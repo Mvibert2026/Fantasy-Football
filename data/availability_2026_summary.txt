@@ -1,0 +1,150 @@
+==============================================================================
+DRAFT-CLOCK AVAILABILITY SHEET — 2026, slot 3
+==============================================================================
+Board: FantasyPros consensus as of 2026-07-24  [NOT FINAL — will move before Week 1]
+3,000 simulated drafts per setting. Your picks: [3, 18, 23, 38, 43, 58, 63, 78, 83, 98, 103, 118, 123, 138, 143, 158]
+
+HOW TO READ THIS. Percentages are the chance a player is STILL ON THE BOARD
+when your pick arrives. They come from simulating the other nine teams
+drafting to consensus with noise. They do NOT depend on any projection of
+how many points anyone scores, which is why they are the most reliable
+numbers in this project.
+
+Three columns because the room's discipline is unknown:
+  TIGHT (sigma 5)  = everyone drafts close to consensus
+  NORMAL (sigma 10) = about a round of slippage — the default assumption
+  CHAOTIC (sigma 20) = reaches and slides everywhere
+If a number is similar across all three, trust it. If it swings, the answer
+depends on how your league behaves and you should plan for both.
+
+------------------------------------------------------------------------------
+PICK 18 — players most likely to still be there
+  player                   pos   ECR   TIGHT  NORMAL CHAOTIC
+  Ladd McConkey            WR     34    100%    96%    84%
+  Jaylen Waddle            WR     35    100%    96%    86%
+  Drake Maye               QB     33    100%    94%    82%
+  Lamar Jackson            QB     32    100%    93%    81%
+  Tee Higgins              WR     31    100%    92%    78%
+  Kenneth Walker III       RB     30     99%    89%    79%
+  Zay Flowers              WR     29     99%    88%    77%
+  Tetairoa McMillan        WR     28     98%    86%    74%
+  Garrett Wilson           WR     27     97%    84%    74%
+  Saquon Barkley           RB     26     95%    81%    72%
+  Josh Allen               QB     25     93%    78%    70%
+  DeVonta Smith            WR     24     90%    75%    70%
+  Omarion Hampton          RB     23     87%    73%    67%
+  Rashee Rice              WR     22     83%    70%    64%
+
+------------------------------------------------------------------------------
+PICK 23 — players most likely to still be there
+  player                   pos   ECR   TIGHT  NORMAL CHAOTIC
+  Kyren Williams           RB     41    100%    97%    85%
+  Breece Hall              RB     40    100%    96%    85%
+  Malik Nabers             WR     39    100%    96%    84%
+  Derrick Henry            RB     38    100%    96%    82%
+  Colston Loveland         TE     37    100%    94%    81%
+  Emeka Egbuka             WR     36     99%    91%    79%
+  Jaylen Waddle            WR     35     99%    90%    78%
+  Ladd McConkey            WR     34     99%    89%    76%
+  Drake Maye               QB     33     99%    86%    75%
+  Lamar Jackson            QB     32     97%    84%    73%
+  Tee Higgins              WR     31     96%    82%    70%
+  Kenneth Walker III       RB     30     94%    78%    70%
+  Zay Flowers              WR     29     91%    77%    68%
+  Tetairoa McMillan        WR     28     86%    72%    65%
+
+------------------------------------------------------------------------------
+TIER SURVIVAL — chance at least one player of that tier is still there
+  (tiers are consensus rank bands: see TIERS in src/availability.py)
+
+  RB
+    tier   ranks        pk3    pk18    pk23    pk38    pk43
+    T1     1-4        100%     46%     10%      0%      0% 
+    T2     5-10       100%    100%     99%     26%      3% 
+    T3     11-20      100%    100%    100%    100%    100% 
+    T4     21-36      100%    100%    100%    100%    100% 
+
+  WR
+    tier   ranks        pk3    pk18    pk23    pk38    pk43
+    T1     1-5        100%     39%      5%      0%      0% 
+    T2     6-12       100%     99%     90%     11%      0% 
+    T3     13-24      100%    100%    100%    100%    100% 
+    T4     25-45      100%    100%    100%    100%    100% 
+
+  TE
+    tier   ranks        pk3    pk18    pk23    pk38    pk43
+    T1     1-2        100%     80%     59%      5%      0% 
+    T2     3-5        100%    100%    100%    100%    100% 
+    T3     6-10       100%    100%    100%    100%    100% 
+    T4     11-18      100%    100%    100%    100%    100% 
+
+  QB
+    tier   ranks        pk3    pk18    pk23    pk38    pk43
+    T1     1-2        100%     99%     95%     37%     15% 
+    T2     3-6        100%    100%    100%    100%    100% 
+    T3     7-12       100%    100%    100%    100%    100% 
+    T4     13-20      100%    100%    100%    100%    100% 
+
+------------------------------------------------------------------------------
+BEST AVAILABLE BY POSITION — full distribution of positional rank
+  Read: at pick 23 the best RB on the board is usually around the median,
+  but a tenth of the time it is as good as p10 and a tenth as bad as p90.
+
+  PICK 3   pos      p10    p25    med    p75    p90
+          RB         1      1      1      1      2
+          WR         1      1      1      2      2
+          TE         1      1      1      1      1
+          QB         1      1      1      1      1
+
+  PICK 18   pos      p10    p25    med    p75    p90
+          RB         2      3      5      6      7
+          WR         3      4      6      8     10
+          TE         1      1      2      2      3
+          QB         1      1      1      1      2
+
+  PICK 23   pos      p10    p25    med    p75    p90
+          RB         4      5      6      8      9
+          WR         7      8     10     11     12
+          TE         1      2      2      3      3
+          QB         1      1      1      2      2
+
+  PICK 38   pos      p10    p25    med    p75    p90
+          RB         9     10     12     13     13
+          WR        12     14     16     18     19
+          TE         3      3      4      4      4
+          QB         1      2      3      4      5
+
+==============================================================================
+SCENARIO: THE TE RUN BETWEEN YOUR PICKS 18 AND 23
+==============================================================================
+Picks 19-22 belong entirely to two managers:
+    pick 19: Shit Leopards
+    pick 20: Cucked Commish
+    pick 21: Cucked Commish
+    pick 22: Shit Leopards
+Both took a TE in round 3 in 2025. If both repeat, up to four TE-capable
+picks happen between your pick 18 and your pick 23.
+
+  Chance at least one TE of each tier survives to YOUR PICK 23:
+    repeat prob          T1       T2       T3
+        0% repeat       60%     100%     100%
+       50% repeat       13%      95%     100%
+      100% repeat        0%      62%     100%
+
+  DECISION RULE: compare the 100% row against the 0% row. If the tier you
+  want drops sharply, take the TE at 18. If it barely moves, wait — those
+  four picks were never the binding constraint.
+
+==============================================================================
+CAVEATS — read once now, not during the draft
+==============================================================================
+1. Opponents are modelled as drafting to consensus with noise, and they do
+   NOT react to what you do. A real room responds to positional runs.
+2. The noise level (sigma) is a guess. It is not fitted to any observed
+   draft data, because none exists for this league. That is why every
+   number is shown across three settings.
+3. The board is consensus as of the date above and will move before Week 1.
+   Re-run this script closer to the draft.
+4. These are availability odds only. They say nothing about whether a
+   player is GOOD — that question runs through a projection whose R-squared
+   is 0.16-0.27, and is much less certain than anything on this sheet.

@@ -117,8 +117,10 @@ ordering matter. Two tests now lock in that the two metrics are complementary.
 
 **2. The board's advantage over consensus does not survive the holdout.** Including 2025,
 `starter_vbd` delta was **+84.6 [+2.3, +153.0]** — excluding zero, and reportable as a win.
-On development seasons only it is **−84.9 [−166.1, +34.7]** — no demonstrated difference,
-with the sign flipped. Had the holdout not been locked first, the first number would have
+On development seasons only the interval widens to include zero — no demonstrated difference.
+**(CORRECTED 2026-07-25: an earlier version of this line said the sign flipped to −84.9. It
+does not. That figure was quoted in the opposite sign convention; the board is better by ~85
+points in both runs, and only the interval changes. See ADR-025.)** Had the holdout not been locked first, the first number would have
 been written down as a finding. This is the single best argument for the Task 7 ordering.
 
 **3. Three existing tests were silently evaluating on 2025.** They failed the moment the lock
@@ -178,6 +180,53 @@ is the *worst* arm. Slot value and reach cost are different quantities — QBs c
 recovers most of the QB1 value while the spent pick does not come back.
 
 Now unblocked by the simulator: #45, the TE/QB timing question, #68 positional runs.
+
+## 2026-07-25 — ALPHA TRACK CLOSED for 2026 (ADR-026)
+
+**No alpha-detection work will be attempted this cycle.** This is arithmetic, not pessimism.
+
+Consensus coverage is 2021–2025; one season is the locked holdout, leaving **4** for
+development (**3** for board-dependent arms). At that size the exact two-sided sign test's
+smallest attainable p is **0.125 at n=4** and **0.250 at n=3** — both above 0.05 *before* any
+multiple-comparisons correction, and the run log already stands at 51 tests. **No factor can
+reach significance regardless of its true merit.**
+
+Three independent results have now each hit this same wall: PR-002 (36 correlations, zero
+surviving BH), PR-003 (15 comparisons, floor p=0.125), and the ADR-025 per-season breakdown
+(3/4 seasons positive, p=0.625). The data runs out before the question does.
+
+**Reopens at n ≥ 6 development seasons** (floor 0.031) — on current accrual, **2028**. More
+consensus *sources* would not help; the binding constraint is seasons. `src/alpha.py` is not
+built. **PR-001 is marked FROZEN-FOR-FUTURE**, not pending, so a later session does not
+relitigate a structurally closed question.
+
+The **ACCURACY track is unaffected** and remains the whole game: it reaches back as far as each
+feature allows (PR-002 used 26 seasons). Availability distributions, startability, bottom-up
+projection and the simulator are all accuracy-track.
+
+## 2026-07-25 — CORRECTION: the board never "flipped sign" (ADR-025)
+
+Per-season `starter_vbd`, re-scored board minus raw consensus:
+
+| Season | Board | Consensus | Delta | |
+|---|---|---|---|---|
+| 2022 | 1001.8 | 825.8 | **+176.0** | dev |
+| 2023 | 626.1 | 660.8 | **−34.7** | dev |
+| 2024 | 673.9 | 560.5 | **+113.4** | dev |
+| 2025 | 693.1 | 609.3 | **+83.8** | HOLDOUT |
+
+Development mean **+84.9**, sign test 2/3 positive, p=1.000, power floor 0.250.
+Including holdout **+84.6**, 3/4 positive, p=0.625, floor 0.125.
+
+**An earlier session reported that the board's advantage "flips sign" from +84.6 to −84.9 when
+the holdout is removed. That was my error** — the two figures were quoted in opposite sign
+conventions (the harness reports `arm − primary`, so −84.9 was *consensus minus board*). Both
+say the board is better by ~85 points. Only the interval changes: three seasons instead of four
+widens it from excluding zero to including it.
+
+Corrected claim: **holdout discipline showed the advantage is not statistically established on
+development data alone — not that it reverses.** The per-season view, which the pooled figure
+was hiding, makes this obvious.
 
 ## DEFERRED: player identity resolution (was Task B, 2026-07-25)
 

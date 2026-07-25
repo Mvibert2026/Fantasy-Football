@@ -17,7 +17,16 @@ confirmation_threshold: CONFIRMED requires ALL of - (a) the post-2019 coefficien
   season-level bootstrap CI on the coefficient excludes zero. Anything less is reported as
   NOT CONFIRMED. A pre-2020 coefficient that is equal or larger falsifies the regime claim
   even if the pooled coefficient is significant.
-status: REGISTERED
+status: FROZEN-FOR-FUTURE
+frozen_date: 2026-07-25
+frozen_reason: The ALPHA track is structurally closed for 2026 (ADR-026). This test measures a
+  factor coefficient CONDITIONAL ON CONSENSUS, so it is bounded by consensus coverage - 4
+  development seasons, where the exact sign test floors at p=0.125 before any multiple-
+  comparisons correction. It cannot reach significance regardless of whether the effect is
+  real. NOT pending, NOT abandoned: the hypothesis stands and the pre-registration is intact.
+  Reopens when development coverage reaches n>=6 seasons (floor 0.031), on current trajectory
+  2028. Do not run it before then and do not treat a null from it as evidence against the
+  hypothesis.
 source_finding: src/regimes.py structural break analysis, 2026-07-25
 regime_context: Break detected after 2019 (sup-F=9.12, bootstrap p=0.0430). Pre-break
   regime 1999-2019 slope -0.00686/season (p<0.001, DECLINING); post-break regime 2020-2025

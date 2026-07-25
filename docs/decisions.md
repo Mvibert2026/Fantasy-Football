@@ -333,10 +333,22 @@ catch. Every attempt, permitted or denied, appends to
 redirects that log during tests so the audit trail is not buried under synthetic accesses.
 
 **Immediate empirical consequence:** the board's apparent advantage over raw consensus does
-NOT survive removal of the holdout. Including 2025, `starter_vbd` delta was +84.6
-[+2.3, +153.0] (excluding zero). On development seasons only it is −84.9 [−166.1, +34.7] —
-no demonstrated difference, and the sign flips. The first number would have been reported as
-a finding.
+NOT survive removal of the holdout as a *statistically distinguishable* result.
+
+> **CORRECTION 2026-07-25 (ADR-025). The original wording of this paragraph was wrong and is
+> retracted.** It claimed the delta "flips sign" between the two runs. It does not. The two
+> figures were quoted in opposite sign conventions and I misread the reversal into existence:
+>
+> - Including the holdout (4 seasons): consensus − board = **−84.6**, CI [−153.0, −2.3]
+> - Development only (3 seasons): consensus − board = **−84.9**, CI [−176.0, +34.7]
+>
+> Both are the *same direction* and essentially the *same magnitude* — the board is better by
+> ~85 points in both. The only thing that changes is the interval: dropping from four seasons
+> to three widens it enough to include zero.
+>
+> The correct claim is therefore narrower than what was written: **holdout discipline showed the
+> board's advantage is not statistically established on development data alone.** It did not
+> reverse the finding. The per-season decomposition (ADR-025) makes this unambiguous.
 
 ### ADR-023: The FDR denominator lives in git, not in the database
 
@@ -369,3 +381,83 @@ probability permanently unrecoverable for that date — no later analysis can re
 dispersion that was never stored. Any future ADP source must be ingested the same way:
 per-source rows keyed by `as_of_date`, never a pre-blended consensus. See docs/deferred.md
 P3-1.
+
+---
+
+## 2026-07-25 (session 7)
+
+### ADR-025: Per-season decomposition, and a correction to ADR-022
+
+Block 1A asked for the per-season breakdown behind two aggregates that had only ever been
+reported pooled. The decomposition:
+
+| Season | Board | Raw consensus | Board − consensus | Status |
+|---|---|---|---|---|
+| 2022 | 1001.8 | 825.8 | **+176.0** | development |
+| 2023 | 626.1 | 660.8 | **−34.7** | development |
+| 2024 | 673.9 | 560.5 | **+113.4** | development |
+| 2025 | 693.1 | 609.3 | **+83.8** | **HOLDOUT** |
+
+- Development mean: **+84.9**, sign test **2/3 positive, p = 1.000**, power floor **0.250**.
+- Including holdout: **+84.6**, sign test **3/4 positive, p = 0.625**, power floor **0.125**.
+
+**The correction.** ADR-022 stated that the board's advantage "flips sign" when the holdout is
+removed, contrasting +84.6 with −84.9. That was a misreading of my own output: the harness
+reports deltas as `arm − primary`, so the −84.9 figure was *consensus minus board*, while the
++84.6 had been quoted as *board minus consensus*. Both describe the board being better by ~85
+points. Nothing flipped.
+
+What actually changes between the two runs is only the confidence interval: three seasons
+instead of four widens it from [−153.0, −2.3] to [−176.0, +34.7], i.e. from excluding zero to
+including it.
+
+**Corrected claim: holdout discipline showed the board's advantage is not statistically
+established on development data alone — not that the advantage reverses.** The narrower claim is
+still worth having, but the original overstated it, and the per-season view (which the pooled
+figure was hiding) makes that obvious. This is a reminder that an aggregate quoted in one
+direction and a delta quoted in the other are easy to mistake for a contradiction.
+
+The per-season pattern is also more informative than either aggregate: the board wins big in
+2022 (+176), loses modestly in 2023 (−35), wins in 2024 (+113) and 2025 (+84). One negative
+season out of four, with high variance. Consistent with a real but modest effect that three
+seasons cannot pin down.
+
+### ADR-026: The ALPHA track is CLOSED for the 2026 draft — arithmetic, not pessimism
+
+**Decision:** no alpha-detection work will be attempted for 2026. `src/alpha.py` will not be
+built this cycle, and PR-001 is marked **frozen-for-future** rather than pending.
+
+**Reason, which is a counting argument rather than a judgement about any factor:**
+
+Consensus coverage is 2021–2025 (`data-availability.md` §5). One season is the locked holdout,
+leaving **four** for development, and arms requiring the re-scored board lose 2021 as well,
+leaving **three**. At that sample size:
+
+- The exact two-sided sign test's smallest attainable p is **0.125 at n=4** and **0.250 at n=3**.
+- Both floors sit above the conventional 0.05 threshold *before any multiple-comparisons
+  correction is applied at all*.
+- Benjamini–Hochberg across a realistic factor sweep (the run log already stands at 51 tests)
+  pushes the effective bar far below the floor.
+
+**No factor can reach significance regardless of its true merit.** This is not a statement that
+alpha is absent — it is a statement that the instrument cannot detect it. Running the sweep
+anyway would produce a list of nulls indistinguishable from a list of undetected real effects,
+consume FDR budget, and create a standing temptation to reinterpret noise.
+
+**Evidence this is the right call, not premature surrender:** three separate pre-registered or
+measured results have now each been bounded by the same arithmetic — PR-002 (36 correlations,
+zero surviving BH), PR-003 (15 comparisons, zero surviving, floor p=0.125), and ADR-025 above
+(3/4 seasons positive, p=0.625). In every case the data ran out before the question did.
+
+**Reopening condition — explicit, so a future session does not relitigate this:** the track
+reopens when consensus coverage reaches a size where the sign-test floor clears 0.05, i.e.
+**n ≥ 6 development seasons** (floor 0.031). Coverage accrues one season per year, so on current
+trajectory that is **2028** (2021–2027 minus a holdout = 6). Ingesting an additional *source* of
+consensus does not help; the binding constraint is seasons, not sources.
+
+**What continues instead.** The ACCURACY track is not bounded this way — it extends as far back
+as each feature's own availability allows, up to 27 seasons for outcome-based work (PR-002 used
+26). Bottom-up projection, startability, availability distributions and the draft simulator are
+all accuracy-track and all remain open. The 2026 edge, if there is one, has to come from
+correct league-specific mechanics and better roster construction, not from out-predicting
+consensus on a sample that cannot demonstrate it.
