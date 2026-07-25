@@ -117,16 +117,52 @@ Nobody else does these, because they only matter in *our* league.
 | 35 | Global flex baseline (~80th flex-eligible) | Correct baseline past mandated slots | `derived` | M | **High** | SPEC |
 | 36 | VONA with pick-gap awareness (5 vs. 14) | Urgency differs ~3× between gap types | `derived` | M | **High** | SPEC |
 | 37 | League-biased ADP (format + manager priors) | Yahoo board assumes 2WR/1FLEX/K | `league` + `adp` | H | **High** | SPEC |
-| 38 | **Bonus-threshold hit rates** | Who *actually* clears 100/150/200, and how often | `nflverse` | M | **High** | NEW |
+| 38 | **Bonus-threshold hit rates** | Who *actually* clears 100/150/200, and how often | `nflverse` | M | ~~**High**~~ **NONE** | **RUN — NULL (2026-07-25, PR-002)**. Volume-adjusted clearance does NOT persist YoY. See below |
 | 39 | No-kicker effect on pool depth | One extra skill player per team drafted | `derived` | L | Med | NEW |
 | 40 | Post-draft players follow waiver rules | Undrafted pool isn't instantly free — changes Wk 1 FAAB | `manual` | L | Med | NEW |
 | 41 | IR restriction (no direct waiver→IR) | Stashing costs a bench spot, not an IR spot | `manual` | L | Med | NEW |
 | 42 | Trade deadline Nov 28 (~Wk 12) | Caps the trade-to-improve path | `manual` | L | Low | NEW |
 
-**#38 is the most genuinely novel item in this registry.** Bonuses stack: a 200-yard game is worth
-+4.5 on top of base. That rewards *spike-week* players over metronomes in a way no public ranking
-captures. Two players with identical projected season totals can differ materially in our format
-based purely on distribution shape. Computable from weekly data we already know how to pull.
+**~~#38 is the most genuinely novel item in this registry.~~ FALSIFIED 2026-07-25 (PR-002).**
+
+The original claim: bonuses stack, a 200-yard game is worth +4.5 on top of base, so *spike-week*
+players are worth more than metronomes with identical projected totals — an edge no public
+ranking captures.
+
+**The arithmetic was never in doubt. The assumption underneath it was, and it failed.** For the
+edge to exist, "clears thresholds more often than volume alone implies" has to be a persistent
+player trait. It is not:
+
+| Primary case | YoY residual r | 95% CI (player-clustered) | BH-adjusted p |
+|---|---|---|---|
+| Receiving 100, WR | **+0.041** | [-0.018, +0.099] | 0.668 |
+| Rushing 100, RB | **+0.063** | [-0.001, +0.124] | 0.336 |
+
+36 correlations run, 24 testable, **zero survived Benjamini-Hochberg**. Largest sample in the
+project: 26 seasons, 1,541 WR pairs / 404 players. The CI upper bounds cap the effect at ~1% of
+explained variance even at their optimistic end — this rules a large effect out rather than
+merely failing to find one.
+
+**Consequence: bonus clearance carries no information beyond projected yardage.** There is no
+"spike-week player" to identify; project the yards and the bonuses follow mechanically. Any
+strategy preferring ceiling-shaped players at equal projected volume has no measured basis.
+
+Two further points from the same run:
+
+- **The 150 and 200 thresholds barely occur.** League-wide there are 18–41 receiving games ≥150
+  and **1–8 games ≥200 per season** (2025: one). Twelve of the 36 tests were not testable for
+  this reason. The `+1.5 @ 150` and `+2.0 @ 200` bonuses are close to irrelevant to draft
+  planning in expectation, separately from persistence.
+- **A regime-dependent near-miss, disqualified in advance.** QB passing-300 in 2012–2019 gave
+  r = +0.265 (raw p = 0.002) — the strongest result in the pass — but it fails BH (0.072) and
+  **reverses to −0.234 in 2020–2024**. Examined alone it would have been written up as a
+  finding. PR-002 pre-committed that regime reversal disqualifies.
+
+**What survives:** re-scoring under our exact rules (a *level* correction to projected points,
+not a shape signal) and the corrected replacement levels (RB28/WR41/TE11/QB10 vs the published
+12-team RB24/WR36). Both real, both modest, neither dependent on #38. Note ADR-016 found the
+board's positional re-weighting had **no demonstrated advantage** over raw consensus on
+development seasons, so even these are unproven rather than established.
 
 **#33/#34 note:** the ported scoring engine treats `flex_split` as an explicit tunable assumption
 rather than a hidden constant. Preserve that design — replacement level depends on how flex slots

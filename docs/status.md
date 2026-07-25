@@ -129,6 +129,28 @@ one session earlier by someone who knew the rule.
 and dropped `sd`/`best`/`worst`. Now stored. Without it, `P(player survives to pick 23)` —
 the core VONA quantity — is permanently unrecoverable for any date already passed.
 
+## 2026-07-25 — #38 FALSIFIED (PR-002): the primary claimed edge does not exist
+
+**Bonus-threshold "spike-week-ness" is not a persistent player trait.** Volume-adjusted YoY
+residual correlation: WR receiving-100 **r = +0.041** [-0.018, +0.099]; RB rushing-100
+**r = +0.063** [-0.001, +0.124]. 36 correlations run, **zero survived Benjamini-Hochberg**.
+Largest sample in the project (26 seasons, 1,541 WR pairs). Full detail in
+`docs/preregistration/PR-002-spike-week-persistence.md` and test-registry #38.
+
+This was pre-registered before running, with the null criteria and the regime-reversal
+disqualifier fixed in advance — which mattered: QB passing-300 hit r = +0.265 (p = 0.002) in
+2012–2019 and **reversed to −0.234** in 2020–2024. Examined alone it would have been a finding.
+
+**What it means practically:** bonus clearance carries no information beyond projected
+yardage. Project the yards; the bonuses follow mechanically. There is no spike-week player to
+identify, and strategy premised on ceiling-shape at equal projected volume has no basis.
+
+**What survives:** re-scoring under our exact rules, and corrected replacement levels
+(RB28/WR41/TE11/QB10 vs published RB24/WR36). Both real, both modest — and per ADR-016 the
+board's positional re-weighting still shows no demonstrated advantage over raw consensus on
+development seasons. The league-specific edge is now considerably thinner than the project has
+been assuming.
+
 ## Prior results still marked PROVISIONAL
 
 Tests #44/#45/#46 (session 3) predate `statistical-guardrails.md` and do not meet it. #46 has now
