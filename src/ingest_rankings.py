@@ -58,6 +58,13 @@ CREATE TABLE IF NOT EXISTS "{TABLE_NAME}" (
     player_name TEXT,
     adp_rank INTEGER,
     adp_value REAL,
+    -- Cross-source dispersion. NEVER collapse these away: VONA at pick 18
+    -- needs P(player survives to pick 23), which requires a distribution over
+    -- where the room might take him, not a consensus point estimate. Once
+    -- ingestion discards spread it is permanently unrecoverable for that date.
+    spread_sd REAL,
+    rank_best REAL,
+    rank_worst REAL,
     as_of_date TEXT NOT NULL,
     position TEXT,
     is_preseason_final INTEGER NOT NULL,
@@ -121,6 +128,9 @@ def fetch_preseason_rankings(season: int) -> tuple[pl.DataFrame, str, bool]:
         pl.col("player").alias("player_name"),
         pl.col("adp_rank").cast(pl.Int64),
         pl.col("ecr").alias("adp_value"),
+        pl.col("sd").alias("spread_sd"),
+        pl.col("best").alias("rank_best"),
+        pl.col("worst").alias("rank_worst"),
         pl.lit(as_of_date).alias("as_of_date"),
         pl.col("pos").alias("position"),
         pl.lit(1 if is_final else 0).cast(pl.Int64).alias("is_preseason_final"),
@@ -131,7 +141,7 @@ def fetch_preseason_rankings(season: int) -> tuple[pl.DataFrame, str, bool]:
 def ensure_table(conn: sqlite3.Connection) -> None:
     conn.execute(_CREATE_SQL)
     existing = {r[1] for r in conn.execute(f'PRAGMA table_info("{TABLE_NAME}")')}
-    if not {"ranking_source", "player_name"} <= existing:
+    if not {"ranking_source", "player_name", "spread_sd", "rank_best", "rank_worst"} <= existing:
         # Legacy table from an earlier schema -- rebuild rather than migrate;
         # every row is re-derivable from the source.
         conn.execute(f'DROP TABLE "{TABLE_NAME}"')

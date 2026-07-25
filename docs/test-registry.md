@@ -149,7 +149,7 @@ Scoped; all need the data pipeline before they can run.
 | # | Test | Question | Source | Status |
 |---|---|---|---|---|
 | 43 | RB dead zone by round, our scoring | Is it real for us? | `derived` | SPEC |
-| 44 | Hero RB vs. alternatives | Does the approach beat BPA? | `derived` | **RUN — PROVISIONAL** (2026-07-25, 2025 season): inconclusive, metric blind spot found. Does not yet meet `docs/statistical-guardrails.md` — see compliance note |
+| 44 | Hero RB vs. alternatives | Does the approach beat BPA? | `derived` | **RUN — PROVISIONAL** (2026-07-25, 2025 season): inconclusive, metric blind spot **partially addressed** by `starter_vbd` (2026-07-25 session 5); full answer still needs a draft simulation |
 | 45 | Elite TE edge, measured | Prior claim had 2 of 3 inputs estimated | `derived` | **RUN — PROVISIONAL** (2026-07-25, 2025 season): measured cost -226.4 pts vs. plain BPA. Does not yet meet `docs/statistical-guardrails.md` — see compliance note |
 | 46 | QB1 vs. QB10 spread, our scoring | Justifies waiting — or doesn't | `derived` | **RUN — PROVISIONAL** (2026-07-25, 2025 actuals): justifies waiting. Does not yet meet `docs/statistical-guardrails.md` — see compliance note |
 | 47 | Handcuff value by round | When does insurance beat a lottery ticket? | `derived` | SPEC |
@@ -226,6 +226,15 @@ not just theory.
 >
 > Both numbers are correct measurements of different things. Future entries must state which
 > conditioning they use; they are not interchangeable.
+
+**Compliance status update (2026-07-25, session 5).** Three of the gaps listed below are now
+closed: `_rank_correlation` no longer pools positions (it is deleted; per-position only),
+every reported metric carries a season-level bootstrap CI with degeneracy flagged, and all
+RNG is seeded and recorded. The remaining gap is **consensus ADP**, still unobtainable
+(ADR-018). Holdout discipline and FDR infrastructure now exist (ADR-022/023), so any future
+factor test is subject to them — but #44/#45/#46 were run before they existed and remain
+PROVISIONAL. Re-running them under the corrected harness is a prerequisite to promoting them,
+and must use development seasons only.
 
 **Guardrails compliance note (added 2026-07-25, after `docs/statistical-guardrails.md` landed
 mid-session — the #44/#45/#46 runs above predate it).** Per that doc's own standard: "a result

@@ -43,14 +43,27 @@ exists regardless of whether any modelling work finishes.
 | Consensus rankings | 2021-2026, `ranking_source='expert'` (2,948 rows). **No market ADP exists** |
 | Scoring engine | Clamp bug fixed; negative scores now permitted |
 | Look-ahead enforcement | `CutoffEnforcedStore`, plus per-module guards in `config.py` and `make_board.py` |
-| Backtest harness | Works; **statistical corrections still pending (Task 9)** |
+| Backtest harness | **Corrected (Task 9)** — per-position Spearman, season-level bootstrap CIs, seeded, board as primary baseline |
 | Regime analysis | `src/regimes.py` — sup-Wald breaks, trend cycles, era similarity |
 | Draft board | `data/board_2026.csv` — 378 players, VBD with bootstrap CIs |
-| Alpha detection | **Not built** (Task 6) |
-| Holdout / pre-registration | **Not built** (Task 7) |
+| Holdout / pre-registration | **Built (Task 7)** — 2025 locked and enforced, prereg required, BH over the persistent run log |
 | Feature pipeline | **Not built** (Task 8) |
+| Alpha detection | **Not built** (Task 6) |
 
-**89 automated tests passing.**
+**139 automated tests passing.**
+
+### Holdout: 2025 is LOCKED
+
+`src/holdout.py`. Development must use 2021-2024; the board arm additionally cannot use 2021
+(no prior consensus season to fit its curve), so the effective development set is
+**2022-2024 — three seasons**. Reads of 2025 raise `HoldoutViolation` unless wrapped in a
+logged `final_evaluation()` (one-time, per pre-registered test) or `release_for_final_fit()`
+(production refit after selection is frozen). Every attempt is appended to
+`docs/preregistration/holdout_access_log.jsonl`.
+
+Locking governs **selection, not fitting** — the shipped 2026 model refits on all seasons
+including 2025. One held-out season is N=1 and cannot confirm an edge; use
+`walk_forward_splits()` during development.
 
 ---
 
@@ -93,6 +106,29 @@ decades but has plateaued over the last five years. Most recent break across all
 
 ---
 
+## Session 5 findings (Tasks 9 and 7)
+
+**1. The evaluation metrics were blind to the primary baseline.** The corrected harness
+returned a delta of *exactly zero* between the re-scored board and raw consensus on every
+metric. Structural, not a bug: the board only reorders across positions, while `vbd_sum`
+(top-N per position) and within-position Spearman are both invariant to that. Added
+`starter_vbd`, which imposes a 15-pick budget and fills the lineup, making cross-position
+ordering matter. Two tests now lock in that the two metrics are complementary.
+
+**2. The board's advantage over consensus does not survive the holdout.** Including 2025,
+`starter_vbd` delta was **+84.6 [+2.3, +153.0]** — excluding zero, and reportable as a win.
+On development seasons only it is **−84.9 [−166.1, +34.7]** — no demonstrated difference,
+with the sign flipped. Had the holdout not been locked first, the first number would have
+been written down as a finding. This is the single best argument for the Task 7 ordering.
+
+**3. Three existing tests were silently evaluating on 2025.** They failed the moment the lock
+landed. That is the leak the lock exists to catch, and it was already present in code written
+one session earlier by someone who knew the rule.
+
+**4. Cross-source dispersion was being discarded at ingestion.** `rankings` kept only `ecr`
+and dropped `sd`/`best`/`worst`. Now stored. Without it, `P(player survives to pick 23)` —
+the core VONA quantity — is permanently unrecoverable for any date already passed.
+
 ## Prior results still marked PROVISIONAL
 
 Tests #44/#45/#46 (session 3) predate `statistical-guardrails.md` and do not meet it. #46 has now
@@ -102,18 +138,23 @@ per-position rank correlation, bootstrap CIs, and a consensus baseline are Task 
 
 ---
 
-## Next steps (Tasks 6-9, post-checkpoint)
+## Next steps
 
-1. **Task 9 first, not last.** `_rank_correlation` still pools positions, there are still no CIs,
-   and the re-scored board is not yet wired in as the primary baseline. Every downstream result
-   depends on these being right.
-2. **Task 7 before any factor sweep.** Holdout lock + pre-registration + persistent test count must
-   exist *before* factors are tested, or the multiple-comparisons correction is applied to a
-   subset chosen after the fact.
-3. **Task 8** feature pipeline, with each feature declaring its first-available season from
-   `data-availability.md` and a test proving cutoff-invariance.
-4. **Task 6** alpha detection last, since it depends on 7 and 8. Note the flagged specification
-   issue: a *linear* control on consensus rank is misspecified (points-vs-rank is strongly convex),
-   and would manufacture false alpha; use a flexible control and report sensitivity.
-5. **Re-pull the 2026 board in late August** once FantasyPros publishes preseason-final snapshots.
-   The current board is flagged `is_preseason_final=0` and will move.
+Tasks 9 and 7 are done. Remaining, in order:
+
+1. **Task 8 — feature pipeline** (`src/features.py`). Each feature takes an explicit
+   `cutoff_date`, declares its first-available season from `data-availability.md`, **refuses**
+   seasons where its inputs are known-broken (the 2003-2008 targets hole) rather than
+   zero-filling, and is covered by a test proving identical output when handed data extending
+   past the cutoff. Imputation choices go in feature metadata with a paired sensitivity check.
+2. **Task 6 — alpha detection** (`src/alpha.py`), last because it depends on 8. The control on
+   consensus rank must be FLEXIBLE (log-rank or spline), with reported sensitivity to that
+   choice: points-vs-rank is strongly convex, and a linear control leaves curvature in the
+   residual that any quality-correlated factor will absorb and be mislabelled CANDIDATE_ALPHA.
+   Cluster SEs by player. Label every factor PRICED_IN / CANDIDATE_ALPHA / ACCURACY_ONLY.
+3. **Re-pull the 2026 board in late August** once FantasyPros publishes preseason-final
+   snapshots. The current board is flagged `is_preseason_final=0` and will move.
+
+Standing expectation, unchanged: the development set is **three seasons**, ~14 factors will be
+tested under FDR, and **"no significant alpha detected" is the likely and acceptable outcome.**
+Do not tune toward finding something.

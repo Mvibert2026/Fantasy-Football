@@ -238,3 +238,134 @@ preseason snapshot (2020's earliest is 2020-10-16, in-season, unusable).
 This bounds several things requested for Tasks 6-9: per-regime alpha coefficients are not
 estimable (all 5 consensus seasons sit inside one modern regime), season-level bootstrap
 resamples only 5 units, and reserving a holdout leaves 4 development seasons.
+
+---
+
+## 2026-07-25 (session 5) — Tasks 9 and 7
+
+### ADR-019: No pooled cross-position correlation, ever
+
+`_rank_correlation` is gone. `_rank_correlation_by_position` returns a per-position dict and
+there is no scalar correlation on `SeasonMetrics`. A test asserts both facts so the defect
+cannot silently return.
+
+Pooling QB/RB/WR/TE into one Spearman mostly measured whether a ranking sorted *positions*
+by scoring scale, not whether it ranked *players* well — QBs score on a different scale, so
+any ranking that puts QBs in roughly the right band scores well regardless of within-position
+skill. That is why the original blended figure was simultaneously high and uninformative.
+
+A single number is still available via `weighted_aggregate(per_position, weighting=...)`,
+which requires the caller to name a weighting and returns it carrying the label
+"NOT a pooled cross-position correlation". Unknown weightings raise.
+
+### ADR-020: `starter_vbd` — because the existing metrics were blind to the primary baseline
+
+Running the corrected harness produced a delta of **exactly zero** between the re-scored
+consensus board and raw consensus, on every metric. Not a small delta — zero, to floating
+point, with a zero-width interval.
+
+The cause is structural, not a bug. The board's only effect is CROSS-positional reordering.
+`vbd_sum` takes the top-N *per position*, and Spearman is computed *within* position. Both
+are mathematically invariant to cross-positional reordering. **The metrics could not see the
+one thing the primary baseline does.**
+
+`top_k_starter_vbd` fixes this: take the ranking's top K picks under a fixed budget
+(K = 15 roster picks), fill the 1QB/2RB/3WR/1TE/2FLEX lineup from them, and sum actual VBD.
+A budget makes cross-position ordering matter — spend early picks on a position you did not
+need and the lineup is worse. Two tests lock the complementarity: one asserts `starter_vbd`
+IS sensitive to cross-position order, the other asserts `vbd_sum` is NOT.
+
+LIMITATION, stated in the docstring: no opponents. It assumes you receive your top-K
+uncontested, so it measures ordering quality, not draft-day scarcity. A real draft simulation
+(test-registry.md #44) remains the missing evaluation layer — see docs/deferred.md P3-4.
+
+A `DELTA_TOLERANCE` was also added: a delta of ~1e-13 with an interval of the same width was
+being labelled "BEATS" by a bare sign test. It now reports
+"IDENTICAL (metric cannot distinguish these arms)".
+
+### ADR-021: Season-level bootstrap only, with degeneracy reported rather than hidden
+
+Every reported metric carries a CI from resampling SEASONS. Player-week resampling is never
+used: player-weeks within a season are correlated, so it would produce intervals far too
+narrow and make weak results look solid.
+
+The cost is stated in the output rather than engineered away:
+
+- **n = 1 season → no interval at all.** `MetricCI.lo/.hi` are None and the note explains
+  that a player-level bootstrap would look narrower and would be wrong.
+- **n < 8 seasons → `degenerate=True`** with a note that the interval is itself poorly
+  estimated. Every real run currently hits this, since the development set has 3-4 seasons.
+
+Arm-vs-baseline deltas use a PAIRED bootstrap — the same resampled season indices for both
+arms within a replication. Independent resampling would add between-arm variance that does
+not exist and would understate real differences. A test asserts identical arms produce a
+delta of exactly zero with a zero-width interval, which only holds under pairing.
+
+### ADR-022: Holdout is 2025, and locking governs SELECTION, not FITTING
+
+Locked: **2025**. The reasoning, since this was a genuine tradeoff:
+
+2025 is at once the truest forward test for a 2026 draft and the most informative season for
+projecting 2026. The apparent conflict mostly dissolves once the distinction is made explicit:
+**the lock constrains which seasons may inform decisions about which factors to use, not which
+seasons the final model is fitted on.** Once selection is frozen, the chosen model refits on
+everything including 2025 to produce the live board. `release_for_final_fit()` marks that
+transition and logs it under a different event type from `final_evaluation()`, so the audit
+trail distinguishes "we measured on the holdout" from "we trained the shipped model on
+everything".
+
+The alternatives were worse. **2021 cannot serve as a holdout at all** — the primary baseline
+needs a prior consensus season and cannot be built for the first year of coverage. A middle
+season such as 2024 would mean tuning on 2025 data to evaluate 2024: using the future to
+predict the past.
+
+**Power warning, recorded up front:** one held-out season is N=1. Given observed variance
+(consensus RB1 outcomes have ranged 40 to 366 points), a single-season result cannot confirm
+an edge — a win is weak evidence, a loss is meaningfully bad news. `walk_forward_splits()`
+supplies rolling-origin evaluation on the development set so development decisions rest on
+several forward-looking observations instead of the one final test.
+
+**Enforcement is structural.** `run_backtest_multi` calls `HoldoutLock.guard()` and raises
+`HoldoutViolation` outside a logged context. Three existing tests failed the moment this
+landed — they had been evaluating on 2025 — which is precisely the leak the lock exists to
+catch. Every attempt, permitted or denied, appends to
+`docs/preregistration/holdout_access_log.jsonl`, tracked in git. A session-scoped fixture
+redirects that log during tests so the audit trail is not buried under synthetic accesses.
+
+**Immediate empirical consequence:** the board's apparent advantage over raw consensus does
+NOT survive removal of the holdout. Including 2025, `starter_vbd` delta was +84.6
+[+2.3, +153.0] (excluding zero). On development seasons only it is −84.9 [−166.1, +34.7] —
+no demonstrated difference, and the sign flips. The first number would have been reported as
+a finding.
+
+### ADR-023: The FDR denominator lives in git, not in the database
+
+`docs/preregistration/test_run_log.jsonl` is append-only and tracked in version control on
+purpose. A test counter living in the gitignored `data/nfl.db` would reset on any rebuild,
+silently shrinking the multiple-comparisons denominator to whatever was run most recently —
+which is exactly the failure the correction defends against. `correct_against_full_log()`
+takes its `n_total` from that file, and `benjamini_hochberg` raises if `n_total` is smaller
+than the number of p-values supplied.
+
+Pre-registration is enforced by refusal, not warning: `require_preregistration()` raises
+`PreRegistrationMissing` when no file exists and `PreRegistrationInvalid` when required
+fields are absent. A warning would be scrolled past.
+
+`docs/preregistration/PR-001-rb-carry-concentration-reversal.md` is the first entry, covering
+the post-2019 RB carry-concentration reversal found by `src/regimes.py`. It states the
+confirmation threshold, and — deliberately — four specific reasons the finding might be
+nothing (n=6 post-break seasons, a possible COVID-era artifact, the likelihood consensus has
+already priced it, and that league-level concentration need not imply player-level
+predictability). Writing the failure modes down before running is the point.
+
+### ADR-024: ADP schema preserves cross-source dispersion
+
+`rankings` now stores `spread_sd`, `rank_best` and `rank_worst` alongside the point estimate.
+This was already being discarded: ingestion kept only `ecr`.
+
+VONA at pick 18 requires `P(player survives to pick 23)`, which needs a distribution over
+where the room might take a player. A collapsed consensus point estimate makes that
+probability permanently unrecoverable for that date — no later analysis can reconstruct
+dispersion that was never stored. Any future ADP source must be ingested the same way:
+per-source rows keyed by `as_of_date`, never a pre-blended consensus. See docs/deferred.md
+P3-1.

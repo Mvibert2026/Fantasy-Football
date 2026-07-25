@@ -109,3 +109,59 @@ by construction (DST rows are dropped in `ingest_rankings.py` for lack of a `gsi
 league does have a DEF slot (`CLAUDE.md` §7 / test-registry.md league context). Out of scope for
 this pass since it wasn't part of the requested narrow schema; the backtest harness currently
 only evaluates offensive skill positions.
+
+## Phase 3 — draft-time tooling (deferred, but constrains the schema TODAY)
+
+These are not being built now. They are recorded here because each imposes a data-capture
+requirement that becomes unrecoverable if ignored, and the capture is cheap today.
+
+### P3-1. VONA-based board ordering, replacing VBD
+
+VBD ranks by value over a *positional replacement*, which is the right static question and
+the wrong draft-day one. The draft-day question is value over the *next available
+alternative at your next pick* — VONA. At pick 18 with your next pick at 23, the relevant
+quantity is not "how much better is this RB than RB28" but "how much better is he than the
+RB who will still be there at 23".
+
+**Schema requirement, already satisfied (2026-07-25):** `rankings` stores `spread_sd`,
+`rank_best` and `rank_worst` per source per `as_of_date`, alongside the point estimate.
+VONA needs `P(player survives to pick 23)`, which requires a *distribution* over where the
+room may take a player. A collapsed consensus point estimate makes that probability
+permanently unrecoverable for that date — no later analysis can reconstruct dispersion that
+was never stored. Any future ADP source must be ingested the same way: **per-source rows,
+never a pre-blended consensus.**
+
+### P3-2. Date-parametrised board refresh with injury and news status
+
+The board must be rebuildable as of any date, not only "now": `board(as_of=2026-08-28)`
+should reflect only what was known then. Two dependencies:
+
+- Consensus snapshots are already dated and stored per `as_of_date`, so the ranking side
+  works today.
+- Injury status is **not** yet captured with an `as_of_date`. `load_injuries` covers
+  2009-2025 (docs/data-availability.md §1) but is not ingested. Without dated injury
+  snapshots, any historical board rebuild silently uses final-season injury knowledge —
+  textbook look-ahead (CLAUDE.md §6.1).
+
+Also blocking: `load_depth_charts` **ends at 2024**, so depth-chart role is unavailable for
+the 2026 draft from this source entirely.
+
+### P3-3. Pick-gap-aware urgency for the 3/18/23 slot sequence
+
+From slot 3 in a 10-team snake, picks fall at 3, 18, 23, 38, 43, ... The gaps alternate
+wildly: 15 picks between 3 and 18, then 5 between 18 and 23. Urgency at a 15-pick gap is
+roughly 3x that at a 5-pick gap — a player you can plausibly get at 23 is not worth
+reaching for at 18, while a run-prone position at pick 3 must be addressed because 15 picks
+will pass.
+
+This is test-registry.md #36. It depends on P3-1 (survival probabilities) and on modelling
+opponent behaviour, which is currently unmodelled — every backtest assumes opponents draft
+to ADP with noise (test-registry.md "Known gaps" #1).
+
+### P3-4 (implied). Draft simulation as the evaluation metric
+
+Recorded here because Tasks 9's metrics still cannot answer it. `starter_vbd` is sensitive
+to cross-positional ordering but assumes you receive your top-K uncontested. Neither it nor
+`vbd_sum` models opponents, scarcity, or pick timing, so no current metric can evaluate a
+strategy whose entire effect is *when* a player is taken (Hero RB, Zero RB — test-registry
+#44). A real draft simulation is the missing evaluation layer.
