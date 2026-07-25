@@ -45,7 +45,7 @@ from scipy.stats import spearmanr
 
 import db
 import holdout as holdout_mod
-from config import DEFAULT_CONFIG
+from config import DEFAULT_CONFIG, stable_offset
 from scoring import ReplacementLevels, compute_vbd, score_offensive_game
 
 RankingConfig = Dict[str, int]  # player_id -> rank (1 = best)
@@ -603,7 +603,7 @@ def run_backtest_multi(
             ]
             if vals:
                 res.spearman_ci[pos] = bootstrap_season_ci(
-                    vals, seed=seed + hash(pos) % 1000, n_bootstrap=n_bootstrap
+                    vals, seed=seed + stable_offset(pos), n_bootstrap=n_bootstrap
                 )
 
     # Paired deltas against the primary baseline
@@ -642,7 +642,7 @@ def run_backtest_multi(
                         b.append(pb.spearman)
                 if a:
                     d[f"spearman_{pos}"] = paired_bootstrap_delta_ci(
-                        a, b, seed=seed + hash(pos) % 1000, n_bootstrap=n_bootstrap
+                        a, b, seed=seed + stable_offset(pos), n_bootstrap=n_bootstrap
                     )
             deltas[name] = d
 

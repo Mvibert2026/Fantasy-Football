@@ -11,6 +11,7 @@ import numpy as np
 
 import db as dbmod
 import draft_sim as ds
+from draft_sim import stable_offset
 import holdout as holdout_mod
 from config import DEFAULT_CONFIG
 from export_contract import CONTRACT_VERSION, EXPORT_DIR
@@ -63,7 +64,7 @@ def main() -> None:
             results[sigma][name] = {}
             for si, season in enumerate(DEV_SEASONS):
                 d = data[season]
-                seed = args.seed + int(sigma * 1000) + si * 97 + abs(hash(name)) % 1000
+                seed = args.seed + int(sigma * 1000) + si * 97 + stable_offset(name)
                 results[sigma][name][season] = ds.run_strategy(
                     d, name, strat, d.consensus_rank.copy(), args.sims, sigma, seed
                 )

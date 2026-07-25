@@ -231,3 +231,31 @@ skips any of the checks in §8 above. The **Statistician** agent designs the met
 using this document; Red-team verifies compliance after the fact. These are deliberately separate
 roles — the person who designs a test should not be the sole check on whether it was executed
 honestly.
+
+---
+
+## 11. Reproducibility is a property you must demonstrate, not declare
+
+Added 2026-07-25 after ADR-028.
+
+§7 already required seeded RNG. That requirement was satisfied *in letter* while being false in
+practice for months: seeds were built from `abs(hash(name)) % 1000`, and Python salts string
+hashing per process, so every run used different seeds while printing the same `seed=` value.
+The same simulation arm reported −92.9 and −98.6 with no code change between them.
+
+**Rules, all of them cheap:**
+
+1. **Never derive a seed from builtin `hash()`.** It is randomised per process for `str` and
+   `bytes`. Use `zlib.crc32` or `hashlib` (`config.stable_offset`). A static test enforces this.
+2. **A recorded seed must fully determine the output.** If any other varying input feeds the
+   RNG, the recorded seed is misleading — worse than recording nothing, because it invites
+   trust.
+3. **Prove it by re-running.** Determinism must be tested by executing the code twice *in
+   separate processes* and comparing. A same-process check passes while this whole class of bug
+   is live.
+4. **Two numbers for the same quantity are an incident, not a rounding difference.** Stop and
+   find the cause before either is used. Both ADR-025 and ADR-028 were caught this way, and in
+   both the conclusion survived while the reported precision did not.
+5. **Quantify the noise floor before quoting a point estimate.** Re-run across several seeds
+   and report the spread. If the seed-induced range is comparable to the effect being claimed,
+   the effect is not measurable at that resolution — say so instead of quoting a decimal.

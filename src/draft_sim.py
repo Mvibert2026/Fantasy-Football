@@ -59,6 +59,7 @@ from __future__ import annotations
 
 import argparse
 import sqlite3
+import zlib
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Callable, Dict, List, Optional, Sequence, Tuple
@@ -67,7 +68,7 @@ import numpy as np
 
 import db as dbmod
 import holdout as holdout_mod
-from config import DEFAULT_CONFIG
+from config import DEFAULT_CONFIG, stable_offset
 from scoring import score_offensive_game
 
 # ----------------------------------------------------------------- league setup

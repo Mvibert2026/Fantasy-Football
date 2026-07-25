@@ -13,6 +13,7 @@ here encodes a belief about the right lookback.
 from __future__ import annotations
 
 import math
+import zlib
 from dataclasses import dataclass, field
 from typing import Dict, Iterable, Literal
 
@@ -112,3 +113,15 @@ class ProjectConfig:
 
 
 DEFAULT_CONFIG = ProjectConfig()
+
+
+def stable_offset(name: str, modulo: int = 1000) -> int:
+    """Deterministic per-name seed offset. NEVER use `hash()` for this.
+
+    Python salts string hashing with a per-process PYTHONHASHSEED, so
+    `abs(hash(name)) % 1000` silently yields a different seed on every run. That
+    is how the same simulation arm reported -92.9 and -98.6 with no code change
+    between the runs (ADR-028). Any value feeding a random seed must be stable
+    across processes, or "seeded" is a false claim.
+    """
+    return zlib.crc32(name.encode("utf-8")) % modulo

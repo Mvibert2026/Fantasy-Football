@@ -504,3 +504,56 @@ tested it and found no evidence, rather than improvising a plausible-sounding re
 will be less lively. That is the intended trade: the project's whole claim to credibility is
 that it reports what it measured and refuses what it did not. A narrator that invents
 causation would undo that in one paragraph.
+
+### ADR-028: The −92.9 / −98.6 discrepancy was an unstable seed, not a model change
+
+**Trigger.** The design handoff recorded `elite_te_early` at −92.9; a later export reported
+−98.6 for the same arm, same seasons, same sigma, with no code change between them and no
+stated reason. Flagged as the same failure shape as the sign-convention incident (ADR-025).
+
+**Root cause.** Both `run_draft_sim.py` and `export_strategies.py` derived their per-strategy
+seed as:
+
+```python
+seed = args.seed + int(sigma * 1000) + si * 97 + abs(hash(name)) % 1000
+```
+
+**`hash()` on a `str` is salted per process.** Python randomises `PYTHONHASHSEED` at
+interpreter start unless it is pinned, so `abs(hash("elite_te_early")) % 1000` returned a
+different value in every run — measured directly: 62, 49, 843 across three processes. Every
+simulation therefore used a different effective seed while *reporting* `seed=20260725`, which
+made the recorded seed actively misleading rather than merely incomplete.
+
+**Neither number was wrong; neither was reproducible.** Re-running the arm across five fixed
+master seeds:
+
+| master seed | margin | seasons positive |
+|---|---|---|
+| 20260725 | −94.5 | 0/4 |
+| 1 | −85.2 | 0/4 |
+| 42 | −100.7 | 0/4 |
+| 999 | −95.1 | 0/4 |
+| 123456 | −92.4 | 0/4 |
+
+Spread −100.7 to −85.2, sd 5.6. **Both previously reported values fall inside the
+seed-induced band.** They were two draws from simulation noise presented as two measurements.
+
+**Does it change any conclusion? No.** `seasons_positive` is **0/4 at every seed tested** —
+`elite_te_early` is consistently negative regardless of seed, and the magnitude is stable at
+roughly −93 ± 6. The finding survives; only the false precision of the point estimate does not.
+
+**Scope was wider than the reported symptom.** The same pattern appeared twice more, in
+`backtest.py`, seeding the per-position Spearman confidence intervals (`seed + hash(pos) %
+1000`). Those intervals were also not reproducible. The `vbd_sum` and `starter_vbd` CIs used
+plain integer seeds and were unaffected, so the ADR-025 board-vs-consensus figures stand.
+
+**Fix.** `config.stable_offset()` — `zlib.crc32`, deterministic across processes — replaces
+every `hash()`-derived seed. Four regression tests now guard it, including one that spawns
+subprocesses (a same-process determinism check would have passed while the bug was live) and a
+static scan that fails if any source file derives a seed from builtin `hash()` again.
+
+**Lesson, and it is the same one as ADR-025.** Both incidents were a *reporting* failure rather
+than an analysis failure: the arithmetic was fine and the conclusion was fine, but a number was
+presented as more solid than it was. "Seeded RNG, seed recorded" was in the standing
+requirements and was satisfied in letter while being false in practice. A claim of
+reproducibility is worth nothing unless something actually re-runs and compares.

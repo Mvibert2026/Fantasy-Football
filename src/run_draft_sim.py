@@ -20,6 +20,7 @@ import numpy as np
 
 import db as dbmod
 import draft_sim as ds
+from draft_sim import stable_offset
 import holdout as holdout_mod
 import preregistration as prereg
 from config import DEFAULT_CONFIG
@@ -64,7 +65,7 @@ def main() -> None:
             for si, season in enumerate(args.seasons):
                 d = data[season]
                 board = d.consensus_rank.copy()
-                seed = args.seed + int(sigma * 1000) + si * 97 + abs(hash(name)) % 1000
+                seed = args.seed + int(sigma * 1000) + si * 97 + stable_offset(name)
                 results[sigma][name][season] = ds.run_strategy(
                     d, name, strat, board, args.sims, sigma, seed
                 )
