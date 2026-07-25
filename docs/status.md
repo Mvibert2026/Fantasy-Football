@@ -115,7 +115,10 @@ metric. Structural, not a bug: the board only reorders across positions, while `
 `starter_vbd`, which imposes a 15-pick budget and fills the lineup, making cross-position
 ordering matter. Two tests now lock in that the two metrics are complementary.
 
-**2. The board's advantage over consensus does not survive the holdout.** Including 2025,
+**2. ~~The board's advantage over consensus does not survive the holdout.~~ CORRECTED — see
+ADR-025.** The advantage is **directionally positive in 3 of 4 seasons, mean +84.6**, and is
+simply *not statistically established at n=4*. It never reversed. Original text below, kept
+for the record: Including 2025,
 `starter_vbd` delta was **+84.6 [+2.3, +153.0]** — excluding zero, and reportable as a win.
 On development seasons only the interval widens to include zero — no demonstrated difference.
 **(CORRECTED 2026-07-25: an earlier version of this line said the sign flipped to −84.9. It
@@ -149,9 +152,10 @@ identify, and strategy premised on ceiling-shape at equal projected volume has n
 
 **What survives:** re-scoring under our exact rules, and corrected replacement levels
 (RB28/WR41/TE11/QB10 vs published RB24/WR36). Both real, both modest — and per ADR-016 the
-board's positional re-weighting still shows no demonstrated advantage over raw consensus on
-development seasons. The league-specific edge is now considerably thinner than the project has
-been assuming.
+board's positional re-weighting is **directionally positive (mean +84.6, 3 of 4 seasons) but
+not statistically established at n=4** (corrected 2026-07-25, ADR-025 — an earlier version of
+this line said "no demonstrated advantage", which understated it). The league-specific edge is
+thinner than the project assumed, but the board itself has never measured worse than consensus.
 
 ## 2026-07-25 — Draft simulator built (P3-4); #44 resolved NULL
 

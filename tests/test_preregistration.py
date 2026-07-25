@@ -67,9 +67,31 @@ def test_multiline_frontmatter_values_are_joined(prereg_dir):
 def test_the_real_pr001_file_is_valid():
     """The shipped pre-registration must actually parse."""
     p = prereg.require_preregistration("PR-001")
-    assert p.status == "REGISTERED"
     assert "carry" in p.title.lower()
     assert p.confirmation_threshold
+
+
+def test_pr001_stays_frozen_while_the_alpha_track_is_closed():
+    """PR-001 is an ALPHA-track test and the alpha track is structurally closed
+    for 2026 (ADR-026): with 4 development seasons the exact sign test floors at
+    p=0.125, so no factor can reach significance regardless of merit.
+
+    This guards against a future session quietly flipping it back to REGISTERED
+    and running it. Reopening is legitimate only when development coverage
+    reaches n>=6 seasons -- at which point this test should be updated
+    deliberately, not deleted to make a red bar go away."""
+    p = prereg.require_preregistration("PR-001")
+    assert p.status == "FROZEN-FOR-FUTURE"
+    assert p.fields.get("frozen_reason")
+
+
+def test_run_preregistrations_record_their_result():
+    """PR-002 and PR-003 were executed; both must carry a result line so a
+    reader cannot mistake a run test for a pending one."""
+    for pid in ("PR-002", "PR-003"):
+        p = prereg.require_preregistration(pid)
+        assert p.status == "RUN"
+        assert p.fields.get("result"), f"{pid} is RUN but records no result"
 
 
 # ------------------------------- run log -------------------------------

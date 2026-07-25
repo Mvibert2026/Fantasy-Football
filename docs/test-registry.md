@@ -182,7 +182,9 @@ Two further points from the same run:
 **What survives:** re-scoring under our exact rules (a *level* correction to projected points,
 not a shape signal) and the corrected replacement levels (RB28/WR41/TE11/QB10 vs the published
 12-team RB24/WR36). Both real, both modest, neither dependent on #38. Note ADR-016 found the
-board's positional re-weighting had **no demonstrated advantage** over raw consensus on
+board's positional re-weighting is **directionally positive (mean +84.6, positive in 3 of 4
+seasons) but not statistically established at n=4** — corrected 2026-07-25 per ADR-025, which
+retracted an earlier claim that it had "no demonstrated advantage" / reversed sign. Measured on
 development seasons, so even these are unproven rather than established.
 
 **#33/#34 note:** the ported scoring engine treats `flex_split` as an explicit tunable assumption

@@ -1,0 +1,169 @@
+{
+  "contract_version": "1.0.0",
+  "teams": 10,
+  "rounds": 16,
+  "user_draft_slot": 3,
+  "pick_sequence": [
+    3,
+    18,
+    23,
+    38,
+    43,
+    58,
+    63,
+    78,
+    83,
+    98,
+    103,
+    118,
+    123,
+    138,
+    143,
+    158
+  ],
+  "roster": {
+    "starters": {
+      "QB": 1,
+      "RB": 2,
+      "WR": 3,
+      "TE": 1,
+      "FLEX": 2,
+      "DEF": 1
+    },
+    "flex_eligible": [
+      "RB",
+      "WR",
+      "TE"
+    ],
+    "bench": 6,
+    "ir": 1,
+    "kicker": false
+  },
+  "scoring": {
+    "offense": {
+      "passing_yards": {
+        "per": 25,
+        "bonuses": [
+          [
+            300,
+            1.0
+          ],
+          [
+            350,
+            1.5
+          ],
+          [
+            400,
+            2.0
+          ]
+        ]
+      },
+      "passing_td": 4,
+      "interception": -2,
+      "rushing_yards": {
+        "per": 10,
+        "bonuses": [
+          [
+            100,
+            1.0
+          ],
+          [
+            150,
+            1.5
+          ],
+          [
+            200,
+            2.0
+          ]
+        ]
+      },
+      "rushing_td": 6,
+      "receptions": 0.5,
+      "receiving_yards": {
+        "per": 10,
+        "bonuses": [
+          [
+            100,
+            1.0
+          ],
+          [
+            150,
+            1.5
+          ],
+          [
+            200,
+            2.0
+          ]
+        ]
+      },
+      "receiving_td": 6,
+      "return_td": 6,
+      "two_point_conversion": 2,
+      "fumbles_lost": -2,
+      "offensive_fumble_return_td": 6
+    },
+    "defense": {
+      "sacks": 1,
+      "interceptions": 2,
+      "fumble_recoveries": 2,
+      "touchdowns": 6,
+      "safeties": 2,
+      "blocked_kicks": 1,
+      "return_tds": 6,
+      "extra_point_returned": 2,
+      "points_allowed": [
+        [
+          0,
+          10
+        ],
+        [
+          7,
+          7
+        ],
+        [
+          14,
+          4
+        ],
+        [
+          21,
+          1
+        ],
+        [
+          28,
+          0
+        ],
+        [
+          35,
+          -1
+        ],
+        [
+          Infinity,
+          -4
+        ]
+      ]
+    }
+  },
+  "replacement_levels": {
+    "QB": 10,
+    "RB": 28,
+    "WR": 41,
+    "TE": 11
+  },
+  "replacement_levels_note": "Derived from this league's 10 teams and starter counts, not hardcoded. Public boards assume a 12-team RB24/WR36 convention; ours is RB28/WR41/TE11/QB10.",
+  "flex_split_assumption": {
+    "RB": 0.4,
+    "WR": 0.55,
+    "TE": 0.05
+  },
+  "flex_split_note": "How flex slots get filled league-wide is not knowable in advance. This is an explicit tunable assumption, not a measurement.",
+  "playoff": {
+    "teams": 4,
+    "weeks": [
+      16,
+      17
+    ],
+    "reseeding": false
+  },
+  "trade_deadline": "2026-11-28",
+  "faab_budget": 100
+}

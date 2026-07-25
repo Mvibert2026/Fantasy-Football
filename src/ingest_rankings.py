@@ -56,6 +56,7 @@ CREATE TABLE IF NOT EXISTS "{TABLE_NAME}" (
     season INTEGER NOT NULL,
     player_id TEXT NOT NULL,
     player_name TEXT,
+    team TEXT,
     adp_rank INTEGER,
     adp_value REAL,
     -- Cross-source dispersion. NEVER collapse these away: VONA at pick 18
@@ -126,6 +127,7 @@ def fetch_preseason_rankings(season: int) -> tuple[pl.DataFrame, str, bool]:
         pl.lit(season).cast(pl.Int64).alias("season"),
         pl.col("gsis_id").alias("player_id"),
         pl.col("player").alias("player_name"),
+        pl.col("team").alias("team"),
         pl.col("adp_rank").cast(pl.Int64),
         pl.col("ecr").alias("adp_value"),
         pl.col("sd").alias("spread_sd"),
@@ -141,7 +143,7 @@ def fetch_preseason_rankings(season: int) -> tuple[pl.DataFrame, str, bool]:
 def ensure_table(conn: sqlite3.Connection) -> None:
     conn.execute(_CREATE_SQL)
     existing = {r[1] for r in conn.execute(f'PRAGMA table_info("{TABLE_NAME}")')}
-    if not {"ranking_source", "player_name", "spread_sd", "rank_best", "rank_worst"} <= existing:
+    if not {"ranking_source", "player_name", "team", "spread_sd", "rank_best", "rank_worst"} <= existing:
         # Legacy table from an earlier schema -- rebuild rather than migrate;
         # every row is re-derivable from the source.
         conn.execute(f'DROP TABLE "{TABLE_NAME}"')
