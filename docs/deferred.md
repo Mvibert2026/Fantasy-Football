@@ -59,6 +59,22 @@ Only the 2025 preseason snapshot was ingested (as literally requested). `load_ff
 data source, same function, just loop over seasons) — needed before the backtest harness can
 evaluate any season other than 2025.
 
+## Backtest harness: no draft-cost-sensitive comparison metric (2026-07-25, found while running #44)
+
+`_vbd_sum_for_ranking()` (`src/backtest.py`) only tests whether a ranking puts the right players
+*in* each position's startable pool (top-N by `ReplacementLevels`) — it's blind to the *order*
+players are ranked in beyond that cutoff, and therefore blind to draft-slot opportunity cost.
+Discovered running the Hero RB config (test-registry.md #44): boosting the value of RBs already
+comfortably inside the RB28 cutoff produced an *identical* result to plain BPA, because the boost
+never changed pool membership. This isn't evidence Hero RB is neutral — the test just can't see
+what the strategy does.
+
+Needed before any "pick X earlier than consensus" strategy (Hero RB, Zero RB, elite-TE-early,
+etc.) can be tested for real: a metric sensitive to what you gave up elsewhere by reaching, e.g. a
+draft-pick-slot simulation (take the ranking, assign players to picks in snake order, compare the
+resulting roster's total value against a baseline roster built the same way) rather than a pure
+value-over-replacement sum. Bigger lift than the current metric; not attempted this pass.
+
 ## Defense/DST scoring and ingestion
 
 `scoring.py` ports `score_defense_game()` from the source code as given, but no ingestion

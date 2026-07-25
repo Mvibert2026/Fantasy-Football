@@ -90,3 +90,19 @@ infrastructure nobody asked for.
 candidate reproduces the `fantasypros_preseason` baseline exactly (`delta_vs_candidate == 0.0`).
 Kept as a permanent regression test (`test_run_backtest_self_consistency_on_real_2025_data`) since
 it's a cheap, strong signal that candidate scoring and baseline scoring haven't diverged.
+
+## ADR-011: Single base ranking with strategy-specific lensing, not per-strategy models
+
+**Decision:** Build one proprietary base ranking. Apply strategy-specific weights (Hero RB, Elite
+TE, etc.) as overlays. Enable real-time re-ranking as the draft unfolds.
+
+**Rationale:**
+- One base ranking is easier to validate and maintain than N separate models.
+- Strategy variations are weights, not separate rankings — changes propagate cleanly.
+- Draft-responsive re-ranking requires a live baseline to deviate from; per-strategy models lose
+  that reference.
+- Enables pivot recommendations: "the room is taking RBs aggressively; shift to WR strategy" is a
+  single decision, not a model swap.
+
+**Timeline:** Phase 3 (after Phase 2 validates that rankings work). Phase 1 builds the base.
+Phase 2 tests it. Phase 3 adds the strategy + draft-response layers.

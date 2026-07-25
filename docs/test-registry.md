@@ -142,9 +142,9 @@ Scoped; all need the data pipeline before they can run.
 | # | Test | Question | Source | Status |
 |---|---|---|---|---|
 | 43 | RB dead zone by round, our scoring | Is it real for us? | `derived` | SPEC |
-| 44 | Hero RB vs. alternatives | Does the approach beat BPA? | `derived` | **PORT** — strategy defs only; harness rebuilds |
-| 45 | Elite TE edge, measured | Prior claim had 2 of 3 inputs estimated | `derived` | SPEC |
-| 46 | QB1 vs. QB10 spread, our scoring | Justifies waiting — or doesn't | `derived` | SPEC |
+| 44 | Hero RB vs. alternatives | Does the approach beat BPA? | `derived` | **RUN (2026-07-25, 2025 season)** — inconclusive: metric blind spot found, see note |
+| 45 | Elite TE edge, measured | Prior claim had 2 of 3 inputs estimated | `derived` | **RUN (2026-07-25, 2025 season)** — measured cost: -226.4 pts vs. plain BPA |
+| 46 | QB1 vs. QB10 spread, our scoring | Justifies waiting — or doesn't | `derived` | **RUN (2026-07-25, 2025 actuals)** — yes, justifies waiting: see note |
 | 47 | Handcuff value by round | When does insurance beat a lottery ticket? | `derived` | SPEC |
 | 48 | Injury rates & duration by position | Positional availability priors | `nflverse` | SPEC |
 | 49 | Positional composition of top-30/60 | Replaces an estimate with a measurement | `derived` | SPEC |
@@ -153,6 +153,48 @@ Scoped; all need the data pipeline before they can run.
 | 52 | Post-injury return curves by injury type | ACL vs. Achilles vs. Lisfranc vs. soft tissue | external | NEW |
 | 53 | Second-year WR leap / third-year TE breakout | Do the classic patterns survive testing? | `derived` | NEW |
 | 54 | New-team adjustment penalty | First year in a new offense | `derived` | NEW |
+
+**#44/#45/#46 backtest findings (2025 season, 10-team VBD, `src/backtest.py`).** All three used a
+VBD-ranked BPA baseline built from 2024 actual points as the common starting point (`ReplacementLevels()`
+defaults: QB10/RB28/WR41/TE11 — confirmed, not the 12-team figure the run was originally requested
+with; corrected to match this doc's own league context before running). Look-ahead cutoff enforced
+and verified (`CutoffEnforcedStore`, `cutoff_season=2025`); no negative-point or >500-point outlier
+seasons in 2025 actuals (2,019 players checked).
+
+**Headline result nobody should skip: our own VBD-based ranking lost to FantasyPros' preseason
+consensus by a wide margin** (-1,070 points of value-over-replacement, summed across the startable
+pool). Per `CLAUDE.md` §6.5, this is reported as a failure, not softened. Mechanism: a backward-looking
+"rank by last year's value" approach can't see the current-year information (injuries, depth-chart
+moves, offseason changes, rookies) that expert consensus incorporates. True market ADP remains
+unavailable (`docs/deferred.md`), so "beats the market" could only be checked against FantasyPros, not
+real draft behavior.
+
+**#44 Hero RB: the test is inconclusive, and the reason matters more than the number.** The +30% value
+bonus on the top-24 RBs (by 2024 VBD) produced a `candidate_vbd_sum` *identical* to plain BPA
+(delta = 0.0) — but this is a harness blind spot, not evidence the strategy is neutral. Our
+"points vs. baseline" metric only counts *which* players land in each position's startable pool
+(top-N by `ReplacementLevels`), not the draft order/cost paid to get them. Boosting players who were
+already comfortably inside the top-28 RB cutoff can't change pool membership, so the metric can't see
+what Hero RB actually does (buy RBs earlier at the cost of reaching elsewhere). A real test needs a
+metric sensitive to draft-slot opportunity cost — logged as a harness gap in `docs/deferred.md`, not
+silently reported as a tie.
+
+**#45 Elite TE: real, measured cost, precisely mechanistic.** Brock Bowers and Trey McBride were
+*already* the natural TE1 and TE3 by 2024 VBD — forcing them into overall ranks 8-9 didn't create value
+BPA was missing. The entire -226.4-point cost comes from refusing every other TE (including that
+season's actual natural TE2, a different player) in favor of nobody, pushed to the bottom of the whole
+draft board. This is a faithful cost measurement of "only these two TEs, full stop" — not a knock on
+Bowers/McBride themselves. Whether that cost is worth paying for playoff-bracket upside is **not
+answered by this run**: this harness scores season-long value only, with no playoff-probability or
+variance model (that's Tier 4 #55/#56, both still `NEW`). Reporting the plain-value cost, not a verdict
+on "does the pick cost justify the playoff upside" — answering that honestly requires infrastructure
+that doesn't exist yet.
+
+**#46 QB1-vs-QB10, measured on real 2025 outcomes: justifies waiting.** QB1 (369.1 pts) to QB10
+(294.4 pts) spread = 74.7 points (25% premium). RB1 (369.6) to RB28-replacement (143.8) spread = 225.8
+points — roughly 3x the QB spread to replacement. QBs cluster much tighter than RBs in this scoring
+format; the positional-scarcity case for not reaching for QB early holds up against actual 2025 results,
+not just theory.
 
 **#53 is a multiple-comparisons trap.** "Second-year WR leap" is folk wisdom with a plausible
 mechanism and a large surface for p-hacking. Pre-register the test definition before running it.
