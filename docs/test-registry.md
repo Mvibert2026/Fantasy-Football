@@ -88,8 +88,9 @@ What a serious, well-read opponent has. Table stakes among the sharpest 2–3 ma
 | 26 | Breakout age / college dominator | Rookie projection | external | M | Med | NEW |
 | 27 | Contract year / free-agency status | Motivation & usage | `nflverse` (contracts) | L | Low | NEW |
 | 28 | Vacated targets & carries | Where opportunity actually opened | `derived` | M | High | NEW |
-| 29 | Coordinator continuity | High OC turnover league-wide | `pfr` | L | **High** | SPEC |
-| 30 | First-time play-callers | Week-to-week volatility | `pfr` | L | Med | SPEC |
+| 29 | Coordinator continuity | High OC turnover league-wide | `pfr` | L | **High** | **GATED on coordinator data** — PFR returns HTTP 403; head coach is NOT a substitute, see note |
+| 30 | First-time play-callers | Week-to-week volatility | `pfr` | L | Med | **GATED on coordinator data** — same |
+| 29b | Head-coach continuity (separate, weaker candidate) | Cheap proxy, but not what #29/#30 test | `nflverse` (schedules) | L | Low-Med | **NEW** — data available 1999-2026, 100% populated |
 | 31 | Personnel package trends | Structural WR3 headwind | `nflverse:FTN` | L | Med | SPEC |
 | 32 | Pre-snap motion rates | Largely arbitraged league-wide | `nflverse:FTN` | L | **Low** | SPEC |
 
@@ -99,6 +100,26 @@ better than any single stat. Above xFP → regression candidate; below → buy c
 
 **#29/#30 require the `coach_id` dimension**, not `team_id`. Coordinators change teams; tendency
 signal keyed to franchise breaks the moment someone moves.
+
+**#29/#30 status correction (2026-07-25).** `load_schedules` carries `home_coach`/`away_coach`
+(1999-2026, 100% populated, 177 coaches) and this was briefly noted as a partial substitute.
+**It is not one.** The premise of both tests is that *coordinators move between teams* and the
+tendency signal follows the person. Head coach is a different, coarser variable: it misses
+every OC/DC change under a retained head coach, which is the majority of coordinator turnover
+and the exact case these tests exist to catch. Both remain **gated on coordinator-level data**,
+which is unobtainable — Pro Football Reference returns HTTP 403 on both `robots.txt` and its
+terms page, so no scraper was built (CLAUDE.md §10, `data-availability.md` §7.9).
+
+Head-coach continuity is logged separately as **#29b**: cheap, buildable today, and a genuinely
+different hypothesis. It should not be reported as evidence for or against #29/#30.
+
+**#67 is NOT ADP-blocked (2026-07-25 correction).** It was tagged `adp`, but the test — where
+has consensus been *systematically* wrong — runs against expert consensus, which we have for
+2021-2025. The residuals from ADR-016's log-linear rank→points fits (R² 0.158-0.266, residual
+SD 46-91 points) **are** the consensus errors, already computed. Reclassified `derived` and
+**PARTIAL / runnable now**, bounded by the 5-season consensus window (4 after the holdout) and
+by the fact that it measures expert-consensus error, not market-ADP error. Those are different
+quantities and the distinction must be stated in any result.
 
 **#16/#17/#31/#32 are FTN-dependent and therefore 2022+ only.** That is 4 seasons — small. Treat
 any finding here as provisional and flag the sample size in results. Do not let a 4-season factor
@@ -185,8 +206,8 @@ Scoped; all need the data pipeline before they can run.
 | # | Test | Question | Source | Status |
 |---|---|---|---|---|
 | 43 | RB dead zone by round, our scoring | Is it real for us? | `derived` | SPEC |
-| 44 | Hero RB vs. alternatives | Does the approach beat BPA? | `derived` | **RUN — PROVISIONAL** (2026-07-25, 2025 season): inconclusive, metric blind spot **partially addressed** by `starter_vbd` (2026-07-25 session 5); full answer still needs a draft simulation |
-| 45 | Elite TE edge, measured | Prior claim had 2 of 3 inputs estimated | `derived` | **RUN — PROVISIONAL** (2026-07-25, 2025 season): measured cost -226.4 pts vs. plain BPA. Does not yet meet `docs/statistical-guardrails.md` — see compliance note |
+| 44 | Hero RB vs. alternatives | Does the approach beat BPA? | `derived` | **RESOLVED — NULL** (2026-07-25, PR-003 draft simulation): margin -13.3 pts vs BPA, CI [-98.1,+65.0], 2/4 seasons, sign p=1.000 at every sigma |
+| 45 | Elite TE edge, measured | Prior claim had 2 of 3 inputs estimated | `derived` | **RUN — PROVISIONAL** (2026-07-25): measured cost **-226.4 pts** vs. plain BPA. Was blocked on P3-4; simulator now exists — re-run under it. See TE reversal note |
 | 46 | QB1 vs. QB10 spread, our scoring | Justifies waiting — or doesn't | `derived` | **RUN — PROVISIONAL** (2026-07-25, 2025 actuals): justifies waiting. Does not yet meet `docs/statistical-guardrails.md` — see compliance note |
 | 47 | Handcuff value by round | When does insurance beat a lottery ticket? | `derived` | SPEC |
 | 48 | Injury rates & duration by position | Positional availability priors | `nflverse` | SPEC |
@@ -272,6 +293,38 @@ factor test is subject to them — but #44/#45/#46 were run before they existed 
 PROVISIONAL. Re-running them under the corrected harness is a prerequisite to promoting them,
 and must use development seasons only.
 
+**#44 / #45 / TE-QB timing were BLOCKED ON P3-4, and read as testable when they were not.**
+Until the draft simulator existed, none of these could be answered: every metric measured which
+players ended up in a lineup, not what was surrendered to get them. `starter_vbd` (ADR-020)
+partially closed the gap by making cross-positional ordering visible, but it assumes you receive
+your top-K picks uncontested — which is precisely the assumption a "reach for X" strategy
+violates. The session-3 #44 result of *exactly 0.0* was not a tie; it was a metric that could
+not see the strategy. The simulator (`src/draft_sim.py`, PR-003) is the first instrument that
+can, and all three should be re-run under it.
+
+**REACHING EARLY FOR TE *OR* QB IS COSTLY (2026-07-25).** Three independent instruments agree:
+
+| Evidence | Finding |
+|---|---|
+| #45 direct measurement | Elite-TE construction cost **-226.4 points** vs. plain BPA |
+| ADR-016 slot values | RB1 168.5 > WR1 153.2 > **QB1 114.1** > **TE1 73.1** |
+| **PR-003 draft simulation** | `elite_te_early` **-92.9**, `qb_early` **-115.4** vs. BPA; both negative in **12 of 12** season×sigma cells |
+
+The prior elite-TE-early framing is not supported.
+
+**Correction to an inference made earlier the same day, before the simulator ran.** An earlier
+version of this note argued from the ADR-016 slot values (QB1 114.1 > TE1 73.1) that
+"TE-before-QB was backwards", implying QB-early is preferable. **The simulation measures that
+decision directly and does not support it** — `qb_early` is the *worst* arm tested, consistently
+worse than `elite_te_early` at every sigma.
+
+Slot value over replacement and the opportunity cost of *reaching* are different quantities.
+QBs cluster tightly (#46: 74.7-point QB1→QB10 spread on actual finish), so waiting recovers most
+of the QB1 slot value, while the early pick spent on him cannot be recovered. **Correct reading:
+both early reaches are costly, and QB-early is the more costly of the two.** Neither reaches
+significance — four seasons floor the sign test at p=0.125 — but the direction is perfectly
+consistent and the magnitude is 3-5% of a roster total.
+
 **Guardrails compliance note (added 2026-07-25, after `docs/statistical-guardrails.md` landed
 mid-session — the #44/#45/#46 runs above predate it).** Per that doc's own standard: "a result
 reported without going through this checklist is not a result — it's an unverified claim." Running
@@ -315,14 +368,14 @@ Where real differentiation likely lives.
 | 61 | Bye-week clustering cost | 6 bench spots; 4 starters on one bye is avoidable | `nflverse` | L | NEW |
 | 62 | In-season acquisition share of championship rosters | If most winning points come post-draft, draft optimization is worth less than we think | `league` | M | NEW |
 | 63 | FAAB market efficiency in 10-team | What do winning bids actually cost? | `league` | M | NEW |
-| 64 | Best-ball vs. redraft ADP divergence | Best-ball ADP is pure points-value; redraft includes startability bias. **The gap is itself a signal.** | `adp` | M | NEW |
-| 65 | Auction values as continuous value proxy | Finer-grained than ordinal ADP | `adp` | L | NEW |
-| 66 | ADP momentum (July→August rate of change) | Rising players often keep rising past fair value | `adp` | L | NEW |
-| 67 | Historical consensus-error analysis | Where has the market been *systematically* wrong? | `adp` + `derived` | H | NEW |
+| 64 | Best-ball vs. redraft ADP divergence | Best-ball ADP is pure points-value; redraft includes startability bias. **The gap is itself a signal.** | `adp` | M | **BLOCKED** — no ADP source exists (ADR-018) |
+| 65 | Auction values as continuous value proxy | Finer-grained than ordinal ADP | `adp` | L | **BLOCKED** — no ADP source exists (ADR-018) |
+| 66 | ADP momentum (July→August rate of change) | Rising players often keep rising past fair value | `adp` | L | **BLOCKED** — no ADP source exists (ADR-018) |
+| 67 | Historical consensus-error analysis | Where has the market been *systematically* wrong? | ~~`adp`~~ `derived` | H | **PARTIAL — runnable now.** Not ADP-blocked; see note |
 | 68 | Positional run / cascade modeling | If I take X, how does the room respond? | `league` | H | SPEC |
 | 69 | Weeks 16–17 availability risk | Clinched teams rest starters; eliminated teams play backups | `nflverse` | M | NEW |
 | 70 | Unsupervised tier clustering | Cluster on projected points + variance instead of eyeballing breaks | `derived` | M | NEW |
-| 71 | Ensemble ADP weighted by historical accuracy | Which source has actually predicted best? | `adp` | M | NEW |
+| 71 | Ensemble ADP weighted by historical accuracy | Which source has actually predicted best? | `adp` | M | **BLOCKED** — needs ≥2 ADP sources; zero exist (ADR-018) |
 | 72 | Value-of-information ranking | Which uncertainties are worth resolving before draft day? Meta-test that prioritizes everything else. | `derived` | M | NEW |
 
 **#55 and #58 are the two highest-value items in the registry.**
@@ -399,16 +452,36 @@ result reported without its baseline comparison is not a result.
 Sequenced by information value per unit of effort. Assumes the Phase 1 pipeline from `CLAUDE.md` §3
 lands first — none of this runs without ingestion, scoring, and a leakage-safe harness.
 
-**First (validate the foundation):** port #33/#34 → run #49, #45, #46, #48 against real data →
-#38 bonus-threshold hit rates → #44 with the rebuilt harness and BPA baseline.
+> **REVISED 2026-07-25.** The order below is superseded in part. #38 is falsified, the
+> ADP-dependent items are blocked rather than cheap, and the draft simulator now exists.
 
-**Then (test the objective function):** #56 full-season Monte Carlo → #55 P(top 4) →
-#58 decision-cost modeling.
+**Superseded original order, kept for the record:** port #33/#34 → #49, #45, #46, #48 → #38 →
+#44 → #56 → #55 → #58 → #37 → #35/#36 → live tool, with #64/#66/#61 in parallel and ADP capture
+started immediately.
 
-**Then (draft-day tooling):** #37 league-biased ADP → #35/#36 flex baseline + VONA → live tool.
+### Corrected order
 
-**Parallel, cheap, independently useful:** #64 best-ball divergence, #66 ADP momentum,
-#61 bye clustering.
+**Done or resolved:** #33/#34 (partial — positional re-weighting only, #2 still blocks
+player-level re-scoring), #46 (revised — the draft-slot framing supersedes the actual-finish
+figure), **#38 (FALSIFIED — see above)**, P3-4 draft simulator (built).
 
-**Start immediately regardless of sequence:** ADP snapshot capture with `as_of_date`. It gates #67
-and #71 and cannot be backfilled.
+**Now unblocked by the simulator:** #44 Hero RB, #45 elite TE, the TE/QB timing question, and
+#68 positional-run modelling. These were untestable before it, and the earlier #44 "result" of
+exactly 0.0 was an artifact of a metric blind to draft cost.
+
+**Runnable now, previously mis-tagged:** #67 consensus-error analysis — `derived`, not `adp`.
+The ADR-016 residuals already are the consensus errors.
+
+**Cheap and genuinely parallel:** #61 bye clustering (2026 schedule is available), #29b
+head-coach continuity.
+
+**BLOCKED — do not schedule as cheap work:** #64, #65, #66, #71 all require an ADP source, and
+ADR-018 established that none is obtainable within CLAUDE.md §10. #2 (component-level
+projections) still blocks player-level re-scoring. #29/#30 are gated on coordinator data
+(PFR returns 403).
+
+**~~Start immediately: ADP snapshot capture~~** — cannot be started. There is no source to
+capture from. What *can* be captured, and now is, is the cross-source **dispersion** of expert
+consensus (`spread_sd`/`rank_best`/`rank_worst`, ADR-024), which is what VONA survival
+probabilities need. Note this is expert disagreement, not market draft position; they are not
+interchangeable.

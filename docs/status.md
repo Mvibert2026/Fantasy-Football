@@ -151,6 +151,49 @@ board's positional re-weighting still shows no demonstrated advantage over raw c
 development seasons. The league-specific edge is now considerably thinner than the project has
 been assuming.
 
+## 2026-07-25 — Draft simulator built (P3-4); #44 resolved NULL
+
+`src/draft_sim.py` + `src/run_draft_sim.py`. 10-team snake, slot 3, picks 3/18/23/38/43
+(verified), 16 rounds, legal-roster enforcement, weekly-optimal lineup scoring against actual
+outcomes, opponents drafting to consensus with tunable Gaussian noise plus positional need.
+**43,200 simulated drafts** across 6 strategies × 4 seasons × 3 sigma settings, seeded.
+
+**#44 Hero RB: NULL.** −13.3 pts vs BPA (sigma=10), CI [−98.1, +65.0], 2 of 4 seasons positive,
+sign p = 1.000 at every sigma. Per-season margins swing +93 to −133 — noise.
+
+**BPA is hard to beat, as anticipated.** Zero of 15 comparisons survived BH. That was
+predictable and stated up front: with 4 development seasons the exact sign test's **floor is
+p = 0.125**, so nothing can reach significance at the season level no matter how many drafts
+are simulated. Simulation SE is ~8 points against season swings of ±100 — **more simulations
+would not narrow a single conclusion here; only more seasons would.**
+
+**The one consistent signal: reaching early for TE or QB costs 3–5% of roster points.**
+`elite_te_early` −92.9 and `qb_early` −115.4, both negative in **12 of 12** season×sigma cells.
+Not significant (it cannot be), but perfectly consistent, large, and stable across the whole
+opponent-noise sweep. Corroborated by #45 (−226.4) and ADR-016 slot values.
+
+This also **corrected an inference I had made earlier the same day**: reasoning from slot values
+that "TE-before-QB was backwards" implied QB-early was preferable. Measured directly, `qb_early`
+is the *worst* arm. Slot value and reach cost are different quantities — QBs cluster, so waiting
+recovers most of the QB1 value while the spent pick does not come back.
+
+Now unblocked by the simulator: #45, the TE/QB timing question, #68 positional runs.
+
+## DEFERRED: player identity resolution (was Task B, 2026-07-25)
+
+**Deferred by decision, not forgotten.** It gates the feature pipeline (Task 8) but the draft
+simulator does not depend on it, and the simulator is the critical path.
+
+The problem it addresses is real and now measured (`data-availability.md` §8.2): `gsis_id` is
+62.1% populated in the crosswalk with 10 known collisions, and the `pfr_player_id → gsis_id`
+leg that snap-share features depend on resolves 77–78% overall (92–95% restricted to
+QB/RB/WR/TE). Until a resolution layer exists, **any cross-source feature must state its
+coverage and refuse unresolved rows rather than dropping them** — the drops are non-random,
+skewing toward fringe roster spots where role changes actually happen.
+
+Scope when resumed: ID space per table, a resolution table with explicit confidence, explicit
+collision handling, and a measured coverage report per source pair.
+
 ## Prior results still marked PROVISIONAL
 
 Tests #44/#45/#46 (session 3) predate `statistical-guardrails.md` and do not meet it. #46 has now

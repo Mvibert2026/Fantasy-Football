@@ -385,3 +385,103 @@ repo, and I have no reliable way to confirm current NFL hires. **Spot-check them
 4. **Combine `forty` missingness is ~41% for 2026** and trending upward, probably not at random.
 5. **`gsis_id` joins are lossy (62%) and slightly wrong (10 collisions).**
 6. **Coordinator data remains blocked**; head coach is available 1999-2026 as a partial substitute.
+
+---
+
+# 8. Two targeted verifications (2026-07-25)
+
+Both were run because a downstream decision rested on an unmeasured assumption.
+
+## 8.1 Does the season-labelled depth chart carry a real `week`?
+
+**Yes — it is a genuine weekly snapshot, not a retroactive season roll-up.** This was the
+specific concern (guardrails §1 names retroactively-assigned starter flags as a disguised form
+of look-ahead), and the data clears it:
+
+| Check | Result |
+|---|---|
+| Distinct weeks per season | **21–22** (17 in 2005) |
+| Week range | 1–22, covering REG through SB |
+| Players whose `depth_team` changes across weeks, 2023 | **753 of 2,007 (37.5%)** |
+| Players whose `depth_position` changes across weeks, 2023 | 486 |
+| Rows with NULL `week` | 5,736 — **all of them `game_type = 'SBBYE'`** (Super Bowl bye, which has no week). Not corruption. |
+
+Depth position genuinely moves during a season, so a week-N chart reflects week-N belief.
+**Registry #5 is buildable for in-season use across 2001–2024.**
+
+### But it is NOT buildable for a DRAFT feature, for two separate reasons
+
+**1. There is no preseason chart.** `game_type` takes only REG / WC / DIV / CON / SB / SBBYE.
+The earliest available chart is REG week 1, published days before week-1 games — i.e. *after*
+a late-August draft. Using it as a pre-draft feature is look-ahead, marginal but real.
+
+**2. The dated snapshot format has ZERO development-set coverage.** Snapshots carry a true
+`dt` and would be ideal for a pre-draft feature, but:
+
+```
+rows with dt < 2025-01-01 : 0
+earliest snapshot         : 2025-08-03
+```
+
+Development seasons are 2021–2024. The snapshot series begins inside the **locked holdout
+season** and continues into 2026. So the format that *could* support a look-ahead-safe
+pre-draft depth-chart feature cannot be validated on any development season.
+
+**Net: registry #5 is usable live for the 2026 draft (via snapshots) but cannot be validated
+before use.** Any 2026 depth-chart feature is an untested assumption, and should be labelled
+that way rather than treated as a backtested factor.
+
+## 8.2 Join coverage per leg
+
+The 98.9% figure recorded earlier is for `fantasypros_id → gsis_id` **only**. The other legs
+were unmeasured; at least one proposed factor (snap share) rests entirely on the second.
+
+### Leg A — `depth_charts_weekly.gsis_id → player_weekly_stats.player_id`
+
+| Season | Distinct ids | Non-null | Matched to stats | Coverage |
+|---|---|---|---|---|
+| 2021 | 2,154 | 2,154 | 1,982 | **92.0%** |
+| 2022 | 2,073 | 2,073 | 1,915 | **92.4%** |
+| 2023 | 2,007 | 2,007 | 1,850 | **92.2%** |
+| 2024 | 2,054 | 2,054 | 1,895 | **92.3%** |
+
+`gsis_id` is non-null on **all 865,329 rows** (0.00%). The ~8% shortfall is players on a depth
+chart who record no stat line in that season — mostly backups who never took a snap, which is
+a real absence rather than a join failure.
+
+### Leg B — `snap_counts.pfr_player_id → ff_playerids.pfr_id → gsis_id`
+
+This is the leg snap-share features depend on entirely, and it is the weakest.
+
+| Season | Snap ids | Resolve to gsis_id | Reach stats |
+|---|---|---|---|
+| 2021 | 2,301 | 1,889 (82.1%) | 1,798 (**78.1%**) |
+| 2022 | 2,196 | 1,792 (81.6%) | 1,720 (**78.3%**) |
+| 2023 | 2,145 | 1,739 (81.1%) | 1,653 (**77.1%**) |
+| 2024 | 2,192 | 1,782 (81.3%) | 1,706 (**77.8%**) |
+
+**Restricted to the positions actually modelled (QB/RB/WR/TE), it is much better:**
+
+| Season | Skill snap ids | Reach stats |
+|---|---|---|
+| 2021 | 677 | 631 (**93.2%**) |
+| 2022 | 634 | 604 (**95.3%**) |
+| 2023 | 621 | 572 (**92.1%**) |
+| 2024 | 620 | 586 (**94.5%**) |
+
+The headline 78% is dragged down by linemen and defensive players, who are irrelevant here.
+The number that matters for a snap-share factor is **92–95%**, with 5–8% of skill players
+still unjoinable in any given season.
+
+### Summary of measured legs
+
+| Join | Coverage | Status |
+|---|---|---|
+| `fantasypros_id → gsis_id` | 98.9% | previously measured |
+| `depth_chart gsis_id → stats` | 92.0–92.4% | **measured 2026-07-25** |
+| `pfr_player_id → gsis_id → stats` (all positions) | 77.1–78.3% | **measured 2026-07-25** |
+| `pfr_player_id → gsis_id → stats` (QB/RB/WR/TE) | 92.1–95.3% | **measured 2026-07-25** |
+
+**Any feature built on leg B must state 92–95% coverage and refuse the unresolved rows rather
+than dropping them silently** — a silent drop is non-random, since unjoinable players skew
+toward fringe roster spots, which is exactly where role changes happen.
