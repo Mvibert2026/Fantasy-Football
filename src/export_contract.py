@@ -121,13 +121,21 @@ def build_board_json(conn: sqlite3.Connection) -> dict:
     players = []
     for r in ours:
         pr = pos_rank.get(r.player)
-        tier = None
+        tier_label = None
         if pr and r.position in av.TIERS:
-            tier = next((t for t, (lo, hi) in av.TIERS[r.position].items() if lo <= pr <= hi),
-                        "T5+")
+            tier_label = next(
+                (t for t, (lo, hi) in av.TIERS[r.position].items() if lo <= pr <= hi), "T5+"
+            )
+        tier_int = int(tier_label[1]) if tier_label and tier_label[1].isdigit() else 5
         team = team_of.get(r.player)
         structural = (pub_rank.get(r.player, r.overall_rank) - r.overall_rank)
         players.append({
+            # Stable integer id: the design contract keys availability and the
+            # player-profile endpoint on an int, and gsis_id strings are not
+            # usable as such. Derived from overall_rank so it is deterministic
+            # for a given board generation.
+            "id": r.overall_rank,
+            "player_id_gsis": None,
             "overall_rank": r.overall_rank,
             "player": r.player,
             "position": r.position,
@@ -139,22 +147,47 @@ def build_board_json(conn: sqlite3.Connection) -> dict:
             "ci_low": None if np.isnan(r.vbd_lo) else r.vbd_lo,
             "ci_high": None if np.isnan(r.vbd_hi) else r.vbd_hi,
             "ci_applies_to": "vbd",
+            # The rank->points curve is fitted only within draft-relevant depth
+            # (QB20/RB45/WR60/TE20). Past that, projected_points and vbd are
+            # EXTRAPOLATIONS and no honest interval exists for them. The design
+            # contract says never ship a projection without a CI; we cannot
+            # manufacture one, so we flag it and the UI must suppress the number
+            # rather than render false precision.
+            "projection_within_fitted_range": bool(
+                pr is not None and pr <= make_board.RELEVANT_DEPTH.get(r.position, 0)
+            ),
+            "projection_note": (
+                None
+                if pr is not None and pr <= make_board.RELEVANT_DEPTH.get(r.position, 0)
+                else "Beyond the fitted range of the projection curve. Extrapolated, no "
+                     "interval available -- do not display a point projection for this player."
+            ),
             "vbd": r.vbd,
             "consensus_rank": r.consensus_rank,
             "delta_vs_consensus": r.delta_vs_consensus,
-            "tier": tier,
+            "tier": tier_int,
+            "tier_label": tier_label,
             "structural_adjustment": r.delta_vs_consensus,
             "structural_breakdown": {
                 "replacement_levels": structural,
                 "scoring_and_vbd_method": r.delta_vs_consensus - structural,
             },
-            "evaluative_adjustment": None,
+            # ZERO, not null, so the design contract's additivity check holds:
+            #   consensus_rank - structural_adjustment - evaluative_adjustment == overall_rank
+            # But zero here is a real measurement, not a placeholder: this board
+            # has no player-level opinion to attribute. The companion flag tells
+            # the UI to suppress the evaluative row rather than render "+0" for
+            # every player, which would make the feature look broken instead of
+            # absent.
+            "evaluative_adjustment": 0,
+            "evaluative_adjustment_available": False,
             "evaluative_adjustment_note": (
-                "Null by construction, not by omission. This board assigns every player at "
+                "Zero by construction, not by omission. This board assigns every player at "
                 "the same positional consensus rank an identical projection, so it holds no "
                 "player-level opinion to attribute. All rank movement is structural. A real "
                 "evaluative component requires component-level projections (test-registry #2), "
-                "which no accessible source provides."
+                "which no accessible source provides. SUPPRESS this row in the UI while "
+                "evaluative_adjustment_available is false."
             ),
             "availability": avail.get(r.player, {}),
         })
@@ -164,6 +197,20 @@ def build_board_json(conn: sqlite3.Connection) -> dict:
         "generated_utc": datetime.now(timezone.utc).isoformat(),
         "season": SEASON,
         "board_source": "fantasypros_ecr re-scored into league positional value structure",
+        # The design contract's example shows "blend:4". We have ONE source.
+        # ADR-018: no market ADP is obtainable within CLAUDE.md §10, so there is
+        # nothing to blend. Stated explicitly so the UI does not imply a blend.
+        "consensus_source": "fantasypros_ecr",
+        "consensus_source_count": 1,
+        "consensus_source_note": (
+            "Single source. Expert consensus rank, NOT market average draft position, and not "
+            "a blend of several providers. No ADP source is legally obtainable (ADR-018)."
+        ),
+        "consensus_state": "preseason_moving",
+        "attribution_is_additive": True,
+        "attribution_identity": (
+            "consensus_rank - structural_adjustment - evaluative_adjustment == overall_rank"
+        ),
         "curve_fits": {
             p: {"r_squared": round(c.r_squared, 4), "residual_sd": round(c.residual_sd, 2),
                 "n_obs": c.n_obs}
@@ -176,6 +223,15 @@ def build_board_json(conn: sqlite3.Connection) -> dict:
         ),
         "replacement_levels_used": ReplacementLevels().baselines(),
         "published_levels_compared_against": PUBLISHED_LEVELS.baselines(),
+        # The design contract's example includes DEF: 10. We have NO DST data at
+        # all -- it is dropped at ingest for lack of a gsis_id -- so no DEF
+        # players appear on this board and no DEF replacement level is emitted.
+        "def_supported": False,
+        "def_note": (
+            "No DST data is ingested, so DEF is absent from the board and from replacement "
+            "levels. The draft simulator reserves the final pick for a DEF scoring a constant. "
+            "Do not render a DEF replacement level; there is no data behind one."
+        ),
         "players": players,
     }
 
