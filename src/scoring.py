@@ -1,0 +1,279 @@
+"""
+Scoring engine for 10-team, 0.5 PPR with stacking yardage bonuses.
+Replacement level is tunable and must stay explicit.
+"""
+
+from dataclasses import dataclass, field
+from typing import Dict, List, Tuple
+
+
+# League scoring configuration — exact league settings
+LEAGUE = {
+    "offense": {
+        "passing_yards": {"per": 25, "bonuses": [(300, 1.0), (350, 1.5), (400, 2.0)]},
+        "passing_td": 4,
+        "interception": -2,
+        "rushing_yards": {"per": 10, "bonuses": [(100, 1.0), (150, 1.5), (200, 2.0)]},
+        "rushing_td": 6,
+        "receptions": 0.5,
+        "receiving_yards": {"per": 10, "bonuses": [(100, 1.0), (150, 1.5), (200, 2.0)]},
+        "receiving_td": 6,
+        "return_td": 6,
+        "two_point_conversion": 2,
+        "fumbles_lost": -2,
+        "offensive_fumble_return_td": 6,
+    },
+    "defense": {
+        "sacks": 1,
+        "interceptions": 2,
+        "fumble_recoveries": 2,
+        "touchdowns": 6,
+        "safeties": 2,
+        "blocked_kicks": 1,
+        "return_tds": 6,
+        "extra_point_returned": 2,
+        "points_allowed": [
+            (0, 10),
+            (7, 7),
+            (14, 4),
+            (21, 1),
+            (28, 0),
+            (35, -1),
+            (float("inf"), -4),
+        ],
+    },
+}
+
+
+def score_offensive_game(stats: Dict, cfg=None) -> float:
+    """
+    Score an offensive player-game from raw stats.
+    stats: dict with keys like 'passing_yards', 'rushing_tds', etc.
+    Returns fantasy points.
+    """
+    cfg = cfg or LEAGUE
+    off = cfg["offense"]
+    score = 0.0
+
+    # Passing
+    py = stats.get("passing_yards", 0) or 0
+    score += (py / off["passing_yards"]["per"]) * 1.0
+    for threshold, bonus in off["passing_yards"]["bonuses"]:
+        if py >= threshold:
+            score += bonus
+    score += stats.get("passing_tds", 0) * off["passing_td"]
+    score += stats.get("interceptions", 0) * off["interception"]
+
+    # Rushing
+    ry = stats.get("rushing_yards", 0) or 0
+    score += (ry / off["rushing_yards"]["per"]) * 1.0
+    for threshold, bonus in off["rushing_yards"]["bonuses"]:
+        if ry >= threshold:
+            score += bonus
+    score += stats.get("rushing_tds", 0) * off["rushing_td"]
+
+    # Receiving
+    rec = stats.get("receptions", 0) or 0
+    score += rec * off["receptions"]
+    rcy = stats.get("receiving_yards", 0) or 0
+    score += (rcy / off["receiving_yards"]["per"]) * 1.0
+    for threshold, bonus in off["receiving_yards"]["bonuses"]:
+        if rcy >= threshold:
+            score += bonus
+    score += stats.get("receiving_tds", 0) * off["receiving_td"]
+
+    # Other
+    score += stats.get("return_tds", 0) * off["return_td"]
+    score += stats.get("two_point_conversions", 0) * off["two_point_conversion"]
+    score += stats.get("fumbles_lost", 0) * off["fumbles_lost"]
+    score += (
+        stats.get("offensive_fumble_return_tds", 0) * off["offensive_fumble_return_td"]
+    )
+
+    return max(0.0, score)
+
+
+def score_defense_game(stats: Dict, cfg=None) -> float:
+    """Score a defense for a game. Requires points_allowed."""
+    d = (cfg or LEAGUE)["defense"]
+    g = lambda k: stats.get(k, 0) or 0
+
+    pts = 0.0
+    for key in (
+        "sacks",
+        "interceptions",
+        "fumble_recoveries",
+        "touchdowns",
+        "safeties",
+        "blocked_kicks",
+        "return_tds",
+        "extra_point_returned",
+    ):
+        pts += g(key) * d[key]
+
+    pa = g("points_allowed")
+    for ceiling, bonus in d["points_allowed"]:
+        if pa <= ceiling:
+            pts += bonus
+            break
+
+    return pts
+
+
+@dataclass
+class ReplacementLevels:
+    """
+    Replacement level depends on how flex slots get filled league-wide.
+    This is NOT knowable a priori; hence flex_split is an explicit assumption.
+    """
+
+    teams: int = 10
+    starters: Dict[str, int] = field(
+        default_factory=lambda: {"QB": 1, "RB": 2, "WR": 3, "TE": 1}
+    )
+    flex_slots: int = 2
+    flex_split: Dict[str, float] = field(
+        default_factory=lambda: {"RB": 0.40, "WR": 0.55, "TE": 0.05}
+    )
+
+    def baselines(self) -> Dict[str, int]:
+        """Positional rank that counts as 'freely available'."""
+        out = {}
+        total_flex = self.teams * self.flex_slots
+        for pos, n in self.starters.items():
+            base = self.teams * n
+            base += round(total_flex * self.flex_split.get(pos, 0.0))
+            out[pos] = int(base)
+        return out
+
+
+def compute_vbd(
+    season_points: Dict[str, List[Tuple[str, float]]], levels: ReplacementLevels = None
+) -> Dict[str, float]:
+    """
+    season_points: {position: [(player, points), ...]}
+    Returns {player: value_over_replacement}
+    """
+    levels = levels or ReplacementLevels()
+    baselines = levels.baselines()
+    vbd = {}
+    for pos, players in season_points.items():
+        ranked = sorted(players, key=lambda x: -x[1])
+        idx = min(baselines.get(pos, len(ranked)) - 1, len(ranked) - 1)
+        replacement = ranked[idx][1] if ranked else 0.0
+        for name, pts in ranked:
+            vbd[name] = pts - replacement
+    return vbd
+
+
+def _test():
+    """Self-tests for scoring engine."""
+    cases = []
+
+    # QB: 320 pass yds, 2 pass TD, 1 INT, 30 rush yds, 1 rush TD
+    # 320/25=12.8, +1.0 (300 bonus), 2*4=8, 1*-2=-2, 30/10=3.0, 1*6=6
+    cases.append(
+        (
+            "QB line",
+            {
+                "passing_yards": 320,
+                "passing_tds": 2,
+                "interceptions": 1,
+                "rushing_yards": 30,
+                "rushing_tds": 1,
+            },
+            28.8,
+        )
+    )
+
+    # RB: 105 rush yds, 1 rush TD, 4 rec, 35 rec yds
+    # 10.5 +1.0 (100 bonus) +6 +2.0 (4 rec) +3.5
+    cases.append(
+        (
+            "RB line",
+            {
+                "rushing_yards": 105,
+                "rushing_tds": 1,
+                "receptions": 4,
+                "receiving_yards": 35,
+            },
+            23.0,
+        )
+    )
+
+    # WR monster: 200 rec yds, 2 TD, 10 rec — all three bonuses stack
+    # 20 + (1.0+1.5+2.0) + 12 + 5.0
+    cases.append(
+        (
+            "WR 200-yd game (stacked bonuses)",
+            {
+                "receiving_yards": 200,
+                "receiving_tds": 2,
+                "receptions": 10,
+            },
+            41.5,
+        )
+    )
+
+    # Elite passing game: 410 yds, 3 TD, 0 INT — all pass bonuses stack
+    # 16.4 + (1.0+1.5+2.0) + 12
+    cases.append(
+        (
+            "QB 410-yd game",
+            {
+                "passing_yards": 410,
+                "passing_tds": 3,
+            },
+            32.9,
+        )
+    )
+
+    # Negative game: 40 rush yds, 2 fumbles lost
+    cases.append(
+        (
+            "Negative game",
+            {
+                "rushing_yards": 40,
+                "fumbles_lost": 2,
+            },
+            0.0,
+        )
+    )
+
+    passed = True
+    for label, stats, expected in cases:
+        got = score_offensive_game(stats)
+        ok = abs(got - expected) < 1e-9
+        passed &= ok
+        print(
+            f"  [{'PASS' if ok else 'FAIL'}] {label}: got {got:.2f}, expected {expected:.2f}"
+        )
+
+    # Defense: shutout with 4 sacks, 2 INT, 1 TD
+    # 4*1 + 2*2 + 6 + 10 (0 pts allowed)
+    d_got = score_defense_game(
+        {"sacks": 4, "interceptions": 2, "touchdowns": 1, "points_allowed": 0}
+    )
+    d_ok = abs(d_got - 24.0) < 1e-9
+    passed &= d_ok
+    print(f"  [{'PASS' if d_ok else 'FAIL'}] DEF shutout: got {d_got:.2f}, expected 24.00")
+
+    # Defense blowup: 38 allowed, 1 sack
+    d2 = score_defense_game({"sacks": 1, "points_allowed": 38})
+    d2_ok = abs(d2 - (-3.0)) < 1e-9
+    passed &= d2_ok
+    print(
+        f"  [{'PASS' if d2_ok else 'FAIL'}] DEF blowup: got {d2:.2f}, expected -3.00"
+    )
+
+    print("\n  Replacement levels (10 teams, 3WR/2RB/TE, 2 flex):")
+    for pos, base in ReplacementLevels().baselines().items():
+        print(f"    {pos}: {pos}{base}")
+
+    print(f"\n  {'ALL TESTS PASSED' if passed else 'FAILURES PRESENT'}")
+    return passed
+
+
+if __name__ == "__main__":
+    print("Scoring engine self-test\n")
+    _test()
