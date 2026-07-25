@@ -279,6 +279,8 @@ tier is ambiguous, say which tier you think it is and why before starting.
 | `docs/test-registry.md` | The tiered factor list (Tier 0 table stakes / Tier 1 analytics / Tier 2 league-specific), with effort, expected edge, data source, and status per item |
 | `docs/deferred.md` | Deliberately postponed decisions and why |
 | `docs/decisions.md` | Architecture decision log — what changed, when, and the reasoning |
+| `docs/status.md` | Running project status — read first; standing requirements, current phase, latest session findings |
+| `docs/statistical-guardrails.md` | Methodology reference expanding §6 into concrete, checkable procedures. Read before running any backtest; every backtest report must state which checks were applied |
 
 Keep this file lean. When a section outgrows a paragraph or two, move it to a companion doc and
 link it here. An overloaded spec file gets ignored, which defeats its purpose.

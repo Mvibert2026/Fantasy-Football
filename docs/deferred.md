@@ -75,6 +75,32 @@ draft-pick-slot simulation (take the ranking, assign players to picks in snake o
 resulting roster's total value against a baseline roster built the same way) rather than a pure
 value-over-replacement sum. Bigger lift than the current metric; not attempted this pass.
 
+## Statistical guardrails compliance gaps (2026-07-25, found auditing #44/#45/#46 against the new doc)
+
+`docs/statistical-guardrails.md` landed after the #44/#45/#46 runs. Auditing those runs against its
+own pre-mortem checklist (full table in test-registry.md) surfaced concrete, fixable gaps — not
+retracting the findings, but none of them are "validated" by that doc's standard yet:
+
+1. **`backtest.py::_rank_correlation` computes correlation across all positions mixed together.**
+   `statistical-guardrails.md` §6 requires it within position group (QB ranks vs. QB outcomes,
+   not QB/RB/WR/TE pooled). Fix: group by position before calling `spearmanr`, return a per-position
+   dict (and probably a position-weighted or separately-reported aggregate, not a single blended
+   number — needs a design decision, not just a mechanical change).
+2. **No confidence intervals anywhere in `backtest.py` output.** §7 requires season-level bootstrap
+   resampling for any reported metric (correlation, vbd_sum delta). With 5 seasons of data, every
+   point estimate reported so far (-1,070 pts, -226.4 pts, etc.) is, per that doc, "close to
+   meaningless" without one. Needs a `bootstrap_seasons()` utility and a decision on how many
+   backtest seasons are actually available to resample from (currently only 2025 has FantasyPros
+   preseason data ingested — see the FantasyPros-backfill item above; bootstrapping single-season
+   metrics needs a different resampling unit, e.g. players-within-season with a
+   caveat, until multi-season data exists).
+3. **No multiple-comparisons correction infrastructure.** Not urgent at 3 configs, but test #53 and
+   any future factor sweep (Tier 1's ~20 items) will need Benjamini-Hochberg FDR correction
+   (§3.2) before reporting "significant" factors. Build this before, not during, that sweep.
+4. **No pre-registration workflow.** §3.4 requires writing down the exact metric/threshold that
+   counts as confirmation *before* running a test, especially for folk-wisdom factors. No file or
+   convention exists yet for recording a pre-registration. Needed before test #53 runs.
+
 ## Defense/DST scoring and ingestion
 
 `scoring.py` ports `score_defense_game()` from the source code as given, but no ingestion

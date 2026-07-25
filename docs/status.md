@@ -27,8 +27,11 @@ is active when they're addressed.
 | 4. Ranking algorithm v1 | Not started |
 | 5. Factor testing | Not started (test-registry.md Tier 0/1 items still `SPEC`/`NEW`) |
 
-**39 automated tests passing** (`pytest`) across ingestion, scoring, the look-ahead-safe data
-layer, and the backtest harness.
+**47 automated tests passing** (`pytest`) across ingestion, scoring, the look-ahead-safe data
+layer, the backtest harness, and candidate-ranking construction.
+
+`docs/statistical-guardrails.md` landed mid-session (2026-07-25) — the methodology reference for
+every backtest going forward. Read it before running any new backtest.
 
 ## This session: Phase 1 baseline backtest runs (test-registry.md #44/#45/#46)
 
@@ -59,11 +62,26 @@ this scoring format.
 Full mechanism detail and numbers: `docs/test-registry.md` (#44/#45/#46 findings note) and
 `docs/decisions.md`.
 
+**These three runs predate `docs/statistical-guardrails.md` and do not fully meet it.** Marked
+`PROVISIONAL` in test-registry.md, not retracted — the directional reasoning (mechanism-level
+findings) holds regardless, but per that doc's own standard, a result without a confidence interval
+and all three required baselines is "an unverified claim," not a finding. Specific gaps: no
+bootstrap CIs, no consensus-ADP baseline, and `_rank_correlation` mixes positions instead of
+computing within-position correlation as `statistical-guardrails.md` §6 requires. Full compliance
+audit against the doc's own pre-mortem checklist is in test-registry.md's #44/#45/#46 note.
+
 ## Next likely steps
 
-1. Fix the Hero RB metric blind spot (draft-cost-sensitive comparison) before trusting any
+1. Fix `backtest.py::_rank_correlation` to compute within position group (statistical-guardrails.md
+   §6) — currently mixes QB/RB/WR/TE into one correlation, which is explicitly wrong per the new doc.
+2. Add bootstrap (season-level) confidence intervals to backtest outputs (statistical-guardrails.md
+   §7) before any future result is reported as more than directional.
+3. Fix the Hero RB metric blind spot (draft-cost-sensitive comparison) before trusting any
    draft-order-based strategy test.
-2. Resolve true multi-source ADP access (FFC needs explicit authorization request; others need
-   ToS review) — currently the biggest gap in the baseline comparisons.
-3. Backfill FantasyPros preseason snapshots for 2021-2024 so the harness can backtest seasons
-   other than 2025.
+4. Resolve true multi-source ADP access (FFC needs explicit authorization request; others need
+   ToS review) — currently the biggest gap in the baseline comparisons, and one of the three
+   baselines statistical-guardrails.md §5 requires for every backtest.
+5. Backfill FantasyPros preseason snapshots for 2021-2024 so the harness can backtest seasons
+   other than 2025 (also needed for any holdout-season discipline per statistical-guardrails.md §3).
+6. Before running test #53 (WR/TE breakout patterns) or any large factor sweep, pre-register the
+   test definition first — statistical-guardrails.md §3.4 and §9 both call this out explicitly.

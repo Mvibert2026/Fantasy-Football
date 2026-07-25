@@ -142,9 +142,9 @@ Scoped; all need the data pipeline before they can run.
 | # | Test | Question | Source | Status |
 |---|---|---|---|---|
 | 43 | RB dead zone by round, our scoring | Is it real for us? | `derived` | SPEC |
-| 44 | Hero RB vs. alternatives | Does the approach beat BPA? | `derived` | **RUN (2026-07-25, 2025 season)** — inconclusive: metric blind spot found, see note |
-| 45 | Elite TE edge, measured | Prior claim had 2 of 3 inputs estimated | `derived` | **RUN (2026-07-25, 2025 season)** — measured cost: -226.4 pts vs. plain BPA |
-| 46 | QB1 vs. QB10 spread, our scoring | Justifies waiting — or doesn't | `derived` | **RUN (2026-07-25, 2025 actuals)** — yes, justifies waiting: see note |
+| 44 | Hero RB vs. alternatives | Does the approach beat BPA? | `derived` | **RUN — PROVISIONAL** (2026-07-25, 2025 season): inconclusive, metric blind spot found. Does not yet meet `docs/statistical-guardrails.md` — see compliance note |
+| 45 | Elite TE edge, measured | Prior claim had 2 of 3 inputs estimated | `derived` | **RUN — PROVISIONAL** (2026-07-25, 2025 season): measured cost -226.4 pts vs. plain BPA. Does not yet meet `docs/statistical-guardrails.md` — see compliance note |
+| 46 | QB1 vs. QB10 spread, our scoring | Justifies waiting — or doesn't | `derived` | **RUN — PROVISIONAL** (2026-07-25, 2025 actuals): justifies waiting. Does not yet meet `docs/statistical-guardrails.md` — see compliance note |
 | 47 | Handcuff value by round | When does insurance beat a lottery ticket? | `derived` | SPEC |
 | 48 | Injury rates & duration by position | Positional availability priors | `nflverse` | SPEC |
 | 49 | Positional composition of top-30/60 | Replaces an estimate with a measurement | `derived` | SPEC |
@@ -195,6 +195,29 @@ that doesn't exist yet.
 points — roughly 3x the QB spread to replacement. QBs cluster much tighter than RBs in this scoring
 format; the positional-scarcity case for not reaching for QB early holds up against actual 2025 results,
 not just theory.
+
+**Guardrails compliance note (added 2026-07-25, after `docs/statistical-guardrails.md` landed
+mid-session — the #44/#45/#46 runs above predate it).** Per that doc's own standard: "a result
+reported without going through this checklist is not a result — it's an unverified claim." Running
+its pre-mortem checklist (§8) against the three runs above, honestly:
+
+| Check | Status |
+|---|---|
+| Look-ahead cutoff enforced programmatically | **Pass** — `CutoffEnforcedStore`, tested |
+| Player universe defined before outcomes known | **Pass, with a gap** — universe = all 2024 (pre-2025) performers, so it's pre-outcome by construction; but it excludes true rookies with zero 2024 stats, which isn't classic survivorship bias but is a real coverage gap worth naming |
+| Untouched holdout season | **N/A** — these are fixed heuristic rules, not fit/tuned models; no holdout-contamination risk to violate, but also no formal holdout discipline was exercised |
+| Multiple-comparisons correction | **N/A at this scale** — 3 configurations, not a factor sweep; revisit once more configs are tested in one pass |
+| Confidence interval, not just point estimate | **Fail** — every number above (-1,070 pts, -226.4 pts, 74.7-pt QB spread) is a point estimate. §7 explicitly says this is close to meaningless with ~5 seasons of data. No bootstrap CIs were computed |
+| All three required baselines (BPA, ADP, expert consensus) | **Fail** — BPA and FantasyPros present; consensus ADP still unavailable (`docs/deferred.md`) |
+| Rank correlation computed within position group | **Fail** — `backtest.py`'s `_rank_correlation` correlates across the whole candidate pool (QB/RB/WR/TE mixed together), not within each position as §6 requires. The reported correlation numbers (e.g. -0.255 full-universe, 0.390 restricted) mix positions and should be treated as directional only |
+| Surprising result investigated before reporting | **Pass** — the negative full-universe correlation was investigated (top-20 position-mix comparison, realistic-universe restriction, mechanism identified: QB scoring-format inflation + QB YoY predictability) before being reported, not reported at face value |
+
+**Net effect: the directional findings above (FantasyPros beats naive VBD, the Hero RB metric
+blind spot, the Elite TE mechanism, QB flatness vs. RB) are real and stand on their own reasoning —
+none of them depend on a p-value or a clean correlation number. But none of the three should be
+treated as a validated go/no-go result until: (1) `_rank_correlation` is fixed to compute within
+position group, (2) bootstrap confidence intervals are added, (3) consensus ADP is resolved as a
+baseline. Logged as concrete follow-up items in `docs/deferred.md`.**
 
 **#53 is a multiple-comparisons trap.** "Second-year WR leap" is folk wisdom with a plausible
 mechanism and a large surface for p-hacking. Pre-register the test definition before running it.
