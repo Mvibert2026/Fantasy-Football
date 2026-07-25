@@ -112,8 +112,8 @@ Nobody else does these, because they only matter in *our* league.
 
 | # | Test | Why | Source | Effort | Edge | Status |
 |---|---|---|---|---|---|---|
-| 33 | Re-score all projections under exact rules | Public half-PPR lists model neither our bonuses nor −2 INT | `derived` | M | **High** | **PORT** — engine exists |
-| 34 | Replacement levels: RB28 / WR41 / TE11 / QB10 | Published VBD assumes 12-team RB24/WR36 | `derived` | L | **High** | **PORT** — derive, never hardcode |
+| 33 | Re-score all projections under exact rules | Public half-PPR lists model neither our bonuses nor −2 INT | `derived` | M | **High** | **PARTIAL (2026-07-25)** — positional re-weighting done (`src/make_board.py`); player-level re-scoring still blocked by #2 |
+| 34 | Replacement levels: RB28 / WR41 / TE11 / QB10 | Published VBD assumes 12-team RB24/WR36 | `derived` | L | **High** | **DONE (2026-07-25)** — `ReplacementLevels()` derived, used unmodified by board + backtest |
 | 35 | Global flex baseline (~80th flex-eligible) | Correct baseline past mandated slots | `derived` | M | **High** | SPEC |
 | 36 | VONA with pick-gap awareness (5 vs. 14) | Urgency differs ~3× between gap types | `derived` | M | **High** | SPEC |
 | 37 | League-biased ADP (format + manager priors) | Yahoo board assumes 2WR/1FLEX/K | `league` + `adp` | H | **High** | SPEC |
@@ -132,6 +132,13 @@ based purely on distribution shape. Computable from weekly data we already know 
 rather than a hidden constant. Preserve that design — replacement level depends on how flex slots
 get filled league-wide, which is not knowable a priori. It is an assumption, and it must stay
 visible as one.
+
+**#33 status detail (2026-07-25).** `src/make_board.py` re-scores the *positional value structure*
+under our exact rules and emits `data/board_{season}.csv`. What it cannot yet do is re-score an
+individual player, because that needs component-level projections (#2) which no accessible source
+provides — FantasyPros ECR was verified to be rank-only. Consequence: every player at the same
+positional consensus rank receives an identical projection, so the bonus-structure edge that makes
+#38 valuable is currently averaged away rather than captured. See `docs/decisions.md` ADR-017.
 
 ---
 
@@ -195,6 +202,30 @@ that doesn't exist yet.
 points — roughly 3x the QB spread to replacement. QBs cluster much tighter than RBs in this scoring
 format; the positional-scarcity case for not reaching for QB early holds up against actual 2025 results,
 not just theory.
+
+> **REVISED 2026-07-25 (session 4) — the number above measures the wrong quantity for a draft
+> decision.** The 74.7-point figure is the spread between the players who *finished* QB1 and QB10.
+> That conditions on the outcome. What a drafter actually chooses is a *draft slot*, and the player
+> taken as consensus QB10 may bust, get hurt, or lose the job — so the decision-relevant quantity is
+> `E[points | consensus positional rank]`, not `points | actual finish rank`.
+>
+> Measured that way over 2021-2025 (`src/make_board.py` curve fits, draft-relevant depth only):
+>
+> | Position | VBD of the rank-1 slot over replacement | 95% CI (season bootstrap) |
+> |---|---|---|
+> | RB | 168.5 | [131.9, 217.9] |
+> | WR | 153.2 | [135.6, 172.7] |
+> | QB | 114.1 | [57.0, 155.2] |
+> | TE | 73.1 | [53.3, 93.2] |
+>
+> **The directional conclusion survives** — QB1's slot value is below RB1 and WR1, so the case for
+> taking RB/WR before QB holds. But the 74.7-point framing *understated* QB slot value by
+> conditioning on success; on a like-for-like basis the QB1 slot is worth ~114 points over
+> replacement, not ~75. Note the QB interval [57, 155] is by far the widest of the four positions:
+> QB slot value is both larger and less certain than the original entry implied.
+>
+> Both numbers are correct measurements of different things. Future entries must state which
+> conditioning they use; they are not interchangeable.
 
 **Guardrails compliance note (added 2026-07-25, after `docs/statistical-guardrails.md` landed
 mid-session — the #44/#45/#46 runs above predate it).** Per that doc's own standard: "a result

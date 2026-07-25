@@ -26,6 +26,7 @@ from typing import Iterator
 DB_PATH = Path(__file__).resolve().parent.parent / "data" / "nfl.db"
 
 SCORING_VIEW = "player_week_scoring_inputs"
+LEAGUE_METRICS_TABLE = "league_season_metrics"
 
 _CREATE_SCORING_VIEW_SQL = f"""
 CREATE VIEW IF NOT EXISTS {SCORING_VIEW} AS

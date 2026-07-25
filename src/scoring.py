@@ -90,7 +90,11 @@ def score_offensive_game(stats: Dict, cfg=None) -> float:
         stats.get("offensive_fumble_return_tds", 0) * off["offensive_fumble_return_td"]
     )
 
-    return max(0.0, score)
+    # No floor: Yahoo permits negative player scores (e.g. a fumble lost with no
+    # offsetting production, or a QB with interceptions and minimal yardage).
+    # Clamping at zero silently inflates poor performances and biases season
+    # totals upward, which in turn understates the cost of a bust.
+    return score
 
 
 def score_defense_game(stats: Dict, cfg=None) -> float:
@@ -228,15 +232,43 @@ def _test():
         )
     )
 
-    # Negative game: 40 rush yds, 2 fumbles lost
+    # Nets to exactly zero: 40 rush yds (+4.0), 2 fumbles lost (-4.0).
+    # NOTE: this case lands on 0.0 by arithmetic, so it does NOT exercise the
+    # absence of a floor -- it passed identically when max(0.0, score) existed.
+    # The genuinely-negative case below is the one that tests the clamp removal.
     cases.append(
         (
-            "Negative game",
+            "Nets to zero (40 rush yds, 2 fumbles lost)",
             {
                 "rushing_yards": 40,
                 "fumbles_lost": 2,
             },
             0.0,
+        )
+    )
+
+    # Genuinely negative: no production, 1 fumble lost. Yahoo permits negative
+    # player scores; a floor here would silently report this as 0.0.
+    cases.append(
+        (
+            "Genuinely negative (0 rush yds, 1 fumble lost)",
+            {
+                "rushing_yards": 0,
+                "fumbles_lost": 1,
+            },
+            -2.0,
+        )
+    )
+
+    # Negative QB line: 2 INTs, 30 pass yds (1.2) -> 1.2 - 4.0 = -2.8
+    cases.append(
+        (
+            "Negative QB line (30 pass yds, 2 INT)",
+            {
+                "passing_yards": 30,
+                "interceptions": 2,
+            },
+            -2.8,
         )
     )
 

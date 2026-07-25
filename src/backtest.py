@@ -148,11 +148,11 @@ def _fantasypros_baseline(conn: sqlite3.Connection, season: int) -> RankingConfi
     enforcement is needed here (see docs/CLAUDE.md #6.1)."""
     rows = conn.execute(
         "SELECT player_id, adp_rank FROM rankings "
-        "WHERE source = 'fantasypros_ecr' AND as_of_date = ("
+        "WHERE source = 'fantasypros_ecr' AND season = ? AND as_of_date = ("
         "  SELECT MAX(as_of_date) FROM rankings "
-        "  WHERE source = 'fantasypros_ecr' AND as_of_date <= ?"
+        "  WHERE source = 'fantasypros_ecr' AND season = ?"
         ")",
-        (f"{season}-08-31",),
+        (season, season),
     ).fetchall()
     return {pid: rank for pid, rank in rows}
 

@@ -20,17 +20,32 @@ TABLE_NAME = "player_weekly_stats"
 PRIMARY_KEY = ("player_id", "season", "season_type", "week")
 DEFAULT_DB_PATH = Path(__file__).resolve().parent.parent / "data" / "nfl.db"
 
+# Verified empirically (not from documentation) -- nflverse weekly player_stats
+# returns data from 1999 onward. See docs/data-availability.md, which also
+# records that raw-column presence does NOT imply the column is populated.
+FIRST_AVAILABLE_SEASON = 1999
 
-def default_seasons(today: dt.date | None = None, years: int = 5) -> list[int]:
-    """Most recent `years` completed NFL seasons as of `today`.
 
-    A season is considered complete once its start month (September) of the
-    following calendar year has passed, i.e. before September we treat last
-    calendar year as the latest available season.
+def latest_season(today: dt.date | None = None) -> int:
+    """The most recent season with data available as of `today`.
+
+    Before September, the current calendar year's season hasn't started, so the
+    prior year is the latest. From September on, the current season is
+    in-progress and partial data is available (and wanted, for in-season use).
     """
     today = today or dt.date.today()
-    latest_season = today.year - 1 if today.month < 9 else today.year
-    return list(range(latest_season - years + 1, latest_season + 1))
+    return today.year - 1 if today.month < 9 else today.year
+
+
+def default_seasons(today: dt.date | None = None, years: int = 5) -> list[int]:
+    """Most recent `years` seasons as of `today` (newest may be in-progress)."""
+    latest = latest_season(today)
+    return list(range(latest - years + 1, latest + 1))
+
+
+def all_available_seasons(today: dt.date | None = None) -> list[int]:
+    """Full available window: FIRST_AVAILABLE_SEASON through the latest season."""
+    return list(range(FIRST_AVAILABLE_SEASON, latest_season(today) + 1))
 
 
 def fetch_weekly_stats(seasons: list[int]) -> pl.DataFrame:
@@ -98,7 +113,13 @@ def main() -> None:
         type=int,
         nargs="+",
         default=None,
-        help="Season years to ingest (default: 5 most recently completed seasons).",
+        help="Explicit season years to ingest. Overrides --recent-years.",
+    )
+    parser.add_argument(
+        "--recent-years",
+        type=int,
+        default=None,
+        help="Ingest only the N most recent seasons instead of the full window.",
     )
     parser.add_argument(
         "--db",
@@ -107,7 +128,12 @@ def main() -> None:
         help=f"Path to the SQLite cache file (default: {DEFAULT_DB_PATH}).",
     )
     args = parser.parse_args()
-    seasons = args.seasons or default_seasons()
+    if args.seasons:
+        seasons = args.seasons
+    elif args.recent_years:
+        seasons = default_seasons(years=args.recent_years)
+    else:
+        seasons = all_available_seasons()
 
     print(f"Fetching weekly player stats for seasons: {seasons}")
     written = ingest(seasons, args.db)

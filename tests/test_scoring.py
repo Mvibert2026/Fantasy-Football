@@ -33,7 +33,7 @@ from scoring import ReplacementLevels, compute_vbd, score_defense_game, score_of
             32.9,
         ),
         (
-            "Negative raw score floors at zero",
+            "Nets to exactly zero by arithmetic (not by clamping)",
             {"rushing_yards": 40, "fumbles_lost": 2},
             0.0,
         ),
@@ -43,10 +43,15 @@ def test_offensive_scoring_cases(label, stats, expected):
     assert score_offensive_game(stats) == pytest.approx(expected), label
 
 
-def test_floor_applies_when_raw_score_is_actually_negative():
-    # 10 rush yards (1.0) + 3 fumbles lost (-6.0) = -5.0 raw; must floor at 0.
-    stats = {"rushing_yards": 10, "fumbles_lost": 3}
-    assert score_offensive_game(stats) == 0.0
+def test_negative_scores_are_not_clamped_to_zero():
+    """Yahoo permits negative player scores. A floor would silently inflate
+    poor performances and bias season totals upward."""
+    # 10 rush yards (1.0) + 3 fumbles lost (-6.0) = -5.0
+    assert score_offensive_game({"rushing_yards": 10, "fumbles_lost": 3}) == pytest.approx(-5.0)
+    # the minimal negative case: no production, one fumble lost
+    assert score_offensive_game({"rushing_yards": 0, "fumbles_lost": 1}) == pytest.approx(-2.0)
+    # negative QB line: 30 pass yds (1.2) - 2 INT (4.0) = -2.8
+    assert score_offensive_game({"passing_yards": 30, "interceptions": 2}) == pytest.approx(-2.8)
 
 
 def test_missing_keys_default_to_zero():

@@ -106,3 +106,135 @@ TE, etc.) as overlays. Enable real-time re-ranking as the draft unfolds.
 
 **Timeline:** Phase 3 (after Phase 2 validates that rankings work). Phase 1 builds the base.
 Phase 2 tests it. Phase 3 adds the strategy + draft-response layers.
+
+---
+
+## 2026-07-25 (session 4) — Alpha pivot: Tasks 1-5
+
+### ADR-012: Scoring floor removed
+
+`score_offensive_game()` returned `max(0.0, score)`. Yahoo permits negative player scores;
+clamping silently inflated poor performances and biased season totals upward, which understates
+the cost of a bust. Removed.
+
+Measured impact on 2025: 98 of 18,521 player-weeks (0.53%) were negative, totalling 93.5 points
+previously erased; 25 players now carry negative season totals; largest single-player inflation
+was 6.0 points. Real bug, small magnitude, concentrated in low-usage players — it does not
+overturn the #44/#45/#46 conclusions. The pre-existing "Negative game" self-test
+(40 rush yds, 2 fumbles lost) nets to exactly 0.0 and never exercised the floor; genuinely
+negative cases were added.
+
+### ADR-013: Feature availability is a first-class, empirically-verified constraint
+
+`docs/data-availability.md` is now the authority on what is testable when, and every factor test
+must cite its effective sample from it. Verified by query, not documentation.
+
+The finding that motivated it: `targets` and `receiving_air_yards` are **100% non-null back to
+1999 and still unusable before 2009**. Season sums for `targets` are 3 / 5 / 0 / 67 / 14 / 17 for
+2003-2008 versus ~17,000 in working years. They are zeros, not nulls, so both a null check and a
+column-exists check pass. Root cause, consistent across sources: receiver *identification* in PBP
+is unreliable 2003-2008 — metrics needing the intended receiver fail, while passing-side metrics
+needing no receiver attribution (`passing_air_yards`, `cpoe`) are fine from 2006.
+
+**Rule: affected features must REFUSE those seasons and raise, never zero-fill.** Imputation is
+inappropriate where data is absent rather than noisy. `ingest_league_metrics.py` demonstrates the
+pattern (`wr_target_top45_share` is NULL for 2003-2008), and `regimes.py` reports excluded
+seasons explicitly in its output.
+
+### ADR-014: Season weighting is a config parameter, never a constant
+
+`src/config.py` supplies `SeasonWeighting` (uniform / exponential / linear, with optional
+`max_lookback`). How far back to weight is an empirical question to be answered by holdout
+testing (statistical-guardrails.md §4), so the code supplies the knob and the backtest supplies
+the answer. `weights()` refuses any season at or after the reference season — weighting the
+season being predicted is look-ahead, not a weighting choice.
+
+### ADR-015: Unknown-breakpoint tests, not Chow tests, for regime detection
+
+The task specified Chow tests. A Chow test requires the break date to be specified in advance,
+so using it to *find* breaks means assuming the answer (e.g. testing only known rule-change
+years). `src/regimes.py` uses a **supremum-Wald (Quandt-Andrews)** test over all admissible
+breakpoints, with binary segmentation for multiple breaks (the greedy form of Bai-Perron).
+
+sup-F does not follow an F distribution — maximising over candidates inflates it — so p-values
+come from a **moving-block residual bootstrap** under the no-break null, seeded and recorded.
+Blocks rather than iid draws because annual league series are autocorrelated (observed lag-1
+residual autocorrelation runs +0.44 to +0.75 across metrics); an iid bootstrap would be
+anti-conservative.
+
+**n = 27 annual observations is low power.** Detected breaks are suggestive boundaries for
+pooling decisions, not established facts, and non-detection is not evidence of stability.
+
+Two implementation points that changed the answers: the time regressor is the **actual season**,
+not the row index, so a series with excluded seasons is not silently compressed (this changed the
+`wr_target_top45_share` slope from -0.00290 to -0.00259); and **trailing-window trends are
+reported alongside regime slopes**, because a metric that rose for a decade and has fallen for
+five years still fits a positive line overall. Era similarity excludes the 5 seasons adjacent to
+the target, since "2025 most resembles 2024" answers nothing.
+
+### ADR-016: Isotonic regression REJECTED for the rank-to-points curve; log-linear adopted
+
+**This is the most consequential decision of the session, and it reversed a headline result.**
+
+`make_board.py` first fitted an isotonic (monotone-decreasing) regression per position on
+per-rank mean points. Inspection killed it. With 5 training seasons there are only 5 observations
+per rank, and the raw rank-to-points relation is dominated by noise: consensus QB10 outscored
+consensus QB1 in 2 of 5 seasons (2021: 400.2 vs 375.2; 2023: 352.8 vs 287.7), and consensus RB1
+season outcomes ranged from 40 to 366 points. Isotonic regression responded by imposing
+monotonicity the data does not support — forcing the QB10 replacement value ~70 points below its
+own raw mean (233 fitted vs 302.7 raw) and putting Josh Allen at overall #1 as a result.
+
+That was an artifact of the estimator, not a finding about quarterbacks. Under the replacement
+estimator the positional ordering **reverses**: RB1 168.5, WR1 153.2, QB1 114.1, TE1 73.1.
+
+Adopted: per position, `points ~ alpha + beta*ln(positional_rank)`, fitted on all individual
+player-seasons inside a declared draft-relevant depth (QB 20 / RB 45 / WR 60 / TE 20 — beyond
+which players go undrafted in a 10-team league and the tail of never-played zeros would bend the
+curve in the range we draft from). Two parameters from 100-300 observations is far more stable
+than ~50 parameters from 5 observations each, and it is monotone by construction rather than by
+imposition.
+
+**Reported R-squared is 0.158-0.266 by position, with residual SD of 46-91 points.** That is not
+a defect in the fit; it is the size of the signal. Consensus draft rank explains under a third of
+the variance in what a player actually scores. Every board row therefore carries a season-level
+bootstrap 95% CI on its VBD, and ranks whose intervals overlap are not distinguishable.
+
+### ADR-017: The board is positional re-weighting, not player-level re-scoring
+
+Task 5 asked to "re-score every player under our league rules." That needs **component-level**
+projections (pass yds, rush yds, receptions, TDs per player). No source has them: FantasyPros ECR
+is rank-only (verified — `ecr`/`sd`/`best`/`worst`, zero projection columns), which is exactly
+test-registry.md #2, the project's biggest external blocker.
+
+`projected_points` is therefore `E[our_points | position, consensus positional rank]`, fitted
+from history **using our scoring engine** so the currency is correct (bonuses, negatives, half-PPR).
+
+- It **does** capture our league's positional value structure — what a positional rank is worth
+  under our rules, which drives VBD and the whole board ordering.
+- It **does not** capture player-specific scoring-rule edges. A spike-week WR who clears the
+  100/150/200 bonuses more often than the average WR at his rank is invisible; he receives the
+  average for his rank. That needs component projections (#2) or a player-level distribution
+  model (#38).
+
+Every player at a given positional rank receives an identical projection. The board's value is in
+the positional re-weighting, not in disagreeing with consensus about individuals.
+
+### ADR-018: Consensus coverage bounds the alpha claim; no market ADP exists
+
+Investigated (Task 4) and recorded in `ingest_rankings.py`'s docstring and
+`docs/data-availability.md` §5:
+
+| Source | Finding |
+|---|---|
+| nflverse | No ADP in any of its 20 loaders (checked individually) |
+| DynastyProcess | Player IDs, FP ECR, dynasty trade values only. No ADP. GPL-3.0 |
+| Fantasy Football Calculator | **Has** historical ADP back to 2007, but `robots.txt` disallows `/api/` and `/adp/csv/`. Blocked, not attempted |
+| FantasyPros ADP pages | `/nfl/adp/overall.php` is not in their `robots.txt` disallow list, but Terms of Use were not affirmatively verified. Not built — CLAUDE.md §10 requires checking terms *before* building a scraper. **Most promising remaining path if the user will review those terms.** |
+
+Consequence: `ranking_source='market_adp'` has no rows. The alpha track is measured against
+**expert consensus only**, over **5 seasons (2021-2025)** — the only years with an August
+preseason snapshot (2020's earliest is 2020-10-16, in-season, unusable).
+
+This bounds several things requested for Tasks 6-9: per-regime alpha coefficients are not
+estimable (all 5 consensus seasons sit inside one modern regime), season-level bootstrap
+resamples only 5 units, and reserving a holdout leaves 4 development seasons.

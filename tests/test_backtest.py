@@ -57,8 +57,9 @@ def test_vbd_sum_for_ranking_skips_players_with_unknown_position():
 def test_fantasypros_baseline_missing_season_returns_empty(tmp_path):
     conn = sqlite3.connect(":memory:")
     conn.execute(
-        'CREATE TABLE rankings (source TEXT, player_id TEXT, adp_rank INTEGER, '
-        "adp_value REAL, as_of_date TEXT, position TEXT)"
+        "CREATE TABLE rankings (ranking_source TEXT, source TEXT, season INTEGER, "
+        "player_id TEXT, player_name TEXT, adp_rank INTEGER, adp_value REAL, "
+        "as_of_date TEXT, position TEXT, is_preseason_final INTEGER, ingested_at TEXT)"
     )
     conn.commit()
     result = backtest._fantasypros_baseline(conn, 1999)
