@@ -1,6 +1,6 @@
 # Front-End Data Contract
 
-**Version 1.0.0** · generated into `data/export/` · authored 2026-07-25
+**Version 1.1.0** · generated into `data/export/` · authored 2026-07-25
 
 The UI reads these files and **never** touches `data/nfl.db`. Every artifact carries
 `contract_version` and `generated_utc`. Breaking changes bump the major version and are
@@ -176,3 +176,47 @@ assumption flagged as an assumption, playoff structure, trade deadline, FAAB.
 | Version | Date | Change |
 |---|---|---|
 | 1.0.0 | 2026-07-25 | Initial contract: board, availability, strategies, opponents, glossary, nulls, league |
+| 1.1.0 | 2026-07-25 | Added the narration layer (Fact schema + renderer contract). Additive only; no existing field changed |
+
+---
+
+## Narration layer (added 2026-07-25, contract 1.1.0)
+
+`src/narrate.py` sits between the exports and any AI-generated prose. **The renderer never
+sees the exports.** It receives only `Fact` objects.
+
+### `Fact`
+
+| Field | Notes |
+|---|---|
+| `id` | Stable, e.g. `tier_survival_shift.RB.T1.18_to_23` |
+| `kind` | `tier_survival_shift`, `tier_survival`, `replacement_level_crossing`, `reach_cost`, `opponent_need`, `registered_null` |
+| `source_path` | `"artifact.json:dotted.path"` — **must resolve**, or extraction raises |
+| `value` | Numeric, or `null` for narrative facts |
+| `template` | Plain-language starting wording with `{}` placeholders |
+| `params` | Values the template substitutes |
+| `confidence` | `high` (availability — no projection curve), `medium` (structural arithmetic), `low` (projection/VBD, R² 0.16–0.27) |
+
+### Renderer contract — binding
+
+1. It may **reword** a Fact's `template`.
+2. It may **not** introduce any claim, comparison between Facts, cause, prediction, or
+   recommendation not already present in a Fact.
+3. Every emitted sentence must be traceable to exactly one `Fact.id`.
+4. It must call `validate_render_input()`, which raises `RenderContractError` on anything
+   that is not a list of `Fact`s — including a bare Fact, a dict, or a string.
+5. It must respect `confidence`. A `low`-confidence Fact may not be rendered in the same
+   assertive register as a `high`-confidence one.
+
+`render_reference()` is a pure-substitution reference implementation used to test the
+traceability property. It is **not** the LLM renderer.
+
+### Why it is built this way
+
+A language model handed draft data will produce fluent causal prose whether or not the data
+supports it — "he's falling because the room is worried about his workload" is exactly the
+class of claim this project spends its effort not making. Facts are the airlock. If a claim
+is not in a Fact, it cannot reach the page.
+
+`nulls.json` feeds `registered_null` facts so the renderer can say "we tested this and found
+no evidence" instead of improvising a rationale for a result we do not have.

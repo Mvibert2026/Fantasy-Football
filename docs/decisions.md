@@ -461,3 +461,46 @@ as each feature's own availability allows, up to 27 seasons for outcome-based wo
 all accuracy-track and all remain open. The 2026 edge, if there is one, has to come from
 correct league-specific mechanics and better roster construction, not from out-predicting
 consensus on a sample that cannot demonstrate it.
+
+### ADR-027: AI-generated prose is separated into fact extraction and rendering
+
+**Decision.** Dynamic narration (live draft commentary, player-panel prose, post-draft
+summary) is built as two layers. `src/narrate.py` is layer 1 and is built now: a pure,
+deterministic function from draft state plus the Block 7 exports to a list of `Fact` objects.
+Layer 2, the renderer that may involve a language model, is deferred and constrained.
+
+**The problem.** A language model given the underlying data will write fluent, confident,
+causal sentences regardless of whether the data supports them. "He's sliding because the room
+is worried about his workload" is precisely the kind of claim this project has spent its
+effort *not* making — and it is the kind a narrator produces by default, because it reads
+better than "his availability probability at pick 23 is 0.10".
+
+**The mechanism.** The renderer never receives the exports. It receives Facts. Each Fact
+carries a stable id, a `source_path` that must resolve against a real field in the exports,
+a numeric value, and a plain-language template. The renderer may reword a template; it may not
+introduce a claim, a comparison, a cause, a prediction or a recommendation that is not already
+a Fact. Every emitted sentence must trace to exactly one `Fact.id`.
+
+Two safety properties are enforced in code rather than by convention:
+
+- **Unresolvable facts raise.** `extract_facts` validates every `source_path` before
+  returning. A stale or restructured export cannot silently yield a confident sentence about a
+  field that no longer exists.
+- **The render entry point rejects non-Facts.** `validate_render_input` raises on a dict, a
+  string, a bare Fact, or a list containing anything else — so the renderer cannot be handed
+  raw data and reason from it.
+
+**Confidence travels with the fact.** Availability numbers never pass through the ADR-016
+projection curve and are marked `high`; structural arithmetic is `medium`; anything
+projection- or VBD-derived is `low`, because that curve's R-squared is 0.16-0.27. The renderer
+is required to respect the distinction rather than flattening everything into one confident
+register — which is the specific failure mode that makes generated commentary untrustworthy.
+
+**Nulls are first-class.** `nulls.json` feeds `registered_null` facts, so when a viewer asks
+why the guide does not recommend chasing spike-week players, the renderer can state that we
+tested it and found no evidence, rather than improvising a plausible-sounding reason.
+
+**Cost accepted.** This is more machinery than piping the JSON into a prompt, and the prose
+will be less lively. That is the intended trade: the project's whole claim to credibility is
+that it reports what it measured and refuses what it did not. A narrator that invents
+causation would undo that in one paragraph.
