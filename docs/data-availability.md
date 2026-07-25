@@ -59,7 +59,7 @@ Verified via `seasons=True` on each loader, taking min/max of the season column.
 | `load_pfr_advstats` (rec/rush) | 2018 | 2025 | 35,724 / 18,461 | |
 | `load_ftn_charting` | 2022 | 2025 | 185,215 | **4 seasons.** CC-BY-SA, attribution required |
 | `load_injuries` | 2009 | 2025 | 90,752 | |
-| `load_depth_charts` | 2001 | **2024** | 1,792,347 | **Ends at 2024 — no 2025 or 2026 data.** See §4 |
+| `load_depth_charts` | 2001 | **2026** | 1,792,347 | ~~Ends at 2024~~ **CORRECTED 2026-07-25** — two stacked formats; 2025/2026 data exists but is `dt`-keyed with NULL season. See §7.2 |
 | `load_rosters_weekly` | 2002 | 2025 | 906,378 | |
 | `load_rosters` | 1920 | 2026 | 142,615 | 2026 present |
 | `load_draft_picks` | 1980 | 2026 | 12,927 | Includes 2026 class → draft capital usable for 2026 rookies |
@@ -108,7 +108,7 @@ a date bound; its true effective sample is 20 seasons, not 27.
 
 | Issue | Impact |
 |---|---|
-| `load_depth_charts` ends at **2024** | No depth-chart feature is available for the 2026 draft. test-registry Tier 0 #5 ("Depth chart / role") is **not buildable** for the live objective unless another source is found |
+| ~~`load_depth_charts` ends at 2024~~ **RETRACTED 2026-07-25** | This was wrong. Depth charts **are** available for 2025 and 2026 — 348 dated snapshots from 2025-08-03 to 2026-07-25 — in a second, `dt`-keyed format with NULL season/week that the earlier `min/max(season)` check could not see. test-registry Tier 0 #5 is buildable. See §7.2 |
 | FantasyPros preseason snapshots for 2026 not yet published | Latest 2026 snapshot is 2026-07-24 (in-window, usable now); August snapshots will appear closer to the draft. Re-pull before finalizing the board |
 | FTN charting = 4 seasons | Any FTN-derived factor (#16, #17, #31, #32) carries a 4-season sample. Per statistical-guardrails.md §4, must not be weighted equally against a 17- or 27-season factor |
 
@@ -152,3 +152,236 @@ Every factor test must state, in its result:
    seasons were **excluded**, not zero-filled.
 3. Whether the test is ACCURACY_ONLY (outside consensus coverage) or eligible for an alpha claim
    (2021–2025 only).
+
+---
+
+# 7. Reference sources (verified 2026-07-25)
+
+Ingested by `src/ingest_reference.py` into 11 tables, 2,320,528 rows. Every figure below was
+produced by querying the ingested data. Nothing here is inferred from documentation, and
+nothing is accepted on the basis of a column merely existing.
+
+**Method note.** For each source: season span, interior gaps, non-null rate, and a
+plausibility check on the *distribution* of non-null values. The last of these is the one
+that matters — the 2003-2008 targets hole (§0) was 100% non-null and 100% wrong.
+
+## 7.0 Key design, and why two tables have surrogate keys
+
+Primary keys were verified for nullability and uniqueness before being chosen. Results:
+
+| Table | Key | Verdict |
+|---|---|---|
+| `injuries` | `(season, game_type, team, week, gsis_id)` | Clean: 0 nulls, 2 duplicate groups (deduped on latest `date_modified`) |
+| `snap_counts` | `(game_id, pfr_player_id)` | Clean: 0 nulls, 0 duplicates |
+| `ngs_receiving/rushing/passing` | `(season, season_type, week, player_gsis_id)` | Clean: 0 nulls, 0 duplicates |
+| `draft_picks` | `(season, round, pick)` | Clean: 0 nulls, 0 duplicates |
+| `combine` | `(season, player_name, pos)` | Clean. **`pfr_id` cannot be used — 1,531 nulls** |
+| `ff_playerids` | `(mfl_id)` | Clean: 0 nulls, 0 duplicates |
+| `depth_charts_weekly` | **surrogate `row_hash`** | No natural key exists: `week` has 5,736 nulls and the best candidate still duplicates 5,346 times |
+| `depth_charts_snapshots` | **surrogate `row_hash`** | No natural key exists: `gsis_id` has 8,038 nulls |
+| `contracts` | **surrogate `row_hash`** | No natural key exists: multiple contracts per player-year, 9,809 duplicate `(otc_id, year_signed)` groups |
+
+The surrogate is a SHA-1 of the row's content, so re-ingestion is idempotent. A side effect
+worth recording: it collapses **exactly duplicated source rows** — 3,330 in `contracts` and
+3,856 in `depth_charts_weekly`. Those are genuine duplicates in the upstream data, not a
+processing artifact.
+
+## 7.1 Injuries — practice participation vs game designation
+
+**This was the specific question, and the two fields have opposite availability profiles.**
+
+| Field | What it is | Usable from |
+|---|---|---|
+| `practice_status` | DNP / Limited / Full participation | **2009 — effectively complete throughout** |
+| `report_status` | Out / Doubtful / Questionable (/ Probable pre-2016) | 2009, but see the collapse below |
+
+Non-null-and-non-blank rate by season:
+
+| Season | practice_status | report_status | `Probable` count |
+|---|---|---|---|
+| 2009-2015 | 100% | 93.9-97.3% | 1,874-2,963 per season |
+| 2016 | 100% | **60.2%** | **0** |
+| 2017 | 100% | **50.6%** | 0 |
+| 2018-2024 | 99.2-100% | 44.8-48.6% | 0 |
+| 2025 | 99.3% | 45.9% | 0 |
+
+**The mechanism, and why it is a trap.** The `Probable` designation appears 17,400 times
+through 2015 and **exactly zero times from 2016 onward** — the NFL abolished it after the
+2015 season. Players who would have been listed Probable now appear on the report with a
+practice status and **no game designation at all**. That is the entire cause of the
+`report_status` collapse from ~95% to ~46%.
+
+So a NULL `report_status` means two different things either side of 2016:
+
+- **Pre-2016 (~5% of rows):** genuinely not designated.
+- **Post-2016 (~55% of rows):** on the injury report, practised in some capacity, healthy
+  enough that no designation was required — roughly the old `Probable`.
+
+A health model that reads NULL as "not injured" will misclassify **over half** of all
+post-2016 injury-report rows, and one trained across the boundary will see a step change in
+"designation rate" that is purely administrative. **Use `practice_status` as the primary
+health signal**: it is complete across the entire 2009-2025 window and its meaning did not
+change.
+
+**Value-set contamination** (non-null but meaningless — the §0 lesson):
+
+- `practice_status` contains 213 whitespace-only (`'\n    '`) values and 1 literal `'Note'`.
+- `report_status` contains 6 `'Note'` values.
+- `practice_status` includes `'Out (Definitely Will Not Play)'` (974 rows), which is a *game*
+  outcome appearing in a *practice* field. It does not occur after 2019.
+
+Filter on `TRIM(practice_status) NOT IN ('', 'Note')` rather than `IS NOT NULL`.
+
+**Coverage:** 2009-2025, no interior gaps, 90,750 rows. Includes postseason (`game_type` in
+REG/WC/DIV/CON/SB); REG covers weeks 1-18. `date_modified` is a genuine timestamp and is
+retained as the `as_of_date` for this table.
+
+## 7.2 Depth charts — two stacked formats (corrects §4)
+
+`load_depth_charts` returns **two incompatible datasets in one frame**, split on ingest:
+
+| Table | Rows | Coverage | Key columns populated |
+|---|---|---|---|
+| `depth_charts_weekly` | 865,329 | **2001-2024**, season/week labelled, no interior gaps | `club_code`, `depth_team`, `formation`, `depth_position`, `position`, `full_name`, `elias_id`, `jersey_number` — all 100% |
+| `depth_charts_snapshots` | 923,162 | **2025-08-03 → 2026-07-25**, `dt`-timestamped, season/week NULL | `team`, `player_name`, `pos_rank`, `pos_slot`, `pos_abb`, `pos_grp`, `espn_id`, `dt` |
+
+The two formats share almost no columns: every "new format" column is **0.0% populated in
+every season 2001-2024**, and every "old format" column is NULL in the snapshot rows. Stacking
+them would have produced a table that is half-null in every row.
+
+**This corrects the earlier claim that depth charts end at 2024.** They do not. The 2025/2026
+data exists as **348 distinct dated snapshots**, roughly 25-31 per month, all 32 teams present
+in every month. That earlier conclusion came from `min/max(season)`, which cannot see rows
+whose season is NULL — the same failure mode as §0, in a different disguise.
+
+For the draft this is *better* than the old format: dated snapshots are exactly what a
+date-parametrised board needs (`docs/deferred.md` P3-2), because a snapshot's `dt` is a true
+`as_of_date` rather than an inferred week boundary.
+
+Caveats: 8,038 snapshot rows have a NULL `gsis_id` (unmatched players); `depth_charts_weekly`
+has 5,736 NULL-week rows, ~220-270 per season plus 1,593 in 2001.
+
+## 7.3 Snap counts
+
+**2013-2025, no interior gaps, 324,611 rows.** Plausibility: `offense_pct` ranges exactly
+[0.0, 1.0] in every season — it is a **fraction, not a percentage**, which is an easy
+off-by-100x error. Season mean is stable at 0.236-0.247. `offense_snaps` maxima are 90-100 per
+game, which is right for a team's offensive play count. No degradation or regime shift.
+
+## 7.4 Next Gen Stats — and an interior gap inside a column
+
+**All three tables: 2016-2025, no interior season gaps.** Volumes are small — 14,731 receiving
+/ 6,059 rushing / 5,933 passing rows — because these are weekly aggregates over qualifying
+players only, not full rosters.
+
+Plausibility checks all pass:
+
+| Metric | Observed range | Plausible? |
+|---|---|---|
+| `avg_separation` (rec) | season means 2.70-3.12 yd | Yes |
+| `avg_cushion` (rec) | season means 5.71-6.24 yd | Yes |
+| `avg_time_to_throw` (pass) | season means 2.65-2.85 s | Yes |
+| `efficiency` (rush) | season means 4.15-4.64 | Yes |
+
+**Interior gap inside a column:** `rush_yards_over_expected` (and the `_per_att` and
+`rush_pct_over_expected` variants) are **100% NULL for 2016 and 2017**, then fully populated
+from 2018. The column exists for the table's whole span; the data starts two years later.
+**RYOE-based features have an effective sample of 2018-2025 (8 seasons), not 2016-2025.**
+
+Note also a real trend rather than an artifact: `avg_separation` rises steadily from 2.70
+(2016) to 3.12 (2024). Worth a factor test, not a data-quality concern.
+
+## 7.5 Contracts
+
+**48,404 rows after collapsing 3,330 exact duplicates.** `year_signed` spans 1980-2026 with no
+interior gaps in that range — **but 1,106 rows carry `year_signed = 0`**, a sentinel for
+unknown. Non-null, numeric, and meaningless: exactly the §0 pattern. Filter
+`year_signed > 0`.
+
+`apy` plausibility by signing year: mean $1.0-2.6M, maximum rising 18.0 (2010) → 64.0 (2026),
+which tracks real cap growth. Only 0-28 zero/null `apy` values per year.
+
+`gsis_id` is NULL for 4,194 rows, so contracts cannot be joined to player stats for those.
+The nested `cols` column (per-year cap detail) is **JSON-encoded on ingest** and needs a parse
+on read — recorded here so it isn't later mistaken for a plain string.
+
+## 7.6 Combine
+
+**2000-2026, no interior gaps, 8,968 rows.** `forty` times span [4.21, 6.00] with season means
+4.67-4.81 — plausible throughout.
+
+**Coverage declines materially over time**, which matters more than the span: ~99% of
+attendees have a `forty` through 2016 (e.g. 331/332 in 2016), falling to 201/329 in 2025 and
+**189/319 in 2026 (59%)**. Prospects increasingly skip the 40 at the combine. Any
+combine-athleticism feature must handle a missingness rate that is both large and trending,
+and missingness is unlikely to be random — it plausibly correlates with draft stock.
+
+## 7.7 Draft picks
+
+**1980-2026, no interior gaps, 12,927 rows.** Structure matches real draft history and is a
+good plausibility signal: 12 rounds and ~333 picks per year through 1992, 8 rounds in 1993,
+then 7 rounds and 222-262 picks from 1994 onward.
+
+`gsis_id` coverage rises from ~60-65% in the 1980s to essentially 100% from 2018. For 2026 it
+is 230/257 (89%) — IDs are still propagating for the most recent class. Draft-capital features
+for rookies are safe from ~2000 onward; earlier seasons will silently lose the players whose
+IDs are missing.
+
+## 7.8 ff_playerids (cross-source ID map)
+
+**12,468 rows, keyed on `mfl_id` (unique, no nulls).** Coverage of each foreign key:
+
+| ID | Coverage |
+|---|---|
+| `pfr_id` | 76.8% |
+| `espn_id` | 65.3% |
+| **`gsis_id`** | **62.1%** |
+| `sportradar_id` | 59.6% |
+| `sleeper_id` | 50.9% |
+| `yahoo_id` | 44.0% |
+| `fantasypros_id` | 38.3% |
+
+**`gsis_id` is not unique here: 10 values map to more than one `mfl_id`.** Inspection shows
+these are genuinely different players sharing an ID — e.g. `00-0029435` is attached to both
+"Damaris Johnson" (WR) and "Dennis Johnson" (DE). Any join on `gsis_id` must be checked for
+row multiplication, and these ten will produce wrong matches. Since `gsis_id` is the join key
+between this crosswalk and `player_weekly_stats`, **38% of the crosswalk cannot be joined to
+NFL stats at all**, and a handful of the remainder join incorrectly.
+
+## 7.9 Coaching staff — BLOCKED, reported and not worked around
+
+`coach_id` (test-registry #29 coordinator continuity, #30 first-time play-callers) needs
+coordinator-level data. Status:
+
+**Pro Football Reference is not cleanly obtainable.** Both `https://www.pro-football-reference.com/robots.txt`
+and their terms page return **HTTP 403 Forbidden** to programmatic requests. The site actively
+blocks automated access, and I could not even read the crawl policy to determine what it
+permits. Building a scraper would mean circumventing an active block. Per CLAUDE.md §10
+("check terms before building the scraper, not after") and the explicit instruction not to
+work around it: **not attempted, and this gates the coordinator dimension.**
+
+**Partial win found instead.** `nflreadpy.load_schedules()` carries `home_coach` and
+`away_coach`: **1999-2026, 15,096 team-games, 100% populated, zero nulls, 177 distinct
+coaches.** Structurally sound — 850 team-seasons have exactly one coach, 43 have two
+(in-season changes), and none have three or more.
+
+This gives a clean, licensed **head coach** dimension for the full modern era. It does **not**
+give offensive or defensive coordinators, which is what #29/#30 actually require, since the
+whole point of those tests is that coordinators move between teams. Head-coach continuity is a
+weaker proxy but is buildable today at zero licensing risk.
+
+**Unverifiable from the pipeline:** the 2026 coach assignments in this data (e.g. Jesse Minter
+at BAL, Robert Saleh at TEN, John Harbaugh at NYG) cannot be checked against anything in the
+repo, and I have no reliable way to confirm current NFL hires. **Spot-check them before any
+2026 coach-based feature is trusted.**
+
+## 7.10 Summary — what changed for downstream work
+
+1. **Use `practice_status`, not `report_status`, as the health signal.** The latter's meaning
+   changes at 2016 and it is ~46% populated after that.
+2. **Depth charts are available for 2026** (§7.2 corrects §4). Use `depth_charts_snapshots`
+   and its `dt` as a true `as_of_date`.
+3. **RYOE starts in 2018**, not 2016 — 8 seasons, not 10.
+4. **Combine `forty` missingness is ~41% for 2026** and trending upward, probably not at random.
+5. **`gsis_id` joins are lossy (62%) and slightly wrong (10 collisions).**
+6. **Coordinator data remains blocked**; head coach is available 1999-2026 as a partial substitute.
