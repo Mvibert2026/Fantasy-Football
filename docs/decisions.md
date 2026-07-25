@@ -41,3 +41,52 @@ duplicating rows.
 
 **Provenance column `ingested_at`** added (not present in the source) so we can tell when a row
 was last (re)written — cheap, useful for debugging cache staleness, not a modeling field.
+
+## 2026-07-25 — Scoring engine, rankings ingestion, backtest harness (Phase 1, Steps 1-3)
+
+**`player_week_scoring_inputs` is a SQL view, not a second ingested copy.** Rather than
+re-pulling nflverse data under the narrower column set requested, `src/db.py` adds a view over
+the already-ingested `player_weekly_stats` table. Same reasoning as the deferred `players` table
+decision above: a second cached copy can drift from the raw cache; a view can't. Zero extra
+network cost, always current.
+
+**The view carries three columns beyond what was literally requested** (`return_tds`,
+`two_point_conversions`, `offensive_fumble_return_tds`). Omitting them would silently under-score
+any player with a return TD, a 2-point conversion, or an offensive fumble-return TD — all of
+which are real categories in this league's scoring rules (`CLAUDE.md` §7). Verified real, if rare,
+values exist in the source data before deciding to include them.
+
+**FantasyPros preseason rankings are ingested as Expert Consensus Rank (ECR), explicitly labeled
+`source = "fantasypros_ecr"` — not relabeled "ADP."** ECR (aggregated expert opinion) and ADP
+(observed average draft position from real drafts) are different things; conflating them would
+misrepresent data provenance. Sourced via `nflreadpy.load_ff_rankings()`, which mirrors
+DynastyProcess.com's public FantasyPros snapshot archive — already vetted for redistribution by
+nflverse the same way the rest of this pipeline's data is. Verified the `fantasypros_id` →
+`gsis_id` crosswalk (`load_ff_playerids()`) resolves 98.9% of non-DST/non-K rows before trusting
+the join.
+
+**True multi-source ADP (FFC/Yahoo/ESPN/Sleeper/Underdog) was not ingested.** See
+`docs/deferred.md`. The backtest harness reports `consensus_adp` as `available: False` with a
+reason, rather than substituting FantasyPros ECR under the ADP label or fabricating a number.
+`CLAUDE.md` §6.5 requires baseline comparisons to be honest about what they are; a mislabeled
+baseline is worse than a missing one.
+
+**BPA baseline = prior season's actual fantasy points, ranked** (`CLAUDE.md` §6.5 baseline #2),
+not a simulated live mock draft. This is a disclosed proxy for "draft best available off a good
+half-PPR list": it requires no external projections source, so it's always buildable, and it's
+routed through the same look-ahead-cutoff-enforced store as the candidate ranking — baselines get
+the same structural guarantee, not an exemption.
+
+**"Points vs. baseline" = sum of actual value-over-replacement (VBD) for the top-N ranked players
+per position, N = that position's replacement-level baseline** (`ReplacementLevels().baselines()`
+— QB10/RB28/WR41/TE11, used unmodified). The replacement baseline itself is computed once from
+the *full* actual player population for the season, then shared across every ranking system being
+compared, so all comparisons sit on the same empirically-grounded scale. Chosen over a full
+mock-draft-with-opponents simulator as the smallest model that actually answers "did this ranking
+put the players who'd beat replacement level at the top" (`CLAUDE.md` §6.6) without building
+infrastructure nobody asked for.
+
+**Self-consistency check:** running the backtest with the FantasyPros ranking itself as the
+candidate reproduces the `fantasypros_preseason` baseline exactly (`delta_vs_candidate == 0.0`).
+Kept as a permanent regression test (`test_run_backtest_self_consistency_on_real_2025_data`) since
+it's a cheap, strong signal that candidate scoring and baseline scoring haven't diverged.
