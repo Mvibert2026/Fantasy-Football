@@ -4,7 +4,7 @@
 Threads are the source of truth. Change a thread's `STATUS:`, then re-run sync.
 Protocol: [`README.md`](README.md).
 
-**30 open** · 10 resolved
+**29 open** · 11 resolved
 
 ---
 
@@ -19,14 +19,13 @@ not an omission. Start your session at your own heading.
 |---|---|---|---|---|---|
 | [005](005-fantasypros-tier.md) | Fantasypros tier | `pm` | BLOCKED-ON-YOU | 0d | bootstrap CIs, full-board projections |
 
-### `backend` — 16 waiting
+### `backend` — 15 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
 | [001](001-adopt-current-state.md) | Adopt current state | `pm` | OPEN | 0d | none |
 | [002](002-per-pick-draft-state.md) | Per pick draft state | `pm` | OPEN | 0d | 007 (mock collection, not yet opened) |
 | [012](012-sprint-1-runbook.md) | Sprint 1 runbook | `pm` | OPEN | 0d | none |
-| [016](016-league-rosters-endpoint.md) | League rosters endpoint | `pm` | OPEN | 0d | the Opponents tab |
 | [017](017-weekly-finishes-season-stats.md) | Weekly finishes season stats | `pm` | OPEN | 0d | consistency view, player detail history |
 | [019](019-bootstrap-confidence-intervals.md) | Bootstrap confidence intervals | `pm` | OPEN | 0d | none |
 | [020](020-preregistration-convention.md) | Preregistration convention | `pm` | OPEN | 0d | test #53 |
@@ -57,7 +56,7 @@ not an omission. Start your session at your own heading.
 | [036](036-mocklab-staleness-retrofit.md) | Mocklab staleness retrofit | `pm` | OPEN | 0d | Mock Lab build |
 | [036](036-weekly-finishes-and-season-stats-exports-contrac.md) | Weekly finishes and season stats exports contrac | `backend` | OPEN | 0d | consistency heat-map, player detail history |
 | [037](037-audit-followups.md) | Audit followups | `pm` | OPEN | 0d | none |
-| [037](037-rosters-json-artifact.md) | Rosters json artifact | `backend` | OPEN | 0d | the Opponents tab's "has vs needs" view |
+| [038](038-rosters-json-artifact.md) | Rosters json artifact | `backend` | OPEN | 0d | the Opponents tab's "has vs needs" view |
 
 ### `data-ops` — 0 waiting
 
@@ -105,6 +104,7 @@ _Nothing waiting on you._
 | [013](013-nfl-db-tracked-in-git.md) | Nfl db tracked in git | `pm` → `backend` |
 | [014](014-bootstrap-cleanup.md) | Bootstrap cleanup | `pm` → `backend` |
 | [015](015-settings-engineering-questions.md) | Settings engineering questions | `pm` → `backend` |
+| [016](016-league-rosters-endpoint.md) | League rosters endpoint | `pm` → `backend` |
 | [018](018-fantasypros-season-backfill.md) | Fantasypros season backfill | `pm` → `data-ops` |
 | [024](024-injury-ingestion-as-of-date.md) | Injury ingestion as of date | `pm` → `data-ops` |
 | [034](034-shortcut-bias-in-mock-logging.md) | Shortcut bias in mock logging | `pm` → `strategist` |

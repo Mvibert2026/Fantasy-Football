@@ -38,7 +38,7 @@ import make_board
 from config import DEFAULT_CONFIG
 from scoring import LEAGUE, ReplacementLevels
 
-CONTRACT_VERSION = "1.7.0"
+CONTRACT_VERSION = "1.8.0"
 SEASON = 2026
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 EXPORT_DIR = DATA_DIR / "export"
@@ -506,6 +506,171 @@ def build_league_json(cfg: lc.LeagueConfig = lc.CURRENT_LEAGUE) -> dict:
     }
 
 
+def _real_draft_picks(conn: sqlite3.Connection, cfg: lc.LeagueConfig, season: int = SEASON) -> List[sqlite3.Row]:
+    """Picks from a REAL (is_mock=0) draft logged for this league and season.
+
+    Deliberately season-scoped: the only is_mock=0 draft on file today is the
+    2025 real draft, and 2025 is a locked holdout (CLAUDE.md #6.1/#6.3). This
+    query asks for `season` (SEASON = 2026, the current draft's year), which
+    that row does not match, so it is excluded by construction -- not by a
+    special-cased holdout check. No path in this function can return 2025 pick
+    data for a 2026 export.
+    """
+    conn.row_factory = sqlite3.Row
+    return conn.execute(
+        "SELECT p.overall_pick, p.round, p.team_slot, p.player_name_raw, p.mfl_id "
+        "FROM mock_picks p JOIN mock_drafts d ON p.mock_id = d.mock_id "
+        "WHERE d.is_mock = 0 AND d.league_config_id = ? "
+        "AND CAST(strftime('%Y', d.drafted_at) AS INTEGER) = ? "
+        "ORDER BY p.overall_pick",
+        (cfg.league_id, season),
+    ).fetchall()
+
+
+def _position_lookup(conn: sqlite3.Connection, season: int = SEASON) -> Dict[str, str]:
+    rows = conn.execute(
+        "SELECT player_name, position FROM rankings "
+        "WHERE source='fantasypros_ecr' AND season=? AND position IS NOT NULL", (season,)
+    ).fetchall()
+    return {r["player_name"]: r["position"] for r in rows}
+
+
+def build_rosters_json(
+    conn: sqlite3.Connection, cfg: lc.LeagueConfig = lc.CURRENT_LEAGUE,
+) -> dict:
+    """Full league rosters: all teams, every slot (starters, flex, bench, IR),
+    filled mechanically from actual draft picks on file for THIS season.
+
+    Observable facts only -- see thread 016. Slot assignment is pure
+    arithmetic over `roster_slots` and the order picks were made: each pick is
+    placed into the first open starter slot at its position, then flex if
+    flex-eligible, then bench, in that priority. `needs` is
+    required-minus-filled per slot type. Nothing here infers what a team
+    WANTS or is LIKELY to draft next -- that was explicitly refused elsewhere
+    in this project (docs/handoffs/016) as an indefensible inference about
+    latent strategy. IR is never filled by a draft pick (it is a
+    post-draft/waiver slot in this league, see league_config.drafted_rounds),
+    so ir.filled is always 0 from this data source.
+
+    Before the real 2026 draft happens, `_real_draft_picks` returns no rows
+    (see its docstring) and every team comes back with an empty roster and
+    full needs -- the correct, honest state right now, not a bug.
+    """
+    picks = _real_draft_picks(conn, cfg, season=SEASON)
+    pos_of = _position_lookup(conn, season=SEASON) if picks else {}
+
+    known_names = {}
+    if cfg.is_primary:
+        from export_static import KNOWN_OPPONENTS
+        known_names = {v["draft_slot_2026"]: k for k, v in KNOWN_OPPONENTS.items()}
+
+    by_team: Dict[int, List[dict]] = defaultdict(list)
+    unresolved_positions = 0
+    for p in picks:
+        slot = p["team_slot"]
+        if slot is None:
+            continue
+        name = p["player_name_raw"]
+        pos = pos_of.get(name)
+        if pos is None:
+            unresolved_positions += 1
+        by_team[slot].append({
+            "player": name,
+            "position": pos,
+            "overall_pick": p["overall_pick"],
+            "round": p["round"],
+            "position_resolved": pos is not None,
+        })
+
+    rosters = []
+    for slot in range(1, cfg.teams + 1):
+        team_picks = sorted(by_team.get(slot, []), key=lambda x: x["overall_pick"])
+        starter_filled: Dict[str, List[dict]] = defaultdict(list)
+        flex_filled: List[dict] = []
+        bench_filled: List[dict] = []
+        for pick in team_picks:
+            pos = pick["position"]
+            if pos in cfg.starters and len(starter_filled[pos]) < cfg.starters[pos]:
+                starter_filled[pos].append(pick)
+            elif pos in cfg.flex_eligible and len(flex_filled) < cfg.flex_slots:
+                flex_filled.append(pick)
+            else:
+                bench_filled.append(pick)
+
+        starters_block = {
+            pos: {
+                "required": req,
+                "filled": len(starter_filled.get(pos, [])),
+                "players": starter_filled.get(pos, []),
+            }
+            for pos, req in cfg.starters.items()
+        }
+        needs = {
+            pos: max(0, req - len(starter_filled.get(pos, [])))
+            for pos, req in cfg.starters.items()
+        }
+        needs["FLEX"] = max(0, cfg.flex_slots - len(flex_filled))
+        needs["BENCH"] = max(0, cfg.bench - len(bench_filled))
+        needs["IR"] = cfg.ir  # never filled by a draft pick -- see docstring
+
+        rosters.append({
+            "team_slot": slot,
+            "is_user": slot == cfg.user_draft_slot,
+            "team_name": known_names.get(slot),
+            "roster_slots": {
+                "starters": starters_block,
+                "flex": {
+                    "required": cfg.flex_slots, "filled": len(flex_filled),
+                    "eligible_positions": list(cfg.flex_eligible), "players": flex_filled,
+                },
+                "bench": {"required": cfg.bench, "filled": len(bench_filled), "players": bench_filled},
+                "ir": {
+                    "required": cfg.ir, "filled": 0, "players": [],
+                    "note": "IR is filled off-waiver after the draft, never by a draft pick "
+                            "(league_config.drafted_rounds excludes it). Always 0 here.",
+                },
+            },
+            "needs": needs,
+            "players": team_picks,
+        })
+
+    total_picks = sum(len(v) for v in by_team.values())
+    if total_picks == 0:
+        draft_state = "not_started"
+    elif total_picks >= cfg.teams * cfg.drafted_rounds():
+        draft_state = "complete"
+    else:
+        draft_state = "in_progress"
+
+    return {
+        "contract_version": CONTRACT_VERSION,
+        "generated_utc": datetime.now(timezone.utc).isoformat(),
+        "league_id": cfg.league_id,
+        "season": SEASON,
+        "teams": cfg.teams,
+        "draft_state": draft_state,
+        "picks_ingested": total_picks,
+        "unresolved_position_count": unresolved_positions,
+        "data_source_note": (
+            "Built from a REAL (is_mock=0) draft logged for this league and season only. No "
+            f"such draft is on file for {SEASON} yet, so every roster below is empty and every "
+            "need equals the full slot requirement -- this is the honest current state, not a "
+            "placeholder. As soon as the real draft is logged pick-by-pick, re-running this "
+            "export fills rosters incrementally without any code change."
+        ) if total_picks == 0 else (
+            f"{total_picks} real pick(s) on file for {SEASON}, resolved against fantasypros_ecr "
+            f"positions where available ({unresolved_positions} unresolved)."
+        ),
+        "inference_scope_note": (
+            "This artifact states what each team HAS (drafted, by slot) and what it still NEEDS "
+            "(mechanical arithmetic: required minus filled per slot). It does not model, guess, "
+            "or rank what a team is likely to draft next -- see docs/handoffs/016. For "
+            "behavioural/tendency data on known opponents, see opponents.json instead."
+        ),
+        "rosters": rosters,
+    }
+
+
 def write_all(
     out_dir: Path, conn: sqlite3.Connection, strategies: Optional[dict] = None,
     cfg: lc.LeagueConfig = lc.CURRENT_LEAGUE,
@@ -516,6 +681,7 @@ def write_all(
         "board.json": build_board_json(conn, cfg),
         "availability.json": build_availability_json(cfg),
         "league.json": build_league_json(cfg),
+        "rosters.json": build_rosters_json(conn, cfg),
     }
     if strategies is not None:
         artifacts["strategies.json"] = strategies
