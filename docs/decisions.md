@@ -946,3 +946,41 @@ comparable bound; only the export drops it.
 **Lesson, and it is ADR-028's again.** "The tests pass" is worth nothing when the test harness
 shares the defect with the code under test. Both bugs were invisible to same-process,
 same-language verification.
+
+---
+
+## 2026-07-26 (session 10)
+
+### Diagnosis: consensus_rank mismatch is scoring-format, not staleness — DynastyProcess's mirror has no PPR dimension at all
+
+**Trigger.** The board's `consensus_rank` doesn't match FantasyPros' current ECR. Diagnosed
+against the live FantasyPros API (`.env` now populated), not fixed yet.
+
+**Finding: (b), a scoring-format mismatch, is the primary cause — not (a) staleness.**
+`nflreadpy.load_ff_rankings(type="all")` (the DynastyProcess mirror `src/ingest_rankings.py`
+pulls from) exposes 44 `page_type` values and exactly **one** `ecr_type` value (`'ro'`) for
+`page_type='redraft-overall'` — there is no half-PPR-specific, PPR-specific, or standard-specific
+variant anywhere in the mirror. It is a single unparameterized "overall redraft" snapshot.
+
+The live FantasyPros API, by contrast, genuinely supports `scoring=HALF` and returns a
+materially different product for it (`type=ST&scoring=HALF` → "Draft Half PPR", `total_experts=92`).
+Comparing the same player (Bijan Robinson) confirms the two are not identical: our stored row
+(`adp_rank=2, adp_value=3.1, as_of_date=2026-07-24`) is close to but not the same as the live
+half-PPR API's `rank_ecr=1, rank_ave=2.01` pulled one day later — close enough that (a) staleness
+is a minor contributor (the board is ~1-2 days behind), but the *systematic* gap traces to
+ingesting an unparameterized snapshot whose underlying scoring convention was never confirmed to
+be half-PPR at all, not to the day-to-day lag.
+
+**(c) positional-vs-overall confusion: ruled out.** `fetch_preseason_rankings()` sorts by the
+single `ecr` column and assigns rank by that order alone; no positional/overall mixing is
+possible in the current code.
+
+**Switching to the live API is straightforward for the format problem, blocked for coverage.**
+The API takes `scoring=HALF` directly and updates daily (`last_updated` field, confirmed same-day
+for the ECR type). But — see `docs/deferred.md`'s FantasyPros entry — the free tier caps every
+response at 10 players with no working pagination, so it cannot deliver a full ~580-player board
+in any number of calls on this tier. **Fixing the format problem and fixing the coverage problem
+are two different blockers; only a paid tier resolves both.**
+
+**Not fixed this session** — diagnosis only, per instruction. `ingest_rankings.py` still pulls the
+DynastyProcess mirror; `PAGE_TYPE = "redraft-overall"` is unchanged.
