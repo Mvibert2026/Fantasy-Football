@@ -163,6 +163,30 @@ def test_no_def_value_of_any_kind_exists_in_the_exports():
     assert "DEF" not in league["replacement_levels"]
 
 
+@pytest.mark.parametrize(
+    "name",
+    [
+        "board.json",
+        "availability.json",
+        "league.json",
+        "strategies.json",
+        "glossary.json",
+        "nulls.json",
+        "opponents.json",
+    ],
+)
+def test_every_artifact_carries_the_provenance_pair(name):
+    """The contract's opening line promises both on every artifact. league.json
+    shipped without `generated_utc` through five contract versions, so consumers
+    keying a run id on it fell back to 'unversioned'."""
+    p = EXPORT / name
+    if not p.exists():
+        pytest.skip(f"{name} not generated")
+    d = json.loads(p.read_text(encoding="utf-8"))
+    assert d.get("contract_version"), f"{name} has no contract_version"
+    assert d.get("generated_utc"), f"{name} has no generated_utc"
+
+
 def test_flex_split_is_described_as_measured_not_assumed():
     """ADR-029 measured the split over 26 seasons; the note said 'not a
     measurement' for two contract versions after that stopped being true."""

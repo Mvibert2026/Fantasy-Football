@@ -37,7 +37,7 @@ import make_board
 from config import DEFAULT_CONFIG
 from scoring import LEAGUE, ReplacementLevels
 
-CONTRACT_VERSION = "1.5.0"
+CONTRACT_VERSION = "1.5.1"
 SEASON = 2026
 EXPORT_DIR = Path(__file__).resolve().parent.parent / "data" / "export"
 AVAIL_CSV = Path(__file__).resolve().parent.parent / "data" / "availability_2026.csv"
@@ -306,6 +306,9 @@ def build_league_json() -> dict:
     levels = ReplacementLevels()
     return {
         "contract_version": CONTRACT_VERSION,
+        # league.json was the only artifact shipping without this, so consumers
+        # keying provenance on it fell back to an "unversioned" run id.
+        "generated_utc": datetime.now(timezone.utc).isoformat(),
         "teams": ds.N_TEAMS,
         "rounds": ds.N_ROUNDS,
         "user_draft_slot": ds.USER_SLOT,

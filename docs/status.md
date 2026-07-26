@@ -409,6 +409,25 @@ ADR-028 reproducibility fix holds across processes. No values moved this session
    Nothing in this repo quotes 0.59 — the exports carry the raw 0.5963, which rounds to 0.60.
    The stale 0.59 was in the external design handoff, not here. No change made; nothing to chase.
 
+## Post-handoff addendum — contract 1.5.1
+
+`league.json` was the only artifact shipping without `generated_utc`, through five contract
+versions, so the front end's provenance line fell back to `league@unversioned`. Added, contract
+bumped to **1.5.1**, and a test now asserts every artifact carries both `contract_version` and
+`generated_utc` — which is what `data-contract.md`'s opening line has always claimed. **209 tests.**
+
+Front end is synced and committed at `7276a2d` on `frontend-prep`. Its sanitiser is gone,
+replaced by validation only: a strict `JSON.parse` plus a token scan that fails `npm run dev`
+with the file, line, token and a pointer to `allow_nan=False`. That is a contract check rather
+than a workaround, and it stays.
+
+Two things that session did which this side should not undo:
+- It reads `positions_without_replacement_levels` from config rather than special-casing DEF, so
+  if DEF ever leaves that list the UI follows without a code change.
+- `ui/__tests__/out-of-scope.test.ts` fails if any app file dereferences `player.availability`,
+  `te_scenarios`, `by_tier` or `sigma_*`. Until ADR-033 is implemented, that test is the only
+  thing preventing the circular availability figures from reaching a reader.
+
 ## Mid-flight — ONE item, and it is trivial
 
 - **`strategies.json` is at `contract_version: 1.4.0`; the other six artifacts are at 1.5.0.**

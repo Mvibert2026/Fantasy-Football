@@ -1,6 +1,6 @@
 {
-  "contract_version": "1.5.0",
-  "generated_utc": "2026-07-26T00:39:59.952728+00:00",
+  "contract_version": "1.5.1",
+  "generated_utc": "2026-07-26T00:58:09.318162+00:00",
   "preamble": "Findings we tested and did NOT confirm. Published draft guides rarely show these, which is precisely why they are here: a claim that has survived a real test is worth more than one that was never tested.",
   "findings": [
     {
