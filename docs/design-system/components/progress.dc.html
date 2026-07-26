@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet" />
+<style>
+:root{--f-ui:'IBM Plex Sans',system-ui,sans-serif;--f-num:'IBM Plex Mono',ui-monospace,monospace;--bg:#090c10;--panel:#14191f;--panel2:#1c222a;--line:#232a33;--line2:#323a45;--txt:#f1f4f8;--dim:#98a2b1;--dim2:#69737f;--acc:#5ecf9e;--down:#f0993f;--r-c:6px}
+*{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--txt)}
+</style>
+</helmet>
+<div style="min-height:100vh;padding:24px;font-family:var(--f-ui);font-size:13px">
+  <div style="max-width:920px">
+    <div style="font-family:var(--f-ui);font-size:10px;letter-spacing:.14em;color:var(--dim2)">COMPONENT · PROGRESS</div>
+    <h1 style="margin:9px 0 0;font-size:24px;font-weight:700;letter-spacing:-.01em">Four claims, not one bar</h1>
+    <p style="margin-top:10px;font-size:14px;line-height:1.6;color:var(--dim);max-width:66ch;text-wrap:pretty">"How far through a job", "how much of a task", "how close to a target" and "how much evidence exists" are different claims. They keep separate treatments. No badges, streaks, levels or congratulation anywhere.</p>
+
+    <div style="margin-top:20px;padding:15px 16px;border:1px solid var(--line);background:var(--panel);border-radius:var(--r-c)">
+      <div style="font-family:var(--f-ui);font-size:9.5px;letter-spacing:.11em;color:var(--dim2)">A · JOB — a named backend process with stages</div>
+      <div style="margin-top:11px;display:flex;align-items:baseline;gap:8px">
+        <span style="font-family:var(--f-num);font-variant-numeric:tabular-nums;font-size:26px;font-weight:600;color:var(--down);line-height:1">62%</span>
+        <span style="flex:1"></span>
+        <span style="font-family:var(--f-num);font-variant-numeric:tabular-nums;font-size:11px;color:var(--dim2)">37s of ~60s</span>
+      </div>
+      <div style="margin-top:9px;height:5px;background:var(--line)"><div style="height:5px;width:62%;background:var(--down)"></div></div>
+      <div style="margin-top:11px;display:flex;flex-direction:column;gap:1px">
+        <sc-for list="{{ stages }}" as="s" hint-placeholder-count="5">
+          <div style="display:flex;align-items:center;gap:8px;padding:4px 0">
+            <span style="width:11px;text-align:center;font-family:var(--f-num);font-size:10px;color:{{ s.fg }}">{{ s.glyph }}</span>
+            <span style="flex:1;font-size:12px;color:{{ s.fg }}">{{ s.label }}</span>
+            <span style="font-family:var(--f-num);font-variant-numeric:tabular-nums;font-size:10px;color:var(--dim2)">{{ s.pct }}</span>
+          </div>
+        </sc-for>
+      </div>
+      <div style="margin-top:10px;font-size:12.5px;line-height:1.55;color:var(--dim2)">5px bar in a panel, 3px rail in a banner. All five stages stay visible — a single spinner at 60 seconds reads as a crash.</div>
+    </div>
+
+    <div style="margin-top:14px;padding:15px 16px;border:1px solid var(--line);background:var(--panel);border-radius:var(--r-c)">
+      <div style="font-family:var(--f-ui);font-size:9.5px;letter-spacing:.11em;color:var(--dim2)">B · COUNT — a task the user is doing by hand</div>
+      <div style="margin-top:11px;display:flex;align-items:center;gap:14px">
+        <span style="font-family:var(--f-num);font-variant-numeric:tabular-nums;font-size:20px;font-weight:600">42 / 160</span>
+        <span style="flex:1;min-width:80px">
+          <span style="display:block;height:6px;background:var(--line)"><span style="display:block;height:6px;width:26%;background:var(--acc)"></span></span>
+          <span style="margin-top:5px;display:flex;column-gap:12px;font-family:var(--f-num);font-variant-numeric:tabular-nums;font-size:10.5px;color:var(--dim2)"><span>2.1s per pick</span><span>~4m left</span></span>
+        </span>
+      </div>
+      <div style="margin-top:10px;font-size:12.5px;line-height:1.55;color:var(--dim2)">Tempo and ETA come from real entry timestamps. A measurement, not a motivator — if <span style="font-family:var(--f-num);font-size:11px">entered_at</span> is not recorded, the readout comes out rather than being estimated.</div>
+    </div>
+
+    <div style="margin-top:14px;padding:15px 16px;border:1px solid var(--line);background:var(--panel);border-radius:var(--r-c)">
+      <div style="font-family:var(--f-ui);font-size:9.5px;letter-spacing:.11em;color:var(--dim2)">C · TARGET — countable artifacts toward a threshold</div>
+      <div style="margin-top:11px;display:flex;align-items:center;gap:3px;flex-wrap:wrap">
+        <sc-for list="{{ squares }}" as="q" hint-placeholder-count="30">
+          <span title="{{ q.title }}" style="width:15px;height:15px;border-radius:3px;background:{{ q.bg }};border:1px solid {{ q.bd }}"></span>
+        </sc-for>
+      </div>
+      <div style="margin-top:10px;font-size:12.5px;line-height:1.55;color:var(--dim2)">Secondary by design. The array counts; the ladder below is what actually changes when you fill one.</div>
+    </div>
+
+    <div style="margin-top:14px;padding:15px 16px;border:1px solid var(--acc);background:var(--panel);border-radius:var(--r-c)">
+      <div style="font-family:var(--f-ui);font-size:9.5px;letter-spacing:.11em;color:var(--acc)">D · EVIDENCE — the honest incentive</div>
+      <div style="margin-top:12px;display:flex;flex-direction:column;gap:9px">
+        <sc-for list="{{ ladder }}" as="l" hint-placeholder-count="4">
+          <div style="display:flex;align-items:center;gap:11px">
+            <span style="font-family:var(--f-num);font-variant-numeric:tabular-nums;font-size:12.5px;font-weight:600;color:{{ l.fg }};width:66px;flex:none">{{ l.n }}</span>
+            <span style="flex:1;min-width:60px;height:9px;background:var(--line)"><span style="display:block;height:9px;width:{{ l.w }};background:{{ l.fg }};opacity:.85"></span></span>
+            <span style="font-family:var(--f-num);font-variant-numeric:tabular-nums;font-size:11.5px;color:{{ l.fg }};width:56px;text-align:right;flex:none">{{ l.half }}</span>
+            <span style="width:190px;flex:none;font-size:12.5px;color:var(--dim2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ l.txt }}</span>
+          </div>
+        </sc-for>
+      </div>
+      <div style="margin-top:11px;font-size:12.5px;line-height:1.55;color:var(--dim)">Bar length is the real 95% Wilson half-width at that sample size. Motivation by measurement: the only thing that changes when you log another is that the band narrows, and the copy says exactly that.</div>
+    </div>
+
+    <div style="margin-top:16px;padding:14px 16px;border:1px solid var(--line);background:var(--panel);border-radius:var(--r-c)">
+      <div style="font-family:var(--f-ui);font-size:9.5px;letter-spacing:.11em;color:var(--dim2)">PROPS</div>
+      <div style="margin-top:9px;font-family:var(--f-num);font-size:11.5px;line-height:1.75;color:var(--dim);white-space:pre-wrap">{{ props }}</div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:980,&quot;height&quot;:1000}}">
+class Component extends DCLogic{
+  half(k,n){const z=1.96,p=k/n,d=1+z*z/n;return z*Math.sqrt(p*(1-p)/n+z*z/(4*n*n))/d;}
+  renderVals(){
+    const ST=[["reading game logs · 2023–2025",18],["re-scoring 378 players",46],
+      ["refitting replacement levels",72],["rebuilding tiers and VBD",92],["writing board.projected_points",100]];
+    const pct=62;
+    return {
+      stages:ST.map((s,i)=>{const prev=i?ST[i-1][1]:0,done=pct>=s[1],active=pct>=prev&&pct<s[1];
+        return {key:"s"+i,label:s[0],glyph:done?"✓":active?"▸":"·",
+          fg:done?"var(--acc)":active?"var(--txt)":"var(--dim2)",pct:s[1]+"%"};}),
+      squares:(()=>{const o=[];for(let i=0;i<30;i++)o.push({key:"q"+i,
+        bg:i<7?"var(--acc)":"transparent",bd:i<7?"var(--acc)":"var(--line2)",
+        title:i<7?("mock "+(i+1)+" logged"):("mock "+(i+1)+" — not logged")});return o;})(),
+      ladder:[[1,"one draft is an anecdote"],[10,"tails still untested"],[20,"middle of the range readable"],[30,"every bucket testable"]]
+        .map(x=>{const hp=Math.round(this.half(Math.round(x[0]*9*0.33),x[0]*9)*100);
+          return {key:"l"+x[0],n:x[0]+(x[0]===1?" mock":" mocks"),
+            w:Math.min(100,hp*2.6)+"%",half:"±"+hp+" pts",
+            fg:x[0]<=7?"var(--acc)":"var(--down)",txt:x[1]};}),
+      props:"variant   'job' | 'count' | 'target' | 'evidence'\npct       number           job and count\nstages    [{label, at}]    job only — all stages stay visible\ntempo     {perUnit, eta}   count only — from real timestamps, omit if unavailable\nfilled    number           target only\nrungs     [{n, half, txt}] evidence only — half is a real Wilson half-width\nnoRewards true             hard-coded: no badges, streaks or levels"
+    };
+  }
+}
+</script>
+</body>
+</html>

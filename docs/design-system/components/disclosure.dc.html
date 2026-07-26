@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet" />
+<style>
+:root{--f-ui:'IBM Plex Sans',system-ui,sans-serif;--f-num:'IBM Plex Mono',ui-monospace,monospace;--bg:#090c10;--panel:#14191f;--panel2:#1c222a;--line:#232a33;--line2:#323a45;--txt:#f1f4f8;--dim:#98a2b1;--dim2:#69737f;--acc:#5ecf9e;--down:#f0993f;--up:#5bb4f2;--te:#7d9fcf;--r-c:6px;--r-m:12px}
+*{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--txt)}
+button{cursor:pointer;border-radius:5px;font:inherit}
+</style>
+</helmet>
+<div style="min-height:100vh;padding:24px;font-family:var(--f-ui);font-size:13px">
+  <div style="max-width:920px">
+    <div style="font-family:var(--f-ui);font-size:10px;letter-spacing:.14em;color:var(--dim2)">COMPONENT · DISCLOSURE</div>
+    <h1 style="margin:9px 0 0;font-size:24px;font-weight:700;letter-spacing:-.01em">Six ways to say more, one interaction away</h1>
+    <p style="margin-top:10px;font-size:14px;line-height:1.6;color:var(--dim);max-width:66ch;text-wrap:pretty">All six were in use and none were named, so an implementer had to guess which to reach for. Naming them is the deliverable. The rule underneath: anything truncated carries a title, and any number can name its field.</p>
+
+    <div style="margin-top:20px;display:flex;flex-direction:column;gap:12px">
+      <sc-for list="{{ items }}" as="d" hint-placeholder-count="6">
+        <div style="padding:15px 16px;border:1px solid var(--line);background:var(--panel);border-radius:var(--r-c)">
+          <div style="display:flex;align-items:baseline;gap:10px">
+            <span style="font-family:var(--f-ui);font-size:9.5px;letter-spacing:.11em;color:var(--dim2)">{{ d.name }}</span>
+            <span style="flex:1;height:1px;background:var(--line)"></span>
+            <span style="font-family:var(--f-num);font-size:10px;color:var(--dim2)">{{ d.screens }}</span>
+          </div>
+          <div style="margin-top:11px">{{ d.demo }}</div>
+          <div style="margin-top:11px;font-size:12.5px;line-height:1.55;color:var(--dim)">{{ d.body }}</div>
+          <div style="margin-top:7px;font-family:var(--f-num);font-size:10px;color:var(--dim2)">{{ d.when }}</div>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="margin-top:18px;padding:15px 16px;border:1px solid var(--line2);background:var(--panel);border-radius:var(--r-c)">
+      <div style="font-family:var(--f-ui);font-size:9.5px;letter-spacing:.11em;color:var(--dim2)">CHOOSING BETWEEN THEM</div>
+      <div style="margin-top:11px;display:flex;flex-direction:column;gap:7px">
+        <sc-for list="{{ rules }}" as="x" hint-placeholder-count="5">
+          <div style="display:flex;gap:9px;align-items:baseline">
+            <span style="color:var(--acc);font-size:11px">▸</span>
+            <span style="flex:1;font-size:12.5px;line-height:1.55;color:var(--dim)">{{ x.t }}</span>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="margin-top:14px;padding:14px 16px;border:1px solid var(--line);background:var(--panel);border-radius:var(--r-c)">
+      <div style="font-family:var(--f-ui);font-size:9.5px;letter-spacing:.11em;color:var(--dim2)">PROPS</div>
+      <div style="margin-top:9px;font-family:var(--f-num);font-size:11.5px;line-height:1.75;color:var(--dim);white-space:pre-wrap">{{ props }}</div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:980,&quot;height&quot;:1000}}">
+class Component extends DCLogic{
+  renderVals(){
+    const R=React.createElement;
+    const dotted=(t)=>R("span",{style:{borderBottom:"1px dotted var(--dim2)",cursor:"help",fontSize:"14px"}},t);
+    const chip=()=>R("span",{style:{display:"inline-flex",alignItems:"center",justifyContent:"center",
+      width:"15px",height:"15px",border:"1px solid var(--line2)",borderRadius:"50%",
+      fontFamily:"var(--f-ui)",fontSize:"9.5px",color:"var(--dim2)",cursor:"help"}},"i");
+    return {
+      items:[
+        {key:"d1",name:"DOTTED TERM",screens:"all 17",
+         demo:R("span",{style:{fontSize:"14px",lineHeight:1.6,color:"var(--dim)"}},
+           "Read the ",dotted("availability probability")," against its ",dotted("noise band"),"."),
+         body:"A technical term inside prose. 1px dotted underline plus cursor:help, opening the glossary popover on hover.",
+         when:"use when the term sits in a sentence"},
+        {key:"d2",name:"INFO CHIP",screens:"draft · settings · mocklab",
+         demo:R("span",{style:{display:"flex",alignItems:"center",gap:"8px"}},
+           R("span",{style:{fontFamily:"var(--f-ui)",fontSize:"10px",letterSpacing:".11em",color:"var(--dim2)"}},"AVAILABILITY AT YOUR PICKS"),chip()),
+         body:"Same popover, for a label with no natural text to underline. 15px circle, never larger — it must not compete with the data.",
+         when:"use on section headings and column labels"},
+        {key:"d3",name:"TITLE ATTRIBUTE",screens:"all 17",
+         demo:R("span",{title:"league.scoring.rush_rec_td",style:{fontFamily:"var(--f-num)",fontSize:"11px",color:"var(--dim2)",
+           display:"inline-block",maxWidth:"110px",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",
+           borderBottom:"1px solid var(--line)"}},"rush_rec_td — hover me"),
+         body:"The native fallback. Mandatory on any truncated value, any abbreviated field path, and any dense numeric cell whose full derivation will not fit.",
+         when:"never let text truncate without one"},
+        {key:"d4",name:"PROVENANCE LINE",screens:"all 17",
+         demo:R("span",{style:{fontFamily:"var(--f-num)",fontSize:"9.5px",color:"var(--dim2)"}},
+           "board.projected_points · ci_low · ci_high · generated 22 Jul 2026"),
+         body:"The quiet line under a block naming the fields behind it. This is what makes the traceability constraint visible rather than aspirational.",
+         when:"one per data block, not per cell"},
+        {key:"d5",name:"INLINE EXPANDER",screens:"prep.board",
+         demo:R("div",{style:{border:"1px solid var(--line)",borderRadius:"var(--r-c)",overflow:"hidden"}},
+           R("div",{style:{display:"flex",alignItems:"center",gap:"9px",padding:"7px 11px",fontSize:"13px"}},
+             R("span",{style:{fontFamily:"var(--f-num)",fontSize:"11px",color:"var(--dim2)"}},"12"),
+             R("span",{style:{flex:1,fontWeight:600}},"Brock Bowers"),
+             R("span",{style:{fontFamily:"var(--f-num)",fontSize:"11px",color:"var(--up)"}},"▲3"),
+             R("span",{style:{fontFamily:"var(--f-ui)",fontSize:"9px",letterSpacing:".06em",color:"var(--te)"}},"hide")),
+           R("div",{style:{padding:"11px;",paddingLeft:"32px",background:"var(--panel2)",borderTop:"1px solid var(--line2)",
+             fontSize:"12.5px",lineHeight:1.55,color:"var(--dim)"}},
+             "Your format moves him up 3 slots — market rank 15, ours 12. Arithmetic on your league's format, nothing else.")),
+         body:"The derivation expands inside the row container, never over the board. Under a pick clock, losing sight of the board to read a reason is a real cost.",
+         when:"use for anything a user might challenge — this pattern is the trust surface"},
+        {key:"d6",name:"COLLAPSED EMPTIES",screens:"playerDetail",
+         demo:R("div",{style:{padding:"11px 13px",border:"1px solid var(--line)",background:"var(--panel2)",
+           borderRadius:"var(--r-c)",fontSize:"12.5px",lineHeight:1.6,color:"var(--dim)"}},
+           "No archetype, notes or news for Brock yet — one season of usage on file, and the news feed isn't connected. Measured history below is unaffected."),
+         body:"Consecutive empty sections collapse into one line naming everything missing at once. Three stacked empty headers read as broken rather than candid.",
+         when:"whenever two or more adjacent sections would render empty"}],
+      rules:[
+        {key:"r1",t:"Prose gets a dotted term. A label gets an info chip. Neither gets both."},
+        {key:"r2",t:"A title is not a disclosure choice — it is a floor. Anything clipped has one, always."},
+        {key:"r3",t:"A derivation the user might dispute expands inline, never in a modal over the data it explains."},
+        {key:"r4",t:"Every popover offers \"Ask the assistant\", which carries the term plus the current screen context."},
+        {key:"r5",t:"Empty states collapse before they stack. Two adjacent nothings become one sentence."}],
+      props:"variant   'term' | 'chip' | 'title' | 'provenance' | 'expander' | 'collapsed'\ntermId    string        glossary key — resolves category and backing field\nfields    string[]      provenance only\nopen      boolean       expander only — one row open at a time\nmissing   string[]      collapsed only — names every absent section in one sentence"
+    };
+  }
+}
+</script>
+</body>
+</html>

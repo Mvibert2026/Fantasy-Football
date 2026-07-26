@@ -28,6 +28,16 @@ Three modes, because the realistic user arrives in three different situations:
 
 Paste is the 100× win and should be the marketed path. It is also where the honesty risk lives (§4).
 
+**Header budget.** The top bar is a single non-wrapping row. Every string in it must fit a 924px
+viewport with all seven state chips reachable: the state eyebrow is short (`REF · LOGGING`) with the
+long form in a `title`, the league line shrinks with `min-width:0` and carries its full form in a
+`title`, and the chip group is `flex:0 1 auto; min-width:0; overflow-x:auto` so it scrolls rather
+than pushing content off-screen. Assert `documentElement.scrollWidth === clientWidth`.
+
+**Autofocus is load-bearing, not a nicety.** The screen prints "never needs the mouse" beneath the
+field, so focus must be asserted on mount *and* re-asserted when the input node attaches — a one-shot
+guard that fires before the element is focusable leaves the claim false on load.
+
 ## 2. Keyboard entry — the details that carry the speed
 
 ```
@@ -110,6 +120,118 @@ narrower."*
 The near-empty state (one mock) is the **real** starting case and gets its own reference file. It
 leads with "one draft is an anecdote" rather than drawing a confident chart over nine calls.
 
+## 5a. Configuration and staleness
+
+**Amended 26 Jul 2026.** Originally out of scope; now build-blocking. A mock's calibration value
+depends entirely on the league configuration it was logged under, so the configuration is part of the
+record — not metadata about it.
+
+### The stamp
+Every mock stores `league_settings_hash` **at log time**, using the same 15-field hash as Settings,
+plus `config_summary` for display (`10T · 0.5 PPR · 3WR/2FLEX · no K`).
+
+Write it on `POST /api/mocks`, never on read. A hash computed at read time is the same defect as a
+prediction recomputed at read time: it will always look consistent and always mean nothing.
+
+### Three configuration states — not two
+
+| State | Condition | Calibration | Why |
+|---|---|---|---|
+| `current` | hash matches the league's hash now | **included** | describes the league you are in |
+| `stale` | hash present, differs | **excluded by default, includable** | describes a real league, just not this one |
+| `unknown` | hash is `null` | **excluded, and NOT includable** | logged before the field existed |
+
+`unknown` is not hypothetical. Every mock logged before the field ships is permanently unstampable,
+and a mock whose configuration is unknown can be neither honestly included nor honestly excluded — so
+it is excluded, counted, and labelled, with **no affordance to opt in.** There is no basis on which a
+user could make that call, so offering the choice would be false precision dressed as control.
+
+This is why the field cannot wait: at one logged mock it costs nothing, and every mock logged without
+it is unrecoverable.
+
+### Configuration is the grouping key, not a flag
+If the 30-mock target is per configuration — the current default — this stamp **is the grouping key for
+the entire calibration analysis**. The aggregate view is therefore *pooled within a configuration*,
+never *pooled across mocks*:
+
+- A **configuration selector** heads the aggregate view: one row per distinct hash with its
+  `config_summary`, mock count, and whether it is the current league. Default is the current config.
+- The 30-square target array and the evidence ladder both count **within the selected configuration**.
+- Old configurations stay viewable as history, labelled as not describing this league.
+
+### What goes stale inside a mock — and what does not
+**Not everything in a stale mock is stale.** The draft happened; the picks are facts. Only model
+outputs are invalidated.
+
+| Column | On a stale mock | Why |
+|---|---|---|
+| `#`, `TEAM`, `ACTUAL PICK`, `POS` | **fresh** | facts about what happened |
+| `WE SAID`, `OUR TOP CALL`, `VERDICT` | **stale** | availability outputs under the old scoring |
+| `SURPRISE` | **stale** | derived from `board.overall_rank`, which moves with scoring |
+
+Treating the whole row as stale would be the easier build and the wrong one: it would imply we are no
+longer sure what the manager picked.
+
+### Treatment per state
+
+**Review state.** The mock header gains a configuration chip:
+- `current` — tag chip, `--dim2`, showing `config_summary`.
+- `stale` — tag chip in `--down`: *"logged under 10T · 0.5 PPR — your league is now 1.0 PPR"*. The
+  three derived columns take the standard stale treatment (`--hatch`, dagger, `--dim2`); the fact
+  columns do not. The frozen-prediction banner stays — predictions are still shown as they were made.
+- `unknown` — tag chip in `--dim2`: *"configuration not recorded — logged before we stamped mocks"*.
+  Same column split, excluded from every aggregate, and the chip says so.
+
+**Calibration dots.** A stale or unknown bucket keeps its filled dots — the observation is real — but
+drops them to `--dim2`, adds `--hatch` behind the dot row, a dagger after the observed value, and dims
+the generated reading. The marker stays at full contrast: where we said it would land is still a fact
+about what we claimed.
+
+**Aggregate view.** The header is always explicit:
+
+```
+POOLED WITHIN 10T · 1.0 PPR · 3WR/2FLEX · no K        [ configuration v ]
+3 of 8 mocks included · 4 excluded (different configuration) · 1 excluded (configuration not recorded)
+```
+
+An **Include other configurations** toggle exists for the stale set only. When on:
+1. every bucket row takes the stale treatment,
+2. the header states which configurations are mixed and in what proportion,
+3. **the Brier score is suppressed entirely** — replaced by *"not computed across mixed
+   configurations"*. A single score spanning two scoring systems is not a worse number, it is not a
+   number. Showing nothing is the honest option.
+
+**All mocks stale — the realistic case right after a scoring change.** Not an error state. The
+aggregate renders its empty form:
+
+> **0 of 8 mocks describe your current configuration.** Calibration for 10T · 1.0 PPR starts from
+> zero. Your eight logged mocks are still here and still valid for the configuration they were logged
+> under — switch configuration above to read them.
+
+The evidence ladder resets to the one-mock rung and the 30-square array shows zero filled for this
+configuration. This is the harshest consequence of per-configuration targeting and the screen states
+it plainly. Softening it would misrepresent how much evidence exists, which is the one thing this
+screen exists not to do.
+
+**Banner.** Mock Lab gains `StatusBanner` in the `stale` variant whenever the selected configuration is
+not the league's current one: *"Reading calibration for a configuration your league no longer uses."*
+
+### Backend additions
+
+```json
+POST /api/mocks   -> { "mock_id": "mk_002", "league_settings_hash": "teams=10·…·rtd=6",
+                       "config_summary": "10T · 0.5 PPR · 3WR/2FLEX · no K" }
+GET  /api/mocks   -> each mock carries hash, config_summary, config_state
+GET  /api/validation?config_hash=…
+                  -> { "buckets": [...],
+                       "configs": [{ "hash": "…", "summary": "…", "mocks": 4, "is_current": false }],
+                       "excluded": { "different_config": 4, "unrecorded": 1 } }
+```
+
+`config_state` is derived server-side (`current`|`stale`|`unknown`) so the client never re-implements the
+comparison. Validation **must** accept a config hash; a pooled-across-everything response has no
+honest use.
+
 ## 6. States
 
 | File | State | Why it exists |
@@ -121,6 +243,8 @@ leads with "one draft is an anecdote" rather than drawing a confident chart over
 | `05-review` | pick-by-pick | predictions as made, locked banner |
 | `06-calibration` | one mock's calibration | every bucket thin; the honest read says so |
 | `07-aggregate` | pooled + progress | 7 mocks, band narrowing, thin buckets still marked |
+| `08-stale-config` | **added** — stale review + mixed aggregate | the treatment above, at build fidelity |
+| `09-all-stale` | **added** — every mock stale | the realistic state right after a scoring change |
 
 `04-paste-reconcile` was not in the brief. It is included because paste is the only mode whose cost
 does not scale with 160, so it is the mode most likely to decide whether 30 mocks happen — and it is

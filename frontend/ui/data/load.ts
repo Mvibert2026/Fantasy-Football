@@ -9,6 +9,7 @@ import type {
   RawLeague,
   RawNulls,
   RawOpponents,
+  RawRosters,
   RawStrategies,
 } from './types';
 
@@ -65,6 +66,15 @@ export interface Dataset {
   availability: RawAvailability;
   opponents: RawOpponents;
   /**
+   * Null when the league has no rosters.json (contract 1.8.0+, added answering
+   * docs/handoffs/016 -- see RawRosters). Not part of the required per-league
+   * artifact set the way board/availability/league/glossary/nulls/opponents are:
+   * a pre-1.8.0 league export genuinely does not have this file, and that's a
+   * real state to render (Opponents falls back to "roster data not available for
+   * this league"), not a load failure.
+   */
+  rosters: RawRosters | null;
+  /**
    * Zero items today. There is no ingested news corpus in the repo, so the artifact
    * is absent and this is a synthesised empty feed rather than a fetch failure.
    */
@@ -84,10 +94,25 @@ async function fetchFeedOrEmpty(pathPrefix: string): Promise<RawFeed> {
   }
 }
 
+/** rosters.json is contract 1.8.0+ and not part of the required per-league set
+ *  (see Dataset.rosters) -- a 404 here is a real "this league predates the
+ *  artifact" state, not a load error, so it resolves to null rather than
+ *  throwing and taking the whole dataset load down with it. */
+async function fetchRostersOrNull(pathPrefix: string): Promise<RawRosters | null> {
+  try {
+    return await fetchJson<RawRosters>('rosters', pathPrefix);
+  } catch {
+    return null;
+  }
+}
+
 /** `{ artifactName: league_id }` for everything that must match, skipping the feed
- *  (legitimately absent for every league today) and strategies when it wasn't
- *  fetched at all for this league (see the Dataset.strategies doc comment). */
-function leagueIdsOf(d: Omit<Dataset, 'manifest' | 'feed'>): Record<string, string | null | undefined> {
+ *  (legitimately absent for every league today), strategies when it wasn't
+ *  fetched at all for this league (see the Dataset.strategies doc comment), and
+ *  rosters when this league predates contract 1.8.0 (see Dataset.rosters). */
+function leagueIdsOf(
+  d: Omit<Dataset, 'manifest' | 'feed'>,
+): Record<string, string | null | undefined> {
   return {
     board: d.board.league_id,
     league: d.league.league_id,
@@ -96,6 +121,7 @@ function leagueIdsOf(d: Omit<Dataset, 'manifest' | 'feed'>): Record<string, stri
     ...(d.strategies ? { strategies: d.strategies.league_id } : {}),
     availability: d.availability.league_id,
     opponents: d.opponents.league_id,
+    ...(d.rosters ? { rosters: d.rosters.league_id } : {}),
   };
 }
 
@@ -133,18 +159,20 @@ export async function loadDataset(leagueId: string = DEFAULT_LEAGUE_ID): Promise
     hasStrategies = 'strategies' in entry.artifacts;
   }
 
-  const [board, league, glossary, nulls, strategies, availability, opponents, feed] = await Promise.all([
-    fetchJson<RawBoard>('board', pathPrefix),
-    fetchJson<RawLeague>('league', pathPrefix),
-    fetchJson<RawGlossary>('glossary', pathPrefix),
-    fetchJson<RawNulls>('nulls', pathPrefix),
-    hasStrategies ? fetchJson<RawStrategies>('strategies', pathPrefix) : Promise.resolve(null),
-    fetchJson<RawAvailability>('availability', pathPrefix),
-    fetchJson<RawOpponents>('opponents', pathPrefix),
-    fetchFeedOrEmpty(pathPrefix),
-  ]);
+  const [board, league, glossary, nulls, strategies, availability, opponents, rosters, feed] =
+    await Promise.all([
+      fetchJson<RawBoard>('board', pathPrefix),
+      fetchJson<RawLeague>('league', pathPrefix),
+      fetchJson<RawGlossary>('glossary', pathPrefix),
+      fetchJson<RawNulls>('nulls', pathPrefix),
+      hasStrategies ? fetchJson<RawStrategies>('strategies', pathPrefix) : Promise.resolve(null),
+      fetchJson<RawAvailability>('availability', pathPrefix),
+      fetchJson<RawOpponents>('opponents', pathPrefix),
+      fetchRostersOrNull(pathPrefix),
+      fetchFeedOrEmpty(pathPrefix),
+    ]);
 
-  const data = { board, league, glossary, nulls, strategies, availability, opponents };
+  const data = { board, league, glossary, nulls, strategies, availability, opponents, rosters };
 
   let manifest: Manifest;
   if (leagueId === DEFAULT_LEAGUE_ID) {

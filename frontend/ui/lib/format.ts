@@ -31,7 +31,17 @@ export function interval(low: number, high: number): string {
 
 const PCT = new Intl.NumberFormat(undefined, { style: 'percent', maximumFractionDigits: 0 });
 
+/**
+ * `acceptance-checks.json#HON-05` / `nullStates`: "Availability < 0.5% renders
+ * '<1%', not '0%'" -- a real, computed, very small probability is a different
+ * claim from a genuine zero, and `Intl.NumberFormat`'s default rounding
+ * collapses both to the same string. Found as a live defect in the 2026-07
+ * frontend spec audit (docs/frontend-audit-2026-07.md): every caller of this
+ * function was silently producing '0%' for the sub-half-percent case, which is
+ * exactly the substitution Principle #2 forbids.
+ */
 export function percent(n: number): string {
+  if (n > 0 && n < 0.005) return '<1%';
   return PCT.format(n);
 }
 

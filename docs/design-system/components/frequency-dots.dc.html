@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet" />
+<style>
+:root{--f-ui:'IBM Plex Sans',system-ui,sans-serif;--f-num:'IBM Plex Mono',ui-monospace,monospace;--bg:#090c10;--panel:#14191f;--panel2:#1c222a;--line:#232a33;--line2:#323a45;--txt:#f1f4f8;--dim:#98a2b1;--dim2:#69737f;--acc:#5ecf9e;--down:#f0993f;--r-c:6px;--hatch:repeating-linear-gradient(135deg,transparent 0 5px,rgba(240,153,63,.20) 5px 6px)}
+*{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--txt)}
+</style>
+</helmet>
+<div style="min-height:100vh;padding:24px;font-family:var(--f-ui);font-size:13px">
+  <div style="max-width:940px">
+    <div style="font-family:var(--f-ui);font-size:10px;letter-spacing:.14em;color:var(--dim2)">COMPONENT · FREQUENCYDOTS</div>
+    <h1 style="margin:9px 0 0;font-size:24px;font-weight:700;letter-spacing:-.01em">A probability you can count</h1>
+    <p style="margin-top:10px;font-size:14px;line-height:1.6;color:var(--dim);max-width:66ch;text-wrap:pretty">Ten dots are ten drafts. A bare percentage presented alone reads as decisive — this is the one visual idiom the product has for probability, and there must never be a second.</p>
+    <div style="margin-top:8px;font-family:var(--f-num);font-size:10px;color:var(--dim2)">fill = round(p × 10) · never print more precision than the model supports</div>
+
+    <div style="margin-top:20px;font-family:var(--f-ui);font-size:9.5px;letter-spacing:.11em;color:var(--dim2)">VARIANT A · AVAILABILITY — the value is actionable, so colour carries urgency</div>
+    <div style="margin-top:9px;border:1px solid var(--line);border-radius:var(--r-c);overflow:hidden">
+      <sc-for list="{{ avail }}" as="a" hint-placeholder-count="4">
+        <div style="display:grid;grid-template-columns:64px 150px minmax(0,1fr);gap:13px;align-items:center;padding:10px 14px;border-bottom:1px solid var(--line);background:var(--panel)">
+          <span style="font-family:var(--f-num);font-variant-numeric:tabular-nums;font-size:14px;font-weight:600;color:{{ a.fg }}">{{ a.pct }}</span>
+          <span style="display:flex;align-items:center;gap:3px">
+            <sc-for list="{{ a.dots }}" as="d" hint-placeholder-count="10">
+              <span style="width:8px;height:8px;border-radius:50%;background:{{ d.bg }};border:1px solid {{ d.bd }}"></span>
+            </sc-for>
+          </span>
+          <span style="font-size:12.5px;color:var(--dim)">{{ a.note }}</span>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="margin-top:20px;font-family:var(--f-ui);font-size:9.5px;letter-spacing:.11em;color:var(--dim2)">VARIANT B · CALIBRATION — the value is being audited, so colour must not editorialise</div>
+    <div style="margin-top:9px;border:1px solid var(--line);border-radius:var(--r-c);overflow:hidden">
+      <sc-for list="{{ calib }}" as="c" hint-placeholder-count="4">
+        <div style="display:grid;grid-template-columns:64px 168px 62px minmax(0,1fr);gap:13px;align-items:center;padding:11px 14px;border-bottom:1px solid var(--line);background:var(--panel)">
+          <span style="font-family:var(--f-num);font-variant-numeric:tabular-nums;font-size:13px;font-weight:600">{{ c.said }}</span>
+          <span style="display:block">
+            <span style="display:flex;align-items:center;gap:3px">
+              <sc-for list="{{ c.dots }}" as="d" hint-placeholder-count="10">
+                <span style="width:11px;height:11px;border-radius:50%;background:{{ d.bg }};border:1px solid {{ d.bd }}"></span>
+              </sc-for>
+            </span>
+            <span style="display:block;position:relative;height:9px;margin-top:2px">
+              <span style="position:absolute;left:{{ c.markL }};top:0;font-size:9px;color:var(--txt)">▲</span>
+            </span>
+          </span>
+          <span style="font-family:var(--f-num);font-variant-numeric:tabular-nums;font-size:13px;text-align:right;color:{{ c.obsFg }};background:{{ c.nBg }}">{{ c.obs }}</span>
+          <span style="font-size:12.5px;line-height:1.5;color:{{ c.readFg }}">{{ c.reading }}</span>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="margin-top:18px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px">
+      <div style="padding:15px 16px;border:1px solid var(--line2);background:var(--panel);border-radius:var(--r-c)">
+        <div style="font-family:var(--f-ui);font-size:9.5px;letter-spacing:.11em;color:var(--dim2)">SIZE SCALE — NORMALISED</div>
+        <div style="margin-top:11px;display:flex;flex-direction:column;gap:10px">
+          <sc-for list="{{ sizes }}" as="s" hint-placeholder-count="3">
+            <div style="display:flex;align-items:center;gap:11px">
+              <span style="font-family:var(--f-num);font-size:11px;color:var(--dim2);width:78px">{{ s.token }}</span>
+              <span style="display:flex;align-items:center;gap:3px;width:130px">
+                <sc-for list="{{ s.dots }}" as="d" hint-placeholder-count="10">
+                  <span style="width:{{ s.px }};height:{{ s.px }};border-radius:50%;background:{{ d.bg }};border:1px solid {{ d.bd }}"></span>
+                </sc-for>
+              </span>
+              <span style="flex:1;font-size:12px;color:var(--dim)">{{ s.use }}</span>
+            </div>
+          </sc-for>
+        </div>
+        <div style="margin-top:11px;font-family:var(--f-num);font-size:10px;color:var(--down);line-height:1.55">retired: 5px and 9px — five sizes were in use for one idiom (AUDIT DOTS-01)</div>
+      </div>
+      <div style="padding:15px 16px;border:1px solid var(--line2);background:var(--panel);border-radius:var(--r-c)">
+        <div style="font-family:var(--f-ui);font-size:9.5px;letter-spacing:.11em;color:var(--dim2)">WHY TWO FILL RULES SURVIVE</div>
+        <div style="margin-top:10px;font-size:13px;line-height:1.6;color:var(--dim);text-wrap:pretty">I checked whether the two fill rules were drift. They are not. An availability figure is something you act on, so colour carrying urgency helps. A calibration figure is the number under inspection — colouring it by band would tell the reader what to think about the thing they are checking.</div>
+        <div style="margin-top:11px;font-family:var(--f-num);font-size:10px;color:var(--dim2);line-height:1.6">availability: fill = band colour<br />calibration: fill = --txt, direction via ▲ position + sentence</div>
+      </div>
+    </div>
+
+    <div style="margin-top:16px;padding:14px 16px;border:1px solid var(--line);background:var(--panel);border-radius:var(--r-c)">
+      <div style="font-family:var(--f-ui);font-size:9.5px;letter-spacing:.11em;color:var(--dim2)">PROPS</div>
+      <div style="margin-top:9px;font-family:var(--f-num);font-size:11.5px;line-height:1.75;color:var(--dim);white-space:pre-wrap">{{ props }}</div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1000,&quot;height&quot;:900}}">
+class Component extends DCLogic{
+  dots(v,key,fg){const f=v==null?0:Math.round(v*10),o=[],c=fg||"var(--txt)";
+    for(let i=0;i<10;i++)o.push({key:key+i,bg:i<f?c:"transparent",bd:i<f?c:"var(--line2)"});return o;}
+  band(v){return v>=.6?"var(--acc)":v>=.25?"var(--down)":"var(--dim2)";}
+  renderVals(){
+    const H="repeating-linear-gradient(135deg,transparent 0 5px,rgba(240,153,63,.20) 5px 6px)";
+    const mk=(mid,n,obs,pfx)=>{
+      const obsPct=n?Math.round(obs/n*100):null;
+      const z=1.96,p=n?obs/n:0,d=1+z*z/n;
+      const half=n?Math.round(z*Math.sqrt(p*(1-p)/n+z*z/(4*n*n))/d*100):null;
+      const dev=obsPct==null?null:obsPct-mid,thin=n<50;
+      const inBand=dev!=null&&half!=null&&Math.abs(dev)<=half;
+      return {key:pfx+mid,said:mid+"%",dots:this.dots(n?obs/n:null,pfx+mid,"var(--txt)"),
+        markL:(mid/100*10*14-4)+"px",
+        obs:obsPct==null?"—":obsPct+"%",
+        obsFg:obsPct==null?"var(--dim2)":thin?"var(--dim2)":inBand?"var(--acc)":"var(--down)",
+        nBg:thin&&n>0?H:"transparent",
+        reading:n===0?"no calls in this bucket yet":thin?(obs+" of "+n+" — too few calls to read")
+          :inBand?("we said "+mid+"%, it happened "+Math.round(obs/n*10)+" in 10 — honest here")
+          :dev>0?("happened more often than we said — under-confident by "+dev+" points")
+          :("happened less often than we said — over-confident by "+Math.abs(dev)+" points"),
+        readFg:thin||n===0?"var(--dim2)":inBand?"var(--dim)":"var(--down)"};
+    };
+    return {
+      avail:[
+        {key:"a1",pct:"80%",dots:this.dots(.8,"a1",this.band(.8)),fg:this.band(.8),note:"8 in 10 drafts — comfortable"},
+        {key:"a2",pct:"41%",dots:this.dots(.41,"a2",this.band(.41)),fg:this.band(.41),note:"4 in 10 — a real decision"},
+        {key:"a3",pct:"12%",dots:this.dots(.12,"a3",this.band(.12)),fg:this.band(.12),note:"1 in 10 — effectively gone"},
+        {key:"a4",pct:"—",dots:this.dots(null,"a4","var(--dim2)"),fg:"var(--dim2)",note:"not computed — every dot outlined, none filled"}],
+      calib:[mk(35,92,37,"c"),mk(65,70,48,"c"),mk(25,9,1,"c"),mk(85,0,0,"c")],
+      sizes:[
+        {key:"z1",token:"--dot-sm 6px",px:"6px",dots:this.dots(.4,"z1","var(--txt)"),use:"dense rails and table cells"},
+        {key:"z2",token:"--dot-md 8px",px:"8px",dots:this.dots(.4,"z2","var(--txt)"),use:"panels and detail sheets"},
+        {key:"z3",token:"--dot-lg 11px",px:"11px",dots:this.dots(.4,"z3","var(--txt)"),use:"calibration rows"}],
+      props:"variant    'availability' | 'calibration'\np          number | null      probability; null renders all ten outlined\nsize       'sm' | 'md' | 'lg'\nstated     number             calibration only — position of the ▲ marker\nn          number             calibration only — call count; < 50 marks thin\nreading    string             calibration only — generated, never hand-written"
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -53,4 +53,36 @@ describe('Opponents', () => {
       expect(screen.getAllByText(status)).toHaveLength(count);
     }
   });
+
+  /**
+   * rosters.json (contract 1.8.0, docs/handoffs/016) wired in as part of the
+   * 2026-07 frontend spec audit -- previously unreachable because sync-exports.mjs
+   * read a stale shadow copy of data/export/ (docs/frontend-audit-2026-07.md).
+   * `data.rosters` is real for this league today; the real export currently has
+   * no 2026 draft logged, so every team's roster is empty and every starter slot
+   * is a full need -- that's the honest state under test, not a fixture.
+   */
+  it('renders roster slots and STILL NEEDS chips from rosters.json when the artifact is present', () => {
+    expect(data.rosters).not.toBeNull();
+    render(<Opponents data={data} />);
+
+    const rostersBySlot = new Map(data.rosters!.rosters.map((r) => [r.team_slot, r]));
+    for (const opp of data.opponents.opponents) {
+      const roster = rostersBySlot.get(opp.draft_slot_2026);
+      if (!roster) continue;
+      for (const [pos, n] of Object.entries(roster.needs)) {
+        if (['QB', 'RB', 'WR', 'TE', 'DEF'].includes(pos) && n > 0) {
+          expect(screen.getAllByText(`${pos} ×${n}`).length).toBeGreaterThan(0);
+        }
+      }
+    }
+  });
+
+  it('states plainly that roster data is unavailable when a league has no rosters.json', () => {
+    const withoutRosters = { ...data, rosters: null };
+    render(<Opponents data={withoutRosters} />);
+    expect(screen.getAllByText(/roster data not available for this league/i).length).toBe(
+      data.opponents.opponents.length,
+    );
+  });
 });

@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet" />
+<style>
+:root{--f-ui:'IBM Plex Sans',system-ui,sans-serif;--f-num:'IBM Plex Mono',ui-monospace,monospace;--bg:#090c10;--panel:#14191f;--panel2:#1c222a;--line:#232a33;--line2:#323a45;--txt:#f1f4f8;--dim:#98a2b1;--dim2:#69737f;--acc:#5ecf9e;--down:#f0993f;--up:#5bb4f2;--live:#ff5f56;--fail:#e5544b;--r-c:6px}
+*{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--txt)}
+button{cursor:pointer;border-radius:5px;font:inherit}
+@keyframes bnpulse{0%,100%{opacity:1}50%{opacity:.35}}
+</style>
+</helmet>
+<div style="min-height:100vh;padding:24px;font-family:var(--f-ui);font-size:13px">
+  <div style="max-width:940px">
+    <div style="font-family:var(--f-ui);font-size:10px;letter-spacing:.14em;color:var(--dim2)">COMPONENT · STATUSBANNER</div>
+    <h1 style="margin:9px 0 0;font-size:24px;font-weight:700;letter-spacing:-.01em">One truth about the whole app, right now</h1>
+    <p style="margin-top:10px;font-size:14px;line-height:1.6;color:var(--dim);max-width:66ch;text-wrap:pretty">Sits between the top bar and the body, full width, and <span style="color:var(--txt)">survives navigation</span> — it is the only always-visible carrier of app-wide state. Never more than one at a time.</p>
+
+    <div style="margin-top:20px;display:flex;flex-direction:column;gap:14px">
+      <sc-for list="{{ banners }}" as="b" hint-placeholder-count="6">
+        <div>
+          <div style="display:flex;align-items:baseline;gap:9px;margin-bottom:6px">
+            <span style="font-family:var(--f-num);font-size:10.5px;color:var(--dim2)">{{ b.variant }}</span>
+            <span style="flex:1;height:1px;background:var(--line)"></span>
+            <span style="font-family:var(--f-num);font-size:10px;color:var(--dim2)">{{ b.screens }}</span>
+          </div>
+          <div style="border:1px solid {{ b.bd }};background:var(--panel2);border-radius:var(--r-c);overflow:hidden">
+            <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;min-height:44px">
+              <span style="width:7px;height:7px;flex:none;border-radius:{{ b.dotR }};background:{{ b.bd }};animation:{{ b.anim }}"></span>
+              <span style="flex:none;font-family:var(--f-ui);font-size:10px;letter-spacing:.11em;color:{{ b.bd }}">{{ b.tag }}</span>
+              <span style="flex:1;min-width:0;font-size:12.5px;line-height:1.45">{{ b.msg }}</span>
+              <sc-if value="{{ b.stage }}" hint-placeholder-val="{{ false }}">
+                <span style="flex:none;font-family:var(--f-num);font-variant-numeric:tabular-nums;font-size:11px;color:var(--dim);white-space:nowrap">{{ b.stage }}</span>
+              </sc-if>
+              <sc-if value="{{ b.action }}" hint-placeholder-val="{{ false }}">
+                <button style="flex:none;white-space:nowrap;padding:5px 13px;background:{{ b.actBg }};border:1px solid {{ b.bd }};color:{{ b.actFg }};font-size:12px;font-weight:700">{{ b.action }}</button>
+              </sc-if>
+              <sc-if value="{{ b.action2 }}" hint-placeholder-val="{{ false }}">
+                <button style="flex:none;white-space:nowrap;padding:5px 11px;background:transparent;border:1px solid var(--line2);color:var(--dim);font-size:12px">{{ b.action2 }}</button>
+              </sc-if>
+            </div>
+            <sc-if value="{{ b.bar }}" hint-placeholder-val="{{ false }}">
+              <div style="height:3px;background:var(--line)">
+                <div style="height:3px;width:{{ b.pct }};background:{{ b.bd }}"></div>
+              </div>
+            </sc-if>
+          </div>
+          <div style="margin-top:6px;font-size:12.5px;line-height:1.5;color:var(--dim2)">{{ b.note }}</div>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="margin-top:20px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px">
+      <div style="padding:15px 16px;border:1px solid var(--down);background:var(--panel);border-radius:var(--r-c)">
+        <div style="font-family:var(--f-ui);font-size:9.5px;letter-spacing:.11em;color:var(--down)">MISSING WHERE IT IS NEEDED</div>
+        <div style="margin-top:9px;font-size:13px;line-height:1.6;color:var(--dim);text-wrap:pretty">Mock Lab has no banner. It needs the <span style="color:var(--txt)">stale</span> variant: calibration buckets are derived numbers, so a mock logged under different scoring describes a league that no longer exists. Today those dots keep rendering at full contrast after a settings change.</div>
+        <div style="margin-top:9px;font-family:var(--f-num);font-size:10px;color:var(--down)">AUDIT STALE-01 · retrofit before the fourth screen</div>
+      </div>
+      <div style="padding:15px 16px;border:1px solid var(--line2);background:var(--panel);border-radius:var(--r-c)">
+        <div style="font-family:var(--f-ui);font-size:9.5px;letter-spacing:.11em;color:var(--dim2)">RULES</div>
+        <div style="margin-top:10px;display:flex;flex-direction:column;gap:7px">
+          <sc-for list="{{ rules }}" as="x" hint-placeholder-count="4">
+            <div style="display:flex;gap:9px;align-items:baseline">
+              <span style="color:var(--acc);font-size:11px">▸</span>
+              <span style="flex:1;font-size:12.5px;line-height:1.55;color:var(--dim)">{{ x.t }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:14px;padding:14px 16px;border:1px solid var(--line);background:var(--panel);border-radius:var(--r-c)">
+      <div style="font-family:var(--f-ui);font-size:9.5px;letter-spacing:.11em;color:var(--dim2)">PROPS</div>
+      <div style="margin-top:9px;font-family:var(--f-num);font-size:11.5px;line-height:1.75;color:var(--dim);white-space:pre-wrap">{{ props }}</div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1000,&quot;height&quot;:1000}}">
+class Component extends DCLogic{
+  renderVals(){
+    return {
+      banners:[
+        {key:"b1",variant:"pending",screens:"settings.editor",tag:"SCORING CHANGE QUEUED",
+         msg:"Every number in the product is still under the scoring in force.",
+         bd:"var(--down)",dotR:"2px",anim:"none",bar:false,stage:null,action:null,action2:null,
+         note:"Edits held, no job running. The app is fully usable and every value is correct."},
+        {key:"b2",variant:"computing",screens:"settings.editor",tag:"RECOMPUTING",
+         msg:"Nothing on screen will change until the job finishes and you apply it.",
+         bd:"var(--down)",dotR:"50%",anim:"bnpulse 1.1s infinite",bar:true,pct:"62%",
+         stage:"refitting replacement levels · 62%",action:null,action2:null,
+         note:"3px rail in the banner; the 5px bar lives in the panel. Same claim, two heights, documented rather than merged."},
+        {key:"b3",variant:"ready",screens:"settings.editor",tag:"NEW VALUES READY",
+         msg:"Review the diff, then apply. The swap is one step.",
+         bd:"var(--acc)",dotR:"2px",anim:"none",bar:false,stage:null,
+         action:"Apply new values",actBg:"var(--acc)",actFg:"#06140d",action2:"Keep old",
+         note:"The atomic-swap moment. Completion never applies on its own."},
+        {key:"b4",variant:"failed",screens:"settings.editor",tag:"RECOMPUTE FAILED",
+         msg:"Nothing was applied. Every number is still under the scoring in force.",
+         bd:"var(--fail)",dotR:"2px",anim:"none",bar:false,stage:null,
+         action:"Retry",actBg:"transparent",actFg:"var(--fail)",action2:"Discard edit",
+         note:"--fail, never --live. Failure is not urgency."},
+        {key:"b5",variant:"stale",screens:"settings.editor · MISSING in mocklab",tag:"AVAILABILITY STALE",
+         msg:"Projections are current. Availability was simulated against the old settings.",
+         bd:"var(--down)",dotR:"2px",anim:"none",bar:false,stage:null,action:null,action2:null,
+         note:"Pairs with the per-cell stale treatment: hatch, dagger, dim."},
+        {key:"b6",variant:"live-draft",screens:"draft",tag:"DRAFT LIVE",
+         msg:"A draft is in progress. Scoring edits are blocked until it ends.",
+         bd:"var(--live)",dotR:"50%",anim:"bnpulse 1.6s infinite",bar:false,stage:null,action:null,action2:null,
+         note:"--live is reserved for this and nothing else."}],
+      rules:[
+        {key:"r1",t:"One banner at a time. If two states are true, the one that blocks action wins."},
+        {key:"r2",t:"Persists across route changes — it describes the league, not the tab."},
+        {key:"r3",t:"The dot is a circle with a pulse only while something is actually running; a square dot means a steady state."},
+        {key:"r4",t:"Never carries a per-cell marking's job. Cells go stale; banners explain why."}],
+      props:"variant   'pending' | 'computing' | 'ready' | 'failed' | 'stale' | 'live-draft'\nmsg       string           what is true right now, in plain language\nstage     string | null    computing only\npct       number | null    computing only — drives the 3px rail\nactions   [{label, kind}]  kind 'primary' | 'secondary'\npersist   true             must survive navigation"
+    };
+  }
+}
+</script>
+</body>
+</html>

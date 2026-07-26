@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import type { BoardRow } from '../data/board';
 import type { DraftPickRecord } from '../data/draft';
 import { currentOverallPick, nextPickForSlot, pickNumbersForSlot } from '../data/draft';
+import { isPresent } from '../data/cell';
 import { computeLiveAvailability, dotsFilled, freqText, type LiveAvailabilityResult } from '../data/liveAvailability';
 import type { Dataset } from '../data/load';
 import type { LeagueConfig } from '../data/league';
@@ -457,9 +458,15 @@ function AvailabilitySection({ avail, targetPick }: { avail: LiveAvailabilityRes
         </div>
       )}
 
-      <div style={{ marginTop: 8, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-        <Dots value={avail.live ?? (avail.baseline.kind === 'present' ? avail.baseline.value : 0)} />
-      </div>
+      {/* HON-02 (docs/frontend-audit-2026-07.md): the dot array must never fall back
+          to 0 when there is genuinely no value -- a zero-filled array is visually
+          indistinguishable from a real 0%. Render it only when live or baseline is
+          an actual number; when neither is, there's nothing honest to plot. */}
+      {avail.live !== null || isPresent(avail.baseline) ? (
+        <div style={{ marginTop: 8, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+          <Dots value={avail.live ?? (isPresent(avail.baseline) ? avail.baseline.value : 0)} />
+        </div>
+      ) : null}
 
       {avail.adjustment ? (
         <div style={{ marginTop: 8, display: 'flex', flexDirection: 'column', gap: 4 }}>

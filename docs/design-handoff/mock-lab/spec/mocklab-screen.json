@@ -104,7 +104,91 @@
       "thin buckets (< 50 calls) refuse to interpret rather than drawing a confident reading",
       "Brier score is kept but demoted — the dots are the claim, the score is the measure",
       "no badges, streaks or levels on the progress affordance"
-    ]
+    ],
+    "headerBudget": "Single non-wrapping row that must fit 924px with all 7 state chips reachable. Short state eyebrow with the long form in a title; league line shrinkable with min-width:0 plus a title; chip group flex:0 1 auto with min-width:0 and overflow-x:auto. Assert documentElement.scrollWidth === clientWidth.",
+    "configuration": {
+      "amended": "2026-07-26",
+      "status": "build-blocking",
+      "stamp": {
+        "field": "league_settings_hash",
+        "writtenAt": "POST /api/mocks — log time only, never on read",
+        "companion": "config_summary for display",
+        "hashFields": "same 15-field hash as Settings",
+        "why": "a hash computed at read time is the same defect as a prediction recomputed at read time — always consistent, always meaningless"
+      },
+      "states": [
+        {
+          "id": "current",
+          "condition": "hash matches the league hash now",
+          "calibration": "included"
+        },
+        {
+          "id": "stale",
+          "condition": "hash present, differs",
+          "calibration": "excluded by default, includable via an explicit toggle"
+        },
+        {
+          "id": "unknown",
+          "condition": "hash is null — logged before the field existed",
+          "calibration": "excluded, and NOT includable",
+          "why": "a mock whose configuration is unknown can be neither honestly included nor honestly excluded; offering the choice would be false precision dressed as control",
+          "urgency": "every mock logged before the field ships is permanently unstampable — at one mock the fix costs nothing, at fifteen the data is permanently ambiguous"
+        }
+      ],
+      "groupingKey": {
+        "note": "If the 30-mock target is per configuration (current default) this stamp IS the grouping key for the whole calibration analysis, not a staleness flag.",
+        "implications": [
+          "aggregate is 'pooled within a configuration', never 'pooled across mocks'",
+          "a configuration selector heads the aggregate view; default is the current league config",
+          "the 30-square array and the evidence ladder both count within the selected configuration",
+          "old configurations remain viewable as history, labelled as not describing this league"
+        ]
+      },
+      "partialStaleness": {
+        "principle": "Not everything in a stale mock is stale. The draft happened; the picks are facts. Only model outputs are invalidated.",
+        "fresh": [
+          "#",
+          "TEAM",
+          "ACTUAL PICK",
+          "POS"
+        ],
+        "stale": [
+          "WE SAID",
+          "OUR TOP CALL",
+          "VERDICT",
+          "SURPRISE"
+        ],
+        "surpriseNote": "SURPRISE is derived from board.overall_rank, which moves with scoring — it is stale, not a fact",
+        "wrongAlternative": "marking the whole row stale would imply we are no longer sure what the manager picked"
+      },
+      "treatments": {
+        "reviewChip": {
+          "current": "tag chip, --dim2, shows config_summary",
+          "stale": "tag chip in --down: 'logged under 10T · 0.5 PPR — your league is now 1.0 PPR'",
+          "unknown": "tag chip in --dim2: 'configuration not recorded — logged before we stamped mocks'"
+        },
+        "calibrationDots": "filled dots retained (the observation is real) at --dim2, --hatch behind the dot row, dagger after the observed value, dimmed reading; the marker stays at full contrast",
+        "frozenBanner": "unchanged — predictions are still shown as they were made",
+        "mixedAggregate": {
+          "default": "stale excluded",
+          "toggle": "Include other configurations — stale set only",
+          "whenOn": [
+            "every bucket row takes the stale treatment",
+            "header states which configurations are mixed and in what proportion",
+            "Brier score SUPPRESSED — replaced by 'not computed across mixed configurations'"
+          ],
+          "brierRationale": "a single score spanning two scoring systems is not a worse number, it is not a number"
+        },
+        "allStale": {
+          "treatment": "aggregate empty form, not an error state",
+          "copy": "0 of 8 mocks describe your current configuration. Calibration for 10T · 1.0 PPR starts from zero. Your eight logged mocks are still here and still valid for the configuration they were logged under — switch configuration above to read them.",
+          "ladder": "resets to the one-mock rung",
+          "array": "zero filled for this configuration",
+          "rationale": "the harshest consequence of per-configuration targeting; softening it would misrepresent how much evidence exists"
+        },
+        "banner": "StatusBanner stale variant whenever the selected configuration is not the league's current one"
+      }
+    }
   },
   "api": [
     {
@@ -172,6 +256,32 @@
         ]
       },
       "requirement": "counts, never percentages — the client computes the Wilson interval"
+    },
+    {
+      "method": "GET",
+      "path": "/api/validation",
+      "query": [
+        "config_hash"
+      ],
+      "response": {
+        "buckets": "[…]",
+        "configs": [
+          {
+            "hash": "string",
+            "summary": "string",
+            "mocks": "int",
+            "is_current": "bool"
+          }
+        ],
+        "excluded": {
+          "different_config": "int",
+          "unrecorded": "int"
+        }
+      },
+      "requirements": [
+        "config_state is derived server-side (current|stale|unknown) so the client never re-implements the comparison",
+        "must accept a config hash — a pooled-across-everything response has no honest use"
+      ]
     }
   ],
   "checks": [
@@ -181,13 +291,6 @@
       "assert": "Digits 1-5 commit the corresponding candidate without touching the mouse",
       "probe": "focus the input, dispatch keydown '2'",
       "expect": "pick logged, field cleared, counter advanced"
-    },
-    {
-      "id": "ML-02",
-      "severity": "block",
-      "assert": "The entry field is focused on mount",
-      "probe": "document.activeElement",
-      "expect": "the entry input"
     },
     {
       "id": "ML-03",
@@ -272,6 +375,70 @@
       "assert": "The one-mock state states that nine calls cannot validate the claim",
       "probe": "read 02-one-logged",
       "expect": "explicit statement present"
+    },
+    {
+      "id": "ML-02",
+      "severity": "block",
+      "assert": "The entry field holds focus on load, and focus is re-asserted if the input node re-attaches",
+      "probe": "document.activeElement on load, then after a re-render",
+      "expect": "the entry input in both cases",
+      "note": "a one-shot ref guard that fires before the element is focusable silently leaves this false — the screen claims 'never needs the mouse' directly beneath the field"
+    },
+    {
+      "id": "ML-15",
+      "severity": "block",
+      "assert": "The header does not force horizontal document scroll at 924px, and all 7 state chips are reachable",
+      "probe": "documentElement.scrollWidth vs clientWidth; right edge of the last chip",
+      "expect": "equal widths; last chip right edge inside the viewport"
+    },
+    {
+      "id": "ML-16",
+      "severity": "block",
+      "assert": "Any truncated header text carries the full string in a title attribute",
+      "probe": "for each header span: scrollWidth > clientWidth implies title present",
+      "expect": "no truncation without a hover fallback"
+    },
+    {
+      "id": "ML-17",
+      "severity": "block",
+      "assert": "Every mock carries league_settings_hash written at log time",
+      "probe": "POST a mock, read the record",
+      "expect": "hash present and equal to the league hash at that moment"
+    },
+    {
+      "id": "ML-18",
+      "severity": "block",
+      "assert": "A mock with a null hash is excluded from calibration and offers no way to include it",
+      "probe": "seed an unknown-config mock, inspect the aggregate and its controls",
+      "expect": "counted as excluded (unrecorded); no include affordance"
+    },
+    {
+      "id": "ML-19",
+      "severity": "block",
+      "assert": "On a stale mock, fact columns stay fresh and only derived columns take the stale treatment",
+      "probe": "open a stale mock's review",
+      "expect": "ACTUAL PICK/TEAM/POS at full contrast; WE SAID/OUR TOP CALL/VERDICT/SURPRISE hatched"
+    },
+    {
+      "id": "ML-20",
+      "severity": "block",
+      "assert": "Including other configurations suppresses the Brier score entirely",
+      "probe": "toggle include-stale on",
+      "expect": "'not computed across mixed configurations', no numeric score"
+    },
+    {
+      "id": "ML-21",
+      "severity": "block",
+      "assert": "When every mock is stale the aggregate renders its empty form, not an error",
+      "probe": "change league scoring, open the aggregate",
+      "expect": "'0 of N mocks describe your current configuration' plus a configuration selector"
+    },
+    {
+      "id": "ML-22",
+      "severity": "block",
+      "assert": "The aggregate header always states included and excluded counts by reason",
+      "probe": "read the aggregate header",
+      "expect": "included · excluded (different configuration) · excluded (configuration not recorded)"
     }
   ],
   "founderDecisions": [
@@ -290,7 +457,9 @@
       "id": "MFD2",
       "question": "Is 30 the right target, and is it per league or global?",
       "recommendation": null,
-      "why": "a 10-team half-PPR mock may not validate a 12-team full-PPR league; per-league multiplies the grind"
+      "why": "a 10-team half-PPR mock may not validate a 12-team full-PPR league; per-league multiplies the grind",
+      "resolved": "per league configuration (default set 26 Jul 2026)",
+      "consequence": "the settings hash becomes the grouping key for calibration, not merely a staleness flag"
     },
     {
       "id": "MFD3",
@@ -309,7 +478,8 @@
     {
       "id": "MBQ1",
       "q": "Can predicted_top and predicted_p be written at entry time and made immutable?",
-      "impact": "the entire review and calibration design rests on it; if predictions can only be recomputed on read, both sections are invalid"
+      "impact": "the entire review and calibration design rests on it; if predictions can only be recomputed on read, both sections are invalid",
+      "answered": "yes — immutable predicted_top/predicted_p at entry was already specified"
     },
     {
       "id": "MBQ2",
@@ -329,7 +499,8 @@
     {
       "id": "MBQ5",
       "q": "Is entered_at recorded per pick?",
-      "impact": "without it the tempo readout and the 'logged in 6m 12s' figure are not real numbers and must be removed"
+      "impact": "without it the tempo readout and the 'logged in 6m 12s' figure are not real numbers and must be removed",
+      "answered": "being added — tempo readout survives"
     },
     {
       "id": "MBQ6",

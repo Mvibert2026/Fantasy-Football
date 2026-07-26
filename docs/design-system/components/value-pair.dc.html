@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet" />
+<style>
+:root{--f-ui:'IBM Plex Sans',system-ui,sans-serif;--f-num:'IBM Plex Mono',ui-monospace,monospace;--bg:#090c10;--panel:#14191f;--panel2:#1c222a;--line:#232a33;--line2:#323a45;--txt:#f1f4f8;--dim:#98a2b1;--dim2:#69737f;--acc:#5ecf9e;--down:#f0993f;--up:#5bb4f2;--r-c:6px;--hatch:repeating-linear-gradient(135deg,transparent 0 5px,rgba(240,153,63,.20) 5px 6px)}
+*{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--txt)}
+button{cursor:pointer;border-radius:5px}
+</style>
+</helmet>
+<div style="min-height:100vh;padding:24px;font-family:var(--f-ui);font-size:13px">
+  <div style="max-width:900px">
+    <div style="font-family:var(--f-ui);font-size:10px;letter-spacing:.14em;color:var(--dim2)">COMPONENT · VALUEPAIR</div>
+    <h1 style="margin:9px 0 0;font-size:24px;font-weight:700;letter-spacing:-.01em">Two values, shown together</h1>
+    <p style="margin-top:10px;font-size:14px;line-height:1.6;color:var(--dim);max-width:64ch;text-wrap:pretty">Used wherever collapsing two numbers into one would hide whether the system is reasoning from current state. The second value never replaces the first — the API must make rendering one alone impossible.</p>
+    <div style="margin-top:8px;font-family:var(--f-num);font-size:10px;color:var(--dim2)">merged from: draft baseline→live · settings in-force→edited (AUDIT STRUCT-01)</div>
+
+    <div style="margin-top:22px;display:flex;flex-direction:column;gap:1px">
+      <sc-for list="{{ rows }}" as="r" hint-placeholder-count="8">
+        <div style="display:grid;grid-template-columns:150px 150px minmax(0,1fr);gap:14px;align-items:center;padding:13px 14px;background:{{ r.bg }};border-bottom:1px solid var(--line)">
+          <span style="font-family:var(--f-num);font-size:10.5px;color:var(--dim2);letter-spacing:.06em">{{ r.variant }}</span>
+          <span style="display:flex;align-items:baseline;gap:6px">
+            <span style="font-family:var(--f-num);font-variant-numeric:tabular-nums;font-size:12px;color:var(--dim2);text-decoration:{{ r.aStrike }}">{{ r.a }}</span>
+            <span style="font-family:var(--f-num);font-size:9px;color:{{ r.arrowFg }}">{{ r.arrow }}</span>
+            <span style="font-family:var(--f-num);font-variant-numeric:tabular-nums;font-size:15px;font-weight:600;color:{{ r.bFg }};background:{{ r.bBg }}">{{ r.b }}<span style="font-size:10px;color:var(--dim2)">{{ r.mark }}</span></span>
+            <span style="font-family:var(--f-num);font-variant-numeric:tabular-nums;font-size:10.5px;color:{{ r.dFg }}">{{ r.delta }}</span>
+          </span>
+          <span style="font-size:12.5px;line-height:1.5;color:var(--dim)">{{ r.note }}</span>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="margin-top:20px;padding:15px 16px;border:1px solid var(--line2);background:var(--panel);border-radius:var(--r-c)">
+      <div style="font-family:var(--f-ui);font-size:9.5px;letter-spacing:.11em;color:var(--dim2)">RULES</div>
+      <div style="margin-top:10px;display:flex;flex-direction:column;gap:7px">
+        <sc-for list="{{ rules }}" as="x" hint-placeholder-count="5">
+          <div style="display:flex;gap:9px;align-items:baseline">
+            <span style="color:var(--acc);font-size:11px">▸</span>
+            <span style="flex:1;font-size:13px;line-height:1.55;color:var(--dim)">{{ x.t }}</span>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="margin-top:16px;padding:14px 16px;border:1px solid var(--line);background:var(--panel);border-radius:var(--r-c)">
+      <div style="font-family:var(--f-ui);font-size:9.5px;letter-spacing:.11em;color:var(--dim2)">PROPS</div>
+      <div style="margin-top:9px;font-family:var(--f-num);font-size:11.5px;line-height:1.75;color:var(--dim);white-space:pre-wrap">{{ props }}</div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:980,&quot;height&quot;:760}}">
+class Component extends DCLogic{
+  renderVals(){
+    const H="repeating-linear-gradient(135deg,transparent 0 5px,rgba(240,153,63,.20) 5px 6px)";
+    return {
+      rows:[
+        {key:"r1",variant:"baseline→live",a:"34%",b:"28%",arrow:"→",arrowFg:"var(--dim2)",
+         bFg:"var(--down)",bBg:"transparent",delta:"▼6",dFg:"var(--down)",mark:"",aStrike:"none",bg:"var(--panel)",
+         note:"Draft. Baseline is quiet, live is loud and band-coloured."},
+        {key:"r2",variant:"baseline→live · up",a:"41%",b:"52%",arrow:"→",arrowFg:"var(--dim2)",
+         bFg:"var(--acc)",bBg:"transparent",delta:"▲11",dFg:"var(--acc)",mark:"",aStrike:"none",bg:"var(--panel)",
+         note:"Direction carries a glyph as well as a colour."},
+        {key:"r3",variant:"baseline→thin",a:"41%",b:"46%",arrow:"→",arrowFg:"var(--down)",
+         bFg:"var(--down)",bBg:"transparent",delta:"▲5 thin",dFg:"var(--down)",mark:"",aStrike:"none",bg:"var(--panel)",
+         note:"Thin signal: computed, band widened ×1.6, arrow tinted."},
+        {key:"r4",variant:"second value null",a:"34%",b:"—",arrow:"→",arrowFg:"var(--dim2)",
+         bFg:"var(--dim2)",bBg:"transparent",delta:"",dFg:"var(--dim2)",mark:"",aStrike:"none",bg:"var(--panel)",
+         note:"Not computed yet. Renders — with the reason in title, NEVER the baseline repeated (AUDIT NULL-01/02)."},
+        {key:"r5",variant:"second value null · roomy",a:"34%",b:"not yet",arrow:"→",arrowFg:"var(--dim2)",
+         bFg:"var(--dim2)",bBg:"transparent",delta:"5 of 4 picks",dFg:"var(--dim2)",mark:"",aStrike:"none",bg:"var(--panel)",
+         note:"Where there is room for a phrase, name the missing input."},
+        {key:"r6",variant:"stale",a:"34%",b:"28%",arrow:"→",arrowFg:"var(--dim2)",
+         bFg:"var(--dim2)",bBg:H,delta:"",dFg:"var(--dim2)",mark:" †",aStrike:"none",bg:"var(--panel)",
+         note:"Both values computed under settings no longer in force."},
+        {key:"r7",variant:"in-force→edited",a:"0.5",b:"1.0",arrow:"→",arrowFg:"var(--dim2)",
+         bFg:"var(--down)",bBg:"transparent",delta:"",dFg:"var(--dim2)",mark:"",aStrike:"line-through",bg:"var(--panel2)",
+         note:"Settings. Old value struck through, row lifted to --panel2, container border --down."},
+        {key:"r8",variant:"in-force→reverted",a:"4",b:"",arrow:"",arrowFg:"var(--dim2)",
+         bFg:"var(--txt)",bBg:"transparent",delta:"",dFg:"var(--dim2)",mark:"",aStrike:"none",bg:"var(--panel)",
+         note:"No edit: one value at full contrast, no arrow, no second slot."}],
+      rules:[
+        {key:"u1",t:"The second value never replaces the first. If only one value exists, the component renders the first and no arrow — it never renders the second slot alone."},
+        {key:"u2",t:"When the second value is not computable, render — (narrow) or a phrase naming the missing input (roomy). Never repeat the first value, and never use · — that glyph means \"no meaningful change\"."},
+        {key:"u3",t:"Direction is carried by a glyph (▲▼) as well as colour."},
+        {key:"u4",t:"Any components that decompose the change (need / run adjustments, per-field diffs) surface the parts separately. A single combined delta is not sufficient."},
+        {key:"u5",t:"Stale applies to the pair as a unit: hatch, dagger, --dim2 on both values."}],
+      props:"variant   'baseline-live' | 'inforce-edited'\na         string            first value, always rendered\nb         string | null     second value; null renders the null treatment\ndelta     string | null     signed change with its glyph\nsignal    'ok' | 'thin' | 'none'\nstale     boolean           hatch + dagger + dim on both\nreason    string            title text when b is null\nfields    string[]          backing field names for the provenance line"
+    };
+  }
+}
+</script>
+</body>
+</html>

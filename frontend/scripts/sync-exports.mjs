@@ -23,7 +23,17 @@ import { join, dirname, basename } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
-const srcDir = join(root, 'data', 'export');
+// `data/export/` is the REPO ROOT's export directory, not a directory local to
+// `frontend/` -- it is the single shared location a concurrent backend session
+// writes to and this frontend reads from (see server/refresh.ts's own doc
+// comment: "Two sessions are running against this repo... it re-reads
+// data/export/"). Before 2026-07-26 this pointed at `frontend/data/export/`, a
+// separate, git-tracked copy that had drifted up to a full contract version and
+// ~18 hours stale, and was silently served with no error -- exactly the failure
+// mode a wrong path produces. Fixed as part of the frontend spec audit
+// (docs/frontend-audit-2026-07.md); the stale copy is removed from git in the
+// same commit so it cannot silently come back as a second source of truth.
+const srcDir = join(root, '..', 'data', 'export');
 const outDir = join(root, 'public', 'data');
 
 /** Bare non-JSON numeric tokens, only where they sit in a JSON value position. */

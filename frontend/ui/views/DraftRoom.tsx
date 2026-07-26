@@ -573,11 +573,23 @@ export function DraftRoom({
                     {avail ? (
                       <span
                         className="num"
-                        title="baseline → live availability at your next pick"
+                        title={
+                          avail.live !== null
+                            ? 'baseline → live availability at your next pick'
+                            : `live not yet computed -- ${avail.picksLogged} of ${avail.picksRequired} picks logged`
+                        }
                         style={{ fontSize: 10, width: 58, textAlign: 'right', color: 'var(--dim2)' }}
                       >
                         <Value cell={avail.baseline} render={percent} />
-                        {avail.live !== null ? <span style={{ color: 'var(--acc)' }}> → {percent(avail.live)}</span> : null}
+                        {avail.live !== null ? (
+                          <span style={{ color: 'var(--acc)' }}> → {percent(avail.live)}</span>
+                        ) : (
+                          // Narrow-cell not-computed treatment (design-system/AUDIT.md
+                          // RETROFIT-1): "--" here, the reason in the title above, never
+                          // the baseline silently standing in for a live value that was
+                          // never computed.
+                          <span style={{ color: 'var(--dim2)' }}> → —</span>
+                        )}
                       </span>
                     ) : null}
                     <span

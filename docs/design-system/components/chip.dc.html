@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet" />
+<style>
+:root{--f-ui:'IBM Plex Sans',system-ui,sans-serif;--f-num:'IBM Plex Mono',ui-monospace,monospace;--bg:#090c10;--panel:#14191f;--panel2:#1c222a;--line:#232a33;--line2:#323a45;--txt:#f1f4f8;--dim:#98a2b1;--dim2:#69737f;--acc:#5ecf9e;--down:#f0993f;--up:#5bb4f2;--fail:#e5544b;--qb:#9d93c4;--rb:#63b39b;--wr:#c39468;--te:#7d9fcf;--def:#8b939f;--soon:#39414e;--r-c:6px;--r-pill:999px}
+*{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--txt)}
+button{cursor:pointer;border-radius:5px;font:inherit;color:inherit}
+</style>
+</helmet>
+<div style="min-height:100vh;padding:24px;font-family:var(--f-ui);font-size:13px">
+  <div style="max-width:940px">
+    <div style="font-family:var(--f-ui);font-size:10px;letter-spacing:.14em;color:var(--dim2)">COMPONENT · CHIP</div>
+    <h1 style="margin:9px 0 0;font-size:24px;font-weight:700;letter-spacing:-.01em">Radius encodes what a label does</h1>
+    <p style="margin-top:10px;font-size:14px;line-height:1.6;color:var(--dim);max-width:66ch;text-wrap:pretty">Five treatments were in use where three were intended. The rule now: rounded means you can click it to filter, pill means display-only and non-sortable, square means structural label or verdict.</p>
+    <div style="margin-top:8px;font-family:var(--f-num);font-size:10px;color:var(--dim2)">AUDIT STRUCT-04</div>
+
+    <sc-for list="{{ groups }}" as="g" hint-placeholder-count="6">
+      <div style="margin-top:20px">
+        <div style="display:flex;align-items:baseline;gap:10px">
+          <span style="font-family:var(--f-ui);font-size:9.5px;letter-spacing:.11em;color:var(--dim2)">{{ g.label }}</span>
+          <span style="flex:1;height:1px;background:var(--line)"></span>
+          <span style="font-family:var(--f-num);font-size:10px;color:var(--dim2)">{{ g.spec }}</span>
+        </div>
+        <div style="margin-top:10px;padding:14px 15px;border:1px solid var(--line);background:var(--panel);border-radius:var(--r-c)">
+          <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap">
+            <sc-for list="{{ g.items }}" as="c" hint-placeholder-count="4">
+              <span style="display:inline-flex;align-items:center;gap:5px;padding:{{ c.pad }};border-radius:{{ c.radius }};background:{{ c.bg }};border:1px solid {{ c.bd }};color:{{ c.fg }};font-family:{{ c.ff }};font-size:{{ c.fs }};font-weight:{{ c.fw }};letter-spacing:{{ c.ls }};cursor:{{ c.cursor }}">{{ c.glyph }}{{ c.label }}</span>
+            </sc-for>
+          </div>
+          <div style="margin-top:11px;font-size:12.5px;line-height:1.55;color:var(--dim)">{{ g.note }}</div>
+          <div style="margin-top:7px;font-family:var(--f-num);font-size:10px;color:var(--dim2)">{{ g.screens }}</div>
+        </div>
+      </div>
+    </sc-for>
+
+    <div style="margin-top:20px;padding:15px 16px;border:1px solid var(--down);background:var(--panel);border-radius:var(--r-c)">
+      <div style="font-family:var(--f-ui);font-size:9.5px;letter-spacing:.11em;color:var(--down)">THE RULE THAT CARRIES CREDIBILITY</div>
+      <div style="margin-top:9px;font-size:13px;line-height:1.6;color:var(--dim);text-wrap:pretty">A pill must never be sortable and must never act as a filter. Archetype labels are descriptive and do not influence a rank — the moment a pill becomes clickable-as-filter, it starts to look like an input to the model, and the product's central claim is that it is not.</div>
+    </div>
+
+    <div style="margin-top:14px;padding:14px 16px;border:1px solid var(--line);background:var(--panel);border-radius:var(--r-c)">
+      <div style="font-family:var(--f-ui);font-size:9.5px;letter-spacing:.11em;color:var(--dim2)">PROPS</div>
+      <div style="margin-top:9px;font-family:var(--f-num);font-size:11.5px;line-height:1.75;color:var(--dim);white-space:pre-wrap">{{ props }}</div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1000,&quot;height&quot;:1000}}">
+class Component extends DCLogic{
+  renderVals(){
+    const base={pad:"3px 10px",ff:"var(--f-ui)",fs:"12px",fw:"400",ls:"normal",cursor:"default",glyph:""};
+    const M=(o)=>Object.assign({},base,o);
+    return {
+      groups:[
+        {key:"g1",label:"FILTER · interactive",spec:"radius --r-c 6px · cursor pointer",
+         note:"Selection state is background + border + weight, never colour alone. Position filters, round pickers, state switchers, sort tabs.",
+         screens:"draft.board · prep.board · mocklab · settings",
+         items:[M({key:"f1",label:"ALL",bg:"var(--panel2)",bd:"var(--line2)",fg:"var(--txt)",fw:"600",radius:"var(--r-c)",cursor:"pointer"}),
+          M({key:"f2",label:"QB",bg:"transparent",bd:"var(--line)",fg:"var(--dim2)",radius:"var(--r-c)",cursor:"pointer"}),
+          M({key:"f3",label:"RB",bg:"transparent",bd:"var(--line)",fg:"var(--dim2)",radius:"var(--r-c)",cursor:"pointer"}),
+          M({key:"f4",label:"R1",bg:"var(--panel2)",bd:"var(--line2)",fg:"var(--txt)",ff:"var(--f-num)",fs:"11.5px",radius:"var(--r-c)",cursor:"pointer"})]},
+        {key:"g2",label:"TAG · display-only, rectangular",spec:"radius --r-c 6px · cursor default",
+         note:"A derived fact with no interaction. Roster gaps, league status, coverage counts.",
+         screens:"draft.opponents · settings.editor",
+         items:[M({key:"t1",label:"QB ×2",bg:"transparent",bd:"var(--line2)",fg:"var(--qb)",fs:"10px",ls:".04em",radius:"var(--r-c)"}),
+          M({key:"t2",label:"RB ×1",bg:"transparent",bd:"var(--line2)",fg:"var(--rb)",fs:"10px",ls:".04em",radius:"var(--r-c)"}),
+          M({key:"t3",label:"CURRENT",bg:"transparent",bd:"var(--line2)",fg:"var(--acc)",fs:"9.5px",ls:".1em",radius:"var(--r-c)"}),
+          M({key:"t4",label:"STALE",bg:"transparent",bd:"var(--down)",fg:"var(--down)",fs:"9.5px",ls:".1em",radius:"var(--r-c)"}),
+          M({key:"t5",label:"COMING SOON",bg:"transparent",bd:"var(--soon)",fg:"var(--soon)",fs:"9.5px",ls:".1em",radius:"var(--r-c)"})]},
+        {key:"g3",label:"PILL · display-only, never sortable",spec:"radius --r-pill 999px",
+         note:"Descriptive labels and severity markers. Visually separated from the numeric grid on purpose, and always carry a disclosure that they do not affect rank.",
+         screens:"playerDetail · settings.editor",
+         items:[M({key:"p1",label:"Three-down back",bg:"var(--panel2)",bd:"var(--line)",fg:"var(--dim)",fw:"600",radius:"var(--r-pill)"}),
+          M({key:"p2",label:"Zero-RB target",bg:"var(--panel2)",bd:"var(--line)",fg:"var(--dim)",fw:"600",radius:"var(--r-pill)"}),
+          M({key:"p3",label:"BLOCKS EVALUATIVE WORK",bg:"transparent",bd:"var(--down)",fg:"var(--down)",fs:"9.5px",ls:".1em",radius:"var(--r-pill)"}),
+          M({key:"p4",label:"PROTOTYPE ONLY",bg:"transparent",bd:"var(--soon)",fg:"var(--dim2)",fs:"9.5px",ls:".1em",radius:"var(--r-pill)"})]},
+        {key:"g4",label:"VERDICT · square, glyph-led",spec:"radius 0 · glyph carries it in greyscale",
+         note:"A binary outcome. The filled or hollow dot is the cue; colour is redundant.",
+         screens:"mocklab.review · mocklab.logging",
+         items:[M({key:"v1",glyph:"● ",label:"HIT",bg:"transparent",bd:"transparent",fg:"var(--acc)",fs:"9.5px",ls:".06em",radius:"0"}),
+          M({key:"v2",glyph:"○ ",label:"MISS",bg:"transparent",bd:"transparent",fg:"var(--down)",fs:"9.5px",ls:".06em",radius:"0"}),
+          M({key:"v3",glyph:"✓ ",label:"OUR TOP CALL",bg:"transparent",bd:"transparent",fg:"var(--acc)",fs:"9.5px",ls:".06em",radius:"0"}),
+          M({key:"v4",glyph:"🔒 ",label:"AS MADE",bg:"transparent",bd:"transparent",fg:"var(--up)",fs:"9.5px",ls:".06em",radius:"0"})]},
+        {key:"g5",label:"POSITION CODE · a label, not a measurement",spec:"--f-ui · letter-spacing .045em · never mono",
+         note:"The single most-repeated element in the product. Sans at small size with letter-spacing; rendering these in mono is what made early screens read as a terminal dump.",
+         screens:"all 17 — and AUDIT TYPE-01 found Settings had lost the letter-spacing",
+         items:[M({key:"c1",label:"QB1",fg:"var(--qb)",fw:"600",fs:"11px",ls:".045em",bg:"transparent",bd:"transparent",radius:"0"}),
+          M({key:"c2",label:"RB2",fg:"var(--rb)",fw:"600",fs:"11px",ls:".045em",bg:"transparent",bd:"transparent",radius:"0"}),
+          M({key:"c3",label:"WR11",fg:"var(--wr)",fw:"600",fs:"11px",ls:".045em",bg:"transparent",bd:"transparent",radius:"0"}),
+          M({key:"c4",label:"TE1",fg:"var(--te)",fw:"600",fs:"11px",ls:".045em",bg:"transparent",bd:"transparent",radius:"0"}),
+          M({key:"c5",label:"BUF",fg:"var(--dim2)",fs:"10px",ls:".045em",bg:"transparent",bd:"transparent",radius:"0"})]},
+        {key:"g6",label:"IDENTITY · team colour, used nowhere else",spec:"radius --r-c · swatch 7px",
+         note:"Team colour appears here and on the initials background of a player card. It is never a data colour, so it cannot collide with the two accents.",
+         screens:"playerDetail",
+         items:[M({key:"i1",glyph:"",label:"BUF",bg:"var(--panel2)",bd:"transparent",fg:"var(--txt)",fw:"600",fs:"10.5px",ls:".05em",radius:"var(--r-c)"}),
+          M({key:"i2",glyph:"",label:"CIN",bg:"var(--panel2)",bd:"transparent",fg:"var(--txt)",fw:"600",fs:"10.5px",ls:".05em",radius:"var(--r-c)"})]}],
+      props:"variant   'filter' | 'tag' | 'pill' | 'verdict' | 'code' | 'identity'\nlabel     string\nselected  boolean          filter only — background + border + weight, never colour alone\nglyph     string           verdict only — carries the meaning in greyscale\ntone      'neutral' | 'acc' | 'down' | 'fail' | 'soon' | position token\nsortable  false            pills and codes must hard-code this"
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet" />
+<style>
+:root{--f-ui:'IBM Plex Sans',system-ui,sans-serif;--f-num:'IBM Plex Mono',ui-monospace,monospace;--bg:#090c10;--panel:#14191f;--panel2:#1c222a;--line:#232a33;--line2:#323a45;--txt:#f1f4f8;--dim:#98a2b1;--dim2:#69737f;--acc:#5ecf9e;--down:#f0993f;--r-c:6px}
+*{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--txt)}
+</style>
+</helmet>
+<div style="min-height:100vh;padding:24px;font-family:var(--f-ui);font-size:13px">
+  <div style="max-width:940px">
+    <div style="font-family:var(--f-ui);font-size:10px;letter-spacing:.14em;color:var(--dim2)">COMPONENT · VALUECELL</div>
+    <h1 style="margin:9px 0 0;font-size:24px;font-weight:700;letter-spacing:-.01em">A number, and what we know about it</h1>
+    <p style="margin-top:10px;font-size:14px;line-height:1.6;color:var(--dim);max-width:66ch;text-wrap:pretty">Four glyph claims that must never substitute for one another. This is the product's identity in one component — if these drift, nothing else in the system matters.</p>
+
+    <div style="margin-top:20px;border:1px solid var(--line);border-radius:var(--r-c);overflow:hidden">
+      <div style="display:grid;grid-template-columns:96px 108px minmax(0,1.4fr) minmax(0,1fr);gap:12px;padding:9px 14px;background:var(--panel2);border-bottom:1px solid var(--line);font-family:var(--f-ui);font-size:9.5px;letter-spacing:.1em;color:var(--dim2)">
+        <span>RENDERS</span><span>STATE</span><span>THE CLAIM</span><span>CUES</span>
+      </div>
+      <sc-for list="{{ states }}" as="s" hint-placeholder-count="6">
+        <div style="display:grid;grid-template-columns:96px 108px minmax(0,1.4fr) minmax(0,1fr);gap:12px;align-items:center;padding:11px 14px;border-bottom:1px solid var(--line);background:var(--panel)">
+          <span title="{{ s.title }}" style="font-family:var(--f-num);font-variant-numeric:tabular-nums;font-size:15px;font-weight:{{ s.fw }};color:{{ s.fg }};background:{{ s.bg }};padding:1px 6px">{{ s.glyph }}<span style="font-size:11px;color:var(--dim2)">{{ s.mark }}</span></span>
+          <span style="font-family:var(--f-ui);font-size:9.5px;letter-spacing:.1em;color:{{ s.tagFg }}">{{ s.tag }}</span>
+          <span style="font-size:12.5px;line-height:1.5;color:var(--dim)">{{ s.claim }}</span>
+          <span style="font-family:var(--f-num);font-size:10px;line-height:1.5;color:var(--dim2)">{{ s.cues }}</span>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="margin-top:18px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px">
+      <div style="padding:15px 16px;border:1px solid var(--down);background:var(--panel);border-radius:var(--r-c)">
+        <div style="font-family:var(--f-ui);font-size:9.5px;letter-spacing:.11em;color:var(--down)">FORBIDDEN SUBSTITUTIONS</div>
+        <div style="margin-top:10px;display:flex;flex-direction:column;gap:8px">
+          <sc-for list="{{ never }}" as="n" hint-placeholder-count="4">
+            <div style="display:flex;gap:9px;align-items:baseline">
+              <span style="color:var(--down);font-size:11px">✕</span>
+              <span style="flex:1;font-size:12.5px;line-height:1.55;color:var(--dim)">{{ n.t }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      <div style="padding:15px 16px;border:1px solid var(--line2);background:var(--panel);border-radius:var(--r-c)">
+        <div style="font-family:var(--f-ui);font-size:9.5px;letter-spacing:.11em;color:var(--dim2)">THE DISTINCTION THAT MATTERS</div>
+        <div style="margin-top:10px;font-size:13px;line-height:1.6;color:var(--dim);text-wrap:pretty">Stale versus null, not stale versus fresh. A stale number looks plausible and a null one does not, so the reader must be able to tell those two apart instantly. That is why stale carries four cues and null carries none beyond its glyph — there is nothing to invalidate.</div>
+        <div style="margin-top:11px;font-family:var(--f-num);font-size:10px;color:var(--dim2);line-height:1.6">stale cues: hatch · dagger · reduced contrast · section tag<br />three of the four survive greyscale</div>
+      </div>
+    </div>
+
+    <div style="margin-top:16px;padding:14px 16px;border:1px solid var(--line);background:var(--panel);border-radius:var(--r-c)">
+      <div style="font-family:var(--f-ui);font-size:9.5px;letter-spacing:.11em;color:var(--dim2)">PROPS</div>
+      <div style="margin-top:9px;font-family:var(--f-num);font-size:11.5px;line-height:1.75;color:var(--dim);white-space:pre-wrap">{{ props }}</div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1000,&quot;height&quot;:800}}">
+class Component extends DCLogic{
+  renderVals(){
+    const H="repeating-linear-gradient(135deg,transparent 0 5px,rgba(240,153,63,.20) 5px 6px)";
+    return {
+      states:[
+        {key:"s1",glyph:"41%",mark:"",fw:"400",fg:"var(--txt)",bg:"transparent",tag:"FRESH",tagFg:"var(--acc)",
+         title:"computed under the settings in force",
+         claim:"Computed under the settings in force. Full contrast, no marking.",cues:"none needed — baseline"},
+        {key:"s2",glyph:"41%",mark:" †",fw:"400",fg:"var(--dim2)",bg:H,tag:"STALE",tagFg:"var(--down)",
+         title:"STALE — computed under settings this league no longer has",
+         claim:"A real number, computed under settings this league no longer has. Still shown — a labelled wrong number beats a hole.",
+         cues:"hatch · dagger · dim · section tag"},
+        {key:"s3",glyph:"—",mark:"",fw:"400",fg:"var(--dim2)",bg:"transparent",tag:"NULL",tagFg:"var(--dim2)",
+         title:"no value exists — never computed, or not computable",
+         claim:"No value exists. Never computed, or not computable for this record.",cues:"glyph + reason on hover"},
+        {key:"s4",glyph:"<1%",mark:"",fw:"400",fg:"var(--txt)",bg:"transparent",tag:"FLOOR",tagFg:"var(--dim)",
+         title:"a real value below the display floor — not zero",
+         claim:"A real value below the display floor. Emphatically not zero.",cues:"the < glyph"},
+        {key:"s5",glyph:"0%",mark:"",fw:"400",fg:"var(--txt)",bg:"transparent",tag:"TRUE ZERO",tagFg:"var(--dim)",
+         title:"a genuine measured zero",
+         claim:"A genuine measured zero. Vanishingly rare, and never a stand-in for any row above.",cues:"none — it is a real number"},
+        {key:"s6",glyph:"not yet",mark:"",fw:"400",fg:"var(--dim2)",bg:"transparent",tag:"NOT YET",tagFg:"var(--down)",
+         title:"computable in principle, not from current state",
+         claim:"Computable in principle, not from current state. Must name the missing input.",
+         cues:"phrase + the count that would satisfy it"},
+        {key:"s7",glyph:"392",mark:"",fw:"600",fg:"var(--txt)",bg:"transparent",tag:"PENDING",tagFg:"var(--down)",
+         title:"pre-edit value held at full contrast while a recompute runs",
+         claim:"A recompute is in flight. The pre-edit value holds at full contrast — it is correct for the settings still in force.",
+         cues:"app-wide banner, never a per-cell marking"}],
+      never:[
+        {key:"n1",t:"0% where the claim is \"not computed\" — the single most damaging substitution available."},
+        {key:"n2",t:"— where a real cutoff applies. A model that ranked a player below its top five has a view; render unranked, not a null (AUDIT NULL-03)."},
+        {key:"n3",t:"· for \"not computed\". That glyph is reserved for \"no meaningful change\" in a delta column (AUDIT NULL-01)."},
+        {key:"n4",t:"A per-cell stale marking during a pending recompute. The values are correct; the banner carries the state."}],
+      props:"value      number | null\nstate      'fresh' | 'stale' | 'null' | 'floor' | 'zero' | 'notyet' | 'pending'\nfloor      number            below this, render <floor rather than the value\nreason     string            required when state is 'null' or 'notyet'\ngeneratedAt string           required when state is 'stale' — shown in the section tag\nfield      string            backing field name for the provenance line"
+    };
+  }
+}
+</script>
+</body>
+</html>

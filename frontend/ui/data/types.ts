@@ -198,6 +198,56 @@ export interface RawOpponents {
 }
 
 /**
+ * Full league rosters -- what each team HAS (drafted, by slot) and what it still
+ * NEEDS (required minus filled, pure arithmetic). Added contract 1.8.0, answering
+ * `docs/handoffs/016-league-rosters-endpoint.md`. Deliberately mechanical: it does
+ * not model or guess what a team is likely to draft next -- see the artifact's own
+ * `inference_scope_note`. For behavioural/tendency context, `opponents.json` is
+ * the separate, much sparser artifact.
+ *
+ * Optional on `Dataset`: only the default league carries it today, and an older
+ * league export (any of the pre-1.8.0 config-matrix directories) will not have
+ * this file at all -- absence is a real state (`rosters: null`), not an error.
+ */
+export interface RawRosterSlotGroup {
+  required: number;
+  filled: number;
+  players: string[];
+}
+
+export interface RawRosterFlexGroup extends RawRosterSlotGroup {
+  eligible_positions: string[];
+}
+
+export interface RawRoster {
+  team_slot: number;
+  is_user: boolean;
+  team_name: string | null;
+  roster_slots: {
+    starters: Record<string, RawRosterSlotGroup>;
+    flex: RawRosterFlexGroup;
+    bench: RawRosterSlotGroup;
+    ir: RawRosterSlotGroup & { note?: string };
+  };
+  needs: Record<string, number>;
+  players: string[];
+}
+
+export interface RawRosters {
+  contract_version: string;
+  generated_utc: string;
+  league_id?: string | null;
+  season: number;
+  teams: number;
+  draft_state: string;
+  picks_ingested: number;
+  unresolved_position_count: number;
+  data_source_note: string;
+  inference_scope_note: string;
+  rosters: RawRoster[];
+}
+
+/**
  * The news feed contract. Nothing produces this yet -- there is no ingested corpus
  * anywhere in the repo, so the lane resolves to zero items and says so.
  *

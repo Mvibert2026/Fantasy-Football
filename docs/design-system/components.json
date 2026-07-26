@@ -1,0 +1,486 @@
+{
+  "$schema": "draft-assistant/component-inventory/1",
+  "version": "1.0.0",
+  "generated": "2026-07-26",
+  "scope": "Every reusable element across 17 states: Draft (4), Settings (6), Mock Lab (7).",
+  "method": "Named by what the element claims, not where it sits. Two elements with the same claim are one component with variants, even if they were built twice.",
+  "components": [
+    {
+      "id": "value-pair",
+      "name": "ValuePair",
+      "ref": "components/value-pair.dc.html",
+      "claim": "Two values shown together, where collapsing them into one would hide whether the system is reasoning from current state.",
+      "variants": [
+        {
+          "id": "baseline-live",
+          "label": "baseline → live",
+          "screens": [
+            "draft.board",
+            "draft.predictions",
+            "draft.queue",
+            "playerDetail"
+          ],
+          "treatment": "baseline quiet (--dim2, small) · arrow · live loud (600, band-coloured)"
+        },
+        {
+          "id": "inforce-edited",
+          "label": "in force → edited",
+          "screens": [
+            "settings.editor"
+          ],
+          "treatment": "in-force struck through (--dim2) · arrow · edited (--down, 600) · row lifted to --panel2"
+        }
+      ],
+      "states": [
+        "both present",
+        "second value null (renders the not-yet reason, never the first value again)",
+        "stale"
+      ],
+      "find": "THESE WERE BUILT TWICE UNDER TWO NAMES. Same claim, same rule, different code. Consolidating them is the single highest-value merge in this audit.",
+      "rule": "The second value never replaces the first. Any component-level API must make it impossible to render one alone."
+    },
+    {
+      "id": "value-state",
+      "name": "ValueCell",
+      "ref": "components/value-state.dc.html",
+      "claim": "A number and the epistemic status of that number.",
+      "variants": [
+        {
+          "id": "fresh",
+          "treatment": "--txt, no marking"
+        },
+        {
+          "id": "stale",
+          "treatment": "--dim2 + --hatch background + † dagger + section tag"
+        },
+        {
+          "id": "null",
+          "treatment": "— in --dim2, reason on hover, no hatch"
+        },
+        {
+          "id": "floor",
+          "treatment": "<1% — a real value below the display floor"
+        },
+        {
+          "id": "pending",
+          "treatment": "pre-edit value at full contrast, banner carries the pending status"
+        }
+      ],
+      "screens": [
+        "all 17"
+      ],
+      "rule": "Four glyph claims are distinct and must never substitute: —, <1%, 0%, 'not yet'."
+    },
+    {
+      "id": "frequency-dots",
+      "name": "FrequencyDots",
+      "ref": "components/frequency-dots.dc.html",
+      "claim": "A probability read as a frequency, so it cannot be misread as a precise scalar.",
+      "variants": [
+        {
+          "id": "availability",
+          "screens": [
+            "draft.predictions",
+            "draft.queue",
+            "playerDetail",
+            "prep.explorer"
+          ],
+          "fill": "band colour (availFg)",
+          "note": "the value is actionable, so colour carries urgency"
+        },
+        {
+          "id": "calibration",
+          "screens": [
+            "mocklab.calib",
+            "mocklab.aggregate"
+          ],
+          "fill": "--txt neutral + ▲ marker beneath at the stated index",
+          "note": "the value is being audited, so colour must not editorialise"
+        }
+      ],
+      "sizes": {
+        "found": [
+          "5px",
+          "6px",
+          "8px",
+          "9px",
+          "11px"
+        ],
+        "normalised": [
+          "--dot-sm 6px",
+          "--dot-md 8px",
+          "--dot-lg 11px"
+        ]
+      },
+      "find": "Five sizes for one idiom, and two different fill rules. The fill rules are DEFENSIBLE and should be documented as variants; the five sizes are drift and are now three.",
+      "rule": "fill = round(p*10). Never print more precision than the model supports."
+    },
+    {
+      "id": "chip",
+      "name": "Chip",
+      "ref": "components/chip.dc.html",
+      "claim": "A short label. Radius and interactivity encode what kind.",
+      "variants": [
+        {
+          "id": "filter",
+          "radius": "--r-c",
+          "interactive": true,
+          "screens": [
+            "draft.board",
+            "prep.board",
+            "mocklab",
+            "settings"
+          ],
+          "example": "ALL / QB / RB · R1–R16 · state switcher"
+        },
+        {
+          "id": "tag",
+          "radius": "--r-c",
+          "interactive": false,
+          "screens": [
+            "draft.opponents",
+            "settings.editor"
+          ],
+          "example": "QB ×2 needs chip · CURRENT / STALE status"
+        },
+        {
+          "id": "pill",
+          "radius": "--r-pill",
+          "interactive": false,
+          "sortable": false,
+          "screens": [
+            "playerDetail",
+            "settings.editor"
+          ],
+          "example": "archetype · severity chip"
+        },
+        {
+          "id": "verdict",
+          "radius": "0",
+          "glyph": "● / ○",
+          "screens": [
+            "mocklab.review",
+            "mocklab.logging"
+          ],
+          "example": "HIT / MISS"
+        },
+        {
+          "id": "eyebrow",
+          "radius": "0",
+          "screens": [
+            "all"
+          ],
+          "example": "SECTION LABEL, letter-spaced"
+        }
+      ],
+      "find": "FIVE treatments were in use where three were intended. Rule now explicit: rounded = interactive filter, pill = display-only and non-sortable, square = structural label or verdict.",
+      "rule": "A pill must never be sortable or act as a filter — the product's credibility depends on display-only labels never appearing to influence a rank."
+    },
+    {
+      "id": "banner",
+      "name": "StatusBanner",
+      "ref": "components/banner.dc.html",
+      "claim": "A state that is true across the whole app right now, and survives navigation.",
+      "variants": [
+        {
+          "id": "pending",
+          "colour": "--down"
+        },
+        {
+          "id": "computing",
+          "colour": "--down",
+          "extras": [
+            "stage",
+            "percent",
+            "3px rail"
+          ]
+        },
+        {
+          "id": "ready",
+          "colour": "--acc",
+          "extras": [
+            "primary action",
+            "secondary action"
+          ]
+        },
+        {
+          "id": "failed",
+          "colour": "--fail",
+          "extras": [
+            "retry",
+            "discard"
+          ]
+        },
+        {
+          "id": "stale",
+          "colour": "--down"
+        },
+        {
+          "id": "live-draft",
+          "colour": "--live"
+        }
+      ],
+      "screens": [
+        "settings.editor (5)",
+        "draft (live badge)"
+      ],
+      "find": "Mock Lab has no banner and needs one — see AUDIT STALE-01.",
+      "rule": "Persists across route changes; it is the only always-visible carrier of app-wide state."
+    },
+    {
+      "id": "progress",
+      "name": "Progress",
+      "ref": "components/progress.dc.html",
+      "claim": "How far through something, or how much evidence exists.",
+      "variants": [
+        {
+          "id": "job-bar",
+          "screens": [
+            "settings.editor"
+          ],
+          "treatment": "5px bar + 26px percent + named stage list (✓ ▸ ·)"
+        },
+        {
+          "id": "banner-rail",
+          "screens": [
+            "settings.editor"
+          ],
+          "treatment": "3px, full width, no label"
+        },
+        {
+          "id": "count-bar",
+          "screens": [
+            "mocklab.logging"
+          ],
+          "treatment": "6px bar + tempo + ETA from real timestamps"
+        },
+        {
+          "id": "target-array",
+          "screens": [
+            "mocklab.aggregate"
+          ],
+          "treatment": "30 squares 15px, --r-c 3px",
+          "rule": "never the primary signal"
+        },
+        {
+          "id": "evidence-ladder",
+          "screens": [
+            "mocklab.empty",
+            "mocklab.one",
+            "mocklab.aggregate"
+          ],
+          "treatment": "one row per sample size, bar = real Wilson half-width",
+          "rule": "motivation by measurement"
+        }
+      ],
+      "find": "FIVE progress treatments across two screens. Four are justified (job vs count vs target vs evidence are different claims); the 3px banner rail and the 5px job bar are the SAME claim at two heights — normalise to 3px in banners, 5px in panels, and say so.",
+      "rule": "No badges, streaks, levels or congratulation anywhere."
+    },
+    {
+      "id": "disclosure",
+      "name": "Disclosure",
+      "ref": "components/disclosure.dc.html",
+      "claim": "More detail, one interaction away, without leaving the row.",
+      "variants": [
+        {
+          "id": "dotted-term",
+          "screens": [
+            "all"
+          ],
+          "treatment": "1px dotted underline + cursor:help → glossary popover"
+        },
+        {
+          "id": "info-chip",
+          "screens": [
+            "draft",
+            "mocklab",
+            "settings"
+          ],
+          "treatment": "14–15px circle with i → same popover"
+        },
+        {
+          "id": "title-attr",
+          "screens": [
+            "all"
+          ],
+          "treatment": "native title — the fallback for any truncated or dense value"
+        },
+        {
+          "id": "provenance-line",
+          "screens": [
+            "all"
+          ],
+          "treatment": "--f-num 9–10px --dim2 naming the backing field"
+        },
+        {
+          "id": "inline-expander",
+          "screens": [
+            "prep.board"
+          ],
+          "treatment": "'why' toggle expanding the derivation inside the row container"
+        },
+        {
+          "id": "collapsed-empties",
+          "screens": [
+            "playerDetail"
+          ],
+          "treatment": "one line naming everything missing at once"
+        }
+      ],
+      "find": "SIX disclosure patterns, all legitimate, but they were never named as a family. Naming them is the deliverable — an implementer currently has to guess which to reach for.",
+      "rule": "Anything truncated must carry a title. Any number must be able to name its field."
+    },
+    {
+      "id": "data-row",
+      "name": "DataRow",
+      "ref": "components/data-row.dc.html",
+      "claim": "One record in a dense table.",
+      "variants": [
+        {
+          "id": "header",
+          "treatment": "--panel2, eyebrow type, hairline below"
+        },
+        {
+          "id": "row",
+          "treatment": "hairline below, hover --panel2, radius 0"
+        },
+        {
+          "id": "tier-header",
+          "treatment": "surface lift + count, makes the tier the visual unit"
+        },
+        {
+          "id": "expanded",
+          "treatment": "derivation panel inside the row container"
+        },
+        {
+          "id": "empty",
+          "treatment": "dashed border + field name + what would fill it"
+        }
+      ],
+      "screens": [
+        "all 17"
+      ],
+      "rule": "Radius 0. Hairlines, never zebra. Grid track sets must fit their pane at 924px."
+    },
+    {
+      "id": "stepper",
+      "name": "Stepper",
+      "ref": "components/data-row.dc.html#stepper",
+      "claim": "Adjust a bounded numeric setting in place.",
+      "variants": [
+        {
+          "id": "pair",
+          "treatment": "− / + at 24×23px, flex:none"
+        },
+        {
+          "id": "pair-revert",
+          "treatment": "− / + / ↺ where the value can be pending"
+        }
+      ],
+      "states": [
+        "idle",
+        "edited (row lifted, revert active)",
+        "inert (job in flight — does not respond, reason in the banner)"
+      ],
+      "screens": [
+        "settings.editor"
+      ],
+      "rule": "Inert, not hidden. Hiding a control mid-job makes the UI feel broken."
+    },
+    {
+      "id": "typeahead",
+      "name": "TypeAhead",
+      "ref": "components/data-row.dc.html#typeahead",
+      "claim": "Commit a record from a ranked candidate list at keyboard speed.",
+      "variants": [
+        {
+          "id": "pick-entry",
+          "screens": [
+            "draft.board (amended RETROFIT-5)",
+            "mocklab.logging"
+          ]
+        }
+      ],
+      "keys": {
+        "1–5": "commit that candidate",
+        "Enter": "commit highlighted",
+        "↑↓": "move",
+        "Backspace": "undo last when empty"
+      },
+      "requirements": [
+        "autofocus on mount and re-assert on node attach",
+        "auto-advance on commit",
+        "never requires the mouse"
+      ],
+      "find": "RESOLVED 26 Jul 2026 — Draft now specifies the Mock Lab implementation. One component, one key map.",
+      "rule": "If a screen claims 'never needs the mouse', focus must be asserted on load.",
+      "randomise": "candidate order is randomised so position does not encode confidence; probabilities travel with their rows",
+      "instrumentation": "entry_mode logged per pick (shortcut | typed | pasted) so shortcut bias can be measured rather than argued"
+    },
+    {
+      "id": "identity",
+      "name": "IdentityChip",
+      "ref": "components/chip.dc.html#identity",
+      "claim": "Who a player is, fast, with visual anchoring.",
+      "variants": [
+        {
+          "id": "with-headshot"
+        },
+        {
+          "id": "initials-on-team-colour",
+          "note": "the null state, and currently the only populated one"
+        }
+      ],
+      "screens": [
+        "playerDetail"
+      ],
+      "rule": "Team colour is used here and for nothing else that carries data."
+    },
+    {
+      "id": "hero-band",
+      "name": "HeroBand",
+      "ref": "components/data-row.dc.html#hero",
+      "claim": "What this screen is, plus the measured facts that frame it.",
+      "variants": [
+        {
+          "id": "prose-screen",
+          "screens": [
+            "prep.strategy",
+            "prep.method",
+            "prep.glossary"
+          ]
+        },
+        {
+          "id": "empty-state",
+          "screens": [
+            "mocklab.empty"
+          ]
+        }
+      ],
+      "rule": "Radius --r-m, --sh elevation, eyebrow + title + a strip of real numbers."
+    }
+  ],
+  "notCounted": [
+    "nav rail item",
+    "mode switch",
+    "sticky action bar",
+    "assistant dock",
+    "mini board grid",
+    "CI whisker"
+  ],
+  "notCountedWhy": "Each appears on exactly one surface and has no variants yet. Promote to a component the second a second screen needs it — that is the drift this inventory exists to catch.",
+  "files": {
+    "count": 6,
+    "list": [
+      "components/value-pair.dc.html",
+      "components/value-state.dc.html",
+      "components/frequency-dots.dc.html",
+      "components/chip.dc.html",
+      "components/banner.dc.html",
+      "components/progress.dc.html",
+      "components/disclosure.dc.html",
+      "components/data-row.dc.html"
+    ],
+    "note": "Eight reference files cover twelve components. Stepper, TypeAhead and HeroBand share data-row.dc.html; IdentityChip shares chip.dc.html — each is anchored, not duplicated."
+  }
+}

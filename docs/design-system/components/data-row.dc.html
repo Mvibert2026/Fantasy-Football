@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet" />
+<style>
+:root{--f-ui:'IBM Plex Sans',system-ui,sans-serif;--f-num:'IBM Plex Mono',ui-monospace,monospace;--bg:#090c10;--panel:#14191f;--panel2:#1c222a;--line:#232a33;--line2:#323a45;--txt:#f1f4f8;--dim:#98a2b1;--dim2:#69737f;--acc:#5ecf9e;--down:#f0993f;--up:#5bb4f2;--te:#7d9fcf;--wr:#c39468;--r-c:6px}
+*{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--txt)}
+button{cursor:pointer;border-radius:5px;font:inherit;color:inherit}
+input{border-radius:5px;font:inherit;color:inherit}
+</style>
+</helmet>
+<div style="min-height:100vh;padding:24px;font-family:var(--f-ui);font-size:13px">
+  <div style="max-width:920px">
+    <div style="font-family:var(--f-ui);font-size:10px;letter-spacing:.14em;color:var(--dim2)">COMPONENT · DATAROW &amp; ROW CONTROLS</div>
+    <h1 style="margin:9px 0 0;font-size:24px;font-weight:700;letter-spacing:-.01em">One record in a dense table</h1>
+    <p style="margin-top:10px;font-size:14px;line-height:1.6;color:var(--dim);max-width:66ch;text-wrap:pretty">Radius 0. Hairlines, never zebra. Every fixed track set must fit its pane at a 924px viewport, and no column carrying text may use a zero floor.</p>
+
+    <div style="margin-top:20px;font-family:var(--f-ui);font-size:9.5px;letter-spacing:.11em;color:var(--dim2)">ROW VARIANTS</div>
+    <div style="margin-top:9px;border:1px solid var(--line);border-radius:var(--r-c);overflow:hidden">
+      <div style="display:grid;grid-template-columns:26px minmax(84px,1fr) 40px 66px 58px;gap:9px;padding:8px 12px;background:var(--panel2);border-bottom:1px solid var(--line);font-family:var(--f-ui);font-size:9.5px;letter-spacing:.1em;color:var(--dim2)">
+        <span>#</span><span>PLAYER</span><span>POS</span><span style="text-align:right">PROJ</span><span style="text-align:right">P(23)</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;padding:8px 12px 5px;background:var(--panel)">
+        <span style="font-family:var(--f-ui);font-size:10px;letter-spacing:.1em;color:var(--dim);white-space:nowrap">TIER 2</span>
+        <span style="flex:1;height:1px;background:var(--line2)"></span>
+        <span style="font-family:var(--f-num);font-variant-numeric:tabular-nums;font-size:10px;color:var(--dim2)">3 players left</span>
+      </div>
+      <sc-for list="{{ rows }}" as="r" hint-placeholder-count="4">
+        <div style="display:grid;grid-template-columns:26px minmax(84px,1fr) 40px 66px 58px;gap:9px;align-items:center;padding:7px 12px;border-bottom:1px solid var(--line);background:{{ r.bg }}">
+          <span style="font-family:var(--f-num);font-variant-numeric:tabular-nums;font-size:11px;color:var(--dim2)">{{ r.n }}</span>
+          <span style="font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.name }}</span>
+          <span style="font-family:var(--f-ui);letter-spacing:.045em;font-size:11px;font-weight:600;color:{{ r.posFg }}">{{ r.pos }}</span>
+          <span style="font-family:var(--f-num);font-variant-numeric:tabular-nums;font-size:12.5px;text-align:right;color:{{ r.projFg }}">{{ r.proj }}</span>
+          <span style="font-family:var(--f-num);font-variant-numeric:tabular-nums;font-size:12.5px;text-align:right;color:{{ r.avFg }};background:{{ r.avBg }}">{{ r.av }}<span style="font-size:10px;color:var(--dim2)">{{ r.mark }}</span></span>
+        </div>
+      </sc-for>
+      <div style="padding:11px 12px;background:var(--panel)">
+        <div style="padding:11px 12px;border:1px dashed var(--line2);border-radius:var(--r-c);font-size:12.5px;line-height:1.55;color:var(--dim2)">draft.queue = [] — nothing queued. Queue a player from the board; he leaves on his own if someone else takes him.</div>
+      </div>
+    </div>
+    <div style="margin-top:8px;font-family:var(--f-num);font-size:10px;color:var(--dim2)">header · tier header (surface lift + count) · row · selected row · stale cell · empty state naming its field</div>
+
+    <div style="margin-top:22px;font-family:var(--f-ui);font-size:9.5px;letter-spacing:.11em;color:var(--dim2)">STEPPER — bounded numeric setting, edited in place</div>
+    <div style="margin-top:9px;border:1px solid var(--line);border-radius:var(--r-c);overflow:hidden;background:var(--panel)">
+      <sc-for list="{{ steppers }}" as="s" hint-placeholder-count="3">
+        <div style="display:grid;grid-template-columns:minmax(88px,1fr) 52px 14px 52px 80px minmax(120px,1.15fr);gap:8px;align-items:center;padding:7px 12px;border-bottom:1px solid var(--line);background:{{ s.bg }}">
+          <span style="font-size:13px;font-weight:600">{{ s.label }}</span>
+          <span style="font-family:var(--f-num);font-variant-numeric:tabular-nums;font-size:14px;text-align:right;color:{{ s.aFg }};text-decoration:{{ s.aStrike }}">{{ s.a }}</span>
+          <span style="font-family:var(--f-num);font-size:10px;color:var(--dim2);text-align:center">{{ s.arrow }}</span>
+          <span style="font-family:var(--f-num);font-variant-numeric:tabular-nums;font-size:14px;font-weight:600;text-align:right;color:var(--down)">{{ s.b }}</span>
+          <span style="display:flex;gap:4px;justify-content:flex-end">
+            <button style="width:24px;height:23px;flex:none;background:transparent;border:1px solid {{ s.ctlBd }};color:{{ s.ctlFg }}">−</button>
+            <button style="width:24px;height:23px;flex:none;background:transparent;border:1px solid {{ s.ctlBd }};color:{{ s.ctlFg }}">+</button>
+            <button title="Revert this rule" style="width:24px;height:23px;flex:none;background:transparent;border:1px solid var(--line);color:{{ s.revFg }};font-size:11px">↺</button>
+          </span>
+          <span title="{{ s.full }}" style="font-family:var(--f-num);font-variant-numeric:tabular-nums;font-size:10px;color:var(--dim2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ s.field }}</span>
+        </div>
+      </sc-for>
+    </div>
+    <div style="margin-top:8px;font-size:12.5px;line-height:1.55;color:var(--dim2)">Idle · edited (row lifted, revert active) · inert while a job runs — <span style="color:var(--dim)">inert, not hidden</span>. Hiding a control mid-job makes the UI feel broken; the reason lives in the banner.</div>
+
+    <div style="margin-top:22px;font-family:var(--f-ui);font-size:9.5px;letter-spacing:.11em;color:var(--dim2)">TYPEAHEAD — commit a record at keyboard speed</div>
+    <div style="margin-top:9px;padding:14px 15px;border:1px solid var(--line);background:var(--panel);border-radius:var(--r-c)">
+      <input value="{{ q }}" onChange="{{ onQ }}" placeholder="Type a name — ⏎ logs the highlighted pick, 1–5 log by number" style="width:100%;height:42px;padding:0 13px;background:var(--bg);border:1px solid var(--acc);font-size:14px;outline:none" />
+      <div style="margin-top:8px;display:flex;column-gap:13px;row-gap:4px;flex-wrap:wrap;font-family:var(--f-num);font-variant-numeric:tabular-nums;font-size:10.5px;color:var(--dim2)">
+        <span style="white-space:nowrap">⏎ log highlighted</span><span style="white-space:nowrap">1–5 log by number</span><span style="white-space:nowrap">↑↓ move</span><span style="white-space:nowrap">⌫ undo last</span><span style="white-space:nowrap">never needs the mouse</span>
+      </div>
+      <div style="margin-top:11px;display:flex;flex-direction:column">
+        <sc-for list="{{ cands }}" as="c" hint-placeholder-count="3">
+          <div style="display:grid;grid-template-columns:22px minmax(0,1fr) 44px 54px 60px;gap:9px;align-items:center;padding:8px 9px;background:{{ c.bg }};border-left:2px solid {{ c.bar }};border-bottom:1px solid var(--line)">
+            <span style="font-family:var(--f-num);font-variant-numeric:tabular-nums;font-size:11px;font-weight:600;color:var(--acc)">{{ c.n }}</span>
+            <span style="font-size:14px;font-weight:600">{{ c.name }}</span>
+            <span style="font-family:var(--f-ui);letter-spacing:.045em;font-size:11px;font-weight:600;color:{{ c.posFg }}">{{ c.pos }}</span>
+            <span style="font-family:var(--f-num);font-variant-numeric:tabular-nums;font-size:11px;color:var(--dim2);text-align:right">#{{ c.rank }}</span>
+            <span style="font-family:var(--f-num);font-variant-numeric:tabular-nums;font-size:12px;color:{{ c.pFg }};text-align:right">{{ c.p }}</span>
+          </div>
+        </sc-for>
+      </div>
+      <div style="margin-top:10px;font-size:12.5px;line-height:1.55;color:var(--dim)">Built twice — Draft's pick entry and Mock Lab's logging. Mock Lab's digit shortcuts and Backspace-undo are the better version and should be back-ported to Draft, which is used under a pick clock.</div>
+      <div style="margin-top:7px;font-family:var(--f-num);font-size:10px;color:var(--down)">AUDIT STRUCT-02 · and per Part 1, the five candidates should be order-randomised so position no longer encodes our confidence</div>
+    </div>
+
+    <div style="margin-top:18px;padding:14px 16px;border:1px solid var(--line);background:var(--panel);border-radius:var(--r-c)">
+      <div style="font-family:var(--f-ui);font-size:9.5px;letter-spacing:.11em;color:var(--dim2)">PROPS</div>
+      <div style="margin-top:9px;font-family:var(--f-num);font-size:11.5px;line-height:1.75;color:var(--dim);white-space:pre-wrap">{{ props }}</div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:980,&quot;height&quot;:1000}}">
+class Component extends DCLogic{
+  state={q:""};
+  renderVals(){
+    const H="repeating-linear-gradient(135deg,transparent 0 5px,rgba(240,153,63,.20) 5px 6px)";
+    return {
+      rows:[
+        {key:"w1",n:"12",name:"Brock Bowers",pos:"TE1",posFg:"var(--te)",proj:"198",projFg:"var(--txt)",
+         av:"41%",avFg:"var(--txt)",avBg:"transparent",mark:"",bg:"transparent"},
+        {key:"w2",n:"16",name:"Josh Allen",pos:"QB1",posFg:"var(--qb)",proj:"392",projFg:"var(--txt)",
+         av:"48%",avFg:"var(--txt)",avBg:"transparent",mark:"",bg:"var(--panel2)"},
+        {key:"w3",n:"22",name:"Ladd McConkey",pos:"WR11",posFg:"var(--wr)",proj:"—",projFg:"var(--dim2)",
+         av:"67%",avFg:"var(--txt)",avBg:"transparent",mark:"",bg:"transparent"},
+        {key:"w4",n:"34",name:"Tyjae Spears",pos:"RB18",posFg:"var(--rb)",proj:"—",projFg:"var(--dim2)",
+         av:"66%",avFg:"var(--dim2)",avBg:H,mark:" †",bg:"transparent"}],
+      steppers:[
+        {key:"s1",label:"Bench slots",a:"6",b:"",arrow:"",aFg:"var(--txt)",aStrike:"none",bg:"transparent",
+         ctlBd:"var(--line2)",ctlFg:"var(--dim)",revFg:"var(--dim2)",field:"slots.bench",full:"league.slots.bench"},
+        {key:"s2",label:"Points per reception",a:"0.5",b:"1.0",arrow:"→",aFg:"var(--dim2)",aStrike:"line-through",bg:"var(--panel2)",
+         ctlBd:"var(--line2)",ctlFg:"var(--dim)",revFg:"var(--down)",field:"scoring.ppr",full:"league.scoring.ppr"},
+        {key:"s3",label:"Passing touchdown",a:"4",b:"6",arrow:"→",aFg:"var(--dim2)",aStrike:"line-through",bg:"var(--panel2)",
+         ctlBd:"var(--line)",ctlFg:"var(--dim2)",revFg:"var(--dim2)",field:"scoring.pass_td",full:"league.scoring.pass_td"}],
+      q:this.state.q,
+      onQ:e=>this.setState({q:e.target.value}),
+      cands:[
+        {key:"c1",n:"1",name:"Brock Bowers",pos:"TE1",posFg:"var(--te)",rank:"12",p:"34%",pFg:"var(--up)",
+         bg:"var(--panel2)",bar:"var(--acc)"},
+        {key:"c2",n:"2",name:"Ladd McConkey",pos:"WR11",posFg:"var(--wr)",rank:"22",p:"22%",pFg:"var(--up)",
+         bg:"transparent",bar:"transparent"},
+        {key:"c3",n:"3",name:"Tyjae Spears",pos:"RB18",posFg:"var(--rb)",rank:"41",p:"unranked",pFg:"var(--dim2)",
+         bg:"transparent",bar:"transparent"}],
+      props:"DataRow\n  variant  'header' | 'tier' | 'row' | 'selected' | 'expanded' | 'empty'\n  columns  string   grid track set — must fit its pane at 924px, no minmax(0,…) on text\n  cells    ValueCell[]\n\nStepper\n  value    number\n  pending  number | null   renders the ValuePair treatment when set\n  inert    boolean         true while a job runs — inert, never hidden\n  field    string          short label on screen, full path in title\n\nTypeAhead\n  candidates  [{label, meta, p}]\n  keys        1-5 commit · Enter commit highlighted · ArrowUp/Down move · Backspace undo\n  autofocus   true          assert on mount AND on node attach\n  randomise   boolean       order-randomise so position does not encode confidence"
+    };
+  }
+}
+</script>
+</body>
+</html>

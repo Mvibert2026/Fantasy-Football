@@ -15,6 +15,33 @@ TIER 2                                3 players left ← surface lift + count
  16  Josh Allen        QB1  BUF   ·    39%→48%   ✕
 ```
 
+## Pick entry — amended 26 Jul 2026 (RETROFIT-5)
+
+**Draft pick entry now uses the Mock Lab TypeAhead implementation.** Two were built; this screen had
+the slower one, and it is the surface that runs under a pick clock.
+
+| Key | Action |
+|---|---|
+| `1`–`5` | commit that candidate directly — the common case is one keystroke |
+| `Enter` | commit the highlighted candidate |
+| `ArrowUp` / `ArrowDown` | move the highlight |
+| `Backspace` on an empty field | undo the last pick |
+| `Esc` | clear the field |
+
+Requirements, all three load-bearing:
+
+- **Autofocus on mount, re-asserted when the input node attaches.** A one-shot guard that fires before
+  the element is focusable leaves the field unfocused, and the screen claims keyboard-only operation.
+- **Auto-advance on commit** — clear the field, advance the pick, re-rank. No confirm step.
+- **Candidate order randomised.** The five are shown in random order so position no longer encodes our
+  confidence, which breaks the "press 1 for our top pick" reflex. The displayed probability travels
+  with its row — shuffle the rows, never the numbers.
+
+Also log `entry_mode` per pick (`shortcut` | `typed` | `pasted`), so shortcut-entered picks can be tested
+for systematically different behaviour rather than argued about. Same field as Mock Lab.
+
+Component: `design_system/components/data-row.dc.html#typeahead`.
+
 ## Row grid
 `display:flex; gap:7px; padding:6px 10px 6px 12px`
 
