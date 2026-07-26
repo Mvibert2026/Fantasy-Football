@@ -18,12 +18,12 @@ to learn *what happened*; it is not fine to read it to learn *what is true*.
 
 | | Value | Notes |
 |---|---|---|
-| Backend branch / commit | `master` @ `6feece2` | Local only — **no git remote configured** |
+| Backend branch / commit | `master` @ `2df3716` | Local only — **no git remote configured** |
 | Backend tests | **400 passing** | Suite runtime ~5.5 min; DB-backed archetype/description tests dominate. +1 from sprint 1 (mailbox health test) |
 | Agent infrastructure | **Live** | Six subagents in `.claude/agents/` (backend, frontend, data-ops, strategist, researcher, librarian), `/inbox` command, mailbox tooling at `tools/handoffs.py` + `tools/sprint_status.py`, mailbox health enforced in the test suite (`tests/test_handoffs.py`) |
 | Data contract | **1.7.0** | `assistant-context.md` still says 1.6.0 — fix on next touch |
-| Frontend branch / commit | `frontend-prep` @ `7276a2d` | Separate working session, **not in this repo** |
-| Frontend tests | **unrecorded** | No count exists anywhere. Record one next frontend session. |
+| Frontend location | `frontend/` subdirectory of this repo | Merged from `frontend-prep` @ `7276a2d`..`d7cd321` via `git subtree add` (commit `2df3716`), full history preserved. No longer a separate working copy. |
+| Frontend tests | **110 passing** (14 files) | `npm run build` and `npm test` both verified green from `frontend/` after `npm install`; `node_modules` is gitignored and must be reinstalled per checkout |
 | Python modules | 33 in `src/` | |
 | Export artifacts | 7 + `player_descriptions.json` | `player_descriptions.json` versions independently, by design |
 | Config matrix | 24 dirs under `data/export/` | board + league + availability stub only; **hazard model not rerun per config** |
