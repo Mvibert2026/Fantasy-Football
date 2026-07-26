@@ -281,6 +281,7 @@ tier is ambiguous, say which tier you think it is and why before starting.
 | `docs/decisions.md` | Architecture decision log — what changed, when, and the reasoning |
 | `docs/status.md` | Running project status — read first; standing requirements, current phase, latest session findings |
 | `docs/statistical-guardrails.md` | Methodology reference expanding §6 into concrete, checkable procedures. Read before running any backtest; every backtest report must state which checks were applied |
+| `docs/assistant-context.md` | Curated, current-state-only summary for the in-app assistant's "why" questions. One paragraph per settled decision, no history, no superseded numbers. Edited in place when an ADR supersedes something in it — never appended to. The assistant must read this instead of `decisions.md`/`test-registry.md`, both of which contain figures later entries overwrote |
 
 Keep this file lean. When a section outgrows a paragraph or two, move it to a companion doc and
 link it here. An overloaded spec file gets ignored, which defeats its purpose.

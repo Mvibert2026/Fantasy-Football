@@ -83,8 +83,24 @@ POSITIONS = ("QB", "RB", "WR", "TE")
 # Hard caps: no sane manager drafts a 4th QB in a 1-QB league.
 MAX_AT_POSITION = {"QB": 3, "RB": 8, "WR": 9, "TE": 3}
 # Counts past which an opponent starts deprioritising a position (assumption 4).
+# This is a JUDGEMENT CALL about depth-chart hoarding behaviour, not derived from
+# the roster rules -- kept as the default for opponent_pick/simulate_one so the
+# PR-003 strategy-comparison numbers (already ADR-028-verified reproducible) do
+# not move silently. See MECHANICAL_NEED_TARGETS for the alternative used by the
+# availability model (ADR-034), which is derived instead of assumed.
 NEED_TARGETS = {"QB": 2, "RB": 5, "WR": 6, "TE": 2}
 NEED_PENALTY_PER_SURPLUS = 25.0
+
+# MECHANICAL, not a judgement call: a position stops filling a REQUIRED roster
+# slot once a team holds STARTERS[pos] plus, for flex-eligible positions, enough
+# to plausibly fill every flex slot (FLEX_SLOTS is a shared pool of 2 across
+# RB/WR/TE, so this is an upper bound per position, not a partition of it -- a
+# team could need up to FLEX_SLOTS more of ANY eligible position, not all three
+# simultaneously). Used by the availability model (ADR-034), not by
+# opponent_pick's default (see NEED_TARGETS above).
+MECHANICAL_NEED_TARGETS: Dict[str, int] = {
+    pos: STARTERS[pos] + (FLEX_SLOTS if pos in FLEX_ELIGIBLE else 0) for pos in POSITIONS
+}
 
 DEFAULT_SIGMA = 10.0
 SIGMA_SWEEP = (5.0, 10.0, 20.0)
@@ -166,20 +182,29 @@ def user_pick_numbers() -> List[int]:
 
 
 # ----------------------------------------------------------------- opponent model
-def _need_penalty(counts: Dict[str, int], pos_name: str) -> float:
+def _need_penalty(
+    counts: Dict[str, int], pos_name: str, targets: Dict[str, int] = NEED_TARGETS
+) -> float:
     have = counts.get(pos_name, 0)
     if have >= MAX_AT_POSITION[pos_name]:
         return np.inf
-    surplus = have - NEED_TARGETS[pos_name] + 1
+    surplus = have - targets[pos_name] + 1
     return NEED_PENALTY_PER_SURPLUS * surplus if surplus > 0 else 0.0
 
 
 def opponent_pick(
-    effective_rank: np.ndarray, available: np.ndarray, counts: Dict[str, int], data: SeasonData
+    effective_rank: np.ndarray,
+    available: np.ndarray,
+    counts: Dict[str, int],
+    data: SeasonData,
+    targets: Dict[str, int] = NEED_TARGETS,
 ) -> int:
+    """`targets` defaults to the judgement-call NEED_TARGETS so existing callers
+    (simulate_one, the PR-003 strategy comparisons) are unaffected. The
+    availability model passes MECHANICAL_NEED_TARGETS instead (ADR-034)."""
     scores = effective_rank.copy()
     for p, name in enumerate(POSITIONS):
-        pen = _need_penalty(counts, name)
+        pen = _need_penalty(counts, name, targets)
         if pen:
             scores[data.positions == p] += pen
     scores[~available] = np.inf

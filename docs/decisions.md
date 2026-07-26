@@ -678,8 +678,46 @@ asked.
 separates, that is the finding** — it means opponent modelling cannot pay for itself at this
 sample size, which is a legitimate result and must be reported as one rather than tuned around.
 
-**Status: NOT STARTED.** Supersedes the precomputed-draws export in favour of a client-side
-simulator.
+---
+
+**Status: IMPLEMENTED (2026-07-25, session 9).** Also implements ADR-033's demotion —
+`ScenarioPick`, `SCENARIO_PICKS`, `REPEAT_PROBS` and the named-manager repeat mechanism are
+**deleted**, not kept as an option, from `src/availability.py` and `src/run_availability.py`.
+`availability.json.te_scenarios` is removed from the contract (bumped to v1.6.0).
+
+**The three inputs, applied per simulated draft:**
+
+1. **Ranking mixture per manager.** Each of the 9 opponent teams draws a ranking source from a
+   shared prior, freshly every draft — never assigned to a team, never collapsed to argmax.
+   `RankingSource(name, rank)` + `default_ranking_sources()` gives one source today
+   (`fantasypros_ecr`, weight 1.0), so the mixture is a no-op in practice, but the sampling path
+   is real: a second source (MFL ADP, ADR-035) is a list entry, not a rewrite.
+2. **Mechanical positional need.** `draft_sim.MECHANICAL_NEED_TARGETS`, derived as
+   `STARTERS[pos] + FLEX_SLOTS` for flex-eligible positions (QB 1, RB 4, WR 5, TE 3) —
+   structural, not assumed. Kept **separate** from `NEED_TARGETS` (QB 2, RB 5, WR 6, TE 2),
+   which stays the judgement-call default for `opponent_pick`/`simulate_one` so the PR-003
+   strategy-comparison numbers (already reproducibility-verified, ADR-028) do not move.
+3. **Rank noise**, unchanged: one shared Gaussian(0, sigma) draw per player per simulated draft.
+
+**Result: TE T1 @ pick 23 = 0.596** (sigma=10, 3000 sims), against the old unconditional
+baseline of 0.5963 (the deleted table's 0%-forced-repeat row) — a move of **−0.0003**, inside
+the pre-declared sanity bracket `[0, 0.60]`. Confirms "flatter, not flat" as predicted: the
+mechanical TE need target (3) essentially never binds by pick 23 (round 3), regardless of model,
+so removing the two-named-manager assumption barely moves the number. Most of the old table's
+0.60-to-0.13 spread was the assumption itself, not signal the room actually contains.
+
+**Pre-registered expectation partially addressed, not tested.** "No separation between managers
+before round 4" needs per-manager output broken out, which the current `tier_avail`/`by_tier`
+aggregates do not expose (they're pooled across all 9 opponents). Not measured this session —
+flagging so a future session does not assume it was.
+
+**Client-side re-simulation.** `availability.json` gains `client_simulation_parameters`
+(ranking-source weights, mechanical need targets, room-noise spec, plain-English algorithm
+description) so a client can recompute availability conditioned on live draft state.
+`by_player`/`by_tier` remain unconditional marginals for Prep mode, flagged
+`metadata.figures_are_unconditional_marginals`. **The client-side simulator itself is not
+built here** — this is model parameters for a client to consume, not client code; building the
+actual JS belongs to whichever session owns `ui/`.
 
 ### ADR-035: MFL ADP as `adp_source='mfl_proxy'` — partially supersedes ADR-018
 
@@ -698,7 +736,52 @@ estimate.
 **Does NOT reopen the alpha track.** ADR-026 closed it on a count of *seasons*, not sources; an
 additional source does not move the sign-test floor.
 
-**Status: NOT STARTED.**
+---
+
+**Status: IMPLEMENTED (2026-07-25, session 9).** `src/ingest_mfl_adp.py` against the documented,
+free, no-login endpoint `https://api.myfantasyleague.com/{period}/export?TYPE=adp&...&JSON=1`.
+Descriptive User-Agent; 429 backoff honouring `Retry-After`; a new `adp_snapshots` table
+(`CLAUDE.md`'s own core-tables sketch reserved this name) keyed
+`(adp_source, mfl_id, retrieved_at)`, carrying `fcount`/`is_ppr`/`is_keeper`/`is_mock`/`cutoff`/
+`period` per row per ADR-024's "never a pre-blended estimate" rule. One fetch per UTC calendar
+day (`already_fetched_today()`), `--force` to bypass.
+
+**MFL's `id` field is confirmed to BE `mfl_id`, not a value requiring a crosswalk.** Verified
+against 10 sampled players (Ja'Marr Chase #1, Jahmyr Gibbs #2, Josh Allen #4, ...): 232/232
+(100%) resolved directly against `ff_playerids.mfl_id`. No name matching was needed or used —
+exactly as expected, since MFL is the source `mfl_id` itself comes from.
+
+**Deliberately NOT a separate table joined against `rankings`.** `rankings` already has
+`spread_sd`/`rank_best`/`rank_worst` (ADR-024) and CLAUDE.md's own `ranking_source` enum names
+`market_adp` for exactly this case — reusing it was considered and rejected, because wiring a new
+source into the table `make_board.py`/`backtest.py` read from risks changing board or backtest
+behaviour as a side effect of an ingestion task, which nobody asked for this session.
+
+**Sample size is small — flagged loudly, not buried.** `totalDrafts=50` behind this snapshot;
+individual players' `draftsSelectedIn` ranged 5-58. `main()` prints a caution below 100 drafts.
+This bounds what comes next.
+
+**`load_mfl_adp_source()` (in `availability.py`) exists, is tested, and is NOT wired into the
+shipped default.** It builds a second `RankingSource` for ADR-034's mixture, mfl_id-joined via
+the ADR-036 hub (`player_ids WHERE source='gsis'`, reverse-looked-up against `SeasonData`'s
+gsis-keyed player array). Against the live 2026 board: **138 of 378 players resolved to a real
+MFL average pick**; the remaining 240 fall back to their FantasyPros ECR rank, since MFL's
+snapshot only covers its own top ~232 picks across all rostered positions. Three reasons it stays
+off by default, so a future session does not flip it on without addressing them:
+
+1. A 50-draft sample is not an equal-weight peer to FantasyPros ECR's far larger analyst base —
+   giving it a mixture weight (even 0.5) is an assumption, not a measurement, in exactly the
+   sense CLAUDE.md §6.3 warns against. No holdout comparison has been run to justify any weight.
+2. "The MFL source" is a blend by construction (real MFL data at the top, a copy of FP-ECR
+   beneath) — worth knowing before trusting a mixture weight against it.
+3. Enabling it would change `data/export/availability.json`'s shipped output as a side effect of
+   an ingestion task. This session already moved that file once (ADR-034, bounds-checked against
+   a pre-declared bracket); a second silent move in the same session, unmeasured, is exactly the
+   failure shape ADR-025/028 both warned about.
+
+**9 tests in `tests/test_ingest_mfl_adp.py`**, covering format-metadata storage, the
+never-league_adp invariant, daily caching, and the fallback-to-consensus behaviour for
+MFL-uncovered players.
 
 ### ADR-036: The identity hub is `mfl_id`, not `gsis_id`
 
@@ -714,6 +797,75 @@ rows is not a hub.
 downstream check will catch. Per the standing rule, cross-source features must **state their
 coverage and refuse unresolved rows**, never drop them silently — the drops are non-random,
 skewing toward fringe roster spots where role changes actually happen.
+
+---
+
+**Status: IMPLEMENTED (2026-07-25, session 9), Task B.** `src/identity.py`. Built entirely from
+`ff_playerids` (already ingested, no re-fetch) — `players_canonical` (one row per `mfl_id`),
+`player_ids` (source, source_id, confidence, method, resolved_at), `player_id_collisions`.
+
+**Re-measured over the full 12,468-row crosswalk, not the earlier estimate:**
+
+| Source | Non-null | Collision groups | Resolvable (post-exclusion) |
+|---|---|---|---|
+| mfl_id | 100.0% | 0 | — (the hub) |
+| gsis | 62.1% | 10 | 61.9% |
+| pfr | 76.8% | 16 | 76.5% |
+| espn | 65.3% | 13 | 65.1% |
+| yahoo | 44.0% | 5 | 43.9% |
+| sleeper | 50.9% | 6 | 50.9% |
+| fantasypros | 38.3% | 2 | 38.3% |
+| sportradar | 59.6% | 5 | 59.5% |
+
+57 (source, source_id) pairs excluded to `player_id_collisions` project-wide. The prior estimate
+(62.1% / 10 collisions for gsis) is confirmed almost exactly — the small gap between "non-null"
+and "resolvable" in each row is the collision exclusion itself.
+
+**`depth_chart` is not a distinct ID space.** `depth_charts_weekly`/`depth_charts_snapshots` key
+rows by `gsis_id` (and `espn_id`), so a depth-chart row resolves through those spokes. Listed in
+the requested source enum for completeness; there is no `depth_chart_id` column to crosswalk.
+`resolve()` still accepts `"depth_chart"` as a valid source name and raises on anything not in
+the enum, but there will never be a row under it in `player_ids`.
+
+**Coverage restricted to the 378 board_2026 players — the number that matters, not the global
+rate.** Board players carry no external ID (rankings has name only), so this first name-matches
+against `players_canonical.display_name`: **402 of 408 matched (98.5%)** after normalizing
+suffixes (Jr./Sr./II/III/IV/V) and punctuation — normalization improved the raw exact-match rate
+from 91.2%. The remaining 6 are nicknames a simple normalizer cannot resolve (Hollywood Brown =
+Marquise Brown, Gabe Davis = Gabriel Davis) or very recent additions the crosswalk may not carry
+yet. **This name join feeds only the coverage REPORT, never `player_ids`** — a wrong match here
+mislabels a statistic, not a downstream join a feature would trust.
+
+Among the 402 matched, coverage is high for every source except Yahoo:
+
+| Source | Coverage of matched board players |
+|---|---|
+| gsis / espn / sportradar | 99.0% |
+| sleeper / fantasypros | 98.8% |
+| pfr | 99.0% |
+| yahoo | 80.6% |
+
+Board-player coverage is far better than the global rate for every source, which makes sense —
+the crosswalk is thinnest for players outside any current relevance (retired, practice-squad,
+never-active), and the board only contains players FantasyPros ranks.
+
+**Note: `board_players` was 408, not the 378 quoted elsewhere.** `board.json` holds 378 after
+depth-of-fit filtering; the `rankings` table for `season=2026, source='fantasypros_ecr'` that
+this coverage check queries directly holds 408 distinct names (30 more — likely players ranked
+by FantasyPros but outside the board's drafted-relevance cut). Flagging the discrepancy rather
+than silently reconciling it; it does not change any conclusion here.
+
+**`name_dob_match_candidates()` / `manually_confirm()` exist with zero consumers this session.**
+The requested schema names `method='name_dob_match'` as an enum value, so the function exists —
+but MFL ADP (ADR-035) resolves against `mfl_id` directly and needs no name matching at all.
+Nothing calls it in production. Birthdate narrowing is unimplemented for the same reason: no
+caller supplies one, and writing DOB-matching logic with no test case to verify it against would
+be exactly the over-engineering CLAUDE.md's gates flag. `manually_confirm()` stamps
+`method='manual'` so a human-confirmed pair is never visually indistinguishable from an automated
+crosswalk hit.
+
+**13 tests in `tests/test_identity.py`**, including the core invariant: a source_id shared by two
+`mfl_id`s must resolve to `None` for *both*, never a tiebreak.
 
 **Status: NOT STARTED** (this is Task B). Gates the feature pipeline.
 

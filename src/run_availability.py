@@ -23,12 +23,6 @@ SEASON = 2026
 OUT_CSV = Path(__file__).resolve().parent.parent / "data" / "availability_2026.csv"
 OUT_TXT = Path(__file__).resolve().parent.parent / "data" / "availability_2026_summary.txt"
 
-# The strategist's named scenario. Picks 19-22 fall between the user's pick 18
-# and pick 23. Two managers own all four, and both took a TE in round 3 in 2025.
-SCENARIO_PICKS = {19: "Shit Leopards", 20: "Cucked Commish",
-                  21: "Cucked Commish", 22: "Shit Leopards"}
-REPEAT_PROBS = (0.0, 0.5, 1.0)
-
 
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
@@ -47,10 +41,11 @@ def main() -> None:
         conn.close()
 
     pos_rank = av.positional_ranks(data)
+    sources = av.default_ranking_sources(data)
     results: Dict[float, av.AvailabilityResult] = {}
     for sigma in ds.SIGMA_SWEEP:
         results[sigma] = av.simulate_availability(
-            data, sigma, args.sims, args.seed + int(sigma * 100)
+            data, sigma, args.sims, args.seed + int(sigma * 100), sources=sources
         )
 
     picks = results[ds.DEFAULT_SIGMA].user_picks
@@ -81,23 +76,6 @@ def main() -> None:
                     for k, v in s.items():
                         w.writerow(["best_available_dist", sigma, "", pos, "", "", "", pk,
                                     round(v, 2), f"{k} of best-available {pos} positional rank"])
-
-    # -------------------------------------------------- TE scenario (18 -> 23)
-    scen_rows = []
-    for p in REPEAT_PROBS:
-        scen = [av.ScenarioPick(pk, "TE", p) for pk in SCENARIO_PICKS]
-        r = av.simulate_availability(
-            data, ds.DEFAULT_SIGMA, args.sims, args.seed + 777, scenario=scen
-        )
-        for tname in ("T1", "T2", "T3"):
-            scen_rows.append((p, tname, r.tier_avail["TE"][tname].get(23, float("nan"))))
-    with OUT_CSV.open("a", newline="", encoding="utf-8") as f:
-        w = csv.writer(f)
-        for p, tname, val in scen_rows:
-            w.writerow(["te_scenario", ds.DEFAULT_SIGMA, "", "TE", "", "", tname, 23,
-                        round(val, 4),
-                        f"P(>=1 TE {tname} survives to pick 23) | picks 19-22 take a TE "
-                        f"with prob {p:.0%}"])
 
     # ------------------------------------------------------------- summary
     lines: List[str] = []
@@ -173,40 +151,27 @@ def main() -> None:
             A(f"          {pos:<5} " + " ".join(
                 f"{s[k]:6.0f}" for k in ("p10", "p25", "median", "p75", "p90")))
 
-    # --- TE scenario --------------------------------------------------------
-    A("")
-    A("=" * 78)
-    A("SCENARIO: THE TE RUN BETWEEN YOUR PICKS 18 AND 23")
-    A("=" * 78)
-    A("Picks 19-22 belong entirely to two managers:")
-    for pk, who in sorted(SCENARIO_PICKS.items()):
-        A(f"    pick {pk}: {who}")
-    A("Both took a TE in round 3 in 2025. If both repeat, up to four TE-capable")
-    A("picks happen between your pick 18 and your pick 23.")
-    A("")
-    A("  Chance at least one TE of each tier survives to YOUR PICK 23:")
-    A(f"    {'repeat prob':<14} " + " ".join(f"{t:>8}" for t in ("T1", "T2", "T3")))
-    for p in REPEAT_PROBS:
-        vals = [v for (pp, t, v) in scen_rows if pp == p]
-        A(f"    {p:>6.0%} repeat  " + " ".join(f"{v:8.0%}" for v in vals))
-    A("")
-    A("  DECISION RULE: compare the 100% row against the 0% row. If the tier you")
-    A("  want drops sharply, take the TE at 18. If it barely moves, wait — those")
-    A("  four picks were never the binding constraint.")
     A("")
     A("=" * 78)
     A("CAVEATS — read once now, not during the draft")
     A("=" * 78)
-    A("1. Opponents are modelled as drafting to consensus with noise, and they do")
-    A("   NOT react to what you do. A real room responds to positional runs.")
+    A("1. Opponents are modelled with a positional-need penalty derived from this")
+    A("   league's roster rules (mechanical, ADR-034) and do NOT react to what you")
+    A("   do. A real room responds to positional runs.")
     A("2. The noise level (sigma) is a guess. It is not fitted to any observed")
     A("   draft data, because none exists for this league. That is why every")
     A("   number is shown across three settings.")
-    A("3. The board is consensus as of the date above and will move before Week 1.")
+    A("3. Opponent boards are drawn from a mixture of ranking sources -- currently")
+    A("   one (FantasyPros ECR) -- so this is a no-op today, but it means a second")
+    A("   source (MFL ADP, ADR-035) plugs in without changing this model's shape.")
+    A("4. The board is consensus as of the date above and will move before Week 1.")
     A("   Re-run this script closer to the draft.")
-    A("4. These are availability odds only. They say nothing about whether a")
+    A("5. These are availability odds only. They say nothing about whether a")
     A("   player is GOOD — that question runs through a projection whose R-squared")
     A("   is 0.16-0.27, and is much less certain than anything on this sheet.")
+    A("6. These are UNCONDITIONAL marginals (Prep mode): they average over every")
+    A("   possible draft, not the one actually in progress. Mid-draft, a client")
+    A("   simulator re-runs conditioned on real picks made -- see data-contract.md.")
 
     OUT_TXT.write_text("\n".join(lines), encoding="utf-8")
     print("\n".join(lines))

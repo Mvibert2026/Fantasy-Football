@@ -37,7 +37,7 @@ import make_board
 from config import DEFAULT_CONFIG
 from scoring import LEAGUE, ReplacementLevels
 
-CONTRACT_VERSION = "1.5.1"
+CONTRACT_VERSION = "1.6.0"
 SEASON = 2026
 EXPORT_DIR = Path(__file__).resolve().parent.parent / "data" / "export"
 AVAIL_CSV = Path(__file__).resolve().parent.parent / "data" / "availability_2026.csv"
@@ -74,9 +74,8 @@ def _load_availability_csv() -> Dict[str, dict]:
     by_tier: Dict[str, Dict[str, Dict[str, Dict[str, float]]]] = defaultdict(
         lambda: defaultdict(lambda: defaultdict(dict))
     )
-    te_scen: List[dict] = []
     if not AVAIL_CSV.exists():
-        return {"by_player": {}, "by_tier": {}, "te_scenarios": []}
+        return {"by_player": {}, "by_tier": {}}
     with AVAIL_CSV.open(encoding="utf-8") as f:
         for row in csv.DictReader(f):
             sig = f"sigma_{int(float(row['sigma']))}"
@@ -84,15 +83,9 @@ def _load_availability_csv() -> Dict[str, dict]:
                 by_player[row["player"]][row["pick"]][sig] = float(row["value"])
             elif row["record_type"] == "tier_available":
                 by_tier[row["position"]][row["tier"]][row["pick"]][sig] = float(row["value"])
-            elif row["record_type"] == "te_scenario":
-                te_scen.append({
-                    "tier": row["tier"], "pick": int(row["pick"]),
-                    "probability_available": float(row["value"]), "note": row["note"],
-                })
     return {
         "by_player": {k: dict(v) for k, v in by_player.items()},
         "by_tier": {p: {t: dict(pk) for t, pk in ts.items()} for p, ts in by_tier.items()},
-        "te_scenarios": te_scen,
     }
 
 
@@ -268,6 +261,55 @@ def build_availability_json() -> dict:
                 "These probabilities never pass through the projection curve, so they are the "
                 "most reliable numbers in the project. They describe draft behaviour, not "
                 "football outcomes."
+            ),
+            "figures_are_unconditional_marginals": True,
+            "marginals_note": (
+                "by_player and by_tier average over every possible draft (Prep mode) -- they "
+                "are NOT conditioned on picks actually made so far. Mid-draft, recompute with "
+                "client_simulation_parameters against the real board state instead of reading "
+                "these numbers as still current. See data-contract.md."
+            ),
+        },
+        # ADR-034. Enough for a client to re-run the same Monte Carlo model
+        # CONDITIONED on live draft state (players already gone, each team's
+        # actual roster) instead of reading the unconditional marginals above.
+        # league.json already carries teams/rounds/user_draft_slot/roster
+        # structure; this block adds only what belongs to the OPPONENT MODEL
+        # itself.
+        "client_simulation_parameters": {
+            # Mirrors av.default_ranking_sources(): single source today. Not
+            # computed from a live SeasonData here (this function only reads the
+            # CSV) -- if a second source (MFL ADP, ADR-035) is wired into
+            # run_availability.py, update this list in the same commit.
+            "ranking_sources": [{"name": "fantasypros_ecr", "weight": 1.0}],
+            "mechanical_need_targets": dict(ds.MECHANICAL_NEED_TARGETS),
+            "mechanical_need_targets_note": (
+                "Per position: STARTERS[pos] + (FLEX_SLOTS if pos is flex-eligible else 0). "
+                "An UPPER BOUND per position, not a partition of the 2 shared flex slots -- a "
+                "team could plausibly need up to this many of ANY one eligible position, not "
+                "all three at once. Below this count a team is not penalised for taking the "
+                "position again; a team at or past MAX_AT_POSITION never takes another."
+            ),
+            "max_at_position": {"QB": 3, "RB": 8, "WR": 9, "TE": 3},
+            "need_penalty_per_surplus": 25.0,
+            "room_noise_drawn_once_per_draft": True,
+            "room_noise_note": (
+                "One Gaussian(0, sigma) draw per player is shared by the whole room for a "
+                "single simulated draft, not redrawn per pick or per team -- this models "
+                "\"the room collectively valued him a round higher this year\", not nine "
+                "independently confused teams."
+            ),
+            "algorithm_note": (
+                "Per simulated draft: (1) sample each opponent team's ranking source from "
+                "ranking_sources (fresh draw every draft, never fixed to a team); (2) draw one "
+                "shared noise vector for the room; (3) each opponent's effective rank is their "
+                "source's rank plus the shared noise; (4) pick order is standard snake over "
+                "teams=league.json:teams, rounds=league.json:rounds, "
+                "user_slot=league.json:user_draft_slot; (5) each opponent picks the lowest "
+                "effective-rank available player, with mechanical_need_targets applied as an "
+                "additive rank penalty (need_penalty_per_surplus per player beyond target, "
+                "infinite at max_at_position); (6) the user is assumed to draft best-available "
+                "off the TRUE consensus board (unperturbed) -- see board.json."
             ),
         },
     })

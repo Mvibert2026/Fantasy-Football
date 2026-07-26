@@ -187,6 +187,20 @@ def test_every_artifact_carries_the_provenance_pair(name):
     assert d.get("generated_utc"), f"{name} has no generated_utc"
 
 
+def test_te_scenarios_is_gone_and_client_simulation_parameters_present():
+    """ADR-033/034: te_scenarios encoded a named-manager repeat assumption found
+    circular. It must not reappear, and the replacement mechanism (enough
+    parameters for a client to recompute availability conditioned on live draft
+    state) must be present."""
+    avail = _load("availability.json")
+    assert "te_scenarios" not in avail
+    csp = avail["client_simulation_parameters"]
+    assert csp["ranking_sources"] == [{"name": "fantasypros_ecr", "weight": 1.0}]
+    assert csp["mechanical_need_targets"]["QB"] == 1  # 1 starter, not flex-eligible
+    assert csp["room_noise_drawn_once_per_draft"] is True
+    assert avail["metadata"]["figures_are_unconditional_marginals"] is True
+
+
 def test_flex_split_is_described_as_measured_not_assumed():
     """ADR-029 measured the split over 26 seasons; the note said 'not a
     measurement' for two contract versions after that stopped being true."""
