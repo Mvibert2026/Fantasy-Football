@@ -3,6 +3,8 @@ from pathlib import Path
 
 import pytest
 
+import export_contract
+
 EXPORT = Path(__file__).resolve().parent.parent / "data" / "export"
 
 
@@ -161,6 +163,37 @@ def test_no_def_value_of_any_kind_exists_in_the_exports():
     assert "DEF" not in board["replacement_levels_used"]
     assert "DEF" not in board.get("curve_fits", {})
     assert "DEF" not in league["replacement_levels"]
+
+
+@pytest.mark.parametrize(
+    "name",
+    [
+        "board.json",
+        "availability.json",
+        "league.json",
+        "glossary.json",
+        "nulls.json",
+        "opponents.json",
+        # strategies.json deliberately excluded: export_strategies.py's slow
+        # (43,200-sim) regeneration is allowed to lag behind CONTRACT_VERSION
+        # between sessions -- the front end treats it as known-stale, not a bug.
+    ],
+)
+def test_committed_artifact_matches_current_contract_version(name):
+    """Regression guard for the exact failure in commit b39a548: CONTRACT_VERSION
+    was bumped in source AFTER the artifacts were generated, and the stale
+    (pre-bump) files were committed anyway -- so six files claimed "1.5.1" while
+    docs/data-contract.md's own changelog, and the source constant, both already
+    said "1.6.0". Every test in this file loaded those files and passed, because
+    "does contract_version exist" was checked, never "does it match the CURRENT
+    source constant". This is the same failure shape as ADR-025/028: a claim
+    that was true in prose and false in the artifact it described."""
+    d = _load(name)
+    assert d["contract_version"] == export_contract.CONTRACT_VERSION, (
+        f"{name} says contract_version={d['contract_version']!r} but "
+        f"export_contract.CONTRACT_VERSION is {export_contract.CONTRACT_VERSION!r} -- "
+        f"regenerate this artifact before committing"
+    )
 
 
 @pytest.mark.parametrize(

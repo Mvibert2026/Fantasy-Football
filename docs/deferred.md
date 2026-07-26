@@ -165,3 +165,46 @@ to cross-positional ordering but assumes you receive your top-K uncontested. Nei
 `vbd_sum` models opponents, scarcity, or pick timing, so no current metric can evaluate a
 strategy whose entire effect is *when* a player is taken (Hero RB, Zero RB — test-registry
 #44). A real draft simulation is the missing evaluation layer.
+
+### FantasyPros API — probed 2026-07-25, not built against
+
+`.env` exists with `FANTASYPROS_API_KEY`. Live probe (not a build) against
+`api.fantasypros.com/public/v2/json/nfl/{season}/{projections,consensus-rankings}`.
+
+**Component projections ARE present.** `projections` returns `pass_yds`/`pass_tds`/
+`pass_ints`/`rush_yds`/`rush_tds`/`rec_rec` (receptions)/`rec_yds`/`rec_tds`, plus
+bonus-threshold flags matching this league's scoring shape almost exactly
+(`pass_yds_300`/`pass_yds_400`, `rush_yds_100`/`rush_yds_200`, `scrimage_yards_100`/`_200`).
+`mflid` is returned per player — a direct crosswalk to the ADR-036 hub, no name matching.
+This is real, in principle, test-registry #2 material.
+
+**The free tier caps every response at the top 10 players, with no working pagination.**
+`limit: 10`, `public_api_limited: true`, `tier: "free"` on every response. `count` reports
+the true total (598 for all-position projections, 580 for consensus-rankings) but `players`
+is truncated to 10 regardless. Tried `offset`/`page`/`start` query params — all silently
+ignored, all returned the identical top-10 players. **This is the load-bearing finding: the
+free tier cannot deliver full-board coverage of anything.** At best, four position-filtered
+calls (`position=QB/RB/WR/TE`) would surface the top 10 *per position* — 40 players — and
+those are almost certainly already inside the 145 players the existing rank-to-points curve
+covers. It does not reach the 233 players currently without a displayable projection, which
+are specifically the ones *outside* consensus-rank depth. **Unblocking #2 for the players
+that actually need it requires a paid tier**, not just a key.
+
+**ADP is filterable to half-PPR, and it is genuinely separate from ECR.** `type=ADP&scoring=HALF`
+returns a distinct dataset from `type=ST&scoring=HALF`: different `rank_ave`/`rank_std`/count,
+and critically **`total_experts=3`** (vs 92 for the ECR/consensus type) — this is FantasyPros'
+own small ADP composite, likely 3 draft-tracking sites, not their full analyst panel. Same
+"thin sample" caveat as MFL's `totalDrafts=50` (ADR-035) applies here if it is ever ingested:
+worth having, not worth weighting heavily without measurement.
+
+**Historical seasons are queryable** (2023 tested successfully, 105 QB rows reported), subject
+to the same 10-row-per-call cap.
+
+**No rate-limit telemetry beyond the per-call cap.** No `X-RateLimit-*` headers, no quota
+field in the body. Whether there is also a daily/monthly call quota on top of the per-call
+truncation was not tested — that would require deliberately exhausting it, which this probe
+did not do (roughly a dozen calls total).
+
+**Next step if this becomes a priority:** either accept 40-player top-tier coverage as a
+partial answer to #2, or price FantasyPros' paid API tier. Nothing was built against this
+tier — per instruction, report only.
