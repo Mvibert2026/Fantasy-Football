@@ -678,8 +678,46 @@ asked.
 separates, that is the finding** — it means opponent modelling cannot pay for itself at this
 sample size, which is a legitimate result and must be reported as one rather than tuned around.
 
-**Status: NOT STARTED.** Supersedes the precomputed-draws export in favour of a client-side
-simulator.
+---
+
+**Status: IMPLEMENTED (2026-07-25, session 9).** Also implements ADR-033's demotion —
+`ScenarioPick`, `SCENARIO_PICKS`, `REPEAT_PROBS` and the named-manager repeat mechanism are
+**deleted**, not kept as an option, from `src/availability.py` and `src/run_availability.py`.
+`availability.json.te_scenarios` is removed from the contract (bumped to v1.6.0).
+
+**The three inputs, applied per simulated draft:**
+
+1. **Ranking mixture per manager.** Each of the 9 opponent teams draws a ranking source from a
+   shared prior, freshly every draft — never assigned to a team, never collapsed to argmax.
+   `RankingSource(name, rank)` + `default_ranking_sources()` gives one source today
+   (`fantasypros_ecr`, weight 1.0), so the mixture is a no-op in practice, but the sampling path
+   is real: a second source (MFL ADP, ADR-035) is a list entry, not a rewrite.
+2. **Mechanical positional need.** `draft_sim.MECHANICAL_NEED_TARGETS`, derived as
+   `STARTERS[pos] + FLEX_SLOTS` for flex-eligible positions (QB 1, RB 4, WR 5, TE 3) —
+   structural, not assumed. Kept **separate** from `NEED_TARGETS` (QB 2, RB 5, WR 6, TE 2),
+   which stays the judgement-call default for `opponent_pick`/`simulate_one` so the PR-003
+   strategy-comparison numbers (already reproducibility-verified, ADR-028) do not move.
+3. **Rank noise**, unchanged: one shared Gaussian(0, sigma) draw per player per simulated draft.
+
+**Result: TE T1 @ pick 23 = 0.596** (sigma=10, 3000 sims), against the old unconditional
+baseline of 0.5963 (the deleted table's 0%-forced-repeat row) — a move of **−0.0003**, inside
+the pre-declared sanity bracket `[0, 0.60]`. Confirms "flatter, not flat" as predicted: the
+mechanical TE need target (3) essentially never binds by pick 23 (round 3), regardless of model,
+so removing the two-named-manager assumption barely moves the number. Most of the old table's
+0.60-to-0.13 spread was the assumption itself, not signal the room actually contains.
+
+**Pre-registered expectation partially addressed, not tested.** "No separation between managers
+before round 4" needs per-manager output broken out, which the current `tier_avail`/`by_tier`
+aggregates do not expose (they're pooled across all 9 opponents). Not measured this session —
+flagging so a future session does not assume it was.
+
+**Client-side re-simulation.** `availability.json` gains `client_simulation_parameters`
+(ranking-source weights, mechanical need targets, room-noise spec, plain-English algorithm
+description) so a client can recompute availability conditioned on live draft state.
+`by_player`/`by_tier` remain unconditional marginals for Prep mode, flagged
+`metadata.figures_are_unconditional_marginals`. **The client-side simulator itself is not
+built here** — this is model parameters for a client to consume, not client code; building the
+actual JS belongs to whichever session owns `ui/`.
 
 ### ADR-035: MFL ADP as `adp_source='mfl_proxy'` — partially supersedes ADR-018
 

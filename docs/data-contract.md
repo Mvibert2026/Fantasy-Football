@@ -1,6 +1,6 @@
 # Front-End Data Contract
 
-**Version 1.5.1** · generated into `data/export/` · authored 2026-07-25
+**Version 1.6.0** · generated into `data/export/` · authored 2026-07-25
 
 The UI reads these files and **never** touches `data/nfl.db`. Every artifact carries
 `contract_version` and `generated_utc`. Breaking changes bump the major version and are
@@ -95,15 +95,44 @@ league's format*", which is a different and better-founded statement.
 |---|---|
 | `by_player` | `{player: {pick: {sigma_5, sigma_10, sigma_20}}}` |
 | `by_tier` | `{position: {tier: {pick: {sigma_5, sigma_10, sigma_20}}}}` — P(≥1 of that tier still on the board) |
-| `te_scenarios[]` | `{tier, pick, probability_available, note}` — the 0% / 50% / 100% repeat cases, kept separate |
-| `metadata` | sims run, sigma values, plain-English sigma explanation, user picks, reliability note |
-
-`te_scenarios` is deliberately **not** merged into `by_tier`: it is a conditional forecast under
-a named assumption about two specific managers, not a marginal probability, and merging them
-would let the UI present a scenario as a fact.
+| `metadata` | sims run, sigma values, plain-English sigma explanation, user picks, reliability note, marginals note |
+| `client_simulation_parameters` | Everything needed to re-run the opponent model client-side, conditioned on live draft state — see below |
 
 **These are the most reliable numbers in the project** — they never pass through the projection
 curve. Surface `metadata.reliability_note`.
+
+### `te_scenarios` is REMOVED (ADR-033, ADR-034) — do not reintroduce it
+
+Prior versions shipped a `te_scenarios[]` block: P(TE tier survives to pick 23) under three
+hand-set probabilities that two *named* managers repeat a 2025 round-3 TE pick. It was found
+circular — its entire spread (0.60 at 0% repeat down to 0.13 at 100%) came from assuming
+specific people's behaviour, not from measuring anything. The switch that generated it
+(`repeat_2025 / half_repeat / no_repeat`) has been deleted from the codebase, not just the
+export. `by_tier["TE"]["T1"]` at pick 23 is now the answer to that question, computed under the
+model below rather than assumed.
+
+### `by_player` / `by_tier` are UNCONDITIONAL marginals — "Prep mode" only
+
+They average over every possible draft, not the one actually happening. **Do not display them
+as current once a real draft is underway** — `metadata.marginals_note` says so and must be
+surfaced anywhere these numbers are read mid-draft. For a number conditioned on picks already
+made, recompute using `client_simulation_parameters` (below) against the real board state
+instead of reading these.
+
+### `client_simulation_parameters` — what a client-side simulator needs
+
+| Field | Notes |
+|---|---|
+| `ranking_sources[]` | `{name, weight}`. Today: one entry, `fantasypros_ecr`, weight 1.0. A second entry (MFL ADP, ADR-035) extends this list, not the algorithm |
+| `mechanical_need_targets` | Per position, the count past which a team is no longer preferred toward that position. `STARTERS[pos] + FLEX_SLOTS` for flex-eligible positions — see `mechanical_need_targets_note` for why this is an upper bound, not a partition |
+| `max_at_position` | Hard cap; a team at this count never takes another of that position |
+| `need_penalty_per_surplus` | Additive rank penalty per player beyond `mechanical_need_targets`, applied before ranking |
+| `room_noise_drawn_once_per_draft` | `true`. One noise draw per player, shared by the whole room for a single simulated draft — not per pick, not per team |
+| `algorithm_note` | The full per-draft procedure in plain English, referencing `league.json` for roster/pick-order fields it does not duplicate |
+
+Player pool, positions and consensus ranks come from `board.json`; roster structure, team count,
+rounds and draft slot come from `league.json`. This block supplies only what belongs to the
+**opponent model** itself, so nothing is duplicated across artifacts.
 
 ---
 
@@ -207,6 +236,7 @@ as QB10). It is still withheld, because publishing a rank invites a downstream V
 | 1.1.0 | 2026-07-25 | Added the narration layer (Fact schema + renderer contract). Additive only; no existing field changed |
 | 1.2.0 | 2026-07-25 | Design-handoff reconciliation: integer `id` and `tier`, `evaluative_adjustment` 0 + availability flag, `consensus_source_count`, `def_supported`, `projection_within_fitted_range` |
 | 1.3.0 | 2026-07-25 | **VALUE CHANGE, no schema change.** Replacement levels RB28/WR41/TE11 -> RB30/WR40/TE10 from measurement (ADR-029). Every `vbd`, `projected_points` and `overall_rank` in board.json moved. Re-fetch the board. |
+| 1.6.0 | 2026-07-25 | **BREAKING (removal).** `availability.json.te_scenarios[]` removed — implements ADR-033/034. The prior-year-manager-repeat assumption it encoded has been deleted from the model, not just the export. Added `availability.json.client_simulation_parameters` (ranking-source mixture, mechanical need targets, room-noise spec) so a client can recompute availability conditioned on live draft state instead of reading the unconditional marginals. `metadata.figures_are_unconditional_marginals` + `metadata.marginals_note` added. TE T1 @ pick 23 moves from 0.598 (old unconditional baseline) to ~0.59 under the new model — inside the pre-declared sanity bracket, not a reversal |
 | 1.5.1 | 2026-07-25 | **Additive, provenance only.** `league.json` gains `generated_utc` — it was the one artifact shipping without it, through five contract versions, so consumers keying a run id on it fell back to "unversioned". A test now asserts every artifact carries both `contract_version` and `generated_utc`, which is what this document's opening line has always claimed. No other field changed |
 | 1.5.0 | 2026-07-25 | **Additive.** `league.json` gains `positions_without_replacement_levels: ["DEF"]` + note (ADR-037 — DEF permanently excluded, stated as a decision rather than an absence). `board.json.def_note` reworded to match. `league.json.flex_split_note` corrected: it called the split "an explicit tunable assumption, not a measurement", which ADR-029 made false. `nulls.json` PR-003 elite-TE result restated −92.9 → **−96.1 ± 6** (ADR-028 seed fix; no conclusion moved). No existing field removed or retyped |
 | 1.4.0 | 2026-07-25 | **BUG FIX — `league.json` was not valid JSON.** `scoring.defense.points_allowed`'s open-ended tier shipped a bare `Infinity` token, so `JSON.parse`/`fetch().json()` threw and no browser could load the file. The ceiling is now `null` plus a `points_allowed_note`. All three exporters now write with `allow_nan=False`, and a test parses every artifact with `parse_constant` set to raise. **Consumers sanitising this token at copy time can drop the workaround.** Also: stale `RB28/WR41/TE11` prose corrected to `RB30/WR40/TE10` in `league.json.replacement_levels_note` and `glossary.json` (the *values* have been correct since 1.3.0; only these two strings were stale). `board.json` and `availability.json` regenerated byte-identically — no values moved. |

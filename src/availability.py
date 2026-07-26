@@ -21,6 +21,26 @@ Sigma in intuitive terms:
   sigma=5   a disciplined room; players go within about half a round of consensus
   sigma=10  default; roughly one round of slippage either way
   sigma=20  a chaotic room; two rounds of slippage, reaches and slides common
+
+ADR-034 -- THREE INPUTS, NONE OF THEM PRIOR-YEAR MANAGER BEHAVIOUR. This module
+previously (pre-2026-07-25) let a caller force NAMED teams to draft a position
+with a hand-set probability, used to model "two managers who took a TE in round 3
+of 2025 might do it again". ADR-033 found that circular: the entire spread of the
+old TE-scenario table (0.60 at 0% repeat, 0.13 at 100% repeat) came from an
+assumption about two specific people, not a measurement. That mechanism
+(`ScenarioPick`) is gone. The three inputs now are:
+
+  (a) A ranking MIXTURE per manager (`RankingSource` + `source_weights`). Each
+      simulated draft samples, per opponent team, which ranking source drives
+      their board -- never hard-assigned to a team, never collapsed to argmax.
+      With a single source (today: FantasyPros ECR only) this is a no-op, but
+      the sampling path is real so a second source (MFL ADP, ADR-035) plugs in
+      without a rewrite.
+  (b) Positional NEED, mechanical: `ds.MECHANICAL_NEED_TARGETS`, derived from
+      STARTERS + FLEX_SLOTS, not a hand-tuned constant (contrast
+      `ds.NEED_TARGETS`, which stays a judgement call for the PR-003 strategy
+      simulator so those already-verified numbers do not move).
+  (c) Rank NOISE (sigma), unchanged, drawn once per simulated draft.
 """
 
 from __future__ import annotations
@@ -45,12 +65,21 @@ TIERS: Dict[str, Dict[str, Tuple[int, int]]] = {
 
 
 @dataclass
-class ScenarioPick:
-    """Force the team owning `pick_number` to take `position` with probability p."""
+class RankingSource:
+    """One board an opponent might be drafting from.
 
-    pick_number: int
-    position: str
-    probability: float
+    `rank` must be aligned to the SAME player order as the SeasonData it will be
+    used with (positional index i means the same player in both arrays).
+    """
+
+    name: str
+    rank: np.ndarray
+
+
+def default_ranking_sources(data: ds.SeasonData) -> List[RankingSource]:
+    """The only source today. A second entry (MFL ADP, ADR-035) is added here,
+    not by branching the simulation code -- that is the point of the mixture."""
+    return [RankingSource("fantasypros_ecr", data.consensus_rank)]
 
 
 @dataclass
@@ -81,14 +110,24 @@ def simulate_availability(
     sigma: float,
     n_sims: int,
     seed: int,
-    scenario: Optional[Sequence[ScenarioPick]] = None,
     track_top_n: int = 80,
+    sources: Optional[Sequence[RankingSource]] = None,
+    source_weights: Optional[Sequence[float]] = None,
 ) -> AvailabilityResult:
     """Record who is on the board at each user pick, across many drafts.
 
     The user drafts BPA here. Their own picks remove players from the board, but
     the user knows their own roster at draft time, so what matters for planning
     is what the other nine teams take -- which BPA reproduces neutrally.
+
+    ADR-034's three inputs, applied per simulated draft:
+      (a) each of the 9 opponent teams is assigned a ranking source by sampling
+          from `sources`/`source_weights` -- a fresh draw every draft, never a
+          fixed per-team identity, which is what "marginalised over, never
+          hard-assigned" means in practice;
+      (b) `ds.MECHANICAL_NEED_TARGETS` drives the positional-need penalty inside
+          `ds.opponent_pick`, derived from roster rules rather than assumed;
+      (c) one shared Gaussian noise draw per draft (unchanged from before).
     """
     rng = np.random.default_rng(seed)
     order = ds.pick_order()
@@ -98,9 +137,10 @@ def simulate_availability(
     n = len(data.player_ids)
     top_ids = list(np.argsort(data.consensus_rank)[:track_top_n])
 
-    scen_by_pick: Dict[int, ScenarioPick] = {}
-    for sp in scenario or []:
-        scen_by_pick[sp.pick_number] = sp
+    sources = list(sources) if sources else default_ranking_sources(data)
+    weights = np.array(source_weights if source_weights else [1.0] * len(sources), dtype=float)
+    weights = weights / weights.sum()
+    source_ranks = np.stack([s.rank for s in sources])  # (n_sources, n_players)
 
     avail_counts = {i: {p: 0 for p in user_picks} for i in top_ids}
     tier_counts = {
@@ -111,7 +151,13 @@ def simulate_availability(
     }
 
     for _ in range(n_sims):
-        effective = data.consensus_rank + rng.normal(0.0, sigma, size=n)
+        # (a) per-team ranking-source assignment, freshly sampled this draft --
+        # never fixed to a team across sims, i.e. marginalised, not hard-assigned.
+        team_source_idx = rng.choice(len(sources), size=ds.N_TEAMS, p=weights)
+        team_base_rank = source_ranks[team_source_idx]  # (N_TEAMS, n)
+        # (c) one shared noise draw for the room this draft.
+        room_noise = rng.normal(0.0, sigma, size=n)
+        effective_by_team = team_base_rank + room_noise[None, :]
         available = np.ones(n, dtype=bool)
         counts = [{p: 0 for p in ds.POSITIONS} for _ in range(ds.N_TEAMS)]
 
@@ -142,16 +188,11 @@ def simulate_availability(
                 state = ds.DraftState(data.season, pick_no, rnd, [], counts[me], available)
                 choice = ds.strategy_bpa(state, available, data, data.consensus_rank)
             else:
-                sp = scen_by_pick.get(pick_no)
-                choice = None
-                if sp is not None and rng.random() < sp.probability:
-                    p = ds.POSITIONS.index(sp.position)
-                    m = available & (data.positions == p)
-                    if m.any():
-                        cand = np.where(m)[0]
-                        choice = int(cand[np.argmin(effective[cand])])
-                if choice is None:
-                    choice = ds.opponent_pick(effective, available, counts[team], data)
+                # (b) mechanical need, not the judgement-call NEED_TARGETS.
+                choice = ds.opponent_pick(
+                    effective_by_team[team], available, counts[team], data,
+                    targets=ds.MECHANICAL_NEED_TARGETS,
+                )
 
             if choice is None or not available[choice]:
                 continue

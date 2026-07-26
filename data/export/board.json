@@ -1,6 +1,6 @@
 {
   "contract_version": "1.5.1",
-  "generated_utc": "2026-07-26T00:58:08.872672+00:00",
+  "generated_utc": "2026-07-26T03:34:27.800027+00:00",
   "season": 2026,
   "board_source": "fantasypros_ecr re-scored into league positional value structure",
   "consensus_source": "fantasypros_ecr",
@@ -78,14 +78,14 @@
       "evaluative_adjustment_note": "Zero by construction, not by omission. This board assigns every player at the same positional consensus rank an identical projection, so it holds no player-level opinion to attribute. All rank movement is structural. A real evaluative component requires component-level projections (test-registry #2), which no accessible source provides. SUPPRESS this row in the UI while evaluative_adjustment_available is false.",
       "availability": {
         "3": {
-          "sigma_5": 0.6143,
-          "sigma_10": 0.7587,
-          "sigma_20": 0.8433
+          "sigma_5": 0.6215,
+          "sigma_10": 0.7475,
+          "sigma_20": 0.8403
         },
         "18": {
-          "sigma_5": 0.0003,
-          "sigma_10": 0.0363,
-          "sigma_20": 0.2313
+          "sigma_5": 0.0005,
+          "sigma_10": 0.0435,
+          "sigma_20": 0.2172
         },
         "23": {
           "sigma_5": 0.0,
@@ -190,9 +190,9 @@
       "evaluative_adjustment_note": "Zero by construction, not by omission. This board assigns every player at the same positional consensus rank an identical projection, so it holds no player-level opinion to attribute. All rank movement is structural. A real evaluative component requires component-level projections (test-registry #2), which no accessible source provides. SUPPRESS this row in the UI while evaluative_adjustment_available is false.",
       "availability": {
         "3": {
-          "sigma_5": 0.5303,
-          "sigma_10": 0.6933,
-          "sigma_20": 0.8337
+          "sigma_5": 0.5142,
+          "sigma_10": 0.705,
+          "sigma_20": 0.8157
         },
         "18": {
           "sigma_5": 0.0,
@@ -302,24 +302,24 @@
       "evaluative_adjustment_note": "Zero by construction, not by omission. This board assigns every player at the same positional consensus rank an identical projection, so it holds no player-level opinion to attribute. All rank movement is structural. A real evaluative component requires component-level projections (test-registry #2), which no accessible source provides. SUPPRESS this row in the UI while evaluative_adjustment_available is false.",
       "availability": {
         "3": {
-          "sigma_5": 0.7657,
-          "sigma_10": 0.7877,
-          "sigma_20": 0.844
+          "sigma_5": 0.7582,
+          "sigma_10": 0.806,
+          "sigma_20": 0.8662
         },
         "18": {
-          "sigma_5": 0.0037,
-          "sigma_10": 0.0893,
-          "sigma_20": 0.2987
+          "sigma_5": 0.0047,
+          "sigma_10": 0.0927,
+          "sigma_20": 0.2938
         },
         "23": {
           "sigma_5": 0.0,
-          "sigma_10": 0.0023,
-          "sigma_20": 0.0917
+          "sigma_10": 0.0025,
+          "sigma_20": 0.0823
         },
         "38": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0037
+          "sigma_20": 0.0015
         },
         "43": {
           "sigma_5": 0.0,
@@ -414,19 +414,19 @@
       "evaluative_adjustment_note": "Zero by construction, not by omission. This board assigns every player at the same positional consensus rank an identical projection, so it holds no player-level opinion to attribute. All rank movement is structural. A real evaluative component requires component-level projections (test-registry #2), which no accessible source provides. SUPPRESS this row in the UI while evaluative_adjustment_available is false.",
       "availability": {
         "3": {
-          "sigma_5": 0.6943,
-          "sigma_10": 0.7667,
-          "sigma_20": 0.861
+          "sigma_5": 0.694,
+          "sigma_10": 0.769,
+          "sigma_20": 0.8525
         },
         "18": {
-          "sigma_5": 0.0027,
-          "sigma_10": 0.0697,
-          "sigma_20": 0.2983
+          "sigma_5": 0.0018,
+          "sigma_10": 0.0695,
+          "sigma_20": 0.267
         },
         "23": {
           "sigma_5": 0.0,
-          "sigma_10": 0.0013,
-          "sigma_20": 0.043
+          "sigma_10": 0.001,
+          "sigma_20": 0.0393
         },
         "38": {
           "sigma_5": 0.0,
@@ -526,29 +526,29 @@
       "evaluative_adjustment_note": "Zero by construction, not by omission. This board assigns every player at the same positional consensus rank an identical projection, so it holds no player-level opinion to attribute. All rank movement is structural. A real evaluative component requires component-level projections (test-registry #2), which no accessible source provides. SUPPRESS this row in the UI while evaluative_adjustment_available is false.",
       "availability": {
         "3": {
-          "sigma_5": 0.927,
-          "sigma_10": 0.8937,
-          "sigma_20": 0.898
+          "sigma_5": 0.9327,
+          "sigma_10": 0.8978,
+          "sigma_20": 0.8972
         },
         "18": {
-          "sigma_5": 0.0303,
-          "sigma_10": 0.164,
-          "sigma_20": 0.374
+          "sigma_5": 0.0262,
+          "sigma_10": 0.1665,
+          "sigma_20": 0.3765
         },
         "23": {
           "sigma_5": 0.0,
-          "sigma_10": 0.0307,
-          "sigma_20": 0.2477
+          "sigma_10": 0.0357,
+          "sigma_20": 0.2407
         },
         "38": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.034
+          "sigma_20": 0.0315
         },
         "43": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0013
+          "sigma_20": 0.0008
         },
         "58": {
           "sigma_5": 0.0,
@@ -639,38 +639,38 @@
       "availability": {
         "3": {
           "sigma_5": 1.0,
-          "sigma_10": 0.998,
-          "sigma_20": 0.9823
+          "sigma_10": 0.9982,
+          "sigma_20": 0.9835
         },
         "18": {
-          "sigma_5": 0.9347,
-          "sigma_10": 0.779,
-          "sigma_20": 0.6993
+          "sigma_5": 0.9303,
+          "sigma_10": 0.7875,
+          "sigma_20": 0.7097
         },
         "23": {
-          "sigma_5": 0.7287,
-          "sigma_10": 0.6177,
-          "sigma_20": 0.6023
+          "sigma_5": 0.708,
+          "sigma_10": 0.6312,
+          "sigma_20": 0.609
         },
         "38": {
-          "sigma_5": 0.007,
-          "sigma_10": 0.1013,
-          "sigma_20": 0.2893
+          "sigma_5": 0.0065,
+          "sigma_10": 0.1098,
+          "sigma_20": 0.295
         },
         "43": {
           "sigma_5": 0.0,
-          "sigma_10": 0.015,
-          "sigma_20": 0.1987
+          "sigma_10": 0.0175,
+          "sigma_20": 0.213
         },
         "58": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0343
+          "sigma_20": 0.0387
         },
         "63": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0033
+          "sigma_20": 0.0037
         },
         "78": {
           "sigma_5": 0.0,
@@ -750,29 +750,29 @@
       "evaluative_adjustment_note": "Zero by construction, not by omission. This board assigns every player at the same positional consensus rank an identical projection, so it holds no player-level opinion to attribute. All rank movement is structural. A real evaluative component requires component-level projections (test-registry #2), which no accessible source provides. SUPPRESS this row in the UI while evaluative_adjustment_available is false.",
       "availability": {
         "3": {
-          "sigma_5": 0.8253,
-          "sigma_10": 0.8323,
-          "sigma_20": 0.8733
+          "sigma_5": 0.8275,
+          "sigma_10": 0.827,
+          "sigma_20": 0.8738
         },
         "18": {
-          "sigma_5": 0.007,
-          "sigma_10": 0.106,
-          "sigma_20": 0.3047
+          "sigma_5": 0.0083,
+          "sigma_10": 0.1145,
+          "sigma_20": 0.3267
         },
         "23": {
           "sigma_5": 0.0,
-          "sigma_10": 0.0083,
-          "sigma_20": 0.1347
+          "sigma_10": 0.0095,
+          "sigma_20": 0.1318
         },
         "38": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.005
+          "sigma_20": 0.004
         },
         "43": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0
+          "sigma_20": 0.0003
         },
         "58": {
           "sigma_5": 0.0,
@@ -862,29 +862,29 @@
       "evaluative_adjustment_note": "Zero by construction, not by omission. This board assigns every player at the same positional consensus rank an identical projection, so it holds no player-level opinion to attribute. All rank movement is structural. A real evaluative component requires component-level projections (test-registry #2), which no accessible source provides. SUPPRESS this row in the UI while evaluative_adjustment_available is false.",
       "availability": {
         "3": {
-          "sigma_5": 0.9693,
-          "sigma_10": 0.9327,
-          "sigma_20": 0.9163
+          "sigma_5": 0.9725,
+          "sigma_10": 0.9267,
+          "sigma_20": 0.9193
         },
         "18": {
-          "sigma_5": 0.0717,
-          "sigma_10": 0.2447,
-          "sigma_20": 0.4053
+          "sigma_5": 0.0607,
+          "sigma_10": 0.231,
+          "sigma_20": 0.4235
         },
         "23": {
-          "sigma_5": 0.001,
-          "sigma_10": 0.074,
-          "sigma_20": 0.2993
+          "sigma_5": 0.0,
+          "sigma_10": 0.0727,
+          "sigma_20": 0.306
         },
         "38": {
           "sigma_5": 0.0,
-          "sigma_10": 0.0003,
-          "sigma_20": 0.0637
+          "sigma_10": 0.001,
+          "sigma_20": 0.0565
         },
         "43": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0073
+          "sigma_20": 0.0047
         },
         "58": {
           "sigma_5": 0.0,
@@ -974,29 +974,29 @@
       "evaluative_adjustment_note": "Zero by construction, not by omission. This board assigns every player at the same positional consensus rank an identical projection, so it holds no player-level opinion to attribute. All rank movement is structural. A real evaluative component requires component-level projections (test-registry #2), which no accessible source provides. SUPPRESS this row in the UI while evaluative_adjustment_available is false.",
       "availability": {
         "3": {
-          "sigma_5": 0.8723,
-          "sigma_10": 0.851,
-          "sigma_20": 0.874
+          "sigma_5": 0.8702,
+          "sigma_10": 0.8532,
+          "sigma_20": 0.8905
         },
         "18": {
-          "sigma_5": 0.0123,
-          "sigma_10": 0.129,
-          "sigma_20": 0.3443
+          "sigma_5": 0.012,
+          "sigma_10": 0.1278,
+          "sigma_20": 0.3322
         },
         "23": {
           "sigma_5": 0.0,
-          "sigma_10": 0.0143,
-          "sigma_20": 0.184
+          "sigma_10": 0.0138,
+          "sigma_20": 0.1777
         },
         "38": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.014
+          "sigma_20": 0.0155
         },
         "43": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0003
+          "sigma_20": 0.0
         },
         "58": {
           "sigma_5": 0.0,
@@ -1086,29 +1086,29 @@
       "evaluative_adjustment_note": "Zero by construction, not by omission. This board assigns every player at the same positional consensus rank an identical projection, so it holds no player-level opinion to attribute. All rank movement is structural. A real evaluative component requires component-level projections (test-registry #2), which no accessible source provides. SUPPRESS this row in the UI while evaluative_adjustment_available is false.",
       "availability": {
         "3": {
-          "sigma_5": 0.993,
-          "sigma_10": 0.9647,
-          "sigma_20": 0.951
+          "sigma_5": 0.9968,
+          "sigma_10": 0.972,
+          "sigma_20": 0.9445
         },
         "18": {
-          "sigma_5": 0.2363,
-          "sigma_10": 0.37,
-          "sigma_20": 0.494
+          "sigma_5": 0.2452,
+          "sigma_10": 0.3762,
+          "sigma_20": 0.4928
         },
         "23": {
-          "sigma_5": 0.025,
-          "sigma_10": 0.1943,
-          "sigma_20": 0.372
+          "sigma_5": 0.0257,
+          "sigma_10": 0.1953,
+          "sigma_20": 0.3832
         },
         "38": {
           "sigma_5": 0.0,
-          "sigma_10": 0.0037,
-          "sigma_20": 0.1223
+          "sigma_10": 0.006,
+          "sigma_20": 0.115
         },
         "43": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0317
+          "sigma_20": 0.0305
         },
         "58": {
           "sigma_5": 0.0,
@@ -1198,29 +1198,29 @@
       "evaluative_adjustment_note": "Zero by construction, not by omission. This board assigns every player at the same positional consensus rank an identical projection, so it holds no player-level opinion to attribute. All rank movement is structural. A real evaluative component requires component-level projections (test-registry #2), which no accessible source provides. SUPPRESS this row in the UI while evaluative_adjustment_available is false.",
       "availability": {
         "3": {
-          "sigma_5": 0.9007,
-          "sigma_10": 0.8803,
-          "sigma_20": 0.885
+          "sigma_5": 0.907,
+          "sigma_10": 0.8725,
+          "sigma_20": 0.8888
         },
         "18": {
-          "sigma_5": 0.0193,
-          "sigma_10": 0.1503,
-          "sigma_20": 0.3463
+          "sigma_5": 0.0173,
+          "sigma_10": 0.1515,
+          "sigma_20": 0.3645
         },
         "23": {
           "sigma_5": 0.0,
-          "sigma_10": 0.024,
-          "sigma_20": 0.2097
+          "sigma_10": 0.0262,
+          "sigma_20": 0.2155
         },
         "38": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0227
+          "sigma_20": 0.0208
         },
         "43": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0003
+          "sigma_20": 0.001
         },
         "58": {
           "sigma_5": 0.0,
@@ -1310,39 +1310,39 @@
       "evaluative_adjustment_note": "Zero by construction, not by omission. This board assigns every player at the same positional consensus rank an identical projection, so it holds no player-level opinion to attribute. All rank movement is structural. A real evaluative component requires component-level projections (test-registry #2), which no accessible source provides. SUPPRESS this row in the UI while evaluative_adjustment_available is false.",
       "availability": {
         "3": {
-          "sigma_5": 1.0,
-          "sigma_10": 0.986,
-          "sigma_20": 0.959
+          "sigma_5": 0.9995,
+          "sigma_10": 0.9835,
+          "sigma_20": 0.9583
         },
         "18": {
-          "sigma_5": 0.447,
-          "sigma_10": 0.4953,
-          "sigma_20": 0.556
+          "sigma_5": 0.4542,
+          "sigma_10": 0.4915,
+          "sigma_20": 0.5567
         },
         "23": {
-          "sigma_5": 0.117,
-          "sigma_10": 0.308,
-          "sigma_20": 0.4477
+          "sigma_5": 0.1105,
+          "sigma_10": 0.2995,
+          "sigma_20": 0.4467
         },
         "38": {
           "sigma_5": 0.0,
-          "sigma_10": 0.017,
-          "sigma_20": 0.1607
+          "sigma_10": 0.0145,
+          "sigma_20": 0.1608
         },
         "43": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0597
+          "sigma_20": 0.0605
         },
         "58": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0023
+          "sigma_20": 0.0022
         },
         "63": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0003
+          "sigma_20": 0.0
         },
         "78": {
           "sigma_5": 0.0,
@@ -1423,48 +1423,48 @@
       "availability": {
         "3": {
           "sigma_5": 1.0,
-          "sigma_10": 0.9993,
-          "sigma_20": 0.9953
+          "sigma_10": 0.9998,
+          "sigma_20": 0.99
         },
         "18": {
-          "sigma_5": 0.9977,
-          "sigma_10": 0.933,
-          "sigma_20": 0.811
+          "sigma_5": 0.9978,
+          "sigma_10": 0.9343,
+          "sigma_20": 0.8195
         },
         "23": {
-          "sigma_5": 0.9707,
-          "sigma_10": 0.845,
-          "sigma_20": 0.732
+          "sigma_5": 0.9762,
+          "sigma_10": 0.8455,
+          "sigma_20": 0.7395
         },
         "38": {
-          "sigma_5": 0.1363,
-          "sigma_10": 0.303,
-          "sigma_20": 0.398
+          "sigma_5": 0.143,
+          "sigma_10": 0.2833,
+          "sigma_20": 0.4103
         },
         "43": {
-          "sigma_5": 0.0047,
-          "sigma_10": 0.1407,
-          "sigma_20": 0.3123
+          "sigma_5": 0.004,
+          "sigma_10": 0.1398,
+          "sigma_20": 0.3245
         },
         "58": {
           "sigma_5": 0.0,
-          "sigma_10": 0.001,
-          "sigma_20": 0.0887
+          "sigma_10": 0.0022,
+          "sigma_20": 0.1045
         },
         "63": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0257
+          "sigma_20": 0.0352
         },
         "78": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0017
+          "sigma_20": 0.0022
         },
         "83": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0
+          "sigma_20": 0.0003
         },
         "98": {
           "sigma_5": 0.0,
@@ -1534,29 +1534,29 @@
       "evaluative_adjustment_note": "Zero by construction, not by omission. This board assigns every player at the same positional consensus rank an identical projection, so it holds no player-level opinion to attribute. All rank movement is structural. A real evaluative component requires component-level projections (test-registry #2), which no accessible source provides. SUPPRESS this row in the UI while evaluative_adjustment_available is false.",
       "availability": {
         "3": {
-          "sigma_5": 0.9543,
-          "sigma_10": 0.9037,
-          "sigma_20": 0.9063
+          "sigma_5": 0.949,
+          "sigma_10": 0.9058,
+          "sigma_20": 0.91
         },
         "18": {
-          "sigma_5": 0.043,
-          "sigma_10": 0.198,
-          "sigma_20": 0.4093
+          "sigma_5": 0.0452,
+          "sigma_10": 0.203,
+          "sigma_20": 0.397
         },
         "23": {
-          "sigma_5": 0.0003,
-          "sigma_10": 0.044,
-          "sigma_20": 0.281
+          "sigma_5": 0.0,
+          "sigma_10": 0.054,
+          "sigma_20": 0.2805
         },
         "38": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0513
+          "sigma_20": 0.0493
         },
         "43": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.005
+          "sigma_20": 0.0032
         },
         "58": {
           "sigma_5": 0.0,
@@ -1646,39 +1646,39 @@
       "evaluative_adjustment_note": "Zero by construction, not by omission. This board assigns every player at the same positional consensus rank an identical projection, so it holds no player-level opinion to attribute. All rank movement is structural. A real evaluative component requires component-level projections (test-registry #2), which no accessible source provides. SUPPRESS this row in the UI while evaluative_adjustment_available is false.",
       "availability": {
         "3": {
-          "sigma_5": 0.9983,
-          "sigma_10": 0.988,
-          "sigma_20": 0.9547
+          "sigma_5": 0.9995,
+          "sigma_10": 0.9872,
+          "sigma_20": 0.9635
         },
         "18": {
-          "sigma_5": 0.549,
-          "sigma_10": 0.5423,
-          "sigma_20": 0.5783
+          "sigma_5": 0.5445,
+          "sigma_10": 0.54,
+          "sigma_20": 0.5697
         },
         "23": {
-          "sigma_5": 0.1727,
-          "sigma_10": 0.344,
-          "sigma_20": 0.4673
+          "sigma_5": 0.1782,
+          "sigma_10": 0.355,
+          "sigma_20": 0.4495
         },
         "38": {
           "sigma_5": 0.0,
-          "sigma_10": 0.0233,
-          "sigma_20": 0.1777
+          "sigma_10": 0.0238,
+          "sigma_20": 0.1708
         },
         "43": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0797
+          "sigma_20": 0.0688
         },
         "58": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.004
+          "sigma_20": 0.0047
         },
         "63": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0003
+          "sigma_20": 0.0
         },
         "78": {
           "sigma_5": 0.0,
@@ -1758,29 +1758,29 @@
       "evaluative_adjustment_note": "Zero by construction, not by omission. This board assigns every player at the same positional consensus rank an identical projection, so it holds no player-level opinion to attribute. All rank movement is structural. A real evaluative component requires component-level projections (test-registry #2), which no accessible source provides. SUPPRESS this row in the UI while evaluative_adjustment_available is false.",
       "availability": {
         "3": {
-          "sigma_5": 0.9767,
-          "sigma_10": 0.9443,
-          "sigma_20": 0.9243
+          "sigma_5": 0.9815,
+          "sigma_10": 0.9333,
+          "sigma_20": 0.9217
         },
         "18": {
-          "sigma_5": 0.1047,
-          "sigma_10": 0.2667,
-          "sigma_20": 0.4353
+          "sigma_5": 0.0927,
+          "sigma_10": 0.264,
+          "sigma_20": 0.429
         },
         "23": {
-          "sigma_5": 0.003,
-          "sigma_10": 0.0987,
-          "sigma_20": 0.3237
+          "sigma_5": 0.0015,
+          "sigma_10": 0.0915,
+          "sigma_20": 0.3247
         },
         "38": {
           "sigma_5": 0.0,
           "sigma_10": 0.0003,
-          "sigma_20": 0.081
+          "sigma_20": 0.075
         },
         "43": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0117
+          "sigma_20": 0.0063
         },
         "58": {
           "sigma_5": 0.0,
@@ -1870,39 +1870,39 @@
       "evaluative_adjustment_note": "Zero by construction, not by omission. This board assigns every player at the same positional consensus rank an identical projection, so it holds no player-level opinion to attribute. All rank movement is structural. A real evaluative component requires component-level projections (test-registry #2), which no accessible source provides. SUPPRESS this row in the UI while evaluative_adjustment_available is false.",
       "availability": {
         "3": {
-          "sigma_5": 0.9983,
-          "sigma_10": 0.9693,
-          "sigma_20": 0.9447
+          "sigma_5": 0.997,
+          "sigma_10": 0.97,
+          "sigma_20": 0.9477
         },
         "18": {
-          "sigma_5": 0.2947,
-          "sigma_10": 0.4077,
-          "sigma_20": 0.498
+          "sigma_5": 0.31,
+          "sigma_10": 0.4042,
+          "sigma_20": 0.5152
         },
         "23": {
-          "sigma_5": 0.04,
-          "sigma_10": 0.2347,
-          "sigma_20": 0.3937
+          "sigma_5": 0.0372,
+          "sigma_10": 0.225,
+          "sigma_20": 0.3987
         },
         "38": {
           "sigma_5": 0.0,
-          "sigma_10": 0.0033,
-          "sigma_20": 0.133
+          "sigma_10": 0.0083,
+          "sigma_20": 0.1242
         },
         "43": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0383
+          "sigma_20": 0.0365
         },
         "58": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0017
+          "sigma_20": 0.001
         },
         "63": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0003
+          "sigma_20": 0.0
         },
         "78": {
           "sigma_5": 0.0,
@@ -1983,38 +1983,38 @@
       "availability": {
         "3": {
           "sigma_5": 1.0,
-          "sigma_10": 0.9897,
-          "sigma_20": 0.9643
+          "sigma_10": 0.9902,
+          "sigma_20": 0.9637
         },
         "18": {
-          "sigma_5": 0.6303,
-          "sigma_10": 0.5673,
-          "sigma_20": 0.597
+          "sigma_5": 0.6242,
+          "sigma_10": 0.5653,
+          "sigma_20": 0.5837
         },
         "23": {
-          "sigma_5": 0.2387,
-          "sigma_10": 0.3777,
-          "sigma_20": 0.4857
+          "sigma_5": 0.2577,
+          "sigma_10": 0.3855,
+          "sigma_20": 0.4763
         },
         "38": {
           "sigma_5": 0.0,
-          "sigma_10": 0.029,
-          "sigma_20": 0.181
+          "sigma_10": 0.0318,
+          "sigma_20": 0.1872
         },
         "43": {
           "sigma_5": 0.0,
-          "sigma_10": 0.0013,
-          "sigma_20": 0.0943
+          "sigma_10": 0.0003,
+          "sigma_20": 0.0882
         },
         "58": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.005
+          "sigma_20": 0.0047
         },
         "63": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0007
+          "sigma_20": 0.0003
         },
         "78": {
           "sigma_5": 0.0,
@@ -2094,29 +2094,29 @@
       "evaluative_adjustment_note": "Zero by construction, not by omission. This board assigns every player at the same positional consensus rank an identical projection, so it holds no player-level opinion to attribute. All rank movement is structural. A real evaluative component requires component-level projections (test-registry #2), which no accessible source provides. SUPPRESS this row in the UI while evaluative_adjustment_available is false.",
       "availability": {
         "3": {
-          "sigma_5": 0.9887,
-          "sigma_10": 0.9513,
-          "sigma_20": 0.9327
+          "sigma_5": 0.9868,
+          "sigma_10": 0.9517,
+          "sigma_20": 0.93
         },
         "18": {
-          "sigma_5": 0.133,
-          "sigma_10": 0.3077,
-          "sigma_20": 0.4583
+          "sigma_5": 0.1278,
+          "sigma_10": 0.2938,
+          "sigma_20": 0.4655
         },
         "23": {
-          "sigma_5": 0.004,
-          "sigma_10": 0.1327,
-          "sigma_20": 0.3553
+          "sigma_5": 0.0035,
+          "sigma_10": 0.126,
+          "sigma_20": 0.362
         },
         "38": {
           "sigma_5": 0.0,
-          "sigma_10": 0.0013,
-          "sigma_20": 0.0843
+          "sigma_10": 0.0015,
+          "sigma_20": 0.0953
         },
         "43": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.011
+          "sigma_20": 0.0165
         },
         "58": {
           "sigma_5": 0.0,
@@ -2207,33 +2207,33 @@
       "availability": {
         "3": {
           "sigma_5": 0.993,
-          "sigma_10": 0.963,
-          "sigma_20": 0.942
+          "sigma_10": 0.9605,
+          "sigma_20": 0.9345
         },
         "18": {
-          "sigma_5": 0.1833,
-          "sigma_10": 0.3323,
-          "sigma_20": 0.47
+          "sigma_5": 0.189,
+          "sigma_10": 0.3415,
+          "sigma_20": 0.48
         },
         "23": {
-          "sigma_5": 0.0097,
-          "sigma_10": 0.1597,
-          "sigma_20": 0.3557
+          "sigma_5": 0.0105,
+          "sigma_10": 0.1605,
+          "sigma_20": 0.3728
         },
         "38": {
           "sigma_5": 0.0,
-          "sigma_10": 0.0033,
-          "sigma_20": 0.1067
+          "sigma_10": 0.0008,
+          "sigma_20": 0.105
         },
         "43": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0223
+          "sigma_20": 0.0192
         },
         "58": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0007
+          "sigma_20": 0.0003
         },
         "63": {
           "sigma_5": 0.0,
@@ -2319,38 +2319,38 @@
       "availability": {
         "3": {
           "sigma_5": 1.0,
-          "sigma_10": 0.9983,
-          "sigma_20": 0.9757
+          "sigma_10": 0.996,
+          "sigma_20": 0.9775
         },
         "18": {
-          "sigma_5": 0.871,
-          "sigma_10": 0.728,
-          "sigma_20": 0.6687
+          "sigma_5": 0.87,
+          "sigma_10": 0.7145,
+          "sigma_20": 0.6605
         },
         "23": {
-          "sigma_5": 0.557,
-          "sigma_10": 0.547,
-          "sigma_20": 0.566
+          "sigma_5": 0.554,
+          "sigma_10": 0.5383,
+          "sigma_20": 0.5525
         },
         "38": {
-          "sigma_5": 0.003,
-          "sigma_10": 0.0727,
-          "sigma_20": 0.2493
+          "sigma_5": 0.0025,
+          "sigma_10": 0.0772,
+          "sigma_20": 0.239
         },
         "43": {
           "sigma_5": 0.0,
-          "sigma_10": 0.0057,
-          "sigma_20": 0.1643
+          "sigma_10": 0.0073,
+          "sigma_20": 0.1565
         },
         "58": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0263
+          "sigma_20": 0.022
         },
         "63": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0017
+          "sigma_20": 0.001
         },
         "78": {
           "sigma_5": 0.0,
@@ -2431,43 +2431,43 @@
       "availability": {
         "3": {
           "sigma_5": 1.0,
-          "sigma_10": 1.0,
-          "sigma_20": 0.9927
+          "sigma_10": 0.9995,
+          "sigma_20": 0.9925
         },
         "18": {
-          "sigma_5": 0.999,
-          "sigma_10": 0.9403,
-          "sigma_20": 0.8223
+          "sigma_5": 0.9975,
+          "sigma_10": 0.9393,
+          "sigma_20": 0.8265
         },
         "23": {
-          "sigma_5": 0.9853,
-          "sigma_10": 0.857,
-          "sigma_20": 0.746
+          "sigma_5": 0.9818,
+          "sigma_10": 0.8618,
+          "sigma_20": 0.7598
         },
         "38": {
-          "sigma_5": 0.175,
-          "sigma_10": 0.3273,
-          "sigma_20": 0.4343
+          "sigma_5": 0.1885,
+          "sigma_10": 0.3382,
+          "sigma_20": 0.4427
         },
         "43": {
-          "sigma_5": 0.0087,
-          "sigma_10": 0.163,
-          "sigma_20": 0.3553
+          "sigma_5": 0.0097,
+          "sigma_10": 0.178,
+          "sigma_20": 0.356
         },
         "58": {
           "sigma_5": 0.0,
-          "sigma_10": 0.0027,
-          "sigma_20": 0.109
+          "sigma_10": 0.0025,
+          "sigma_20": 0.1232
         },
         "63": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0263
+          "sigma_20": 0.04
         },
         "78": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.001
+          "sigma_20": 0.0025
         },
         "83": {
           "sigma_5": 0.0,
@@ -2542,29 +2542,29 @@
       "evaluative_adjustment_note": "Zero by construction, not by omission. This board assigns every player at the same positional consensus rank an identical projection, so it holds no player-level opinion to attribute. All rank movement is structural. A real evaluative component requires component-level projections (test-registry #2), which no accessible source provides. SUPPRESS this row in the UI while evaluative_adjustment_available is false.",
       "availability": {
         "3": {
-          "sigma_5": 0.9983,
-          "sigma_10": 0.9747,
-          "sigma_20": 0.9553
+          "sigma_5": 0.999,
+          "sigma_10": 0.977,
+          "sigma_20": 0.9543
         },
         "18": {
-          "sigma_5": 0.375,
-          "sigma_10": 0.455,
-          "sigma_20": 0.5287
+          "sigma_5": 0.3708,
+          "sigma_10": 0.456,
+          "sigma_20": 0.5268
         },
         "23": {
-          "sigma_5": 0.0773,
-          "sigma_10": 0.2733,
-          "sigma_20": 0.4183
+          "sigma_5": 0.0685,
+          "sigma_10": 0.2727,
+          "sigma_20": 0.4155
         },
         "38": {
           "sigma_5": 0.0,
-          "sigma_10": 0.0123,
-          "sigma_20": 0.1447
+          "sigma_10": 0.0103,
+          "sigma_20": 0.142
         },
         "43": {
           "sigma_5": 0.0,
-          "sigma_10": 0.0003,
-          "sigma_20": 0.0483
+          "sigma_10": 0.0,
+          "sigma_20": 0.0495
         },
         "58": {
           "sigma_5": 0.0,
@@ -2655,38 +2655,38 @@
       "availability": {
         "3": {
           "sigma_5": 1.0,
-          "sigma_10": 0.9977,
-          "sigma_20": 0.9807
+          "sigma_10": 0.9988,
+          "sigma_20": 0.9825
         },
         "18": {
-          "sigma_5": 0.9503,
-          "sigma_10": 0.8097,
-          "sigma_20": 0.715
+          "sigma_5": 0.9565,
+          "sigma_10": 0.8075,
+          "sigma_20": 0.7258
         },
         "23": {
-          "sigma_5": 0.7753,
-          "sigma_10": 0.6647,
-          "sigma_20": 0.6163
+          "sigma_5": 0.7682,
+          "sigma_10": 0.6508,
+          "sigma_20": 0.6288
         },
         "38": {
-          "sigma_5": 0.01,
-          "sigma_10": 0.1303,
+          "sigma_5": 0.0125,
+          "sigma_10": 0.1217,
           "sigma_20": 0.2973
         },
         "43": {
           "sigma_5": 0.0,
-          "sigma_10": 0.0217,
-          "sigma_20": 0.2097
+          "sigma_10": 0.0238,
+          "sigma_20": 0.2102
         },
         "58": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.04
+          "sigma_20": 0.0385
         },
         "63": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0043
+          "sigma_20": 0.0035
         },
         "78": {
           "sigma_5": 0.0,
@@ -2767,33 +2767,33 @@
       "availability": {
         "3": {
           "sigma_5": 1.0,
-          "sigma_10": 0.9953,
-          "sigma_20": 0.9693
+          "sigma_10": 0.9908,
+          "sigma_20": 0.9643
         },
         "18": {
-          "sigma_5": 0.6823,
-          "sigma_10": 0.6147,
-          "sigma_20": 0.6123
+          "sigma_5": 0.7003,
+          "sigma_10": 0.6218,
+          "sigma_20": 0.618
         },
         "23": {
-          "sigma_5": 0.303,
-          "sigma_10": 0.417,
-          "sigma_20": 0.4987
+          "sigma_5": 0.3202,
+          "sigma_10": 0.4348,
+          "sigma_20": 0.5102
         },
         "38": {
-          "sigma_5": 0.0003,
-          "sigma_10": 0.035,
-          "sigma_20": 0.2047
+          "sigma_5": 0.0,
+          "sigma_10": 0.0415,
+          "sigma_20": 0.197
         },
         "43": {
           "sigma_5": 0.0,
-          "sigma_10": 0.001,
-          "sigma_20": 0.1123
+          "sigma_10": 0.0013,
+          "sigma_20": 0.1032
         },
         "58": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0083
+          "sigma_20": 0.008
         },
         "63": {
           "sigma_5": 0.0,
@@ -2879,43 +2879,43 @@
       "availability": {
         "3": {
           "sigma_5": 1.0,
-          "sigma_10": 0.9993,
-          "sigma_20": 0.987
+          "sigma_10": 0.9995,
+          "sigma_20": 0.9902
         },
         "18": {
-          "sigma_5": 0.992,
-          "sigma_10": 0.8907,
-          "sigma_20": 0.792
+          "sigma_5": 0.9918,
+          "sigma_10": 0.908,
+          "sigma_20": 0.781
         },
         "23": {
-          "sigma_5": 0.9377,
-          "sigma_10": 0.7837,
-          "sigma_20": 0.7033
+          "sigma_5": 0.941,
+          "sigma_10": 0.7933,
+          "sigma_20": 0.7025
         },
         "38": {
-          "sigma_5": 0.0637,
-          "sigma_10": 0.226,
-          "sigma_20": 0.363
+          "sigma_5": 0.0653,
+          "sigma_10": 0.2233,
+          "sigma_20": 0.3733
         },
         "43": {
-          "sigma_5": 0.0003,
-          "sigma_10": 0.0837,
-          "sigma_20": 0.2787
+          "sigma_5": 0.001,
+          "sigma_10": 0.0783,
+          "sigma_20": 0.2825
         },
         "58": {
           "sigma_5": 0.0,
-          "sigma_10": 0.001,
-          "sigma_20": 0.0867
+          "sigma_10": 0.0005,
+          "sigma_20": 0.0815
         },
         "63": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.018
+          "sigma_20": 0.0163
         },
         "78": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0007
+          "sigma_20": 0.0003
         },
         "83": {
           "sigma_5": 0.0,
@@ -2991,38 +2991,38 @@
       "availability": {
         "3": {
           "sigma_5": 1.0,
-          "sigma_10": 0.9953,
-          "sigma_20": 0.9727
+          "sigma_10": 0.996,
+          "sigma_20": 0.9762
         },
         "18": {
-          "sigma_5": 0.8303,
-          "sigma_10": 0.697,
-          "sigma_20": 0.6433
+          "sigma_5": 0.8197,
+          "sigma_10": 0.6855,
+          "sigma_20": 0.6512
         },
         "23": {
-          "sigma_5": 0.4923,
-          "sigma_10": 0.5163,
-          "sigma_20": 0.535
+          "sigma_5": 0.4788,
+          "sigma_10": 0.501,
+          "sigma_20": 0.531
         },
         "38": {
           "sigma_5": 0.001,
-          "sigma_10": 0.062,
-          "sigma_20": 0.2227
+          "sigma_10": 0.0615,
+          "sigma_20": 0.231
         },
         "43": {
           "sigma_5": 0.0,
-          "sigma_10": 0.0037,
-          "sigma_20": 0.1277
+          "sigma_10": 0.0027,
+          "sigma_20": 0.1462
         },
         "58": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0147
+          "sigma_20": 0.014
         },
         "63": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0003
+          "sigma_20": 0.0005
         },
         "78": {
           "sigma_5": 0.0,
@@ -3103,38 +3103,38 @@
       "availability": {
         "3": {
           "sigma_5": 1.0,
-          "sigma_10": 0.992,
-          "sigma_20": 0.9753
+          "sigma_10": 0.9922,
+          "sigma_20": 0.97
         },
         "18": {
-          "sigma_5": 0.7697,
-          "sigma_10": 0.6417,
-          "sigma_20": 0.64
+          "sigma_5": 0.758,
+          "sigma_10": 0.6415,
+          "sigma_20": 0.6302
         },
         "23": {
-          "sigma_5": 0.396,
-          "sigma_10": 0.463,
-          "sigma_20": 0.536
+          "sigma_5": 0.386,
+          "sigma_10": 0.4642,
+          "sigma_20": 0.5202
         },
         "38": {
-          "sigma_5": 0.0,
-          "sigma_10": 0.0453,
-          "sigma_20": 0.2347
+          "sigma_5": 0.0005,
+          "sigma_10": 0.0508,
+          "sigma_20": 0.2142
         },
         "43": {
           "sigma_5": 0.0,
-          "sigma_10": 0.003,
-          "sigma_20": 0.133
+          "sigma_10": 0.0027,
+          "sigma_20": 0.1245
         },
         "58": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.017
+          "sigma_20": 0.013
         },
         "63": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0
+          "sigma_20": 0.0005
         },
         "78": {
           "sigma_5": 0.0,
@@ -3216,47 +3216,47 @@
         "3": {
           "sigma_5": 1.0,
           "sigma_10": 1.0,
-          "sigma_20": 0.9977
+          "sigma_20": 0.997
         },
         "18": {
           "sigma_5": 1.0,
-          "sigma_10": 0.9843,
-          "sigma_20": 0.8867
+          "sigma_10": 0.979,
+          "sigma_20": 0.8855
         },
         "23": {
-          "sigma_5": 0.9983,
-          "sigma_10": 0.955,
-          "sigma_20": 0.817
+          "sigma_5": 0.9995,
+          "sigma_10": 0.9443,
+          "sigma_20": 0.8223
         },
         "38": {
-          "sigma_5": 0.526,
-          "sigma_10": 0.5267,
-          "sigma_20": 0.528
+          "sigma_5": 0.53,
+          "sigma_10": 0.5355,
+          "sigma_20": 0.5218
         },
         "43": {
-          "sigma_5": 0.1767,
-          "sigma_10": 0.339,
-          "sigma_20": 0.43
+          "sigma_5": 0.173,
+          "sigma_10": 0.3595,
+          "sigma_20": 0.4268
         },
         "58": {
           "sigma_5": 0.0,
-          "sigma_10": 0.0157,
-          "sigma_20": 0.167
+          "sigma_10": 0.0215,
+          "sigma_20": 0.174
         },
         "63": {
           "sigma_5": 0.0,
-          "sigma_10": 0.0003,
-          "sigma_20": 0.0857
+          "sigma_10": 0.0005,
+          "sigma_20": 0.0885
         },
         "78": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0073
+          "sigma_20": 0.007
         },
         "83": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0003
+          "sigma_20": 0.0
         },
         "98": {
           "sigma_5": 0.0,
@@ -3327,38 +3327,38 @@
       "availability": {
         "3": {
           "sigma_5": 1.0,
-          "sigma_10": 0.997,
-          "sigma_20": 0.9857
+          "sigma_10": 0.9968,
+          "sigma_20": 0.9838
         },
         "18": {
-          "sigma_5": 0.9027,
-          "sigma_10": 0.7457,
-          "sigma_20": 0.6977
+          "sigma_5": 0.9052,
+          "sigma_10": 0.767,
+          "sigma_20": 0.6857
         },
         "23": {
-          "sigma_5": 0.6333,
-          "sigma_10": 0.567,
-          "sigma_20": 0.5937
+          "sigma_5": 0.6335,
+          "sigma_10": 0.5927,
+          "sigma_20": 0.582
         },
         "38": {
-          "sigma_5": 0.0047,
-          "sigma_10": 0.0907,
-          "sigma_20": 0.2627
+          "sigma_5": 0.0018,
+          "sigma_10": 0.0965,
+          "sigma_20": 0.2567
         },
         "43": {
           "sigma_5": 0.0,
-          "sigma_10": 0.0093,
-          "sigma_20": 0.1843
+          "sigma_10": 0.013,
+          "sigma_20": 0.1735
         },
         "58": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0297
+          "sigma_20": 0.0285
         },
         "63": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.001
+          "sigma_20": 0.003
         },
         "78": {
           "sigma_5": 0.0,
@@ -3440,47 +3440,47 @@
         "3": {
           "sigma_5": 1.0,
           "sigma_10": 1.0,
-          "sigma_20": 0.999
+          "sigma_20": 0.998
         },
         "18": {
           "sigma_5": 1.0,
-          "sigma_10": 0.9947,
-          "sigma_20": 0.925
+          "sigma_10": 0.9965,
+          "sigma_20": 0.9385
         },
         "23": {
           "sigma_5": 1.0,
-          "sigma_10": 0.9817,
-          "sigma_20": 0.873
+          "sigma_10": 0.986,
+          "sigma_20": 0.888
         },
         "38": {
-          "sigma_5": 0.869,
-          "sigma_10": 0.6993,
-          "sigma_20": 0.6083
+          "sigma_5": 0.8802,
+          "sigma_10": 0.728,
+          "sigma_20": 0.6362
         },
         "43": {
-          "sigma_5": 0.5623,
-          "sigma_10": 0.5313,
-          "sigma_20": 0.5147
+          "sigma_5": 0.5733,
+          "sigma_10": 0.5667,
+          "sigma_20": 0.555
         },
         "58": {
-          "sigma_5": 0.002,
-          "sigma_10": 0.0797,
-          "sigma_20": 0.2367
+          "sigma_5": 0.0027,
+          "sigma_10": 0.0815,
+          "sigma_20": 0.25
         },
         "63": {
           "sigma_5": 0.0,
-          "sigma_10": 0.0063,
-          "sigma_20": 0.1683
+          "sigma_10": 0.0092,
+          "sigma_20": 0.1852
         },
         "78": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0307
+          "sigma_20": 0.0485
         },
         "83": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.002
+          "sigma_20": 0.0037
         },
         "98": {
           "sigma_5": 0.0,
@@ -3551,38 +3551,38 @@
       "availability": {
         "3": {
           "sigma_5": 1.0,
-          "sigma_10": 0.999,
-          "sigma_20": 0.9897
+          "sigma_10": 0.9988,
+          "sigma_20": 0.9888
         },
         "18": {
-          "sigma_5": 0.9677,
-          "sigma_10": 0.837,
-          "sigma_20": 0.7443
+          "sigma_5": 0.9715,
+          "sigma_10": 0.8323,
+          "sigma_20": 0.7455
         },
         "23": {
-          "sigma_5": 0.83,
-          "sigma_10": 0.702,
-          "sigma_20": 0.652
+          "sigma_5": 0.8277,
+          "sigma_10": 0.686,
+          "sigma_20": 0.6525
         },
         "38": {
-          "sigma_5": 0.019,
-          "sigma_10": 0.1453,
-          "sigma_20": 0.3277
+          "sigma_5": 0.018,
+          "sigma_10": 0.141,
+          "sigma_20": 0.3075
         },
         "43": {
           "sigma_5": 0.0,
-          "sigma_10": 0.0247,
-          "sigma_20": 0.2383
+          "sigma_10": 0.0275,
+          "sigma_20": 0.2243
         },
         "58": {
           "sigma_5": 0.0,
-          "sigma_10": 0.0007,
-          "sigma_20": 0.0497
+          "sigma_10": 0.0,
+          "sigma_20": 0.046
         },
         "63": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0083
+          "sigma_20": 0.004
         },
         "78": {
           "sigma_5": 0.0,
@@ -3664,47 +3664,47 @@
         "3": {
           "sigma_5": 1.0,
           "sigma_10": 1.0,
-          "sigma_20": 0.998
+          "sigma_20": 0.9992
         },
         "18": {
           "sigma_5": 1.0,
-          "sigma_10": 0.9883,
-          "sigma_20": 0.9043
+          "sigma_10": 0.987,
+          "sigma_20": 0.896
         },
         "23": {
-          "sigma_5": 0.9997,
-          "sigma_10": 0.9637,
-          "sigma_20": 0.8477
+          "sigma_5": 0.9995,
+          "sigma_10": 0.9633,
+          "sigma_20": 0.8415
         },
         "38": {
-          "sigma_5": 0.7067,
-          "sigma_10": 0.6,
-          "sigma_20": 0.5727
+          "sigma_5": 0.6957,
+          "sigma_10": 0.588,
+          "sigma_20": 0.5645
         },
         "43": {
-          "sigma_5": 0.314,
-          "sigma_10": 0.4117,
-          "sigma_20": 0.4817
+          "sigma_5": 0.3217,
+          "sigma_10": 0.4052,
+          "sigma_20": 0.475
         },
         "58": {
-          "sigma_5": 0.0003,
-          "sigma_10": 0.0467,
-          "sigma_20": 0.196
+          "sigma_5": 0.0,
+          "sigma_10": 0.039,
+          "sigma_20": 0.185
         },
         "63": {
           "sigma_5": 0.0,
-          "sigma_10": 0.0007,
-          "sigma_20": 0.1153
+          "sigma_10": 0.0008,
+          "sigma_20": 0.106
         },
         "78": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0127
+          "sigma_20": 0.009
         },
         "83": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0003
+          "sigma_20": 0.0008
         },
         "98": {
           "sigma_5": 0.0,
@@ -3775,38 +3775,38 @@
       "availability": {
         "3": {
           "sigma_5": 1.0,
-          "sigma_10": 0.999,
-          "sigma_20": 0.9877
+          "sigma_10": 0.9988,
+          "sigma_20": 0.9845
         },
         "18": {
-          "sigma_5": 0.9777,
-          "sigma_10": 0.863,
-          "sigma_20": 0.7413
+          "sigma_5": 0.9812,
+          "sigma_10": 0.8545,
+          "sigma_20": 0.7535
         },
         "23": {
-          "sigma_5": 0.865,
-          "sigma_10": 0.7247,
-          "sigma_20": 0.65
+          "sigma_5": 0.8838,
+          "sigma_10": 0.7245,
+          "sigma_20": 0.66
         },
         "38": {
-          "sigma_5": 0.0287,
-          "sigma_10": 0.179,
-          "sigma_20": 0.3337
+          "sigma_5": 0.0295,
+          "sigma_10": 0.165,
+          "sigma_20": 0.3267
         },
         "43": {
-          "sigma_5": 0.0,
-          "sigma_10": 0.047,
-          "sigma_20": 0.259
+          "sigma_5": 0.0003,
+          "sigma_10": 0.0413,
+          "sigma_20": 0.2495
         },
         "58": {
           "sigma_5": 0.0,
-          "sigma_10": 0.0,
-          "sigma_20": 0.059
+          "sigma_10": 0.0003,
+          "sigma_20": 0.0622
         },
         "63": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0103
+          "sigma_20": 0.0097
         },
         "78": {
           "sigma_5": 0.0,
@@ -3888,47 +3888,47 @@
         "3": {
           "sigma_5": 1.0,
           "sigma_10": 1.0,
-          "sigma_20": 0.998
+          "sigma_20": 0.9985
         },
         "18": {
           "sigma_5": 1.0,
-          "sigma_10": 0.991,
-          "sigma_20": 0.9067
+          "sigma_10": 0.9918,
+          "sigma_20": 0.9145
         },
         "23": {
-          "sigma_5": 1.0,
-          "sigma_10": 0.968,
-          "sigma_20": 0.8487
+          "sigma_5": 0.9995,
+          "sigma_10": 0.975,
+          "sigma_20": 0.8592
         },
         "38": {
-          "sigma_5": 0.78,
-          "sigma_10": 0.6377,
+          "sigma_5": 0.7632,
+          "sigma_10": 0.645,
           "sigma_20": 0.5843
         },
         "43": {
-          "sigma_5": 0.3923,
-          "sigma_10": 0.442,
-          "sigma_20": 0.4923
+          "sigma_5": 0.395,
+          "sigma_10": 0.4507,
+          "sigma_20": 0.488
         },
         "58": {
-          "sigma_5": 0.0003,
-          "sigma_10": 0.0483,
-          "sigma_20": 0.206
+          "sigma_5": 0.0,
+          "sigma_10": 0.0493,
+          "sigma_20": 0.2035
         },
         "63": {
           "sigma_5": 0.0,
-          "sigma_10": 0.003,
-          "sigma_20": 0.1317
+          "sigma_10": 0.0027,
+          "sigma_20": 0.1232
         },
         "78": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0153
+          "sigma_20": 0.0127
         },
         "83": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0003
+          "sigma_20": 0.0005
         },
         "98": {
           "sigma_5": 0.0,
@@ -3999,43 +3999,43 @@
       "availability": {
         "3": {
           "sigma_5": 1.0,
-          "sigma_10": 1.0,
-          "sigma_20": 0.986
+          "sigma_10": 0.9998,
+          "sigma_20": 0.9895
         },
         "18": {
-          "sigma_5": 0.9873,
-          "sigma_10": 0.885,
-          "sigma_20": 0.772
+          "sigma_5": 0.991,
+          "sigma_10": 0.8828,
+          "sigma_20": 0.774
         },
         "23": {
-          "sigma_5": 0.9123,
-          "sigma_10": 0.7667,
-          "sigma_20": 0.68
+          "sigma_5": 0.914,
+          "sigma_10": 0.7628,
+          "sigma_20": 0.6785
         },
         "38": {
-          "sigma_5": 0.0447,
-          "sigma_10": 0.2017,
-          "sigma_20": 0.334
+          "sigma_5": 0.0445,
+          "sigma_10": 0.1935,
+          "sigma_20": 0.3422
         },
         "43": {
-          "sigma_5": 0.0003,
-          "sigma_10": 0.055,
-          "sigma_20": 0.2633
+          "sigma_5": 0.0,
+          "sigma_10": 0.0575,
+          "sigma_20": 0.2537
         },
         "58": {
           "sigma_5": 0.0,
-          "sigma_10": 0.0003,
-          "sigma_20": 0.069
+          "sigma_10": 0.0005,
+          "sigma_20": 0.0775
         },
         "63": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0143
+          "sigma_20": 0.011
         },
         "78": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0
+          "sigma_20": 0.0008
         },
         "83": {
           "sigma_5": 0.0,
@@ -4112,47 +4112,47 @@
         "3": {
           "sigma_5": 1.0,
           "sigma_10": 1.0,
-          "sigma_20": 0.9967
+          "sigma_20": 0.9958
         },
         "18": {
           "sigma_5": 1.0,
-          "sigma_10": 0.9807,
-          "sigma_20": 0.8753
+          "sigma_10": 0.978,
+          "sigma_20": 0.8748
         },
         "23": {
-          "sigma_5": 0.9967,
-          "sigma_10": 0.9433,
-          "sigma_20": 0.8137
+          "sigma_5": 0.9972,
+          "sigma_10": 0.9345,
+          "sigma_20": 0.8053
         },
         "38": {
-          "sigma_5": 0.4473,
-          "sigma_10": 0.476,
-          "sigma_20": 0.52
+          "sigma_5": 0.4647,
+          "sigma_10": 0.471,
+          "sigma_20": 0.5028
         },
         "43": {
-          "sigma_5": 0.1123,
-          "sigma_10": 0.298,
-          "sigma_20": 0.4163
+          "sigma_5": 0.115,
+          "sigma_10": 0.2955,
+          "sigma_20": 0.417
         },
         "58": {
           "sigma_5": 0.0,
-          "sigma_10": 0.017,
-          "sigma_20": 0.1667
+          "sigma_10": 0.0155,
+          "sigma_20": 0.144
         },
         "63": {
           "sigma_5": 0.0,
-          "sigma_10": 0.0003,
-          "sigma_20": 0.0817
+          "sigma_10": 0.0,
+          "sigma_20": 0.0675
         },
         "78": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.005
+          "sigma_20": 0.0047
         },
         "83": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0003
+          "sigma_20": 0.0005
         },
         "98": {
           "sigma_5": 0.0,
@@ -4223,43 +4223,43 @@
       "availability": {
         "3": {
           "sigma_5": 1.0,
-          "sigma_10": 0.999,
-          "sigma_20": 0.992
+          "sigma_10": 0.9995,
+          "sigma_20": 0.9915
         },
         "18": {
-          "sigma_5": 0.9953,
-          "sigma_10": 0.916,
-          "sigma_20": 0.7847
+          "sigma_5": 0.9952,
+          "sigma_10": 0.9133,
+          "sigma_20": 0.797
         },
         "23": {
-          "sigma_5": 0.9567,
-          "sigma_10": 0.8247,
-          "sigma_20": 0.6993
+          "sigma_5": 0.9577,
+          "sigma_10": 0.812,
+          "sigma_20": 0.705
         },
         "38": {
-          "sigma_5": 0.0883,
-          "sigma_10": 0.2553,
-          "sigma_20": 0.3757
+          "sigma_5": 0.0895,
+          "sigma_10": 0.2657,
+          "sigma_20": 0.3882
         },
         "43": {
-          "sigma_5": 0.0023,
-          "sigma_10": 0.1047,
-          "sigma_20": 0.293
+          "sigma_5": 0.0013,
+          "sigma_10": 0.1,
+          "sigma_20": 0.3018
         },
         "58": {
           "sigma_5": 0.0,
-          "sigma_10": 0.001,
-          "sigma_20": 0.0957
+          "sigma_10": 0.0003,
+          "sigma_20": 0.0902
         },
         "63": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0253
+          "sigma_20": 0.0173
         },
         "78": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0
+          "sigma_20": 0.0003
         },
         "83": {
           "sigma_5": 0.0,
@@ -4336,47 +4336,47 @@
         "3": {
           "sigma_5": 1.0,
           "sigma_10": 1.0,
-          "sigma_20": 0.9997
+          "sigma_20": 1.0
         },
         "18": {
           "sigma_5": 1.0,
-          "sigma_10": 0.994,
-          "sigma_20": 0.9297
+          "sigma_10": 0.997,
+          "sigma_20": 0.9405
         },
         "23": {
-          "sigma_5": 0.9997,
-          "sigma_10": 0.9853,
-          "sigma_20": 0.8853
+          "sigma_5": 1.0,
+          "sigma_10": 0.985,
+          "sigma_20": 0.8988
         },
         "38": {
-          "sigma_5": 0.9057,
-          "sigma_10": 0.7453,
-          "sigma_20": 0.6213
+          "sigma_5": 0.9097,
+          "sigma_10": 0.741,
+          "sigma_20": 0.6512
         },
         "43": {
-          "sigma_5": 0.6377,
-          "sigma_10": 0.574,
-          "sigma_20": 0.5353
+          "sigma_5": 0.6455,
+          "sigma_10": 0.5713,
+          "sigma_20": 0.558
         },
         "58": {
-          "sigma_5": 0.004,
-          "sigma_10": 0.088,
-          "sigma_20": 0.2547
+          "sigma_5": 0.0027,
+          "sigma_10": 0.0813,
+          "sigma_20": 0.2615
         },
         "63": {
           "sigma_5": 0.0,
-          "sigma_10": 0.0103,
-          "sigma_20": 0.1767
+          "sigma_10": 0.0075,
+          "sigma_20": 0.182
         },
         "78": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0347
+          "sigma_20": 0.0275
         },
         "83": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0023
+          "sigma_20": 0.0022
         },
         "98": {
           "sigma_5": 0.0,
@@ -4452,48 +4452,48 @@
         },
         "18": {
           "sigma_5": 1.0,
-          "sigma_10": 1.0,
-          "sigma_20": 0.974
+          "sigma_10": 0.9998,
+          "sigma_20": 0.9748
         },
         "23": {
           "sigma_5": 1.0,
-          "sigma_10": 0.999,
-          "sigma_20": 0.9533
+          "sigma_10": 0.9995,
+          "sigma_20": 0.957
         },
         "38": {
-          "sigma_5": 0.999,
-          "sigma_10": 0.95,
-          "sigma_20": 0.8027
+          "sigma_5": 0.9995,
+          "sigma_10": 0.9527,
+          "sigma_20": 0.818
         },
         "43": {
-          "sigma_5": 0.9903,
-          "sigma_10": 0.8867,
-          "sigma_20": 0.7373
+          "sigma_5": 0.9922,
+          "sigma_10": 0.8935,
+          "sigma_20": 0.7535
         },
         "58": {
-          "sigma_5": 0.2443,
-          "sigma_10": 0.3663,
-          "sigma_20": 0.44
+          "sigma_5": 0.286,
+          "sigma_10": 0.3922,
+          "sigma_20": 0.459
         },
         "63": {
-          "sigma_5": 0.0163,
-          "sigma_10": 0.197,
-          "sigma_20": 0.3477
+          "sigma_5": 0.0372,
+          "sigma_10": 0.24,
+          "sigma_20": 0.3845
         },
         "78": {
-          "sigma_5": 0.0,
-          "sigma_10": 0.0063,
-          "sigma_20": 0.1273
+          "sigma_5": 0.0003,
+          "sigma_10": 0.0173,
+          "sigma_20": 0.1878
         },
         "83": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0503
+          "sigma_20": 0.0798
         },
         "98": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.002
+          "sigma_20": 0.0077
         },
         "103": {
           "sigma_5": 0.0,
@@ -4559,43 +4559,43 @@
       "availability": {
         "3": {
           "sigma_5": 1.0,
-          "sigma_10": 0.9997,
-          "sigma_20": 0.9943
+          "sigma_10": 1.0,
+          "sigma_20": 0.994
         },
         "18": {
-          "sigma_5": 0.9997,
-          "sigma_10": 0.959,
-          "sigma_20": 0.8367
+          "sigma_5": 0.9995,
+          "sigma_10": 0.9507,
+          "sigma_20": 0.8275
         },
         "23": {
-          "sigma_5": 0.9873,
-          "sigma_10": 0.8927,
-          "sigma_20": 0.756
+          "sigma_5": 0.9915,
+          "sigma_10": 0.882,
+          "sigma_20": 0.754
         },
         "38": {
-          "sigma_5": 0.2543,
-          "sigma_10": 0.378,
-          "sigma_20": 0.4397
+          "sigma_5": 0.2265,
+          "sigma_10": 0.3503,
+          "sigma_20": 0.448
         },
         "43": {
-          "sigma_5": 0.0223,
-          "sigma_10": 0.212,
-          "sigma_20": 0.353
+          "sigma_5": 0.0255,
+          "sigma_10": 0.1842,
+          "sigma_20": 0.3573
         },
         "58": {
           "sigma_5": 0.0,
           "sigma_10": 0.0047,
-          "sigma_20": 0.1213
+          "sigma_20": 0.1175
         },
         "63": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.044
+          "sigma_20": 0.0408
         },
         "78": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0007
+          "sigma_20": 0.0008
         },
         "83": {
           "sigma_5": 0.0,
@@ -4672,47 +4672,47 @@
         "3": {
           "sigma_5": 1.0,
           "sigma_10": 1.0,
-          "sigma_20": 0.999
+          "sigma_20": 0.9998
         },
         "18": {
           "sigma_5": 1.0,
-          "sigma_10": 0.998,
-          "sigma_20": 0.9437
+          "sigma_10": 0.9972,
+          "sigma_20": 0.9423
         },
         "23": {
           "sigma_5": 1.0,
-          "sigma_10": 0.9913,
-          "sigma_20": 0.907
+          "sigma_10": 0.9908,
+          "sigma_20": 0.9073
         },
         "38": {
-          "sigma_5": 0.958,
-          "sigma_10": 0.7997,
-          "sigma_20": 0.6867
+          "sigma_5": 0.9623,
+          "sigma_10": 0.803,
+          "sigma_20": 0.6807
         },
         "43": {
-          "sigma_5": 0.7853,
-          "sigma_10": 0.6477,
-          "sigma_20": 0.5977
+          "sigma_5": 0.7857,
+          "sigma_10": 0.6485,
+          "sigma_20": 0.5952
         },
         "58": {
-          "sigma_5": 0.0117,
-          "sigma_10": 0.1243,
-          "sigma_20": 0.2923
+          "sigma_5": 0.0105,
+          "sigma_10": 0.1235,
+          "sigma_20": 0.29
         },
         "63": {
           "sigma_5": 0.0,
-          "sigma_10": 0.0213,
-          "sigma_20": 0.2137
+          "sigma_10": 0.0195,
+          "sigma_20": 0.2097
         },
         "78": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.047
+          "sigma_20": 0.0415
         },
         "83": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.006
+          "sigma_20": 0.0047
         },
         "98": {
           "sigma_5": 0.0,
@@ -4784,37 +4784,37 @@
         "3": {
           "sigma_5": 1.0,
           "sigma_10": 1.0,
-          "sigma_20": 0.996
+          "sigma_20": 0.9965
         },
         "18": {
-          "sigma_5": 0.9997,
-          "sigma_10": 0.9583,
-          "sigma_20": 0.8597
+          "sigma_5": 0.9998,
+          "sigma_10": 0.9585,
+          "sigma_20": 0.846
         },
         "23": {
-          "sigma_5": 0.9927,
-          "sigma_10": 0.8967,
-          "sigma_20": 0.7783
+          "sigma_5": 0.994,
+          "sigma_10": 0.8992,
+          "sigma_20": 0.77
         },
         "38": {
-          "sigma_5": 0.2977,
-          "sigma_10": 0.3933,
-          "sigma_20": 0.4657
+          "sigma_5": 0.292,
+          "sigma_10": 0.3915,
+          "sigma_20": 0.4725
         },
         "43": {
-          "sigma_5": 0.0397,
-          "sigma_10": 0.2347,
-          "sigma_20": 0.3763
+          "sigma_5": 0.0385,
+          "sigma_10": 0.231,
+          "sigma_20": 0.3842
         },
         "58": {
           "sigma_5": 0.0,
-          "sigma_10": 0.008,
-          "sigma_20": 0.1197
+          "sigma_10": 0.01,
+          "sigma_20": 0.128
         },
         "63": {
           "sigma_5": 0.0,
-          "sigma_10": 0.0,
-          "sigma_20": 0.049
+          "sigma_10": 0.0003,
+          "sigma_20": 0.0483
         },
         "78": {
           "sigma_5": 0.0,
@@ -4824,7 +4824,7 @@
         "83": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0003
+          "sigma_20": 0.0
         },
         "98": {
           "sigma_5": 0.0,
@@ -4896,52 +4896,52 @@
         "3": {
           "sigma_5": 1.0,
           "sigma_10": 1.0,
-          "sigma_20": 0.998
+          "sigma_20": 0.9988
         },
         "18": {
           "sigma_5": 1.0,
-          "sigma_10": 0.9987,
-          "sigma_20": 0.9437
+          "sigma_10": 0.9982,
+          "sigma_20": 0.946
         },
         "23": {
           "sigma_5": 1.0,
-          "sigma_10": 0.992,
-          "sigma_20": 0.9133
+          "sigma_10": 0.9952,
+          "sigma_20": 0.9107
         },
         "38": {
-          "sigma_5": 0.9747,
-          "sigma_10": 0.838,
-          "sigma_20": 0.683
+          "sigma_5": 0.9718,
+          "sigma_10": 0.837,
+          "sigma_20": 0.6945
         },
         "43": {
-          "sigma_5": 0.8223,
-          "sigma_10": 0.7053,
-          "sigma_20": 0.5993
+          "sigma_5": 0.8425,
+          "sigma_10": 0.686,
+          "sigma_20": 0.606
         },
         "58": {
-          "sigma_5": 0.0207,
-          "sigma_10": 0.1447,
-          "sigma_20": 0.3077
+          "sigma_5": 0.016,
+          "sigma_10": 0.1472,
+          "sigma_20": 0.3008
         },
         "63": {
           "sigma_5": 0.0,
-          "sigma_10": 0.0327,
-          "sigma_20": 0.2253
+          "sigma_10": 0.0305,
+          "sigma_20": 0.2205
         },
         "78": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.051
+          "sigma_20": 0.045
         },
         "83": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.008
+          "sigma_20": 0.0037
         },
         "98": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0003
+          "sigma_20": 0.0
         },
         "103": {
           "sigma_5": 0.0,
@@ -5008,42 +5008,42 @@
         "3": {
           "sigma_5": 1.0,
           "sigma_10": 1.0,
-          "sigma_20": 0.995
+          "sigma_20": 0.9958
         },
         "18": {
-          "sigma_5": 0.9993,
-          "sigma_10": 0.9713,
-          "sigma_20": 0.8603
+          "sigma_5": 0.9995,
+          "sigma_10": 0.9702,
+          "sigma_20": 0.8572
         },
         "23": {
-          "sigma_5": 0.9943,
-          "sigma_10": 0.9123,
-          "sigma_20": 0.7927
+          "sigma_5": 0.9945,
+          "sigma_10": 0.9153,
+          "sigma_20": 0.793
         },
         "38": {
-          "sigma_5": 0.3657,
-          "sigma_10": 0.4373,
-          "sigma_20": 0.493
+          "sigma_5": 0.388,
+          "sigma_10": 0.4432,
+          "sigma_20": 0.4915
         },
         "43": {
-          "sigma_5": 0.072,
-          "sigma_10": 0.2763,
-          "sigma_20": 0.3973
+          "sigma_5": 0.0783,
+          "sigma_10": 0.255,
+          "sigma_20": 0.4012
         },
         "58": {
           "sigma_5": 0.0,
-          "sigma_10": 0.0143,
-          "sigma_20": 0.1533
+          "sigma_10": 0.0073,
+          "sigma_20": 0.1417
         },
         "63": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0593
+          "sigma_20": 0.061
         },
         "78": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0027
+          "sigma_20": 0.0022
         },
         "83": {
           "sigma_5": 0.0,
@@ -5120,52 +5120,52 @@
         "3": {
           "sigma_5": 1.0,
           "sigma_10": 1.0,
-          "sigma_20": 1.0
+          "sigma_20": 0.9995
         },
         "18": {
           "sigma_5": 1.0,
-          "sigma_10": 0.9993,
-          "sigma_20": 0.9697
+          "sigma_10": 0.9992,
+          "sigma_20": 0.9698
         },
         "23": {
           "sigma_5": 1.0,
-          "sigma_10": 0.9973,
-          "sigma_20": 0.9467
+          "sigma_10": 0.9968,
+          "sigma_20": 0.945
         },
         "38": {
-          "sigma_5": 0.999,
-          "sigma_10": 0.9253,
-          "sigma_20": 0.7853
+          "sigma_5": 0.9978,
+          "sigma_10": 0.926,
+          "sigma_20": 0.7863
         },
         "43": {
-          "sigma_5": 0.9743,
-          "sigma_10": 0.8377,
-          "sigma_20": 0.7117
+          "sigma_5": 0.9675,
+          "sigma_10": 0.8395,
+          "sigma_20": 0.7077
         },
         "58": {
-          "sigma_5": 0.1327,
-          "sigma_10": 0.296,
-          "sigma_20": 0.4217
+          "sigma_5": 0.1235,
+          "sigma_10": 0.2833,
+          "sigma_20": 0.3962
         },
         "63": {
-          "sigma_5": 0.0023,
-          "sigma_10": 0.134,
-          "sigma_20": 0.3347
+          "sigma_5": 0.0035,
+          "sigma_10": 0.1237,
+          "sigma_20": 0.31
         },
         "78": {
           "sigma_5": 0.0,
-          "sigma_10": 0.0023,
-          "sigma_20": 0.1107
+          "sigma_10": 0.001,
+          "sigma_20": 0.0905
         },
         "83": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.03
+          "sigma_20": 0.0187
         },
         "98": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0007
+          "sigma_20": 0.0
         },
         "103": {
           "sigma_5": 0.0,
@@ -5231,48 +5231,48 @@
       "availability": {
         "3": {
           "sigma_5": 1.0,
-          "sigma_10": 1.0,
-          "sigma_20": 0.998
+          "sigma_10": 0.9998,
+          "sigma_20": 0.9972
         },
         "18": {
           "sigma_5": 1.0,
-          "sigma_10": 0.983,
-          "sigma_20": 0.8953
+          "sigma_10": 0.9852,
+          "sigma_20": 0.886
         },
         "23": {
-          "sigma_5": 0.9993,
-          "sigma_10": 0.9563,
-          "sigma_20": 0.8377
+          "sigma_5": 0.9998,
+          "sigma_10": 0.9593,
+          "sigma_20": 0.8215
         },
         "38": {
-          "sigma_5": 0.6193,
-          "sigma_10": 0.566,
-          "sigma_20": 0.551
+          "sigma_5": 0.6258,
+          "sigma_10": 0.5657,
+          "sigma_20": 0.5387
         },
         "43": {
-          "sigma_5": 0.25,
-          "sigma_10": 0.387,
-          "sigma_20": 0.46
+          "sigma_5": 0.2512,
+          "sigma_10": 0.3815,
+          "sigma_20": 0.4467
         },
         "58": {
           "sigma_5": 0.0,
-          "sigma_10": 0.0257,
-          "sigma_20": 0.1847
+          "sigma_10": 0.0323,
+          "sigma_20": 0.1835
         },
         "63": {
           "sigma_5": 0.0,
-          "sigma_10": 0.0003,
-          "sigma_20": 0.1047
+          "sigma_10": 0.0005,
+          "sigma_20": 0.1017
         },
         "78": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0077
+          "sigma_20": 0.005
         },
         "83": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0003
+          "sigma_20": 0.0
         },
         "98": {
           "sigma_5": 0.0,
@@ -5348,48 +5348,48 @@
         },
         "18": {
           "sigma_5": 1.0,
-          "sigma_10": 1.0,
-          "sigma_20": 0.977
+          "sigma_10": 0.9995,
+          "sigma_20": 0.9758
         },
         "23": {
           "sigma_5": 1.0,
-          "sigma_10": 0.9983,
-          "sigma_20": 0.9573
+          "sigma_10": 0.9985,
+          "sigma_20": 0.956
         },
         "38": {
-          "sigma_5": 0.9967,
-          "sigma_10": 0.9373,
-          "sigma_20": 0.8047
+          "sigma_5": 0.9982,
+          "sigma_10": 0.9347,
+          "sigma_20": 0.8
         },
         "43": {
-          "sigma_5": 0.9803,
-          "sigma_10": 0.8537,
-          "sigma_20": 0.725
+          "sigma_5": 0.981,
+          "sigma_10": 0.868,
+          "sigma_20": 0.726
         },
         "58": {
-          "sigma_5": 0.1783,
-          "sigma_10": 0.3323,
-          "sigma_20": 0.4207
+          "sigma_5": 0.1742,
+          "sigma_10": 0.3302,
+          "sigma_20": 0.4168
         },
         "63": {
-          "sigma_5": 0.0103,
-          "sigma_10": 0.162,
-          "sigma_20": 0.3283
+          "sigma_5": 0.011,
+          "sigma_10": 0.168,
+          "sigma_20": 0.3245
         },
         "78": {
           "sigma_5": 0.0,
-          "sigma_10": 0.0027,
-          "sigma_20": 0.1117
+          "sigma_10": 0.0035,
+          "sigma_20": 0.0965
         },
         "83": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.033
+          "sigma_20": 0.0283
         },
         "98": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0023
+          "sigma_20": 0.0005
         },
         "103": {
           "sigma_5": 0.0,
@@ -5456,57 +5456,57 @@
         "3": {
           "sigma_5": 1.0,
           "sigma_10": 1.0,
-          "sigma_20": 1.0
+          "sigma_20": 0.9992
         },
         "18": {
           "sigma_5": 1.0,
           "sigma_10": 1.0,
-          "sigma_20": 0.981
+          "sigma_20": 0.9792
         },
         "23": {
           "sigma_5": 1.0,
-          "sigma_10": 0.9993,
-          "sigma_20": 0.9647
+          "sigma_10": 0.9992,
+          "sigma_20": 0.9637
         },
         "38": {
-          "sigma_5": 1.0,
-          "sigma_10": 0.9637,
-          "sigma_20": 0.822
+          "sigma_5": 0.9998,
+          "sigma_10": 0.9635,
+          "sigma_20": 0.8255
         },
         "43": {
-          "sigma_5": 0.995,
-          "sigma_10": 0.907,
-          "sigma_20": 0.7513
+          "sigma_5": 0.9948,
+          "sigma_10": 0.9125,
+          "sigma_20": 0.7618
         },
         "58": {
-          "sigma_5": 0.306,
-          "sigma_10": 0.408,
-          "sigma_20": 0.4757
+          "sigma_5": 0.3603,
+          "sigma_10": 0.4365,
+          "sigma_20": 0.4903
         },
         "63": {
-          "sigma_5": 0.0387,
-          "sigma_10": 0.2483,
-          "sigma_20": 0.39
+          "sigma_5": 0.0685,
+          "sigma_10": 0.3025,
+          "sigma_20": 0.416
         },
         "78": {
           "sigma_5": 0.0,
-          "sigma_10": 0.0087,
-          "sigma_20": 0.145
+          "sigma_10": 0.024,
+          "sigma_20": 0.2135
         },
         "83": {
           "sigma_5": 0.0,
           "sigma_10": 0.0003,
-          "sigma_20": 0.058
+          "sigma_20": 0.102
         },
         "98": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.003
+          "sigma_20": 0.0163
         },
         "103": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0
+          "sigma_20": 0.0003
         },
         "118": {
           "sigma_5": 0.0,
@@ -5568,47 +5568,47 @@
         "3": {
           "sigma_5": 1.0,
           "sigma_10": 1.0,
-          "sigma_20": 0.9983
+          "sigma_20": 0.9978
         },
         "18": {
           "sigma_5": 1.0,
-          "sigma_10": 0.9937,
-          "sigma_20": 0.927
+          "sigma_10": 0.995,
+          "sigma_20": 0.9207
         },
         "23": {
           "sigma_5": 1.0,
-          "sigma_10": 0.977,
-          "sigma_20": 0.882
+          "sigma_10": 0.9798,
+          "sigma_20": 0.866
         },
         "38": {
-          "sigma_5": 0.8267,
-          "sigma_10": 0.6903,
-          "sigma_20": 0.614
+          "sigma_5": 0.8133,
+          "sigma_10": 0.6827,
+          "sigma_20": 0.6118
         },
         "43": {
-          "sigma_5": 0.4693,
-          "sigma_10": 0.5053,
-          "sigma_20": 0.5277
+          "sigma_5": 0.4703,
+          "sigma_10": 0.493,
+          "sigma_20": 0.5142
         },
         "58": {
-          "sigma_5": 0.001,
-          "sigma_10": 0.067,
-          "sigma_20": 0.2373
+          "sigma_5": 0.0018,
+          "sigma_10": 0.059,
+          "sigma_20": 0.224
         },
         "63": {
           "sigma_5": 0.0,
-          "sigma_10": 0.003,
-          "sigma_20": 0.1517
+          "sigma_10": 0.0047,
+          "sigma_20": 0.1405
         },
         "78": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0233
+          "sigma_20": 0.015
         },
         "83": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0007
+          "sigma_20": 0.001
         },
         "98": {
           "sigma_5": 0.0,
@@ -5685,52 +5685,52 @@
         "18": {
           "sigma_5": 1.0,
           "sigma_10": 1.0,
-          "sigma_20": 0.983
+          "sigma_20": 0.9765
         },
         "23": {
           "sigma_5": 1.0,
-          "sigma_10": 0.9997,
-          "sigma_20": 0.968
+          "sigma_10": 0.9995,
+          "sigma_20": 0.9615
         },
         "38": {
-          "sigma_5": 0.9997,
-          "sigma_10": 0.971,
-          "sigma_20": 0.84
+          "sigma_5": 1.0,
+          "sigma_10": 0.9633,
+          "sigma_20": 0.83
         },
         "43": {
-          "sigma_5": 0.996,
-          "sigma_10": 0.9163,
-          "sigma_20": 0.763
+          "sigma_5": 0.9958,
+          "sigma_10": 0.905,
+          "sigma_20": 0.768
         },
         "58": {
-          "sigma_5": 0.3833,
-          "sigma_10": 0.4277,
-          "sigma_20": 0.4823
+          "sigma_5": 0.359,
+          "sigma_10": 0.431,
+          "sigma_20": 0.4768
         },
         "63": {
-          "sigma_5": 0.0687,
-          "sigma_10": 0.2597,
-          "sigma_20": 0.388
+          "sigma_5": 0.074,
+          "sigma_10": 0.2605,
+          "sigma_20": 0.3857
         },
         "78": {
           "sigma_5": 0.0,
-          "sigma_10": 0.011,
-          "sigma_20": 0.1367
+          "sigma_10": 0.0097,
+          "sigma_20": 0.121
         },
         "83": {
           "sigma_5": 0.0,
-          "sigma_10": 0.0,
-          "sigma_20": 0.0627
+          "sigma_10": 0.0003,
+          "sigma_20": 0.0545
         },
         "98": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0023
+          "sigma_20": 0.0035
         },
         "103": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0
+          "sigma_20": 0.0003
         },
         "118": {
           "sigma_5": 0.0,
@@ -5792,47 +5792,47 @@
         "3": {
           "sigma_5": 1.0,
           "sigma_10": 1.0,
-          "sigma_20": 0.9993
+          "sigma_20": 0.9982
         },
         "18": {
           "sigma_5": 1.0,
-          "sigma_10": 0.9967,
-          "sigma_20": 0.9437
+          "sigma_10": 0.9978,
+          "sigma_20": 0.9383
         },
         "23": {
           "sigma_5": 1.0,
-          "sigma_10": 0.9873,
-          "sigma_20": 0.8987
+          "sigma_10": 0.9875,
+          "sigma_20": 0.8975
         },
         "38": {
-          "sigma_5": 0.9363,
-          "sigma_10": 0.7727,
-          "sigma_20": 0.661
+          "sigma_5": 0.9223,
+          "sigma_10": 0.783,
+          "sigma_20": 0.6545
         },
         "43": {
-          "sigma_5": 0.725,
-          "sigma_10": 0.6133,
-          "sigma_20": 0.571
+          "sigma_5": 0.6915,
+          "sigma_10": 0.619,
+          "sigma_20": 0.5663
         },
         "58": {
-          "sigma_5": 0.007,
-          "sigma_10": 0.1053,
-          "sigma_20": 0.2733
+          "sigma_5": 0.0053,
+          "sigma_10": 0.096,
+          "sigma_20": 0.2727
         },
         "63": {
           "sigma_5": 0.0,
-          "sigma_10": 0.013,
-          "sigma_20": 0.1927
+          "sigma_10": 0.0085,
+          "sigma_20": 0.1975
         },
         "78": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0307
+          "sigma_20": 0.0325
         },
         "83": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0037
+          "sigma_20": 0.003
         },
         "98": {
           "sigma_5": 0.0,
@@ -5909,52 +5909,52 @@
         "18": {
           "sigma_5": 1.0,
           "sigma_10": 1.0,
-          "sigma_20": 0.994
+          "sigma_20": 0.996
         },
         "23": {
           "sigma_5": 1.0,
           "sigma_10": 1.0,
-          "sigma_20": 0.988
+          "sigma_20": 0.9882
         },
         "38": {
           "sigma_5": 1.0,
-          "sigma_10": 0.998,
-          "sigma_20": 0.925
+          "sigma_10": 0.9992,
+          "sigma_20": 0.9325
         },
         "43": {
           "sigma_5": 1.0,
-          "sigma_10": 0.994,
-          "sigma_20": 0.8913
+          "sigma_10": 0.9952,
+          "sigma_20": 0.8948
         },
         "58": {
-          "sigma_5": 0.968,
-          "sigma_10": 0.838,
-          "sigma_20": 0.669
+          "sigma_5": 0.9655,
+          "sigma_10": 0.822,
+          "sigma_20": 0.6763
         },
         "63": {
-          "sigma_5": 0.828,
-          "sigma_10": 0.6933,
-          "sigma_20": 0.592
+          "sigma_5": 0.7893,
+          "sigma_10": 0.6775,
+          "sigma_20": 0.583
         },
         "78": {
-          "sigma_5": 0.0183,
-          "sigma_10": 0.149,
-          "sigma_20": 0.293
+          "sigma_5": 0.0107,
+          "sigma_10": 0.1217,
+          "sigma_20": 0.2617
         },
         "83": {
           "sigma_5": 0.0,
-          "sigma_10": 0.0343,
-          "sigma_20": 0.2197
+          "sigma_10": 0.0243,
+          "sigma_20": 0.1795
         },
         "98": {
           "sigma_5": 0.0,
-          "sigma_10": 0.0003,
-          "sigma_20": 0.052
+          "sigma_10": 0.0,
+          "sigma_20": 0.0312
         },
         "103": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0083
+          "sigma_20": 0.0057
         },
         "118": {
           "sigma_5": 0.0,
@@ -6016,47 +6016,47 @@
         "3": {
           "sigma_5": 1.0,
           "sigma_10": 1.0,
-          "sigma_20": 0.9993
+          "sigma_20": 1.0
         },
         "18": {
           "sigma_5": 1.0,
-          "sigma_10": 0.9993,
-          "sigma_20": 0.9527
+          "sigma_10": 0.9988,
+          "sigma_20": 0.9603
         },
         "23": {
           "sigma_5": 1.0,
-          "sigma_10": 0.9947,
-          "sigma_20": 0.9177
+          "sigma_10": 0.9942,
+          "sigma_20": 0.9255
         },
         "38": {
-          "sigma_5": 0.9747,
-          "sigma_10": 0.8533,
-          "sigma_20": 0.7033
+          "sigma_5": 0.9775,
+          "sigma_10": 0.8595,
+          "sigma_20": 0.712
         },
         "43": {
-          "sigma_5": 0.8717,
-          "sigma_10": 0.72,
-          "sigma_20": 0.611
+          "sigma_5": 0.8635,
+          "sigma_10": 0.7345,
+          "sigma_20": 0.6222
         },
         "58": {
-          "sigma_5": 0.03,
-          "sigma_10": 0.1817,
-          "sigma_20": 0.3057
+          "sigma_5": 0.029,
+          "sigma_10": 0.1757,
+          "sigma_20": 0.3185
         },
         "63": {
-          "sigma_5": 0.0003,
-          "sigma_10": 0.0467,
-          "sigma_20": 0.233
+          "sigma_5": 0.0,
+          "sigma_10": 0.0382,
+          "sigma_20": 0.2382
         },
         "78": {
           "sigma_5": 0.0,
-          "sigma_10": 0.0003,
-          "sigma_20": 0.0643
+          "sigma_10": 0.0,
+          "sigma_20": 0.0545
         },
         "83": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.009
+          "sigma_20": 0.0097
         },
         "98": {
           "sigma_5": 0.0,
@@ -6133,47 +6133,47 @@
         "18": {
           "sigma_5": 1.0,
           "sigma_10": 1.0,
-          "sigma_20": 0.9817
+          "sigma_20": 0.987
         },
         "23": {
           "sigma_5": 1.0,
-          "sigma_10": 0.9997,
-          "sigma_20": 0.9647
+          "sigma_10": 1.0,
+          "sigma_20": 0.9752
         },
         "38": {
           "sigma_5": 1.0,
-          "sigma_10": 0.9853,
-          "sigma_20": 0.8603
+          "sigma_10": 0.985,
+          "sigma_20": 0.869
         },
         "43": {
           "sigma_5": 1.0,
-          "sigma_10": 0.961,
-          "sigma_20": 0.8037
+          "sigma_10": 0.9537,
+          "sigma_20": 0.8113
         },
         "58": {
-          "sigma_5": 0.634,
-          "sigma_10": 0.5637,
-          "sigma_20": 0.5213
+          "sigma_5": 0.6068,
+          "sigma_10": 0.554,
+          "sigma_20": 0.5363
         },
         "63": {
-          "sigma_5": 0.254,
-          "sigma_10": 0.3683,
-          "sigma_20": 0.4317
+          "sigma_5": 0.262,
+          "sigma_10": 0.37,
+          "sigma_20": 0.4358
         },
         "78": {
           "sigma_5": 0.0,
-          "sigma_10": 0.029,
-          "sigma_20": 0.1693
+          "sigma_10": 0.0243,
+          "sigma_20": 0.1635
         },
         "83": {
           "sigma_5": 0.0,
-          "sigma_10": 0.0007,
-          "sigma_20": 0.0897
+          "sigma_10": 0.0003,
+          "sigma_20": 0.0835
         },
         "98": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0077
+          "sigma_20": 0.0055
         },
         "103": {
           "sigma_5": 0.0,
@@ -6240,52 +6240,52 @@
         "3": {
           "sigma_5": 1.0,
           "sigma_10": 1.0,
-          "sigma_20": 0.9993
+          "sigma_20": 0.9992
         },
         "18": {
           "sigma_5": 1.0,
           "sigma_10": 0.999,
-          "sigma_20": 0.9603
+          "sigma_20": 0.9537
         },
         "23": {
           "sigma_5": 1.0,
-          "sigma_10": 0.9963,
-          "sigma_20": 0.9253
+          "sigma_10": 0.9948,
+          "sigma_20": 0.917
         },
         "38": {
-          "sigma_5": 0.9897,
-          "sigma_10": 0.8797,
-          "sigma_20": 0.7303
+          "sigma_5": 0.9882,
+          "sigma_10": 0.8758,
+          "sigma_20": 0.717
         },
         "43": {
-          "sigma_5": 0.911,
-          "sigma_10": 0.7547,
-          "sigma_20": 0.6613
+          "sigma_5": 0.9022,
+          "sigma_10": 0.7565,
+          "sigma_20": 0.6278
         },
         "58": {
-          "sigma_5": 0.0423,
-          "sigma_10": 0.1873,
-          "sigma_20": 0.3593
+          "sigma_5": 0.0398,
+          "sigma_10": 0.194,
+          "sigma_20": 0.3345
         },
         "63": {
-          "sigma_5": 0.0007,
-          "sigma_10": 0.0543,
-          "sigma_20": 0.2797
+          "sigma_5": 0.0003,
+          "sigma_10": 0.061,
+          "sigma_20": 0.2532
         },
         "78": {
           "sigma_5": 0.0,
-          "sigma_10": 0.001,
-          "sigma_20": 0.0783
+          "sigma_10": 0.0,
+          "sigma_20": 0.0638
         },
         "83": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0153
+          "sigma_20": 0.012
         },
         "98": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0003
+          "sigma_20": 0.0
         },
         "103": {
           "sigma_5": 0.0,
@@ -6352,57 +6352,57 @@
         "3": {
           "sigma_5": 1.0,
           "sigma_10": 1.0,
-          "sigma_20": 1.0
+          "sigma_20": 0.9998
         },
         "18": {
           "sigma_5": 1.0,
           "sigma_10": 1.0,
-          "sigma_20": 0.9923
+          "sigma_20": 0.988
         },
         "23": {
           "sigma_5": 1.0,
           "sigma_10": 1.0,
-          "sigma_20": 0.9807
+          "sigma_20": 0.9772
         },
         "38": {
           "sigma_5": 1.0,
-          "sigma_10": 0.9863,
-          "sigma_20": 0.8817
+          "sigma_10": 0.989,
+          "sigma_20": 0.8705
         },
         "43": {
-          "sigma_5": 1.0,
-          "sigma_10": 0.9627,
-          "sigma_20": 0.8287
+          "sigma_5": 0.9995,
+          "sigma_10": 0.961,
+          "sigma_20": 0.817
         },
         "58": {
-          "sigma_5": 0.6867,
-          "sigma_10": 0.6027,
-          "sigma_20": 0.5533
+          "sigma_5": 0.6935,
+          "sigma_10": 0.5938,
+          "sigma_20": 0.546
         },
         "63": {
-          "sigma_5": 0.315,
-          "sigma_10": 0.4197,
-          "sigma_20": 0.4607
+          "sigma_5": 0.3322,
+          "sigma_10": 0.4007,
+          "sigma_20": 0.4615
         },
         "78": {
-          "sigma_5": 0.0003,
-          "sigma_10": 0.0377,
-          "sigma_20": 0.191
+          "sigma_5": 0.0,
+          "sigma_10": 0.028,
+          "sigma_20": 0.1767
         },
         "83": {
           "sigma_5": 0.0,
-          "sigma_10": 0.0003,
-          "sigma_20": 0.1137
+          "sigma_10": 0.0013,
+          "sigma_20": 0.1022
         },
         "98": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0167
+          "sigma_20": 0.0085
         },
         "103": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.001
+          "sigma_20": 0.0008
         },
         "118": {
           "sigma_5": 0.0,
@@ -6464,47 +6464,47 @@
         "3": {
           "sigma_5": 1.0,
           "sigma_10": 1.0,
-          "sigma_20": 0.9997
+          "sigma_20": 0.9992
         },
         "18": {
           "sigma_5": 1.0,
-          "sigma_10": 0.999,
-          "sigma_20": 0.9603
+          "sigma_10": 0.9998,
+          "sigma_20": 0.9597
         },
         "23": {
           "sigma_5": 1.0,
-          "sigma_10": 0.9963,
-          "sigma_20": 0.93
+          "sigma_10": 0.998,
+          "sigma_20": 0.9285
         },
         "38": {
-          "sigma_5": 0.995,
-          "sigma_10": 0.896,
-          "sigma_20": 0.741
+          "sigma_5": 0.9935,
+          "sigma_10": 0.8965,
+          "sigma_20": 0.742
         },
         "43": {
-          "sigma_5": 0.9363,
-          "sigma_10": 0.7877,
-          "sigma_20": 0.658
+          "sigma_5": 0.932,
+          "sigma_10": 0.7855,
+          "sigma_20": 0.6687
         },
         "58": {
-          "sigma_5": 0.0713,
-          "sigma_10": 0.223,
-          "sigma_20": 0.3567
+          "sigma_5": 0.0698,
+          "sigma_10": 0.2372,
+          "sigma_20": 0.354
         },
         "63": {
-          "sigma_5": 0.0013,
-          "sigma_10": 0.08,
-          "sigma_20": 0.2703
+          "sigma_5": 0.0003,
+          "sigma_10": 0.0808,
+          "sigma_20": 0.2657
         },
         "78": {
           "sigma_5": 0.0,
-          "sigma_10": 0.0,
-          "sigma_20": 0.0847
+          "sigma_10": 0.0003,
+          "sigma_20": 0.0695
         },
         "83": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0157
+          "sigma_20": 0.0127
         },
         "98": {
           "sigma_5": 0.0,
@@ -6581,57 +6581,57 @@
         "18": {
           "sigma_5": 1.0,
           "sigma_10": 1.0,
-          "sigma_20": 0.994
+          "sigma_20": 0.9912
         },
         "23": {
           "sigma_5": 1.0,
           "sigma_10": 1.0,
-          "sigma_20": 0.986
+          "sigma_20": 0.9842
         },
         "38": {
           "sigma_5": 1.0,
-          "sigma_10": 0.9943,
-          "sigma_20": 0.9093
+          "sigma_10": 0.9958,
+          "sigma_20": 0.9137
         },
         "43": {
           "sigma_5": 1.0,
-          "sigma_10": 0.9827,
-          "sigma_20": 0.8733
+          "sigma_10": 0.9868,
+          "sigma_20": 0.877
         },
         "58": {
-          "sigma_5": 0.9027,
-          "sigma_10": 0.732,
-          "sigma_20": 0.6347
+          "sigma_5": 0.924,
+          "sigma_10": 0.7735,
+          "sigma_20": 0.6635
         },
         "63": {
-          "sigma_5": 0.6463,
-          "sigma_10": 0.5663,
-          "sigma_20": 0.5513
+          "sigma_5": 0.7007,
+          "sigma_10": 0.6432,
+          "sigma_20": 0.6015
         },
         "78": {
-          "sigma_5": 0.0017,
-          "sigma_10": 0.0883,
-          "sigma_20": 0.26
+          "sigma_5": 0.07,
+          "sigma_10": 0.1965,
+          "sigma_20": 0.371
         },
         "83": {
           "sigma_5": 0.0,
-          "sigma_10": 0.016,
-          "sigma_20": 0.189
+          "sigma_10": 0.0323,
+          "sigma_20": 0.3018
         },
         "98": {
           "sigma_5": 0.0,
-          "sigma_10": 0.0,
-          "sigma_20": 0.0353
+          "sigma_10": 0.0003,
+          "sigma_20": 0.1338
         },
         "103": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0037
+          "sigma_20": 0.012
         },
         "118": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0003
+          "sigma_20": 0.0008
         },
         "123": {
           "sigma_5": 0.0,
@@ -6688,47 +6688,47 @@
         "3": {
           "sigma_5": 1.0,
           "sigma_10": 1.0,
-          "sigma_20": 1.0
+          "sigma_20": 0.9998
         },
         "18": {
           "sigma_5": 1.0,
-          "sigma_10": 0.9993,
-          "sigma_20": 0.969
+          "sigma_10": 0.9998,
+          "sigma_20": 0.9677
         },
         "23": {
           "sigma_5": 1.0,
-          "sigma_10": 0.999,
-          "sigma_20": 0.945
+          "sigma_10": 0.9975,
+          "sigma_20": 0.9437
         },
         "38": {
-          "sigma_5": 0.9973,
-          "sigma_10": 0.912,
-          "sigma_20": 0.7627
+          "sigma_5": 0.997,
+          "sigma_10": 0.9097,
+          "sigma_20": 0.775
         },
         "43": {
-          "sigma_5": 0.9507,
-          "sigma_10": 0.822,
-          "sigma_20": 0.697
+          "sigma_5": 0.9527,
+          "sigma_10": 0.8117,
+          "sigma_20": 0.6943
         },
         "58": {
-          "sigma_5": 0.0893,
-          "sigma_10": 0.264,
-          "sigma_20": 0.388
+          "sigma_5": 0.085,
+          "sigma_10": 0.2465,
+          "sigma_20": 0.3857
         },
         "63": {
-          "sigma_5": 0.0017,
-          "sigma_10": 0.109,
-          "sigma_20": 0.3113
+          "sigma_5": 0.0003,
+          "sigma_10": 0.1042,
+          "sigma_20": 0.2928
         },
         "78": {
           "sigma_5": 0.0,
-          "sigma_10": 0.0,
-          "sigma_20": 0.0853
+          "sigma_10": 0.0005,
+          "sigma_20": 0.0767
         },
         "83": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0237
+          "sigma_20": 0.0163
         },
         "98": {
           "sigma_5": 0.0,
@@ -6805,52 +6805,52 @@
         "18": {
           "sigma_5": 1.0,
           "sigma_10": 1.0,
-          "sigma_20": 0.9907
+          "sigma_20": 0.991
         },
         "23": {
           "sigma_5": 1.0,
           "sigma_10": 1.0,
-          "sigma_20": 0.9807
+          "sigma_20": 0.98
         },
         "38": {
           "sigma_5": 1.0,
-          "sigma_10": 0.9913,
-          "sigma_20": 0.8953
+          "sigma_10": 0.9885,
+          "sigma_20": 0.891
         },
         "43": {
           "sigma_5": 1.0,
-          "sigma_10": 0.9747,
-          "sigma_20": 0.8483
+          "sigma_10": 0.9673,
+          "sigma_20": 0.8383
         },
         "58": {
-          "sigma_5": 0.759,
-          "sigma_10": 0.6417,
-          "sigma_20": 0.588
+          "sigma_5": 0.7522,
+          "sigma_10": 0.6408,
+          "sigma_20": 0.586
         },
         "63": {
-          "sigma_5": 0.4013,
-          "sigma_10": 0.4557,
-          "sigma_20": 0.4937
+          "sigma_5": 0.399,
+          "sigma_10": 0.452,
+          "sigma_20": 0.4885
         },
         "78": {
-          "sigma_5": 0.0007,
-          "sigma_10": 0.046,
-          "sigma_20": 0.2117
+          "sigma_5": 0.0005,
+          "sigma_10": 0.0418,
+          "sigma_20": 0.202
         },
         "83": {
           "sigma_5": 0.0,
-          "sigma_10": 0.001,
-          "sigma_20": 0.1317
+          "sigma_10": 0.0015,
+          "sigma_20": 0.1217
         },
         "98": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.017
+          "sigma_20": 0.0118
         },
         "103": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0017
+          "sigma_20": 0.0005
         },
         "118": {
           "sigma_5": 0.0,
@@ -6917,57 +6917,57 @@
         "18": {
           "sigma_5": 1.0,
           "sigma_10": 1.0,
-          "sigma_20": 0.9957
+          "sigma_20": 0.9965
         },
         "23": {
           "sigma_5": 1.0,
           "sigma_10": 1.0,
-          "sigma_20": 0.9913
+          "sigma_20": 0.9925
         },
         "38": {
           "sigma_5": 1.0,
-          "sigma_10": 0.9993,
-          "sigma_20": 0.946
+          "sigma_10": 0.999,
+          "sigma_20": 0.944
         },
         "43": {
           "sigma_5": 1.0,
-          "sigma_10": 0.9977,
-          "sigma_20": 0.914
+          "sigma_10": 0.996,
+          "sigma_20": 0.909
         },
         "58": {
-          "sigma_5": 0.9873,
-          "sigma_10": 0.8833,
-          "sigma_20": 0.7193
+          "sigma_5": 0.9852,
+          "sigma_10": 0.874,
+          "sigma_20": 0.7113
         },
         "63": {
-          "sigma_5": 0.9113,
-          "sigma_10": 0.7563,
-          "sigma_20": 0.6443
+          "sigma_5": 0.8792,
+          "sigma_10": 0.7378,
+          "sigma_20": 0.6268
         },
         "78": {
-          "sigma_5": 0.047,
-          "sigma_10": 0.196,
-          "sigma_20": 0.349
+          "sigma_5": 0.0255,
+          "sigma_10": 0.1713,
+          "sigma_20": 0.3043
         },
         "83": {
-          "sigma_5": 0.0007,
-          "sigma_10": 0.0613,
-          "sigma_20": 0.2633
+          "sigma_5": 0.0003,
+          "sigma_10": 0.0485,
+          "sigma_20": 0.214
         },
         "98": {
           "sigma_5": 0.0,
-          "sigma_10": 0.0003,
-          "sigma_20": 0.0673
+          "sigma_10": 0.0,
+          "sigma_20": 0.0408
         },
         "103": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0143
+          "sigma_20": 0.0065
         },
         "118": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0003
+          "sigma_20": 0.0
         },
         "123": {
           "sigma_5": 0.0,
@@ -7024,52 +7024,52 @@
         "3": {
           "sigma_5": 1.0,
           "sigma_10": 1.0,
-          "sigma_20": 0.9997
+          "sigma_20": 1.0
         },
         "18": {
           "sigma_5": 1.0,
           "sigma_10": 1.0,
-          "sigma_20": 0.9833
+          "sigma_20": 0.987
         },
         "23": {
           "sigma_5": 1.0,
-          "sigma_10": 0.9997,
-          "sigma_20": 0.972
+          "sigma_10": 0.9998,
+          "sigma_20": 0.9732
         },
         "38": {
           "sigma_5": 1.0,
-          "sigma_10": 0.9773,
-          "sigma_20": 0.8437
+          "sigma_10": 0.9705,
+          "sigma_20": 0.8465
         },
         "43": {
-          "sigma_5": 0.9977,
-          "sigma_10": 0.9283,
-          "sigma_20": 0.7813
+          "sigma_5": 0.9972,
+          "sigma_10": 0.9353,
+          "sigma_20": 0.7795
         },
         "58": {
-          "sigma_5": 0.447,
-          "sigma_10": 0.482,
-          "sigma_20": 0.515
+          "sigma_5": 0.4505,
+          "sigma_10": 0.4685,
+          "sigma_20": 0.4875
         },
         "63": {
-          "sigma_5": 0.118,
-          "sigma_10": 0.2993,
-          "sigma_20": 0.4203
+          "sigma_5": 0.1105,
+          "sigma_10": 0.2785,
+          "sigma_20": 0.3905
         },
         "78": {
           "sigma_5": 0.0,
-          "sigma_10": 0.0163,
-          "sigma_20": 0.158
+          "sigma_10": 0.0132,
+          "sigma_20": 0.1325
         },
         "83": {
           "sigma_5": 0.0,
-          "sigma_10": 0.001,
-          "sigma_20": 0.072
+          "sigma_10": 0.0003,
+          "sigma_20": 0.0633
         },
         "98": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0037
+          "sigma_20": 0.0025
         },
         "103": {
           "sigma_5": 0.0,
@@ -7141,52 +7141,52 @@
         "18": {
           "sigma_5": 1.0,
           "sigma_10": 1.0,
-          "sigma_20": 0.992
+          "sigma_20": 0.994
         },
         "23": {
           "sigma_5": 1.0,
           "sigma_10": 1.0,
-          "sigma_20": 0.9853
+          "sigma_20": 0.9862
         },
         "38": {
           "sigma_5": 1.0,
-          "sigma_10": 0.9913,
-          "sigma_20": 0.9013
+          "sigma_10": 0.9935,
+          "sigma_20": 0.896
         },
         "43": {
           "sigma_5": 1.0,
-          "sigma_10": 0.976,
-          "sigma_20": 0.852
+          "sigma_10": 0.9745,
+          "sigma_20": 0.8492
         },
         "58": {
-          "sigma_5": 0.818,
-          "sigma_10": 0.6697,
-          "sigma_20": 0.5977
+          "sigma_5": 0.8153,
+          "sigma_10": 0.68,
+          "sigma_20": 0.593
         },
         "63": {
-          "sigma_5": 0.487,
-          "sigma_10": 0.502,
-          "sigma_20": 0.502
+          "sigma_5": 0.4893,
+          "sigma_10": 0.4845,
+          "sigma_20": 0.496
         },
         "78": {
-          "sigma_5": 0.001,
-          "sigma_10": 0.0613,
-          "sigma_20": 0.2263
+          "sigma_5": 0.0013,
+          "sigma_10": 0.0488,
+          "sigma_20": 0.206
         },
         "83": {
           "sigma_5": 0.0,
-          "sigma_10": 0.0033,
-          "sigma_20": 0.151
+          "sigma_10": 0.002,
+          "sigma_20": 0.1273
         },
         "98": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0183
+          "sigma_20": 0.0125
         },
         "103": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0017
+          "sigma_20": 0.0008
         },
         "118": {
           "sigma_5": 0.0,
@@ -7248,52 +7248,52 @@
         "3": {
           "sigma_5": 1.0,
           "sigma_10": 1.0,
-          "sigma_20": 1.0
+          "sigma_20": 0.9998
         },
         "18": {
           "sigma_5": 1.0,
           "sigma_10": 1.0,
-          "sigma_20": 0.9857
+          "sigma_20": 0.9852
         },
         "23": {
           "sigma_5": 1.0,
-          "sigma_10": 0.9997,
-          "sigma_20": 0.9683
+          "sigma_10": 1.0,
+          "sigma_20": 0.971
         },
         "38": {
           "sigma_5": 1.0,
-          "sigma_10": 0.975,
-          "sigma_20": 0.8627
+          "sigma_10": 0.9795,
+          "sigma_20": 0.8522
         },
         "43": {
-          "sigma_5": 0.9993,
-          "sigma_10": 0.9387,
-          "sigma_20": 0.803
+          "sigma_5": 0.9982,
+          "sigma_10": 0.9423,
+          "sigma_20": 0.7947
         },
         "58": {
-          "sigma_5": 0.5447,
-          "sigma_10": 0.511,
-          "sigma_20": 0.5313
+          "sigma_5": 0.518,
+          "sigma_10": 0.513,
+          "sigma_20": 0.5168
         },
         "63": {
-          "sigma_5": 0.1793,
-          "sigma_10": 0.3303,
-          "sigma_20": 0.4277
+          "sigma_5": 0.1608,
+          "sigma_10": 0.3335,
+          "sigma_20": 0.4195
         },
         "78": {
           "sigma_5": 0.0,
-          "sigma_10": 0.018,
-          "sigma_20": 0.161
+          "sigma_10": 0.0195,
+          "sigma_20": 0.154
         },
         "83": {
           "sigma_5": 0.0,
           "sigma_10": 0.0003,
-          "sigma_20": 0.0827
+          "sigma_20": 0.0788
         },
         "98": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0093
+          "sigma_20": 0.004
         },
         "103": {
           "sigma_5": 0.0,
@@ -7360,57 +7360,57 @@
         "3": {
           "sigma_5": 1.0,
           "sigma_10": 1.0,
-          "sigma_20": 1.0
+          "sigma_20": 0.9998
         },
         "18": {
           "sigma_5": 1.0,
           "sigma_10": 1.0,
-          "sigma_20": 0.992
+          "sigma_20": 0.9925
         },
         "23": {
           "sigma_5": 1.0,
           "sigma_10": 1.0,
-          "sigma_20": 0.9813
+          "sigma_20": 0.982
         },
         "38": {
           "sigma_5": 1.0,
-          "sigma_10": 0.9917,
-          "sigma_20": 0.903
+          "sigma_10": 0.9948,
+          "sigma_20": 0.9012
         },
         "43": {
-          "sigma_5": 0.9997,
-          "sigma_10": 0.973,
-          "sigma_20": 0.866
+          "sigma_5": 1.0,
+          "sigma_10": 0.9818,
+          "sigma_20": 0.8582
         },
         "58": {
-          "sigma_5": 0.871,
-          "sigma_10": 0.7097,
-          "sigma_20": 0.613
+          "sigma_5": 0.8462,
+          "sigma_10": 0.6865,
+          "sigma_20": 0.6098
         },
         "63": {
-          "sigma_5": 0.551,
-          "sigma_10": 0.534,
-          "sigma_20": 0.526
+          "sigma_5": 0.4835,
+          "sigma_10": 0.503,
+          "sigma_20": 0.5165
         },
         "78": {
-          "sigma_5": 0.0013,
-          "sigma_10": 0.0753,
-          "sigma_20": 0.2323
+          "sigma_5": 0.002,
+          "sigma_10": 0.0585,
+          "sigma_20": 0.2235
         },
         "83": {
           "sigma_5": 0.0,
-          "sigma_10": 0.006,
-          "sigma_20": 0.1583
+          "sigma_10": 0.0043,
+          "sigma_20": 0.1462
         },
         "98": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0233
+          "sigma_20": 0.0147
         },
         "103": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0013
+          "sigma_20": 0.0008
         },
         "118": {
           "sigma_5": 0.0,
@@ -7477,52 +7477,52 @@
         "18": {
           "sigma_5": 1.0,
           "sigma_10": 1.0,
-          "sigma_20": 0.9933
+          "sigma_20": 0.996
         },
         "23": {
           "sigma_5": 1.0,
           "sigma_10": 1.0,
-          "sigma_20": 0.9893
+          "sigma_20": 0.9882
         },
         "38": {
           "sigma_5": 1.0,
-          "sigma_10": 0.9967,
-          "sigma_20": 0.9287
+          "sigma_10": 0.9978,
+          "sigma_20": 0.93
         },
         "43": {
           "sigma_5": 1.0,
-          "sigma_10": 0.991,
-          "sigma_20": 0.894
+          "sigma_10": 0.99,
+          "sigma_20": 0.8992
         },
         "58": {
-          "sigma_5": 0.954,
-          "sigma_10": 0.7973,
-          "sigma_20": 0.674
+          "sigma_5": 0.955,
+          "sigma_10": 0.8033,
+          "sigma_20": 0.6787
         },
         "63": {
-          "sigma_5": 0.7753,
-          "sigma_10": 0.6543,
-          "sigma_20": 0.5893
+          "sigma_5": 0.7817,
+          "sigma_10": 0.6415,
+          "sigma_20": 0.5925
         },
         "78": {
-          "sigma_5": 0.013,
-          "sigma_10": 0.1297,
-          "sigma_20": 0.287
+          "sigma_5": 0.0097,
+          "sigma_10": 0.102,
+          "sigma_20": 0.2655
         },
         "83": {
-          "sigma_5": 0.0,
-          "sigma_10": 0.0227,
-          "sigma_20": 0.211
+          "sigma_5": 0.0003,
+          "sigma_10": 0.025,
+          "sigma_20": 0.1883
         },
         "98": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0457
+          "sigma_20": 0.0335
         },
         "103": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0037
+          "sigma_20": 0.0057
         },
         "118": {
           "sigma_5": 0.0,
@@ -7589,67 +7589,67 @@
         "18": {
           "sigma_5": 1.0,
           "sigma_10": 1.0,
-          "sigma_20": 0.9927
+          "sigma_20": 0.9915
         },
         "23": {
           "sigma_5": 1.0,
           "sigma_10": 1.0,
-          "sigma_20": 0.987
+          "sigma_20": 0.9835
         },
         "38": {
           "sigma_5": 1.0,
-          "sigma_10": 0.998,
-          "sigma_20": 0.9233
+          "sigma_10": 0.9972,
+          "sigma_20": 0.9217
         },
         "43": {
           "sigma_5": 1.0,
-          "sigma_10": 0.989,
-          "sigma_20": 0.8863
+          "sigma_10": 0.9885,
+          "sigma_20": 0.8858
         },
         "58": {
-          "sigma_5": 0.9353,
-          "sigma_10": 0.764,
-          "sigma_20": 0.6543
+          "sigma_5": 0.9557,
+          "sigma_10": 0.8095,
+          "sigma_20": 0.6803
         },
         "63": {
-          "sigma_5": 0.7077,
-          "sigma_10": 0.6137,
-          "sigma_20": 0.575
+          "sigma_5": 0.7602,
+          "sigma_10": 0.685,
+          "sigma_20": 0.6135
         },
         "78": {
-          "sigma_5": 0.008,
-          "sigma_10": 0.1123,
-          "sigma_20": 0.2803
+          "sigma_5": 0.096,
+          "sigma_10": 0.2045,
+          "sigma_20": 0.3952
         },
         "83": {
-          "sigma_5": 0.0,
-          "sigma_10": 0.0133,
-          "sigma_20": 0.2087
+          "sigma_5": 0.0005,
+          "sigma_10": 0.0413,
+          "sigma_20": 0.3265
         },
         "98": {
           "sigma_5": 0.0,
-          "sigma_10": 0.0,
-          "sigma_20": 0.0417
+          "sigma_10": 0.0015,
+          "sigma_20": 0.1555
         },
         "103": {
           "sigma_5": 0.0,
-          "sigma_10": 0.0,
-          "sigma_20": 0.0057
+          "sigma_10": 0.0005,
+          "sigma_20": 0.03
         },
         "118": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0
+          "sigma_20": 0.0015
         },
         "123": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0
+          "sigma_20": 0.0008
         },
         "138": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0
+          "sigma_20": 0.0003
         },
         "143": {
           "sigma_5": 0.0,
@@ -7701,62 +7701,62 @@
         "18": {
           "sigma_5": 1.0,
           "sigma_10": 1.0,
-          "sigma_20": 0.9993
+          "sigma_20": 0.998
         },
         "23": {
           "sigma_5": 1.0,
           "sigma_10": 1.0,
-          "sigma_20": 0.998
+          "sigma_20": 0.9965
         },
         "38": {
           "sigma_5": 1.0,
-          "sigma_10": 1.0,
-          "sigma_20": 0.9713
+          "sigma_10": 0.9995,
+          "sigma_20": 0.9738
         },
         "43": {
           "sigma_5": 1.0,
-          "sigma_10": 0.9997,
-          "sigma_20": 0.9557
+          "sigma_10": 0.9995,
+          "sigma_20": 0.9585
         },
         "58": {
           "sigma_5": 1.0,
-          "sigma_10": 0.9673,
-          "sigma_20": 0.8217
+          "sigma_10": 0.9657,
+          "sigma_20": 0.828
         },
         "63": {
-          "sigma_5": 0.995,
-          "sigma_10": 0.9237,
-          "sigma_20": 0.7633
+          "sigma_5": 0.9942,
+          "sigma_10": 0.9038,
+          "sigma_20": 0.751
         },
         "78": {
-          "sigma_5": 0.375,
-          "sigma_10": 0.4413,
-          "sigma_20": 0.489
+          "sigma_5": 0.2805,
+          "sigma_10": 0.3887,
+          "sigma_20": 0.4427
         },
         "83": {
-          "sigma_5": 0.0713,
-          "sigma_10": 0.2783,
-          "sigma_20": 0.4017
+          "sigma_5": 0.0648,
+          "sigma_10": 0.2067,
+          "sigma_20": 0.3342
         },
         "98": {
           "sigma_5": 0.0,
-          "sigma_10": 0.0147,
-          "sigma_20": 0.1447
+          "sigma_10": 0.0043,
+          "sigma_20": 0.0905
         },
         "103": {
           "sigma_5": 0.0,
-          "sigma_10": 0.0,
-          "sigma_20": 0.0627
+          "sigma_10": 0.0003,
+          "sigma_20": 0.042
         },
         "118": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.004
+          "sigma_20": 0.0013
         },
         "123": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0
+          "sigma_20": 0.0005
         },
         "138": {
           "sigma_5": 0.0,
@@ -7813,57 +7813,57 @@
         "18": {
           "sigma_5": 1.0,
           "sigma_10": 1.0,
-          "sigma_20": 0.9987
+          "sigma_20": 0.9982
         },
         "23": {
           "sigma_5": 1.0,
           "sigma_10": 1.0,
-          "sigma_20": 0.993
+          "sigma_20": 0.9962
         },
         "38": {
           "sigma_5": 1.0,
-          "sigma_10": 0.999,
-          "sigma_20": 0.9463
+          "sigma_10": 1.0,
+          "sigma_20": 0.9567
         },
         "43": {
           "sigma_5": 1.0,
-          "sigma_10": 0.9987,
-          "sigma_20": 0.9147
+          "sigma_10": 0.997,
+          "sigma_20": 0.9243
         },
         "58": {
-          "sigma_5": 0.9947,
-          "sigma_10": 0.9027,
-          "sigma_20": 0.7347
+          "sigma_5": 0.991,
+          "sigma_10": 0.893,
+          "sigma_20": 0.7328
         },
         "63": {
-          "sigma_5": 0.938,
-          "sigma_10": 0.7983,
-          "sigma_20": 0.6547
+          "sigma_5": 0.9093,
+          "sigma_10": 0.7772,
+          "sigma_20": 0.6485
         },
         "78": {
-          "sigma_5": 0.063,
-          "sigma_10": 0.233,
-          "sigma_20": 0.355
+          "sigma_5": 0.0465,
+          "sigma_10": 0.2032,
+          "sigma_20": 0.332
         },
         "83": {
           "sigma_5": 0.001,
-          "sigma_10": 0.0703,
-          "sigma_20": 0.273
+          "sigma_10": 0.071,
+          "sigma_20": 0.2522
         },
         "98": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0717
+          "sigma_20": 0.0522
         },
         "103": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0143
+          "sigma_20": 0.0123
         },
         "118": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0
+          "sigma_20": 0.0008
         },
         "123": {
           "sigma_5": 0.0,
@@ -7925,57 +7925,57 @@
         "18": {
           "sigma_5": 1.0,
           "sigma_10": 1.0,
-          "sigma_20": 0.9957
+          "sigma_20": 0.9972
         },
         "23": {
           "sigma_5": 1.0,
           "sigma_10": 1.0,
-          "sigma_20": 0.9913
+          "sigma_20": 0.9932
         },
         "38": {
           "sigma_5": 1.0,
-          "sigma_10": 0.999,
-          "sigma_20": 0.942
+          "sigma_10": 0.9982,
+          "sigma_20": 0.9413
         },
         "43": {
           "sigma_5": 1.0,
-          "sigma_10": 0.9953,
-          "sigma_20": 0.911
+          "sigma_10": 0.9942,
+          "sigma_20": 0.9097
         },
         "58": {
-          "sigma_5": 0.9837,
-          "sigma_10": 0.861,
-          "sigma_20": 0.721
+          "sigma_5": 0.9828,
+          "sigma_10": 0.8505,
+          "sigma_20": 0.7057
         },
         "63": {
-          "sigma_5": 0.8703,
-          "sigma_10": 0.7253,
-          "sigma_20": 0.6333
+          "sigma_5": 0.8812,
+          "sigma_10": 0.709,
+          "sigma_20": 0.6258
         },
         "78": {
-          "sigma_5": 0.0263,
-          "sigma_10": 0.1717,
-          "sigma_20": 0.334
+          "sigma_5": 0.0232,
+          "sigma_10": 0.1557,
+          "sigma_20": 0.3035
         },
         "83": {
           "sigma_5": 0.0003,
-          "sigma_10": 0.041,
-          "sigma_20": 0.2523
+          "sigma_10": 0.0408,
+          "sigma_20": 0.2152
         },
         "98": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.054
+          "sigma_20": 0.0403
         },
         "103": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0087
+          "sigma_20": 0.0088
         },
         "118": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0
+          "sigma_20": 0.0003
         },
         "123": {
           "sigma_5": 0.0,
@@ -8042,57 +8042,57 @@
         "23": {
           "sigma_5": 1.0,
           "sigma_10": 1.0,
-          "sigma_20": 0.9953
+          "sigma_20": 0.9965
         },
         "38": {
           "sigma_5": 1.0,
-          "sigma_10": 1.0,
-          "sigma_20": 0.959
+          "sigma_10": 0.9995,
+          "sigma_20": 0.9515
         },
         "43": {
           "sigma_5": 1.0,
-          "sigma_10": 0.998,
-          "sigma_20": 0.9353
+          "sigma_10": 0.9972,
+          "sigma_20": 0.92
         },
         "58": {
-          "sigma_5": 0.9947,
-          "sigma_10": 0.9137,
-          "sigma_20": 0.7643
+          "sigma_5": 0.9965,
+          "sigma_10": 0.9135,
+          "sigma_20": 0.7485
         },
         "63": {
-          "sigma_5": 0.9583,
-          "sigma_10": 0.808,
-          "sigma_20": 0.6903
+          "sigma_5": 0.9507,
+          "sigma_10": 0.8075,
+          "sigma_20": 0.6633
         },
         "78": {
-          "sigma_5": 0.0783,
-          "sigma_10": 0.2407,
-          "sigma_20": 0.3917
+          "sigma_5": 0.0685,
+          "sigma_10": 0.2395,
+          "sigma_20": 0.343
         },
         "83": {
-          "sigma_5": 0.0007,
-          "sigma_10": 0.0937,
-          "sigma_20": 0.304
+          "sigma_5": 0.003,
+          "sigma_10": 0.0963,
+          "sigma_20": 0.2572
         },
         "98": {
           "sigma_5": 0.0,
           "sigma_10": 0.0013,
-          "sigma_20": 0.0853
+          "sigma_20": 0.0638
         },
         "103": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0197
+          "sigma_20": 0.0158
         },
         "118": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0
+          "sigma_20": 0.0005
         },
         "123": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0
+          "sigma_20": 0.0003
         },
         "138": {
           "sigma_5": 0.0,
@@ -8149,52 +8149,52 @@
         "18": {
           "sigma_5": 1.0,
           "sigma_10": 1.0,
-          "sigma_20": 0.9977
+          "sigma_20": 0.9978
         },
         "23": {
           "sigma_5": 1.0,
           "sigma_10": 1.0,
-          "sigma_20": 0.996
+          "sigma_20": 0.9948
         },
         "38": {
           "sigma_5": 1.0,
-          "sigma_10": 1.0,
-          "sigma_20": 0.964
+          "sigma_10": 0.9995,
+          "sigma_20": 0.9633
         },
         "43": {
           "sigma_5": 1.0,
-          "sigma_10": 0.9997,
-          "sigma_20": 0.941
+          "sigma_10": 0.9975,
+          "sigma_20": 0.936
         },
         "58": {
-          "sigma_5": 0.9983,
-          "sigma_10": 0.9227,
-          "sigma_20": 0.7773
+          "sigma_5": 0.998,
+          "sigma_10": 0.9163,
+          "sigma_20": 0.7758
         },
         "63": {
-          "sigma_5": 0.97,
-          "sigma_10": 0.8407,
-          "sigma_20": 0.698
+          "sigma_5": 0.9623,
+          "sigma_10": 0.817,
+          "sigma_20": 0.6953
         },
         "78": {
-          "sigma_5": 0.1353,
-          "sigma_10": 0.2847,
-          "sigma_20": 0.3933
+          "sigma_5": 0.101,
+          "sigma_10": 0.2532,
+          "sigma_20": 0.3867
         },
         "83": {
-          "sigma_5": 0.0053,
-          "sigma_10": 0.126,
-          "sigma_20": 0.3087
+          "sigma_5": 0.0043,
+          "sigma_10": 0.1123,
+          "sigma_20": 0.2958
         },
         "98": {
           "sigma_5": 0.0,
-          "sigma_10": 0.0013,
-          "sigma_20": 0.0953
+          "sigma_10": 0.0005,
+          "sigma_20": 0.0668
         },
         "103": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.023
+          "sigma_20": 0.021
         },
         "118": {
           "sigma_5": 0.0,
@@ -8261,62 +8261,62 @@
         "18": {
           "sigma_5": 1.0,
           "sigma_10": 1.0,
-          "sigma_20": 0.998
+          "sigma_20": 0.9982
         },
         "23": {
           "sigma_5": 1.0,
           "sigma_10": 1.0,
-          "sigma_20": 0.997
+          "sigma_20": 0.9962
         },
         "38": {
           "sigma_5": 1.0,
           "sigma_10": 1.0,
-          "sigma_20": 0.9777
+          "sigma_20": 0.9745
         },
         "43": {
           "sigma_5": 1.0,
           "sigma_10": 1.0,
-          "sigma_20": 0.9617
+          "sigma_20": 0.9593
         },
         "58": {
-          "sigma_5": 1.0,
-          "sigma_10": 0.9817,
-          "sigma_20": 0.8457
+          "sigma_5": 0.9998,
+          "sigma_10": 0.981,
+          "sigma_20": 0.8435
         },
         "63": {
-          "sigma_5": 0.9987,
-          "sigma_10": 0.9413,
-          "sigma_20": 0.7893
+          "sigma_5": 0.9988,
+          "sigma_10": 0.942,
+          "sigma_20": 0.7782
         },
         "78": {
-          "sigma_5": 0.5427,
-          "sigma_10": 0.5267,
-          "sigma_20": 0.503
+          "sigma_5": 0.4622,
+          "sigma_10": 0.5022,
+          "sigma_20": 0.4868
         },
         "83": {
-          "sigma_5": 0.202,
-          "sigma_10": 0.3427,
-          "sigma_20": 0.416
+          "sigma_5": 0.228,
+          "sigma_10": 0.3113,
+          "sigma_20": 0.39
         },
         "98": {
           "sigma_5": 0.0,
-          "sigma_10": 0.0183,
-          "sigma_20": 0.1677
+          "sigma_10": 0.0088,
+          "sigma_20": 0.123
         },
         "103": {
           "sigma_5": 0.0,
-          "sigma_10": 0.0,
-          "sigma_20": 0.092
+          "sigma_10": 0.001,
+          "sigma_20": 0.0703
         },
         "118": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0067
+          "sigma_20": 0.0103
         },
         "123": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0
+          "sigma_20": 0.0005
         },
         "138": {
           "sigma_5": 0.0,
@@ -8404,62 +8404,62 @@
         "18": {
           "sigma_5": 1.0,
           "sigma_10": 1.0,
-          "sigma_20": 0.999
+          "sigma_20": 0.9978
         },
         "23": {
           "sigma_5": 1.0,
           "sigma_10": 1.0,
-          "sigma_20": 0.9983
+          "sigma_20": 0.9962
         },
         "38": {
           "sigma_5": 1.0,
           "sigma_10": 1.0,
-          "sigma_20": 0.968
+          "sigma_20": 0.964
         },
         "43": {
           "sigma_5": 1.0,
-          "sigma_10": 0.9997,
-          "sigma_20": 0.9467
+          "sigma_10": 0.9992,
+          "sigma_20": 0.9417
         },
         "58": {
-          "sigma_5": 0.9983,
-          "sigma_10": 0.9497,
-          "sigma_20": 0.7883
+          "sigma_5": 0.9995,
+          "sigma_10": 0.9487,
+          "sigma_20": 0.79
         },
         "63": {
-          "sigma_5": 0.987,
-          "sigma_10": 0.8853,
-          "sigma_20": 0.7187
+          "sigma_5": 0.9858,
+          "sigma_10": 0.8672,
+          "sigma_20": 0.7225
         },
         "78": {
-          "sigma_5": 0.2447,
-          "sigma_10": 0.3653,
-          "sigma_20": 0.4267
+          "sigma_5": 0.1797,
+          "sigma_10": 0.309,
+          "sigma_20": 0.4012
         },
         "83": {
-          "sigma_5": 0.0227,
-          "sigma_10": 0.1937,
-          "sigma_20": 0.3393
+          "sigma_5": 0.022,
+          "sigma_10": 0.159,
+          "sigma_20": 0.317
         },
         "98": {
           "sigma_5": 0.0,
-          "sigma_10": 0.0053,
-          "sigma_20": 0.1177
+          "sigma_10": 0.0015,
+          "sigma_20": 0.0848
         },
         "103": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.045
+          "sigma_20": 0.036
         },
         "118": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.001
+          "sigma_20": 0.0013
         },
         "123": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0
+          "sigma_20": 0.0003
         },
         "138": {
           "sigma_5": 0.0,
@@ -8516,52 +8516,52 @@
         "18": {
           "sigma_5": 1.0,
           "sigma_10": 1.0,
-          "sigma_20": 0.998
+          "sigma_20": 0.9998
         },
         "23": {
           "sigma_5": 1.0,
           "sigma_10": 1.0,
-          "sigma_20": 0.997
+          "sigma_20": 0.998
         },
         "38": {
           "sigma_5": 1.0,
-          "sigma_10": 0.9997,
-          "sigma_20": 0.977
+          "sigma_10": 1.0,
+          "sigma_20": 0.9782
         },
         "43": {
           "sigma_5": 1.0,
-          "sigma_10": 0.9997,
-          "sigma_20": 0.9623
+          "sigma_10": 0.9998,
+          "sigma_20": 0.9635
         },
         "58": {
           "sigma_5": 1.0,
-          "sigma_10": 0.9797,
-          "sigma_20": 0.841
+          "sigma_10": 0.9702,
+          "sigma_20": 0.8478
         },
         "63": {
-          "sigma_5": 0.9973,
-          "sigma_10": 0.9417,
-          "sigma_20": 0.781
+          "sigma_5": 0.9955,
+          "sigma_10": 0.9187,
+          "sigma_20": 0.7847
         },
         "78": {
-          "sigma_5": 0.4577,
-          "sigma_10": 0.4877,
-          "sigma_20": 0.502
+          "sigma_5": 0.3762,
+          "sigma_10": 0.4285,
+          "sigma_20": 0.466
         },
         "83": {
-          "sigma_5": 0.113,
-          "sigma_10": 0.3097,
-          "sigma_20": 0.421
+          "sigma_5": 0.106,
+          "sigma_10": 0.2637,
+          "sigma_20": 0.3735
         },
         "98": {
           "sigma_5": 0.0,
-          "sigma_10": 0.0193,
-          "sigma_20": 0.1583
+          "sigma_10": 0.008,
+          "sigma_20": 0.1082
         },
         "103": {
           "sigma_5": 0.0,
-          "sigma_10": 0.0003,
-          "sigma_20": 0.0783
+          "sigma_10": 0.0005,
+          "sigma_20": 0.0645
         },
         "118": {
           "sigma_5": 0.0,
@@ -8571,7 +8571,7 @@
         "123": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0
+          "sigma_20": 0.0003
         },
         "138": {
           "sigma_5": 0.0,
@@ -8628,62 +8628,62 @@
         "18": {
           "sigma_5": 1.0,
           "sigma_10": 1.0,
-          "sigma_20": 0.9993
+          "sigma_20": 0.999
         },
         "23": {
           "sigma_5": 1.0,
           "sigma_10": 1.0,
-          "sigma_20": 0.998
+          "sigma_20": 0.9982
         },
         "38": {
           "sigma_5": 1.0,
           "sigma_10": 1.0,
-          "sigma_20": 0.9757
+          "sigma_20": 0.9788
         },
         "43": {
           "sigma_5": 1.0,
-          "sigma_10": 1.0,
-          "sigma_20": 0.9643
+          "sigma_10": 0.9998,
+          "sigma_20": 0.9657
         },
         "58": {
           "sigma_5": 1.0,
-          "sigma_10": 0.9883,
-          "sigma_20": 0.8487
+          "sigma_10": 0.9815,
+          "sigma_20": 0.8602
         },
         "63": {
-          "sigma_5": 0.9993,
-          "sigma_10": 0.9537,
-          "sigma_20": 0.795
+          "sigma_5": 0.999,
+          "sigma_10": 0.9523,
+          "sigma_20": 0.8007
         },
         "78": {
-          "sigma_5": 0.6197,
-          "sigma_10": 0.5613,
-          "sigma_20": 0.5133
+          "sigma_5": 0.5545,
+          "sigma_10": 0.5317,
+          "sigma_20": 0.5148
         },
         "83": {
-          "sigma_5": 0.2813,
-          "sigma_10": 0.3787,
-          "sigma_20": 0.4273
+          "sigma_5": 0.2988,
+          "sigma_10": 0.3478,
+          "sigma_20": 0.4193
         },
         "98": {
-          "sigma_5": 0.0003,
-          "sigma_10": 0.0303,
-          "sigma_20": 0.167
+          "sigma_5": 0.0,
+          "sigma_10": 0.015,
+          "sigma_20": 0.1383
         },
         "103": {
           "sigma_5": 0.0,
-          "sigma_10": 0.0003,
-          "sigma_20": 0.0923
+          "sigma_10": 0.0008,
+          "sigma_20": 0.083
         },
         "118": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.007
+          "sigma_20": 0.0132
         },
         "123": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0003
+          "sigma_20": 0.0008
         },
         "138": {
           "sigma_5": 0.0,
@@ -8740,72 +8740,72 @@
         "18": {
           "sigma_5": 1.0,
           "sigma_10": 1.0,
-          "sigma_20": 0.9977
+          "sigma_20": 0.9978
         },
         "23": {
           "sigma_5": 1.0,
           "sigma_10": 1.0,
-          "sigma_20": 0.995
+          "sigma_20": 0.9958
         },
         "38": {
           "sigma_5": 1.0,
           "sigma_10": 1.0,
-          "sigma_20": 0.9633
+          "sigma_20": 0.9655
         },
         "43": {
           "sigma_5": 1.0,
-          "sigma_10": 0.9987,
-          "sigma_20": 0.9407
+          "sigma_10": 0.999,
+          "sigma_20": 0.95
         },
         "58": {
-          "sigma_5": 0.998,
-          "sigma_10": 0.938,
-          "sigma_20": 0.7957
+          "sigma_5": 0.9995,
+          "sigma_10": 0.9525,
+          "sigma_20": 0.8077
         },
         "63": {
-          "sigma_5": 0.9797,
-          "sigma_10": 0.8663,
-          "sigma_20": 0.723
+          "sigma_5": 0.9848,
+          "sigma_10": 0.9,
+          "sigma_20": 0.7602
         },
         "78": {
-          "sigma_5": 0.1903,
-          "sigma_10": 0.3177,
-          "sigma_20": 0.429
+          "sigma_5": 0.5395,
+          "sigma_10": 0.511,
+          "sigma_20": 0.5383
         },
         "83": {
-          "sigma_5": 0.0123,
-          "sigma_10": 0.1717,
-          "sigma_20": 0.3563
+          "sigma_5": 0.0675,
+          "sigma_10": 0.3465,
+          "sigma_20": 0.484
         },
         "98": {
           "sigma_5": 0.0,
-          "sigma_10": 0.0027,
-          "sigma_20": 0.1257
+          "sigma_10": 0.0638,
+          "sigma_20": 0.3455
         },
         "103": {
           "sigma_5": 0.0,
-          "sigma_10": 0.0003,
-          "sigma_20": 0.0453
+          "sigma_10": 0.0013,
+          "sigma_20": 0.1435
         },
         "118": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0027
+          "sigma_20": 0.011
         },
         "123": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0013
+          "sigma_20": 0.0018
         },
         "138": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0
+          "sigma_20": 0.0003
         },
         "143": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0
+          "sigma_20": 0.0003
         },
         "158": {
           "sigma_5": 0.0,
@@ -8883,62 +8883,62 @@
         "18": {
           "sigma_5": 1.0,
           "sigma_10": 1.0,
-          "sigma_20": 1.0
+          "sigma_20": 0.999
         },
         "23": {
           "sigma_5": 1.0,
           "sigma_10": 1.0,
-          "sigma_20": 0.999
+          "sigma_20": 0.9985
         },
         "38": {
           "sigma_5": 1.0,
           "sigma_10": 1.0,
-          "sigma_20": 0.9807
+          "sigma_20": 0.9838
         },
         "43": {
           "sigma_5": 1.0,
           "sigma_10": 1.0,
-          "sigma_20": 0.9693
+          "sigma_20": 0.9742
         },
         "58": {
           "sigma_5": 1.0,
-          "sigma_10": 0.9873,
-          "sigma_20": 0.877
+          "sigma_10": 0.985,
+          "sigma_20": 0.88
         },
         "63": {
-          "sigma_5": 0.9997,
-          "sigma_10": 0.9597,
-          "sigma_20": 0.8247
+          "sigma_5": 0.9998,
+          "sigma_10": 0.955,
+          "sigma_20": 0.827
         },
         "78": {
-          "sigma_5": 0.691,
-          "sigma_10": 0.5907,
-          "sigma_20": 0.5537
+          "sigma_5": 0.6215,
+          "sigma_10": 0.562,
+          "sigma_20": 0.5357
         },
         "83": {
-          "sigma_5": 0.351,
-          "sigma_10": 0.4017,
-          "sigma_20": 0.4563
+          "sigma_5": 0.3703,
+          "sigma_10": 0.372,
+          "sigma_20": 0.4382
         },
         "98": {
-          "sigma_5": 0.0,
-          "sigma_10": 0.0357,
-          "sigma_20": 0.199
+          "sigma_5": 0.0003,
+          "sigma_10": 0.016,
+          "sigma_20": 0.1557
         },
         "103": {
           "sigma_5": 0.0,
-          "sigma_10": 0.0013,
-          "sigma_20": 0.111
+          "sigma_10": 0.001,
+          "sigma_20": 0.0983
         },
         "118": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0103
+          "sigma_20": 0.0182
         },
         "123": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0003
+          "sigma_20": 0.0015
         },
         "138": {
           "sigma_5": 0.0,
@@ -9243,72 +9243,72 @@
         "18": {
           "sigma_5": 1.0,
           "sigma_10": 1.0,
-          "sigma_20": 0.9973
+          "sigma_20": 0.9988
         },
         "23": {
           "sigma_5": 1.0,
           "sigma_10": 1.0,
-          "sigma_20": 0.9963
+          "sigma_20": 0.997
         },
         "38": {
           "sigma_5": 1.0,
           "sigma_10": 1.0,
-          "sigma_20": 0.9743
+          "sigma_20": 0.9708
         },
         "43": {
           "sigma_5": 1.0,
-          "sigma_10": 0.999,
-          "sigma_20": 0.9547
+          "sigma_10": 1.0,
+          "sigma_20": 0.9535
         },
         "58": {
-          "sigma_5": 1.0,
-          "sigma_10": 0.9663,
-          "sigma_20": 0.813
+          "sigma_5": 0.9995,
+          "sigma_10": 0.966,
+          "sigma_20": 0.823
         },
         "63": {
-          "sigma_5": 0.9927,
-          "sigma_10": 0.917,
-          "sigma_20": 0.743
+          "sigma_5": 0.9965,
+          "sigma_10": 0.926,
+          "sigma_20": 0.7705
         },
         "78": {
-          "sigma_5": 0.3307,
-          "sigma_10": 0.4197,
-          "sigma_20": 0.4497
+          "sigma_5": 0.6767,
+          "sigma_10": 0.593,
+          "sigma_20": 0.5827
         },
         "83": {
-          "sigma_5": 0.0433,
-          "sigma_10": 0.2473,
-          "sigma_20": 0.3723
+          "sigma_5": 0.2018,
+          "sigma_10": 0.4502,
+          "sigma_20": 0.5278
         },
         "98": {
-          "sigma_5": 0.0,
-          "sigma_10": 0.0067,
-          "sigma_20": 0.137
+          "sigma_5": 0.0027,
+          "sigma_10": 0.1403,
+          "sigma_20": 0.3917
         },
         "103": {
           "sigma_5": 0.0,
-          "sigma_10": 0.0,
-          "sigma_20": 0.0557
+          "sigma_10": 0.011,
+          "sigma_20": 0.223
         },
         "118": {
           "sigma_5": 0.0,
-          "sigma_10": 0.0,
-          "sigma_20": 0.0037
+          "sigma_10": 0.0005,
+          "sigma_20": 0.0238
         },
         "123": {
           "sigma_5": 0.0,
-          "sigma_10": 0.0,
-          "sigma_20": 0.001
+          "sigma_10": 0.0003,
+          "sigma_20": 0.006
         },
         "138": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0003
+          "sigma_20": 0.0005
         },
         "143": {
           "sigma_5": 0.0,
           "sigma_10": 0.0,
-          "sigma_20": 0.0
+          "sigma_20": 0.0003
         },
         "158": {
           "sigma_5": 0.0,
