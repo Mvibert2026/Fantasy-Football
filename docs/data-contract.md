@@ -1,6 +1,6 @@
 # Front-End Data Contract
 
-**Version 1.3.0** · generated into `data/export/` · authored 2026-07-25
+**Version 1.5.0** · generated into `data/export/` · authored 2026-07-25
 
 The UI reads these files and **never** touches `data/nfl.db`. Every artifact carries
 `contract_version` and `generated_utc`. Breaking changes bump the major version and are
@@ -26,7 +26,12 @@ first if the board has moved.
   the player more than consensus does.**
 - `null` means *not available*, never *zero*. Fields that could not be computed carry a
   sibling `*_note` or `data_status` explaining why. **No value in these files is invented to
-  fill a gap.**
+  fill a gap.** The single documented exception is the open-ended DEF points-allowed tier in
+  `league.json`, where a null ceiling means *no upper bound*; it carries an inline note saying so.
+- **Every file is strict JSON (RFC 8259).** No `Infinity`, `-Infinity` or `NaN` tokens — those
+  are valid Python literals but not valid JSON, and `JSON.parse` throws on them. Enforced at
+  write time (`allow_nan=False`) and by a test that parses each artifact with `parse_constant`
+  set to raise. See the 1.4.0 changelog entry.
 - Probabilities are floats in `[0, 1]`, not percentages.
 - Pick numbers are overall draft picks (1-160), not round-and-slot.
 
@@ -39,7 +44,7 @@ first if the board has moved.
 | `contract_version`, `generated_utc`, `season` | str | |
 | `curve_fits` | obj | Per position: `r_squared`, `residual_sd`, `n_obs` for the projection fit |
 | `curve_caveat` | str | **Surface this in the UI.** R² is 0.16–0.27 |
-| `replacement_levels_used` | obj | `{QB:10, RB:28, WR:41, TE:11}` |
+| `replacement_levels_used` | obj | `{QB:10, RB:30, WR:40, TE:10}` (ADR-029, measured) |
 | `published_levels_compared_against` | obj | `{QB:12, RB:24, WR:36, TE:12}` |
 | `players[]` | array | 378 records, sorted by `overall_rank` |
 
@@ -60,7 +65,7 @@ Per player:
 | `delta_vs_consensus` | int | Positive = we rank higher than consensus |
 | `tier` | str\|null | `T1`–`T4`, or `T5+` |
 | `structural_adjustment` | int | Rank movement from league-format corrections |
-| `structural_breakdown.replacement_levels` | int | Movement attributable to RB28/WR41/TE11/QB10 vs published RB24/WR36/TE12/QB12 |
+| `structural_breakdown.replacement_levels` | int | Movement attributable to RB30/WR40/TE10/QB10 vs published RB24/WR36/TE12/QB12 |
 | `structural_breakdown.scoring_and_vbd_method` | int | The remainder: our scoring rules and the VBD method itself |
 | `evaluative_adjustment` | **always null** | See below |
 | `evaluative_adjustment_note` | str | Why it is null |
@@ -169,6 +174,29 @@ Teams, rounds, user slot, full pick sequence, roster slots, complete scoring rul
 replacement levels (with the note that they are derived, not hardcoded), the `flex_split`
 assumption flagged as an assumption, playoff structure, trade deadline, FAAB.
 
+### `scoring.defense.points_allowed`
+
+An ordered list of `[ceiling, bonus]` tiers, inclusive upper bound. **The final tier's ceiling
+is `null`, meaning no upper bound** — not "unavailable". `points_allowed_note` states this
+inline so the field is unambiguous without reading this document.
+
+Before 1.4.0 this shipped as a bare `Infinity` token, which is invalid JSON; see the changelog.
+
+### DEF is permanently excluded — settled decision (ADR-039)
+
+`roster.starters.DEF` is `1`, but `replacement_levels` has no `DEF` key. That is deliberate, and
+`positions_without_replacement_levels: ["DEF"]` now says so explicitly rather than leaving the
+absence to be read as an oversight. `board.json.def_supported` stays `false`.
+
+**Do not synthesize a DEF replacement level from these files.** No DST data is ingested, so any
+DEF points value would be fabricated. Render `board.json.def_note` verbatim where a DEF number
+would otherwise go.
+
+Ingesting DST data is **not** planned. Note for anyone tempted to reopen this: the replacement
+*rank* DEF10 is derivable from league structure alone (10 teams × 1 starter, the same arithmetic
+as QB10). It is still withheld, because publishing a rank invites a downstream VBD and the
+*points* half genuinely does not exist.
+
 ---
 
 ## Changelog
@@ -179,6 +207,8 @@ assumption flagged as an assumption, playoff structure, trade deadline, FAAB.
 | 1.1.0 | 2026-07-25 | Added the narration layer (Fact schema + renderer contract). Additive only; no existing field changed |
 | 1.2.0 | 2026-07-25 | Design-handoff reconciliation: integer `id` and `tier`, `evaluative_adjustment` 0 + availability flag, `consensus_source_count`, `def_supported`, `projection_within_fitted_range` |
 | 1.3.0 | 2026-07-25 | **VALUE CHANGE, no schema change.** Replacement levels RB28/WR41/TE11 -> RB30/WR40/TE10 from measurement (ADR-029). Every `vbd`, `projected_points` and `overall_rank` in board.json moved. Re-fetch the board. |
+| 1.5.0 | 2026-07-25 | **Additive.** `league.json` gains `positions_without_replacement_levels: ["DEF"]` + note (ADR-037 — DEF permanently excluded, stated as a decision rather than an absence). `board.json.def_note` reworded to match. `league.json.flex_split_note` corrected: it called the split "an explicit tunable assumption, not a measurement", which ADR-029 made false. `nulls.json` PR-003 elite-TE result restated −92.9 → **−96.1 ± 6** (ADR-028 seed fix; no conclusion moved). No existing field removed or retyped |
+| 1.4.0 | 2026-07-25 | **BUG FIX — `league.json` was not valid JSON.** `scoring.defense.points_allowed`'s open-ended tier shipped a bare `Infinity` token, so `JSON.parse`/`fetch().json()` threw and no browser could load the file. The ceiling is now `null` plus a `points_allowed_note`. All three exporters now write with `allow_nan=False`, and a test parses every artifact with `parse_constant` set to raise. **Consumers sanitising this token at copy time can drop the workaround.** Also: stale `RB28/WR41/TE11` prose corrected to `RB30/WR40/TE10` in `league.json.replacement_levels_note` and `glossary.json` (the *values* have been correct since 1.3.0; only these two strings were stale). `board.json` and `availability.json` regenerated byte-identically — no values moved. |
 
 ---
 

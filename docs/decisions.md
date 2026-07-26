@@ -638,3 +638,159 @@ Ingestion refuses to run without a verified file and validates confidence values
 citations, week ranges and key uniqueness before writing anything. Completion trigger is the
 ESPN 32-team roundup published in late August; precedent verified for 2024 (id 41018846) and
 2025 (id 46137832).
+
+---
+
+## 2026-07-25 (session 8) — backlog ADRs 033-038, written up from session 7's decision list
+
+These six were decided in session 7 and recorded only as bullets in `status.md`. Written up here
+so they are decisions of record. Short by intent — the reasoning, not prose.
+
+### ADR-033: Prior-year repeat behaviour is demoted to display-only
+
+**Decision.** The `repeat_2025 / half_repeat / no_repeat` switch no longer selects between
+models. Prior-year manager behaviour is display context only.
+
+**Why.** The switch was circular. The 60/13/0 spread in the TE availability table came almost
+entirely from *assuming* two managers repeat their 2025 round-3 TE picks — so the output restated
+the input with a probability attached. A number whose entire range is set by an unmeasured
+assumption about two people is not a forecast.
+
+**Status: NOT YET IMPLEMENTED.** The switch is still live in `availability.py` and the
+`te_scenarios` block still ships in `availability.json`. Removing it requires recomputing
+P(tier-1 TE at 23) under ADR-034's model and reporting the delta against 60/13/0. Until that
+lands, **the shipped availability figures remain circular** and the contract's existing warning
+(te_scenarios is "a conditional forecast under a named assumption", not a marginal probability)
+is the only thing holding the line.
+
+### ADR-034: New availability model — marginalise over ranking sources, never hard-assign
+
+**Decision.** Replace the current model with: a ranking mixture per manager, mechanical roster
+need, and rank noise. Ranking sources enter as a **posterior marginalised over** — never
+hard-assigned, never argmax.
+
+**Why.** Picking the single most likely ranking source per manager throws away the uncertainty
+that is the entire quantity of interest. P(player survives to pick 23) is a question about the
+spread of plausible rooms, and argmax collapses that spread to a point before the question is
+asked.
+
+**Pre-registered expectation:** no separation between managers before round 4. **If it never
+separates, that is the finding** — it means opponent modelling cannot pay for itself at this
+sample size, which is a legitimate result and must be reported as one rather than tuned around.
+
+**Status: NOT STARTED.** Supersedes the precomputed-draws export in favour of a client-side
+simulator.
+
+### ADR-035: MFL ADP as `adp_source='mfl_proxy'` — partially supersedes ADR-018
+
+**Decision.** Ingest MyFantasyLeague ADP under `adp_source='mfl_proxy'`. Joins natively on
+`mfl_id`.
+
+**Why it partially supersedes ADR-018.** ADR-018 concluded no market ADP was legally obtainable
+(FFC blocked by `robots.txt`, Yahoo/ESPN behind OAuth). MFL is a source that route missed. It is
+a **proxy**, not this league's ADP: different scoring, different room, different format.
+
+**Binding constraint: never present it as this league's ADP.** It is a separate `adp_source`
+value precisely so it cannot be silently blended into a consensus figure. Per ADR-024, ingest
+per-source rows keyed by `as_of_date` with dispersion preserved — never a pre-blended point
+estimate.
+
+**Does NOT reopen the alpha track.** ADR-026 closed it on a count of *seasons*, not sources; an
+additional source does not move the sign-test floor.
+
+**Status: NOT STARTED.**
+
+### ADR-036: The identity hub is `mfl_id`, not `gsis_id`
+
+**Decision.** `mfl_id` is the hub of the player-identity resolution layer. Collisions go to an
+explicit table and are **EXCLUDED**; `resolve()` returns `None` and never guesses.
+
+**Why.** Measured, not assumed (`data-availability.md` §8.2): `gsis_id` is **62.1% populated**
+in the crosswalk with **10 known collisions**, and the `pfr_player_id -> gsis_id` leg that
+snap-share features depend on resolves only 77-78% overall. A hub that is missing on a third of
+rows is not a hub.
+
+**Returning `None` is the point.** A guessed identity produces a confident wrong join that no
+downstream check will catch. Per the standing rule, cross-source features must **state their
+coverage and refuse unresolved rows**, never drop them silently — the drops are non-random,
+skewing toward fringe roster spots where role changes actually happen.
+
+**Status: NOT STARTED** (this is Task B). Gates the feature pipeline.
+
+### ADR-037: Player profiles are display-only, enforced by test
+
+**Decision.** Profile data is display-only and **test-enforced never to reach** `board`,
+`backtest`, `scoring`, or `Facts`.
+
+**Why enforcement is a test rather than a convention.** The project has already been burned twice
+by a rule that was believed and not checked: three tests were silently evaluating on the 2025
+holdout (ADR-022), and `hash()`-derived seeds satisfied "seeded RNG, seed recorded" in letter
+while being false in practice (ADR-028). Profile content is unvalidated, partly absent (7 of 9
+opponents have no data) and partly narrative; a leak into the board would be invisible in the
+output and would contaminate a ranking with vibes.
+
+The `Facts` exclusion matters most: ADR-027's whole mechanism is that the renderer can only say
+what a Fact says. A profile reaching the Fact layer would route unverified prose straight to the
+page with the project's credibility attached.
+
+**Status: NOT STARTED.**
+
+### ADR-038: Draft state records all ten teams, not just the user's
+
+**Decision.** Draft state records every team's roster and picks. `team_slot` is derived from
+snake order rather than stored per pick.
+
+**Why.** Positional-run detection (test-registry #68), VONA, and any "the room is taking RBs
+aggressively" signal are all questions about *other* teams. A user-only draft state cannot answer
+them and would force a schema migration mid-draft — the worst possible time.
+
+Deriving `team_slot` from snake order rather than storing it keeps the pick sequence the single
+source of truth; a stored slot can disagree with the pick number, and then neither is trustworthy.
+
+**Status: NOT STARTED.**
+
+### ADR-039: DEF is permanently excluded from replacement levels — stated, not merely absent
+
+**Decision.** No DEF replacement level. `league.json` gains
+`positions_without_replacement_levels: ["DEF"]` plus a note; `board.json.def_supported` stays
+`false`. Ingesting DST data is **not** planned.
+
+**Trigger.** The front-end session reported the contradiction: `roster.starters` declares
+`DEF: 1` while `replacement_levels` has no `DEF` key. A consumer reading `starters` alone would
+reasonably expect a matching level.
+
+**Why not just publish DEF10.** The replacement *rank* genuinely is derivable with no player data
+(10 teams x 1 DEF starter — the same arithmetic that yields QB10), and that was the initial fix
+attempted this session. It was reverted on the user's call. A published level invites a
+downstream VBD, and the *points* half does not exist — no DST data is ingested. Publishing the
+rank alone puts a number within reach of a consumer who cannot see which half is missing.
+**Recorded explicitly so a future session does not rediscover the derivation and "fix" the
+omission.**
+
+The distinction being defended is the project's usual one: an absent dimension cannot be reported
+at all (cf. ADR-031 on FTN alignment), and filling a field to make it look complete is the same
+failure mode as inventing a number.
+
+### ADR-040: Exports are strict JSON, enforced at write time
+
+**Decision.** All three exporters write with `allow_nan=False`. A test parses every artifact with
+`parse_constant` set to raise.
+
+**The bug.** `league.json` shipped a bare `Infinity` token in `scoring.defense.points_allowed` —
+valid Python, **invalid JSON** (RFC 8259). `JSON.parse` and `fetch().json()` both throw, so no
+browser could load the file at all. It shipped for six commits, and the front-end session was
+sanitising it at copy time to keep working.
+
+**Why every Python test passed.** Python's `json` module accepts `Infinity`/`-Infinity`/`NaN` on
+**both** read and write by default, so a Python round-trip is structurally incapable of catching
+this. The test therefore makes the *reader* as strict as a browser, rather than checking for the
+one token.
+
+**Fix shape.** The open-ended tier is emitted as a `null` ceiling with an inline
+`points_allowed_note`, because null means "not available" everywhere else in the contract and the
+difference is load-bearing here. `float("inf")` stays in the scoring engine, which needs a
+comparable bound; only the export drops it.
+
+**Lesson, and it is ADR-028's again.** "The tests pass" is worth nothing when the test harness
+shares the defect with the code under test. Both bugs were invisible to same-process,
+same-language verification.

@@ -37,7 +37,7 @@ import make_board
 from config import DEFAULT_CONFIG
 from scoring import LEAGUE, ReplacementLevels
 
-CONTRACT_VERSION = "1.3.0"
+CONTRACT_VERSION = "1.5.0"
 SEASON = 2026
 EXPORT_DIR = Path(__file__).resolve().parent.parent / "data" / "export"
 AVAIL_CSV = Path(__file__).resolve().parent.parent / "data" / "availability_2026.csv"
@@ -223,14 +223,25 @@ def build_board_json(conn: sqlite3.Connection) -> dict:
         ),
         "replacement_levels_used": ReplacementLevels().baselines(),
         "published_levels_compared_against": PUBLISHED_LEVELS.baselines(),
-        # The design contract's example includes DEF: 10. We have NO DST data at
-        # all -- it is dropped at ingest for lack of a gsis_id -- so no DEF
-        # players appear on this board and no DEF replacement level is emitted.
+        # DEF splits into two questions that had been collapsed into one flag.
+        #
+        # The replacement RANK is structural arithmetic -- 10 teams x 1 DEF
+        # starter = DEF10, the same derivation that yields QB10 -- and needs no
+        # player data at all. It is emitted in league.json, which describes the
+        # LEAGUE.
+        #
+        # The replacement POINTS, and therefore any DEF VBD, projection or board
+        # row, need DST scoring data. None is ingested (DST rows carry no
+        # gsis_id and are dropped at ingest). So no DEF player appears here, and
+        # `replacement_levels_used` deliberately excludes DEF: it lists the
+        # levels THIS BOARD was built from, and DEF was not one of them.
         "def_supported": False,
         "def_note": (
-            "No DST data is ingested, so DEF is absent from the board and from replacement "
-            "levels. The draft simulator reserves the final pick for a DEF scoring a constant. "
-            "Do not render a DEF replacement level; there is no data behind one."
+            "DEF is a starting slot in this league (1 per team) but is permanently excluded "
+            "from the model: no DST data is ingested, so there is no DEF replacement level, "
+            "points projection, VBD or board row. See "
+            "league.json:positions_without_replacement_levels. Render this note where a DEF "
+            "number would go. Do not compute a DEF value from these files."
         ),
         "players": players,
     }
@@ -263,6 +274,34 @@ def build_availability_json() -> dict:
     return payload
 
 
+def _scoring_for_export(cfg: dict) -> dict:
+    """LEAGUE rendered so it survives a real JSON parser.
+
+    The last `points_allowed` tier carries `float("inf")` as its upper bound.
+    json.dumps emits that as a bare `Infinity` token -- a valid Python literal
+    and NOT valid JSON (RFC 8259). `JSON.parse` and `fetch().json()` both throw
+    on it, so no browser could load league.json at all. The scoring engine keeps
+    the sentinel (it needs a comparable upper bound); only the export drops it.
+
+    The open-ended tier is emitted with a `null` upper bound. This is the ONE
+    place in the contract where null does not mean "not available" -- it means
+    "no upper bound" -- so `points_allowed_note` states that inline rather than
+    leaving the reader to reconcile it against the cross-cutting convention.
+    """
+    out = {k: dict(v) if isinstance(v, dict) else v for k, v in cfg.items()}
+    tiers = out["defense"]["points_allowed"]
+    out["defense"] = dict(out["defense"])
+    out["defense"]["points_allowed"] = [
+        [None if ceiling == float("inf") else ceiling, bonus] for ceiling, bonus in tiers
+    ]
+    out["defense"]["points_allowed_note"] = (
+        "Tiers are [points_allowed_ceiling, bonus], inclusive upper bound. A null ceiling "
+        "means NO UPPER BOUND (the open-ended top tier) -- it does not mean 'not available' "
+        "as null does elsewhere in this contract."
+    )
+    return out
+
+
 def build_league_json() -> dict:
     levels = ReplacementLevels()
     return {
@@ -278,16 +317,40 @@ def build_league_json() -> dict:
             "ir": 1,
             "kicker": False,
         },
-        "scoring": LEAGUE,
+        "scoring": _scoring_for_export(LEAGUE),
         "replacement_levels": levels.baselines(),
+        # DEF is PERMANENTLY EXCLUDED, by decision (2026-07-25), and this field
+        # exists so that reads as a decision rather than an omission -- which is
+        # how the front end reasonably read it when roster.starters declared
+        # DEF:1 against a replacement_levels with no DEF key.
+        #
+        # NOTE FOR A FUTURE SESSION, so this is not relitigated: DEF10 *is*
+        # derivable without any player data (10 teams x 1 DEF starter, the same
+        # arithmetic that yields QB10). It is left out anyway. A published level
+        # invites a downstream VBD, and the POINTS half genuinely does not exist
+        # -- no DST data is ingested. Publishing the rank alone would put a
+        # number in reach of a consumer who cannot see that distinction.
+        "positions_without_replacement_levels": ["DEF"],
+        "positions_without_replacement_levels_note": (
+            "DEF is a starting slot (1 per team) with no replacement level, deliberately and "
+            "permanently. No DST data is ingested, so no DEF points projection, VBD or board "
+            "row exists. Do not derive a DEF value from these files. Render "
+            "board.json:def_note where a DEF number would otherwise go."
+        ),
         "replacement_levels_note": (
             "Derived from this league's 10 teams and starter counts, not hardcoded. Public "
-            "boards assume a 12-team RB24/WR36 convention; ours is RB28/WR41/TE11/QB10."
+            "boards assume a 12-team RB24/WR36 convention; ours is RB30/WR40/TE10/QB10, "
+            "measured rather than assumed (ADR-029)."
         ),
         "flex_split_assumption": levels.flex_split,
         "flex_split_note": (
-            "How flex slots get filled league-wide is not knowable in advance. This is an "
-            "explicit tunable assumption, not a measurement."
+            "MEASURED, not assumed (ADR-029, 2026-07-25 -- this note previously said the "
+            "opposite and was stale). Derived from 26 seasons: rank all flex-eligible players "
+            "under this league's exact rules, remove the mandated starters, and count who wins "
+            "the 20 flex slots. Season-to-season variance is large (RB flex ranges 5 to 17, "
+            "sd 3.0) and the answer moves +/-1 rank by era window, so treat it as a measured "
+            "midpoint, not a precise constant. TE is the robust part: zero flex slots in every "
+            "window tested."
         ),
         "playoff": {"teams": 4, "weeks": [16, 17], "reseeding": False},
         "trade_deadline": "2026-11-28",
@@ -307,7 +370,12 @@ def write_all(out_dir: Path, conn: sqlite3.Connection, strategies: Optional[dict
         artifacts["strategies.json"] = strategies
     for name, payload in artifacts.items():
         p = out_dir / name
-        p.write_text(json.dumps(payload, indent=2, default=str), encoding="utf-8")
+        # allow_nan=False: refuse to WRITE invalid JSON rather than emit bare
+        # Infinity/NaN tokens that no non-Python consumer can parse. Raises
+        # ValueError at export time, which is where a human is looking.
+        p.write_text(
+            json.dumps(payload, indent=2, default=str, allow_nan=False), encoding="utf-8"
+        )
         written.append(p)
     return written
 

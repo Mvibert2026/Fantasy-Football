@@ -134,7 +134,11 @@ def main() -> None:
         })
 
     args.out.parent.mkdir(parents=True, exist_ok=True)
-    args.out.write_text(json.dumps(out, indent=2, default=str), encoding="utf-8")
+    # allow_nan=False -- see export_contract.write_all. Bare Infinity/NaN is
+    # valid Python and invalid JSON; fail here, not in the browser.
+    args.out.write_text(
+        json.dumps(out, indent=2, default=str, allow_nan=False), encoding="utf-8"
+    )
     print(f"wrote {args.out}")
     for s in out["strategies"]:
         d = next(x for x in s["by_sigma"] if x["sigma"] == ds.DEFAULT_SIGMA)

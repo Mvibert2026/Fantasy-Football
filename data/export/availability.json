@@ -7939,8 +7939,8 @@
       "note": "P(>=1 TE T3 survives to pick 23) | picks 19-22 take a TE with prob 100%"
     }
   ],
-  "contract_version": "1.3.0",
-  "generated_utc": "2026-07-26T00:01:50.081447+00:00",
+  "contract_version": "1.5.0",
+  "generated_utc": "2026-07-26T00:39:59.519614+00:00",
   "metadata": {
     "season": 2026,
     "simulations_per_setting": 3000,

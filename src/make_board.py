@@ -307,7 +307,7 @@ def build_board(
     by_pos = _positional_ranks(_consensus_board(conn, season))
 
     # Replacement points per position = the curve's value at that position's
-    # replacement rank (QB10/RB28/WR41/TE11 for this 10-team league).
+    # replacement rank (QB10/RB30/WR40/TE10 for this 10-team league; ADR-029).
     replacement = {
         pos: curve.predict(baselines[pos])
         for pos, curve in curves.items()

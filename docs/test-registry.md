@@ -134,7 +134,7 @@ Nobody else does these, because they only matter in *our* league.
 | # | Test | Why | Source | Effort | Edge | Status |
 |---|---|---|---|---|---|---|
 | 33 | Re-score all projections under exact rules | Public half-PPR lists model neither our bonuses nor −2 INT | `derived` | M | **High** | **PARTIAL (2026-07-25)** — positional re-weighting done (`src/make_board.py`); player-level re-scoring still blocked by #2 |
-| 34 | Replacement levels: RB28 / WR41 / TE11 / QB10 | Published VBD assumes 12-team RB24/WR36 | `derived` | L | **High** | **DONE (2026-07-25)** — `ReplacementLevels()` derived, used unmodified by board + backtest |
+| 34 | Replacement levels: RB30 / WR40 / TE10 / QB10 | Published VBD assumes 12-team RB24/WR36 | `derived` | L | **High** | **DONE (2026-07-25)** — `ReplacementLevels()` derived, used unmodified by board + backtest. Revised from RB28/WR41/TE11 by measurement (ADR-029); the change is inside measurement noise except TE |
 | 35 | Global flex baseline (~80th flex-eligible) | Correct baseline past mandated slots | `derived` | M | **High** | SPEC |
 | 36 | VONA with pick-gap awareness (5 vs. 14) | Urgency differs ~3× between gap types | `derived` | M | **High** | SPEC |
 | 37 | League-biased ADP (format + manager priors) | Yahoo board assumes 2WR/1FLEX/K | `league` + `adp` | H | **High** | SPEC |
@@ -310,7 +310,7 @@ can, and all three should be re-run under it.
 |---|---|
 | #45 direct measurement | Elite-TE construction cost **-226.4 points** vs. plain BPA |
 | ADR-016 slot values | RB1 168.5 > WR1 153.2 > **QB1 114.1** > **TE1 73.1** |
-| **PR-003 draft simulation** | `elite_te_early` **-92.9**, `qb_early` **-115.4** vs. BPA; both negative in **12 of 12** season×sigma cells |
+| **PR-003 draft simulation** | `elite_te_early` **-96.1 ± 6** (seed-noise band, ADR-028), `qb_early` **-115.4** vs. BPA; both negative in **12 of 12** season×sigma cells |
 
 The prior elite-TE-early framing is not supported.
 

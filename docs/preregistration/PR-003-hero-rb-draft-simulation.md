@@ -26,7 +26,7 @@ status: RUN
 result: NULL on the primary case. Hero RB margin vs BPA is -13.3 pts (sigma=10),
   95% CI [-98.1,+65.0], 2 of 4 seasons positive, sign p=1.000 - a coin flip at every sigma.
   Zero of 15 comparisons survived BH, as anticipated: with 4 seasons the exact sign test
-  cannot go below p=0.125. Separately, elite_te_early (-92.9) and qb_early (-115.4) are
+  cannot go below p=0.125. Separately, elite_te_early (-96.1) and qb_early (-115.4) are
   negative in 12 of 12 season-sigma cells.
 run_date: 2026-07-25
 primary_comparison: hero_rb vs bpa_consensus
@@ -117,8 +117,18 @@ margins are pure noise — at sigma=10 they run 2021 −20.2, 2022 +6.3, 2023 **
 | zero_rb | 2171.3 | 7.5 | 0.530 | **+26.7** | [−6.2, +59.7] | 2/4 | 1.000 |
 | balanced | 2159.9 | 7.8 | 0.501 | **+15.3** | [+1.6, +23.4] | 3/4 | 0.625 |
 | hero_rb | 2131.2 | 7.8 | 0.478 | −13.3 | [−98.1, +65.0] | 2/4 | 1.000 |
-| elite_te_early | 2051.6 | 7.5 | 0.295 | **−92.9** | [−134.1, −51.8] | **0/4** | 0.125 |
+| elite_te_early | 2051.6 | 7.5 | 0.295 | **−96.1** | [−134.1, −51.8] | **0/4** | 0.125 |
 | qb_early | 2029.2 | 7.2 | 0.260 | **−115.4** | [−176.3, −54.4] | **0/4** | 0.125 |
+
+> **RESTATED 2026-07-25 (ADR-028).** `elite_te_early` originally read **−92.9** here. That
+> figure was not reproducible: the per-strategy seed was derived from builtin `hash()` on the
+> strategy name, which Python salts per process, so every run silently used a different seed
+> while reporting the same one. The canonical value is **−96.1**, now reproducible byte-identically
+> across processes. Re-running at five fixed master seeds spans **−100.7 to −85.2 (sd 5.6)**, so
+> treat this as **−96.1 ± 6**, not a point estimate. **No conclusion moves** — `seasons_positive`
+> is 0/4 at every seed tested, and both the old and new figures sit inside the same band. What
+> changed is the false precision, not the finding. Other rows in this table are unaffected
+> (`vbd_sum`/`starter_vbd` CIs used plain integer seeds).
 
 ## The honest headline: BPA is hard to beat
 
@@ -148,7 +158,7 @@ It also corroborates two independent measurements:
 |---|---|
 | #45 direct measurement | Elite-TE construction cost **−226.4 pts** vs plain BPA |
 | ADR-016 slot values | RB1 168.5 > WR1 153.2 > **QB1 114.1 > TE1 73.1** |
-| **This simulation** | elite_te_early **−92.9**, qb_early **−115.4** |
+| **This simulation** | elite_te_early **−96.1**, qb_early **−115.4** |
 
 Three different instruments, same direction.
 
