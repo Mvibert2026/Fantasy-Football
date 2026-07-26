@@ -99,8 +99,11 @@ function findLiteralNumbers(file: string): Finding[] {
     findings.push({ file, line: lineOf(m.index), text: text.trim(), kind: 'jsx-text' });
   }
 
-  // Numeric literal in an expression container: {12}, {3.5}, {-1}
-  const expr = /\{\s*-?\d+(?:\.\d+)?\s*\}/g;
+  // Numeric literal in a JSX child expression container: {12}, {3.5}, {-1}.
+  // The negative lookbehind excludes `propName={0}` (immediately preceded by `=`) --
+  // a numeric prop value like `tabIndex={0}` or `maxLength={5}` is DOM plumbing, not
+  // a claim rendered on screen, and this scanner only cares about the latter.
+  const expr = /(?<!=)\{\s*-?\d+(?:\.\d+)?\s*\}/g;
   for (let m = expr.exec(source); m; m = expr.exec(source)) {
     findings.push({ file, line: lineOf(m.index), text: m[0], kind: 'jsx-expression' });
   }
@@ -144,5 +147,21 @@ describe('no invented numbers in components', () => {
     }
     expect(findings).toHaveLength(1);
     expect(findings[0]?.text).toBe('28');
+  });
+
+  it('the scanner still catches a bare numeric child expression', () => {
+    // Positive control for the bare-{N} path, separate from the JSX-text path above.
+    const planted = `export const X = () => <td>{28}</td>;`;
+    const expr = /(?<!=)\{\s*-?\d+(?:\.\d+)?\s*\}/g;
+    expect(planted.match(expr)).toEqual(['{28}']);
+  });
+
+  it('the scanner does not flag a numeric prop value like tabIndex={0}', () => {
+    // Regression guard for the false positive this exclusion was added to fix:
+    // tabIndex, maxLength and similar numeric props are DOM plumbing, not a claim
+    // rendered on screen, and must never require a Cell behind them.
+    const planted = `export const X = () => <div tabIndex={0} maxLength={5}>hi</div>;`;
+    const expr = /(?<!=)\{\s*-?\d+(?:\.\d+)?\s*\}/g;
+    expect(planted.match(expr)).toBeNull();
   });
 });

@@ -1,86 +1,113 @@
 /*
- * Design tokens -- the single swap point for the visual layer.
+ * Design tokens.
  *
- * The design reference did not reach this session, so the values below are a
- * defensible reading of the language that was described: no border radius anywhere,
- * 1px borders, high density. Everything visual is a token here; restyling to the real
- * reference is an edit to this file, not to any component.
+ * The values below are ported verbatim from the design handoff prototype
+ * (design_handoff_draft_assistant/Draft Assistant.dc.html, §Design tokens in its
+ * README). Fidelity is explicit and high: colours, type, density, spacing and
+ * interactions are final per that document. These are not a reading or an
+ * approximation.
  *
- * Density rules encoded here: a board row is --row-h tall and the table is meant to
- * be scanned at a draft table, so numerals are tabular and monospaced to keep columns
- * aligned, and the type scale is tight.
+ * Two variable sets are defined side by side, on purpose:
+ *
+ *   1. The prototype's own names (--bg, --panel, --txt, --acc, --up, --down, ...),
+ *      used verbatim by the new shell components (TopBar, Sidebar, AssistantDock,
+ *      Board's control row) so that code mirrors the prototype's inline styles
+ *      1:1, per the instruction to port rather than idiomatically translate.
+ *   2. This app's pre-existing names (--fg, --border, --accent, ...), kept so the
+ *      established view components (StrategyGuide, Glossary, Methodology, the
+ *      assistant's claim tags) do not need a line-by-line rewrite in this pass --
+ *      they simply inherit the new palette through their existing class names.
+ *
+ * Default (no attribute) is dark, matching the prototype's default state. The
+ * theme toggle sets `data-theme="light"` on the root element directly -- there is
+ * no system-preference fallback, matching the prototype's own toggle-only design.
  */
 
 :root {
-  color-scheme: light dark;
+  color-scheme: dark;
 
-  /* Type pairing: sans for text, mono for every number. */
-  --font-ui: ui-sans-serif, -apple-system, 'Segoe UI', system-ui, sans-serif;
-  --font-num: ui-monospace, 'SF Mono', 'Cascadia Mono', 'Consolas', monospace;
+  /* ---- Prototype's own token names, used by the new shell verbatim ---- */
+  --bg: #0a0d12;
+  --panel: #0f131a;
+  --panel2: #151a23;
+  --line: #222937;
+  --line2: #2e3646;
+  --txt: #e7ecf3;
+  --dim: #8b95a7;
+  --dim2: #5b6474;
+  --up: #4cc9f0;
+  --down: #f0a35e;
+  --acc: #7dd3a0;
+  --live: #ff5f56;
+  --qb: #b39ddb;
+  --rb: #4dd0b1;
+  --wr: #f2a65a;
+  --te: #6fa8ff;
+  --def: #94a0b0;
+  --soon: #3b4354;
+
+  /* Type pairing: sans for UI text, mono for every number (tabular alignment is
+     a stated requirement in the handoff, not a style preference). */
+  --font-ui: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-num: 'IBM Plex Mono', ui-monospace, 'SF Mono', 'Cascadia Mono', monospace;
 
   --fs-xs: 11px;
-  --fs-sm: 12px;
+  --fs-sm: 12.5px;
   --fs-base: 13px;
-  --fs-lg: 16px;
-  --fs-xl: 22px;
+  --fs-lg: 15px;
+  --fs-xl: 21px;
 
   --lh-tight: 1.25;
   --lh-body: 1.55;
 
-  /* Density */
   --row-h: 28px;
   --pad-x: 10px;
   --pad-y: 5px;
   --gap: 12px;
   --gap-lg: 24px;
 
-  /* Geometry: no radius, 1px rules. */
+  /* No border radius anywhere, 1px borders -- stated exactly, not approximated. */
   --radius: 0;
   --border-w: 1px;
 
-  /* Light */
-  --bg: #ffffff;
-  --bg-sunken: #f6f6f4;
-  --bg-raised: #ffffff;
-  --fg: #16150f;
-  --fg-muted: #62605a;
-  --fg-faint: #8f8c85;
-  --border: #d8d5cd;
-  --border-strong: #16150f;
+  /* ---- This app's existing names, remapped onto the prototype palette so the
+     established view components pick up the new look without a rewrite ---- */
+  --bg-sunken: var(--panel2);
+  --bg-raised: var(--panel);
+  --fg: var(--txt);
+  --fg-muted: var(--dim);
+  --fg-faint: var(--dim2);
+  --border: var(--line);
+  --border-strong: var(--line2);
 
-  --accent: #7a3b1d;
-  --accent-bg: #f2e6df;
+  --accent: var(--acc);
+  --accent-bg: var(--panel2);
 
-  /* Semantics. Positive delta means our board likes the player more than consensus. */
-  --pos: #245c3a;
-  --neg: #8a2c22;
+  --pos: var(--up);
+  --neg: var(--down);
 
-  /* The sparse state is a first-class visual, not a disabled one. */
-  --sparse-fg: #7c7870;
-  --sparse-rule: repeating-linear-gradient(
-    90deg,
-    var(--border) 0 3px,
-    transparent 3px 6px
-  );
+  --sparse-fg: var(--dim2);
+  --sparse-rule: repeating-linear-gradient(90deg, var(--line) 0 3px, transparent 3px 6px);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #12120f;
-    --bg-sunken: #1a1a16;
-    --bg-raised: #161612;
-    --fg: #ece9e0;
-    --fg-muted: #a3a096;
-    --fg-faint: #74716a;
-    --border: #33322c;
-    --border-strong: #ece9e0;
-
-    --accent: #d38a5f;
-    --accent-bg: #2a1d14;
-
-    --pos: #6dbb8b;
-    --neg: #d9796c;
-
-    --sparse-fg: #86837b;
-  }
+:root[data-theme='light'] {
+  color-scheme: light;
+  --bg: #f3f4f6;
+  --panel: #ffffff;
+  --panel2: #eef0f4;
+  --line: #dde1e8;
+  --line2: #c8cfda;
+  --txt: #111620;
+  --dim: #5c6675;
+  --dim2: #8d97a6;
+  --up: #0b7ea8;
+  --down: #b56a12;
+  --acc: #1c7f52;
+  --live: #d43b32;
+  --qb: #6b4fbb;
+  --rb: #0d7f6c;
+  --wr: #a25f10;
+  --te: #2b62c4;
+  --def: #5d6875;
+  --soon: #c3cad5;
 }

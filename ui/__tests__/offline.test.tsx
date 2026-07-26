@@ -124,8 +124,12 @@ describe('the app works with the proxy stopped', () => {
     render(<App />);
     await waitFor(() => expect(screen.getByRole('heading', { name: 'Board' })).toBeInTheDocument());
 
-    await userEvent.click(screen.getByRole('button', { name: 'Glossary' }));
-    expect(await screen.findByRole('heading', { name: 'Glossary' })).toBeInTheDocument();
+    // Nav items are the sidebar's rows, not a horizontal tab bar -- see
+    // ui/components/shell/Sidebar.tsx. "Strategy guide" (the view's own heading) is
+    // lowercase-g where "Strategy Guide" (the nav label) is not; both are correct,
+    // matching what's actually rendered in each place.
+    await userEvent.click(screen.getByRole('button', { name: 'Strategy Guide' }));
+    expect(await screen.findByRole('heading', { name: 'Strategy guide' })).toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('button', { name: 'Methodology' }));
     expect(await screen.findByRole('heading', { name: 'Methodology' })).toBeInTheDocument();

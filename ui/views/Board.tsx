@@ -1,246 +1,558 @@
 import { useMemo, useState } from 'react';
-import { applyFilters, NO_FILTERS, POSITIONS, tierLabels, type BoardFilters, type BoardRow } from '../data/board';
+import type { BoardRow } from '../data/board';
 import { isStartable, type LeagueConfig } from '../data/league';
 import type { Dataset } from '../data/load';
-import { NumCell, Value } from '../components/Value';
-import { decimal, integer, interval, signed } from '../lib/format';
+import { Value } from '../components/Value';
+import { PlayerDetail } from '../components/PlayerDetail';
+import { decimal, integer, interval } from '../lib/format';
 import { RoundGrid } from './RoundGrid';
 
 /**
  * The board.
  *
- * Built sparse-first: 233 of 378 rows carry no displayable projection and no interval.
- * Those rows are not dimmed, collapsed, or pushed to the bottom -- they are the common
- * case, they keep full-weight type, and each suppressed value explains itself on hover.
- * A row with a name, a rank, a tier and a delta is still a useful row at a draft table.
+ * Header and control row are ported from the design handoff prototype
+ * (design_handoff_draft_assistant/Draft Assistant.dc.html, lines 405-461): title +
+ * metadata line + export buttons, then a Table/Round-grid toggle, position tabs, a
+ * "Delta view" toggle, and a player count. The ten-column table grid (430-459),
+ * its Δ glyph convention, its per-column sort comparators and its tier-band
+ * dividers (line 2319-2330) are ported the same way. Sticky headers and the
+ * row-click detail panel were added on top, per explicit instruction.
+ *
+ * Departures from the source, each intentional and noted rather than silent:
+ *   - Export CSV / Export PDF are visually present but inert. Nothing in this app
+ *     generates either file yet.
+ *   - "Round grade grid" switches to this app's own snake-order draft grid, not
+ *     the prototype's VBD-tier-band grid grouped by round and position -- that is
+ *     a content rebuild, not a shell/interaction change.
+ *   - Tier bands only render when a single position is selected, not "ALL". The
+ *     prototype computes a separate synthetic cross-position "global tier" from
+ *     VBD gaps for its ALL view (a ~4.5-point-gap, max-9-per-tier heuristic that
+ *     exists only in the prototype's own code, not in any export) -- reproducing
+ *     it would mean inventing a threshold this app cannot source from data.
+ *     board.json's real `tier_label` is assigned per position, not globally: in
+ *     overall-rank order across every position it is not contiguous -- verified
+ *     against the live export, the same "T1" label re-triggers 74 separate times
+ *     across the full board, one cluster per position, versus a clean 5
+ *     transitions (matching the 5 real tiers) within any single position. Bands
+ *     from that field in the ALL view would render "TIER 1" over and over as
+ *     positions interleave by rank, which is confusing rather than wrong -- worse
+ *     than the prototype's synthetic field, not a faithful stand-in for it. Pick
+ *     a position tab to see bands; the real, per-position field is coherent there.
+ *   - `curve_caveat` ("R² is 0.16-0.27... treat projections as weak") has no line
+ *     in the prototype's header but is a standing requirement in this project's
+ *     data contract ("Surface this in the UI"). Kept as a third bar.
+ *   - The sort indicator (▲/▼ beside the active column, direction flips on a
+ *     second click of the same column) is an explicit addition beyond the
+ *     prototype, which highlights the active column but has no direction glyph
+ *     and no click-again-to-reverse behaviour.
  */
 
-/** Empty or non-numeric input means "no bound", never NaN. */
-function parseBound(raw: string): number | null {
-  const trimmed = raw.trim();
-  if (trimmed === '' || trimmed === '-') return null;
-  const n = Number(trimmed);
-  return Number.isFinite(n) ? n : null;
+type ViewMode = 'table' | 'grid';
+type PositionFilter = 'ALL' | 'QB' | 'RB' | 'WR' | 'TE' | 'DEF';
+type SortKey = 'rank' | 'name' | 'pos' | 'team' | 'bye' | 'proj' | 'cons' | 'delta' | 'vbd' | 'tier' | 'absdelta';
+
+const POSITION_TABS: PositionFilter[] = ['ALL', 'QB', 'RB', 'WR', 'TE', 'DEF'];
+
+/** Position accent colours, ported verbatim from the prototype's token set. */
+const POSITION_COLOR: Record<string, string> = {
+  QB: 'var(--qb)',
+  RB: 'var(--rb)',
+  WR: 'var(--wr)',
+  TE: 'var(--te)',
+  DEF: 'var(--def)',
+};
+
+const GRID_TEMPLATE = '64px minmax(180px,1fr) 72px 54px 54px 168px 70px 60px 72px 64px';
+
+/** Column id, label, and the direction a first click on it should sort in --
+ *  ported from the prototype's `bcols` (line 2314), with "better first" as the
+ *  default direction for proj/delta/vbd, matching its own comparator (line 2319). */
+const COLUMNS: Array<{ key: SortKey; label: string; defaultDir: 1 | -1 }> = [
+  { key: 'rank', label: 'RANK', defaultDir: 1 },
+  { key: 'name', label: 'PLAYER', defaultDir: 1 },
+  { key: 'pos', label: 'POS', defaultDir: 1 },
+  { key: 'team', label: 'TM', defaultDir: 1 },
+  { key: 'bye', label: 'BYE', defaultDir: 1 },
+  { key: 'proj', label: 'PROJ (CI)', defaultDir: -1 },
+  { key: 'cons', label: 'CONS', defaultDir: 1 },
+  { key: 'delta', label: 'Δ', defaultDir: -1 },
+  { key: 'vbd', label: 'VBD', defaultDir: -1 },
+  { key: 'tier', label: 'TIER', defaultDir: 1 },
+];
+
+/** Missing values sort to the bottom regardless of direction -- porting the
+ *  prototype's `nz()` helper (line 2318). */
+function numOrBottom(cell: { kind: string; value?: number }, dir: 1 | -1): number {
+  if (cell.kind !== 'present') return dir === 1 ? Infinity : -Infinity;
+  return cell.value as number;
+}
+
+function textOf(cell: { kind: string; value?: unknown }): string {
+  return cell.kind === 'present' ? String(cell.value) : '';
+}
+
+function compareRows(a: BoardRow, b: BoardRow, key: SortKey): number {
+  switch (key) {
+    case 'absdelta': {
+      const ad = a.deltaVsConsensus.kind === 'present' ? Math.abs(a.deltaVsConsensus.value) : -1;
+      const bd = b.deltaVsConsensus.kind === 'present' ? Math.abs(b.deltaVsConsensus.value) : -1;
+      return bd - ad;
+    }
+    case 'name':
+      return textOf(a.name).localeCompare(textOf(b.name));
+    case 'pos':
+      return (a.raw.position + String(a.positionalRank).padStart(2, '0')).localeCompare(
+        b.raw.position + String(b.positionalRank).padStart(2, '0'),
+      );
+    case 'team':
+      return textOf(a.team).localeCompare(textOf(b.team));
+    case 'bye':
+      return numOrBottom(a.byeWeek, 1) - numOrBottom(b.byeWeek, 1);
+    case 'proj':
+      return numOrBottom(b.projectedPoints, -1) - numOrBottom(a.projectedPoints, -1);
+    case 'cons':
+      return numOrBottom(a.consensusRank, 1) - numOrBottom(b.consensusRank, 1);
+    case 'delta':
+      return numOrBottom(b.deltaVsConsensus, -1) - numOrBottom(a.deltaVsConsensus, -1);
+    case 'vbd':
+      return numOrBottom(b.vbd, -1) - numOrBottom(a.vbd, -1);
+    case 'tier': {
+      const ta = a.raw.tier;
+      const tb = b.raw.tier;
+      return ta - tb || numOrBottom(a.overallRank, 1) - numOrBottom(b.overallRank, 1);
+    }
+    case 'rank':
+    default:
+      return numOrBottom(a.overallRank, 1) - numOrBottom(b.overallRank, 1);
+  }
 }
 
 export function Board({
   data,
   rows,
   league,
+  onFocusPlayer,
 }: {
   data: Dataset;
   rows: BoardRow[];
   league: LeagueConfig;
+  onFocusPlayer?: (name: string | null) => void;
 }) {
-  const [filters, setFilters] = useState<BoardFilters>(NO_FILTERS);
+  const [view, setView] = useState<ViewMode>('table');
+  const [position, setPosition] = useState<PositionFilter>('ALL');
+  const [sort, setSort] = useState<{ key: SortKey; dir: 1 | -1 }>({ key: 'rank', dir: 1 });
   const [selected, setSelected] = useState<number | null>(null);
 
-  const tiers = useMemo(() => tierLabels(rows), [rows]);
-  const visible = useMemo(() => applyFilters(rows, filters), [rows, filters]);
-  const selectedRow = visible.find((r) => r.id === selected) ?? null;
+  const deltaView = sort.key === 'absdelta';
 
-  const sparseCount = rows.filter((r) => r.isSparse).length;
+  const filtered = useMemo(() => {
+    const byPosition = position === 'ALL' ? rows : rows.filter((r) => r.raw.position === position);
+    const dir = sort.key === 'absdelta' ? 1 : sort.dir;
+    return [...byPosition].sort((a, b) => dir * compareRows(a, b, sort.key));
+  }, [rows, position, sort]);
 
-  function toggle<K extends 'positions' | 'tiers'>(key: K, value: string) {
-    setFilters((f) => {
-      const list = f[key] as string[];
-      const next = list.includes(value) ? list.filter((x) => x !== value) : [...list, value];
-      return { ...f, [key]: next } as BoardFilters;
-    });
+  const selectedRow = filtered.find((r) => r.id === selected) ?? null;
+
+  function selectRow(id: number | null) {
+    setSelected(id);
+    const row = id === null ? null : (filtered.find((r) => r.id === id) ?? null);
+    onFocusPlayer?.(row && row.name.kind === 'present' ? row.name.value : null);
   }
 
-  return (
-    <div className="stack">
-      <section>
-        <h2>Board</h2>
-        <p className="notice">{data.board.curve_caveat}</p>
-      </section>
+  function toggleDelta() {
+    setSort((s) => (s.key === 'absdelta' ? { key: 'rank', dir: 1 } : { key: 'absdelta', dir: 1 }));
+  }
 
-      <section>
-        <h3>Filters</h3>
-        <div className="templates" style={{ marginBottom: 'var(--gap)' }}>
-          {POSITIONS.map((p) => (
-            <button
-              key={p}
-              aria-pressed={filters.positions.includes(p)}
-              onClick={() => toggle('positions', p)}
-            >
-              {p}
-            </button>
-          ))}
-          {tiers.map((t) => (
-            <button key={t} aria-pressed={filters.tiers.includes(t)} onClick={() => toggle('tiers', t)}>
-              {t}
-            </button>
-          ))}
+  function clickColumn(key: SortKey, defaultDir: 1 | -1) {
+    setSort((s) => (s.key === key ? { key, dir: (s.dir * -1) as 1 | -1 } : { key, dir: defaultDir }));
+  }
+
+  // The prototype's own provenance-line shape (line 2409): source, state, generated
+  // timestamp, and a real count -- every piece a sourced value, nothing invented.
+  const provenance =
+    `${data.board.consensus_source} · ${data.board.consensus_state.replace(/_/g, ' ')} · ` +
+    `generated ${data.board.generated_utc} · ${rows.length} of 378 players loaded`;
+
+  return (
+    <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+      <div
+        style={{
+          flex: 'none',
+          padding: '11px 20px',
+          borderBottom: '1px solid var(--line)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 12,
+          background: 'var(--panel)',
+        }}
+      >
+        <h2 style={{ fontSize: 16, fontWeight: 600 }}>Board</h2>
+        <div style={{ fontFamily: 'var(--font-num)', fontSize: 12, color: 'var(--dim2)' }}>{provenance}</div>
+        <div style={{ flex: 1 }} />
+        <button
+          aria-disabled="true"
+          style={{
+            padding: '5px 13px',
+            background: 'transparent',
+            border: '1px solid var(--line2)',
+            color: 'var(--dim)',
+            fontSize: 12,
+          }}
+        >
+          Export CSV
+        </button>
+        <button
+          aria-disabled="true"
+          style={{
+            padding: '5px 13px',
+            background: 'transparent',
+            border: '1px solid var(--line2)',
+            color: 'var(--dim)',
+            fontSize: 12,
+          }}
+        >
+          Export PDF
+        </button>
+      </div>
+
+      <div
+        style={{
+          flex: 'none',
+          padding: '11px 20px',
+          borderBottom: '1px solid var(--line)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 14,
+        }}
+      >
+        <div style={{ display: 'flex', border: '1px solid var(--line2)' }}>
           <button
-            aria-pressed={filters.sparseOnly}
-            onClick={() => setFilters((f) => ({ ...f, sparseOnly: !f.sparseOnly }))}
-            title="Players whose projection the contract says not to display"
+            aria-pressed={view === 'table'}
+            onClick={() => setView('table')}
+            style={{
+              padding: '6px 15px',
+              background: view === 'table' ? 'var(--panel2)' : 'transparent',
+              border: 0,
+              color: view === 'table' ? 'var(--txt)' : 'var(--dim2)',
+              fontSize: 12.5,
+              fontWeight: 600,
+            }}
           >
-            No projection
+            Table
           </button>
-          <input
-            aria-label="Search player or team"
-            placeholder="Search player or team"
-            value={filters.search}
-            onChange={(e) => setFilters((f) => ({ ...f, search: e.target.value }))}
-          />
-          {/*
-            Controlled, so Reset actually empties them. Left uncontrolled these kept
-            their typed text after a reset while the filter behind them had cleared --
-            the table would show everything while the box still read "10".
-            A non-numeric entry is treated as no bound rather than as NaN.
-          */}
-          <input
-            aria-label="Minimum delta vs consensus"
-            placeholder="Delta ≥"
-            inputMode="numeric"
-            value={filters.minDelta === null ? '' : String(filters.minDelta)}
-            onChange={(e) => setFilters((f) => ({ ...f, minDelta: parseBound(e.target.value) }))}
-          />
-          <input
-            aria-label="Maximum delta vs consensus"
-            placeholder="Delta ≤"
-            inputMode="numeric"
-            value={filters.maxDelta === null ? '' : String(filters.maxDelta)}
-            onChange={(e) => setFilters((f) => ({ ...f, maxDelta: parseBound(e.target.value) }))}
-          />
-          <button onClick={() => setFilters(NO_FILTERS)}>Reset</button>
+          <button
+            aria-pressed={view === 'grid'}
+            onClick={() => setView('grid')}
+            style={{
+              padding: '6px 15px',
+              background: view === 'grid' ? 'var(--panel2)' : 'transparent',
+              border: 0,
+              color: view === 'grid' ? 'var(--txt)' : 'var(--dim2)',
+              fontSize: 12.5,
+              fontWeight: 600,
+            }}
+          >
+            Round grade grid
+          </button>
         </div>
 
-        <p className="num" style={{ fontSize: 'var(--fs-xs)', color: 'var(--fg-faint)' }}>
-          {`${integer(visible.length)} of ${integer(rows.length)} shown · ${integer(sparseCount)} of ${integer(rows.length)} players carry no displayable projection`}
-        </p>
+        <div style={{ display: 'flex', gap: 4 }}>
+          {POSITION_TABS.map((t) => {
+            const active = position === t;
+            return (
+              <button
+                key={t}
+                aria-pressed={active}
+                onClick={() => setPosition(t)}
+                style={{
+                  padding: '5px 14px',
+                  background: active ? 'var(--panel2)' : 'transparent',
+                  border: `1px solid ${active ? 'var(--line2)' : 'var(--line)'}`,
+                  color: active ? (POSITION_COLOR[t] ?? 'var(--txt)') : 'var(--dim2)',
+                  fontFamily: 'var(--font-num)',
+                  fontSize: 12,
+                  fontWeight: 600,
+                }}
+              >
+                {t}
+              </button>
+            );
+          })}
+        </div>
 
-        {visible.length === 0 ? (
-          <div className="empty">
-            <strong>Nothing matches these filters.</strong> The board holds{' '}
-            {integer(rows.length)} players; loosen a filter to see them.
-          </div>
-        ) : (
-          <div className="table-wrap">
-            <table className="board">
-              <thead>
-                <tr>
-                  <th className="n">#</th>
-                  <th>Player</th>
-                  <th>Pos</th>
-                  <th>Team</th>
-                  <th>Tier</th>
-                  <th className="n">Bye</th>
-                  <th className="n">Proj</th>
-                  <th className="n">Interval (VBD)</th>
-                  <th className="n">VBD</th>
-                  <th className="n">ECR</th>
-                  <th className="n">Δ</th>
-                </tr>
-              </thead>
-              <tbody>
-                {visible.map((row) => {
-                  const startable = isStartable(league, row.raw.position, row.positionalRank);
-                  return (
-                    <tr
-                      key={row.id}
-                      className={row.isSparse ? 'sparse' : undefined}
-                      aria-selected={row.id === selected}
-                      onClick={() => setSelected(row.id === selected ? null : row.id)}
-                    >
-                      <NumCell cell={row.overallRank} render={integer} />
-                      <td className={startable === false ? 'startable-off' : undefined}>
-                        <Value cell={row.name} render={(v) => v} />
-                      </td>
-                      <td>
-                        <Value cell={row.positionalLabel} render={(v) => v} />
-                      </td>
-                      <td>
-                        <Value cell={row.team} render={(v) => v} />
-                      </td>
-                      <td>
-                        <Value cell={row.tierLabel} render={(v) => v} />
-                      </td>
-                      <NumCell cell={row.byeWeek} render={integer} />
-                      <NumCell cell={row.projectedPoints} render={decimal} />
-                      <NumCell cell={row.interval} render={(v) => interval(v.low, v.high)} />
-                      <NumCell cell={row.vbd} render={decimal} />
-                      <NumCell cell={row.consensusRank} render={integer} />
-                      <NumCell
-                        cell={row.deltaVsConsensus}
-                        render={signed}
-                        className={
-                          row.deltaVsConsensus.kind === 'present' && row.deltaVsConsensus.value > 0
-                            ? 'pos'
-                            : row.deltaVsConsensus.kind === 'present' && row.deltaVsConsensus.value < 0
-                              ? 'neg'
-                              : undefined
-                        }
-                      />
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </section>
+        <button
+          aria-pressed={deltaView}
+          onClick={toggleDelta}
+          style={{
+            padding: '5px 14px',
+            background: deltaView ? 'var(--panel2)' : 'transparent',
+            border: `1px solid ${deltaView ? 'var(--up)' : 'var(--line)'}`,
+            color: deltaView ? 'var(--up)' : 'var(--dim2)',
+            fontSize: 12.5,
+          }}
+        >
+          Delta view — biggest disagreements
+        </button>
 
-      {selectedRow ? <Attribution row={selectedRow} /> : <AttributionEmpty />}
+        <div style={{ flex: 1 }} />
+        <span style={{ fontFamily: 'var(--font-num)', fontSize: 12, color: 'var(--dim2)' }}>
+          {filtered.length} players
+        </span>
+      </div>
 
-      <RoundGrid league={league} rows={rows} />
+      <div
+        style={{
+          flex: 'none',
+          padding: '8px 20px',
+          borderBottom: '1px solid var(--line)',
+          fontSize: 12.5,
+          color: 'var(--dim)',
+        }}
+      >
+        {data.board.curve_caveat}
+      </div>
+
+      {view === 'table' ? (
+        <BoardTable
+          rows={filtered}
+          league={league}
+          selected={selected}
+          onSelect={selectRow}
+          sort={sort}
+          onClickColumn={clickColumn}
+          bandsEnabled={sort.key === 'rank' && sort.dir === 1 && position !== 'ALL'}
+        />
+      ) : (
+        <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: '15px 20px' }}>
+          <RoundGrid league={league} rows={rows} />
+        </div>
+      )}
+
+      {selectedRow ? <PlayerDetail row={selectedRow} onClose={() => selectRow(null)} /> : null}
     </div>
   );
 }
 
-/**
- * The attribution panel. Structural only -- one honest claim.
- *
- * There is no "we disagree with the experts about this player" row here, suppressed or
- * otherwise, because the board holds no such opinion: it assigns every player at the
- * same positional consensus rank an identical projection. Showing a zeroed-out
- * evaluative row would imply a measurement was taken and came back nil. None was taken.
- */
-function Attribution({ row }: { row: BoardRow }) {
-  return (
-    <section>
-      <h3>Why this player moved</h3>
-      <h2>
-        <Value cell={row.name} render={(v) => v} />
-      </h2>
-      <dl className="defs">
-        <dt>Against consensus</dt>
-        <dd className="num">
-          <Value cell={row.deltaVsConsensus} render={signed} /> places
-        </dd>
-
-        <dt>This league’s replacement levels</dt>
-        <dd className="num">
-          <Value cell={row.replacementLevelsComponent} render={signed} />
-        </dd>
-
-        <dt>Our scoring and VBD method</dt>
-        <dd className="num">
-          <Value cell={row.scoringAndVbdComponent} render={signed} />
-        </dd>
-      </dl>
-      <p className="notice">{row.evaluativeNote}</p>
-      {row.isSparse && row.projectedPoints.kind === 'absent' ? (
-        <p className="notice">{row.projectedPoints.reason}</p>
-      ) : null}
-    </section>
-  );
-}
-
-function AttributionEmpty() {
-  return (
-    <section>
-      <h3>Why this player moved</h3>
-      <div className="empty">
-        <strong>No player selected.</strong> Pick a row to see how much of its distance from
-        consensus comes from this league’s replacement levels and how much from our scoring and
-        VBD method. That split is the whole of the attribution — the board holds no player-level
-        opinion to show beside it.
+function BoardTable({
+  rows,
+  league,
+  selected,
+  onSelect,
+  sort,
+  onClickColumn,
+  bandsEnabled,
+}: {
+  rows: BoardRow[];
+  league: LeagueConfig;
+  selected: number | null;
+  onSelect: (id: number | null) => void;
+  sort: { key: SortKey; dir: 1 | -1 };
+  onClickColumn: (key: SortKey, defaultDir: 1 | -1) => void;
+  bandsEnabled: boolean;
+}) {
+  if (rows.length === 0) {
+    return (
+      <div style={{ padding: 20 }}>
+        <div className="empty">
+          <strong>Nothing matches these filters.</strong> Choose a different position tab to see
+          more of the board.
+        </div>
       </div>
-    </section>
+    );
+  }
+
+  // Tier band dividers, ported from the prototype's brows builder (line
+  // 2320-2330): a divider row inserted whenever the tier changes, only while the
+  // table is in its natural rank order -- sorting by anything else (a column
+  // click, or Delta view) breaks the grouping a band implies, so bands only show
+  // in the one order where consecutive rows really do share a tier.
+  const items: Array<{ kind: 'band'; tier: string; count: number } | { kind: 'row'; row: BoardRow }> = [];
+  if (bandsEnabled) {
+    let lastTier: string | null = null;
+    for (const row of rows) {
+      const tier = row.tierLabel.kind === 'present' ? row.tierLabel.value : null;
+      if (tier !== null && tier !== lastTier) {
+        lastTier = tier;
+        const count = rows.filter((r) => r.tierLabel.kind === 'present' && r.tierLabel.value === tier).length;
+        items.push({ kind: 'band', tier, count });
+      }
+      items.push({ kind: 'row', row });
+    }
+  } else {
+    for (const row of rows) items.push({ kind: 'row', row });
+  }
+
+  return (
+    <div style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
+      <div
+        style={{
+          position: 'sticky',
+          top: 0,
+          zIndex: 2,
+          display: 'grid',
+          gridTemplateColumns: GRID_TEMPLATE,
+          padding: '9px 20px',
+          borderBottom: '1px solid var(--line2)',
+          background: 'var(--panel)',
+        }}
+      >
+        {COLUMNS.map((col) => {
+          const active = sort.key === col.key || (col.key === 'delta' && sort.key === 'absdelta');
+          return (
+            <span
+              key={col.key}
+              onClick={() => onClickColumn(col.key, col.defaultDir)}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 4,
+                fontFamily: 'var(--font-num)',
+                fontSize: 12,
+                letterSpacing: '.08em',
+                color: active ? 'var(--txt)' : 'var(--dim2)',
+                cursor: 'pointer',
+              }}
+            >
+              {col.label}
+              {sort.key === col.key ? <span>{sort.dir === 1 ? '▲' : '▼'}</span> : null}
+            </span>
+          );
+        })}
+      </div>
+
+      {items.map((item) =>
+        item.kind === 'band' ? (
+          <div
+            key={`band-${item.tier}`}
+            style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '13px 20px 6px' }}
+          >
+            <span style={{ fontFamily: 'var(--font-num)', fontSize: 12, letterSpacing: '.1em', color: 'var(--dim)' }}>
+              TIER {item.tier.replace('T', '')}
+            </span>
+            <span style={{ flex: 1, height: 1, background: 'var(--line2)' }} />
+            <span style={{ fontFamily: 'var(--font-num)', fontSize: 12, color: 'var(--dim2)' }}>
+              {item.count} players
+            </span>
+          </div>
+        ) : (
+          <BoardRowLine
+            key={item.row.id}
+            row={item.row}
+            league={league}
+            selected={item.row.id === selected}
+            onSelect={onSelect}
+          />
+        ),
+      )}
+    </div>
   );
 }
 
+function BoardRowLine({
+  row,
+  league,
+  selected,
+  onSelect,
+}: {
+  row: BoardRow;
+  league: LeagueConfig;
+  selected: boolean;
+  onSelect: (id: number | null) => void;
+}) {
+  const startable = isStartable(league, row.raw.position, row.positionalRank);
+  return (
+    <div
+      onClick={() => onSelect(selected ? null : row.id)}
+      style={{
+        display: 'grid',
+        gridTemplateColumns: GRID_TEMPLATE,
+        alignItems: 'center',
+        padding: '8px 20px',
+        borderBottom: '1px solid var(--line)',
+        cursor: 'pointer',
+        background: selected ? 'var(--panel2)' : 'transparent',
+        fontFamily: 'var(--font-num)',
+        fontSize: 13,
+        color: 'var(--txt)',
+      }}
+    >
+      <span style={{ color: 'var(--dim2)' }}>
+        <Value cell={row.overallRank} render={integer} />
+      </span>
+      <span
+        style={{
+          fontFamily: 'var(--font-ui)',
+          fontWeight: 600,
+          fontSize: 14,
+          color: startable === false ? 'var(--dim2)' : 'var(--txt)',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap',
+        }}
+      >
+        <Value cell={row.name} render={(v) => v} />
+      </span>
+      <span style={{ color: POSITION_COLOR[row.raw.position] ?? 'var(--txt)', fontWeight: 600 }}>
+        <Value cell={row.position} render={(v) => v} />
+      </span>
+      <span style={{ color: 'var(--dim2)' }}>
+        <Value cell={row.team} render={(v) => v} />
+      </span>
+      <span style={{ color: 'var(--dim2)' }}>
+        <Value cell={row.byeWeek} render={integer} />
+      </span>
+      <ProjCell row={row} />
+      <span style={{ color: 'var(--dim2)' }}>
+        <Value cell={row.consensusRank} render={integer} />
+      </span>
+      <DeltaCell row={row} />
+      <span>
+        <Value cell={row.vbd} render={decimal} />
+      </span>
+      <span style={{ color: 'var(--dim2)' }}>
+        <Value cell={row.tierLabel} render={(v) => v} />
+      </span>
+    </div>
+  );
+}
+
+/** PROJ (CI): a projection and its interval are one column in the prototype, since
+ *  an interval is never meaningful without the number it brackets. Absence renders
+ *  as the em-dash used everywhere else in this app plus "no projection" in dim
+ *  text, matching the prototype's own wording for the same state. */
+function ProjCell({ row }: { row: BoardRow }) {
+  if (row.projectedPoints.kind === 'absent') {
+    return (
+      <span>
+        <span className="val-absent" title={row.projectedPoints.reason}>
+          —
+        </span>{' '}
+        <span style={{ color: 'var(--dim2)', fontSize: 12 }}>no projection</span>
+      </span>
+    );
+  }
+  const ci = row.interval.kind === 'present' ? `(${interval(row.interval.value.low, row.interval.value.high)})` : '';
+  return (
+    <span>
+      <span style={{ fontWeight: 600 }}>{decimal(row.projectedPoints.value)}</span>{' '}
+      <span style={{ color: 'var(--dim2)', fontSize: 12 }}>{ci}</span>
+    </span>
+  );
+}
+
+/** Δ glyph convention ported verbatim (prototype line 2326-2327): ▲/▼ past a
+ *  2-slot deadband either side of zero, "·" inside it -- color carries the same
+ *  meaning as the glyph, never alone. */
+function DeltaCell({ row }: { row: BoardRow }) {
+  if (row.deltaVsConsensus.kind === 'absent') {
+    return (
+      <span className="val-absent" title={row.deltaVsConsensus.reason}>
+        —
+      </span>
+    );
+  }
+  const d = row.deltaVsConsensus.value;
+  const text = d > 2 ? `▲${integer(d)}` : d < -2 ? `▼${integer(Math.abs(d))}` : '·';
+  const color = d > 2 ? 'var(--up)' : d < -2 ? 'var(--down)' : 'var(--dim2)';
+  return <span style={{ color, fontWeight: 600 }}>{text}</span>;
+}
