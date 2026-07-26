@@ -78,6 +78,8 @@ export interface RawBoard {
 export interface RawLeague {
   contract_version: string;
   league_id?: string | null;
+  /** Added contract 1.7.0 (ADR-041). Absent on an older export. */
+  league_name?: string;
   teams: number;
   rounds: number;
   user_draft_slot: number;
@@ -266,6 +268,8 @@ export interface ArtifactManifestEntry {
  *  data/export/<id>/. */
 export interface LeagueManifestEntry {
   id: string;
+  /** league.json's own league_name where available (contract 1.7.0+), else the id. */
+  label: string;
   artifacts: Record<string, ArtifactManifestEntry>;
 }
 

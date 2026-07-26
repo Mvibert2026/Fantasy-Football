@@ -18,6 +18,18 @@ import { decimal, integer } from '../lib/format';
 export function StrategyGuide({ data }: { data: Dataset }) {
   const s = data.strategies;
 
+  if (s === null) {
+    return (
+      <div className="stack">
+        <h2>Strategy guide</h2>
+        <div className="empty">
+          <strong>Not available for this league.</strong> Strategy simulations have not been run for
+          it yet — strategies.json is not part of this league's export set.
+        </div>
+      </div>
+    );
+  }
+
   if (s.strategies.length === 0) {
     return (
       <div className="stack">

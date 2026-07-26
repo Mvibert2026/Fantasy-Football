@@ -33,7 +33,7 @@ export interface TraceField {
 }
 
 /** The contract version the registry below is pinned against. */
-export const TRACE_CONTRACT = '1.6.0';
+export const TRACE_CONTRACT = '1.7.0';
 
 /**
  * Changes to the user-visible trace surface, newest first.
@@ -47,6 +47,22 @@ export const TRACE_CHANGELOG: ReadonlyArray<{
   kind: 'rename' | 'value' | 'added' | 'removed';
   summary: string;
 }> = [
+  {
+    version: '1.7.0',
+    kind: 'value',
+    summary:
+      'Multi-league export support (ADR-041). Every artifact now carries league_id, and a second, ' +
+      'non-primary league (a Yahoo-format mock, for pipeline validation only) can now exist ' +
+      'alongside the primary one -- see ui/data/league-registry.ts and the TopBar league switcher. ' +
+      'Two rendered strings changed on the primary league: board.json.def_note dropped its ' +
+      'parenthetical "(1 per team)" (the count is league-specific and now lives in ' +
+      'league.json.roster.starters, not repeated in prose), and ' +
+      'availability.json.metadata.sigma_plain_english changed "the other nine teams" to "the ' +
+      'other opposing teams" since team count is no longer always nine. New fields not yet ' +
+      'surfaced anywhere in this app -- league_name, platform, draft_type, unsupported_positions, ' +
+      'unsupported_positions_note -- are additive and not yet in the registry below because ' +
+      'nothing renders them; the per-player field set this registry actually governs is unchanged.',
+  },
   {
     version: '1.6.0',
     kind: 'removed',

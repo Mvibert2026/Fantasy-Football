@@ -126,9 +126,7 @@ export function syncExports({ quiet = false } = {}) {
       `Manifest: public/data/_manifest.json`,
   );
 
-  // Additional leagues: any subdirectory of data/export/ other than files. None
-  // exist yet -- this is additive scaffolding for when the backend starts writing
-  // them, not a feature with real multi-league data behind it today.
+  // Additional leagues: any subdirectory of data/export/ other than files.
   const leagueDirs = readdirSync(srcDir, { withFileTypes: true })
     .filter((d) => d.isDirectory())
     .map((d) => d.name);
@@ -137,7 +135,24 @@ export function syncExports({ quiet = false } = {}) {
     const from = join(srcDir, leagueId);
     const to = join(outDir, 'leagues', leagueId);
     const leagueArtifacts = copyJsonDir(from, to, `leagues/${leagueId}/`, log);
-    return { id: leagueId, artifacts: leagueArtifacts };
+
+    // league_name (added contract 1.7.0, ADR-041) makes a much better switcher
+    // label than the raw id -- read it straight from the copy just written rather
+    // than re-parsing the source, so there's exactly one place that trusts the
+    // file's content. Falls back to the id itself on an older contract that
+    // doesn't carry the field yet, same as the default league's label.
+    let label = leagueId;
+    try {
+      const leagueJson = JSON.parse(readFileSync(join(to, 'league.json'), 'utf8'));
+      if (typeof leagueJson.league_name === 'string' && leagueJson.league_name.trim()) {
+        label = leagueJson.league_name;
+      }
+    } catch {
+      // No league.json, or it doesn't parse -- copyJsonDir already threw loudly
+      // for a genuine parse error, so reaching here just means "no name available".
+    }
+
+    return { id: leagueId, label, artifacts: leagueArtifacts };
   });
 
   writeFileSync(join(outDir, '_leagues.json'), JSON.stringify({ leagues }, null, 2));

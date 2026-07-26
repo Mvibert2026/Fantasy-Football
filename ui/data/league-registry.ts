@@ -16,9 +16,8 @@ export const DEFAULT_LEAGUE_ID = 'default';
 
 export interface SelectableLeague {
   id: string;
-  /** There is no human-readable league name field anywhere in the contract yet,
-   *  for either the default league or an additional one -- so the label is the id
-   *  itself, not an invented display name. */
+  /** league.json's own league_name where the export carries one (contract
+   *  1.7.0+, ADR-041); the raw id otherwise -- never an invented display name. */
   label: string;
 }
 
@@ -36,7 +35,7 @@ export async function fetchSelectableLeagues(): Promise<SelectableLeague[]> {
   const manifest = (await res.json().catch(() => null)) as LeaguesManifest | null;
   if (!manifest?.leagues?.length) return base;
 
-  return [...base, ...manifest.leagues.map((l) => ({ id: l.id, label: l.id }))];
+  return [...base, ...manifest.leagues.map((l) => ({ id: l.id, label: l.label ?? l.id }))];
 }
 
 /** Path prefix under public/data/ for a given league's artifacts. */

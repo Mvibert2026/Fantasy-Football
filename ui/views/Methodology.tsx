@@ -101,7 +101,11 @@ export function Methodology({ data, league }: { data: Dataset; league: LeagueCon
               <dd>
                 <strong>{f.claim_tested}</strong>
                 <p style={{ marginTop: 'var(--pad-y)' }}>{f.plain_language_summary}</p>
-                <p style={{ color: 'var(--fg-muted)', fontSize: 'var(--fs-xs)' }}>{f.result}</p>
+                <p style={{ color: 'var(--fg-muted)', fontSize: 'var(--fs-xs)' }}>
+                  {f.result === 'NOT_YET_RUN_FOR_THIS_LEAGUE'
+                    ? 'Not yet re-run for this league (see the summary above).'
+                    : f.result}
+                </p>
               </dd>
             </Fragment>
           ))}

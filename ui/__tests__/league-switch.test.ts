@@ -31,6 +31,17 @@ function secondLeagueFiles(leagueId: string): Record<string, { league_id?: strin
   };
 }
 
+/** Vite's real dev-server behaviour for a missing public/ file: 200 OK with
+ *  index.html, not a 404 -- this is what actually broke strategies.json for the
+ *  real yahoo_standard_mock league (its per-league set has no strategies.json at
+ *  all), so the mock reproduces that exact response instead of a clean 404. */
+function htmlFallbackResponse() {
+  return new Response('<!doctype html><html><body>dev server</body></html>', {
+    status: 200,
+    headers: { 'content-type': 'text/html' },
+  });
+}
+
 function installFetch(files: Record<string, unknown>, leaguesManifest: unknown) {
   vi.stubGlobal(
     'fetch',
@@ -38,10 +49,10 @@ function installFetch(files: Record<string, unknown>, leaguesManifest: unknown) 
       const url = String(input);
       if (url.includes('data/_leagues.json')) return jsonResponse(leaguesManifest);
       if (url.includes('data/_manifest.json')) return jsonResponse(base.manifest);
-      if (url.includes('feed.json')) return jsonResponse(null, false);
+      if (url.includes('feed.json')) return htmlFallbackResponse();
       const key = Object.keys(files).find((f) => url.endsWith(`${f}.json`));
       if (key) return jsonResponse(files[key]);
-      return jsonResponse(null, false);
+      return htmlFallbackResponse();
     }),
   );
 }
@@ -83,6 +94,28 @@ describe('loadDataset with a non-default league', () => {
     expect(data.league.league_id).toBe('dynasty');
   });
 
+  it('loads with strategies null when the registry lists no strategies artifact for this league', async () => {
+    // Mirrors the real yahoo_standard_mock convention exactly: the per-league
+    // artifact set is board/availability/league/glossary/nulls/opponents, no
+    // strategies.json. The files map below also omits 'strategies' entirely, so if
+    // loadDataset tried to fetch it anyway it would hit the HTML fallback and throw
+    // -- this test only passes if strategies is genuinely skipped, not merely absent.
+    const files = secondLeagueFiles('dynasty');
+    delete files.strategies;
+    const artifacts = Object.fromEntries(
+      Object.keys(files).map((name) => [
+        name,
+        { file: `leagues/dynasty/${name}.json`, contract_version: '1.6.0', generated_utc: 'x', league_id: 'dynasty', run_id: `${name}@x` },
+      ]),
+      // Note: no 'strategies' key here either, matching entry.artifacts from the real _leagues.json.
+    );
+    installFetch(files, { leagues: [{ id: 'dynasty', artifacts }] });
+
+    const data = await loadDataset('dynasty');
+    expect(data.strategies).toBeNull();
+    expect(data.board.league_id).toBe('dynasty');
+  });
+
   it('refuses to render when one artifact belongs to a different league', async () => {
     const files = secondLeagueFiles('dynasty');
     // A wrong-league leak: strategies.json actually belongs to some other league.
@@ -120,21 +153,44 @@ describe('loadDataset with a non-default league', () => {
   });
 });
 
+describe('fetchJson vs. the dev server\'s HTML fallback', () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('treats a 200 HTML response for a required file as not-found, not a JSON parse crash', async () => {
+    const files = secondLeagueFiles('dynasty');
+    delete files.board; // required for every league; its absence hits the HTML fallback
+    const artifacts = Object.fromEntries(
+      Object.keys(files).map((name) => [
+        name,
+        { file: `leagues/dynasty/${name}.json`, contract_version: '1.6.0', generated_utc: 'x', league_id: 'dynasty', run_id: `${name}@x` },
+      ]),
+    );
+    installFetch(files, { leagues: [{ id: 'dynasty', artifacts }] });
+
+    await expect(loadDataset('dynasty')).rejects.toThrow(LoadError);
+    await expect(loadDataset('dynasty')).rejects.toThrow(/non-JSON response/);
+  });
+});
+
 describe('loadDataset for the default league', () => {
   afterEach(() => vi.unstubAllGlobals());
 
-  it('does not require league_id on any artifact', async () => {
-    // The real, unmodified default-league fixtures: none of them carry league_id.
+  it('never enforces the league_id guard, whatever the artifacts carry', async () => {
+    // Deliberately inconsistent league_ids -- the wrong-league guard exists for
+    // non-default leagues (see the describe block above); the default league
+    // path must not apply it at all, since as of contract 1.7.0 the primary
+    // league's own artifacts do carry league_id ("primary") but older or
+    // in-flight exports might not, and neither case should ever be refused here.
     const files = {
-      board: base.board,
-      league: base.league,
-      glossary: base.glossary,
-      nulls: base.nulls,
+      board: { ...base.board, league_id: 'primary' },
+      league: { ...base.league, league_id: 'primary' },
+      glossary: base.glossary, // no league_id at all
+      nulls: { ...base.nulls, league_id: 'some-other-value' },
       strategies: base.strategies,
       availability: base.availability,
     };
     installFetch(files, { leagues: [] });
     const data = await loadDataset(DEFAULT_LEAGUE_ID);
-    expect(data.board.league_id ?? null).toBeNull();
+    expect(data.board.league_id).toBe('primary');
   });
 });

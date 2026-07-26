@@ -75,6 +75,15 @@ export function App() {
   const rows = useMemo(() => (data ? buildRows(data) : []), [data]);
   const league = useMemo(() => (data ? buildLeagueConfig(data) : null), [data]);
 
+  // league.json:league_name (contract 1.7.0+) is a better label than "Default
+  // league" once it's actually loaded -- overlaid here rather than baked into the
+  // leagues list itself, since fetchSelectableLeagues has no reason to load the
+  // full dataset just to name the option the app is already sitting on.
+  const displayLeagues = useMemo(() => {
+    if (!data?.league.league_name) return leagues;
+    return leagues.map((l) => (l.id === leagueId ? { ...l, label: data.league.league_name! } : l));
+  }, [leagues, data, leagueId]);
+
   const soon = SOON_MAP.get(screen);
   const screenLabel =
     mode !== 'prep' ? (mode === 'draft' ? 'Draft' : 'Season') : (soon?.label ?? NAV_LABEL.get(screen) ?? 'Board');
@@ -155,7 +164,7 @@ export function App() {
         theme={theme}
         onToggleTheme={toggleTheme}
         league={league}
-        leagues={leagues}
+        leagues={displayLeagues}
         leagueId={leagueId}
         onSelectLeague={setLeagueId}
         refreshSlot={<RefreshData onApplied={() => setReloadKey((k) => k + 1)} />}

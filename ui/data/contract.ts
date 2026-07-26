@@ -14,4 +14,4 @@
  * than hardcoded, so a mismatch here is informational, not fatal: the app renders
  * whatever the export says and flags the divergence rather than adjusting for it.
  */
-export const EXPECTED_CONTRACT = '1.6.0';
+export const EXPECTED_CONTRACT = '1.7.0';

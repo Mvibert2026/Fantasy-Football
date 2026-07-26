@@ -136,52 +136,56 @@ function retrieveFallbackContext(data: Dataset): ContextItem[] {
   const items: ContextItem[] = [];
   const s = data.strategies;
 
-  for (const [i, strategy] of s.strategies.entries()) {
-    // Sigma 10 is the export's own default reading ("about one round of slippage");
-    // summarizing at one sigma keeps each strategy to one digestible context item
-    // instead of three near-duplicates.
-    const cell = strategy.by_sigma.find((c) => c.sigma === 10) ?? strategy.by_sigma[0];
-    if (!cell) continue;
-    const j = strategy.by_sigma.indexOf(cell);
+  // Null for a league strategies.json hasn't been run for yet (see Dataset.strategies)
+  // -- nothing to summarize, but nulls.json findings below still apply.
+  if (s) {
+    for (const [i, strategy] of s.strategies.entries()) {
+      // Sigma 10 is the export's own default reading ("about one round of slippage");
+      // summarizing at one sigma keeps each strategy to one digestible context item
+      // instead of three near-duplicates.
+      const cell = strategy.by_sigma.find((c) => c.sigma === 10) ?? strategy.by_sigma[0];
+      if (!cell) continue;
+      const j = strategy.by_sigma.indexOf(cell);
 
-    const margin =
-      cell.margin_vs_baseline === null
-        ? ''
-        : ` Margin vs. the baseline: ${cell.margin_vs_baseline > 0 ? '+' : ''}${decimal(cell.margin_vs_baseline)} points.`;
-    const seasons =
-      cell.seasons_positive === null
-        ? ''
-        : ` Positive in ${integer(cell.seasons_positive)} of ${integer(s.power_floor.n_seasons)} simulated seasons.`;
-    const signTest = cell.sign_test_p === null ? '' : ` Sign-test p = ${decimal(cell.sign_test_p)}.`;
+      const margin =
+        cell.margin_vs_baseline === null
+          ? ''
+          : ` Margin vs. the baseline: ${cell.margin_vs_baseline > 0 ? '+' : ''}${decimal(cell.margin_vs_baseline)} points.`;
+      const seasons =
+        cell.seasons_positive === null
+          ? ''
+          : ` Positive in ${integer(cell.seasons_positive)} of ${integer(s.power_floor.n_seasons)} simulated seasons.`;
+      const signTest = cell.sign_test_p === null ? '' : ` Sign-test p = ${decimal(cell.sign_test_p)}.`;
+
+      items.push({
+        id: `strategies.${i}.summary`,
+        text:
+          `Strategy "${strategy.name}"${strategy.is_baseline ? ' (the baseline every other strategy is measured against)' : ''}: ` +
+          `${strategy.verdict} At sigma ${integer(cell.sigma)}, mean roster points ${decimal(cell.mean_roster_points)}.` +
+          `${margin}${seasons}${signTest}`,
+        confidence: 'medium',
+        source_path: `strategies.json:strategies[${i}].by_sigma[${j}]`,
+      });
+    }
 
     items.push({
-      id: `strategies.${i}.summary`,
+      id: 'strategies.power_floor',
+      text: s.power_floor.plain_english,
+      confidence: 'high',
+      source_path: 'strategies.json:power_floor.plain_english',
+    });
+
+    items.push({
+      id: 'strategies.not_compositional',
       text:
-        `Strategy "${strategy.name}"${strategy.is_baseline ? ' (the baseline every other strategy is measured against)' : ''}: ` +
-        `${strategy.verdict} At sigma ${integer(cell.sigma)}, mean roster points ${decimal(cell.mean_roster_points)}.` +
-        `${margin}${seasons}${signTest}`,
-      confidence: 'medium',
-      source_path: `strategies.json:strategies[${i}].by_sigma[${j}]`,
+        'Each strategy above was simulated independently against the baseline, one at a time. There is no ' +
+        'simulation of combining two strategies into a single draft plan, and these numbers cannot be added ' +
+        'or averaged together to produce one -- that would need a new simulation run, not arithmetic on the ' +
+        'existing results.',
+      confidence: 'high',
+      source_path: 'strategies.json:strategies',
     });
   }
-
-  items.push({
-    id: 'strategies.power_floor',
-    text: s.power_floor.plain_english,
-    confidence: 'high',
-    source_path: 'strategies.json:power_floor.plain_english',
-  });
-
-  items.push({
-    id: 'strategies.not_compositional',
-    text:
-      'Each strategy above was simulated independently against the baseline, one at a time. There is no ' +
-      'simulation of combining two strategies into a single draft plan, and these numbers cannot be added ' +
-      'or averaged together to produce one -- that would need a new simulation run, not arithmetic on the ' +
-      'existing results.',
-    confidence: 'high',
-    source_path: 'strategies.json:strategies',
-  });
 
   for (const [i, finding] of data.nulls.findings.entries()) {
     items.push({

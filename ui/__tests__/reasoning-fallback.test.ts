@@ -15,6 +15,9 @@ import { loadDatasetFromDisk } from './helpers';
 
 const data = loadDatasetFromDisk();
 const rows = buildRows(data);
+// The default league (what loadDatasetFromDisk reads) always carries strategies.json.
+if (!data.strategies) throw new Error('fixture expected to carry strategies.json');
+const strategies = data.strategies;
 
 describe('reasoning lane context fallback', () => {
   it('used to refuse a strategy question with zero context; now retrieves strategies.json', () => {
@@ -22,7 +25,7 @@ describe('reasoning lane context fallback', () => {
     expect(items.length).toBeGreaterThan(0);
     expect(items.some((i) => i.source_path.startsWith('strategies.json:'))).toBe(true);
     // Every real strategy shows up, not just one cherry-picked example.
-    for (const strategy of data.strategies.strategies) {
+    for (const strategy of strategies.strategies) {
       expect(items.some((i) => i.text.includes(strategy.name))).toBe(true);
     }
   });
@@ -31,7 +34,7 @@ describe('reasoning lane context fallback', () => {
     const items = retrieveContext(data, rows, 'which strategy is best');
     const floor = items.find((i) => i.source_path === 'strategies.json:power_floor.plain_english');
     expect(floor).toBeDefined();
-    expect(floor?.text).toBe(data.strategies.power_floor.plain_english);
+    expect(floor?.text).toBe(strategies.power_floor.plain_english);
     expect(floor?.confidence).toBe('high');
   });
 
