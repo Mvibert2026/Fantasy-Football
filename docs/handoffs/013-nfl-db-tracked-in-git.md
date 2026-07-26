@@ -2,7 +2,7 @@
 ID: 013
 FROM: pm
 TO: backend
-STATUS: OPEN
+STATUS: RESOLVED
 OPENED: 2026-07-26
 BLOCKS: 007 (a git remote)
 ---

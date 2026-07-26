@@ -805,3 +805,35 @@ simulated-strategy values).
   against real distributions, mock draft data collection now has exactly ONE real data point (not
   zero, but nowhere near the ~30-mock decision-useful threshold), FantasyPros paid tier is a
   budget decision for the user.
+
+---
+
+# SESSION HANDOFF -- 2026-07-26 (sprint 1 closeout)
+
+Closed out sprint 1 housekeeping that the prior bootstrap session (threads 008/010) left
+incomplete: temp files (`docs/CLAUDE-md-append.md`, `docs/data-ops-agent-definition.md`,
+`docs/handoffs/handoffs.py`, `docs/handoffs/sprint_status.py`, `docs/agent-definitions/`) were
+never deleted after their real destinations (`CLAUDE.md`, `.claude/agents/data-ops.md`,
+`tools/handoffs.py`, `tools/sprint_status.py`) were already committed in `b4093d8`/`88dea17`.
+Diffed each stale copy against its tracked counterpart before deleting -- all identical, no
+content lost. `docs/agent-definitions/PERMISSIONS.md` moved to `docs/PERMISSIONS.md` per thread
+014's instruction rather than deleted with the rest.
+
+Found and fixed a real bug while running the suite for the closeout: `tests/test_handoffs.py`
+hardcoded `"py"` as the interpreter, which is a broken Windows Store alias stub on this machine
+(see memory `python-interpreter.md`) -- the mailbox health test was failing for an environment
+reason unrelated to mailbox health. Fixed to `sys.executable`. **400 tests passing** (399 + this
+fix, suite ~5.5 min).
+
+Threads 008, 010, 013, 014, 015 marked `RESOLVED` in their frontmatter -- they had reply text
+claiming completion but the `STATUS:` field itself was never updated, so `OPEN.md` kept listing
+them as waiting on backend. `tools/handoffs.py sync` + `check` both clean: 32 threads, 27 open,
+none stale, all addressed.
+
+Noticed threads 025-030 now exist (mock lab backend, recompute streaming, opponents/predictions
+tabs, frequency array, why-rank-differs) that were not present at session start -- looks like
+another session is writing to this same mailbox concurrently. Left untouched; out of scope for
+this session's assignment (016-024).
+
+Proceeding to work threads 016-024 per dispatch instructions: three concurrent max, 018 before
+019, 018 and 023 not concurrent (both touch `ingest_rankings.py`).

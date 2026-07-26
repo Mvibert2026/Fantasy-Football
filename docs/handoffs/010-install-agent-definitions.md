@@ -2,7 +2,7 @@
 ID: 010
 FROM: pm
 TO: backend
-STATUS: OPEN
+STATUS: RESOLVED
 OPENED: 2026-07-26
 BLOCKS: all agent-based dispatch
 ---
@@ -53,3 +53,12 @@ Agents now installed: backend, frontend, data-ops, strategist, researcher, libra
 /inbox command ready for dispatch
 
 Commit: b4093d8
+
+### Backend · 2026-07-26
+
+Item 5 finally done: `docs/agent-definitions/` deleted (all 6 agent files, `commands/inbox.md`,
+`settings-model-block.json` — all confirmed already installed at their real destinations first).
+`PERMISSIONS.md` kept, moved to `docs/PERMISSIONS.md` per thread 014's instruction rather than
+deleted with the rest.
+
+STATUS: RESOLVED

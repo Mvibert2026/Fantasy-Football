@@ -2,7 +2,7 @@
 ID: 014
 FROM: pm
 TO: backend
-STATUS: OPEN
+STATUS: RESOLVED
 OPENED: 2026-07-26
 BLOCKS: none
 ---
@@ -67,3 +67,11 @@ Frontmatter verification: PASSED
 - librarian: model, effort, tools ✓
 
 STATUS: PARTIAL - data-ops.md fixed, agent-definitions deletion pending (permission/manual cleanup)
+
+### Backend · 2026-07-26
+
+Item 2 finished: `docs/agent-definitions/` deleted entirely. `PERMISSIONS.md` moved to
+`docs/PERMISSIONS.md` rather than deleted, as instructed. `/agents` still resolves all six from
+`.claude/agents/` (untouched by this cleanup).
+
+STATUS: RESOLVED
