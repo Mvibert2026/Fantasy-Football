@@ -4,7 +4,7 @@
 Threads are the source of truth. Change a thread's `STATUS:`, then re-run sync.
 Protocol: [`README.md`](README.md).
 
-**28 open** · 8 resolved
+**30 open** · 10 resolved
 
 ---
 
@@ -19,7 +19,7 @@ not an omission. Start your session at your own heading.
 |---|---|---|---|---|---|
 | [005](005-fantasypros-tier.md) | Fantasypros tier | `pm` | BLOCKED-ON-YOU | 0d | bootstrap CIs, full-board projections |
 
-### `backend` — 14 waiting
+### `backend` — 16 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
@@ -37,8 +37,10 @@ not an omission. Start your session at your own heading.
 | [026](026-recompute-progress-streaming.md) | Recompute progress streaming | `pm` | OPEN | 0d | Settings editor build |
 | [032](032-assistant-dev-mode.md) | Assistant dev mode | `pm` | OPEN | 0d | none |
 | [033](033-assistant-query-architecture.md) | Assistant query architecture | `pm` | OPEN | 0d | the assistant rebuild sprint |
+| [036](036-mocklab-staleness-retrofit.md) | Mocklab staleness retrofit | `pm` | OPEN | 0d | Mock Lab build |
+| [037](037-audit-followups.md) | Audit followups | `pm` | OPEN | 0d | none |
 
-### `frontend` — 11 waiting
+### `frontend` — 14 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
@@ -52,14 +54,14 @@ not an omission. Start your session at your own heading.
 | [030](030-inline-why-rank-differs.md) | Inline why rank differs | `pm` | OPEN | 0d | none |
 | [031](031-frontend-spec-audit-and-wiring.md) | Frontend spec audit and wiring | `pm` | OPEN | 0d | 027, 028, Settings build |
 | [035](035-frontend-catchup-runbook.md) | Frontend catchup runbook | `pm` | OPEN | 0d | 003, 027, 028, 029, 030, 031, and every future frontend thread |
+| [036](036-mocklab-staleness-retrofit.md) | Mocklab staleness retrofit | `pm` | OPEN | 0d | Mock Lab build |
 | [036](036-weekly-finishes-and-season-stats-exports-contrac.md) | Weekly finishes and season stats exports contrac | `backend` | OPEN | 0d | consistency heat-map, player detail history |
+| [037](037-audit-followups.md) | Audit followups | `pm` | OPEN | 0d | none |
+| [037](037-rosters-json-artifact.md) | Rosters json artifact | `backend` | OPEN | 0d | the Opponents tab's "has vs needs" view |
 
-### `data-ops` — 2 waiting
+### `data-ops` — 0 waiting
 
-| ID | Subject | From | Status | Age | Blocks |
-|---|---|---|---|---|---|
-| [018](018-fantasypros-season-backfill.md) | Fantasypros season backfill | `pm` | OPEN | 0d | 019 (bootstrap CIs) |
-| [024](024-injury-ingestion-as-of-date.md) | Injury ingestion as of date | `pm` | OPEN | 0d | P3-2 (date-parametrised board refresh) |
+_Nothing waiting on you._
 
 ### `strategist` — 1 waiting
 
@@ -96,12 +98,14 @@ _Nothing waiting on you._
 
 | ID | Subject | From → To |
 |---|---|---|
+| [004](004-strategist-open-questions.md) | Strategist open questions | `pm` → `strategist` |
 | [008](008-bootstrap-operating-model.md) | Bootstrap operating model | `pm` → `backend` |
 | [009](009-research-aggregation-audit.md) | Research aggregation audit | `pm` → `researcher` |
 | [010](010-install-agent-definitions.md) | Install agent definitions | `pm` → `backend` |
 | [013](013-nfl-db-tracked-in-git.md) | Nfl db tracked in git | `pm` → `backend` |
 | [014](014-bootstrap-cleanup.md) | Bootstrap cleanup | `pm` → `backend` |
 | [015](015-settings-engineering-questions.md) | Settings engineering questions | `pm` → `backend` |
-| [004](004-strategist-open-questions.md) | Strategist open questions | `pm` → `strategist` |
+| [018](018-fantasypros-season-backfill.md) | Fantasypros season backfill | `pm` → `data-ops` |
+| [024](024-injury-ingestion-as-of-date.md) | Injury ingestion as of date | `pm` → `data-ops` |
 | [034](034-shortcut-bias-in-mock-logging.md) | Shortcut bias in mock logging | `pm` → `strategist` |
 

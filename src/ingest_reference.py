@@ -193,8 +193,22 @@ def _row_hash(row: Sequence) -> str:
     return hashlib.sha1(joined.encode("utf-8")).hexdigest()
 
 
-def build_create_table_sql(table: str, df: pl.DataFrame, pk: Optional[Sequence[str]]) -> str:
-    cols = [f'"{n}" {_polars_dtype_to_sqlite(t)}' for n, t in zip(df.columns, df.dtypes)]
+def build_create_table_sql(
+    table: str,
+    df: pl.DataFrame,
+    pk: Optional[Sequence[str]],
+    as_of_column: Optional[str] = None,
+) -> str:
+    cols = []
+    for n, t in zip(df.columns, df.dtypes):
+        col_sql = f'"{n}" {_polars_dtype_to_sqlite(t)}'
+        if as_of_column is not None and n == as_of_column:
+            # Structural enforcement (CLAUDE.md Sec6.1): prepare() already drops
+            # undated rows, but the table itself must also refuse one -- a
+            # spec change or a direct INSERT bypassing prepare() must not be
+            # able to slip a null as_of value in.
+            col_sql += " NOT NULL"
+        cols.append(col_sql)
     if pk is None:
         cols.insert(0, '"row_hash" TEXT')
         key = '"row_hash"'
@@ -218,6 +232,21 @@ def prepare(spec: SourceSpec) -> Tuple[pl.DataFrame, Dict[str, int]]:
     if nested:
         report["json_encoded_columns"] = len(nested)
         spec.notes = (spec.notes + f" | JSON-encoded nested cols: {nested}").strip(" |")
+
+    if spec.as_of_column is not None:
+        if spec.as_of_column not in df.columns:
+            raise ValueError(
+                f"{spec.table}: as_of_column '{spec.as_of_column}' absent from source -- "
+                "cannot ingest without a real as_of_date (CLAUDE.md Sec6.1); fix the spec or "
+                "skip this table, do not default the date"
+            )
+        before = df.height
+        # A row with no as_of value is worse than no row: it looks usable to a
+        # future historical rebuild and silently contaminates it with
+        # look-ahead knowledge (CLAUDE.md Sec6.1, handoff 024). Reject, don't
+        # default. Reported, never silent.
+        df = df.filter(pl.col(spec.as_of_column).is_not_null())
+        report["dropped_missing_as_of_date"] = before - df.height
 
     if spec.primary_key:
         missing = [c for c in spec.primary_key if c not in df.columns]
@@ -244,7 +273,7 @@ def prepare(spec: SourceSpec) -> Tuple[pl.DataFrame, Dict[str, int]]:
 
 def write(conn: sqlite3.Connection, spec: SourceSpec, df: pl.DataFrame) -> int:
     conn.execute(f'DROP TABLE IF EXISTS "{spec.table}"')
-    conn.execute(build_create_table_sql(spec.table, df, spec.primary_key))
+    conn.execute(build_create_table_sql(spec.table, df, spec.primary_key, spec.as_of_column))
     if df.height == 0:
         return 0
     ingested_at = dt.datetime.now(dt.timezone.utc).isoformat()

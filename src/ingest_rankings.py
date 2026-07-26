@@ -21,6 +21,20 @@ CONSEQUENCE: ranking_source='market_adp' has no rows. The alpha track is
 measured against expert consensus only. See docs/data-availability.md §5.
 
 CONSENSUS IS NEVER A MODEL INPUT. It is the yardstick for the alpha track.
+
+SCORING FORMAT (investigated 2026-07-26, handoff 018): this league is half-PPR, and the
+DynastyProcess mirror's "redraft-overall" page has no PPR variant at all (only full-PPR
+position pages like ppr-rb.php, and non-PPR/standard "redraft-*"). Switching to FantasyPros'
+live API (api.fantasypros.com, `type=ST&scoring=HALF`) *would* fix the scoring mismatch, but
+its free tier caps every response at 10 players regardless of position filter or offset/page
+params (re-confirmed live: RB call reported count=209, returned 10 rows) -- per
+docs/deferred.md's prior probe. Four position-filtered calls would yield ~40 players/season,
+down from ~500 via the current mirror. That is not a usable substitute for backtest coverage
+(RB30/WR40 replacement-level cutoffs alone exceed a single position's 10-row cap), so this
+ingestion deliberately stays on the DynastyProcess mirror and stays unscored-format as a
+result. The scoring mismatch is real and not fixed by this file; it needs either paid
+FantasyPros API tier (see docs/CURRENT-STATE.md open item 4) or a different half-PPR-native
+source. Do not "fix" this by pointing at the live API without addressing the row cap first.
 """
 
 from __future__ import annotations

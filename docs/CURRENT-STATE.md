@@ -19,7 +19,7 @@ to learn *what happened*; it is not fine to read it to learn *what is true*.
 | | Value | Notes |
 |---|---|---|
 | Backend branch / commit | `master` @ `2df3716` | Local only — **no git remote configured** |
-| Backend tests | **400 passing** | Suite runtime ~5.5 min; DB-backed archetype/description tests dominate. +1 from sprint 1 (mailbox health test) |
+| Backend tests | **422 passing, 1 pre-existing failure** | Measured 2026-07-26 (data-ops session, `-m pytest -q`, ~3.7 min). +15 from this session (`test_ingest_rankings.py`, `test_ingest_reference.py`). The 1 failure (`test_handoffs.py::test_mailbox_health`) predates this session — mailbox threads 031/036 flagged by another concurrent agent's work, not ingestion-related; not fixed here. |
 | Agent infrastructure | **Live** | Six subagents in `.claude/agents/` (backend, frontend, data-ops, strategist, researcher, librarian), `/inbox` command, mailbox tooling at `tools/handoffs.py` + `tools/sprint_status.py`, mailbox health enforced in the test suite (`tests/test_handoffs.py`) |
 | Data contract | **1.7.0** | `assistant-context.md` still says 1.6.0 — fix on next touch |
 | Frontend location | `frontend/` subdirectory of this repo | Merged from `frontend-prep` @ `7276a2d`..`d7cd321` via `git subtree add` (commit `2df3716`), full history preserved. No longer a separate working copy. |
@@ -62,7 +62,10 @@ result, not a modelling failure.
 Board + VBD with format-corrected replacement levels · identity hub (`mfl_id`) with quarantine ·
 live-availability hazard model · need-weighted `strategy_balanced` · mock-draft ingestion and
 validation report · archetype assignment and display-only descriptions · multi-league config and
-export routing · 24-config board matrix · deterministic narration Facts layer.
+export routing · 24-config board matrix · deterministic narration Facts layer · FantasyPros ECR
+preseason rankings 2021–2025 (`rankings` table, `is_preseason_final` flagged) · historical injury
+reports 2010–2024 with enforced `as_of_date` (`injuries` table, `src/ingest_reference.py`; 2009
+mostly undated at the source and dropped, 2025 has no `date_modified` column upstream yet).
 
 ## Not built / null-stated
 

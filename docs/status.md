@@ -982,3 +982,53 @@ and are not to be filled by inference.
 and commit `docs/research/source-audit-2026-07.md`,
 `docs/handoffs/009-research-aggregation-audit.md`, `docs/handoffs/OPEN.md`,
 `docs/decisions-needed.md`, `docs/founder-requests.md`, `docs/CURRENT-STATE.md`, `docs/status.md`.
+
+## 2026-07-26 — data-ops: FantasyPros backfill (018) + injury as_of_date ingestion (024)
+
+Two threads closed this session, both mechanical ingestion work per operating-model tier.
+
+**Thread 018 (FantasyPros preseason backfill).** `src/ingest_rankings.py` already looped over
+seasons (default `range(2021, 2027)`) from a prior session; ran it fresh and confirmed 2021-2025
+each carry real rows (519/504/485/558/474). The `scoring=HALF` half of the ask was investigated,
+not implemented: the DynastyProcess mirror this file reads has no half-PPR variant of the overall
+board at all (checked `page_type`/`fp_page` values directly), and FantasyPros' live API -- which
+does support `scoring=HALF` -- caps every free-tier response at 10 players regardless of position
+filter (re-confirmed live: `count=209` for RB, 10 rows returned). Switching would trade the scoring
+fix for a ~90% coverage loss (~40 players/season vs ~500), which would silently break every
+downstream RB30/WR40-cutoff consumer. Declined the swap, documented the finding in the module
+docstring and the handoff reply, and left it for pm/backend as a licensing-tier decision (it lands
+in the same bucket as the FantasyPros API licence question D-020 already tracked in
+CURRENT-STATE item 4).
+
+**Thread 024 (injury as_of_date).** Found `src/ingest_reference.py` was already pulling
+`load_injuries(seasons=True)` into an `injuries` table (90,752 raw rows) with an `as_of_column`
+field on its `SourceSpec` that was declared but never actually enforced -- no row was rejected for
+a missing date, and the DB column had no `NOT NULL`. Rather than build a second, competing
+`injuries` table, fixed the shared pipeline: `prepare()` now drops any row with a null
+`as_of_column` value (reported, not silent), and `build_create_table_sql()` now emits `NOT NULL`
+on that column so a direct bypass-insert is also refused at the DB level. This fix applies to both
+tables that declare `as_of_column` (`injuries` -> `date_modified`, `depth_charts_snapshots` ->
+`dt`); re-ran `depth_charts_snapshots` afterward and confirmed zero regression (0 rows dropped,
+its `dt` was already fully populated).
+
+Re-ran the injuries pull end to end: 79,816 of 90,752 rows kept. 2009 nearly entirely rejected
+(17 of 4,821 -- source has almost no `date_modified` that year), 2010 lost 62 rows, 2011-2024 fully
+dated, **2025 dropped in full** -- nflverse has not published a `date_modified` column for the
+current season yet, so the season the ask named ("2009-2025") isn't actually available with a real
+date today. Verified post-write: zero rows anywhere lack `date_modified`.
+
+**Rows ingested:** rankings 2,540 (5 seasons) + injuries 79,816 (15 seasons, 2010-2024) = 82,356.
+**Rows quarantined/dropped:** injuries 10,934 for missing `as_of_date` + 2 duplicate-key; rankings
+0 beyond the pre-existing gsis_id-join drop.
+**Sources attempted:** DynastyProcess ECR mirror (used, unchanged), FantasyPros live API (probed
+only, not adopted -- free-tier row cap), nflverse `load_injuries` (used).
+**Tests:** 15 new (`tests/test_ingest_rankings.py` x7, `tests/test_ingest_reference.py` x8). Full
+suite: 422 passed, 1 pre-existing unrelated failure (`test_mailbox_health`, threads 031/036 from a
+concurrent agent's session).
+**Commit:** see this session's commit hash in git log for
+`src/ingest_rankings.py`, `src/ingest_reference.py`, `tests/test_ingest_rankings.py`,
+`tests/test_ingest_reference.py`, `docs/handoffs/018-fantasypros-season-backfill.md`,
+`docs/handoffs/024-injury-ingestion-as-of-date.md`, `docs/handoffs/OPEN.md`.
+
+Both threads set `STATUS: RESOLVED` (018, 024) and synced via `python tools/handoffs.py sync`.
+No founder statements surfaced this session -- `docs/founder-requests.md` untouched.
