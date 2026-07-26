@@ -33,7 +33,7 @@ export interface TraceField {
 }
 
 /** The contract version the registry below is pinned against. */
-export const TRACE_CONTRACT = '1.5.0';
+export const TRACE_CONTRACT = '1.6.0';
 
 /**
  * Changes to the user-visible trace surface, newest first.
@@ -47,6 +47,21 @@ export const TRACE_CHANGELOG: ReadonlyArray<{
   kind: 'rename' | 'value' | 'added' | 'removed';
   summary: string;
 }> = [
+  {
+    version: '1.6.0',
+    kind: 'removed',
+    summary:
+      'Two separate backend updates landed close together. The commit that made the second ' +
+      'change was titled "Contract v1.6.0" but initially shipped six artifacts still stamped ' +
+      '"1.5.1" -- fixed in a follow-up commit that regenerated nothing and only corrected the ' +
+      'stamp (content was byte-identical throughout). (1) league.json now carries generated_utc ' +
+      '-- it was the only artifact without one, through five contract versions; provenance only, ' +
+      'no displayed value changed. (2) The availability model dropped the prior-year repeat ' +
+      'assumption entirely and te_scenarios was removed from availability.json (ADR-033/034). ' +
+      'Availability figures were circular before this -- their spread came from assuming two ' +
+      'named managers repeat their 2025 TE picks -- which is why this app did not surface them. ' +
+      'That is no longer true; the Availability screen is queued to read from the export directly.',
+  },
   {
     version: '1.5.0',
     kind: 'value',
