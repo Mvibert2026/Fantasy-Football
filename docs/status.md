@@ -409,15 +409,22 @@ ADR-028 reproducibility fix holds across processes. No values moved this session
    Nothing in this repo quotes 0.59 — the exports carry the raw 0.5963, which rounds to 0.60.
    The stale 0.59 was in the external design handoff, not here. No change made; nothing to chase.
 
-## Mid-flight — ONE item
+## Mid-flight — ONE item, and it is trivial
 
-- **`strategies.json` regeneration is RUNNING in the background** (`src/export_strategies.py`,
-  43,200 sims, started 18:33). It was left at `contract_version: 1.0.0` while the other six
-  artifacts moved to 1.5.0 — it is the only artifact out of step. It already carries the correct
-  `-96.1`, so this is a **version-stamp refresh, not a value change**.
-  **If the file on disk still says 1.0.0, the job did not finish — just re-run it:**
-  `python src/export_strategies.py`. Nothing depends on it completing.
+- **`strategies.json` is at `contract_version: 1.4.0`; the other six artifacts are at 1.5.0.**
+  It regenerated successfully (43,200 sims) but the process had imported `CONTRACT_VERSION`
+  before the 1.5.0 bump, so it stamped the older value. **Nothing else about it is stale** — it
+  carries the correct `-96.1`, and 1.5.0 changed no field this artifact contains (the 1.5.0
+  changes were all in `league.json` and `nulls.json`).
+  **To close it, one command, no side effects:** `python src/export_strategies.py` (~13 min).
   The front-end session is aware and flags it as behind-expected rather than assuming stale.
+
+  **Worth recording — this run independently confirmed ADR-028.** The regenerated file differs
+  from the previous one in `contract_version` and `generated_utc` **and nothing else**: all
+  43,200 simulated drafts across 6 strategies x 4 seasons x 3 sigmas reproduced byte-identically
+  in a separate process. That is the property `stable_offset()` was introduced to guarantee, now
+  demonstrated rather than asserted — which is exactly the standard ADR-028 said the old
+  "seeded RNG, seed recorded" claim failed to meet.
 
 ## Still open — nothing below was started
 
