@@ -8,6 +8,7 @@ import { RefreshData } from './components/RefreshData';
 import { Assistant } from './views/Assistant';
 import { Availability } from './views/Availability';
 import { Board } from './views/Board';
+import { DraftRoom } from './views/DraftRoom';
 import { Methodology } from './views/Methodology';
 import { StrategyGuide } from './views/StrategyGuide';
 import { buildRows } from './data/board';
@@ -87,11 +88,17 @@ export function App() {
   const soon = SOON_MAP.get(screen);
   const screenLabel =
     mode !== 'prep' ? (mode === 'draft' ? 'Draft' : 'Season') : (soon?.label ?? NAV_LABEL.get(screen) ?? 'Board');
+  const showsFocusedPlayer = mode === 'draft' || (mode === 'prep' && screen === 'board');
   const assistantWhere =
-    screen === 'board' && focusedPlayer ? `${screenLabel} · this player: ${focusedPlayer}` : screenLabel;
+    showsFocusedPlayer && focusedPlayer ? `${screenLabel} · this player: ${focusedPlayer}` : screenLabel;
 
   function changeScreen(next: ScreenId) {
     setScreen(next);
+    setFocusedPlayer(null);
+  }
+
+  function changeMode(next: Mode) {
+    setMode(next);
     setFocusedPlayer(null);
   }
 
@@ -118,7 +125,7 @@ export function App() {
       </div>
     );
   } else if (mode === 'draft') {
-    body = <NotBuilt title="Draft mode" body="Draft mode is not built in this app yet." />;
+    body = <DraftRoom data={data} rows={rows} league={league} onOpenPlayer={setFocusedPlayer} />;
   } else if (mode === 'season') {
     body = <NotBuilt title="Season mode" body="Season mode is not built in this app yet." />;
   } else {
@@ -160,7 +167,7 @@ export function App() {
     <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       <TopBar
         mode={mode}
-        onModeChange={setMode}
+        onModeChange={changeMode}
         theme={theme}
         onToggleTheme={toggleTheme}
         league={league}
