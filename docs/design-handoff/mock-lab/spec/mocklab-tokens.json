@@ -1,0 +1,72 @@
+{
+  "$schema": "draft-assistant/design-tokens/1",
+  "version": "1.2.0",
+  "generated": "2026-07-26",
+  "scope": "ADDITIVE to spec/design-tokens.json and spec/settings-tokens.json. The Mock Lab introduces NO new colour tokens — it is built entirely from the existing set. What is new is four patterns.",
+  "restraint": "Deliberate. A screen this size would normally accrete tokens; every meaning here maps onto a token that already carries it, so adding more would dilute the ones that exist.",
+  "tokensUsed": {
+    "--acc": "logged / honest / hit / primary action",
+    "--down": "miscalibrated, thin, or over-confident",
+    "--up": "frozen-prediction marker and probability values",
+    "--fail": "no-match rows in reconcile",
+    "--hatch": "thin bucket (< 50 calls)",
+    "--txt": "filled frequency dots and the prediction marker",
+    "--line2": "unfilled frequency dots"
+  },
+  "newPatterns": [
+    {
+      "id": "calibration-row",
+      "name": "Dual-signal calibration row",
+      "structure": "10 dots (filled = observed frequency, outlined = remainder) + a ▲ marker beneath, positioned at the stated probability index",
+      "markerMath": "left = (stated/100 * 10 * dotPitch) - 4px, where dotPitch = 14px (11px dot + 3px gap)",
+      "reading": "▲ left of the fill edge = under-confident; right = over-confident; under the edge = honest",
+      "cues": [
+        "marker position",
+        "generated plain-language sentence",
+        "observed value colour"
+      ],
+      "colourOnly": false,
+      "rationale": "reuses the existing 10-dot frequency idiom rather than introducing a second visual language for probability"
+    },
+    {
+      "id": "thirty-array",
+      "name": "Progress-to-target array",
+      "structure": "30 squares, 15×15px, radius 3px, filled --acc when logged, outlined --line2 when not",
+      "rule": "the array is never the primary progress signal — the confidence-band width above it is. No badges, streaks, levels or congratulation.",
+      "rationale": "the honest incentive already exists: filling a square narrows the band"
+    },
+    {
+      "id": "band-narrowing",
+      "name": "Confidence-band ladder",
+      "structure": "one row per sample-size milestone (1 / 10 / 20 / 30 mocks): count, bar, ± half-width, plain label",
+      "math": "bar length is the real 95% Wilson half-width at that n on a 33% bucket",
+      "rationale": "motivation by measurement — the bar is a fact, not a graphic"
+    },
+    {
+      "id": "frozen-marker",
+      "name": "Frozen-prediction marker",
+      "structure": "🔒 glyph + --up eyebrow + a left rule, on a banner rather than a footnote",
+      "rule": "any surface showing a prediction as-made must state that it is never recomputed",
+      "rationale": "a wrong prediction is the most valuable row on the screen; hiding it breaks the premise"
+    }
+  ],
+  "verdictTreatment": {
+    "hit": {
+      "colour": "--acc",
+      "glyph": "● filled"
+    },
+    "miss": {
+      "colour": "--down",
+      "glyph": "○ hollow"
+    },
+    "rule": "glyph carries the verdict in greyscale; colour is redundant"
+  },
+  "entryTempo": {
+    "fields": [
+      "seconds per pick",
+      "estimated time remaining"
+    ],
+    "source": "real entry timestamps (mock.picks[].entered_at)",
+    "rule": "a measurement, not a motivator — if entered_at is not recorded, remove the readout rather than estimate it"
+  }
+}

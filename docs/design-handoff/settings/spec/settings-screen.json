@@ -1,0 +1,324 @@
+{
+  "$schema": "draft-assistant/screens/1",
+  "version": "1.1.0",
+  "generated": "2026-07-26",
+  "scope": "ADDITIVE to spec/screens.json — the Settings editor screen.",
+  "screen": {
+    "id": "settings.editor",
+    "label": "League settings",
+    "reference": "Settings_Editor_reference.dc.html",
+    "layout": {
+      "columns": "minmax(0,1fr) 372px",
+      "rail": "own scroll",
+      "banner": "between top bar and body, full width, persists across navigation"
+    },
+    "decision": {
+      "name": "shadow recompute with atomic user-triggered swap",
+      "summary": "job runs in background, app stays fully usable, nothing changes on screen, new values land only on explicit Apply",
+      "rejected": [
+        {
+          "option": "freeze behind a modal",
+          "why": "60s reads as a hang; removes the reason the user is here; makes failure cost the whole wait"
+        },
+        {
+          "option": "navigate with everything marked stale",
+          "why": "a scoring change invalidates nearly every number, so the whole app hatches out — a slower freeze that teaches users to ignore the stale treatment"
+        }
+      ],
+      "keyReframe": "pre-edit numbers are not stale, they are correct — the change is not applied, so the old scoring is still in force",
+      "consequences": [
+        "principle #3 satisfied by construction, not vigilance",
+        "failure is trivially safe — nothing to unwind",
+        "no ambush: values never rearrange under a user mid-scan"
+      ]
+    },
+    "tiers": [
+      {
+        "tier": 1,
+        "triggers": [
+          "roster slots",
+          "bench",
+          "IR",
+          "flex eligibility",
+          "team count",
+          "draft slot"
+        ],
+        "recomputes": [
+          "replacement levels",
+          "VBD",
+          "tiers"
+        ],
+        "behaviour": "instant, client-side, no job",
+        "alsoInvalidates": "availability simulation"
+      },
+      {
+        "tier": 2,
+        "triggers": [
+          "ppr",
+          "pass_td",
+          "rush_rec_td",
+          "interception",
+          "fumble_lost",
+          "yardage_bonuses"
+        ],
+        "recomputes": [
+          "378 projections",
+          "replacement levels",
+          "VBD",
+          "tiers"
+        ],
+        "behaviour": "pending until explicit recompute + apply",
+        "seconds": 60,
+        "alsoInvalidates": "availability simulation"
+      }
+    ],
+    "states": [
+      {
+        "id": "in-force",
+        "condition": "pending_settings = null",
+        "banner": null,
+        "app": "everything fresh"
+      },
+      {
+        "id": "pending",
+        "condition": "edits held, no job",
+        "banner": "SCORING CHANGE QUEUED",
+        "app": "fully usable, all fresh"
+      },
+      {
+        "id": "computing",
+        "condition": "job running",
+        "banner": "RECOMPUTING + stage + pct + 3px rail",
+        "app": "fully usable, all fresh, steppers inert"
+      },
+      {
+        "id": "ready",
+        "condition": "job complete, not applied",
+        "banner": "NEW VALUES READY + Apply / Keep old",
+        "app": "still showing old values"
+      },
+      {
+        "id": "failed",
+        "condition": "job errored",
+        "banner": "RECOMPUTE FAILED + Retry / Discard edit",
+        "app": "still showing old values"
+      },
+      {
+        "id": "applied",
+        "condition": "new scoring live",
+        "banner": "AVAILABILITY STALE",
+        "app": "projections fresh, availability hatched"
+      }
+    ],
+    "stages": [
+      {
+        "label": "reading game logs · 2023–2025",
+        "to": 18
+      },
+      {
+        "label": "re-scoring 378 players",
+        "to": 46
+      },
+      {
+        "label": "refitting replacement levels",
+        "to": 72
+      },
+      {
+        "label": "rebuilding tiers and VBD",
+        "to": 92
+      },
+      {
+        "label": "writing board.projected_points",
+        "to": 100
+      }
+    ],
+    "grids": {
+      "scoringRules": "minmax(88px,1fr) 52px 14px 52px 80px minmax(120px,1.15fr) · gap 8px · padding 7px 12px",
+      "rosterSlots": "minmax(90px,1fr) 62px 88px minmax(96px,1.2fr) · gap 9px · padding 7px 12px",
+      "boardPreview": "26px minmax(84px,1fr) 40px 66px 52px 92px · gap 8px · padding 7px 12px"
+    },
+    "gridConstraint": "Every track set must fit the fluid left pane at a 924px viewport (pane = 502px). No track may use minmax(0,…) — a zero floor lets the FIELD column collapse to invisible, which breaks the trace-affordance constraint. Assert scrollWidth === clientWidth on all three grids.",
+    "fieldAffordance": "Displayed field text may drop a prefix shared by the whole column when the column header names it (FIELD · league.scoring.*), but the full dotted path must always be present in a title attribute. Never let a field name truncate without a hover fallback."
+  },
+  "api": [
+    {
+      "method": "PATCH",
+      "path": "/api/leagues/:id/settings",
+      "body": {
+        "tier": 1,
+        "settings": {}
+      },
+      "response": {
+        "applied": true,
+        "replacement_levels": {},
+        "availability_invalidated": true
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/leagues/:id/recompute",
+      "body": {
+        "pending_settings": {}
+      },
+      "response": {
+        "job_id": "string",
+        "estimated_seconds": 60
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/recompute/:job_id",
+      "streaming": true,
+      "response": {
+        "job_id": "string",
+        "state": "running|complete|failed",
+        "stage": "string",
+        "pct": "int",
+        "failed_stage": "string|null",
+        "error": "string|null"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/leagues/:id/recompute/:job_id/apply",
+      "response": {
+        "applied_at": "ISO8601",
+        "projections_generated_at": "ISO8601",
+        "availability_stale": true
+      }
+    }
+  ],
+  "contractRequirements": [
+    "apply is a separate call from job completion — the server holds the result and must not mutate league.settings before it",
+    "a held result is superseded if pending settings change; return superseded:true rather than applying a stale computation",
+    "availability_stale is returned by both endpoints; tier-1 changes set it too",
+    "job ownership is the league, not the session — other tabs and devices see the same state"
+  ],
+  "checks": [
+    {
+      "id": "SET-01",
+      "severity": "block",
+      "assert": "During a tier-2 recompute, no number anywhere in the app differs from its pre-edit value",
+      "probe": "snapshot all numeric cells before edit and at 50% progress",
+      "expect": "identical"
+    },
+    {
+      "id": "SET-02",
+      "severity": "block",
+      "assert": "The app is navigable during a recompute — nothing is disabled behind a modal",
+      "probe": "start job, navigate to Board and Draft",
+      "expect": "both reachable and interactive"
+    },
+    {
+      "id": "SET-03",
+      "severity": "block",
+      "assert": "Job completion does not change any displayed value; only Apply does",
+      "probe": "let job finish, snapshot, press Apply, snapshot",
+      "expect": "unchanged at completion; changed after Apply"
+    },
+    {
+      "id": "SET-04",
+      "severity": "block",
+      "assert": "An edited scoring rule shows both the in-force and edited values",
+      "probe": "edit ppr, read the row",
+      "expect": "old struck through + new in --down"
+    },
+    {
+      "id": "SET-05",
+      "severity": "block",
+      "assert": "Progress shows a named stage and a percent, with all five stages listed",
+      "probe": "read the status rail during a job",
+      "expect": "stage name, pct, 5 stage rows with done/active/pending glyphs"
+    },
+    {
+      "id": "SET-06",
+      "severity": "block",
+      "assert": "A failed job leaves league.settings unchanged and retains the edit",
+      "probe": "trigger failure, inspect settings and the diff panel",
+      "expect": "settings unchanged; diff still present"
+    },
+    {
+      "id": "SET-07",
+      "severity": "block",
+      "assert": "Stale values carry hatch + dagger + reduced contrast + a section tag",
+      "probe": "apply a change, inspect an availability cell",
+      "expect": "all four cues present"
+    },
+    {
+      "id": "SET-08",
+      "severity": "block",
+      "assert": "Stale and null are visually distinguishable in greyscale",
+      "probe": "desaturate a screenshot containing both",
+      "expect": "hatch/dagger vs em dash still distinct"
+    },
+    {
+      "id": "SET-09",
+      "severity": "block",
+      "assert": "A tier-1 change applies instantly with no job and still marks availability stale",
+      "probe": "increment bench, observe VBD and availability",
+      "expect": "VBD immediate; availability hatched"
+    },
+    {
+      "id": "SET-10",
+      "severity": "block",
+      "assert": "Scoring steppers do not respond while a job is in flight",
+      "probe": "start job, click a stepper",
+      "expect": "no change; reason visible in the banner"
+    },
+    {
+      "id": "SET-11",
+      "severity": "block",
+      "assert": "--fail is not the same colour as --live",
+      "probe": "read both tokens",
+      "expect": "different values"
+    },
+    {
+      "id": "SET-12",
+      "severity": "block",
+      "assert": "The recompute banner persists across navigation",
+      "probe": "start job, change screen",
+      "expect": "banner still visible"
+    },
+    {
+      "id": "SET-13",
+      "severity": "block",
+      "assert": "All three settings grids fit their pane at a 924px viewport — no clipped columns",
+      "probe": "for each grid: scrollWidth === clientWidth",
+      "expect": "true for scoring rules, roster slots, board preview"
+    },
+    {
+      "id": "SET-14",
+      "severity": "block",
+      "assert": "Every FIELD cell renders its text untruncated, and carries the full dotted path in a title attribute",
+      "probe": "for each field cell: scrollWidth <= clientWidth AND getAttribute('title') is the full path",
+      "expect": "no truncation; title present on every cell",
+      "note": "a pixel floor is not sufficient — a 100px track passes a >=84px check while still clipping league.scoring.rush_rec_td"
+    }
+  ],
+  "founderDecisions": [
+    {
+      "id": "FD1",
+      "question": "Are scoring edits blocked during a live draft?",
+      "recommendation": "block, with the reason stated",
+      "why": "changing scoring mid-draft rebases every recommendation the user has already acted on"
+    },
+    {
+      "id": "FD2",
+      "question": "If the user closes the tab mid-job, does the result auto-apply on next open?",
+      "recommendation": "wait",
+      "why": "ambush is worse than staleness"
+    },
+    {
+      "id": "FD3",
+      "question": "If the user edits again mid-job, cancel and restart automatically or ask?",
+      "recommendation": "restart automatically and say so",
+      "why": "a held result nobody wants is clutter"
+    },
+    {
+      "id": "FD4",
+      "question": "Who can edit — commissioner only, or anyone with the league open?",
+      "recommendation": null,
+      "why": "determines whether the banner needs an actor name"
+    }
+  ]
+}

@@ -1,0 +1,366 @@
+# Decisions needed from the founder
+
+**Standing rule: rigour is the default, and silence is consent to it.**
+
+Every entry below states the rigorous option and the cost of taking it. If the founder says nothing,
+agents take the rigorous option and proceed — no one blocks waiting for an answer. The founder
+intervenes only to *loosen*. That inverts the usual escalation cost: being unavailable produces the
+conservative outcome rather than a stall.
+
+Agents: when you hit a decision, add it here rather than deciding silently or asking in chat. State
+the rigorous default explicitly, because that is what will happen if nobody replies. Never loosen a
+default on your own authority — "the founder would probably be fine with it" is exactly the reasoning
+this file exists to prevent.
+
+**Status values:** `OPEN` (awaiting, default will be taken) · `DEFAULTED` (default taken, still
+reversible) · `DECIDED` (founder answered) · `LOCKED` (acted on, expensive to reverse)
+
+---
+
+## D-001 · `NEED_ADJUSTMENT_SCALE` — delete, or keep tuning it?
+**Status:** OPEN · **Raised by:** strategist, ADR-A · **Needed before:** Backend implements ADR-A
+
+**Rigorous default:** delete the parameter, or convert it to a bounded constraint. Do not adopt 10.0
+and do not fit a value.
+
+**Why.** The parameter enters the product only through an `argmax`, so the objective is piecewise
+constant in it — data can never select a point value, only an interval of behaviour. Any reported
+figure like "9.4" would be fabricated precision. Separately, the superiority test that would justify
+*any* value cannot clear multiple-comparisons correction on 4 seasons: minimum attainable p is 0.0625
+with a single test at infinite effect size. It needs ~9 usable seasons, i.e. roughly 2029.
+
+**Cost of rigour.** If the need term genuinely helps and the constraint bound undershoots, points are
+left on the table. This is undetectable with current data.
+
+**To loosen:** say so, and 10.0 stays with an `ARBITRARY` provenance tag visible in the methodology
+surface. It will not be presented as measured.
+
+---
+
+## D-002 · Retract past rank-correlation figures, or annotate them?
+**Status:** OPEN · **Raised by:** strategist, ADR-B · **Needed before:** Backend rewrites `_rank_correlation`
+
+**Rigorous default:** retract. Remove them from docs rather than adjusting them.
+
+**Why.** The current function pools all positions before correlating, which manufactures correlation
+from between-position mean differences. A model with *zero* within-position skill — ordering players
+randomly inside each position — still posts a healthy pooled number, because QBs outscore TEs. Within-
+position ordering is the only skill that matters at a draft. The figures do not measure a weaker
+version of the right thing; they measure a different thing.
+
+**Cost of rigour.** Losing the only correlation numbers currently on record, with nothing to replace
+them until the rewrite lands.
+
+**To loosen:** keep them with a prominent "pooled, not comparable" warning. Not recommended — the
+project's own experience is that warnings on stale numbers get read past.
+
+---
+
+## D-003 · Show ranks for positions where ordering skill is unproven?
+**Status:** OPEN · **Raised by:** strategist, ADR-B · **Needed before:** Frontend implements the band table
+
+**Rigorous default:** positions whose measured ordering skill is indistinguishable from noise show
+**tiers only, no rank number**. On current samples that likely means TE, QB, and DEF, since at n≈20
+the confidence interval spans roughly ±0.32 and will frequently contain zero.
+
+**Why.** Showing a precise rank the data cannot support is the exact false-precision failure the
+competitive research identifies in rivals. The product's differentiation is honest uncertainty; a
+rank number that means nothing contradicts it directly.
+
+**Cost of rigour.** A visible product downgrade. Three of five positions lose their rank column, and
+users will notice.
+
+**To loosen:** show ranks everywhere with the correlation and sample size disclosed on the column
+header. Defensible, and closer to what competitors do.
+
+---
+
+## D-004 · `delta = 0.10` ships unvalidated — accept, or set to zero now?
+**Status:** DEFAULTED (currently shipping at 0.10, flagged) · **Needed before:** the draft
+
+**Rigorous default:** leave it at 0.10 **only** if it is visibly flagged as an unvalidated prior, and
+honour the existing pre-registered rule — if the need+run model does not beat marginal-only on Brier
+across ≥30 conforming mocks, set it to zero.
+
+**Why.** The pre-registered rule already exists and was written before any data was seen. Honouring it
+is the whole point of pre-registration. But note the binding practical fact: with 1 of ~30 mocks
+logged, the test will not run before this season's draft, so 0.10 ships untested either way.
+
+**Cost of rigour.** None if flagged. The risk is drift — an unvalidated constant quietly becoming
+"the value we use" through familiarity.
+
+**To loosen:** nothing to loosen. The alternative is setting it to zero now, which is *more*
+conservative, not less — and would discard a plausible effect on no evidence.
+
+---
+
+## D-005 · The research section — aggregate, or compare?
+**Status:** OPEN · **Raised by:** FR-001 · **Needed before:** the feature is specced
+
+**Rigorous default:** **comparison** — show each source side by side and let the user decide. Do not
+compute a blended consensus.
+
+**Why.** Two reasons converge. The voice-of-customer work found the upvoted sentiment explicitly
+against blind deference to an aggregate and in favour of forming your own view. And a computed blend
+requires defending a weighting scheme across sources of very different quality — a free parameter with
+no way to validate it, which is the same identifiability problem as D-001.
+
+**Cost of rigour.** More screen space, more user effort. A single blended number is easier to consume.
+
+**To loosen:** ship a blend, but it must show its weights and let them be inspected.
+
+---
+
+## D-006 · Is the 853 MB database tracked in git?
+**Status:** OPEN · **Needed:** now — it worsens with every commit
+
+**Rigorous default:** verify with `git check-ignore -v data/nfl.db`. If it is tracked, stop committing
+it immediately and plan a history rewrite deliberately rather than in a hurry.
+
+**Why.** Git stores a full copy of a binary file on every commit where it changed. At 853 MB the
+repository becomes unusable quickly, and — since there is no remote — a botched history rewrite has no
+backup to recover from.
+
+**Cost of rigour.** Ten minutes to check. A rewrite, if needed, is a careful hour.
+
+**To loosen:** nothing here is loosenable. This is either true or it isn't.
+
+---
+
+## D-007 · A git remote as backup?
+**Status:** OPEN · **Needed:** before the draft
+
+**Rigorous default:** create a private remote. Not for agent coordination — that is solved — but
+because the entire project currently exists on exactly one disk, and several destructive git commands
+are one typo away from unrecoverable.
+
+**Why.** It is also the precondition for loosening permissions further. Broad auto-approval is
+defensible with a remote as a backstop and hard to defend without one.
+
+**Cost of rigour.** Free, roughly fifteen minutes, and D-006 must be resolved first — pushing an
+853 MB tracked database is its own problem.
+
+**To loosen:** an external drive backup instead. Weaker, but not nothing.
+
+---
+
+## D-008 · Recompute blocking behaviour in Settings
+**Status:** OPEN · **Raised by:** the Settings editor design session · **Needed before:** Frontend builds it
+
+**Rigorous default:** hard-block the interface for the ~60-second recompute, with staged progress.
+
+**Why.** Principle #3 forbids any number showing a partially-updated value. Letting users navigate
+during a recompute means marking every affected number stale everywhere, and a single missed spot is
+a silent violation of the principle. Blocking makes correctness structural rather than dependent on
+exhaustive coverage.
+
+**Cost of rigour.** A 60-second wall. Genuinely annoying, and it will be the most-complained-about
+interaction in the product.
+
+**To loosen:** allow navigation with a global stale treatment. Requires an audit proving every
+affected surface honours it — that audit is the real cost, not the design work.
+
+---
+
+---
+
+## D-009 · Does the engine come before the interface this season?
+**Status:** DECIDED — 2026-07-26 · **Outcome:** deadline pressure removed by the founder
+
+**Decision.** The founder has stated the draft deadline is no longer a constraint. That resolves this
+in the direction the rigorous default argued *against*: with no hard date, the case for rushing
+interface completion disappears, and the engine work FR-005 describes can be sequenced on merit
+rather than on the calendar.
+
+**What changes:**
+- Draft-slot simulation (P3-4) is no longer gated behind "finish the screens first."
+- Mock collection is still urgent, but for a different reason — mocks cannot be collected
+  retroactively and preseason mock lobbies thin out after the draft window regardless of whether we
+  care about this year's draft. The chain 002 → 025 → Mock Lab UI keeps its priority.
+- The "five weeks" framing should be removed from planning documents. It is no longer true and it
+  distorts sequencing.
+
+**What does not change.** Every rigour default in this file stands. Removing a deadline removes an
+excuse for shortcuts; it does not license any.
+
+**Still open, and now the real question:** with time no longer scarce, what *is* the binding
+constraint? Current answer: data volume and founder attention, in that order. Worth putting to Fable
+as part of candidate 3, reframed — not "engine or interface before the draft" but "what should this
+project optimise for now that it is not optimising for a date."
+
+---
+
+## D-009-ORIG (superseded) · Does the engine come before the interface this season?
+**Status:** SUPERSEDED · **Raised by:** FR-005 · **Needed before:** the next sprint is scoped
+
+**Rigorous default:** finish the interface gaps first (Opponents tab, rosters endpoint), and build
+simulation capability second.
+
+**Why that is the conservative choice.** The draft is roughly five weeks away. An app with missing
+screens is a concrete, certain failure on draft day. Simulation capability is high-value but
+open-ended, and an unfinished simulation layer helps nobody in September.
+
+**Why you might loosen it.** FR-005 says the engine *is* the product. Draft-mechanics questions are
+answerable to tight intervals right now, because they resample at the draft level rather than the
+season level — unlike every season-outcome question, which is blocked until ~2029. That is the one
+place rigour currently produces answers instead of refusals, and it is unclaimed by any competitor.
+A case exists for building it before polishing screens.
+
+**Cost of rigour.** The engine work slips past this season, and the first real draft runs on an app
+that is complete but analytically thin.
+
+**To loosen:** say so, and I re-scope the sprint around draft-slot simulation, accepting that the
+Opponents tab may not exist for this year's draft.
+
+---
+
+## D-010 · Block scoring edits during a live draft?
+**Status:** OPEN · **Raised by:** Design, Settings editor · **Needed before:** Frontend builds it
+
+**Rigorous default:** block them, and show the reason rather than greying the control silently.
+
+**Why.** A scoring change invalidates every projection, replacement level, ranking and availability
+figure. Doing that mid-draft means the board a user is actively picking from changes underneath them
+during a ~60-second window when Principle #3 forbids showing partial results. Design's reference
+implementation blocks it and recommends blocking.
+
+**Cost of rigour.** A user who genuinely mis-entered their scoring rules is stuck with wrong numbers
+for the whole draft. That is a real scenario and it will feel awful.
+
+**To loosen:** allow it behind an explicit confirmation that states what will happen. Design's own
+framing is that this trades flexibility for trust.
+
+---
+
+## D-011 · Auto-apply a finished recompute if the tab closes mid-job?
+**Status:** OPEN · **Raised by:** Design, Settings editor · **Needed before:** Frontend builds it
+
+**Rigorous default:** do not auto-apply. Hold the result and apply on the user's next visit, with
+their confirmation.
+
+**Why.** Design's reasoning, which I agree with: ambush is worse than staleness. A user who returns
+to find every number silently changed has lost the thread of what they did, and the product's whole
+proposition is that numbers are traceable and never change under you unannounced.
+
+**Cost of rigour.** A completed 60-second computation sits unapplied. The user waits again, or at
+least clicks again, for work already done.
+
+**To loosen:** auto-apply with a persistent, dismissable notice saying what changed and when. Weaker,
+but not unreasonable.
+
+---
+
+## D-012 · User edits again while a recompute is running
+**Status:** OPEN · **Raised by:** Design, Settings editor · **Needed before:** Frontend builds it
+
+**Rigorous default:** auto-restart the job and tell the user plainly that it restarted.
+
+**Why.** The alternatives are worse: queueing two jobs risks applying them out of order, and blocking
+edits during a 60-second window is hostile when the user is likely fixing a mistake they just spotted.
+Restarting is the only option that cannot produce a wrong final state.
+
+**Cost of rigour.** The clock resets. A user making three quick edits waits three times.
+
+**Depends on:** thread 015, question on `superseded` — the server needs that response for this to work.
+
+---
+
+## D-013 · Who can edit league settings?
+**Status:** OPEN · **Raised by:** Design, Settings editor · **No recommendation from Design**
+
+**Rigorous default:** single editor — the league owner — until there is a reason otherwise.
+
+**Why.** Design explicitly declined to recommend here, correctly: it is a permissions question, not a
+design one, and it changes the design materially. Multiple editors means the pending-change banner
+needs an actor name, and the whole flow needs a concurrency story that has not been designed. Starting
+single-editor keeps the design honest and defers complexity that may never be needed — this is a
+10-team home league, and the product is currently personal-use.
+
+**Cost of rigour.** If co-commissioners turn out to matter, this is a rebuild of the flow rather than
+an addition.
+
+**To loosen:** say so early. This is the one decision here that is expensive to change later, because
+it is structural rather than behavioural.
+
+---
+
+## D-014 · Reverse the LLM-renderer deferral?
+**Status:** DECIDED — 2026-07-26 · **Founder reversed the deferral, with a narrowing**
+
+**What the founder asked for:** "a very futuristic chatbot there, especially if it can see the back
+end to answer the questions."
+
+**What is approved:** an LLM **query interface** — the model selects which typed tool to call against
+real data, and reports what came back. Spec first via thread 033, build after.
+
+**What remains deferred:** the LLM **narrator** — a model that receives facts and writes prose
+interpreting them. The code's own warning stands: it will produce fluent, confident, causal sentences
+whether the data supports them or not.
+
+**Why this is not a fudge.** These are different systems with opposite risk profiles. A narrator
+decides what facts *mean*, so its errors are invisible and persuasive. A query interface decides only
+what to *look up*; the database decides what is true, and provenance is structural rather than
+promised. The query interface is arguably the strictest implementation of Principle #1 in the product
+— the model has no way to obtain a number except through a named field.
+
+**The line that must hold:** no interpolation between retrieved facts. Reporting `p_survive = 0.33`
+from `availability.json` is fine. "Player X is undervalued" is not — and not merely because it is
+unsupported, but because the board computes no player-level opinion at all
+(`evaluative_adjustment` is always null, by design).
+
+**Still open:** whether to build after the ADR lands. That is a fresh decision with a cost dimension
+attached — this is the first component with a per-interaction API cost.
+
+
+---
+
+## D-015 · Is the 30-mock target per league, or global?
+**Status:** OPEN · **Raised by:** Design, Mock Lab · **Needed before:** the progress affordance is built
+
+**Rigorous default:** **per league configuration.** The availability model's behaviour depends on
+league size, scoring, and roster shape, so 30 mocks spread across a 10-team half-PPR and a 12-team
+full-PPR validate neither.
+
+**Cost of rigour.** Brutal. It means the 24-config matrix would each need their own 30, which is never
+happening. In practice it means calibration is claimed for **one** configuration — the founder's own
+league — and explicitly not claimed elsewhere.
+
+**To loosen:** treat 30 as global and state the configuration mix alongside any calibration claim.
+Weaker, but honest if the mix is disclosed.
+
+---
+
+## D-016 · Do other users' mocks count toward the target?
+**Status:** OPEN · **Raised by:** Design, Mock Lab · **Design recommends:** keep personal primary
+
+**Rigorous default:** personal mocks are primary; others' are stored but pooled separately and never
+silently merged.
+
+**Why.** A mock logged by someone else may come from a different room, a different platform, and a
+different level of care in entry. Pooling them inflates n while degrading the thing n is for. Design
+reached the same conclusion independently.
+
+**Cost of rigour.** Reaching 30 stays slow, because it stays one person's work.
+
+---
+
+## D-017 · Are partial mocks acceptable?
+**Status:** OPEN · **Raised by:** Design, Mock Lab · **Design recommends:** accept, with `rounds_logged`
+
+**Rigorous default:** accept them, recorded with `rounds_logged`, and weight or filter at analysis time
+rather than at entry.
+
+**Why.** Availability predictions are most interesting in early rounds anyway, and a user who abandons
+at round 8 has still produced eight rounds of real evidence. Rejecting partials discards data and
+punishes the exact behaviour we are trying to make easy. Design's recommendation is right.
+
+**The catch to specify:** partial mocks are not missing at random — people abandon when a draft gets
+boring or lopsided, which may correlate with the outcomes being predicted. Record the field, and treat
+"can partials be pooled" as a separate question for the analysis stage rather than assuming yes.
+
+
+## Resolved
+
+| ID | Decision | Outcome |
+|---|---|---|
+| D-000 | FantasyPros paid tier | **DECIDED** — no purchase. Use the logged-in CSV export; no scraper will be written. |

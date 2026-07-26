@@ -1,0 +1,116 @@
+{
+  "$schema": "draft-assistant/spec-manifest/1",
+  "name": "draft-assistant-design-spec",
+  "version": "1.0.0",
+  "generated": "2026-07-26",
+  "sourceOfTruth": "Draft_Assistant_reference.dc.html (pinned reference prototype in this bundle)",
+  "purpose": "Machine-readable design spec for diffing a running build against a pinned reference.",
+  "drift": {
+    "note": "Token hex values supersede any earlier session brief. Earlier palette listed bg #0a0d12 / acc #7dd3a0 / positions b39ddb-4dd0b1-f2a65a-6fa8ff-94a0b0; the current build is in design-tokens.json.",
+    "asOf": "2026-07-26"
+  },
+  "files": [
+    {
+      "path": "spec/design-tokens.json",
+      "describes": "type roles, both theme palettes, radius, density, team colours",
+      "diffable": "exact values"
+    },
+    {
+      "path": "spec/formulas.json",
+      "describes": "constants and step-by-step algorithms for availability, scarcity, verdict line, recompute, persistence",
+      "diffable": "constants and step order"
+    },
+    {
+      "path": "spec/api-contract.json",
+      "describes": "endpoints, payload shapes, nullability, field names",
+      "diffable": "field names and nullability"
+    },
+    {
+      "path": "spec/screens.json",
+      "describes": "shell and overlay geometry, grid column widths, screen inventory, panel order",
+      "diffable": "grid strings, widths, section order"
+    },
+    {
+      "path": "spec/acceptance-checks.json",
+      "describes": "assertable checks, null-state matrix, the four principles",
+      "diffable": "pass/fail per check id"
+    },
+    {
+      "path": "FRONTEND-SPEC.md",
+      "describes": "the same content in prose, for humans",
+      "diffable": "no — reference only"
+    },
+    {
+      "path": "screens/*.md",
+      "describes": "one short spec per screen, for porting one screen at a time",
+      "diffable": "no — reference only"
+    },
+    {
+      "path": "README.md",
+      "describes": "backend integration history and open questions",
+      "diffable": "no"
+    },
+    {
+      "path": "HANDOFF-NOTES.md",
+      "describes": "CTO/PM summary",
+      "diffable": "no"
+    }
+  ],
+  "knownGaps": [
+    {
+      "id": "G1",
+      "item": "Non-snake drafts",
+      "detail": "mock grid and opponent cards assume snake order; linear, 3rd-round reversal and auction are unimplemented",
+      "owner": "product"
+    },
+    {
+      "id": "G2",
+      "item": "Prep board at laptop width",
+      "detail": "needs ~880px, gets ~708px at a 924px window; VBD and TIER fall off",
+      "owner": "design+product"
+    },
+    {
+      "id": "G3",
+      "item": "Headshots plumbed but unpopulated",
+      "detail": "field, slot and hotlink exist; no sample player has a real ESPN id",
+      "owner": "data"
+    },
+    {
+      "id": "G4",
+      "item": "noise_band is a placeholder 0.12",
+      "detail": "replace with the real bootstrapped width",
+      "owner": "modelling"
+    },
+    {
+      "id": "G5",
+      "item": "Where the live adjustment runs",
+      "detail": "client-side per pick today; anything heavier needs an endpoint and a latency budget under a pick clock",
+      "owner": "engineering"
+    },
+    {
+      "id": "G6",
+      "item": "Is {need, run} the final decomposition",
+      "detail": "components are shown individually; four or more signals needs a design decision",
+      "owner": "modelling+design"
+    },
+    {
+      "id": "G7",
+      "item": "Mock storage",
+      "detail": "server-side per league (pools validation across devices) or local until opt-in",
+      "owner": "engineering"
+    },
+    {
+      "id": "G8",
+      "item": "Platform mock imports",
+      "detail": "if mock rooms can be read directly, manual entry becomes the fallback",
+      "owner": "engineering"
+    },
+    {
+      "id": "G9",
+      "item": "Per-league watchlist annotations",
+      "detail": "server-side join or client-side",
+      "owner": "engineering"
+    }
+  ],
+  "prototypeDataCaveat": "Availability figures, mock logs, calibration buckets, weekly finishes and three-season tables are sample or deterministically generated data, labelled on screen. 70 of 378 players loaded. Layouts, formulas and null states are final; the wiring is the work."
+}

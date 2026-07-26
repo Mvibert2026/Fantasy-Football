@@ -1,0 +1,340 @@
+{
+  "$schema": "draft-assistant/screens/1",
+  "version": "1.2.0",
+  "generated": "2026-07-26",
+  "scope": "ADDITIVE to spec/screens.json — the Mock Lab.",
+  "screen": {
+    "id": "mocklab",
+    "label": "Mock Lab",
+    "reference": "reference/01-empty … 07-aggregate",
+    "framing": "not an analytics screen — the mechanism by which the calibration claim becomes true",
+    "arithmetic": {
+      "target": 30,
+      "picksPerMock": 160,
+      "totalEntries": 4800,
+      "consequence": "every extra interaction per pick multiplies by 4800, so entry cost decides whether the claim is ever validated"
+    },
+    "coreDecision": {
+      "name": "the model's prediction is the input device",
+      "detail": "the five players most likely to go next are rendered as a numbered list; digits 1-5 commit directly, so the common case is one keystroke",
+      "compounding": "better calibration means its top five covers more picks, which makes logging faster"
+    },
+    "entryModes": [
+      {
+        "id": "keyboard",
+        "cost": "~2s per pick",
+        "total": "~5 min per mock",
+        "when": "logging live",
+        "keys": {
+          "1-5": "commit that candidate",
+          "Enter": "commit highlighted",
+          "ArrowUp/Down": "move",
+          "Backspace": "undo last when the field is empty"
+        },
+        "requirements": [
+          "autofocus on mount",
+          "auto-advance on commit",
+          "never requires the mouse"
+        ]
+      },
+      {
+        "id": "paste",
+        "cost": "one action + reconcile",
+        "total": "~1 min",
+        "when": "the mock site ended on a results grid",
+        "note": "the only mode whose cost does not scale with 160 — market this one"
+      },
+      {
+        "id": "grid",
+        "cost": "~4s per pick",
+        "total": "~11 min",
+        "when": "working from a screenshot or filling gaps"
+      }
+    ],
+    "states": [
+      {
+        "file": "01-empty",
+        "id": "empty",
+        "condition": "mocks = []"
+      },
+      {
+        "file": "02-one-logged",
+        "id": "one",
+        "condition": "exactly one mock",
+        "note": "THE REAL STARTING CASE — leads with 'one draft is an anecdote'"
+      },
+      {
+        "file": "03-logging",
+        "id": "logging",
+        "condition": "entry in progress"
+      },
+      {
+        "file": "04-paste-reconcile",
+        "id": "paste",
+        "condition": "bulk paste parsed, not committed",
+        "note": "ADDED — not in the brief; paste is the mode most likely to decide whether 30 mocks happen, and a silent wrong fuzzy match would corrupt calibration quietly"
+      },
+      {
+        "file": "05-review",
+        "id": "review",
+        "condition": "completed mock, pick by pick"
+      },
+      {
+        "file": "06-calibration",
+        "id": "calib",
+        "condition": "one mock's calibration — every bucket thin"
+      },
+      {
+        "file": "07-aggregate",
+        "id": "aggregate",
+        "condition": "pooled across mocks + progress to 30"
+      }
+    ],
+    "grids": {
+      "review": "38px 62px minmax(0,1.1fr) 44px minmax(0,1.1fr) 78px 74px 62px · gap 9px",
+      "calibration": "82px 168px 62px minmax(0,1fr) 46px · gap 11px",
+      "candidates": "22px minmax(0,1fr) 44px 34px 54px 66px · gap 9px",
+      "reconcile": "40px minmax(0,1fr) 74px 96px minmax(0,1fr) · gap 9px",
+      "mockList": "minmax(78px,1fr) 116px 52px 56px 62px 84px · gap 9px",
+      "boardMini": "20px repeat(10,minmax(0,1fr)) · gap 2px"
+    },
+    "hardConstraints": [
+      "predictions are shown as they were made — never retroactively corrected or recomputed with hindsight",
+      "off-board players log as player_id = unknown with raw_text kept, and are excluded from calibration rather than dropped",
+      "thin buckets (< 50 calls) refuse to interpret rather than drawing a confident reading",
+      "Brier score is kept but demoted — the dots are the claim, the score is the measure",
+      "no badges, streaks or levels on the progress affordance"
+    ]
+  },
+  "api": [
+    {
+      "method": "POST",
+      "path": "/api/mocks",
+      "response": {
+        "mock_id": "string",
+        "teams": "int",
+        "slot": "int"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/mocks/:id/pick",
+      "body": {
+        "n": "int",
+        "team_slot": "int",
+        "player_id": "int|'unknown'",
+        "raw_text": "string",
+        "predicted_top": "int|null",
+        "predicted_p": "number|null",
+        "in_top_5": "bool",
+        "entered_at": "ISO8601"
+      },
+      "requirements": [
+        "predicted_* are write-once — reject an update rather than overwrite",
+        "raw_text retained on every row so a bad match stays auditable"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/mocks/:id/picks/bulk",
+      "response": {
+        "committed": "int",
+        "unresolved": "int",
+        "rows": [
+          {
+            "n": "int",
+            "match": "exact|fuzzy|none",
+            "player_id": "int|null",
+            "raw_text": "string"
+          }
+        ]
+      },
+      "requirement": "must return PER-ROW resolution, not just an aggregate count"
+    },
+    {
+      "method": "GET",
+      "path": "/api/mocks/:id/review",
+      "response": "picks with predictions as written"
+    },
+    {
+      "method": "GET",
+      "path": "/api/validation",
+      "query": [
+        "mock_id|pooled"
+      ],
+      "response": {
+        "buckets": [
+          {
+            "stated_mid": "number",
+            "n": "int",
+            "observed": "int"
+          }
+        ]
+      },
+      "requirement": "counts, never percentages — the client computes the Wilson interval"
+    }
+  ],
+  "checks": [
+    {
+      "id": "ML-01",
+      "severity": "block",
+      "assert": "Digits 1-5 commit the corresponding candidate without touching the mouse",
+      "probe": "focus the input, dispatch keydown '2'",
+      "expect": "pick logged, field cleared, counter advanced"
+    },
+    {
+      "id": "ML-02",
+      "severity": "block",
+      "assert": "The entry field is focused on mount",
+      "probe": "document.activeElement",
+      "expect": "the entry input"
+    },
+    {
+      "id": "ML-03",
+      "severity": "block",
+      "assert": "Backspace on an empty field undoes the last pick",
+      "probe": "log a pick, clear field, dispatch Backspace",
+      "expect": "pick count decremented"
+    },
+    {
+      "id": "ML-04",
+      "severity": "block",
+      "assert": "Tempo readout derives from real entry timestamps",
+      "probe": "log two picks with a known delay",
+      "expect": "seconds-per-pick reflects the delay, not a constant"
+    },
+    {
+      "id": "ML-05",
+      "severity": "block",
+      "assert": "A prediction shown in review is never recomputed",
+      "probe": "change board state, reload review",
+      "expect": "predicted_p unchanged"
+    },
+    {
+      "id": "ML-06",
+      "severity": "block",
+      "assert": "Review carries an explicit 'as they were made' statement",
+      "probe": "read the review banner",
+      "expect": "present, not a footnote"
+    },
+    {
+      "id": "ML-07",
+      "severity": "block",
+      "assert": "Each calibration row shows filled dots for observed and a marker at the stated probability",
+      "probe": "count filled dots and read marker offset",
+      "expect": "filled = round(observed/n*10); marker left = stated/100*140-4 px"
+    },
+    {
+      "id": "ML-08",
+      "severity": "block",
+      "assert": "Calibration direction is carried by marker position and a sentence, not colour alone",
+      "probe": "desaturate and read a miscalibrated row",
+      "expect": "direction still legible"
+    },
+    {
+      "id": "ML-09",
+      "severity": "block",
+      "assert": "Buckets under 50 calls are hatched and refuse to interpret",
+      "probe": "read a thin bucket's reading text",
+      "expect": "'too few calls to read', hatch on the count"
+    },
+    {
+      "id": "ML-10",
+      "severity": "block",
+      "assert": "Brier score is present but visually subordinate to the dot rows",
+      "probe": "compare font size and position",
+      "expect": "Brier in a secondary card, dots in the primary table"
+    },
+    {
+      "id": "ML-11",
+      "severity": "block",
+      "assert": "An unmatched paste row commits as unknown with raw text, never silently dropped",
+      "probe": "paste a garbled name, parse, inspect the row",
+      "expect": "no-match status, raw text retained, excluded-from-calibration note"
+    },
+    {
+      "id": "ML-12",
+      "severity": "block",
+      "assert": "Fuzzy matches are flagged for review, not auto-committed as exact",
+      "probe": "paste a misspelling, parse",
+      "expect": "'fuzzy' status with a fix affordance"
+    },
+    {
+      "id": "ML-13",
+      "severity": "block",
+      "assert": "Progress-to-30 shows no badge, streak, level or congratulatory copy",
+      "probe": "read the aggregate progress block",
+      "expect": "squares + band width only"
+    },
+    {
+      "id": "ML-14",
+      "severity": "block",
+      "assert": "The one-mock state states that nine calls cannot validate the claim",
+      "probe": "read 02-one-logged",
+      "expect": "explicit statement present"
+    }
+  ],
+  "founderDecisions": [
+    {
+      "id": "MFD1",
+      "question": "Does offering the model's top five bias the logged data?",
+      "recommendation": null,
+      "why": "presenting our own prediction as the fastest key risks logging what we guessed rather than what happened; the fix trades away the entry speed the whole screen depends on",
+      "options": [
+        "do nothing",
+        "hide probabilities during entry",
+        "periodic blind spot-check"
+      ]
+    },
+    {
+      "id": "MFD2",
+      "question": "Is 30 the right target, and is it per league or global?",
+      "recommendation": null,
+      "why": "a 10-team half-PPR mock may not validate a 12-team full-PPR league; per-league multiplies the grind"
+    },
+    {
+      "id": "MFD3",
+      "question": "Do other users' mocks count toward calibration?",
+      "recommendation": "keep the personal view primary, treat pooled as a separate labelled number",
+      "why": "pooling reaches 30 far faster and is the obvious growth loop, but changes the claim from 'calibrated for you' to 'calibrated on average'"
+    },
+    {
+      "id": "MFD4",
+      "question": "Is a partial mock (rounds 1-6) worth logging?",
+      "recommendation": "accept, and record rounds_logged so calibration can weight or filter",
+      "why": "rounds 1-6 carry nearly all the availability decisions and cost a third as much"
+    }
+  ],
+  "backendQuestions": [
+    {
+      "id": "MBQ1",
+      "q": "Can predicted_top and predicted_p be written at entry time and made immutable?",
+      "impact": "the entire review and calibration design rests on it; if predictions can only be recomputed on read, both sections are invalid"
+    },
+    {
+      "id": "MBQ2",
+      "q": "Is there a bulk pick endpoint, and does it return per-row resolution?",
+      "impact": "the reconcile table needs per-row exact/fuzzy/none, not an aggregate count"
+    },
+    {
+      "id": "MBQ3",
+      "q": "Does the player matcher exist server-side, or does the client fuzzy-match?",
+      "impact": "the reference matches client-side against 70 players; against 378 with nicknames and suffixes this should be a server endpoint"
+    },
+    {
+      "id": "MBQ4",
+      "q": "Can a pick store player_id = unknown plus raw_text?",
+      "impact": "required so off-board players are excluded from calibration rather than dropped"
+    },
+    {
+      "id": "MBQ5",
+      "q": "Is entered_at recorded per pick?",
+      "impact": "without it the tempo readout and the 'logged in 6m 12s' figure are not real numbers and must be removed"
+    },
+    {
+      "id": "MBQ6",
+      "q": "Are validation buckets available per-mock as well as pooled?",
+      "impact": "06-calibration needs per-mock; 07-aggregate needs pooled"
+    }
+  ]
+}

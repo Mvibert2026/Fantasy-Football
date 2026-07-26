@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Roles &amp; Workflow Map — Fantasy Draft Assistant</title>
+<style>
+:root{
+--bg:#0a0d12;--panel:#0f131a;--panel2:#151a23;--line:#222937;--line2:#2e3646;
+--txt:#e7ecf3;--dim:#8b95a7;--dim2:#5b6474;
+--up:#4cc9f0;--down:#f0a35e;--acc:#7dd3a0;--live:#ff5f56;--pur:#b39ddb;
+--f-ui:'IBM Plex Sans',system-ui,-apple-system,sans-serif;
+--f-num:'IBM Plex Mono',ui-monospace,monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--txt);font-family:var(--f-ui);font-size:13px;line-height:1.45}
+.wrap{max-width:1500px;margin:0 auto;padding:16px}
+header{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:14px 18px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+h1{font-size:16px;font-weight:600}
+.sub{color:var(--dim);font-size:12px;margin-top:2px}
+.tabs{display:flex;gap:4px;flex-wrap:wrap}
+.tab{background:var(--panel2);border:1px solid var(--line);color:var(--dim);padding:6px 13px;border-radius:5px;cursor:pointer;font-size:12px}
+.tab:hover{color:var(--txt);border-color:var(--line2)}
+.tab.on{background:var(--acc);color:#07130d;border-color:var(--acc);font-weight:600}
+.pane{display:none}.pane.on{display:block}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:16px 18px;margin-bottom:14px}
+.card h3{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.7px;color:var(--dim);margin-bottom:12px}
+.row{display:grid;grid-template-columns:repeat(auto-fit,minmax(400px,1fr));gap:14px;margin-bottom:14px}
+svg{width:100%;height:auto;display:block}
+.n-lbl{font:600 12px var(--f-ui);fill:var(--txt)}
+.n-sub{font:10.5px var(--f-ui);fill:var(--dim)}
+.n-tool{font:9.5px var(--f-num);fill:var(--dim2)}
+.e-lbl{font:9.5px var(--f-ui);fill:var(--dim)}
+.sec{font:600 10px var(--f-ui);fill:var(--dim2);letter-spacing:1.2px}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th{text-align:left;padding:8px 9px;border-bottom:1px solid var(--line2);color:var(--dim);font-size:10.5px;text-transform:uppercase;letter-spacing:.6px;font-weight:600;white-space:nowrap}
+td{padding:8px 9px;border-bottom:1px solid var(--line);vertical-align:top}
+tbody tr:hover{background:var(--panel2)}
+.pill{display:inline-block;padding:2px 7px;border-radius:4px;font-size:10.5px;font-weight:600;white-space:nowrap}
+.yes{background:rgba(125,211,160,.15);color:var(--acc);border:1px solid rgba(125,211,160,.32)}
+.no{background:rgba(255,95,86,.14);color:var(--live);border:1px solid rgba(255,95,86,.32)}
+.part{background:rgba(240,163,94,.14);color:var(--down);border:1px solid rgba(240,163,94,.3)}
+code{font-family:var(--f-num);font-size:11.5px;color:var(--up)}
+.small{font-size:11.5px;color:var(--dim)}
+ul{margin:0 0 0 16px}li{margin-bottom:5px}
+.note{font-size:11.5px;color:var(--dim);border-left:2px solid var(--line2);padding-left:10px;margin-top:10px}
+.okbox{border-left-color:var(--acc)}.warnbox{border-left-color:var(--down)}.badbox{border-left-color:var(--live)}
+.step{display:flex;gap:11px;margin-bottom:11px;align-items:flex-start}
+.stepn{flex:0 0 22px;height:22px;border-radius:4px;background:var(--panel2);border:1px solid var(--line2);color:var(--acc);font-family:var(--f-num);font-size:11px;display:flex;align-items:center;justify-content:center;font-weight:600}
+.stepb{flex:1}
+.stept{font-weight:600;font-size:12.5px;margin-bottom:2px}
+footer{color:var(--dim2);font-size:11px;padding:10px 2px;border-top:1px solid var(--line)}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:11px;color:var(--dim);margin-top:10px}
+.lg{display:flex;align-items:center;gap:6px}
+.sw{width:14px;height:3px;border-radius:2px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div><h1>Roles &amp; Workflow Map</h1>
+  <div class="sub">Fantasy Draft Assistant · who does what, what they read, what they write · 26 Jul 2026</div></div>
+  <div class="tabs">
+    <div class="tab on" data-p="map">System map</div>
+    <div class="tab" data-p="memory">Memory layers</div>
+    <div class="tab" data-p="design">Design ⇄ Code</div>
+    <div class="tab" data-p="loop">Sprint loop</div>
+    <div class="tab" data-p="brief">Bot instructions</div>
+  </div>
+</header>
+
+<!-- MAP -->
+<div class="pane on" id="map">
+<div class="card"><h3>System map — agents, tools, and the artifacts they exchange</h3>
+<svg viewBox="0 0 1180 660" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<marker id="a" markerWidth="9" markerHeight="9" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#5b6474"/></marker>
+<marker id="ag" markerWidth="9" markerHeight="9" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#7dd3a0"/></marker>
+<marker id="ao" markerWidth="9" markerHeight="9" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#f0a35e"/></marker>
+<marker id="ar" markerWidth="9" markerHeight="9" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#ff5f56"/></marker>
+</defs>
+
+<text x="20" y="26" class="sec">FOUNDER</text>
+<rect x="20" y="34" width="180" height="52" rx="5" fill="#151a23" stroke="#7dd3a0" stroke-width="1.5"/>
+<text x="34" y="55" class="n-lbl">Hank — Founder</text>
+<text x="34" y="71" class="n-sub">Priorities · budget · final calls</text>
+
+<text x="20" y="126" class="sec">COORDINATION</text>
+<rect x="20" y="134" width="180" height="66" rx="5" fill="#151a23" stroke="#2e3646"/>
+<text x="34" y="155" class="n-lbl">PM / Chief of Staff</text>
+<text x="34" y="171" class="n-sub">Dispatch · verify · synthesize</text>
+<text x="34" y="188" class="n-tool">Cowork chat · Sonnet</text>
+
+<rect x="20" y="214" width="180" height="66" rx="5" fill="#151a23" stroke="#2e3646" stroke-dasharray="3,3"/>
+<text x="34" y="235" class="n-lbl">Fable</text>
+<text x="34" y="251" class="n-sub">Weekly outside review</text>
+<text x="34" y="268" class="n-tool">heaviest tier · P3 scope</text>
+
+<text x="285" y="126" class="sec">BUILD — CLAUDE CODE, IN THE REPO</text>
+<rect x="285" y="134" width="205" height="78" rx="5" fill="#151a23" stroke="#4dd0b1"/>
+<text x="299" y="155" class="n-lbl">Backend</text>
+<text x="299" y="171" class="n-sub">Python · stats · exports</text>
+<text x="299" y="188" class="n-tool">Sonnet e2 → e4</text>
+<text x="299" y="203" class="n-tool">399 tests · 3ea391b</text>
+
+<rect x="285" y="226" width="205" height="78" rx="5" fill="#151a23" stroke="#f2a65a"/>
+<text x="299" y="247" class="n-lbl">Frontend</text>
+<text x="299" y="263" class="n-sub">React · spec port · state</text>
+<text x="299" y="280" class="n-tool">Sonnet e3 → e5</text>
+<text x="299" y="295" class="n-tool">frontend-prep · 7276a2d</text>
+
+<rect x="285" y="318" width="205" height="78" rx="5" fill="#151a23" stroke="#4cc9f0" stroke-dasharray="4,3"/>
+<text x="299" y="339" class="n-lbl">Data Ops</text>
+<text x="299" y="355" class="n-sub">Ingestion · snapshots · mocks</text>
+<text x="299" y="372" class="n-tool">Sonnet e1–2</text>
+<text x="299" y="387" class="n-tool">PROPOSED — new role</text>
+
+<text x="285" y="436" class="sec">ADVISORY — CHAT, NO REPO WRITE</text>
+<rect x="285" y="444" width="205" height="70" rx="5" fill="#151a23" stroke="#b39ddb"/>
+<text x="299" y="465" class="n-lbl">Strategist</text>
+<text x="299" y="481" class="n-sub">Stats red-team · no DB access</text>
+<text x="299" y="498" class="n-tool">Opus e4 · under-used</text>
+
+<rect x="285" y="528" width="205" height="70" rx="5" fill="#151a23" stroke="#2e3646"/>
+<text x="299" y="549" class="n-lbl">Researcher</text>
+<text x="299" y="565" class="n-sub">Competitive · platform · VOC</text>
+<text x="299" y="582" class="n-tool">Opus e4–5 · parked</text>
+
+<text x="580" y="126" class="sec">SHARED STATE — THE REPO</text>
+<rect x="580" y="134" width="230" height="200" rx="5" fill="#0f131a" stroke="#7dd3a0" stroke-width="1.5"/>
+<text x="594" y="156" class="n-lbl">Fantasy Football/ (local git)</text>
+<text x="594" y="177" class="n-tool" fill="#7dd3a0">docs/CURRENT-STATE.md ← new</text>
+<text x="594" y="194" class="n-tool">docs/assistant-context.md</text>
+<text x="594" y="211" class="n-tool">docs/operating-model.md ← new</text>
+<text x="594" y="228" class="n-tool">docs/status.md (log only)</text>
+<text x="594" y="245" class="n-tool">docs/decisions.md · deferred.md</text>
+<text x="594" y="262" class="n-tool">src/ · tests/ · data/export/</text>
+<text x="594" y="286" class="n-sub">Single source of truth for state.</text>
+<text x="594" y="302" class="n-sub">No remote. master @ 3ea391b.</text>
+<text x="594" y="322" class="n-tool" fill="#f0a35e">CLAUDE.md = auto-read by every session</text>
+
+<rect x="580" y="356" width="230" height="80" rx="5" fill="#0f131a" stroke="#2e3646"/>
+<text x="594" y="378" class="n-lbl">Cowork Project</text>
+<text x="594" y="396" class="n-tool">operating-model.md</text>
+<text x="594" y="412" class="n-tool">competitive · platform · VOC research</text>
+<text x="594" y="429" class="n-sub">Synthesis only — never repo state.</text>
+
+<text x="890" y="126" class="sec">DESIGN</text>
+<rect x="890" y="134" width="215" height="86" rx="5" fill="#151a23" stroke="#6fa8ff"/>
+<text x="904" y="155" class="n-lbl">Design</text>
+<text x="904" y="171" class="n-sub">Tokens · components · spec</text>
+<text x="904" y="188" class="n-tool">Claude Design (separate app)</text>
+<text x="904" y="205" class="n-tool" fill="#ff5f56">no filesystem access to repo</text>
+
+<rect x="890" y="244" width="215" height="92" rx="5" fill="#0f131a" stroke="#f0a35e" stroke-dasharray="4,3"/>
+<text x="904" y="266" class="n-lbl">/design-sync bridge</text>
+<text x="904" y="284" class="n-sub">Two-way, run FROM Claude Code</text>
+<text x="904" y="301" class="n-tool">components ⇄ design project</text>
+<text x="904" y="318" class="n-tool" fill="#f0a35e">design system only, not screens</text>
+
+<rect x="890" y="366" width="215" height="70" rx="5" fill="#151a23" stroke="#ff5f56"/>
+<text x="904" y="388" class="n-lbl">Screenshot gate</text>
+<text x="904" y="405" class="n-sub">Every UI "done" claim</text>
+<text x="904" y="422" class="n-tool">founder eyes · non-negotiable</text>
+
+<path d="M110,86 L110,134" stroke="#7dd3a0" stroke-width="1.5" fill="none" marker-end="url(#ag)"/>
+<text x="118" y="112" class="e-lbl">priorities</text>
+
+<path d="M200,167 L285,167" stroke="#5b6474" fill="none" marker-end="url(#a)"/>
+<path d="M200,180 L240,180 L240,258 L285,258" stroke="#5b6474" fill="none" marker-end="url(#a)"/>
+<path d="M200,190 L228,190 L228,352 L285,352" stroke="#5b6474" fill="none" marker-end="url(#a)"/>
+<path d="M200,196 L216,196 L216,474 L285,474" stroke="#5b6474" fill="none" marker-end="url(#a)"/>
+<text x="206" y="160" class="e-lbl">scoped dispatch</text>
+
+<path d="M490,173 L580,173" stroke="#7dd3a0" fill="none" marker-end="url(#ag)"/>
+<path d="M490,265 L536,265 L536,200 L580,200" stroke="#7dd3a0" fill="none" marker-end="url(#ag)"/>
+<path d="M490,357 L556,357 L556,230 L580,230" stroke="#7dd3a0" fill="none" marker-end="url(#ag)"/>
+<text x="496" y="166" class="e-lbl">read + write</text>
+
+<path d="M580,262 L520,262 L520,214 L490,214" stroke="#5b6474" stroke-dasharray="3,3" fill="none" marker-end="url(#a)"/>
+
+<path d="M580,396 L512,396 L512,470 L490,470" stroke="#b39ddb" stroke-dasharray="3,3" fill="none" marker-end="url(#a)"/>
+<path d="M490,500 L540,500 L540,420 L580,420" stroke="#b39ddb" fill="none" marker-end="url(#a)"/>
+<text x="500" y="516" class="e-lbl">findings → repo ADR</text>
+
+<path d="M810,200 L850,200 L850,178 L890,178" stroke="#f0a35e" fill="none" marker-end="url(#ao)"/>
+<path d="M890,196 L866,196 L866,240 L810,240" stroke="#f0a35e" fill="none" marker-end="url(#ao)"/>
+<text x="816" y="192" class="e-lbl">/design-sync</text>
+
+<path d="M960,220 L960,244" stroke="#f0a35e" fill="none" marker-end="url(#ao)"/>
+<path d="M960,336 L960,366" stroke="#ff5f56" fill="none" marker-end="url(#ar)"/>
+
+<path d="M890,400 L840,400 L840,560 L200,560 L200,250" stroke="#ff5f56" fill="none" marker-end="url(#ar)"/>
+<text x="560" y="574" class="e-lbl">screenshot verdict → PM may mark done</text>
+
+<path d="M110,200 L110,214" stroke="#5b6474" fill="none" marker-end="url(#a)"/>
+<text x="24" y="300" class="e-lbl">weekly briefing ↑</text>
+<path d="M20,280 L20,318 L580,318 L580,330" stroke="#5b6474" stroke-dasharray="2,3" fill="none" marker-end="url(#a)"/>
+</svg>
+<div class="legend">
+<div class="lg"><div class="sw" style="background:#7dd3a0"></div>repo read/write</div>
+<div class="lg"><div class="sw" style="background:#f0a35e"></div>design sync</div>
+<div class="lg"><div class="sw" style="background:#ff5f56"></div>verification gate</div>
+<div class="lg"><div class="sw" style="background:#b39ddb"></div>advisory (no code)</div>
+<div class="lg"><div class="sw" style="background:#5b6474"></div>coordination</div>
+</div>
+<div class="note okbox">The important structural fact: <b>the repo is the bus.</b> Everything that has filesystem access converges on it, and nothing that matters is allowed to live only in a chat transcript. Design sits outside that bus — which is exactly why it needs its own bridge, and why the screenshot gate exists.</div>
+</div>
+</div>
+
+<!-- MEMORY -->
+<div class="pane" id="memory">
+<div class="card"><h3>Three memory layers — what goes where, and who can see it</h3>
+<table><thead><tr><th>Layer</th><th>Holds</th><th>Backend</th><th>Frontend</th><th>Design</th><th>PM chat</th><th>Fable</th></tr></thead>
+<tbody>
+<tr><td><b>Repo <code>docs/</code></b><br><span class="small">canonical state</span></td><td class="small">Current state, ADRs, deferred log, contract, session history</td>
+<td><span class="pill yes">native</span></td><td><span class="pill yes">native</span></td><td><span class="pill no">none</span></td><td><span class="pill part">via bridge</span></td><td><span class="pill part">if given repo</span></td></tr>
+<tr><td><b>Cowork project</b><br><span class="small">synthesis</span></td><td class="small">Operating model, research docs, budget calibration</td>
+<td><span class="pill no">none</span></td><td><span class="pill no">none</span></td><td><span class="pill no">none</span></td><td><span class="pill yes">native</span></td><td><span class="pill yes">native</span></td></tr>
+<tr><td><b>Chat transcript</b><br><span class="small">ephemeral</span></td><td class="small">Nothing that matters. If it's here only, it's lost.</td>
+<td><span class="pill no">—</span></td><td><span class="pill no">—</span></td><td><span class="pill no">—</span></td><td><span class="pill part">this session</span></td><td><span class="pill no">—</span></td></tr>
+</tbody></table>
+<div class="note badbox">The gap this table makes obvious: <b>Design can see none of it.</b> No repo, no project docs. Anything Design must know has to be pasted into Claude Design directly or pushed there by <code>/design-sync</code>. That is a property of the tool, not something a better process fixes.</div>
+</div>
+
+<div class="row">
+<div class="card"><h3>The <code>status.md</code> split — do this first</h3>
+<div class="step"><div class="stepn">1</div><div class="stepb"><div class="stept">Create <code>docs/CURRENT-STATE.md</code></div><div class="small">One screen. Commit, branch, test count, contract version, what's built, what's null-stated, top 5 open items. Edited <b>in place</b>, never appended to.</div></div></div>
+<div class="step"><div class="stepn">2</div><div class="stepb"><div class="stept">Demote <code>status.md</code> to an append-only session log</div><div class="small">Add a header: "historical log — do not read for current state, see CURRENT-STATE.md."</div></div></div>
+<div class="step"><div class="stepn">3</div><div class="stepb"><div class="stept">Point <code>CLAUDE.md</code> at the new file</div><div class="small">This is the mechanism that makes it stick — CLAUDE.md is auto-read by every Claude Code session in the folder.</div></div></div>
+<div class="note">Precedent already exists in your own repo: <code>assistant-context.md</code>'s header explains this exact failure mode for the in-app assistant. You are applying a rule you already wrote — to the agents instead of the product.</div>
+</div>
+<div class="card"><h3>Why this is the biggest token win available</h3>
+<ul>
+<li><code>status.md</code> is <b>52 KB ≈ 13K tokens</b>. Every agent, every session.</li>
+<li>It contains <b>three</b> conflicting "current state" headers and ~15 internal contradictions.</li>
+<li>So agents pay the full cost <i>and</i> can still come away wrong — the worst combination.</li>
+<li>A one-screen current-state file costs roughly <b>600 tokens</b> and is unambiguous.</li>
+</ul>
+<div class="note okbox">No model downgrade available to you saves as much as this, and unlike a downgrade it makes output <i>better</i> rather than cheaper-but-worse.</div>
+</div>
+</div>
+</div>
+
+<!-- DESIGN -->
+<div class="pane" id="design">
+<div class="card"><h3>Your question: can Design produce code-ready output, instead of specs the Frontend re-implements?</h3>
+<p style="margin-bottom:12px"><b>Partly — and the honest split matters more than the yes/no.</b> There are two different things flowing from Design to code, and only one of them can be automated away.</p>
+<table><thead><tr><th>What Design produces</th><th>Can it go straight to code?</th><th>Mechanism</th></tr></thead>
+<tbody>
+<tr><td><b>Design system</b><br><span class="small">tokens, colours, type scale, radius rules, individual components — button, chip, pill, table cell, availability badge</span></td>
+<td><span class="pill yes">Yes — real two-way sync</span></td>
+<td class="small"><code>/design-sync</code> pushes your actual local component library into a Claude Design project and pulls edits back. Design works against your real components, not a mockup of them. This genuinely removes the double-build.</td></tr>
+<tr><td><b>Screens &amp; layout</b><br><span class="small">Board view, Opponents tab, player detail sheet, state model, data wiring</span></td>
+<td><span class="pill no">No — still a port</span></td>
+<td class="small">The sync operates on a component library, not a React application. Screens carry client state, API wiring, and the null-state and recompute rules from your four principles. Those have no design-tool representation to sync.</td></tr>
+</tbody></table>
+<div class="note warnbox"><b>Confirmed empirically this session:</b> I attempted <code>DesignSync.list_projects</code> from this chat and it failed — the design-system authorization requires an interactive terminal. So the bridge <b>cannot be driven from this Cowork chat</b>. It must be run from a Claude Code session on your machine, which is also the only place your component files live. Practically: <b>Frontend owns the sync, not Design and not me.</b></div>
+</div>
+<div class="row">
+<div class="card"><h3>What this changes in practice</h3>
+<div class="step"><div class="stepn">↓</div><div class="stepb"><div class="stept">Before</div><div class="small">Design writes a 38K-char spec → Frontend reads it and re-implements everything from scratch → drift is discovered later by screenshot. Both sides build the button.</div></div></div>
+<div class="step"><div class="stepn">↑</div><div class="stepb"><div class="stept">After</div><div class="small">Frontend pushes the real component library up once. Design edits real components. Frontend pulls. The spec shrinks to what a spec is actually good at — screen composition, states, formulas, acceptance criteria — instead of re-describing a button in prose.</div></div></div>
+<div class="note okbox">Realistic saving: the spec stops being 38K characters. That directly attacks the failure you already hit — the port that ran to a 97% usage stop and still self-reported wrongly. A shorter spec is a spec that gets followed.</div>
+</div>
+<div class="card"><h3>What still needs a human in the loop</h3>
+<ul>
+<li><b>Screenshot verification survives all of this.</b> Component sync proves a button matches. It cannot prove a screen exists. The Opponents tab was missing entirely while every test passed — sync would not have caught that either.</li>
+<li><b>Design has no read access to <code>docs/</code>.</b> If a backend field is renamed, Design will not know. Under Principle #1 a field rename is a product change, so it must be told explicitly.</li>
+<li><b>The 24-config matrix and null-states are invisible to Design.</b> It cannot see which values are honestly null in <code>nulls.json</code>, so it will keep designing populated states unless told which cells are empty and why.</li>
+</ul>
+<div class="note badbox">First sync should be a <b>one-component pilot</b> — push a single button or chip, confirm the round trip, then scale. Do not push the whole library on the first attempt.</div>
+</div>
+</div>
+</div>
+
+<!-- LOOP -->
+<div class="pane" id="loop">
+<div class="card"><h3>The sprint loop — one cycle, 1–2 coding sessions</h3>
+<svg viewBox="0 0 1140 260" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="b" markerWidth="9" markerHeight="9" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#5b6474"/></marker>
+<marker id="br" markerWidth="9" markerHeight="9" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#ff5f56"/></marker></defs>
+<rect x="14" y="70" width="150" height="70" rx="5" fill="#151a23" stroke="#7dd3a0"/>
+<text x="28" y="94" class="n-lbl">1 · Scope</text><text x="28" y="111" class="n-sub">PM reads CURRENT-</text><text x="28" y="126" class="n-sub">STATE, founder confirms</text>
+<path d="M164,105 L196,105" stroke="#5b6474" marker-end="url(#b)"/>
+<rect x="200" y="70" width="150" height="70" rx="5" fill="#151a23" stroke="#2e3646"/>
+<text x="214" y="94" class="n-lbl">2 · Dispatch</text><text x="214" y="111" class="n-sub">Pointers, not pasted</text><text x="214" y="126" class="n-sub">context. Max 3 parallel.</text>
+<path d="M350,105 L382,105" stroke="#5b6474" marker-end="url(#b)"/>
+<rect x="386" y="70" width="150" height="70" rx="5" fill="#151a23" stroke="#4dd0b1"/>
+<text x="400" y="94" class="n-lbl">3 · Build</text><text x="400" y="111" class="n-sub">Agent commits + updates</text><text x="400" y="126" class="n-sub">CURRENT-STATE itself</text>
+<path d="M536,105 L568,105" stroke="#5b6474" marker-end="url(#b)"/>
+<rect x="572" y="70" width="150" height="70" rx="5" fill="#151a23" stroke="#ff5f56"/>
+<text x="586" y="94" class="n-lbl">4 · Verify</text><text x="586" y="111" class="n-sub">Tests+commit = enough</text><text x="586" y="126" class="n-sub">UI ⇒ screenshot required</text>
+<path d="M722,105 L754,105" stroke="#5b6474" marker-end="url(#b)"/>
+<rect x="758" y="70" width="150" height="70" rx="5" fill="#151a23" stroke="#2e3646"/>
+<text x="772" y="94" class="n-lbl">5 · Log</text><text x="772" y="111" class="n-sub">PM reads repo direct;</text><text x="772" y="126" class="n-sub">logs budget row</text>
+<path d="M908,105 L940,105" stroke="#5b6474" marker-end="url(#b)"/>
+<rect x="944" y="70" width="182" height="70" rx="5" fill="#151a23" stroke="#2e3646" stroke-dasharray="3,3"/>
+<text x="958" y="94" class="n-lbl">6 · Fable (weekly)</text><text x="958" y="111" class="n-sub">Shipped / blocked /</text><text x="958" y="126" class="n-sub">needs heavy reasoning</text>
+<path d="M648,140 L648,192 L88,192 L88,140" stroke="#ff5f56" fill="none" marker-end="url(#br)"/>
+<text x="300" y="209" class="e-lbl">screenshot fails ⇒ back to scope, item stays "reported, unverified" — never "done"</text>
+<path d="M1035,140 L1035,232 L88,232 L88,145" stroke="#5b6474" stroke-dasharray="2,3" fill="none" marker-end="url(#b)"/>
+<text x="480" y="249" class="e-lbl">next sprint</text>
+</svg>
+<div class="note">Sprint exit condition, unchanged and non-negotiable: <b>the app still runs.</b> A half-built feature degrades to an explicit "not computed" state — never a crash, never a half-rendered screen.</div>
+</div>
+<div class="card"><h3>Standing rules by artifact type</h3>
+<table><thead><tr><th>Work type</th><th>Sufficient evidence of "done"</th><th>Never accept</th></tr></thead><tbody>
+<tr><td>Statistical constant</td><td class="small">Measurement + SE + n + a non-trivial test</td><td class="small">A number with no stated uncertainty</td></tr>
+<tr><td>Pipeline / ingestion</td><td class="small">Passing tests + row counts + quarantine report</td><td class="small">"Ingested successfully"</td></tr>
+<tr><td>Export / contract change</td><td class="small">Version bump + Frontend notified</td><td class="small">Schema change with no bump</td></tr>
+<tr><td>UI screen or component</td><td class="small">Screenshot the founder has looked at</td><td class="small">A passing suite — it coexisted with a missing tab</td></tr>
+<tr><td>Research claim</td><td class="small">[VERIFIED] / [SNIPPET] / [SECONDARY] tag</td><td class="small">A plausible number filling a [GAP]</td></tr>
+</tbody></table></div>
+</div>
+
+<!-- BRIEF -->
+<div class="pane" id="brief">
+<div class="card"><h3>Do the bots need to be told any of this? Yes — but only in two places</h3>
+<div class="step"><div class="stepn">A</div><div class="stepb"><div class="stept">Claude Code sessions — one block appended to <code>CLAUDE.md</code></div>
+<div class="small"><code>CLAUDE.md</code> at the repo root is read automatically at the start of every Claude Code session in that folder. Put the reading order and the write-back rule there once and you never re-explain it. This is the whole mechanism — no per-dispatch reminder needed.</div></div></div>
+<div class="step"><div class="stepn">B</div><div class="stepb"><div class="stept">Claude Design — a short standing brief, pasted</div>
+<div class="small">Design has no repo access and no project access, so it has no automatic channel at all. It needs a short brief pasted at the start of a design session, and re-pasted whenever the four principles or the token set change. Keep it short; it is a recurring manual cost.</div></div></div>
+<div class="note warnbox">Strategist and Researcher run in chat inside this project, so they already see the project docs. They need no separate instruction file — only a well-formed question and the standing confidence-tagging rule.</div>
+</div>
+<div class="row">
+<div class="card"><h3>Block to append to <code>CLAUDE.md</code></h3>
+<pre style="background:#0a0d12;border:1px solid var(--line);border-radius:4px;padding:12px;font-family:var(--f-num);font-size:11px;color:var(--txt);overflow-x:auto;white-space:pre-wrap">## Agent operating rules
+
+Reading order at session start:
+1. docs/CURRENT-STATE.md  — canonical state. Trust this.
+2. docs/operating-model.md — your role, effort, gates.
+3. Only the specific ADR or doc your task names.
+
+Do NOT read docs/status.md for current state. It is an
+append-only historical log containing superseded figures.
+Same hazard as decisions.md, described in
+docs/assistant-context.md's header.
+
+Write-back, end of every session:
+- Update docs/CURRENT-STATE.md IN PLACE. Replace stale
+  lines; do not append a new section.
+- Append the session narrative to docs/status.md.
+- New decision -> ADR in docs/decisions.md.
+- Contract schema change -> bump version AND note that
+  the frontend must be told.
+
+Completion reporting:
+- Report commit hash + test count. Not prose summaries.
+- UI/visual work is NEVER "done" on your own report.
+  State it as "built, pending screenshot verification."</pre></div>
+<div class="card"><h3>Standing brief to paste into Claude Design</h3>
+<pre style="background:#0a0d12;border:1px solid var(--line);border-radius:4px;padding:12px;font-family:var(--f-num);font-size:11px;color:var(--txt);overflow-x:auto;white-space:pre-wrap">You produce the design system and screen specs for a
+fantasy football draft assistant. You cannot see the
+code repo — assume nothing about current build state.
+
+Four hard constraints, not style preferences:
+1. Every number on screen traces to a named backend
+   field. No decorative numbers.
+2. An explicit null is a real state. "0%", "0", "—" and
+   "not computed" are four different claims. Never
+   substitute one for another.
+3. Never show a part-applied recompute. Mid-recompute,
+   everything holds its pre-edit value.
+4. Density IS the product. Do not add whitespace or
+   raise font sizes to modernise. ESPN's 2025 redesign
+   is the cautionary tale.
+
+Typography: two roles only. IBM Plex Sans for names,
+prose, labels, nav. IBM Plex Mono for numeric cells
+only, tabular-nums scoped to the cell. Position and
+team codes (WR1, LV) are LABELS — sans, not mono.
+
+Radius: 4-6px chrome, 0 on data cells and table rows,
+10-12px modals only. No gradients or shadows except a
+side-panel drop shadow. Colour never carries meaning
+alone — every colour signal needs a redundant non-
+colour cue.
+
+Deliverables: components go through /design-sync (the
+frontend engineer runs it). Screens still need a written
+spec — keep it tight and structured, not 38K characters
+of prose.</pre></div>
+</div>
+<div class="card"><h3>On marketing skills — deliberately not used yet</h3>
+<p class="small">You asked me to use everything loaded. I used process documentation, dashboard building, design handoff, and roadmap prioritisation, because each maps to a decision on the table today. I did <b>not</b> run the marketing skills, and I'd rather say why than produce filler: this is a private-use product with no launch date, no pricing, no audience, and unresolved licensing (the nflverse headshots are personal-use-only until revisited). Positioning work now would be written against a product whose signature claim — calibrated availability — is <b>not yet calibrated</b>, because you have 1 of the ~30 mocks needed to validate it. The right trigger for the marketing skills is after the real-world validation loop produces evidence the rank beats consensus. At that point <code>marketing:competitive-brief</code> and <code>marketing:campaign-plan</code> have something true to work with. Right now they'd generate claims you'd have to walk back.</p>
+</div>
+</div>
+
+<footer>Snapshot 26 Jul 2026 · repo <span style="font-family:var(--f-num)">3ea391b</span> · Design/code sync verified unavailable from Cowork chat; must run from Claude Code on the local machine.</footer>
+</div>
+<script>
+document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
+document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));
+document.querySelectorAll('.pane').forEach(x=>x.classList.remove('on'));
+t.classList.add('on');document.getElementById(t.dataset.p).classList.add('on');}));
+</script>
+</body>
+</html>

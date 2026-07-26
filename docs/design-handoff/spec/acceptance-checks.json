@@ -1,0 +1,363 @@
+{
+  "$schema": "draft-assistant/acceptance-checks/1",
+  "version": "1.0.0",
+  "generated": "2026-07-26",
+  "usage": "Each check is independently assertable against a running build. severity 'block' must pass before ship. 'probe' is a hint, not a required implementation.",
+  "checks": [
+    {
+      "id": "TOK-01",
+      "group": "tokens",
+      "severity": "block",
+      "assert": "No monospace font on any player name, prose paragraph, nav item, button label, or position/team code",
+      "probe": "for each candidate node, getComputedStyle(n).fontFamily must not match /mono/i",
+      "expect": "0 violations"
+    },
+    {
+      "id": "TOK-02",
+      "group": "tokens",
+      "severity": "block",
+      "assert": "tabular-nums present on numeric cells and absent from prose",
+      "probe": "getComputedStyle(cell).fontVariantNumeric includes 'tabular-nums'",
+      "expect": "true for numeric cells, false for prose"
+    },
+    {
+      "id": "TOK-03",
+      "group": "tokens",
+      "severity": "block",
+      "assert": "Zero border-radius on data cells and table rows",
+      "probe": "getComputedStyle(row).borderRadius",
+      "expect": "0px"
+    },
+    {
+      "id": "TOK-04",
+      "group": "tokens",
+      "severity": "block",
+      "assert": "6px radius on cards, buttons, chips; 12px on overlays",
+      "probe": "getComputedStyle(el).borderRadius",
+      "expect": "6px | 5px (controls) | 12px (overlays)"
+    },
+    {
+      "id": "TOK-05",
+      "group": "tokens",
+      "severity": "block",
+      "assert": "Light mode is not an inversion: canvas off-white, surfaces white, accents higher chroma",
+      "probe": "documentElement[data-theme=light] then read --bg,--panel,--acc",
+      "expect": "#f4f6f8, #ffffff, #0d8a57"
+    },
+    {
+      "id": "TOK-06",
+      "group": "tokens",
+      "severity": "block",
+      "assert": "Saturated amber (--down) appears only on attention/scarcity/stale states",
+      "probe": "enumerate elements whose colour resolves to --down and classify",
+      "expect": "no decorative or position-label usage"
+    },
+    {
+      "id": "TOK-07",
+      "group": "tokens",
+      "severity": "block",
+      "assert": "Every colour-carried meaning has a non-colour cue",
+      "probe": "for each colour-coded cell, assert a sibling glyph, weight change, rule, or the number itself",
+      "expect": "0 colour-only signals"
+    },
+    {
+      "id": "LIVE-01",
+      "group": "liveAvailability",
+      "severity": "block",
+      "assert": "Baseline and live are both visible on the board row, in the queue, and in the player panel",
+      "probe": "count nodes rendering baseline and live per surface",
+      "expect": "both present on all three surfaces"
+    },
+    {
+      "id": "LIVE-02",
+      "group": "liveAvailability",
+      "severity": "block",
+      "assert": "adjustment.need and adjustment.run are shown separately, never pre-combined",
+      "probe": "player panel availability block text",
+      "expect": "two distinct labelled values"
+    },
+    {
+      "id": "LIVE-03",
+      "group": "liveAvailability",
+      "severity": "block",
+      "assert": "With fewer than max(4, teams/2) picks logged, live reads 'not yet' and never the baseline",
+      "probe": "seed picks below threshold, read the live cell",
+      "expect": "'not yet' + picks-logged count; live_p null"
+    },
+    {
+      "id": "LIVE-04",
+      "group": "liveAvailability",
+      "severity": "block",
+      "assert": "Between half a round and a full round, rows are marked thin and the band is 1.6x wider",
+      "probe": "seed picks in that window, read the thin marker and band width",
+      "expect": "thin marker present; band = noise_band*1.6"
+    },
+    {
+      "id": "LIVE-05",
+      "group": "liveAvailability",
+      "severity": "block",
+      "assert": "No availability figure appears without its 10-dot array",
+      "probe": "for each availability percentage node, find a sibling dot group of length 10",
+      "expect": "1:1"
+    },
+    {
+      "id": "REC-01",
+      "group": "recompute",
+      "severity": "block",
+      "assert": "Changing a roster slot updates instantly with no job",
+      "probe": "change flex count, observe board without awaiting a job",
+      "expect": "values change immediately; no spinner"
+    },
+    {
+      "id": "REC-02",
+      "group": "recompute",
+      "severity": "block",
+      "assert": "Changing a scoring value changes NOTHING on screen until Recalculate completes",
+      "probe": "snapshot all numbers, edit ppr, re-snapshot",
+      "expect": "identical snapshots until job completion"
+    },
+    {
+      "id": "REC-03",
+      "group": "recompute",
+      "severity": "block",
+      "assert": "A pending scoring change shows the app-wide banner and a per-field old → new diff",
+      "probe": "edit ppr, assert banner node and diff rows",
+      "expect": "both present"
+    },
+    {
+      "id": "REC-04",
+      "group": "recompute",
+      "severity": "block",
+      "assert": "Editing settings marks availability STALE app-wide and the assistant refuses to quote it",
+      "probe": "edit teams, read availability cells and ask the assistant",
+      "expect": "greyed with reason; assistant declines"
+    },
+    {
+      "id": "REC-05",
+      "group": "recompute",
+      "severity": "block",
+      "assert": "A league that has never been simulated shows explicit nulls, not zeros",
+      "probe": "select the never-generated league, read availability",
+      "expect": "null state copy; no 0%"
+    },
+    {
+      "id": "STR-01",
+      "group": "structure",
+      "severity": "block",
+      "assert": "Player detail is a right side sheet at 440px with no dark scrim; board and clock stay visible",
+      "probe": "open detail; measure sheet width and scrim background",
+      "expect": "width 440; scrim transparent"
+    },
+    {
+      "id": "STR-02",
+      "group": "structure",
+      "severity": "block",
+      "assert": "Panel order is identity → verdict → numbers → availability → derivation",
+      "probe": "read section order in the sheet",
+      "expect": "exact order"
+    },
+    {
+      "id": "STR-03",
+      "group": "structure",
+      "severity": "block",
+      "assert": "The action bar is sticky at the bottom of the sheet with an accent-filled primary",
+      "probe": "getComputedStyle(bar).position and primary button background",
+      "expect": "sticky, bottom 0; background = --acc"
+    },
+    {
+      "id": "STR-04",
+      "group": "structure",
+      "severity": "block",
+      "assert": "Rank derivation expands inline on the board row, not only in the panel",
+      "probe": "click the 'why' toggle on a row",
+      "expect": "derivation panel appears within the row's container"
+    },
+    {
+      "id": "STR-05",
+      "group": "structure",
+      "severity": "block",
+      "assert": "Mock grid and opponent cards render `teams` columns for any team count",
+      "probe": "set teams=12, count columns",
+      "expect": "12 columns; 192 pick slots"
+    },
+    {
+      "id": "STR-06",
+      "group": "structure",
+      "severity": "block",
+      "assert": "Switching leagues preserves each league's own draft state",
+      "probe": "log picks in A, switch to B, switch back",
+      "expect": "A's picks intact; B independent"
+    },
+    {
+      "id": "HON-01",
+      "group": "honesty",
+      "severity": "block",
+      "assert": "No value on screen lacks a named backend field",
+      "probe": "every numeric cell has a trace affordance or a provenance line in scope",
+      "expect": "0 untraceable values"
+    },
+    {
+      "id": "HON-02",
+      "group": "honesty",
+      "severity": "block",
+      "assert": "0% never appears where the claim is 'not computed'",
+      "probe": "grep rendered text for '0%' and classify each",
+      "expect": "only genuine zero probabilities"
+    },
+    {
+      "id": "HON-03",
+      "group": "honesty",
+      "severity": "block",
+      "assert": "Consecutive empty sections collapse to one line",
+      "probe": "open a sparse player",
+      "expect": "one collapsed line, not stacked empty headers"
+    },
+    {
+      "id": "HON-04",
+      "group": "honesty",
+      "severity": "block",
+      "assert": "Sample or generated data is labelled as such on screen",
+      "probe": "screens using sample data carry the label",
+      "expect": "label present"
+    },
+    {
+      "id": "HON-05",
+      "group": "honesty",
+      "severity": "block",
+      "assert": "Availability below 0.5% renders '<1%', not '0%'",
+      "probe": "read the smallest availability cell",
+      "expect": "'<1%'"
+    },
+    {
+      "id": "HON-06",
+      "group": "honesty",
+      "severity": "block",
+      "assert": "Aggregates over incomplete sets carry a coverage disclosure",
+      "probe": "weekly total with missing projections",
+      "expect": "sentence naming what the total covers"
+    }
+  ],
+  "nullStates": [
+    {
+      "situation": "No projection (~60% of board)",
+      "render": "— plus 'no projection'; rank still shown",
+      "never": [
+        "0",
+        "blank",
+        "an inferred number"
+      ]
+    },
+    {
+      "situation": "Availability < 0.5%",
+      "render": "<1%",
+      "never": [
+        "0%"
+      ]
+    },
+    {
+      "situation": "Availability not computed",
+      "render": "— with the reason on hover",
+      "never": [
+        "0%",
+        "the baseline"
+      ]
+    },
+    {
+      "situation": "live_p with signal 'none'",
+      "render": "'not yet' + picks-logged count",
+      "never": [
+        "the baseline repeated silently"
+      ]
+    },
+    {
+      "situation": "Sim never generated",
+      "render": "'Never simulated · availability.players = null'",
+      "never": [
+        "0%"
+      ]
+    },
+    {
+      "situation": "Sim stale",
+      "render": "old numbers, greyed, labelled with generation timestamp",
+      "never": [
+        "fresh-looking numbers"
+      ]
+    },
+    {
+      "situation": "Scoring recompute pending",
+      "render": "pre-edit numbers everywhere + banner",
+      "never": [
+        "partially updated numbers"
+      ]
+    },
+    {
+      "situation": "Empty queue",
+      "render": "draft.queue = [] + what queuing does",
+      "never": [
+        "a generic 'nothing here'"
+      ]
+    },
+    {
+      "situation": "Empty watchlist",
+      "render": "account.watchlist = [] + that it is account-wide",
+      "never": []
+    },
+    {
+      "situation": "No mocks for this league",
+      "render": "mocks[league=…] = [] + how to log one",
+      "never": [
+        "another league's mocks"
+      ]
+    },
+    {
+      "situation": "Multiple empty sections on one player",
+      "render": "one collapsed line naming everything missing",
+      "never": [
+        "three stacked empty headers"
+      ]
+    },
+    {
+      "situation": "Unknown roster player (outside our board)",
+      "render": "roster.player_id = unknown",
+      "never": [
+        "omitting the row"
+      ]
+    },
+    {
+      "situation": "Aggregate over incomplete set",
+      "render": "coverage disclosure sentence",
+      "never": [
+        "a bare total"
+      ]
+    },
+    {
+      "situation": "Source older than 48h in season",
+      "render": "'treat as last-seen, not current'",
+      "never": [
+        "an unqualified value"
+      ]
+    }
+  ],
+  "principles": [
+    {
+      "id": "P1",
+      "rule": "Every number on screen traces to a named backend field",
+      "consequence": "renaming a field is a product change, not a refactor"
+    },
+    {
+      "id": "P2",
+      "rule": "An explicit null is a real state; 0%, 0, — and 'not computed' are four different claims",
+      "consequence": "null states are first-class design, not error cases"
+    },
+    {
+      "id": "P3",
+      "rule": "Never show a part-applied recompute",
+      "consequence": "a half-updated board is worse than an old one"
+    },
+    {
+      "id": "P4",
+      "rule": "Density is the product",
+      "consequence": "premium means better organised, not roomier"
+    }
+  ]
+}

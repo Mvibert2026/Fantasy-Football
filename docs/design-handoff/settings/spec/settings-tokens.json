@@ -1,0 +1,86 @@
+{
+  "$schema": "draft-assistant/design-tokens/1",
+  "version": "1.1.0",
+  "generated": "2026-07-26",
+  "scope": "ADDITIVE to spec/design-tokens.json — new tokens introduced by the Settings editor. Everything not listed here is unchanged.",
+  "note": "Palette in the session brief is the pre-2026-07-26 set; spec/design-tokens.json holds the current values.",
+  "newTokens": {
+    "--fail": {
+      "dark": "#e5544b",
+      "light": "#c0392f",
+      "role": "recompute or job failure",
+      "mustNotShare": "--live",
+      "why": "--live means 'this is happening now' (live draft). --fail means 'something broke'. Sharing one colour would make a failed job read as urgency and a live draft read as an error."
+    },
+    "--hatch": {
+      "dark": "repeating-linear-gradient(135deg,transparent 0 5px,rgba(240,153,63,.20) 5px 6px)",
+      "light": "repeating-linear-gradient(135deg,transparent 0 5px,rgba(168,92,7,.22) 5px 6px)",
+      "role": "stale-value underlay",
+      "why": "a pattern, not a colour — survives greyscale and colour-blindness, which a tint would not"
+    }
+  },
+  "dataStates": {
+    "fresh": {
+      "value": "as computed",
+      "colour": "--txt",
+      "background": "none",
+      "glyph": "none",
+      "sectionCue": "none",
+      "assistant": "quotable",
+      "means": "computed under the settings in force"
+    },
+    "stale": {
+      "value": "as computed",
+      "colour": "--dim2",
+      "background": "--hatch",
+      "glyph": "† (dagger)",
+      "sectionCue": "STALE tag + generation timestamp",
+      "assistant": "refuses to quote",
+      "means": "a real number, computed under settings this league no longer has",
+      "cueCount": 4,
+      "greyscaleSurviving": 3,
+      "policy": "keep showing the number — a wrong-but-labelled value beats a hole, and blanking makes a settings change feel like data loss"
+    },
+    "nullState": {
+      "value": "—",
+      "colour": "--dim2",
+      "background": "none",
+      "glyph": "em dash is the glyph",
+      "sectionCue": "reason on hover",
+      "assistant": "refuses to quote",
+      "means": "no value exists: never computed, or not computable for this player",
+      "policy": "no hatch — there is nothing to invalidate"
+    }
+  },
+  "criticalDistinction": "stale vs null, not stale vs fresh — a stale number looks plausible and a null one does not",
+  "progressTokens": {
+    "percentSize": "26px",
+    "percentColour": "--down",
+    "barHeight": "5px",
+    "bannerBarHeight": "3px",
+    "stageGlyphs": {
+      "done": "✓",
+      "active": "▸",
+      "pending": "·"
+    },
+    "stageColours": {
+      "done": "--acc",
+      "active": "--txt",
+      "pending": "--dim2"
+    }
+  },
+  "editedValueTreatment": {
+    "inForce": {
+      "colour": "--dim2",
+      "decoration": "line-through"
+    },
+    "edited": {
+      "colour": "--down",
+      "weight": 600
+    },
+    "separator": "→",
+    "rowBackground": "--panel2",
+    "containerBorder": "--down while any edit is pending",
+    "rule": "never collapse the pair into one number — same rule as the availability baseline/live pair"
+  }
+}

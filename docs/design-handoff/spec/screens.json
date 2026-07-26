@@ -1,0 +1,423 @@
+{
+  "$schema": "draft-assistant/screens/1",
+  "version": "1.0.0",
+  "generated": "2026-07-26",
+  "shell": {
+    "topBar": {
+      "height": "46px",
+      "surface": "panel",
+      "contents": [
+        "logo",
+        "DRAFT LIVE badge (draft mode)",
+        "league selector",
+        "League settings",
+        "theme toggle",
+        "mode switch: Prep | Draft | Season"
+      ]
+    },
+    "pendingBanner": {
+      "position": "between top bar and body",
+      "width": "full",
+      "border": "down",
+      "action": "opens League settings",
+      "when": "scoring change pending or recomputing"
+    },
+    "navRail": {
+      "width": "216px",
+      "hiddenIn": [
+        "draft"
+      ]
+    },
+    "draftPanes": {
+      "formula": {
+        "board": "clamp(props.boardPaneWidth ?? 35, 20, 60)",
+        "center": "clamp(props.centerPaneWidth ?? 40, 20, 65)",
+        "right": "max(14, 100 - board - center)",
+        "normalise": "each column = minmax(0, value/total*100%)"
+      },
+      "wideTabs": {
+        "when": "dtab !== 'board'",
+        "board": "board + center*0.42",
+        "center": "center*0.58",
+        "note": "right roster rail never changes width"
+      },
+      "requirement": "pane 1 must carry min-width:0 and overflow:hidden or its header rows paint outside the pane"
+    }
+  },
+  "overlays": [
+    {
+      "id": "playerSheet",
+      "geometry": "position:fixed; top:0; right:0; bottom:0",
+      "width": "props.detailWidth ?? 440",
+      "minWidth": 420,
+      "maxWidth": "96vw",
+      "zIndex": 90,
+      "scrim": {
+        "present": true,
+        "colour": "transparent",
+        "zIndex": 80
+      },
+      "requirement": "NO dark scrim — the board and the pick clock must stay visible"
+    },
+    {
+      "id": "sheetActionBar",
+      "geometry": "position:sticky; bottom:0 inside the sheet",
+      "surface": "panel",
+      "extras": [
+        "top hairline",
+        "upward shadow"
+      ]
+    },
+    {
+      "id": "leagueSettings",
+      "geometry": "right drawer",
+      "width": "620px",
+      "scrim": {
+        "present": true,
+        "colour": "rgba(0,0,0,.55)",
+        "zIndex": 95
+      },
+      "note": "this one IS modal"
+    },
+    {
+      "id": "assistantDock",
+      "geometry": "position:fixed bottom-right",
+      "width": "props.assistantWidth ?? 430",
+      "maxHeight": "props.assistantHeight ?? 72 vh",
+      "zIndex": 86,
+      "radius": "overlay",
+      "defaultState": "collapsed in draft mode"
+    },
+    {
+      "id": "glossaryPopover",
+      "geometry": "position:fixed at trigger bottom+8",
+      "left": "clamp(12, viewportWidth-352)",
+      "width": "340px",
+      "zIndex": 120
+    }
+  ],
+  "props": {
+    "boardPaneWidth": {
+      "default": 35,
+      "min": 20,
+      "max": 55,
+      "unit": "%"
+    },
+    "centerPaneWidth": {
+      "default": 40,
+      "min": 20,
+      "max": 60,
+      "unit": "%"
+    },
+    "detailWidth": {
+      "default": 440,
+      "min": 420,
+      "max": 1000,
+      "unit": "px"
+    },
+    "assistantWidth": {
+      "default": 430,
+      "min": 340,
+      "max": 760,
+      "unit": "px"
+    },
+    "assistantHeight": {
+      "default": 72,
+      "min": 40,
+      "max": 92,
+      "unit": "vh"
+    }
+  },
+  "screens": [
+    {
+      "id": "draft.board",
+      "label": "Draft Room",
+      "mode": "draft",
+      "tab": "board",
+      "grid": "rank 20 | name flex(min 52) | POS 30 | TM 22 | delta+why 24 | base→live 58 | mark-taken",
+      "gap": "7px",
+      "features": [
+        "position filter chips ALL/QB/RB/WR/TE/DEF",
+        "sort row: our rank / consensus / delta / proj pts",
+        "tier-grouped rows with count in the tier header",
+        "delta cell carries a 'why' toggle that expands the rank derivation INLINE (replacement level, roster shape, kicker — each with value and field)"
+      ],
+      "rationale": "the rank derivation was our strongest differentiator sitting two clicks deep; it must be one interaction on the row"
+    },
+    {
+      "id": "draft.opponents",
+      "label": "Draft Room",
+      "mode": "draft",
+      "tab": "opponents",
+      "grid": "repeat(auto-fill, minmax(232px, 1fr))",
+      "card": [
+        "team name",
+        "next pick number",
+        "full slot list with filled/empty state and position colour",
+        "starters filled count",
+        "bench count",
+        "still-needs chips derived from the roster gap"
+      ]
+    },
+    {
+      "id": "draft.predictions",
+      "label": "Draft Room",
+      "mode": "draft",
+      "tab": "predict",
+      "grid": "player+queue 1.5fr | POS 46 | BASELINE 64 | LIVE 64 | delta 44 | IN 10 DRAFTS 108 | RANGE 96",
+      "gap": "10px",
+      "header": "states the signal condition in plain language: how many picks logged, whether the adjustment is live, thin, or not yet computed"
+    },
+    {
+      "id": "draft.centreRail.onClock",
+      "label": "Draft Room",
+      "contents": [
+        "RECOMMENDED card: name, position, projection with CI bar, reason, Draft button, 'what you give up' panel",
+        "ALTERNATIVES",
+        "'if you wait' table"
+      ]
+    },
+    {
+      "id": "draft.centreRail.offClock",
+      "label": "Draft Room",
+      "contents": [
+        "POSITION SCARCITY: bar per position, remaining/total, pace, tier line, 'N <50% by pick X', depletion warnings, run note",
+        "QUEUE / WATCHLIST tabs",
+        "NEXT DECISION",
+        "DECISION RULES"
+      ]
+    },
+    {
+      "id": "draft.rosterRail",
+      "label": "Draft Room",
+      "contents": [
+        "slot chips (QB 0/1 …)",
+        "my roster slot list with bye flags",
+        "bye-collision warning"
+      ]
+    },
+    {
+      "id": "playerDetail",
+      "label": "Player detail",
+      "surface": "right side sheet",
+      "order": [
+        {
+          "n": 1,
+          "name": "Identity strip",
+          "contents": "headshot or initials on team colour, name, POS rank, team chip, bye, our rank, tier",
+          "sticky": "top"
+        },
+        {
+          "n": 2,
+          "name": "Verdict line",
+          "spec": "formulas.json#verdictLine",
+          "style": "left accent rule, 14.5px, provenance line beneath"
+        },
+        {
+          "n": 3,
+          "name": "Projection",
+          "contents": "point estimate 26px, honest range as a visual bar with mid tick, VBD, plain-language gloss",
+          "rule": "CI weight sits BELOW the point estimate, never above"
+        },
+        {
+          "n": 4,
+          "name": "Availability at your picks",
+          "contents": "baseline→live pair, dot array, frequency phrasing, band, both adjustment components with run context, then the per-pick strip for the next 5 picks"
+        },
+        {
+          "n": 5,
+          "name": "Why our rank differs from the market",
+          "contents": "consensus / format correction / our rank, then component breakdown with fields",
+          "rule": "BELOW the numbers, not above"
+        },
+        {
+          "n": 6,
+          "name": "Archetype",
+          "style": "display-only pill, 999px radius, UI font, muted background",
+          "disclosure": "descriptive · not sortable · not an input to any rank"
+        },
+        {
+          "n": 7,
+          "name": "Weekly finishes",
+          "contents": "18-cell heatmap, gradient over positional finish",
+          "redundantCue": "2px bottom rule on cells below that player's startable line"
+        },
+        {
+          "n": 8,
+          "name": "Three-season table"
+        },
+        {
+          "n": 9,
+          "name": "Bullet takeaways"
+        },
+        {
+          "n": 10,
+          "name": "Sticky action bar",
+          "contents": "Mark taken (accent fill) · Add to queue · Watchlist · Compare · Ask"
+        }
+      ]
+    },
+    {
+      "id": "prep.board",
+      "label": "Board",
+      "mode": "prep",
+      "grid": "60px 170px 66px 48px 48px 192px 62px 74px 64px 58px",
+      "columns": [
+        "RANK",
+        "PLAYER",
+        "POS",
+        "TM",
+        "BYE",
+        "PROJ (CI) with whisker",
+        "CONS",
+        "delta+why",
+        "VBD",
+        "TIER"
+      ],
+      "views": [
+        "table",
+        "round-grade grid",
+        "delta view"
+      ],
+      "exports": [
+        "CSV",
+        "PDF"
+      ],
+      "knownIssue": "needs ~880px, gets ~708px at a 924px window — VBD and TIER fall off the right edge"
+    },
+    {
+      "id": "prep.explorer",
+      "label": "Availability Explorer",
+      "mode": "prep",
+      "contents": [
+        "pick selector",
+        "five position columns with per-player dot arrays",
+        "tier-availability card with dots and frequency phrasing"
+      ]
+    },
+    {
+      "id": "prep.opponents",
+      "label": "Opponents",
+      "mode": "prep",
+      "contents": [
+        "the nine other managers and their tendencies, marked NOT A MODEL INPUT where relevant"
+      ]
+    },
+    {
+      "id": "prep.strategy",
+      "label": "Strategy Guide",
+      "mode": "prep",
+      "contents": [
+        "hero band: eyebrow, title, replacement-level strip vs public defaults",
+        "plan cards per pick",
+        "strategy comparison table with noise-band caveat",
+        "league-specific corrections"
+      ]
+    },
+    {
+      "id": "prep.method",
+      "label": "Methodology",
+      "mode": "prep",
+      "contents": [
+        "hero band",
+        "four-step pipeline: consensus → format correction → projection+interval → VBD/tiers, each with its field",
+        "is/is-not-an-input pair",
+        "data sources table",
+        "limitations as severity-chipped cards"
+      ]
+    },
+    {
+      "id": "prep.glossary",
+      "label": "Glossary",
+      "mode": "prep",
+      "contents": [
+        "four categories",
+        "two-column cards",
+        "backing field plus 'Ask the assistant' per term"
+      ]
+    },
+    {
+      "id": "mock.entry",
+      "label": "Mock Entry",
+      "mode": "prep",
+      "contents": [
+        "pick entry for ALL teams",
+        "prediction recorded before each pick"
+      ],
+      "grid": "44px repeat(teams, minmax(62-74px, 1fr))",
+      "picks": "teams × 16"
+    },
+    {
+      "id": "mock.review",
+      "label": "Mock Review",
+      "mode": "prep",
+      "contents": [
+        "per-mock: picks logged, top-prediction hit rate, availability calls, Brier",
+        "availability calls at your picks",
+        "pick-by-pick with surprise index"
+      ]
+    },
+    {
+      "id": "mock.validation",
+      "label": "Model Validation",
+      "mode": "prep",
+      "contents": [
+        "calibration by stated probability with Wilson intervals",
+        "thin-bucket flags",
+        "a plain statement that a handful of mocks is not a validation set"
+      ]
+    },
+    {
+      "id": "prep.soon",
+      "label": "Coming soon",
+      "mode": "prep",
+      "screens": [
+        "Live league sync",
+        "Bottom-up projections",
+        "News & injuries",
+        "In-season tools",
+        "Startability scores"
+      ],
+      "treatment": "real layouts at 55% opacity with an honest note"
+    },
+    {
+      "id": "season.*",
+      "label": "Season",
+      "mode": "season",
+      "contents": [
+        "manager selector across all screens",
+        "weekly lineup with projection-at-lock scoring, CIs and coverage disclosure",
+        "consistency heatmap",
+        "waivers/FAAB",
+        "decision log",
+        "trades",
+        "league comparison with error bars and 'read the bars, not the order'",
+        "write-up"
+      ]
+    }
+  ],
+  "crossCutting": [
+    {
+      "id": "inlineGlossary",
+      "trigger": "dotted terms and 'i' chips",
+      "popover": [
+        "definition",
+        "Ask the assistant (sends term + current screen context)",
+        "Full entry"
+      ]
+    },
+    {
+      "id": "assistant",
+      "contents": "context-aware (mode, screen, focused player)",
+      "provenance": "colour-coded left rules for MODEL / SOURCE / INFERENCE — provenance is the layout, not a footnote"
+    },
+    {
+      "id": "trace",
+      "contents": "any number can name its field, value and source"
+    },
+    {
+      "id": "compareTray",
+      "limit": 3
+    }
+  ]
+}

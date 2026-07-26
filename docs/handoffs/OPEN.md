@@ -4,7 +4,7 @@
 Threads are the source of truth. Change a thread's `STATUS:`, then re-run sync.
 Protocol: [`README.md`](README.md).
 
-**28 open** · 5 resolved
+**31 open** · 5 resolved
 
 ---
 
@@ -38,7 +38,7 @@ not an omission. Start your session at your own heading.
 | [032](032-assistant-dev-mode.md) | Assistant dev mode | `pm` | OPEN | 0d | none |
 | [033](033-assistant-query-architecture.md) | Assistant query architecture | `pm` | OPEN | 0d | the assistant rebuild sprint |
 
-### `frontend` — 9 waiting
+### `frontend` — 11 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
@@ -51,6 +51,8 @@ not an omission. Start your session at your own heading.
 | [029](029-frequency-array-on-board.md) | Frequency array on board | `pm` | OPEN | 0d | none |
 | [030](030-inline-why-rank-differs.md) | Inline why rank differs | `pm` | OPEN | 0d | none |
 | [031](031-frontend-spec-audit-and-wiring.md) | Frontend spec audit and wiring | `pm` | OPEN | 0d | 027, 028, Settings build |
+| [035](035-frontend-catchup-runbook.md) | Frontend catchup runbook | `pm` | OPEN | 0d | 003, 027, 028, 029, 030, 031, and every future frontend thread |
+| [036](036-weekly-finishes-and-season-stats-exports-contrac.md) | Weekly finishes and season stats exports contrac | `backend` | OPEN | 0d | consistency heat-map, player detail history |
 
 ### `data-ops` — 2 waiting
 
@@ -59,12 +61,13 @@ not an omission. Start your session at your own heading.
 | [018](018-fantasypros-season-backfill.md) | Fantasypros season backfill | `pm` | OPEN | 0d | 019 (bootstrap CIs) |
 | [024](024-injury-ingestion-as-of-date.md) | Injury ingestion as of date | `pm` | OPEN | 0d | P3-2 (date-parametrised board refresh) |
 
-### `strategist` — 2 waiting
+### `strategist` — 3 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
 | [004](004-strategist-open-questions.md) | Strategist open questions | `pm` | OPEN | 0d | none |
 | [033](033-assistant-query-architecture.md) | Assistant query architecture | `pm` | OPEN | 0d | the assistant rebuild sprint |
+| [034](034-shortcut-bias-in-mock-logging.md) | Shortcut bias in mock logging | `pm` | OPEN | 0d | Mock Lab build (025, and the UI) |
 
 ### `researcher` — 1 waiting
 
@@ -80,11 +83,12 @@ _Nothing waiting on you._
 
 _Nothing waiting on you._
 
-### `founder` — 1 waiting
+### `founder` — 2 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
 | [011](011-locate-frontend-spec.md) | Locate frontend spec | `pm` | OPEN | 0d | 007 |
+| [035](035-frontend-catchup-runbook.md) | Frontend catchup runbook | `pm` | OPEN | 0d | 003, 027, 028, 029, 030, 031, and every future frontend thread |
 
 ### `fable` — 0 waiting
 

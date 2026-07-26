@@ -1,0 +1,366 @@
+{
+  "$schema": "draft-assistant/api-contract/1",
+  "version": "1.0.0",
+  "generated": "2026-07-26",
+  "conventions": {
+    "transport": "REST/JSON",
+    "scoping": "every league-scoped call takes leagueId",
+    "fieldNames": "user-visible via trace affordances — renaming a field is a product change, not a refactor",
+    "nullability": "a null must be transmittable and displayable as an explicit null; never substitute 0"
+  },
+  "endpoints": [
+    {
+      "id": "leagues.list",
+      "method": "GET",
+      "path": "/api/leagues",
+      "response": {
+        "leagues": [
+          {
+            "id": "string",
+            "name": "string",
+            "platform": "Sleeper|ESPN|Yahoo|NFL.com|Manual",
+            "draft_type": "Snake|Linear|3rd-round reversal|Auction",
+            "draft_date": "ISO8601|null",
+            "settings": {
+              "teams": "int",
+              "slot": "int",
+              "qb": "int",
+              "rb": "int",
+              "wr": "int",
+              "te": "int",
+              "flex": "int",
+              "def": "int",
+              "k": "bool",
+              "bench": "int",
+              "ir": "int",
+              "ppr": "number",
+              "ptd": "number",
+              "intp": "number",
+              "rtd": "number"
+            },
+            "sim_generated_at": "ISO8601|null",
+            "sim_settings_hash": "string|null",
+            "projections_generated_at": "ISO8601|null",
+            "mocks": "int"
+          }
+        ]
+      },
+      "notes": [
+        "draft_date null renders as 'league.draft_date = null', never blank",
+        "draft state, queue and mocks are per league",
+        "nothing may assume 10 teams — team count is dynamic everywhere"
+      ]
+    },
+    {
+      "id": "leagues.create",
+      "method": "POST",
+      "path": "/api/leagues",
+      "response": "same shape as one league"
+    },
+    {
+      "id": "leagues.update",
+      "method": "PATCH",
+      "path": "/api/leagues/:id",
+      "response": "same shape as one league"
+    },
+    {
+      "id": "board.get",
+      "method": "GET",
+      "path": "/api/board",
+      "query": [
+        "leagueId"
+      ],
+      "response": {
+        "players": [
+          {
+            "player_id": "int",
+            "name": "string",
+            "position": "QB|RB|WR|TE|DEF|K",
+            "team": "string",
+            "bye_week": "int",
+            "overall_rank": "int",
+            "position_rank": "int",
+            "consensus_rank": "int",
+            "position_tier": "int",
+            "global_tier": "int",
+            "projected_points": "number|null",
+            "ci_low": "number|null",
+            "ci_high": "number|null",
+            "vbd": "number|null",
+            "format_correction": "number|null"
+          }
+        ],
+        "projection_coverage_rank": "int",
+        "projections_generated_at": "ISO8601|null",
+        "consensus_blended_at": "ISO8601",
+        "consensus_sources": "int",
+        "players_loaded": "int",
+        "players_total": "int"
+      },
+      "notes": [
+        "projected_points, ci_low, ci_high and vbd are nullable TOGETHER",
+        "~60% of the board has a rank and no projection — a designed state, not a gap",
+        "projection_coverage_rank is the rank past which projections stop"
+      ]
+    },
+    {
+      "id": "availability.get",
+      "method": "GET",
+      "path": "/api/availability",
+      "query": [
+        "leagueId",
+        "pick"
+      ],
+      "response": {
+        "pick": "int",
+        "generated_at": "ISO8601|null",
+        "model_inputs": [
+          "consensus_rank",
+          "teams",
+          "draft_slot"
+        ],
+        "players": [
+          {
+            "player_id": "int",
+            "baseline_p": "number",
+            "live_p": "number|null",
+            "noise_band": "number",
+            "signal_strength": "none|thin|ok",
+            "adjustment": {
+              "need": "number|null",
+              "run": "number|null"
+            },
+            "run_context": {
+              "position": "string",
+              "count": "int",
+              "of": "int"
+            },
+            "picks_logged": "int",
+            "picks_required": "int"
+          }
+        ]
+      },
+      "notes": [
+        "when signal_strength is 'none', live_p MUST be null",
+        "prior-year manager behaviour is NOT an input — it was fit, could not be identified, and was retired",
+        "adjustment.need and adjustment.run must be sent separately, never pre-combined"
+      ]
+    },
+    {
+      "id": "simulate",
+      "method": "POST",
+      "path": "/api/simulate",
+      "body": {
+        "leagueId": "string"
+      },
+      "response": {
+        "pct": "int"
+      },
+      "streaming": true,
+      "notes": [
+        "~20,000 drafts",
+        "on completion rewrite sim_generated_at and sim_settings_hash on the league record"
+      ]
+    },
+    {
+      "id": "scarcity.get",
+      "method": "GET",
+      "path": "/api/scarcity",
+      "query": [
+        "leagueId"
+      ],
+      "response": {
+        "positions": [
+          {
+            "pos": "string",
+            "total": "int",
+            "remaining": "int",
+            "gone": "int",
+            "pace_vs_consensus": "int",
+            "tier1_remaining": "int",
+            "tier2_remaining": "int",
+            "under_50pct_by_next_pick": "int|null",
+            "startable_pool": "int"
+          }
+        ]
+      }
+    },
+    {
+      "id": "mocks.list",
+      "method": "GET",
+      "path": "/api/mocks",
+      "query": [
+        "leagueId"
+      ],
+      "response": {
+        "mocks": [
+          {
+            "id": "string",
+            "league": "string",
+            "label": "string",
+            "when": "ISO8601",
+            "teams": "int",
+            "slot": "int",
+            "picks": "int",
+            "calls": "int",
+            "hits": "int",
+            "brier": "number"
+          }
+        ]
+      }
+    },
+    {
+      "id": "mocks.pick",
+      "method": "POST",
+      "path": "/api/mocks/:id/pick",
+      "body": {
+        "n": "int",
+        "team_slot": "int",
+        "player_id": "int",
+        "predicted_top": "int|null",
+        "predicted_p": "number|null",
+        "in_top_5": "bool"
+      },
+      "notes": [
+        "the prediction is written AT ENTRY TIME and never recomputed",
+        "recomputing it later against a changed board destroys the comparison"
+      ]
+    },
+    {
+      "id": "mocks.availabilityCalls",
+      "method": "GET",
+      "path": "/api/mocks/:id/calls",
+      "response": {
+        "calls": [
+          {
+            "pick": "int",
+            "player_id": "int",
+            "predicted_p": "number",
+            "noise_band": "number",
+            "observed_available": "bool",
+            "taken_at": "int|null"
+          }
+        ]
+      },
+      "derived": {
+        "surprise": "board.overall_rank - pick.n",
+        "note": "positive = went later than our board said; describes the mock, not the manager"
+      }
+    },
+    {
+      "id": "validation.get",
+      "method": "GET",
+      "path": "/api/validation",
+      "response": {
+        "buckets": [
+          {
+            "stated_mid": "number",
+            "n": "int",
+            "observed": "int"
+          }
+        ],
+        "mocks_logged": "int",
+        "mean_brier": "number"
+      },
+      "notes": [
+        "pooled across all mocks in all leagues — state that on screen; it measures the model, not a league",
+        "send counts, never percentages"
+      ]
+    },
+    {
+      "id": "glossary.get",
+      "method": "GET",
+      "path": "/api/glossary",
+      "response": {
+        "terms": [
+          {
+            "id": "string",
+            "term": "string",
+            "body": "string",
+            "category": "prob|value|draft|state",
+            "field": "string|null"
+          }
+        ]
+      },
+      "ids": [
+        "avail",
+        "live",
+        "signal",
+        "ci",
+        "calib",
+        "wilson",
+        "noise",
+        "vbd",
+        "repl",
+        "cons",
+        "tier",
+        "struct",
+        "queue",
+        "watchlist",
+        "run",
+        "surprise",
+        "slot",
+        "stale",
+        "pending",
+        "nullproj",
+        "coverage"
+      ],
+      "categories": {
+        "prob": "Probability & uncertainty",
+        "value": "Value & ranking",
+        "draft": "Draft mechanics",
+        "state": "Data state"
+      }
+    },
+    {
+      "id": "player.get",
+      "method": "GET",
+      "path": "/api/players/:id",
+      "response": {
+        "player_id": "int",
+        "headshot_url": "string|null",
+        "team_color": "string|null",
+        "archetype": "string|null",
+        "archetype_reason": "string|null",
+        "news": [
+          {
+            "date": "ISO8601",
+            "text": "string",
+            "source": "string"
+          }
+        ],
+        "weekly_finishes": [
+          {
+            "week": "int",
+            "finish": "int|null",
+            "bye": "bool"
+          }
+        ],
+        "seasons": [
+          {
+            "year": "int",
+            "rows": "object|null"
+          }
+        ]
+      },
+      "notes": [
+        "headshot_url is nullable, hotlinked, URL only — never cached or re-hosted. Source: nflverse roster join (ESPN CDN)",
+        "NOT populated in the prototype: no sample player has a real ESPN id and we do not invent them, so every card renders initials on the team colour",
+        "do not put the URL in a template-interpolated src — mount the <img> only when a URL exists, or the browser fetches the literal placeholder string",
+        "private use only as built; licensing needs review before any public launch"
+      ]
+    },
+    {
+      "id": "queue",
+      "field": "draft.queue[]",
+      "scope": "draft-scoped",
+      "behaviour": "self-pruning — a queued player is removed the moment anyone drafts him. No dead-pick state, no error to clear. Resets with the draft"
+    },
+    {
+      "id": "watchlist",
+      "field": "account.watchlist[]",
+      "scope": "account-wide",
+      "behaviour": "persists across seasons and leagues; never disappears; shows a per-league drafted/available annotation instead"
+    }
+  ]
+}

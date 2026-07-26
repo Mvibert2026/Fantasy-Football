@@ -18,7 +18,7 @@ to learn *what happened*; it is not fine to read it to learn *what is true*.
 
 | | Value | Notes |
 |---|---|---|
-| Backend branch / commit | `master` @ `3ea391b` | Local only — **no git remote configured** |
+| Backend branch / commit | `master` @ `6feece2` | Local only — **no git remote configured** |
 | Backend tests | **400 passing** | Suite runtime ~5.5 min; DB-backed archetype/description tests dominate. +1 from sprint 1 (mailbox health test) |
 | Agent infrastructure | **Live** | Six subagents in `.claude/agents/` (backend, frontend, data-ops, strategist, researcher, librarian), `/inbox` command, mailbox tooling at `tools/handoffs.py` + `tools/sprint_status.py`, mailbox health enforced in the test suite (`tests/test_handoffs.py`) |
 | Data contract | **1.7.0** | `assistant-context.md` still says 1.6.0 — fix on next touch |

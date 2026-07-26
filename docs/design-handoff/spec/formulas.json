@@ -1,0 +1,277 @@
+{
+  "$schema": "draft-assistant/formulas/1",
+  "version": "1.0.0",
+  "generated": "2026-07-26",
+  "constants": {
+    "FLAT_POSITION_SHARE": 0.2,
+    "NEED_COEFFICIENT": -0.62,
+    "RUN_COEFFICIENT": -1.25,
+    "RUN_WINDOW_PICKS": 5,
+    "RUN_MIN_PICKS_FOR_SIGNAL": 3,
+    "NOISE_BAND": {
+      "value": 0.12,
+      "status": "PLACEHOLDER",
+      "action": "replace with the real bootstrapped width"
+    },
+    "THIN_BAND_MULTIPLIER": 1.6,
+    "LIVE_CLAMP": [
+      0.01,
+      0.99
+    ],
+    "LOGIT_CLAMP": [
+      0.005,
+      0.995
+    ],
+    "WILSON_Z": 1.96,
+    "THIN_BUCKET_N": 50,
+    "DOTS": 10,
+    "ROUNDS": 17,
+    "MOCK_ROUNDS": 16,
+    "TIER2_RECOMPUTE_SECONDS": 60,
+    "SIM_DRAFTS": 20000
+  },
+  "settingsHash": {
+    "fields": [
+      "teams",
+      "qb",
+      "rb",
+      "wr",
+      "te",
+      "flex",
+      "def",
+      "k",
+      "bench",
+      "ir",
+      "slot",
+      "ppr",
+      "ptd",
+      "intp",
+      "rtd"
+    ],
+    "join": "·",
+    "format": "<key>=<value>",
+    "compare": [
+      "hash(live settings)",
+      "hash(league.settings)",
+      "league.sim_settings_hash"
+    ],
+    "states": [
+      {
+        "when": "all three equal",
+        "state": "CURRENT",
+        "ui": "availability and strategy render normally"
+      },
+      {
+        "when": "sim_settings_hash differs",
+        "state": "STALE",
+        "ui": "numbers grey out app-wide with reason and generation timestamp; assistant refuses to quote them"
+      },
+      {
+        "when": "sim_generated_at is null",
+        "state": "NEVER_GENERATED",
+        "ui": "availability is an explicit null, never 0%"
+      }
+    ]
+  },
+  "snakeOrder": {
+    "teamAt": "rd=ceil(n/teams); i=(n-1)%teams; return rd%2 ? i : teams-1-i",
+    "userPicks": "for r in 1..17: r%2 ? teams*(r-1)+slot : teams*(r-1)+(teams-slot+1)",
+    "currentPick": "picks.length + 1",
+    "nextUserPick": "first userPicks() >= currentPick, else null",
+    "limitation": "snake only; linear, 3rd-round reversal and auction are not implemented"
+  },
+  "rosterSlots": {
+    "order": [
+      "QB×qb",
+      "RB×rb",
+      "WR×wr",
+      "TE×te",
+      "FLEX×flex",
+      "DEF×def",
+      "K×(k?1:0)",
+      "bench"
+    ],
+    "flexEligible": [
+      "RB",
+      "WR",
+      "TE"
+    ],
+    "rule": "a drafted player fills exactly one slot, filled in the order above"
+  },
+  "teamNeeds": {
+    "want": {
+      "QB": "qb",
+      "RB": "rb + 1",
+      "WR": "wr + 1",
+      "TE": "te",
+      "DEF": "def"
+    },
+    "note": "+1 on RB and WR absorbs the flex slots",
+    "gap": "max(0, want[pos] - have[pos])",
+    "total": "sum of gap"
+  },
+  "liveAvailability": {
+    "purpose": "adjust the marginal survival probability using tonight's draft state",
+    "minPicks": "max(4, round(teams * 0.5))",
+    "steps": [
+      "between = teams on the clock from currentPick to pick-1",
+      "if between is empty OR picksLogged < minPicks: return {base, live:null, signal:'none'}",
+      "demand = sum over between of (needs.total ? needs.gap[pos]/needs.total : FLAT)",
+      "recent = last 5 drafted players; runN = count(recent where pos matches)",
+      "runZ = recent.length >= 3 ? (runN/recent.length - FLAT) : 0",
+      "needZ = (demand - between.length*FLAT) / max(1, sqrt(between.length))",
+      "needAdj = -0.62 * needZ ; runAdj = -1.25 * runZ",
+      "live = clamp(sigmoid(logit(base) + needAdj + runAdj), 0.01, 0.99)",
+      "signal = picksLogged < teams ? 'thin' : 'ok'"
+    ],
+    "helpers": {
+      "logit": "ln(v/(1-v)) with v clamped to [0.005,0.995]",
+      "sigmoid": "1/(1+e^-z)"
+    },
+    "band": "w = noise_band * (signal==='thin' ? 1.6 : 1); lo = max(0, v-w); hi = min(1, v+w)",
+    "displayContract": [
+      "baseline and live are shown together, always — the adjusted number never replaces the baseline",
+      "adjustment.need and adjustment.run are surfaced separately; a single combined delta is not sufficient",
+      "signal 'none' renders 'not yet' plus the picks-logged count, never the baseline repeated",
+      "signal 'thin' renders the number, marks the row thin, and widens the band 1.6x",
+      "recompute runs client-side per pick — no server round-trip during a draft"
+    ]
+  },
+  "frequency": {
+    "dotsFilled": "round(p * 10)",
+    "text": "<dotsFilled> in 10 drafts",
+    "rationale": "a bare percentage presented alone reads as decisive; the dot array makes it a frequency",
+    "rule": "every availability probability carries the dot array"
+  },
+  "wilson": {
+    "formula": [
+      "z=1.96; p=k/n; d=1+z*z/n",
+      "centre=(p + z*z/(2*n))/d",
+      "half=z*sqrt(p*(1-p)/n + z*z/(4*n*n))/d",
+      "lo=max(0,centre-half); hi=min(1,centre+half)"
+    ],
+    "serverContract": "send counts (n, observed), never percentages — the client computes the interval",
+    "flags": [
+      "bucket flagged when its stated probability falls outside its own interval",
+      "bucket marked thin when n < 50"
+    ]
+  },
+  "scarcity": {
+    "remaining": "players at pos not yet drafted",
+    "gone": "total - remaining",
+    "expected": "count(players at pos where consensus_rank < currentPick)",
+    "pace": "gone - expected (positive = going faster than the market expects)",
+    "tier1Remaining": "count(remaining where tier <= 1)",
+    "under50ByNext": "count(remaining where avail(p, nextUserPick) < 0.5)",
+    "startablePool": "perPositionStarters * teams",
+    "warning": {
+      "condition": "tier1_remaining > 0 AND under50_by_next >= tier1_remaining",
+      "copy": "All N remaining tier-1 {POS} sit under 50% to reach pick X. If you want one, this is the turn.",
+      "note": "the only urgency claim the product makes, and it is derived"
+    }
+  },
+  "verdictLine": {
+    "rule": "generated from measured fields only; must work for all ~378 players with zero hand-written copy",
+    "join": " · ",
+    "terminator": ".",
+    "clauses": [
+      {
+        "n": 1,
+        "name": "structure",
+        "source": "board.position_tier",
+        "variants": [
+          "The only {POS} left in tier {T}",
+          "Top of tier {T} at {POS}, {N} in the tier",
+          "Last of {N} in tier {T} at {POS}",
+          "{I} of {N} in tier {T} at {POS}"
+        ]
+      },
+      {
+        "n": 2,
+        "name": "cost of waiting",
+        "source": "availability.live_p",
+        "variants": [
+          "{live}% to reach your pick at {pick} ({dots} in 10 drafts)",
+          "{base}% to reach your pick at {pick} on the baseline, with no live adjustment yet",
+          "availability is stale for this league, so waiting is unpriced"
+        ]
+      },
+      {
+        "n": 3,
+        "name": "value over the alternative",
+        "source": "board.vbd",
+        "variants": [
+          "{gap} VBD points clear of {lastName}, the next {POS} on the board",
+          "{gap} VBD points behind {lastName}, the next {POS} on the board",
+          "no projection, so this is a rank-and-availability call only"
+        ]
+      }
+    ],
+    "forbidden": [
+      "adjectives",
+      "ranking language",
+      "anything that is not arithmetic on a named field"
+    ]
+  },
+  "recompute": {
+    "tier1": {
+      "trigger": [
+        "slots",
+        "roster shape",
+        "team count",
+        "draft slot"
+      ],
+      "behaviour": "instant, client-side, no job, no spinner"
+    },
+    "tier2": {
+      "trigger": [
+        "ppr",
+        "ptd",
+        "intp",
+        "rtd"
+      ],
+      "behaviour": "explicit Recalculate required; ~60s job",
+      "ui": [
+        "hold edits in pending",
+        "show saved-but-not-applied diff (old → new per field)",
+        "app-wide banner while pending or running",
+        "EVERY displayed number holds its pre-edit value until the job completes",
+        "report the server stage string and percent"
+      ],
+      "stages": [
+        "reading game logs · 2023–2025",
+        "re-scoring 378 players under new values",
+        "refitting replacement levels",
+        "rebuilding tiers and VBD",
+        "writing board.projected_points"
+      ],
+      "onComplete": "update projections_generated_at"
+    },
+    "simulation": {
+      "endpoint": "POST /api/simulate",
+      "drafts": 20000,
+      "onComplete": "rewrite sim_generated_at and sim_settings_hash"
+    }
+  },
+  "persistence": {
+    "key": "ffda_v6",
+    "shape": {
+      "v": 6,
+      "seed": "hash of the shipped league seed",
+      "keys": [
+        "picks",
+        "watch",
+        "theme",
+        "settings",
+        "leagueId",
+        "leagues",
+        "picksByLeague"
+      ]
+    },
+    "rules": [
+      "if v or seed does not match the shipped build, discard stored state entirely and re-seed",
+      "never merge a stale payload — it produces a UI claiming CURRENT while showing numbers from different settings",
+      "never clear storage keys you did not write"
+    ]
+  }
+}

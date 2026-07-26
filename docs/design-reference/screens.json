@@ -1,0 +1,5 @@
+{
+  "board":       { "route": "/draft/board",   "threshold": 0.08 },
+  "opponents":   { "route": "/draft/opponents", "threshold": 0.05 },
+  "predictions": { "route": "/draft/predictions", "threshold": 0.05 }
+}

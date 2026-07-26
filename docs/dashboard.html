@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fantasy Draft Assistant — Project Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1" integrity="sha384-jb8JQMbMoBUzgWatfe6COACi2ljcDdZQ2OxczGA3bGNeWe+6DChMTBJemed7ZnvJ" crossorigin="anonymous"></script>
+<style>
+:root{
+--bg:#0a0d12; --panel:#0f131a; --panel2:#151a23; --line:#222937; --line2:#2e3646;
+--txt:#e7ecf3; --dim:#8b95a7; --dim2:#5b6474;
+--up:#4cc9f0; --down:#f0a35e; --acc:#7dd3a0; --live:#ff5f56;
+--qb:#b39ddb; --rb:#4dd0b1; --wr:#f2a65a; --te:#6fa8ff; --def:#94a0b0;
+--f-ui:'IBM Plex Sans',system-ui,-apple-system,sans-serif;
+--f-num:'IBM Plex Mono',ui-monospace,monospace;
+--gap:14px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--txt);font-family:var(--f-ui);font-size:13px;line-height:1.45}
+.wrap{max-width:1500px;margin:0 auto;padding:16px}
+header{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:14px 18px;margin-bottom:var(--gap);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+h1{font-size:16px;font-weight:600;letter-spacing:.2px}
+.sub{color:var(--dim);font-size:12px;margin-top:2px}
+.tabs{display:flex;gap:4px;flex-wrap:wrap}
+.tab{background:var(--panel2);border:1px solid var(--line);color:var(--dim);padding:6px 13px;border-radius:5px;cursor:pointer;font-family:var(--f-ui);font-size:12px}
+.tab:hover{color:var(--txt);border-color:var(--line2)}
+.tab.on{background:var(--acc);color:#07130d;border-color:var(--acc);font-weight:600}
+.pane{display:none}.pane.on{display:block}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:var(--gap);margin-bottom:var(--gap)}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:13px 16px}
+.kpi .l{font-size:10.5px;color:var(--dim);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px}
+.kpi .v{font-family:var(--f-num);font-size:23px;font-weight:600;font-variant-numeric:tabular-nums}
+.kpi .n{font-size:11px;color:var(--dim2);margin-top:3px}
+.v.ok{color:var(--acc)}.v.warn{color:var(--down)}.v.bad{color:var(--live)}.v.info{color:var(--up)}
+.row{display:grid;grid-template-columns:repeat(auto-fit,minmax(380px,1fr));gap:var(--gap);margin-bottom:var(--gap)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:15px 18px;margin-bottom:var(--gap)}
+.card h3{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.7px;color:var(--dim);margin-bottom:11px}
+canvas{max-height:230px}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th{text-align:left;padding:8px 9px;border-bottom:1px solid var(--line2);color:var(--dim);font-size:10.5px;text-transform:uppercase;letter-spacing:.6px;font-weight:600;cursor:pointer;user-select:none;white-space:nowrap}
+th:hover{color:var(--txt)}
+td{padding:8px 9px;border-bottom:1px solid var(--line);vertical-align:top}
+tbody tr:hover{background:var(--panel2)}
+.num{font-family:var(--f-num);font-variant-numeric:tabular-nums}
+.pill{display:inline-block;padding:2px 7px;border-radius:4px;font-size:10.5px;font-weight:600;letter-spacing:.3px;white-space:nowrap}
+.p0{background:rgba(255,95,86,.16);color:var(--live);border:1px solid rgba(255,95,86,.35)}
+.p1{background:rgba(240,163,94,.14);color:var(--down);border:1px solid rgba(240,163,94,.3)}
+.p2{background:rgba(76,201,240,.13);color:var(--up);border:1px solid rgba(76,201,240,.3)}
+.p3{background:rgba(139,149,167,.12);color:var(--dim);border:1px solid var(--line2)}
+.tag{display:inline-block;padding:1.5px 6px;border-radius:4px;font-size:10px;background:var(--panel2);border:1px solid var(--line2);color:var(--dim);letter-spacing:.3px}
+.ver{color:var(--acc)}.unver{color:var(--down)}.miss{color:var(--live)}
+.filters{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin-bottom:11px}
+select{background:var(--panel2);border:1px solid var(--line2);color:var(--txt);padding:5px 9px;border-radius:4px;font-family:var(--f-ui);font-size:12px}
+label{font-size:11px;color:var(--dim)}
+.note{font-size:11.5px;color:var(--dim);border-left:2px solid var(--line2);padding-left:9px;margin-top:9px}
+.warnbox{border-left:2px solid var(--down)}
+.badbox{border-left:2px solid var(--live)}
+.okbox{border-left:2px solid var(--acc)}
+ul{margin:0 0 0 16px}li{margin-bottom:4px;font-size:12.5px}
+.small{font-size:11.5px;color:var(--dim)}
+footer{color:var(--dim2);font-size:11px;padding:10px 2px;border-top:1px solid var(--line);margin-top:6px}
+code{font-family:var(--f-num);font-size:11.5px;color:var(--up)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div>
+    <h1>Fantasy Draft Assistant — Project Dashboard</h1>
+    <div class="sub">Verified against repo <code>master</code> @ <span class="num">3ea391b</span> · generated 26 Jul 2026</div>
+  </div>
+  <div class="tabs">
+    <div class="tab on" data-p="overview">Overview</div>
+    <div class="tab" data-p="priorities">Priorities</div>
+    <div class="tab" data-p="blockers">Blockers</div>
+    <div class="tab" data-p="org">Org &amp; Cost</div>
+    <div class="tab" data-p="verify">Verification</div>
+  </div>
+</header>
+
+<!-- OVERVIEW -->
+<div class="pane on" id="overview">
+  <div class="kpis">
+    <div class="kpi"><div class="l">Backend tests</div><div class="v ok num">399</div><div class="n">verified · +31 last session</div></div>
+    <div class="kpi"><div class="l">Contract</div><div class="v info num">1.7.0</div><div class="n">assistant-context says 1.6.0 — stale</div></div>
+    <div class="kpi"><div class="l">Frontend tests</div><div class="v bad num">?</div><div class="n">repo not connected — unverifiable</div></div>
+    <div class="kpi"><div class="l">Mock drafts logged</div><div class="v bad num">1 / 30</div><div class="n">blocks all availability validation</div></div>
+    <div class="kpi"><div class="l">Configs generated</div><div class="v ok num">24</div><div class="n">board+VBD only, no hazard model</div></div>
+    <div class="kpi"><div class="l">Weeks to draft</div><div class="v warn num">~5</div><div class="n">late Aug / early Sept window</div></div>
+  </div>
+
+  <div class="row">
+    <div class="card"><h3>Test growth by session</h3><canvas id="c1"></canvas>
+      <div class="note">Runtime grew 1.3 min → 5.7 min. DB-backed archetype/description tests (15–60s each, uncached) dominate. Worth a fixture cache before the suite gets slower.</div></div>
+    <div class="card"><h3>Open items by blocker class</h3><canvas id="c2"></canvas>
+      <div class="note">"Design/user decision" and "missing ingestion" are the two cheapest classes to clear and together account for the majority of stalled work.</div></div>
+  </div>
+
+  <div class="card">
+    <h3>What actually shipped last session (verified in git log)</h3>
+    <ul>
+      <li><b>ADR-045</b> — <code>live_availability.py</code> hazard model + <code>lambda_estimation.py</code>. λ̂ = 0.352, clustered SE 0.070, z = 5.04, n = 160 picks / 10 clusters. 21 tests.</li>
+      <li><b>ADR-046</b> — need term N<sub>t</sub>(p) wired into <code>strategy_balanced</code>, replacing the flat −8.0 step. 4 tests.</li>
+      <li><b>ADR-047</b> — 24-config board/VBD matrix (8/10/12/14 × std/half/full PPR × ESPN/Yahoo). 6 tests.</li>
+      <li>Real 2025 league draft ingested: 145/160 picks resolved, 15 quarantined (9 DEF + 5 collisions + 1 nickname).</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h3>Three things I'd flag to the founder before anything else</h3>
+    <ul>
+      <li><b>Sequencing trap.</b> Per-pick draft-state logging must land <i>before</i> mock collection starts. Collect 30 mocks in the current schema and you get 30 records that still can't validate <code>delta</code> — the run term needs state at every pick, and the current tables store only the final pick sequence. Cheap now, unrecoverable later.</li>
+      <li><b>The frontend is unverifiable from here.</b> It lives in a separate session/branch (<code>frontend-prep</code> @ <code>7276a2d</code>), is not in the connected folder, and no test count is recorded anywhere in <code>status.md</code>. The Opponents/Predictions gap was found by manual screenshot; nothing has changed structurally to stop that recurring.</li>
+      <li><b><code>status.md</code> is now a liability, not an asset.</b> 52 KB, three conflicting "current state" headers, ~15 internal contradictions (contract 1.6.0 never introduced; Task B both "deferred" and "already built"; ADR-035 both "not started" and shipped). Every agent that reads it pays ~13K tokens for a document that can mislead them.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- PRIORITIES -->
+<div class="pane" id="priorities">
+  <div class="card">
+    <h3>Ranked priorities — filterable</h3>
+    <div class="filters">
+      <label>Priority</label><select id="fp"><option value="all">All</option><option>P0</option><option>P1</option><option>P2</option><option>P3</option></select>
+      <label>Owner</label><select id="fo"><option value="all">All</option></select>
+      <label>Effort</label><select id="fe"><option value="all">All</option><option>S</option><option>M</option><option>L</option></select>
+      <span class="small" id="cnt"></span>
+    </div>
+    <div id="ptable"></div>
+    <div class="note">Ordering logic: urgency × irreversibility × unblock-count, not raw impact. Items that become impossible if delayed (ADP snapshots, per-pick logging, mock volume before the draft) outrank larger-value items with no clock on them.</div>
+  </div>
+</div>
+
+<!-- BLOCKERS -->
+<div class="pane" id="blockers">
+  <div class="row">
+    <div class="card"><h3>Blocked on a decision you can make today</h3>
+      <ul>
+        <li><b>FantasyPros paid tier (~$72/yr).</b> Free tier hard-caps at 10 rows/response with no working pagination — 40 players max, all already inside the 145 covered by the rank-to-points curve. It does not reach the 233 players lacking projections. Buy or formally accept partial coverage; it can't be engineered around.</li>
+        <li><b>Per-pick mock state schema shape.</b> Drafted-counts-per-team vs. raw ordered pick list. ADR-043's <code>ALTER TABLE ADD COLUMN</code> pattern already exists to do it non-destructively.</li>
+        <li><b>Per-position rank correlation aggregation.</b> Position-weighted single number vs. reported separately. Pure design call, zero data dependency, blocks a guardrail gap.</li>
+      </ul>
+      <div class="note badbox">All three are cheap. All three have been sitting. This is the highest-yield hour you could spend on the project.</div>
+    </div>
+    <div class="card"><h3>Blocked on data volume — genuinely cannot be rushed</h3>
+      <ul>
+        <li><b>Mock drafts: 1 of ~30.</b> Blocks <code>delta</code> validation, Brier-vs-baseline, and the entire pre-registered availability decision rule.</li>
+        <li><b>Alpha detection: closed until ~2028.</b> Correctly closed — the bootstrap floor sits above the BH threshold regardless of effect size. Don't reopen.</li>
+        <li><b>λ = 0.352 rests on one season, one draft.</b> Real measurement, thin base. Keep the caveat attached everywhere it's quoted.</li>
+      </ul>
+      <div class="note">Honest framing: the product's signature claim — calibrated availability — is currently <i>uncalibrated</i>. That's not a flaw in the work, it's a data-volume fact, and shipping it with an honest null is consistent with Principle #2.</div>
+    </div>
+  </div>
+  <div class="card"><h3>Blocked externally (no action available)</h3>
+    <ul>
+      <li><b>FFC ADP</b> — <code>robots.txt</code> disallows <code>/api/</code>, <code>/adp/csv/</code>; no ToS permitting access. Only unblock is written authorization by email.</li>
+      <li><b>Yahoo / ESPN ADP</b> — OAuth + league-scoped; ESPN fetch additionally blocked by bot detection. Yahoo API application still pending (1–2 wk turnaround).</li>
+      <li><b>Depth charts end 2024</b> — no depth-chart signal available for the 2026 draft from this source at all. This is what keeps <code>RB_HANDCUFF</code> out of the archetype taxonomy; it is not a scoping choice.</li>
+      <li><b>Sleeper / Underdog</b> — no public aggregate ADP endpoint exists.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ORG -->
+<div class="pane" id="org">
+  <div class="card"><h3>Current roster — assessment</h3>
+    <div id="otable"></div>
+  </div>
+  <div class="row">
+    <div class="card"><h3>Recommended changes</h3>
+      <ul>
+        <li><b>Add a Data Ops role (Sonnet, effort 1–2).</b> Ingestion is the largest blocker cluster and it keeps losing to modelling work inside Backend's queue, because it's less interesting and Backend is the same agent making the tradeoff. Snapshot capture, injury ingestion, the FantasyPros season loop, and mock logging are mechanical, low-effort, high-consequence, and perfectly suited to the cheapest tier. This is the single best cost-per-value change available.</li>
+        <li><b>Activate Strategist — it is under-used, not idle by design.</b> Three named statistical questions are sitting unanswered: <code>NEED_ADJUSTMENT_SCALE = 10.0</code> unmeasured, the correlation aggregation scheme, and the delta validation design. The stated rule is "activate on a named question." There are three. Use it.</li>
+        <li><b>Retire PM memory-keeping.</b> The repo's <code>assistant-context.md</code> already does current-state memory better than I can, and doing both means paying twice and inviting drift. My memory role should shrink to synthesis the repo can't hold: org model, budget calibration, cross-product research.</li>
+        <li><b>Frontend needs a verification gate in the role definition, not just in policy.</b> Require a screenshot artifact as a deliverable of the session itself, not as a follow-up ask.</li>
+      </ul>
+    </div>
+    <div class="card"><h3>Token efficiency — where the waste actually is</h3>
+      <div id="ttable"></div>
+      <div class="note okbox">The largest single saving is not a model downgrade. It's splitting <code>status.md</code>: every agent, every session, currently pays for 52 KB of partly-contradictory history to learn a handful of current facts.</div>
+    </div>
+  </div>
+  <div class="card"><h3>Model / effort defaults</h3>
+    <div id="mtable"></div>
+    <div class="note">Standing exception: never downgrade effort on a long fidelity-critical spec port. The 38K-char port at escalated effort still produced a false completion report — under-effort there doesn't save tokens, it defers them into a more expensive discovery later.</div>
+  </div>
+</div>
+
+<!-- VERIFY -->
+<div class="pane" id="verify">
+  <div class="card"><h3>History doc vs. live repo</h3>
+    <div id="vtable"></div>
+    <div class="note warnbox">Method: read directly from the connected folder — git logs, <code>docs/</code>, <code>src/</code>, <code>data/export/</code>. No claim below rests on an agent's prose self-report.</div>
+  </div>
+  <div class="card"><h3>Contradictions found inside <code>status.md</code></h3>
+    <ul>
+      <li>Contract <b>1.6.0 is never introduced</b> — jumps 1.5.1 → "bumped 1.6.0 → 1.7.0".</li>
+      <li><b>Task B / identity hub</b> — recorded as DEFERRED, "not started", and "already built (ADR-036)" in three places.</li>
+      <li><b>ADR-035 MFL ADP</b> — "not started" on one line, shipped in commit <code>3ea587f</code> on another.</li>
+      <li><b>Three conflicting "State:" headers</b> — 139 / 191 / 202 tests, all reading as current. The top-of-file header is ~260 tests stale.</li>
+      <li><b>Bot-seat gate</b> — "permanently unenforceable as currently specced", later made checkable by ADR-043; the absolute claim was never struck.</li>
+      <li><b>Dev-set size</b> — "three seasons" and "4 development seasons" both asserted.</li>
+      <li><b><code>.env</code> exists / does not exist</b> — the false line is still present with the correction filed separately.</li>
+      <li><b>Tests #44/#45/#46</b> still flagged PROVISIONAL pending Task 9, while Task 9 is marked done.</li>
+    </ul>
+    <div class="note badbox">These are the predictable output of an append-only log being used as a state document. The repo already solved this once — <code>assistant-context.md</code>'s own header explains the exact failure mode ("a model handed decisions.md will find −92.9 and cite it with full confidence"). The fix is to apply that same discipline to state.</div>
+  </div>
+</div>
+
+<footer>Snapshot — accurate as of 26 Jul 2026, repo <span class="num">3ea391b</span>. Not live; regenerate after each sprint. Frontend figures unverified (repo not connected to this session).</footer>
+</div>
+
+<script>
+const PRI=[
+{p:"P0",t:"Per-pick draft-state logging",o:"Backend",e:"S",w:"Must land BEFORE mock collection. Without state at every pick, delta/run-detection can never be validated no matter how many mocks you log.",b:"Schema shape decision",u:3},
+{p:"P0",t:"Start ADP snapshot capture",o:"Data Ops",e:"S",w:"Unrecoverable if delayed — you cannot backfill a snapshot of what ADP was on a past date. Every week without it is permanently lost.",b:"None",u:2},
+{p:"P0",t:"Split status.md into log + current-state",o:"PM",e:"S",w:"52KB with ~15 contradictions, read by every agent every session. Cuts recurring token cost and removes a real correctness hazard.",b:"None",u:5},
+{p:"P0",t:"Fix assistant-context.md version stamp",o:"Backend",e:"S",w:"Says contract 1.6.0; actual is 1.7.0. One-line fix to the file every agent is told to trust.",b:"None",u:1},
+{p:"P0",t:"Collect mock drafts toward n=30",o:"Founder",e:"L",w:"Only 1 of ~30 logged. Gates the pre-registered availability decision rule and the product's signature calibration claim. Hard clock: preseason mock lobbies thin out after the draft window.",b:"Per-pick logging first",u:4},
+{p:"P1",t:"FantasyPros 2021–24 preseason backfill",o:"Data Ops",e:"S",w:"Same function already in use, just loop the seasons. Unblocks backtesting any season other than 2025 and the bootstrap CI work behind it.",b:"None",u:2},
+{p:"P1",t:"Decide FantasyPros paid tier",o:"Founder",e:"S",w:"~$72/yr. Free tier caps at 10 rows and reaches 40 players — none of the 233 that need projections. Cannot be engineered around.",b:"Budget call",u:2},
+{p:"P1",t:"Full league rosters endpoint",o:"Backend",e:"M",w:"All 10 teams incl. bench/IR. The Opponents tab cannot render anything meaningful without it — building the tab first would just produce a null screen.",b:"None",u:1},
+{p:"P1",t:"Bootstrap CIs in backtest.py",o:"Backend",e:"M",w:"Guardrails §7 requires season-level bootstrap. Current point estimates (−1,070, −226.4) are close to meaningless without them.",b:"FP backfill",u:1},
+{p:"P1",t:"Pre-registration file convention",o:"Strategist",e:"S",w:"Guardrails §3.4 requires pre-declaring metric and threshold. No file or convention exists yet, and test #53 cannot honestly run before it does.",b:"None",u:1},
+{p:"P1",t:"Per-position rank correlation",o:"Strategist",e:"S",w:"Currently pools all positions, violating guardrails §6. Blocked only on choosing an aggregation scheme.",b:"Design decision",u:1},
+{p:"P2",t:"Weekly finishes + season stats tables",o:"Backend",e:"M",w:"Unblocks the consistency heat-map and the player-detail history section.",b:"None",u:2},
+{p:"P2",t:"Build Opponents + Predictions tabs",o:"Frontend",e:"L",w:"The known headline gap — reported as 'folded into one pane', actually absent. Requires a screenshot artifact as part of the deliverable.",b:"Rosters endpoint",u:0},
+{p:"P2",t:"Measure NEED_ADJUSTMENT_SCALE",o:"Strategist",e:"M",w:"Ships at an arbitrary 10.0. Needs a swept-scale comparison against bpa_consensus before it can be defended.",b:"None",u:0},
+{p:"P2",t:"Archetype threshold verification",o:"Strategist",e:"M",w:"Thresholds never checked against real distributions. Keenan Allen already falls through every WR criterion into UNDETERMINED.",b:"None",u:0},
+{p:"P2",t:"Late-August board re-pull",o:"Data Ops",e:"S",w:"Current board is is_preseason_final=0; rankings will move materially before the draft.",b:"Calendar",u:0},
+{p:"P2",t:"Send frontend the league_id path change",o:"PM",e:"S",w:"Export convention changed to data/export/<league_id>/ and the notification was never sent. Silent breakage risk.",b:"None",u:1},
+{p:"P3",t:"VONA board ordering (P3-1)",o:"Fable",e:"L",w:"Schema prerequisite already satisfied — spread_sd, rank_best, rank_worst are stored. Only the algorithm remains.",b:"Framework spec first",u:1},
+{p:"P3",t:"Opponent behaviour model",o:"Fable",e:"L",w:"Every backtest currently assumes opponents draft to ADP with noise. Gates pick-gap urgency (P3-3).",b:"Framework spec first",u:1},
+{p:"P3",t:"Bottom-up proprietary ranking framework",o:"Fable",e:"L",w:"Founder's stated ambition. Sequencing already agreed: specify framework and validation, defend it, only then build.",b:"By design",u:0},
+{p:"P3",t:"Injury / news pipeline",o:"Fable",e:"L",w:"Deliberately deferred over hallucination risk, with that reasoning stated in the code. Do not reverse mid-sprint.",b:"By design",u:1},
+{p:"P3",t:"AI assistant guardrail redesign",o:"Founder",e:"L",w:"Strip conversational guardrails while explicitly preserving the four architectural principles. Needs its own sprint.",b:"Founder decision",u:0}
+];
+const ORG=[
+{r:"Backend",s:"Working well",n:"399 tests, disciplined ADRs, sanity checks written before implementation. No change needed to how it runs — only to what it stops carrying (ingestion)."},
+{r:"Frontend",s:"Highest risk",n:"Separate branch, not connected here, no recorded test count, one confirmed false completion claim. Least verifiable role doing the most user-visible work."},
+{r:"Design",s:"Adequate, isolated",n:"Produces the spec well. Has no filesystem access to the repo, so drift detection stays manual regardless of tooling choices."},
+{r:"Strategist",s:"Under-used",n:"Held idle while three named statistical questions sit unanswered. The no-DB-access constraint is correct and should stay; the idleness is not deliberate design, it's neglect."},
+{r:"Researcher",s:"Correctly idle",n:"Confidence-tagging discipline is genuinely good. Nothing needs it right now — keep it parked."},
+{r:"PM (me)",s:"Partly redundant",n:"Memory-keeping duplicates what the repo already does better. Should shrink to synthesis, dispatch, and verification gatekeeping."},
+{r:"Data Ops",s:"MISSING — add",n:"The largest blocker cluster has no owner. Mechanical, cheap, high-consequence work that keeps losing Backend's internal priority contest."},
+{r:"Fable",s:"Not yet engaged",n:"Weekly cadence agreed but no briefing has been delivered. Its whole scope sits in P3 — nothing is lost by starting next week rather than now."}
+];
+const TOK=[
+{s:"status.md read by every agent",c:"~13K tokens/session",f:"Split: status.md = append-only log, new current-state.md = one short canonical table"},
+{s:"PM re-deriving state in chat",c:"High, recurring",f:"Read the repo's own context file instead of rebuilding the picture each session"},
+{s:"Pasting history docs into dispatches",c:"5–8K per dispatch",f:"Reference file paths and section names; let the session read the small file itself"},
+{s:"Duplicate memory in project + repo",c:"Compounding drift",f:"Repo owns state; Cowork project owns synthesis. No overlap."},
+{s:"Uncached DB tests",c:"5.7 min/run, growing",f:"Fixture-cache the archetype and description tests"},
+{s:"Opus for routine coordination",c:"Moderate",f:"Sonnet default; escalate only for cross-domain conflicts — already the standing practice"}
+];
+const MOD=[
+{r:"Backend",d:"Sonnet · effort 2",e:"effort 4 — new formula with multiple sanity checks only"},
+{r:"Data Ops (new)",d:"Sonnet · effort 1–2",e:"Never — if a task needs more, it isn't Data Ops"},
+{r:"Frontend",d:"Sonnet · effort 3",e:"effort 4–5 for any full spec port; never downgrade these"},
+{r:"Strategist",d:"Opus · effort 4",e:"Per named question, not standing"},
+{r:"Researcher",d:"Opus · effort 4–5",e:"Only when a claim needs sourced verification"},
+{r:"PM",d:"Sonnet",e:"Opus for cross-domain conflict or irreversible architecture calls"},
+{r:"Fable",d:"Heaviest tier",e:"Weekly, real material only"}
+];
+const VER=[
+{i:"Backend commit",h:"3ea391b",a:"3ea391b74249f3… on master",s:"ok"},
+{i:"Backend tests",h:"399",a:"399 (8 λ + 13 live-avail + 4 strategy + 6 config matrix)",s:"ok"},
+{i:"Data contract",h:"1.7.0",a:"1.7.0 — but assistant-context.md still says 1.6.0",s:"warn"},
+{i:"Export JSONs",h:"7 files",a:"7 + player_descriptions.json (separate versioning, by design)",s:"ok"},
+{i:"Config matrix",h:"24 configs",a:"24 dirs confirmed on disk, board+league+availability stubs",s:"ok"},
+{i:"Frontend commit",h:"d7cd321",a:"status.md says 7276a2d on frontend-prep — history doc appears stale",s:"warn"},
+{i:"Frontend tests",h:"110",a:"No frontend test count recorded anywhere in the repo",s:"bad"},
+{i:"Git remote",h:"—",a:"None configured. This is why 'GitHub wasn't working' — nothing was ever pushed.",s:"warn"},
+{i:"Mock drafts",h:"0 logged",a:"1 (the real 2025 draft, is_mock=0). Still 1 of ~30.",s:"warn"},
+{i:"λ = 0.352",h:"measured",a:"Confirmed: lambda_estimation.py, SE 0.070, z 5.04, n=160/10 clusters",s:"ok"},
+{i:"src/ modules",h:"7 named",a:"33 Python modules present — history doc listed only the headline set",s:"ok"}
+];
+function tbl(el,cols,rows,rf){
+ let h='<table><thead><tr>'+cols.map(c=>`<th>${c.l}</th>`).join('')+'</tr></thead><tbody>';
+ rows.forEach(r=>{h+='<tr>'+cols.map(c=>`<td>${rf?rf(c.f,r[c.f],r):r[c.f]}</td>`).join('')+'</tr>'});
+ document.getElementById(el).innerHTML=h+'</tbody></table>';
+}
+function renderP(){
+ const p=document.getElementById('fp').value,o=document.getElementById('fo').value,e=document.getElementById('fe').value;
+ const d=PRI.filter(x=>(p==='all'||x.p===p)&&(o==='all'||x.o===o)&&(e==='all'||x.e===e));
+ document.getElementById('cnt').textContent=`${d.length} of ${PRI.length} items`;
+ tbl('ptable',[{l:'',f:'p'},{l:'Item',f:'t'},{l:'Owner',f:'o'},{l:'Effort',f:'e'},{l:'Unblocks',f:'u'},{l:'Blocked on',f:'b'},{l:'Why this rank',f:'w'}],d,
+  (f,v)=>f==='p'?`<span class="pill ${v.toLowerCase()}">${v}</span>`:f==='o'?`<span class="tag">${v}</span>`:f==='e'?`<span class="num">${v}</span>`:f==='u'?`<span class="num">${v||'—'}</span>`:f==='w'?`<span class="small">${v}</span>`:v);
+}
+['fp','fo','fe'].forEach(i=>document.getElementById(i).addEventListener('change',renderP));
+[...new Set(PRI.map(x=>x.o))].sort().forEach(o=>{const s=document.createElement('option');s.textContent=o;document.getElementById('fo').appendChild(s)});
+renderP();
+tbl('otable',[{l:'Role',f:'r'},{l:'Assessment',f:'s'},{l:'Detail',f:'n'}],ORG,(f,v)=>f==='r'?`<b>${v}</b>`:f==='s'?`<span class="pill ${v.includes('MISSING')?'p0':v.includes('risk')?'p0':v.includes('Under')||v.includes('redundant')?'p1':'p3'}">${v}</span>`:`<span class="small">${v}</span>`);
+tbl('ttable',[{l:'Sink',f:'s'},{l:'Cost',f:'c'},{l:'Fix',f:'f'}],TOK,(f,v)=>f==='c'?`<span class="num" style="color:var(--down)">${v}</span>`:f==='f'?`<span class="small">${v}</span>`:v);
+tbl('mtable',[{l:'Role',f:'r'},{l:'Default',f:'d'},{l:'Escalate',f:'e'}],MOD,(f,v)=>f==='d'?`<span class="num ver">${v}</span>`:f==='e'?`<span class="small">${v}</span>`:`<b>${v}</b>`);
+tbl('vtable',[{l:'Item',f:'i'},{l:'History doc claimed',f:'h'},{l:'Repo actually shows',f:'a'},{l:'',f:'s'}],VER,
+ (f,v)=>f==='s'?`<span class="pill ${v==='ok'?'p3':v==='warn'?'p1':'p0'}">${v==='ok'?'MATCH':v==='warn'?'DRIFT':'UNVERIFIABLE'}</span>`:f==='h'?`<span class="num" style="color:var(--dim)">${v}</span>`:f==='a'?`<span class="small">${v}</span>`:v);
+document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
+ document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));
+ document.querySelectorAll('.pane').forEach(x=>x.classList.remove('on'));
+ t.classList.add('on');document.getElementById(t.dataset.p).classList.add('on');
+}));
+const gs={color:'#8b95a7',font:{size:10}},gg={color:'#222937'};
+new Chart(document.getElementById('c1'),{type:'line',data:{labels:['S4','S7','S8','S8+','S10a','S10b','S10c','S11'],datasets:[{label:'Tests',data:[139,191,202,209,288,316,368,399],borderColor:'#7dd3a0',backgroundColor:'rgba(125,211,160,.10)',fill:true,tension:.25,pointRadius:3,pointBackgroundColor:'#7dd3a0'}]},options:{responsive:true,maintainAspectRatio:false,animation:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:gs},y:{beginAtZero:true,grid:gg,ticks:gs}}}});
+new Chart(document.getElementById('c2'),{type:'bar',data:{labels:['External access','Data volume','Missing ingestion','Design decision','Modelling infra','Scope only'],datasets:[{data:[4,3,4,4,4,4],backgroundColor:['#ff5f56cc','#f0a35ecc','#4cc9f0cc','#7dd3a0cc','#b39ddbcc','#5b6474cc'],borderRadius:3}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,animation:false,plugins:{legend:{display:false}},scales:{x:{beginAtZero:true,grid:gg,ticks:gs},y:{grid:{display:false},ticks:gs}}}});
+</script>
+</body>
+</html>
