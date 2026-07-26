@@ -7883,8 +7883,8 @@
       }
     }
   },
-  "contract_version": "1.5.1",
-  "generated_utc": "2026-07-26T03:34:27.819149+00:00",
+  "contract_version": "1.6.0",
+  "generated_utc": "2026-07-26T04:23:50.344536+00:00",
   "metadata": {
     "season": 2026,
     "simulations_per_setting": 3000,
