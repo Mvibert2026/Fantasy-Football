@@ -551,3 +551,49 @@ schema; `league_id` is now present on every artifact as a cross-check.
   league-invariance section.
 - **Only ADR-026 (alpha-detection closure) is confirmed to travel across leagues.** Every other
   finding, including the ones in `nulls.json`, is league-specific until proven otherwise.
+
+---
+
+# SESSION HANDOFF -- 2026-07-26 (session 10, item 3 continued, stopping now per token-limit warning)
+
+## What's done and committed this round: ADR-042, mock draft logging
+
+`src/ingest_mock_drafts.py` -- file-based ingestion matching the front end's exact schema
+(mock_drafts/mock_picks), plus mock_pick_quarantine (ours). Name resolution via new
+`identity.resolve_name()` (public, promoted from a private helper). Format-mismatch gate
+implemented; bot-seat gate NOT implementable from this schema, flagged `bot_seat_status='unknown'`
+per mock rather than silently passed.
+
+`src/mock_validation_report.py` -- Levels 1 (positional depletion) and 2 (3-bucket per-player
+calibration) of `mock_validation_protocol.md`, built and tested against both a zero-mock state
+(current reality -- reports "no measurement", not a fabricated number) and a seeded non-zero
+case (verifies the counting logic itself). Reuses the shipped `data/availability_2026.csv` for
+predictions rather than re-simulating.
+
+**26 new tests. 316 passing project-wide.** Full detail in ADR-042, decisions.md.
+
+## NOT done -- explicit scope cuts, not oversights
+
+- **Tertiary (dispersion vs. sigma schedule) -- NOT built.** The protocol calls this "the
+  highest-value output of the whole exercise." Real, well-specified, cut for time.
+- **Brier score vs. rank-logistic baseline (protocol SS1, the actual pass/fail criterion) --
+  NOT built.**
+- **Bot-seat gate is permanently unenforceable as currently specced.** Raise with whoever owns
+  the front end's mock-draft export next: either the mock tool can report per-seat human/bot
+  status and it should be added to the schema, or it can't and this gate never runs. Not decided
+  here.
+- **Item 4 (player descriptions) -- not started, as instructed.** `archetype_taxonomy.md` was
+  read and understood this session (closed RB/WR/TE enums, UNDETERMINED fallback, evaluation
+  order specified, thresholds flagged as unverified conventions). Nothing implemented against it.
+
+## Where a fresh session picks up
+
+1. If continuing item 3: `mock_validation_report.py` needs a `level3_dispersion_report()`
+   (observed SD of depletion counts per pick/position vs. the sigma schedule's implied SD --
+   the `best_available_dist` p10/p90 spread already in the CSV is the relevant input) and a
+   `brier_vs_baseline()` (fit `P(survive) = sigmoid(a + b*(pick - consensus_rank))` on
+   conforming-mock outcomes, compare Brier score against the shipped model's predictions).
+2. If starting item 4: read `archetype_taxonomy.md` (path was `C:\Users\matth\Downloads\
+   archetype_taxonomy.md` this session -- confirm it's still there or ask for it again), start
+   from the identity hub (ADR-036, already built) to resolve which players get which archetype.
+3. **No uncommitted work.** Working tree is clean at the end of this message.

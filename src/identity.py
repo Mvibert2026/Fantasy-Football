@@ -56,7 +56,7 @@ _SUFFIX_RE = re.compile(r"\s+(jr|sr|ii|iii|iv|v)\.?$", re.IGNORECASE)
 _PUNCT_RE = re.compile(r"[.'\-]")
 
 
-def _normalize_name(name: str) -> str:
+def normalize_name(name: str) -> str:
     """Coverage-report matching only -- see coverage_report_for_board's
     docstring. Never used to populate player_ids; a wrong match here only
     mislabels a stat, not a join a downstream feature would trust."""
@@ -268,12 +268,12 @@ def coverage_report_for_board(
     merge_to_mfl: Dict[str, str] = {}
     for mfl_id, name in conn.execute("SELECT mfl_id, display_name FROM players_canonical"):
         if name:
-            merge_to_mfl.setdefault(_normalize_name(name), mfl_id)
+            merge_to_mfl.setdefault(normalize_name(name), mfl_id)
 
     matched_mfl_ids = []
     unmatched = []
     for name in board_names:
-        mfl_id = merge_to_mfl.get(_normalize_name(name))
+        mfl_id = merge_to_mfl.get(normalize_name(name))
         if mfl_id:
             matched_mfl_ids.append(mfl_id)
         else:
@@ -301,6 +301,26 @@ def coverage_report_for_board(
             "coverage_of_matched_board_players": round(n / len(matched_mfl_ids), 4),
         }
     return out
+
+
+def resolve_name(
+    conn: sqlite3.Connection, player_name_raw: str, position: Optional[str] = None
+) -> Optional[str]:
+    """mfl_id for a raw player name, via the SAME suffix/punctuation
+    normalization as coverage_report_for_board() (measured there at 98.5% on
+    the live board). Returns None on zero matches OR on more than one
+    (ambiguous) -- never guesses, same invariant as resolve(). Used by
+    ingest_mock_drafts.py to resolve player_name_raw -- unmatched or
+    ambiguous names must go to quarantine, not a best-effort pick.
+    """
+    key = normalize_name(player_name_raw)
+    rows = conn.execute("SELECT mfl_id, display_name, position FROM players_canonical").fetchall()
+    matches = [r for r in rows if r[1] and normalize_name(r[1]) == key]
+    if position:
+        matches = [r for r in matches if r[2] == position]
+    if len(matches) != 1:
+        return None
+    return matches[0][0]
 
 
 @dataclass

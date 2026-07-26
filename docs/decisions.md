@@ -1106,3 +1106,65 @@ patched):**
 covering config validation, engine/primary-function parity, the mock league's structural
 generalization, and export-function-level assertions (not just file inspection) for both leagues.
 **288 tests passing project-wide.**
+
+---
+
+## 2026-07-26 (session 10, item 3 continued) -- Mock draft logging
+
+### ADR-042: Mock draft validation instrument -- ingestion complete, Levels 1-2 of the report complete, Tertiary and Brier-baseline NOT built
+
+**Decision.** `src/ingest_mock_drafts.py` (file-based ingestion, matching the front end's schema
+exactly) + `src/mock_validation_report.py` (Levels 1-2 of `mock_validation_protocol.md`).
+Primary consumer, stated explicitly per instruction: **validating the availability model** --
+every availability figure this project has shipped (ADR-034's mixture, the sigma schedule) has
+been unvalidated against any real draft behavior until this exists.
+
+**Schema exactly as specified, no additions**, since the point is ingestion needing no
+translation from whatever the front end exports:
+
+```
+mock_drafts(mock_id, league_config_id, platform, drafted_at, source, is_mock)
+mock_picks(mock_id, overall_pick, round, team_slot, mfl_id, player_name_raw,
+           predicted_top, predicted_p, timestamp)
+```
+
+Plus `mock_pick_quarantine(mock_id, overall_pick, player_name_raw, mfl_id_supplied, reason,
+quarantined_at)` -- not in the front-end schema, ours alone, for unresolved picks.
+
+**Name resolution: `identity.resolve_name()` (new, public -- promoted from a private helper
+already proven at 98.5% coverage in `coverage_report_for_board`).** Zero or ambiguous (>1)
+matches go to quarantine, never a guess -- the same invariant `resolve()` already enforces for
+ID-based lookups, extended to names. A supplied `mfl_id` is validated against
+`players_canonical`, not trusted blindly.
+
+**Two protocol discard gates, one implemented, one named as a genuine schema gap:**
+
+1. **Format-mismatch** (10-team/3WR-2FLEX/no-kicker/half-PPR) -- IMPLEMENTED
+   (`format_conforms()`), checked against the mock's `league_config_id` at ingestion, stored per
+   mock, never silently adjusted or reweighted.
+2. **Bot-seat gate** (>3 bot seats discarded) -- **NOT CHECKABLE from this schema.** Neither table
+   carries `drafter_type` per seat. Every ingested mock gets `bot_seat_status='unknown'` rather
+   than silently passing or silently failing the gate. `mock_validation_report.py` INCLUDES
+   unknown-status mocks (excluding all of them would make the report report zero mocks forever)
+   but states this loudly in every report's caveats. **This is a real question for whoever specs
+   the front end's export next** -- either the mock tool can report per-seat bot/human status and
+   it should be added to the schema, or it cannot and the gate is permanently unenforceable.
+
+**Report: Levels 1-2 built, Tertiary and the Brier-vs-baseline test explicitly NOT built.**
+Level 1 (positional depletion at the primary league's own first 7 picks -- computed as
+`ds.user_pick_numbers()[:7]`, confirmed to equal the protocol's literal [3,18,23,38,43,58,63])
+and Level 2 (per-player calibration, 3 buckets not 5, per the protocol's own reasoning that the
+board is fixed across mocks so effective N is ~40 players, not player x mock count) are real,
+tested, and reuse the already-shipped `data/availability_2026.csv` for predictions rather than
+re-simulating. **The protocol calls Tertiary (observed dispersion vs. the sigma schedule's
+implied SD) "the highest-value output of the whole exercise" -- it is not built.** Neither is the
+one-parameter rank-logistic Brier-score baseline (protocol SS1's actual pass/fail criterion).
+Both are real, well-specified remaining work, cut for time, not forgotten -- see status.md.
+
+**Report correctly reports "no measurement", not a fabricated number, at n=0** (the actual
+current state -- zero mocks are logged). `_power_note()` scales its language at 0 / <10 / <30 /
+>=30 mocks, matching the protocol's own power table exactly.
+
+**26 new tests** (`test_ingest_mock_drafts.py`, `test_mock_validation_report.py`), including a
+seeded (non-zero) case verifying the depletion-counting logic itself, not just the empty-state
+path. **316 tests passing project-wide.**
