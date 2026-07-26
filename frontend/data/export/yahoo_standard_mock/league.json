@@ -1,0 +1,146 @@
+{
+  "contract_version": "1.6.0",
+  "generated_utc": "2026-07-26T05:24:03.278581+00:00",
+  "league_id": "yahoo_standard_mock",
+  "league_name": "Yahoo Standard 12-team (mock, approximate -- values pending correction)",
+  "platform": "yahoo",
+  "teams": 12,
+  "rounds": 15,
+  "user_draft_slot": 6,
+  "draft_type": "snake",
+  "pick_sequence": [
+    6,
+    19,
+    30,
+    43,
+    54,
+    67,
+    78,
+    91,
+    102,
+    115,
+    126,
+    139,
+    150,
+    163,
+    174
+  ],
+  "roster": {
+    "starters": {
+      "QB": 1,
+      "RB": 2,
+      "WR": 2,
+      "TE": 1,
+      "K": 1,
+      "DEF": 1,
+      "FLEX": 1
+    },
+    "flex_eligible": [
+      "RB",
+      "WR",
+      "TE"
+    ],
+    "bench": 6,
+    "ir": 0,
+    "kicker": true
+  },
+  "scoring": {
+    "offense": {
+      "passing_yards": {
+        "per": 25,
+        "bonuses": []
+      },
+      "passing_td": 4,
+      "interception": -2,
+      "rushing_yards": {
+        "per": 10,
+        "bonuses": []
+      },
+      "rushing_td": 6,
+      "receptions": 0,
+      "receiving_yards": {
+        "per": 10,
+        "bonuses": []
+      },
+      "receiving_td": 6,
+      "return_td": 6,
+      "two_point_conversion": 2,
+      "fumbles_lost": -2,
+      "offensive_fumble_return_td": 6
+    },
+    "defense": {
+      "sacks": 1,
+      "interceptions": 2,
+      "fumble_recoveries": 2,
+      "touchdowns": 6,
+      "safeties": 2,
+      "blocked_kicks": 2,
+      "return_tds": 6,
+      "extra_point_returned": 2,
+      "points_allowed": [
+        [
+          0,
+          10
+        ],
+        [
+          6,
+          7
+        ],
+        [
+          13,
+          4
+        ],
+        [
+          20,
+          1
+        ],
+        [
+          27,
+          0
+        ],
+        [
+          34,
+          -1
+        ],
+        [
+          null,
+          -4
+        ]
+      ],
+      "points_allowed_note": "Tiers are [points_allowed_ceiling, bonus], inclusive upper bound. A null ceiling means NO UPPER BOUND (the open-ended top tier) -- it does not mean 'not available' as null does elsewhere in this contract."
+    },
+    "kicker": {
+      "note": "PLACEHOLDER ROSTER SLOT ONLY -- no kicker scoring engine exists in this project (ADR-041). This sub-dict is not read by any scoring function."
+    }
+  },
+  "replacement_levels": {
+    "QB": 12,
+    "RB": 30,
+    "WR": 30,
+    "TE": 12
+  },
+  "positions_without_replacement_levels": [
+    "DEF",
+    "K"
+  ],
+  "positions_without_replacement_levels_note": "DEF, K are starting slot(s) with no scoring data ingested (no kicker or DST stats exist in this project). Do not derive a value for them from these files.",
+  "replacement_levels_note": "Derived from this league's 12 teams and starter counts, not hardcoded. See replacement_levels_flex_split_note in board.json for whether flex_split was measured for this specific league.",
+  "flex_split_assumption": {
+    "RB": 0.52,
+    "WR": 0.48,
+    "TE": 0.0
+  },
+  "flex_split_measured": false,
+  "flex_split_note": "NOT measured for this league (flex_split_measured is false): borrowed from the primary league's ADR-029 measurement as an explicitly flagged placeholder. A real measurement requires re-running that analysis under this league's own scoring rules, which has not been done.",
+  "playoff": {
+    "teams": 6,
+    "weeks": [
+      15,
+      16,
+      17
+    ],
+    "reseeding": true
+  },
+  "trade_deadline": null,
+  "faab_budget": null
+}

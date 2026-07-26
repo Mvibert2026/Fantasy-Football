@@ -1,0 +1,315 @@
+/**
+ * Shapes of the export artifacts, transcribed from docs/data-contract.md and verified
+ * against the files in data/export/.
+ *
+ * These describe the artifacts as they actually are, which in two places differs from
+ * the prose in the contract doc (the doc is at 1.1.0; the artifacts declare 1.0.0):
+ *
+ *   - `tier` is an int with a separate `tier_label` string; the doc describes a single
+ *     string field.
+ *   - `evaluative_adjustment` is 0 with a sibling `evaluative_adjustment_available:
+ *     false`; the doc says the field is always null.
+ *
+ * Both are recorded in the contract-drift banner rather than smoothed over here.
+ */
+
+export type Position = 'QB' | 'RB' | 'WR' | 'TE';
+
+export interface RawBoardPlayer {
+  id: number;
+  player_id_gsis: string | null;
+  overall_rank: number;
+  player: string;
+  position: Position;
+  positional_rank: number;
+  positional_label: string;
+  team: string;
+  bye_week: number | null;
+  projected_points: number;
+  ci_low: number | null;
+  ci_high: number | null;
+  ci_applies_to: string;
+  /**
+   * False for 233 of 378 players. When false, `projection_note` instructs the UI not
+   * to display `projected_points` at all -- the field is populated but contractually
+   * suppressed. This is the sparse state.
+   */
+  projection_within_fitted_range: boolean;
+  projection_note: string | null;
+  vbd: number;
+  consensus_rank: number;
+  delta_vs_consensus: number;
+  tier: number;
+  tier_label: string;
+  structural_adjustment: number;
+  structural_breakdown: {
+    replacement_levels: number;
+    scoring_and_vbd_method: number;
+  };
+  evaluative_adjustment: number;
+  evaluative_adjustment_available: boolean;
+  evaluative_adjustment_note: string;
+  availability: Record<string, unknown>;
+}
+
+export interface RawBoard {
+  contract_version: string;
+  generated_utc: string;
+  /** Absent on the default league today; required on every artifact under a
+   *  data/export/<league_id>/ subdirectory. See ui/data/league-registry.ts. */
+  league_id?: string | null;
+  season: number;
+  board_source: string;
+  consensus_source: string;
+  consensus_source_count: number;
+  consensus_source_note: string;
+  consensus_state: string;
+  attribution_is_additive: boolean;
+  attribution_identity: string;
+  curve_fits: Record<Position, { r_squared: number; residual_sd: number; n_obs: number }>;
+  curve_caveat: string;
+  replacement_levels_used: Record<Position, number>;
+  published_levels_compared_against: Record<Position, number>;
+  def_supported: boolean;
+  def_note: string;
+  players: RawBoardPlayer[];
+}
+
+export interface RawLeague {
+  contract_version: string;
+  league_id?: string | null;
+  /** Added contract 1.7.0 (ADR-041). Absent on an older export. */
+  league_name?: string;
+  teams: number;
+  rounds: number;
+  user_draft_slot: number;
+  pick_sequence: number[];
+  roster: {
+    starters: Record<string, number>;
+    flex_eligible: string[];
+    bench: number;
+    ir: number;
+    kicker: boolean;
+  };
+  scoring: Record<string, unknown>;
+  replacement_levels: Record<string, number>;
+  replacement_levels_note: string;
+  /**
+   * Positions that start in this league but carry no replacement level on purpose,
+   * added at contract 1.5.0. DEF is the only member and the exclusion is permanent
+   * (ADR-039) -- see `reasonForMissingLevel` in league.ts before touching it.
+   */
+  positions_without_replacement_levels?: string[];
+  positions_without_replacement_levels_note?: string;
+  flex_split_assumption: Record<string, number>;
+  flex_split_note: string;
+  playoff: { teams: number; weeks: number[]; reseeding: boolean };
+  trade_deadline: string;
+  faab_budget: number;
+}
+
+export interface RawGlossary {
+  contract_version: string;
+  generated_utc: string;
+  league_id?: string | null;
+  terms: Record<string, { short_definition: string; long_explanation: string }>;
+}
+
+export interface RawNulls {
+  contract_version: string;
+  generated_utc: string;
+  league_id?: string | null;
+  preamble: string;
+  findings: Array<{
+    id: string;
+    claim_tested: string;
+    method: string;
+    result: string;
+    plain_language_summary: string;
+  }>;
+}
+
+export interface RawStrategySigma {
+  sigma: number;
+  mean_roster_points: number;
+  p_top4: number;
+  margin_vs_baseline: number | null;
+  ci_low: number | null;
+  ci_high: number | null;
+  seasons_positive: number | null;
+  sign_test_p: number | null;
+  per_season_margin: Record<string, number> | null;
+  simulation_se: number;
+}
+
+export interface RawStrategies {
+  contract_version: string;
+  generated_utc: string;
+  league_id?: string | null;
+  baseline: string;
+  seasons: number[];
+  simulations_per_cell: number;
+  seed: number;
+  sigma_values: number[];
+  power_floor: {
+    n_seasons: number;
+    smallest_attainable_two_sided_p: number;
+    plain_english: string;
+  };
+  lineup_assumption: string;
+  strategies: Array<{
+    name: string;
+    is_baseline: boolean;
+    by_sigma: RawStrategySigma[];
+    verdict: string;
+  }>;
+}
+
+/**
+ * One opponent's profile. Every field beyond team_name/draft_slot/known_picks is
+ * nullable because it genuinely is null for most opponents in this league: the
+ * backend's own coverage_warning says so (7 of 9 have no behavioural data at
+ * all). `data_status` names exactly what's known and how, per player -- this is
+ * the field this screen leans on instead of inventing confidence where none exists.
+ */
+export interface RawOpponent {
+  /** Null for slots with no supplied identity -- 7 of 9 in the real export.
+   *  Render the slot number, never a blank or a fabricated name. */
+  team_name: string | null;
+  draft_slot_2026: number;
+  draft_slot_2025: number | null;
+  known_picks_2026: number[];
+  positional_tendencies: string | null;
+  first_pick_by_position: string | null;
+  consensus_tracking_behaviour: string | null;
+  notes: string;
+  cited_2025_picks: number[];
+  holds_picks_19_to_22: boolean;
+  data_status: string;
+}
+
+export interface RawOpponents {
+  contract_version: string;
+  generated_utc: string;
+  league_id?: string | null;
+  user_draft_slot: number;
+  coverage_warning: string;
+  opponents: RawOpponent[];
+}
+
+/**
+ * The news feed contract. Nothing produces this yet -- there is no ingested corpus
+ * anywhere in the repo, so the lane resolves to zero items and says so.
+ *
+ * There is deliberately no body-text field. News prose is licensed; storing or
+ * re-rendering it is not something this app will do. A headline, an attribution and
+ * a link out is the whole of what gets kept.
+ */
+export interface FeedItem {
+  headline: string;
+  source_name: string;
+  url: string;
+  /** ISO 8601. Drives the staleness rule -- see STALE_AFTER_MS. */
+  published_at: string;
+  /** Board player ids this item attaches to. */
+  player_ids: number[];
+  retrieved_at: string;
+}
+
+export interface RawFeed {
+  contract_version: string;
+  generated_utc: string;
+  league_id?: string | null;
+  items: FeedItem[];
+}
+
+export interface RawAvailabilitySigma {
+  sigma_5: number;
+  sigma_10: number;
+  sigma_20: number;
+}
+
+/**
+ * Availability probabilities: how likely a player (or the best player left in a
+ * tier) is to survive to a given pick, simulated against this league's format.
+ *
+ * Both `by_player` and `by_tier` are keyed down to a pick number (one of the
+ * user's own picks, as a string key), holding one RawAvailabilitySigma per pick --
+ * a reading at each of the three sigma settings the model was run at, never a
+ * single collapsed number. There is no `noise_band` field anywhere in this
+ * artifact; the three-sigma sweep is the shape, not a placeholder for one.
+ */
+export interface RawAvailability {
+  contract_version: string;
+  generated_utc: string;
+  league_id?: string | null;
+  /** Player name -> pick number (string) -> sigma triple. Covers the top players
+   *  simulated, not the full board -- absence means "not simulated", not zero. */
+  by_player: Record<string, Record<string, RawAvailabilitySigma>>;
+  /** Position -> tier label -> pick number (string) -> sigma triple. */
+  by_tier: Record<string, Record<string, Record<string, RawAvailabilitySigma>>>;
+  metadata: {
+    season: number;
+    simulations_per_setting: number;
+    sigma_values: number[];
+    sigma_plain_english: string;
+    user_draft_slot: number;
+    user_picks: number[];
+    reliability_note: string;
+    /** True: by_player/by_tier are averages over every possible draft, not
+     *  conditioned on picks actually made. See `marginals_note`. */
+    figures_are_unconditional_marginals: boolean;
+    marginals_note: string;
+  };
+  /**
+   * Parameters for a future client-side simulator that would recompute
+   * availability conditioned on real picks made so far, instead of these
+   * unconditional Prep-mode marginals. Not consumed by this build -- Draft mode
+   * (which would condition on live picks) is explicitly out of scope for now.
+   */
+  client_simulation_parameters: {
+    ranking_sources: Array<{ name: string; weight: number }>;
+    mechanical_need_targets: Record<string, number>;
+    mechanical_need_targets_note: string;
+    max_at_position: Record<string, number>;
+    need_penalty_per_surplus: number;
+    room_noise_drawn_once_per_draft: boolean;
+    room_noise_note: string;
+    algorithm_note: string;
+  };
+}
+
+export interface ArtifactManifestEntry {
+  file: string;
+  contract_version: string | null;
+  generated_utc: string | null;
+  /** Null for the default league today -- the backend has not added `league_id`
+   *  to any default-league artifact, only to the convention for additional
+   *  leagues under data/export/<league_id>/. */
+  league_id: string | null;
+  /**
+   * `name@contract_version+generated_utc`, or `name@unversioned` when the artifact
+   * carries no timestamp. league.json has no `generated_utc`, so it takes the fallback.
+   */
+  run_id: string;
+}
+
+/** One additional league's artifact set, from public/data/_leagues.json. Empty
+ *  today -- no backend league directory exists yet -- but the shape is real, not
+ *  speculative: sync-exports.mjs writes it from whatever it actually finds under
+ *  data/export/<id>/. */
+export interface LeagueManifestEntry {
+  id: string;
+  /** league.json's own league_name where available (contract 1.7.0+), else the id. */
+  label: string;
+  artifacts: Record<string, ArtifactManifestEntry>;
+}
+
+export interface LeaguesManifest {
+  leagues: LeagueManifestEntry[];
+}
+
+export interface Manifest {
+  synced_utc: string;
+  artifacts: Record<string, ArtifactManifestEntry>;
+}

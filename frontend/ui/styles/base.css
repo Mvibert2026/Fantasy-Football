@@ -1,0 +1,446 @@
+@import './tokens.css';
+
+/*
+ * Radius on chrome only (FRONTEND-SPEC.md §2.3). Nothing gets a universal reset
+ * any more -- an unstyled element's browser-default 0 radius is exactly what data
+ * cells and table rows want, so they need no rule at all. Only chrome opts in.
+ */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+button,
+input,
+select,
+textarea {
+  border-radius: 5px;
+}
+
+.card,
+.chip,
+.filter-pill,
+.table-wrap {
+  border-radius: var(--r-c);
+}
+
+.overlay,
+.modal,
+.popover {
+  border-radius: var(--r-m);
+}
+
+.pill {
+  border-radius: 999px;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font: var(--fs-base) / var(--lh-body) var(--font-ui);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Ported verbatim from the prototype's global reset. */
+input,
+button,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+::-webkit-scrollbar {
+  width: 9px;
+  height: 9px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--line2);
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+@keyframes ffpulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+@keyframes ffrise {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+h1,
+h2,
+h3 {
+  margin: 0;
+  font-weight: 600;
+  line-height: var(--lh-tight);
+}
+h1 {
+  font-size: var(--fs-xl);
+  letter-spacing: -0.01em;
+}
+h2 {
+  font-size: var(--fs-lg);
+}
+h3 {
+  font-size: var(--fs-base);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--fg-muted);
+}
+
+p {
+  margin: 0 0 0.75em;
+  max-width: 68ch;
+}
+
+a {
+  color: var(--accent);
+}
+
+button,
+input,
+select {
+  font: inherit;
+  color: inherit;
+  background: var(--bg-raised);
+  border: var(--border-w) solid var(--border);
+  padding: var(--pad-y) var(--pad-x);
+}
+
+button {
+  cursor: pointer;
+}
+button:hover {
+  border-color: var(--border-strong);
+}
+button[aria-pressed='true'] {
+  background: var(--accent-bg);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* ---- App frame ---------------------------------------------------------- */
+
+.app {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  height: 100%;
+}
+
+.topbar {
+  display: flex;
+  align-items: baseline;
+  gap: var(--gap-lg);
+  padding: var(--pad-y) var(--gap);
+  border-bottom: var(--border-w) solid var(--border-strong);
+}
+
+.topbar nav {
+  display: flex;
+  gap: 2px;
+}
+
+.topbar nav button {
+  border: var(--border-w) solid transparent;
+  background: transparent;
+  text-transform: uppercase;
+  font-size: var(--fs-sm);
+  letter-spacing: 0.08em;
+}
+
+.wordmark {
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  font-size: var(--fs-sm);
+}
+
+.stamp {
+  margin-left: auto;
+  font-family: var(--font-num);
+  font-size: var(--fs-xs);
+  color: var(--fg-faint);
+}
+
+.view {
+  overflow: auto;
+  padding: var(--gap);
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-lg);
+}
+
+/* ---- Notices ------------------------------------------------------------ */
+
+.notice {
+  border: var(--border-w) solid var(--border);
+  border-left: 3px solid var(--accent);
+  padding: var(--pad-x);
+  background: var(--bg-sunken);
+  font-size: var(--fs-sm);
+  max-width: 88ch;
+}
+
+.notice h3 {
+  margin-bottom: 4px;
+}
+
+/* ---- Empty is the default state, not an error --------------------------- */
+
+.empty {
+  border: var(--border-w) solid var(--border);
+  padding: var(--gap);
+  background: var(--bg-sunken);
+  color: var(--fg-muted);
+  font-size: var(--fs-sm);
+  max-width: 78ch;
+}
+
+.empty strong {
+  color: var(--fg);
+  font-weight: 600;
+}
+
+/* ---- Values ------------------------------------------------------------- */
+
+.num {
+  font-family: var(--font-num);
+  font-variant-numeric: tabular-nums;
+}
+
+.val-absent {
+  color: var(--sparse-fg);
+  font-family: var(--font-num);
+  cursor: help;
+  border-bottom: 1px dashed var(--border);
+}
+
+.pos {
+  color: var(--pos);
+}
+.neg {
+  color: var(--neg);
+}
+
+/* ---- Table -------------------------------------------------------------- */
+
+.table-wrap {
+  overflow-x: auto;
+  border: var(--border-w) solid var(--border);
+}
+
+table.board {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: var(--fs-sm);
+}
+
+table.board th,
+table.board td {
+  padding: 0 var(--pad-x);
+  height: var(--row-h);
+  text-align: left;
+  border-bottom: var(--border-w) solid var(--border);
+  white-space: nowrap;
+}
+
+table.board thead th {
+  position: sticky;
+  top: 0;
+  background: var(--bg);
+  border-bottom: var(--border-w) solid var(--border-strong);
+  font-size: var(--fs-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--fg-muted);
+  font-weight: 500;
+  z-index: 1;
+}
+
+table.board td.n,
+table.board th.n {
+  text-align: right;
+  font-family: var(--font-num);
+  font-variant-numeric: tabular-nums;
+}
+
+table.board tbody tr:hover {
+  background: var(--bg-sunken);
+}
+
+table.board tbody tr[aria-selected='true'] {
+  background: var(--accent-bg);
+}
+
+/* A sparse row is styled as a legitimate state: same weight, marked at the edge. */
+tr.sparse td:first-child {
+  box-shadow: inset 3px 0 0 -1px var(--border);
+}
+
+.startable-off {
+  color: var(--fg-faint);
+}
+
+/* ---- Round grid --------------------------------------------------------- */
+
+.round-grid {
+  display: grid;
+  gap: 1px;
+  background: var(--border);
+  border: var(--border-w) solid var(--border);
+}
+
+.round-cell {
+  background: var(--bg);
+  padding: var(--pad-y) var(--pad-x);
+  min-height: calc(var(--row-h) * 2);
+  font-size: var(--fs-xs);
+}
+
+.round-cell.mine {
+  background: var(--accent-bg);
+  outline: var(--border-w) solid var(--accent);
+  outline-offset: -1px;
+}
+
+.round-cell .pick-no {
+  font-family: var(--font-num);
+  color: var(--fg-faint);
+}
+
+/* ---- Definition lists --------------------------------------------------- */
+
+.defs {
+  display: grid;
+  grid-template-columns: minmax(12ch, 22ch) 1fr;
+  gap: 1px;
+  background: var(--border);
+  border: var(--border-w) solid var(--border);
+}
+
+.defs dt,
+.defs dd {
+  background: var(--bg);
+  margin: 0;
+  padding: var(--pad-y) var(--pad-x);
+}
+
+.defs dt {
+  font-weight: 600;
+}
+
+/* ---- Assistant ---------------------------------------------------------- */
+
+.assistant {
+  display: grid;
+  grid-template-rows: 1fr auto;
+  gap: var(--gap);
+  height: 100%;
+}
+
+.answers {
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+}
+
+.claim {
+  border: var(--border-w) solid var(--border);
+  padding: var(--pad-x);
+  background: var(--bg-raised);
+}
+
+.tag {
+  display: inline-block;
+  font-family: var(--font-num);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.1em;
+  padding: 0 4px;
+  border: var(--border-w) solid currentColor;
+  margin-right: 6px;
+  vertical-align: 1px;
+}
+
+.tag-MODEL {
+  color: var(--accent);
+}
+.tag-SOURCE {
+  color: var(--pos);
+}
+.tag-INFERENCE {
+  color: var(--fg-muted);
+}
+
+.provenance {
+  font-family: var(--font-num);
+  font-size: var(--fs-xs);
+  color: var(--fg-faint);
+  margin-top: 4px;
+  word-break: break-all;
+}
+
+.ask {
+  display: flex;
+  gap: var(--gap);
+}
+
+.ask input {
+  flex: 1;
+}
+
+.templates {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  font-size: var(--fs-xs);
+}
+
+/* ---- Refresh control ---------------------------------------------------- */
+
+.refresh-report {
+  position: absolute;
+  top: calc(var(--row-h) + var(--pad-y));
+  right: var(--gap);
+  z-index: 5;
+  max-width: 62ch;
+  background: var(--bg-raised);
+  border: var(--border-w) solid var(--border-strong);
+  padding: var(--pad-x);
+  font-size: var(--fs-sm);
+  box-shadow: 4px 4px 0 0 rgb(0 0 0 / 0.08);
+}
+
+.refresh-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--gap);
+  margin-bottom: var(--pad-y);
+}
+
+.topbar {
+  position: relative;
+}

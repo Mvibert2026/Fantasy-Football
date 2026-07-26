@@ -1,0 +1,14 @@
+data/*.db
+.env
+__pycache__/
+*.pyc
+.pytest_cache/
+.claude/settings.local.json
+
+# front-end
+node_modules/
+dist/
+public/data/
+.env
+.env.local
+tsconfig.tsbuildinfo

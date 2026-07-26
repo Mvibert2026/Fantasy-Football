@@ -1,0 +1,4 @@
+nflreadpy==0.1.5
+polars==1.43.0
+pytest==9.1.1
+scipy==1.18.0
