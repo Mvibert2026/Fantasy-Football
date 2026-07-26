@@ -3,9 +3,17 @@
  *
  * No backend call per pick -- this project is static-JSON, offline-first by
  * design (see CLAUDE.md and every other view in this app), and a live draft is
- * exactly when the network is least reliable. Picks and the watchlist persist to
+ * exactly when the network is least reliable. Picks and the queue persist to
  * localStorage, keyed per league (matching the multi-league work: draft state for
  * one league has no business leaking into another's).
+ *
+ * Queue vs. watchlist, per FRONTEND-SPEC.md §6.10 -- two distinct objects, not
+ * one renamed:
+ *   - Queue (`DraftState.queue`, here) is draft-scoped and self-pruning: a
+ *     queued player drops out the instant anyone drafts him (see `recordPick`'s
+ *     caller in DraftRoom.tsx), and the whole list resets with the draft.
+ *   - Watchlist (`ui/data/watchlist.ts`) is account-wide, persists across
+ *     seasons and leagues, and never disappears on its own.
  *
  * Team-at-pick is derived, never stored, from the same snake formula
  * ui/views/RoundGrid.tsx already uses in the forward direction (round, slot) ->
@@ -32,7 +40,8 @@ export interface DraftState {
    *  assigns its own identity to an imported log. */
   mockId: string;
   picks: DraftPickRecord[];
-  watchlist: string[];
+  /** Draft-scoped, self-pruning -- board.json player ids. See the module doc. */
+  queue: number[];
 }
 
 function storageKey(leagueId: string): string {
@@ -45,19 +54,34 @@ function newMockId(): string {
 }
 
 function emptyState(leagueId: string): DraftState {
-  return { leagueId, mockId: newMockId(), picks: [], watchlist: [] };
+  return { leagueId, mockId: newMockId(), picks: [], queue: [] };
 }
 
 export function loadDraftState(leagueId: string): DraftState {
   try {
     const raw = localStorage.getItem(storageKey(leagueId));
     if (!raw) return emptyState(leagueId);
-    const parsed = JSON.parse(raw) as DraftState;
+    const parsed = JSON.parse(raw) as Partial<DraftState>;
     if (parsed.leagueId !== leagueId) return emptyState(leagueId);
-    return parsed;
+    // `queue` and (the now-retired) `watchlist` field: tolerate an older
+    // record written before this field existed, rather than discarding real
+    // picks just because the shape grew a field.
+    return {
+      leagueId,
+      mockId: parsed.mockId ?? newMockId(),
+      picks: parsed.picks ?? [],
+      queue: parsed.queue ?? [],
+    };
   } catch {
     return emptyState(leagueId);
   }
+}
+
+/** A queued player drops out the instant anyone drafts him -- self-pruning, no
+ *  dead-pick state to clear. Call after appending a new pick. */
+export function pruneQueue(queue: number[], justDraftedId: number | null): number[] {
+  if (justDraftedId === null) return queue;
+  return queue.filter((id) => id !== justDraftedId);
 }
 
 export function saveDraftState(state: DraftState): void {

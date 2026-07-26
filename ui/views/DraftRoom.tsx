@@ -6,6 +6,7 @@ import {
   isSlotOnClock,
   loadDraftState,
   nextPickForSlot,
+  pruneQueue,
   roundOfPick,
   saveDraftState,
   takenPlayerIds,
@@ -17,6 +18,7 @@ import {
 import type { Dataset } from '../data/load';
 import type { LeagueConfig } from '../data/league';
 import { rankByRecommendation } from '../data/recommendation';
+import { useWatchlist } from '../data/useWatchlist';
 import { PlayerDetail } from '../components/PlayerDetail';
 import { Value } from '../components/Value';
 import { decimal, integer, percent } from '../lib/format';
@@ -127,6 +129,7 @@ export function DraftRoom({
 }) {
   const leagueId = data.manifest.artifacts.board?.league_id ?? 'default';
   const [draft, setDraft] = useState<DraftState>(() => loadDraftState(leagueId));
+  const [watchlist, toggleWatch] = useWatchlist();
   const [query, setQuery] = useState('');
   const [selected, setSelected] = useState(0);
   const [positionTab, setPositionTab] = useState<PositionTab>('ALL');
@@ -182,7 +185,7 @@ export function DraftRoom({
       playerName,
       timestamp: new Date().toISOString(),
     };
-    persist({ ...draft, picks: [...draft.picks, entry] });
+    persist({ ...draft, picks: [...draft.picks, entry], queue: pruneQueue(draft.queue, playerId) });
     setQuery('');
     setSelected(0);
     searchRef.current?.focus();
@@ -200,13 +203,13 @@ export function DraftRoom({
     persist({ ...draft, picks: renumbered });
   }
 
-  function toggleWatch(name: string) {
-    const has = draft.watchlist.includes(name);
-    persist({ ...draft, watchlist: has ? draft.watchlist.filter((w) => w !== name) : [...draft.watchlist, name] });
+  function resetDraft() {
+    persist({ leagueId, mockId: draft.mockId, picks: [], queue: draft.queue });
   }
 
-  function resetDraft() {
-    persist({ leagueId, mockId: draft.mockId, picks: [], watchlist: draft.watchlist });
+  function toggleQueue(id: number) {
+    const has = draft.queue.includes(id);
+    persist({ ...draft, queue: has ? draft.queue.filter((q) => q !== id) : [...draft.queue, id] });
   }
 
   const searchResults = useMemo(() => {
@@ -257,14 +260,14 @@ export function DraftRoom({
 
   const waitList = useMemo(() => {
     if (userOnClock || nextUserPick === null) return [];
-    return draft.watchlist
+    return watchlist
       .map((name) => available.find((r) => r.name.kind === 'present' && r.name.value === name))
       .filter((r): r is BoardRow => !!r)
       .map((row) => ({
         row,
         cell: playerAvailabilityAtPick(data, row.name.kind === 'present' ? row.name.value : '', nextUserPick),
       }));
-  }, [userOnClock, nextUserPick, draft.watchlist, available, data]);
+  }, [userOnClock, nextUserPick, watchlist, available, data]);
 
   if (teams === 0 || rounds === 0 || userSlot === 0) {
     return (
@@ -502,11 +505,11 @@ export function DraftRoom({
                   title="Star to track availability on your next pick"
                   style={{
                     fontSize: 11,
-                    color: r.name.kind === 'present' && draft.watchlist.includes(r.name.value) ? 'var(--down)' : 'var(--dim2)',
+                    color: r.name.kind === 'present' && watchlist.includes(r.name.value) ? 'var(--down)' : 'var(--dim2)',
                     cursor: 'pointer',
                   }}
                 >
-                  {r.name.kind === 'present' && draft.watchlist.includes(r.name.value) ? '★' : '☆'}
+                  {r.name.kind === 'present' && watchlist.includes(r.name.value) ? '★' : '☆'}
                 </span>
                 <span
                   onClick={(e) => {
@@ -769,6 +772,19 @@ export function DraftRoom({
       {detailRow ? (
         <PlayerDetail
           row={detailRow}
+          rows={rows}
+          data={data}
+          league={league}
+          picks={draft.picks}
+          watchlist={watchlist}
+          onToggleWatch={toggleWatch}
+          queue={draft.queue}
+          onToggleQueue={toggleQueue}
+          onMarkTaken={(id, name) => {
+            recordPick(id, name);
+            setDetailRow(null);
+            onOpenPlayer?.(null);
+          }}
           onClose={() => {
             setDetailRow(null);
             onOpenPlayer?.(null);

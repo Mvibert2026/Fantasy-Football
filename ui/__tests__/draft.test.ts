@@ -100,7 +100,7 @@ describe('toDraftLog', () => {
     const state: DraftState = {
       leagueId: 'default',
       mockId: 'mock-abc',
-      watchlist: [],
+      queue: [],
       picks: [
         { overallPick: 1, round: 1, teamSlot: 1, playerId: 5, playerName: 'Bijan Robinson', timestamp: '2026-08-01T00:00:00.000Z' },
       ],

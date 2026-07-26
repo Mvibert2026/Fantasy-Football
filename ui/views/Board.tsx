@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import type { BoardRow } from '../data/board';
 import { isStartable, type LeagueConfig } from '../data/league';
 import type { Dataset } from '../data/load';
+import { useWatchlist } from '../data/useWatchlist';
 import { Value } from '../components/Value';
 import { PlayerDetail } from '../components/PlayerDetail';
 import { decimal, integer, interval } from '../lib/format';
@@ -142,6 +143,7 @@ export function Board({
   const [position, setPosition] = useState<PositionFilter>('ALL');
   const [sort, setSort] = useState<{ key: SortKey; dir: 1 | -1 }>({ key: 'rank', dir: 1 });
   const [selected, setSelected] = useState<number | null>(null);
+  const [watchlist, toggleWatch] = useWatchlist();
 
   const deltaView = sort.key === 'absdelta';
 
@@ -328,7 +330,18 @@ export function Board({
         </div>
       )}
 
-      {selectedRow ? <PlayerDetail row={selectedRow} onClose={() => selectRow(null)} /> : null}
+      {selectedRow ? (
+        <PlayerDetail
+          row={selectedRow}
+          rows={rows}
+          data={data}
+          league={league}
+          picks={[]}
+          watchlist={watchlist}
+          onToggleWatch={toggleWatch}
+          onClose={() => selectRow(null)}
+        />
+      ) : null}
     </div>
   );
 }
