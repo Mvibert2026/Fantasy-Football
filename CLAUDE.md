@@ -301,6 +301,12 @@ superseded figures stated in the same voice as current ones — three conflictin
 headers and roughly fifteen internal contradictions. Read it to learn what happened, never to learn
 what is true. Same hazard `docs/assistant-context.md` describes for `decisions.md`.
 
+### Dispatch, do not absorb
+For each thread, use the Task tool to dispatch the agent named in its `TO:` field. Do not work
+threads in your own context. Each agent carries pinned `model` and `effort` — `strategist` is
+Opus/high, `data-ops` is Sonnet/low — and working in-session discards that, running cheap work
+expensively and expensive work cheaply.
+
 ### Inter-agent communication
 All of it goes through `docs/handoffs/`. Protocol in `docs/handoffs/README.md`. Never rely on a
 human to relay a message between agents — assume no human is in the loop.
