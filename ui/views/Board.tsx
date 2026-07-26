@@ -5,7 +5,7 @@ import type { Dataset } from '../data/load';
 import { useWatchlist } from '../data/useWatchlist';
 import { Value } from '../components/Value';
 import { PlayerDetail } from '../components/PlayerDetail';
-import { decimal, integer, interval } from '../lib/format';
+import { decimal, integer, interval, signed } from '../lib/format';
 import { RoundGrid } from './RoundGrid';
 
 /**
@@ -143,6 +143,7 @@ export function Board({
   const [position, setPosition] = useState<PositionFilter>('ALL');
   const [sort, setSort] = useState<{ key: SortKey; dir: 1 | -1 }>({ key: 'rank', dir: 1 });
   const [selected, setSelected] = useState<number | null>(null);
+  const [expandedId, setExpandedId] = useState<number | null>(null);
   const [watchlist, toggleWatch] = useWatchlist();
 
   const deltaView = sort.key === 'absdelta';
@@ -323,6 +324,8 @@ export function Board({
           sort={sort}
           onClickColumn={clickColumn}
           bandsEnabled={sort.key === 'rank' && sort.dir === 1 && position !== 'ALL'}
+          expandedId={expandedId}
+          onToggleExpand={(id) => setExpandedId((cur) => (cur === id ? null : id))}
         />
       ) : (
         <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: '15px 20px' }}>
@@ -354,6 +357,8 @@ function BoardTable({
   sort,
   onClickColumn,
   bandsEnabled,
+  expandedId,
+  onToggleExpand,
 }: {
   rows: BoardRow[];
   league: LeagueConfig;
@@ -362,6 +367,8 @@ function BoardTable({
   sort: { key: SortKey; dir: 1 | -1 };
   onClickColumn: (key: SortKey, defaultDir: 1 | -1) => void;
   bandsEnabled: boolean;
+  expandedId: number | null;
+  onToggleExpand: (id: number) => void;
 }) {
   if (rows.length === 0) {
     return (
@@ -453,6 +460,8 @@ function BoardTable({
             league={league}
             selected={item.row.id === selected}
             onSelect={onSelect}
+            expanded={item.row.id === expandedId}
+            onToggleExpand={onToggleExpand}
           />
         ),
       )}
@@ -465,64 +474,108 @@ function BoardRowLine({
   league,
   selected,
   onSelect,
+  expanded,
+  onToggleExpand,
 }: {
   row: BoardRow;
   league: LeagueConfig;
   selected: boolean;
   onSelect: (id: number | null) => void;
+  expanded: boolean;
+  onToggleExpand: (id: number) => void;
 }) {
   const startable = isStartable(league, row.raw.position, row.positionalRank);
   return (
-    <div
-      onClick={() => onSelect(selected ? null : row.id)}
-      style={{
-        display: 'grid',
-        gridTemplateColumns: GRID_TEMPLATE,
-        alignItems: 'center',
-        padding: '8px 20px',
-        borderBottom: '1px solid var(--line)',
-        cursor: 'pointer',
-        background: selected ? 'var(--panel2)' : 'transparent',
-        fontFamily: 'var(--font-ui)',
-        fontSize: 13,
-        color: 'var(--txt)',
-      }}
-    >
-      <span className="num" style={{ color: 'var(--dim2)' }}>
-        <Value cell={row.overallRank} render={integer} />
-      </span>
-      <span
+    <div>
+      <div
+        onClick={() => onSelect(selected ? null : row.id)}
         style={{
-          fontWeight: 600,
-          fontSize: 14,
-          color: startable === false ? 'var(--dim2)' : 'var(--txt)',
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-          whiteSpace: 'nowrap',
+          display: 'grid',
+          gridTemplateColumns: GRID_TEMPLATE,
+          alignItems: 'center',
+          padding: '8px 20px',
+          borderBottom: expanded ? 'none' : '1px solid var(--line)',
+          cursor: 'pointer',
+          background: selected ? 'var(--panel2)' : 'transparent',
+          fontFamily: 'var(--font-ui)',
+          fontSize: 13,
+          color: 'var(--txt)',
         }}
       >
-        <Value cell={row.name} render={(v) => v} />
-      </span>
-      <span style={{ letterSpacing: '.045em', color: POSITION_COLOR[row.raw.position] ?? 'var(--txt)', fontWeight: 600 }}>
-        <Value cell={row.position} render={(v) => v} />
-      </span>
-      <span style={{ letterSpacing: '.045em', color: 'var(--dim2)' }}>
-        <Value cell={row.team} render={(v) => v} />
-      </span>
-      <span className="num" style={{ color: 'var(--dim2)' }}>
-        <Value cell={row.byeWeek} render={integer} />
-      </span>
-      <ProjCell row={row} />
-      <span className="num" style={{ color: 'var(--dim2)' }}>
-        <Value cell={row.consensusRank} render={integer} />
-      </span>
-      <DeltaCell row={row} />
-      <span className="num">
-        <Value cell={row.vbd} render={decimal} />
-      </span>
-      <span style={{ letterSpacing: '.045em', color: 'var(--dim2)' }}>
-        <Value cell={row.tierLabel} render={(v) => v} />
-      </span>
+        <span className="num" style={{ color: 'var(--dim2)' }}>
+          <Value cell={row.overallRank} render={integer} />
+        </span>
+        <span
+          style={{
+            fontWeight: 600,
+            fontSize: 14,
+            color: startable === false ? 'var(--dim2)' : 'var(--txt)',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          <Value cell={row.name} render={(v) => v} />
+        </span>
+        <span style={{ letterSpacing: '.045em', color: POSITION_COLOR[row.raw.position] ?? 'var(--txt)', fontWeight: 600 }}>
+          <Value cell={row.position} render={(v) => v} />
+        </span>
+        <span style={{ letterSpacing: '.045em', color: 'var(--dim2)' }}>
+          <Value cell={row.team} render={(v) => v} />
+        </span>
+        <span className="num" style={{ color: 'var(--dim2)' }}>
+          <Value cell={row.byeWeek} render={integer} />
+        </span>
+        <ProjCell row={row} />
+        <span className="num" style={{ color: 'var(--dim2)' }}>
+          <Value cell={row.consensusRank} render={integer} />
+        </span>
+        <span
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleExpand(row.id);
+          }}
+          title="Why this rank -- click to expand"
+          style={{ cursor: 'pointer' }}
+        >
+          <DeltaCell row={row} />
+        </span>
+        <span className="num">
+          <Value cell={row.vbd} render={decimal} />
+        </span>
+        <span style={{ letterSpacing: '.045em', color: 'var(--dim2)' }}>
+          <Value cell={row.tierLabel} render={(v) => v} />
+        </span>
+      </div>
+      {expanded ? (
+        <div
+          style={{
+            padding: '4px 20px 12px 84px',
+            borderBottom: '1px solid var(--line)',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 4,
+            background: 'var(--panel2)',
+          }}
+        >
+          {row.replacementLevelsComponent.kind === 'present' ? (
+            <div style={{ fontSize: 12, color: 'var(--dim)' }}>
+              Replacement levels: <span className="num">{signed(row.replacementLevelsComponent.value)}</span>{' '}
+              <span className="num" style={{ color: 'var(--dim2)' }}>
+                ({row.replacementLevelsComponent.path})
+              </span>
+            </div>
+          ) : null}
+          {row.scoringAndVbdComponent.kind === 'present' ? (
+            <div style={{ fontSize: 12, color: 'var(--dim)' }}>
+              Scoring and VBD method: <span className="num">{signed(row.scoringAndVbdComponent.value)}</span>{' '}
+              <span className="num" style={{ color: 'var(--dim2)' }}>
+                ({row.scoringAndVbdComponent.path})
+              </span>
+            </div>
+          ) : null}
+        </div>
+      ) : null}
     </div>
   );
 }
