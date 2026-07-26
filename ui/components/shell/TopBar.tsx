@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import type { LeagueConfig } from '../../data/league';
+import type { SelectableLeague } from '../../data/league-registry';
 import type { Theme } from './useTheme';
 
 /**
@@ -7,14 +8,17 @@ import type { Theme } from './useTheme';
  * (design_handoff_draft_assistant/Draft Assistant.dc.html, lines 31-59) with its DOM
  * structure and inline styles kept as literally as JSX allows.
  *
- * Two departures from the source markup, both noted:
+ * Departures from the source markup, each noted:
  *   - `v0.9` is routed through a named constant rather than sitting in JSX text, so
  *     the no-invented-numbers guard (which flags any digit in rendered text) doesn't
  *     mistake a version string for an unsourced football claim.
- *   - The league indicator always renders the "matches your real league" state. The
- *     prototype's other state (`MODIFIED — COMPARISON`) exists because its settings
- *     panel lets you edit league config away from your real league; this app has no
- *     settings editor, so that state has nothing to ever trigger it.
+ *   - The static "REAL LEAGUE · 10T · PICK 3" pill is now a switcher. The prototype
+ *     has no multi-league concept at all (it has a settings panel that edits the one
+ *     league away from "real", producing a `MODIFIED — COMPARISON` state this app
+ *     still has no trigger for, since there's no settings editor). The switcher is
+ *     new, driven by whatever public/data/_leagues.json actually lists -- today
+ *     that's just the default league, so it renders as a single, honest option
+ *     rather than a dropdown implying choices that don't exist yet.
  */
 
 const WORDMARK_VERSION = 'v0.9';
@@ -33,19 +37,29 @@ export function TopBar({
   theme,
   onToggleTheme,
   league,
+  leagues,
+  leagueId,
+  onSelectLeague,
   refreshSlot,
 }: {
   mode: Mode;
   onModeChange: (m: Mode) => void;
   theme: Theme;
   onToggleTheme: () => void;
-  league: LeagueConfig;
+  /** Null while a league is (re)loading, or after a load error -- the switcher
+   *  itself must keep working in both cases, so it can't require this to be present. */
+  league: LeagueConfig | null;
+  leagues: SelectableLeague[];
+  leagueId: string;
+  onSelectLeague: (id: string) => void;
   refreshSlot?: ReactNode;
 }) {
-  const leagueLabel =
-    league.teams.kind === 'present' && league.userSlot.kind === 'present'
-      ? `REAL LEAGUE · ${league.teams.value}T · PICK ${league.userSlot.value}`
-      : 'LEAGUE CONFIG UNAVAILABLE';
+  const leagueDetail =
+    league && league.teams.kind === 'present' && league.userSlot.kind === 'present'
+      ? `${league.teams.value}T · PICK ${league.userSlot.value}`
+      : league
+        ? 'CONFIG UNAVAILABLE'
+        : 'LOADING…';
 
   return (
     <div
@@ -73,7 +87,7 @@ export function TopBar({
       {refreshSlot}
 
       <div
-        title="Settings match your actual league"
+        title="Switch which league's data is loaded"
         style={{
           display: 'flex',
           flex: 'none',
@@ -88,7 +102,26 @@ export function TopBar({
         }}
       >
         <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--acc)' }} />
-        <span style={{ color: 'var(--dim)' }}>{leagueLabel}</span>
+        <select
+          aria-label="Select league"
+          value={leagueId}
+          onChange={(e) => onSelectLeague(e.target.value)}
+          style={{
+            background: 'transparent',
+            border: 0,
+            color: 'var(--dim)',
+            fontFamily: 'var(--font-num)',
+            fontSize: 11,
+            textTransform: 'uppercase',
+          }}
+        >
+          {leagues.map((l) => (
+            <option key={l.id} value={l.id}>
+              {l.label}
+            </option>
+          ))}
+        </select>
+        <span style={{ color: 'var(--dim2)' }}>{leagueDetail}</span>
       </div>
 
       <button

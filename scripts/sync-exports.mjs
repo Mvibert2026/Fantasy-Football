@@ -39,26 +39,17 @@ function findBadToken(text) {
   return null;
 }
 
-/**
- * Copies the exports and returns the manifest it wrote.
- *
- * Exported so the dev server's Refresh control can re-run exactly this, rather than
- * a second implementation that could drift from it. `quiet` suppresses the per-file
- * logging when it runs on request rather than at startup.
- */
-export function syncExports({ quiet = false } = {}) {
-  const log = quiet ? () => {} : (...args) => console.log(...args);
-
-  if (!existsSync(srcDir)) {
-    throw new Error(`[sync-exports] missing ${srcDir}`);
-  }
-  mkdirSync(outDir, { recursive: true });
-
-  const files = readdirSync(srcDir).filter((f) => f.endsWith('.json'));
+/** Copies one directory of *.json exports into one output directory, validating
+ *  each file the same way regardless of whether it's the default league or a
+ *  per-league subdirectory. Returns the artifacts map for whichever manifest the
+ *  caller is building. */
+function copyJsonDir(fromDir, toDir, pathPrefix, log) {
+  mkdirSync(toDir, { recursive: true });
+  const files = readdirSync(fromDir).filter((f) => f.endsWith('.json'));
   const artifacts = {};
 
   for (const file of files) {
-    const raw = readFileSync(join(srcDir, file), 'utf8');
+    const raw = readFileSync(join(fromDir, file), 'utf8');
 
     let parsed;
     try {
@@ -67,25 +58,27 @@ export function syncExports({ quiet = false } = {}) {
       const bad = findBadToken(raw);
       if (bad) {
         throw new Error(
-          `[sync-exports] ${file} is not valid JSON: bare \`${bad.token}\` token at line ${bad.line}.\n` +
+          `[sync-exports] ${pathPrefix}${file} is not valid JSON: bare \`${bad.token}\` token at line ${bad.line}.\n` +
             `  JSON has no Infinity or NaN literal, so no browser can load this file.\n` +
             `  This was fixed upstream at contract 1.4.0 by writing with allow_nan=False; a\n` +
             `  reappearance means that regressed. Fix it in the exporter, not here.`,
         );
       }
-      throw new Error(`[sync-exports] ${file} is not valid JSON: ${err.message}`);
+      throw new Error(`[sync-exports] ${pathPrefix}${file} is not valid JSON: ${err.message}`);
     }
 
-    writeFileSync(join(outDir, file), raw);
+    writeFileSync(join(toDir, file), raw);
 
     const name = basename(file, '.json');
     const contractVersion = parsed?.contract_version ?? null;
     const generatedUtc = parsed?.generated_utc ?? null;
+    const leagueId = parsed?.league_id ?? null;
 
     artifacts[name] = {
-      file: `data/${file}`,
+      file: `data/${pathPrefix}${file}`,
       contract_version: contractVersion,
       generated_utc: generatedUtc,
+      league_id: leagueId,
       // The run id is what the assistant cites alongside every value it returns.
       // It identifies the export run a number came from, nothing more.
       run_id:
@@ -93,16 +86,64 @@ export function syncExports({ quiet = false } = {}) {
           ? `${name}@${contractVersion}+${generatedUtc}`
           : `${name}@unversioned`,
     };
-    log(`[sync-exports] ${file} -> public/data/${file}`);
+    log(`[sync-exports] ${pathPrefix}${file} -> public/data/${pathPrefix}${file}`);
   }
 
+  return artifacts;
+}
+
+/**
+ * Copies the exports and returns the manifest it wrote.
+ *
+ * Exported so the dev server's Refresh control can re-run exactly this, rather than
+ * a second implementation that could drift from it. `quiet` suppresses the per-file
+ * logging when it runs on request rather than at startup.
+ *
+ * The default league's files stay exactly where they've always been --
+ * data/export/*.json -> public/data/*.json -- per the backend's convention: the
+ * current league keeps the unprefixed path, and additional leagues each get their
+ * own data/export/<league_id>/ subdirectory with the same filenames, copied to
+ * public/data/leagues/<league_id>/. Nothing here computes or invents a league_id;
+ * it's read from each artifact's own `league_id` field, or recorded as absent if
+ * the artifact doesn't carry one yet (true for every default-league artifact
+ * today -- the backend hasn't added the field there, only to the convention for
+ * additional leagues).
+ */
+export function syncExports({ quiet = false } = {}) {
+  const log = quiet ? () => {} : (...args) => console.log(...args);
+
+  if (!existsSync(srcDir)) {
+    throw new Error(`[sync-exports] missing ${srcDir}`);
+  }
+
+  const artifacts = copyJsonDir(srcDir, outDir, '', log);
   const manifest = { synced_utc: new Date().toISOString(), artifacts };
   writeFileSync(join(outDir, '_manifest.json'), JSON.stringify(manifest, null, 2));
 
+  const fileCount = Object.keys(artifacts).length;
   log(
-    `[sync-exports] ${files.length} artifact(s) copied verbatim. ` +
+    `[sync-exports] ${fileCount} artifact(s) copied verbatim. ` +
       `Manifest: public/data/_manifest.json`,
   );
+
+  // Additional leagues: any subdirectory of data/export/ other than files. None
+  // exist yet -- this is additive scaffolding for when the backend starts writing
+  // them, not a feature with real multi-league data behind it today.
+  const leagueDirs = readdirSync(srcDir, { withFileTypes: true })
+    .filter((d) => d.isDirectory())
+    .map((d) => d.name);
+
+  const leagues = leagueDirs.map((leagueId) => {
+    const from = join(srcDir, leagueId);
+    const to = join(outDir, 'leagues', leagueId);
+    const leagueArtifacts = copyJsonDir(from, to, `leagues/${leagueId}/`, log);
+    return { id: leagueId, artifacts: leagueArtifacts };
+  });
+
+  writeFileSync(join(outDir, '_leagues.json'), JSON.stringify({ leagues }, null, 2));
+  if (leagueDirs.length > 0) {
+    log(`[sync-exports] ${leagueDirs.length} additional league(s) copied. Manifest: public/data/_leagues.json`);
+  }
 
   return manifest;
 }

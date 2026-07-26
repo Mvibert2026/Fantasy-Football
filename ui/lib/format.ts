@@ -29,6 +29,12 @@ export function interval(low: number, high: number): string {
   return `${ONE_DP.format(low)} – ${ONE_DP.format(high)}`;
 }
 
+const PCT = new Intl.NumberFormat(undefined, { style: 'percent', maximumFractionDigits: 0 });
+
+export function percent(n: number): string {
+  return PCT.format(n);
+}
+
 /**
  * The staleness rule from the data contract: in-season, a SOURCE claim older than
  * about 48 hours renders with its age shown. Nothing can be stale yet -- there is no

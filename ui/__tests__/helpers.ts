@@ -24,6 +24,7 @@ export function loadDatasetFromDisk(): Dataset {
     glossary: read('glossary'),
     nulls: read('nulls'),
     strategies: read('strategies'),
+    availability: read('availability'),
     feed: { contract_version: 'absent', generated_utc: 'never', items: [] },
   } as Dataset;
 }

@@ -55,6 +55,9 @@ export interface RawBoardPlayer {
 export interface RawBoard {
   contract_version: string;
   generated_utc: string;
+  /** Absent on the default league today; required on every artifact under a
+   *  data/export/<league_id>/ subdirectory. See ui/data/league-registry.ts. */
+  league_id?: string | null;
   season: number;
   board_source: string;
   consensus_source: string;
@@ -74,6 +77,7 @@ export interface RawBoard {
 
 export interface RawLeague {
   contract_version: string;
+  league_id?: string | null;
   teams: number;
   rounds: number;
   user_draft_slot: number;
@@ -105,12 +109,14 @@ export interface RawLeague {
 export interface RawGlossary {
   contract_version: string;
   generated_utc: string;
+  league_id?: string | null;
   terms: Record<string, { short_definition: string; long_explanation: string }>;
 }
 
 export interface RawNulls {
   contract_version: string;
   generated_utc: string;
+  league_id?: string | null;
   preamble: string;
   findings: Array<{
     id: string;
@@ -137,6 +143,7 @@ export interface RawStrategySigma {
 export interface RawStrategies {
   contract_version: string;
   generated_utc: string;
+  league_id?: string | null;
   baseline: string;
   seasons: number[];
   simulations_per_cell: number;
@@ -178,18 +185,92 @@ export interface FeedItem {
 export interface RawFeed {
   contract_version: string;
   generated_utc: string;
+  league_id?: string | null;
   items: FeedItem[];
+}
+
+export interface RawAvailabilitySigma {
+  sigma_5: number;
+  sigma_10: number;
+  sigma_20: number;
+}
+
+/**
+ * Availability probabilities: how likely a player (or the best player left in a
+ * tier) is to survive to a given pick, simulated against this league's format.
+ *
+ * Both `by_player` and `by_tier` are keyed down to a pick number (one of the
+ * user's own picks, as a string key), holding one RawAvailabilitySigma per pick --
+ * a reading at each of the three sigma settings the model was run at, never a
+ * single collapsed number. There is no `noise_band` field anywhere in this
+ * artifact; the three-sigma sweep is the shape, not a placeholder for one.
+ */
+export interface RawAvailability {
+  contract_version: string;
+  generated_utc: string;
+  league_id?: string | null;
+  /** Player name -> pick number (string) -> sigma triple. Covers the top players
+   *  simulated, not the full board -- absence means "not simulated", not zero. */
+  by_player: Record<string, Record<string, RawAvailabilitySigma>>;
+  /** Position -> tier label -> pick number (string) -> sigma triple. */
+  by_tier: Record<string, Record<string, Record<string, RawAvailabilitySigma>>>;
+  metadata: {
+    season: number;
+    simulations_per_setting: number;
+    sigma_values: number[];
+    sigma_plain_english: string;
+    user_draft_slot: number;
+    user_picks: number[];
+    reliability_note: string;
+    /** True: by_player/by_tier are averages over every possible draft, not
+     *  conditioned on picks actually made. See `marginals_note`. */
+    figures_are_unconditional_marginals: boolean;
+    marginals_note: string;
+  };
+  /**
+   * Parameters for a future client-side simulator that would recompute
+   * availability conditioned on real picks made so far, instead of these
+   * unconditional Prep-mode marginals. Not consumed by this build -- Draft mode
+   * (which would condition on live picks) is explicitly out of scope for now.
+   */
+  client_simulation_parameters: {
+    ranking_sources: Array<{ name: string; weight: number }>;
+    mechanical_need_targets: Record<string, number>;
+    mechanical_need_targets_note: string;
+    max_at_position: Record<string, number>;
+    need_penalty_per_surplus: number;
+    room_noise_drawn_once_per_draft: boolean;
+    room_noise_note: string;
+    algorithm_note: string;
+  };
 }
 
 export interface ArtifactManifestEntry {
   file: string;
   contract_version: string | null;
   generated_utc: string | null;
+  /** Null for the default league today -- the backend has not added `league_id`
+   *  to any default-league artifact, only to the convention for additional
+   *  leagues under data/export/<league_id>/. */
+  league_id: string | null;
   /**
    * `name@contract_version+generated_utc`, or `name@unversioned` when the artifact
    * carries no timestamp. league.json has no `generated_utc`, so it takes the fallback.
    */
   run_id: string;
+}
+
+/** One additional league's artifact set, from public/data/_leagues.json. Empty
+ *  today -- no backend league directory exists yet -- but the shape is real, not
+ *  speculative: sync-exports.mjs writes it from whatever it actually finds under
+ *  data/export/<id>/. */
+export interface LeagueManifestEntry {
+  id: string;
+  artifacts: Record<string, ArtifactManifestEntry>;
+}
+
+export interface LeaguesManifest {
+  leagues: LeagueManifestEntry[];
 }
 
 export interface Manifest {

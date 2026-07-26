@@ -9,9 +9,9 @@ import { loadDatasetFromDisk } from './helpers';
  * At contract 1.6.0 the backend removed the prior-year repeat assumption from the
  * availability model and dropped `te_scenarios` entirely (ADR-033/034) -- the
  * circularity this file used to guard against is gone, and the broad "availability
- * stays out" test that lived here has been retired along with it. A real
- * Availability screen reading `availability.json` directly is queued but not yet
- * built (`ui/data/availability.ts`, `ui/views/Availability.tsx` do not exist yet).
+ * stays out" test that lived here has been retired along with it. The Availability
+ * screen (`ui/data/availability.ts`, `ui/views/Availability.tsx`) reads
+ * `availability.json` directly.
  *
  * What's left is narrower and still true regardless of that change:
  *
