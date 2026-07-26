@@ -88,6 +88,13 @@ export interface RawLeague {
   scoring: Record<string, unknown>;
   replacement_levels: Record<string, number>;
   replacement_levels_note: string;
+  /**
+   * Positions that start in this league but carry no replacement level on purpose,
+   * added at contract 1.5.0. DEF is the only member and the exclusion is permanent
+   * (ADR-039) -- see `reasonForMissingLevel` in league.ts before touching it.
+   */
+  positions_without_replacement_levels?: string[];
+  positions_without_replacement_levels_note?: string;
   flex_split_assumption: Record<string, number>;
   flex_split_note: string;
   playoff: { teams: number; weeks: number[]; reseeding: boolean };

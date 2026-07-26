@@ -47,18 +47,44 @@ export interface LeagueConfig {
 /**
  * Why a startable position has no replacement level. Each case is a different fact
  * about the data, and collapsing them into one message would lose that.
+ *
+ * ---------------------------------------------------------------------------
+ * DO NOT COMPUTE A DEF REPLACEMENT LEVEL HERE. (ADR-039)
+ *
+ * DEF10 is genuinely derivable from league structure alone -- 10 teams x 1 DEF
+ * starter, the identical arithmetic that yields QB10 -- so its absence looks like an
+ * oversight. It is not. The backend implemented it that way first and reverted it
+ * deliberately.
+ *
+ * The reason: publishing a DEF *rank* invites a downstream VBD, and the *points* half
+ * of that calculation does not exist. No DST data is ingested, so there is no DEF
+ * points projection for a replacement level to be measured against. A rank with no
+ * points behind it is a number that looks computed and is not.
+ *
+ * The exclusion is permanent, not pending. Read ADR-039 before changing anything here.
+ * ---------------------------------------------------------------------------
  */
-function reasonForMissingLevel(pos: string, defSupported: boolean, defNote: string): string {
+function reasonForMissingLevel(
+  pos: string,
+  excludedPositions: readonly string[],
+  exclusionNote: string | undefined,
+  defNote: string,
+): string {
   if (pos === 'FLEX') {
     // FLEX is a lineup slot filled from other positions, not a position of its own, so
     // it has no replacement level by definition rather than by omission.
     return (
       'FLEX is a lineup slot filled from RB, WR and TE rather than a position in its own ' +
       'right, so it has no replacement level of its own. How flex slots get filled ' +
-      'league-wide is an explicit assumption, recorded separately.'
+      'league-wide is measured separately.'
     );
   }
-  if (pos === 'DEF' && !defSupported) return defNote;
+  // The export names its own deliberate exclusions as of contract 1.5.0, so this reads
+  // the decision rather than restating it. Falls back to the board's def_note on an
+  // older export that predates the field.
+  if (excludedPositions.includes(pos)) {
+    return exclusionNote ?? defNote;
+  }
   return `No replacement level is published for ${pos} in league.json:replacement_levels.`;
 }
 
@@ -72,6 +98,9 @@ export function buildLeagueConfig(data: Dataset): LeagueConfig {
   // no replacement level (DEF) still appears, rather than vanishing from the list.
   const positions = Object.keys(starters);
 
+  // Positions the contract says are excluded on purpose, as opposed to merely missing.
+  const excluded = L.positions_without_replacement_levels ?? [];
+
   const thresholds: Threshold[] = positions.map((pos) => {
     const level = levels[pos];
     return {
@@ -81,7 +110,12 @@ export function buildLeagueConfig(data: Dataset): LeagueConfig {
           ? absent(
               `league.json:replacement_levels.${pos}`,
               runId,
-              reasonForMissingLevel(pos, data.board.def_supported, data.board.def_note),
+              reasonForMissingLevel(
+                pos,
+                excluded,
+                L.positions_without_replacement_levels_note,
+                data.board.def_note,
+              ),
             )
           : present(level, `league.json:replacement_levels.${pos}`, runId),
       starters: present(starters[pos] as number, `league.json:roster.starters.${pos}`, runId),

@@ -33,7 +33,7 @@ export interface TraceField {
 }
 
 /** The contract version the registry below is pinned against. */
-export const TRACE_CONTRACT = '1.4.0';
+export const TRACE_CONTRACT = '1.5.0';
 
 /**
  * Changes to the user-visible trace surface, newest first.
@@ -47,6 +47,19 @@ export const TRACE_CHANGELOG: ReadonlyArray<{
   kind: 'rename' | 'value' | 'added' | 'removed';
   summary: string;
 }> = [
+  {
+    version: '1.5.0',
+    kind: 'value',
+    summary:
+      'Two user-visible strings corrected upstream, both of which this app renders verbatim. ' +
+      'league.json.flex_split_note said the flex split was "an explicit tunable assumption, not ' +
+      'a measurement" — false since ADR-029 measured it over 26 seasons; it now carries the ' +
+      'variance caveat instead. glossary.json\'s replacement-level definition still read ' +
+      'RB28/WR41/TE11 in prose. In both cases the values we rendered were right and the help ' +
+      'text beside them disagreed, which is the worse failure of the two. Also: nulls.json ' +
+      'elite_te_early is now −96.1 ± 6 (was −92.9), resolving a disagreement with ' +
+      'strategies.json; no conclusion moved. DEF settled as a permanent exclusion (ADR-039).',
+  },
   {
     version: '1.4.0',
     kind: 'value',
@@ -140,6 +153,11 @@ export const LEAGUE_TRACE_FIELDS: readonly TraceField[] = [
   { path: 'user_draft_slot', label: 'Your draft slot', since: '1.0.0' },
   { path: 'pick_sequence', label: 'Your picks, by overall pick number', since: '1.0.0' },
   { path: 'replacement_levels', label: 'Startable threshold per position', since: '1.0.0' },
+  {
+    path: 'positions_without_replacement_levels',
+    label: 'Positions started in this league that deliberately have no threshold',
+    since: '1.5.0',
+  },
   { path: 'roster.starters', label: 'Starting lineup slots', since: '1.0.0' },
   { path: 'playoff.teams', label: 'Playoff teams', since: '1.0.0' },
 ];
