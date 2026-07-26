@@ -20,6 +20,7 @@ export type ScreenId =
   | 'opponents'
   | 'strategy'
   | 'method'
+  | 'glossary'
   | 'sync'
   | 'bottomup'
   | 'news'
@@ -39,6 +40,7 @@ export const NAV_MAIN: Array<{ key: ScreenId; label: string }> = [
   { key: 'opponents', label: 'Opponents' },
   { key: 'strategy', label: 'Strategy Guide' },
   { key: 'method', label: 'Methodology' },
+  { key: 'glossary', label: 'Glossary' },
 ];
 
 /** Verbatim from the prototype's `soon` array (line 2129), same order. Bodies are

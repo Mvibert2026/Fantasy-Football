@@ -9,6 +9,7 @@ import { Assistant } from './views/Assistant';
 import { Availability } from './views/Availability';
 import { Board } from './views/Board';
 import { DraftRoom } from './views/DraftRoom';
+import { Glossary } from './views/Glossary';
 import { Methodology } from './views/Methodology';
 import { Opponents } from './views/Opponents';
 import { StrategyGuide } from './views/StrategyGuide';
@@ -33,12 +34,11 @@ import { loadDataset, type Dataset } from './data/load';
  * model no longer carries the circular prior-year-repeat assumption that used to
  * keep it out of scope (ADR-033/034, contract 1.6.0); Opponents reads
  * opponents.json directly (ui/views/Opponents.tsx), showing the real 7-of-9-no-
- * data coverage honestly rather than refusing to render at all. Glossary,
- * previously a top-level tab, is not in this nav: the prototype folds glossary
- * content into Methodology ("METHODOLOGY & GLOSSARY") and inline info-icon
- * popovers, which is content work belonging to a later step. The existing
- * Glossary view is kept in the codebase, just unreachable from navigation for
- * now -- noted rather than silently dropped.
+ * data coverage honestly rather than refusing to render at all. Glossary is a
+ * real nav entry again (it briefly wasn't, folded conceptually into Methodology
+ * per an earlier reading of the design prototype) -- FRONTEND-SPEC.md §7.3 lists
+ * it as its own screen, categorised, so it's back as one, with a backing-field
+ * cross-reference per term (ui/data/glossaryCategories.ts).
  */
 
 const SOON_MAP = new Map(SOON_ITEMS.map((item) => [item.key, item]));
@@ -158,6 +158,10 @@ export function App() {
           ) : screen === 'method' ? (
             <div className="view" style={{ flex: 1, minHeight: 0 }}>
               <Methodology data={data} league={league} />
+            </div>
+          ) : screen === 'glossary' ? (
+            <div className="view" style={{ flex: 1, minHeight: 0 }}>
+              <Glossary data={data} />
             </div>
           ) : null}
         </div>
