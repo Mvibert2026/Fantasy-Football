@@ -32,6 +32,12 @@ same shape.
 League configs themselves live at `data/leagues/<league_id>.json` (a `LeagueConfig`, see
 `src/league_config.py`) and are tracked in git — they are source data, not generated output.
 
+**Board/VBD matrix (ADR-047):** `src/generate_config_matrix.py` generates 24 exploratory
+`LeagueConfig`s (8/10/12/14 teams × standard/half/full-PPR × ESPN-default/Yahoo-default roster
+shape) and their `board.json`/`league.json` in one pass — board-only, no availability simulation,
+no `strategies.json`, no `nulls.json` findings. Same directory convention as any other
+non-primary league. Re-run with `python src/generate_config_matrix.py` (~3 min for all 24).
+
 **Timing** (measured on the primary league and confirmed comparable on a 12-team mock):
 `board.json` + `league.json` regenerate in ~7s; a full `availability.json` recompute
 (`run_availability.py`, 3000 sims × 3 sigmas) takes ~45-60s; `strategies.json`

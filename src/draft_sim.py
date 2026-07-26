@@ -68,6 +68,7 @@ import numpy as np
 
 import db as dbmod
 import holdout as holdout_mod
+import live_availability as la
 from config import DEFAULT_CONFIG, stable_offset
 from scoring import score_offensive_game
 
@@ -275,12 +276,32 @@ strategy_elite_te = _positional_bias({"TE": -45.0}, early_rounds=3)
 strategy_qb_early = _positional_bias({"QB": -45.0}, early_rounds=3)
 
 
+# ADR-046: proportionality constant translating N_t(p) (live_availability.py)
+# into a rank-point adjustment. UNMEASURED -- no backtest calibrated this
+# value, same posture as NEED_PENALTY_PER_SURPLUS and MAX_AT_POSITION above.
+# Chosen only to land in the same rough order of magnitude as the flat -8.0
+# step function it replaces (see ADR-046 for the worked comparison).
+NEED_ADJUSTMENT_SCALE = 10.0
+
+
 def strategy_balanced(state, available, data, board):
-    """Best value with a mild nudge toward unfilled starting slots."""
+    """Best value with a continuous nudge toward roster need (ADR-046).
+
+    Replaces the old flat 'any unfilled STARTER slot gets -8.0' step function
+    with live_availability.n_need()'s share-based N_t(p), evaluated against
+    the SAME 2025-observed final-roster TARGET every other N_t(p) consumer
+    uses -- not just the mandatory STARTERS minimum. This changes the
+    'balanced' strategy's simulated behaviour for the whole draft (previously
+    zero adjustment once starters filled; now every remaining pick gets a
+    graded nudge toward or away from a position depending on whether the
+    team is short of or past its target share), not just the opening rounds.
+    """
     adj = board.copy()
-    for name, need in STARTERS.items():
-        if state.my_counts.get(name, 0) < need:
-            adj[data.positions == POSITIONS.index(name)] -= 8.0
+    n_by_pos = la.n_need(state.my_counts, lam=la.DEFAULT_LAMBDA)
+    for name in STARTERS:
+        adj[data.positions == POSITIONS.index(name)] -= (
+            NEED_ADJUSTMENT_SCALE * (n_by_pos[name] - 1.0)
+        )
     return _best_by(adj, available, _legal_mask(state, data))
 
 

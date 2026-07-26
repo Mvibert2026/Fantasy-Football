@@ -1289,3 +1289,158 @@ verification discipline as every export change this session.
 **36 new tests** (`test_archetypes.py`, `test_player_descriptions.py`), including the static
 enforcement scan, the mid-mass-gap regression case, and export determinism/strict-JSON checks
 against the live DB.
+
+---
+
+## 2026-07-26 (session 11) — Live-availability adjustment, N_t(p) wired in, multi-config matrix
+
+### ADR-045: Live-availability adjustment — hazard model, SS5(a) lambda measurement
+
+**Decision.** `src/live_availability.py` implements the Strategist's
+`live_availability_adjustment.md` spec in full: per-pick hazard back-out from the Prep-mode
+marginal, roster-need term `N_t(p)`, positional-run term `R(p)`, global renormalisation, and
+survival-by-product across the gap. `src/lambda_estimation.py` implements SS5(a) — the
+conditional-logit measurement the spec required be run *before* writing any of the above.
+
+**SS5(a) was run first, on real data, per instruction.** The one real draft this project has
+(the actual 2025 league draft, 160 picks, 10 teams) was ingested via `ingest_mock_drafts.py` as
+`mock_id='2025_league_draft_real'`, `is_mock=0` — the user supplied it as structured JSON
+reconstructed from screenshots, now committed at `data/real_drafts/2025_league_draft.json`.
+145 of 160 picks resolved to an `mfl_id`; the 15 that quarantined are exactly the expected
+cases (9 team defenses, which have no player identity to resolve at all per ADR-039, plus 5
+ambiguous historical-name collisions and one nickname mismatch — correct behavior, not a bug).
+Ingesting this did not break `test_level3_dispersion_report_computes_real_implied_sd` (asserts
+`NOT_EVALUATED_NO_MOCKS` against the real DB): with `n=1` conforming mock, observed-SD still
+requires ≥2 mocks to compute a sample variance, so `n_checked` stays 0 and the status is
+unchanged. Verified by running that test, not assumed.
+
+**Why the regression reads the source JSON directly, not `mock_picks`.** `mock_picks` has no
+`position` column (it stores identity, not position), and the 9 DEF picks — exactly the
+near-hard-cap behavior SS2's own table is built on — have no `mfl_id` to join through at all.
+Reading the source file loses nothing; reading the ingested table would silently drop the
+positions this test most needs.
+
+**Model: a conditional logit (McFadden), one shared covariate, no alternative-specific
+intercepts** — `P(position taken=p) = softmax(beta * x_p)`, `x_p = log(share_t(p)/share_bar(p))`.
+This is exactly the functional form `N_t(p) = (share_t(p)/share_bar(p))^lambda` implies for pick
+choice under the need mechanism alone (ADP/rank preference is not in this regression — a stated
+limitation of the test, not an oversight). Fit by MLE (scipy), cluster-robust SE by team (a
+scalar M-estimator sandwich: `Var = (sum_c S_c^2) / H^2`, no numeric Hessian needed — a conditional
+logit's Hessian is the fitted-softmax variance of `x`, a standard closed form). The MLE machinery
+itself is verified on synthetic data generated from a known beta before trusting it on the real
+draft (`test_conditional_logit_recovers_known_beta_on_synthetic_data`).
+
+**Result: `lambda_hat = 0.352`, `se_clustered = 0.070`, `z = 5.04`, n=160 picks, 10 team
+clusters.** Clearly nonzero and correctly signed — a saturated position's need share drops,
+suppressing further picks there, exactly as SS2 predicts. **Adopted as `DEFAULT_LAMBDA`,
+replacing the 0.5 prior**, per the spec's own decision rule ("either supports the need mechanism,
+gives a data-derived lambda, or shows the effect is indistinguishable from zero"). **Explicitly
+flagged, not oversold:** 10 clusters is a small-cluster regime where cluster-robust SEs are known
+to under-cover (z=5.04 should not be read as a precise p-value), one season confounds need with
+round (everyone has deficits early in every draft), and this is a *prior with a wide true
+interval*, not a validated measurement — CLAUDE.md SS6.3's bar is not cleared by this alone.
+
+**`delta=0.10` ships as the spec's own unvalidated prior, unchanged.** SS5(b) (run-detection
+validation) needs mocks with **per-pick draft state logged**, which does not exist and was
+explicitly out of scope this session (not to be added without a separate decision — the mock
+schema is otherwise fixed to what the front end exports, per ADR-042). The spec's own decision
+rule is recorded here so a future session does not need to re-derive it: **if ≥30 conforming
+mocks with per-pick state accumulate and Arm 2 (need+runs) does not beat Arm 0 (the marginal) on
+Brier score, set `lambda = delta = 0` and ship the marginal alone.**
+
+**Checks #1 and #7b were written first, per instruction, as they are named as the two most
+likely to catch a real bug.** Both passed on first implementation, along with #2–#9 written
+immediately after in the same order as the spec's table. All are synthetic/self-consistent unit
+tests (a fixture where `h0_true` sums to exactly 1 by construction), not integration checks
+against the shipped Prep-mode CSV — **check #3 (`SUM h0(Y) ≈ 1` on the real marginal) cannot
+currently be checked empirically**: `availability.json`/`availability_2026.csv` only track
+per-player probabilities for the top ~80 players; the rest of the undrafted pool exists only as
+tier-level aggregates, so the full-pool sum can't be reconstructed from the shipped artifact.
+Noted as a real limitation, not silently worked around.
+
+**Target vector verified before any code was written:** `{QB:1.0, RB:5.5, WR:7.0, TE:1.5,
+DEF:1.0}` sums to exactly 16 (= roster size) — checked with a module-level assertion in
+`live_availability.py`, not just eyeballed, so a future edit to `TARGET` cannot silently break
+every `share_bar` denominator without the import itself failing loudly.
+
+**13 new tests** (`test_live_availability.py`) + **8 new tests** (`test_lambda_estimation.py`).
+
+### ADR-046: `N_t(p)` wired into the draft simulator's `strategy_balanced`
+
+**Decision.** `draft_sim.strategy_balanced`'s flat "-8.0 if any STARTER slot is unfilled" step
+function is replaced with `live_availability.n_need()`'s continuous, share-based `N_t(p)`,
+evaluated against the same 2025-observed final-roster `TARGET` every other `N_t(p)` consumer
+uses — not just the mandatory `STARTERS` minimum. The new adjustment is
+`-NEED_ADJUSTMENT_SCALE * (N_t(p) - 1)` per position, `NEED_ADJUSTMENT_SCALE = 10.0`.
+
+**This changes `strategy_balanced`'s simulated behavior for the WHOLE draft, not just the
+opening rounds.** The old rule went silent the moment starters filled (round 2–3 for most
+positions); the new one grades every remaining pick by how far the team's current composition
+sits from the target *share*, so a team already 3-deep at RB is actively steered away from a 4th,
+which the old step function could not express at all (it only ever asked "have I met the
+minimum," never "have I taken too many").
+
+**`NEED_ADJUSTMENT_SCALE=10.0` is an explicit, UNMEASURED proportionality constant** — same
+posture as `NEED_PENALTY_PER_SURPLUS` and `MAX_AT_POSITION`, both already unmeasured judgement
+calls in this file. No backtest calibrated it; it was chosen only to land in the same rough order
+of magnitude as the flat -8.0 it replaces, so this is a considered starting point, not a claimed
+improvement. A real calibration would compare roster-point outcomes under a swept `SCALE` against
+the existing `bpa_consensus` baseline via `draft_sim.py`'s own simulator — not attempted this
+session.
+
+**`strategies.json`'s `balanced` arm is now stale relative to the code** the moment this landed;
+regenerated in this same session (`python src/export_strategies.py`, ~13 min) so the shipped
+artifact and the code do not silently diverge — see the session handoff for the refreshed
+numbers.
+
+**4 new tests** (`test_strategy_balanced.py`), including a tied-board fixture where the choice
+between two identically-ranked players is decided purely by the need adjustment (confirms the
+mechanism actually changes strategy behavior, not just its internal arithmetic) and a fresh-roster
+case confirming the adjustment is exactly zero with no picks made (N_t(p)=1 everywhere, matching
+check #1's null-parameter reasoning in ADR-045).
+
+### ADR-047: Multi-config board/VBD matrix — team-size × scoring × roster-shape (first stage)
+
+**Decision.** `src/generate_config_matrix.py` generates 24 `LeagueConfig`s and their `board.json`
++ `league.json` (no availability simulation, no strategies): 4 team counts (8/10/12/14) × 3
+scoring variants (standard/half-PPR/full-PPR, reception value only) × 2 roster shapes
+(ESPN-default, Yahoo-default). All 24 saved under `data/leagues/` and exported to
+`data/export/<league_id>/`, same convention as ADR-041's Yahoo mock.
+
+**Platform defaults used, from the researcher pass supplied 2026-07-26 mid-session:** ESPN
+(QB1/RB2/WR3/TE1/FLEX1 RB-WR-TE/DEF1/K1, bench 7, roster VERIFIED, scoring unverified — bot
+detection blocked the fetch) and Yahoo (QB1/RB2/WR3/TE1/FLEX1 **RB/WR only, no TE**/DEF1/K1,
+bench 5, fully verified). **NFL.com and Sleeper deliberately excluded from this pass** —
+NFL.com's roster is verified but its FLEX is W/R-only (a third, distinct shape, not a variant of
+either included one) and its scoring is unverified; Sleeper has nothing platform-confirmed at
+all (a possible 2-FLEX build is third-party-sourced only). Guessing either would have been
+exactly the "leave platform variants for a later pass rather than guessing" the queued task
+named as the fallback — except the fallback was not needed for ESPN/Yahoo, since real confirmed
+shapes arrived before this item was reached.
+
+**Scoring axis varies ONLY the reception value (0.0/0.5/1.0).** Yardage bonuses, TD values, INT,
+and defense scoring are held at this project's existing `LEAGUE` ruleset (`scoring.py`) across
+all 24 configs — which is not an arbitrary choice: it is *identical* to ESPN's confirmed bonus
+structure (same +1/+1.5/+2 tiers at the same 100/150/200 rush/rec and 300/350/400 pass
+thresholds). Yahoo's bonus structure was not confirmed by the researcher pass, so no
+platform-specific bonus variant is claimed for it either — this matrix answers "how do team size,
+PPR value, and roster shape move the board," not "what does Yahoo's board look like on Yahoo's
+exact scoring," which remains unanswered pending a verified Yahoo bonus structure.
+
+**Board-only, verified cheap.** ~7s/config confirmed (matches the ADR-041 timing measurement);
+`availability.json` is written but carries empty `by_player`/`by_tier` (no CSV exists for a
+config that was never run through `run_availability.py`) — the same "not yet run for this
+league" state every fresh non-primary league starts in, not special-cased here.
+`nulls.json`/`strategies.json` are not generated for any of the 24 at all.
+
+**Spot-checked, not just executed:** `espn_12_full` → QB12/RB30/WR42/TE12 replacement levels
+(12 teams, 1 flex), 17 rounds, `receptions=1.0`, `unsupported_positions=[DEF,K]`; `yahoo_14_standard`
+→ QB14/RB35/WR49/TE14, 15 rounds, `flex_eligible=[RB,WR]` (no TE), `receptions=0.0`. Round counts
+differ by roster shape as expected (ESPN 17 = 9 starters+1 flex+7 bench; Yahoo 15 = 9+1+5) and are
+constant across team count within a shape, as they should be — round depth is a per-roster
+property, not a league-size one.
+
+**6 new tests** (`test_generate_config_matrix.py`), including a full-crossing check (all 24
+`(platform, teams, ppr)` triples present, no duplicates) and one real-DB smoke export
+(`espn_12_full`) confirming the whole `write_all` pipeline round-trips through strict JSON
+without crashing.

@@ -97,8 +97,15 @@ figure is close to what that assumption-free removal implies it should be.
 
 `by_player` and `by_tier` in `availability.json` are **unconditional averages over every possible
 draft** — treat them as pre-draft planning numbers, not as live odds once a real draft is
-underway. Mid-draft, availability should be recomputed against the actual picks made so far, not
-read off these precomputed figures.
+underway. Mid-draft, availability is recomputed against the actual picks made so far using
+`live_availability.py`, which re-weights the pre-draft marginal by two mechanisms: a
+continuous, share-based roster-need term (a team further above its typical final composition at
+a position gets that position's hazard suppressed, not merely un-boosted) and a positional-run
+term (a standardized, shrunk signal over the last 10 picks, deliberately timid since the
+detection threshold folk wisdom usually reaches for turns out to be noise about a quarter of the
+time). The roster-need term's strength was measured from this league's actual 2025 draft, not
+assumed; the run term remains an explicit, flagged prior pending mock data with per-pick draft
+state, which does not exist yet.
 
 ## Known data traps — say these before answering, don't wait to be asked
 

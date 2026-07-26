@@ -1,0 +1,66 @@
+{
+  "by_player": {},
+  "by_tier": {},
+  "contract_version": "1.7.0",
+  "generated_utc": "2026-07-26T17:38:25.392837+00:00",
+  "league_id": "espn_10_standard",
+  "metadata": {
+    "season": 2026,
+    "simulations_per_setting": 3000,
+    "sigma_values": [
+      5.0,
+      10.0,
+      20.0
+    ],
+    "sigma_plain_english": "Sigma is how far the other opposing teams stray from consensus, measured in draft picks: 5 is a disciplined room, 10 is about one round of slippage (the default), 20 is chaotic. It is a guess, not fitted to observed drafts, which is why every number is given at all three settings.",
+    "user_draft_slot": 5,
+    "user_picks": [
+      5,
+      16,
+      25,
+      36,
+      45,
+      56,
+      65,
+      76,
+      85,
+      96,
+      105,
+      116,
+      125,
+      136,
+      145,
+      156,
+      165
+    ],
+    "reliability_note": "These probabilities never pass through the projection curve, so they are the most reliable numbers in the project. They describe draft behaviour, not football outcomes.",
+    "figures_are_unconditional_marginals": true,
+    "marginals_note": "by_player and by_tier average over every possible draft (Prep mode) -- they are NOT conditioned on picks actually made so far. Mid-draft, recompute with client_simulation_parameters against the real board state instead of reading these numbers as still current. See data-contract.md."
+  },
+  "client_simulation_parameters": {
+    "ranking_sources": [
+      {
+        "name": "fantasypros_ecr",
+        "weight": 1.0
+      }
+    ],
+    "mechanical_need_targets": {
+      "QB": 1,
+      "RB": 3,
+      "WR": 4,
+      "TE": 2
+    },
+    "mechanical_need_targets_note": "Per position: STARTERS[pos] + (FLEX_SLOTS if pos is flex-eligible else 0). An UPPER BOUND per position, not a partition of the shared flex slots -- a team could plausibly need up to this many of ANY one eligible position, not all of them at once. Below this count a team is not penalised for taking the position again; a team at or past max_at_position never takes another.",
+    "max_at_position": {
+      "QB": 8,
+      "RB": 10,
+      "WR": 11,
+      "TE": 9
+    },
+    "max_at_position_note": "The primary league's values are a hand-set judgement call (how much bench depth a manager hoards), not a formula. Other leagues use an explicitly flagged heuristic instead (mechanical_need_targets + bench size) -- see ADR-041; this has not been measured for any league.",
+    "need_penalty_per_surplus": 25.0,
+    "room_noise_drawn_once_per_draft": true,
+    "room_noise_note": "One Gaussian(0, sigma) draw per player is shared by the whole room for a single simulated draft, not redrawn per pick or per team -- this models \"the room collectively valued him a round higher this year\", not nine independently confused teams.",
+    "algorithm_note": "Per simulated draft: (1) sample each opponent team's ranking source from ranking_sources (fresh draw every draft, never fixed to a team); (2) draw one shared noise vector for the room; (3) each opponent's effective rank is their source's rank plus the shared noise; (4) pick order is standard snake over teams=league.json:teams, rounds=league.json:rounds, user_slot=league.json:user_draft_slot; (5) each opponent picks the lowest effective-rank available player, with mechanical_need_targets applied as an additive rank penalty (need_penalty_per_surplus per player beyond target, infinite at max_at_position); (6) the user is assumed to draft best-available off the TRUE consensus board (unperturbed) -- see board.json."
+  }
+}

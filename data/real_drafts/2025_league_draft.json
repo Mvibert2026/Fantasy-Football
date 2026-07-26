@@ -1,0 +1,1450 @@
+{
+  "mock_id": "2025_league_draft_real",
+  "league_config_id": "primary",
+  "platform": "manual",
+  "drafted_at": "2025-08-30",
+  "source": "user_provided_screenshots",
+  "is_mock": false,
+  "picks": [
+    {
+      "overall_pick": 1,
+      "round": 1,
+      "team_slot": 1,
+      "team_name": "Keion Sanders",
+      "player_name_raw": "Ja'Marr Chase",
+      "nfl_team": "Cin",
+      "position": "WR"
+    },
+    {
+      "overall_pick": 2,
+      "round": 1,
+      "team_slot": 2,
+      "team_name": "ArtistFormerly",
+      "player_name_raw": "CeeDee Lamb",
+      "nfl_team": "Dal",
+      "position": "WR"
+    },
+    {
+      "overall_pick": 3,
+      "round": 1,
+      "team_slot": 3,
+      "team_name": "Shit Leopards",
+      "player_name_raw": "Jahmyr Gibbs",
+      "nfl_team": "Det",
+      "position": "RB"
+    },
+    {
+      "overall_pick": 4,
+      "round": 1,
+      "team_slot": 4,
+      "team_name": "Couch Cummanders",
+      "player_name_raw": "Bijan Robinson",
+      "nfl_team": "Atl",
+      "position": "RB"
+    },
+    {
+      "overall_pick": 5,
+      "round": 1,
+      "team_slot": 5,
+      "team_name": "Fat Deebo",
+      "player_name_raw": "Justin Jefferson",
+      "nfl_team": "Min",
+      "position": "WR"
+    },
+    {
+      "overall_pick": 6,
+      "round": 1,
+      "team_slot": 6,
+      "team_name": "Two balls no Kupp",
+      "player_name_raw": "Saquon Barkley",
+      "nfl_team": "Phi",
+      "position": "RB"
+    },
+    {
+      "overall_pick": 7,
+      "round": 1,
+      "team_slot": 7,
+      "team_name": "Big Swinging",
+      "player_name_raw": "Malik Nabers",
+      "nfl_team": "NYG",
+      "position": "WR"
+    },
+    {
+      "overall_pick": 8,
+      "round": 1,
+      "team_slot": 8,
+      "team_name": "Moore Mediocre",
+      "player_name_raw": "Christian McCaffrey",
+      "nfl_team": "SF",
+      "position": "RB"
+    },
+    {
+      "overall_pick": 9,
+      "round": 1,
+      "team_slot": 9,
+      "team_name": "The Cucked Commish",
+      "player_name_raw": "Derrick Henry",
+      "nfl_team": "Bal",
+      "position": "RB"
+    },
+    {
+      "overall_pick": 10,
+      "round": 1,
+      "team_slot": 10,
+      "team_name": "MILF Mafia",
+      "player_name_raw": "Nico Collins",
+      "nfl_team": "Hou",
+      "position": "WR"
+    },
+    {
+      "overall_pick": 11,
+      "round": 2,
+      "team_slot": 10,
+      "team_name": "MILF Mafia",
+      "player_name_raw": "Amon-Ra St. Brown",
+      "nfl_team": "Det",
+      "position": "WR"
+    },
+    {
+      "overall_pick": 12,
+      "round": 2,
+      "team_slot": 9,
+      "team_name": "The Cucked Commish",
+      "player_name_raw": "Drake London",
+      "nfl_team": "Atl",
+      "position": "WR"
+    },
+    {
+      "overall_pick": 13,
+      "round": 2,
+      "team_slot": 8,
+      "team_name": "Moore Mediocre",
+      "player_name_raw": "Ashton Jeanty",
+      "nfl_team": "LV",
+      "position": "RB"
+    },
+    {
+      "overall_pick": 14,
+      "round": 2,
+      "team_slot": 7,
+      "team_name": "Big Swinging",
+      "player_name_raw": "Josh Jacobs",
+      "nfl_team": "GB",
+      "position": "RB"
+    },
+    {
+      "overall_pick": 15,
+      "round": 2,
+      "team_slot": 6,
+      "team_name": "Two balls no Kupp",
+      "player_name_raw": "Puka Nacua",
+      "nfl_team": "LAR",
+      "position": "WR"
+    },
+    {
+      "overall_pick": 16,
+      "round": 2,
+      "team_slot": 5,
+      "team_name": "Fat Deebo",
+      "player_name_raw": "Bucky Irving",
+      "nfl_team": "TB",
+      "position": "RB"
+    },
+    {
+      "overall_pick": 17,
+      "round": 2,
+      "team_slot": 4,
+      "team_name": "Couch Cummanders",
+      "player_name_raw": "Brian Thomas Jr.",
+      "nfl_team": "Jax",
+      "position": "WR"
+    },
+    {
+      "overall_pick": 18,
+      "round": 2,
+      "team_slot": 3,
+      "team_name": "Shit Leopards",
+      "player_name_raw": "Chase Brown",
+      "nfl_team": "Cin",
+      "position": "RB"
+    },
+    {
+      "overall_pick": 19,
+      "round": 2,
+      "team_slot": 2,
+      "team_name": "ArtistFormerly",
+      "player_name_raw": "Jonathan Taylor",
+      "nfl_team": "Ind",
+      "position": "RB"
+    },
+    {
+      "overall_pick": 20,
+      "round": 2,
+      "team_slot": 1,
+      "team_name": "Keion Sanders",
+      "player_name_raw": "Brock Bowers",
+      "nfl_team": "LV",
+      "position": "TE"
+    },
+    {
+      "overall_pick": 21,
+      "round": 3,
+      "team_slot": 1,
+      "team_name": "Keion Sanders",
+      "player_name_raw": "De'Von Achane",
+      "nfl_team": "Mia",
+      "position": "RB"
+    },
+    {
+      "overall_pick": 22,
+      "round": 3,
+      "team_slot": 2,
+      "team_name": "ArtistFormerly",
+      "player_name_raw": "A.J. Brown",
+      "nfl_team": "NE",
+      "position": "WR"
+    },
+    {
+      "overall_pick": 23,
+      "round": 3,
+      "team_slot": 3,
+      "team_name": "Shit Leopards",
+      "player_name_raw": "Trey McBride",
+      "nfl_team": "Ari",
+      "position": "TE"
+    },
+    {
+      "overall_pick": 24,
+      "round": 3,
+      "team_slot": 4,
+      "team_name": "Couch Cummanders",
+      "player_name_raw": "Lamar Jackson",
+      "nfl_team": "Bal",
+      "position": "QB"
+    },
+    {
+      "overall_pick": 25,
+      "round": 3,
+      "team_slot": 5,
+      "team_name": "Fat Deebo",
+      "player_name_raw": "Ladd McConkey",
+      "nfl_team": "LAC",
+      "position": "WR"
+    },
+    {
+      "overall_pick": 26,
+      "round": 3,
+      "team_slot": 6,
+      "team_name": "Two balls no Kupp",
+      "player_name_raw": "Tee Higgins",
+      "nfl_team": "Cin",
+      "position": "WR"
+    },
+    {
+      "overall_pick": 27,
+      "round": 3,
+      "team_slot": 7,
+      "team_name": "Big Swinging",
+      "player_name_raw": "Josh Allen",
+      "nfl_team": "Buf",
+      "position": "QB"
+    },
+    {
+      "overall_pick": 28,
+      "round": 3,
+      "team_slot": 8,
+      "team_name": "Moore Mediocre",
+      "player_name_raw": "Terry McLaurin",
+      "nfl_team": "Was",
+      "position": "WR"
+    },
+    {
+      "overall_pick": 29,
+      "round": 3,
+      "team_slot": 9,
+      "team_name": "The Cucked Commish",
+      "player_name_raw": "George Kittle",
+      "nfl_team": "SF",
+      "position": "TE"
+    },
+    {
+      "overall_pick": 30,
+      "round": 3,
+      "team_slot": 10,
+      "team_name": "MILF Mafia",
+      "player_name_raw": "Kyren Williams",
+      "nfl_team": "LAR",
+      "position": "RB"
+    },
+    {
+      "overall_pick": 31,
+      "round": 4,
+      "team_slot": 10,
+      "team_name": "MILF Mafia",
+      "player_name_raw": "Marvin Harrison Jr.",
+      "nfl_team": "Ari",
+      "position": "WR"
+    },
+    {
+      "overall_pick": 32,
+      "round": 4,
+      "team_slot": 9,
+      "team_name": "The Cucked Commish",
+      "player_name_raw": "Jaxon Smith-Njigba",
+      "nfl_team": "Sea",
+      "position": "WR"
+    },
+    {
+      "overall_pick": 33,
+      "round": 4,
+      "team_slot": 8,
+      "team_name": "Moore Mediocre",
+      "player_name_raw": "Garrett Wilson",
+      "nfl_team": "NYJ",
+      "position": "WR"
+    },
+    {
+      "overall_pick": 34,
+      "round": 4,
+      "team_slot": 7,
+      "team_name": "Big Swinging",
+      "player_name_raw": "James Cook III",
+      "nfl_team": "Buf",
+      "position": "RB"
+    },
+    {
+      "overall_pick": 35,
+      "round": 4,
+      "team_slot": 6,
+      "team_name": "Two balls no Kupp",
+      "player_name_raw": "Mike Evans",
+      "nfl_team": "SF",
+      "position": "WR"
+    },
+    {
+      "overall_pick": 36,
+      "round": 4,
+      "team_slot": 5,
+      "team_name": "Fat Deebo",
+      "player_name_raw": "Tyreek Hill",
+      "nfl_team": "Mia",
+      "position": "WR"
+    },
+    {
+      "overall_pick": 37,
+      "round": 4,
+      "team_slot": 4,
+      "team_name": "Couch Cummanders",
+      "player_name_raw": "Omarion Hampton",
+      "nfl_team": "LAC",
+      "position": "RB"
+    },
+    {
+      "overall_pick": 38,
+      "round": 4,
+      "team_slot": 3,
+      "team_name": "Shit Leopards",
+      "player_name_raw": "Davante Adams",
+      "nfl_team": "LAR",
+      "position": "WR"
+    },
+    {
+      "overall_pick": 39,
+      "round": 4,
+      "team_slot": 2,
+      "team_name": "ArtistFormerly",
+      "player_name_raw": "Kenneth Walker III",
+      "nfl_team": "KC",
+      "position": "RB"
+    },
+    {
+      "overall_pick": 40,
+      "round": 4,
+      "team_slot": 1,
+      "team_name": "Keion Sanders",
+      "player_name_raw": "Tetairoa McMillan",
+      "nfl_team": "Car",
+      "position": "WR"
+    },
+    {
+      "overall_pick": 41,
+      "round": 5,
+      "team_slot": 1,
+      "team_name": "Keion Sanders",
+      "player_name_raw": "George Pickens",
+      "nfl_team": "Dal",
+      "position": "WR"
+    },
+    {
+      "overall_pick": 42,
+      "round": 5,
+      "team_slot": 2,
+      "team_name": "ArtistFormerly",
+      "player_name_raw": "Jalen Hurts",
+      "nfl_team": "Phi",
+      "position": "QB"
+    },
+    {
+      "overall_pick": 43,
+      "round": 5,
+      "team_slot": 3,
+      "team_name": "Shit Leopards",
+      "player_name_raw": "Jaylen Waddle",
+      "nfl_team": "Den",
+      "position": "WR"
+    },
+    {
+      "overall_pick": 44,
+      "round": 5,
+      "team_slot": 4,
+      "team_name": "Couch Cummanders",
+      "player_name_raw": "DeVonta Smith",
+      "nfl_team": "Phi",
+      "position": "WR"
+    },
+    {
+      "overall_pick": 45,
+      "round": 5,
+      "team_slot": 5,
+      "team_name": "Fat Deebo",
+      "player_name_raw": "James Conner",
+      "nfl_team": "Ari",
+      "position": "RB"
+    },
+    {
+      "overall_pick": 46,
+      "round": 5,
+      "team_slot": 6,
+      "team_name": "Two balls no Kupp",
+      "player_name_raw": "Xavier Worthy",
+      "nfl_team": "KC",
+      "position": "WR"
+    },
+    {
+      "overall_pick": 47,
+      "round": 5,
+      "team_slot": 7,
+      "team_name": "Big Swinging",
+      "player_name_raw": "DK Metcalf",
+      "nfl_team": "Pit",
+      "position": "WR"
+    },
+    {
+      "overall_pick": 48,
+      "round": 5,
+      "team_slot": 8,
+      "team_name": "Moore Mediocre",
+      "player_name_raw": "Sam LaPorta",
+      "nfl_team": "Det",
+      "position": "TE"
+    },
+    {
+      "overall_pick": 49,
+      "round": 5,
+      "team_slot": 9,
+      "team_name": "The Cucked Commish",
+      "player_name_raw": "Jameson Williams",
+      "nfl_team": "Det",
+      "position": "WR"
+    },
+    {
+      "overall_pick": 50,
+      "round": 5,
+      "team_slot": 10,
+      "team_name": "MILF Mafia",
+      "player_name_raw": "Breece Hall",
+      "nfl_team": "NYJ",
+      "position": "RB"
+    },
+    {
+      "overall_pick": 51,
+      "round": 6,
+      "team_slot": 10,
+      "team_name": "MILF Mafia",
+      "player_name_raw": "Courtland Sutton",
+      "nfl_team": "Den",
+      "position": "WR"
+    },
+    {
+      "overall_pick": 52,
+      "round": 6,
+      "team_slot": 9,
+      "team_name": "The Cucked Commish",
+      "player_name_raw": "Chuba Hubbard",
+      "nfl_team": "Car",
+      "position": "RB"
+    },
+    {
+      "overall_pick": 53,
+      "round": 6,
+      "team_slot": 8,
+      "team_name": "Moore Mediocre",
+      "player_name_raw": "Zay Flowers",
+      "nfl_team": "Bal",
+      "position": "WR"
+    },
+    {
+      "overall_pick": 54,
+      "round": 6,
+      "team_slot": 7,
+      "team_name": "Big Swinging",
+      "player_name_raw": "Calvin Ridley",
+      "nfl_team": "Ten",
+      "position": "WR"
+    },
+    {
+      "overall_pick": 55,
+      "round": 6,
+      "team_slot": 6,
+      "team_name": "Two balls no Kupp",
+      "player_name_raw": "TreVeyon Henderson",
+      "nfl_team": "NE",
+      "position": "RB"
+    },
+    {
+      "overall_pick": 56,
+      "round": 6,
+      "team_slot": 5,
+      "team_name": "Fat Deebo",
+      "player_name_raw": "Jayden Daniels",
+      "nfl_team": "Was",
+      "position": "QB"
+    },
+    {
+      "overall_pick": 57,
+      "round": 6,
+      "team_slot": 4,
+      "team_name": "Couch Cummanders",
+      "player_name_raw": "Tony Pollard",
+      "nfl_team": "Ten",
+      "position": "RB"
+    },
+    {
+      "overall_pick": 58,
+      "round": 6,
+      "team_slot": 3,
+      "team_name": "Shit Leopards",
+      "player_name_raw": "Emeka Egbuka",
+      "nfl_team": "TB",
+      "position": "WR"
+    },
+    {
+      "overall_pick": 59,
+      "round": 6,
+      "team_slot": 2,
+      "team_name": "ArtistFormerly",
+      "player_name_raw": "Alvin Kamara",
+      "nfl_team": "NO",
+      "position": "RB"
+    },
+    {
+      "overall_pick": 60,
+      "round": 6,
+      "team_slot": 1,
+      "team_name": "Keion Sanders",
+      "player_name_raw": "RJ Harvey",
+      "nfl_team": "Den",
+      "position": "RB"
+    },
+    {
+      "overall_pick": 61,
+      "round": 7,
+      "team_slot": 1,
+      "team_name": "Keion Sanders",
+      "player_name_raw": "D'Andre Swift",
+      "nfl_team": "Chi",
+      "position": "RB"
+    },
+    {
+      "overall_pick": 62,
+      "round": 7,
+      "team_slot": 2,
+      "team_name": "ArtistFormerly",
+      "player_name_raw": "Ricky Pearsall",
+      "nfl_team": "SF",
+      "position": "WR"
+    },
+    {
+      "overall_pick": 63,
+      "round": 7,
+      "team_slot": 3,
+      "team_name": "Shit Leopards",
+      "player_name_raw": "Tyrone Tracy Jr.",
+      "nfl_team": "NYG",
+      "position": "RB"
+    },
+    {
+      "overall_pick": 64,
+      "round": 7,
+      "team_slot": 4,
+      "team_name": "Couch Cummanders",
+      "player_name_raw": "Rome Odunze",
+      "nfl_team": "Chi",
+      "position": "WR"
+    },
+    {
+      "overall_pick": 65,
+      "round": 7,
+      "team_slot": 5,
+      "team_name": "Fat Deebo",
+      "player_name_raw": "Isiah Pacheco",
+      "nfl_team": "Det",
+      "position": "RB"
+    },
+    {
+      "overall_pick": 66,
+      "round": 7,
+      "team_slot": 6,
+      "team_name": "Two balls no Kupp",
+      "player_name_raw": "DJ Moore",
+      "nfl_team": "Buf",
+      "position": "WR"
+    },
+    {
+      "overall_pick": 67,
+      "round": 7,
+      "team_slot": 7,
+      "team_name": "Big Swinging",
+      "player_name_raw": "David Montgomery",
+      "nfl_team": "Hou",
+      "position": "RB"
+    },
+    {
+      "overall_pick": 68,
+      "round": 7,
+      "team_slot": 8,
+      "team_name": "Moore Mediocre",
+      "player_name_raw": "Travis Hunter",
+      "nfl_team": "Jax",
+      "position": "WR"
+    },
+    {
+      "overall_pick": 69,
+      "round": 7,
+      "team_slot": 9,
+      "team_name": "The Cucked Commish",
+      "player_name_raw": "Joe Burrow",
+      "nfl_team": "Cin",
+      "position": "QB"
+    },
+    {
+      "overall_pick": 70,
+      "round": 7,
+      "team_slot": 10,
+      "team_name": "MILF Mafia",
+      "player_name_raw": "Chris Olave",
+      "nfl_team": "NO",
+      "position": "WR"
+    },
+    {
+      "overall_pick": 71,
+      "round": 8,
+      "team_slot": 10,
+      "team_name": "MILF Mafia",
+      "player_name_raw": "T.J. Hockenson",
+      "nfl_team": "Min",
+      "position": "TE"
+    },
+    {
+      "overall_pick": 72,
+      "round": 8,
+      "team_slot": 9,
+      "team_name": "The Cucked Commish",
+      "player_name_raw": "Matthew Golden",
+      "nfl_team": "GB",
+      "position": "WR"
+    },
+    {
+      "overall_pick": 73,
+      "round": 8,
+      "team_slot": 8,
+      "team_name": "Moore Mediocre",
+      "player_name_raw": "Jordan Mason",
+      "nfl_team": "Min",
+      "position": "RB"
+    },
+    {
+      "overall_pick": 74,
+      "round": 8,
+      "team_slot": 7,
+      "team_name": "Big Swinging",
+      "player_name_raw": "Mark Andrews",
+      "nfl_team": "Bal",
+      "position": "TE"
+    },
+    {
+      "overall_pick": 75,
+      "round": 8,
+      "team_slot": 6,
+      "team_name": "Two balls no Kupp",
+      "player_name_raw": "Kaleb Johnson",
+      "nfl_team": "Pit",
+      "position": "RB"
+    },
+    {
+      "overall_pick": 76,
+      "round": 8,
+      "team_slot": 5,
+      "team_name": "Fat Deebo",
+      "player_name_raw": "Rashee Rice",
+      "nfl_team": "KC",
+      "position": "WR"
+    },
+    {
+      "overall_pick": 77,
+      "round": 8,
+      "team_slot": 4,
+      "team_name": "Couch Cummanders",
+      "player_name_raw": "Stefon Diggs",
+      "nfl_team": "NE",
+      "position": "WR"
+    },
+    {
+      "overall_pick": 78,
+      "round": 8,
+      "team_slot": 3,
+      "team_name": "Shit Leopards",
+      "player_name_raw": "J.K. Dobbins",
+      "nfl_team": "Den",
+      "position": "RB"
+    },
+    {
+      "overall_pick": 79,
+      "round": 8,
+      "team_slot": 2,
+      "team_name": "ArtistFormerly",
+      "player_name_raw": "Zach Charbonnet",
+      "nfl_team": "Sea",
+      "position": "RB"
+    },
+    {
+      "overall_pick": 80,
+      "round": 8,
+      "team_slot": 1,
+      "team_name": "Keion Sanders",
+      "player_name_raw": "Bo Nix",
+      "nfl_team": "Den",
+      "position": "QB"
+    },
+    {
+      "overall_pick": 81,
+      "round": 9,
+      "team_slot": 1,
+      "team_name": "Keion Sanders",
+      "player_name_raw": "Aaron Jones Sr.",
+      "nfl_team": "Min",
+      "position": "RB"
+    },
+    {
+      "overall_pick": 82,
+      "round": 9,
+      "team_slot": 2,
+      "team_name": "ArtistFormerly",
+      "player_name_raw": "Travis Kelce",
+      "nfl_team": "KC",
+      "position": "TE"
+    },
+    {
+      "overall_pick": 83,
+      "round": 9,
+      "team_slot": 3,
+      "team_name": "Shit Leopards",
+      "player_name_raw": "Kyler Murray",
+      "nfl_team": "Ari",
+      "position": "QB"
+    },
+    {
+      "overall_pick": 84,
+      "round": 9,
+      "team_slot": 4,
+      "team_name": "Couch Cummanders",
+      "player_name_raw": "Jaylen Warren",
+      "nfl_team": "Pit",
+      "position": "RB"
+    },
+    {
+      "overall_pick": 85,
+      "round": 9,
+      "team_slot": 5,
+      "team_name": "Fat Deebo",
+      "player_name_raw": "Deebo Samuel",
+      "nfl_team": "Was",
+      "position": "WR"
+    },
+    {
+      "overall_pick": 86,
+      "round": 9,
+      "team_slot": 6,
+      "team_name": "Two balls no Kupp",
+      "player_name_raw": "Jacory Croskey-Merritt",
+      "nfl_team": "Was",
+      "position": "RB"
+    },
+    {
+      "overall_pick": 87,
+      "round": 9,
+      "team_slot": 7,
+      "team_name": "Big Swinging",
+      "player_name_raw": "Jordan Addison",
+      "nfl_team": "Min",
+      "position": "WR"
+    },
+    {
+      "overall_pick": 88,
+      "round": 9,
+      "team_slot": 8,
+      "team_name": "Moore Mediocre",
+      "player_name_raw": "Keon Coleman",
+      "nfl_team": "Buf",
+      "position": "WR"
+    },
+    {
+      "overall_pick": 89,
+      "round": 9,
+      "team_slot": 9,
+      "team_name": "The Cucked Commish",
+      "player_name_raw": "Jerry Jeudy",
+      "nfl_team": "Cle",
+      "position": "WR"
+    },
+    {
+      "overall_pick": 90,
+      "round": 9,
+      "team_slot": 10,
+      "team_name": "MILF Mafia",
+      "player_name_raw": "Dylan Sampson",
+      "nfl_team": "Cle",
+      "position": "RB"
+    },
+    {
+      "overall_pick": 91,
+      "round": 10,
+      "team_slot": 10,
+      "team_name": "MILF Mafia",
+      "player_name_raw": "Braelon Allen",
+      "nfl_team": "NYJ",
+      "position": "RB"
+    },
+    {
+      "overall_pick": 92,
+      "round": 10,
+      "team_slot": 9,
+      "team_name": "The Cucked Commish",
+      "player_name_raw": "Nick Chubb",
+      "nfl_team": "Hou",
+      "position": "RB"
+    },
+    {
+      "overall_pick": 93,
+      "round": 10,
+      "team_slot": 8,
+      "team_name": "Moore Mediocre",
+      "player_name_raw": "Caleb Williams",
+      "nfl_team": "Chi",
+      "position": "QB"
+    },
+    {
+      "overall_pick": 94,
+      "round": 10,
+      "team_slot": 7,
+      "team_name": "Big Swinging",
+      "player_name_raw": "Josh Downs",
+      "nfl_team": "Ind",
+      "position": "WR"
+    },
+    {
+      "overall_pick": 95,
+      "round": 10,
+      "team_slot": 6,
+      "team_name": "Two balls no Kupp",
+      "player_name_raw": "Cam Skattebo",
+      "nfl_team": "NYG",
+      "position": "RB"
+    },
+    {
+      "overall_pick": 96,
+      "round": 10,
+      "team_slot": 5,
+      "team_name": "Fat Deebo",
+      "player_name_raw": "Tyler Warren",
+      "nfl_team": "Ind",
+      "position": "TE"
+    },
+    {
+      "overall_pick": 97,
+      "round": 10,
+      "team_slot": 4,
+      "team_name": "Couch Cummanders",
+      "player_name_raw": "Jakobi Meyers",
+      "nfl_team": "Jax",
+      "position": "WR"
+    },
+    {
+      "overall_pick": 98,
+      "round": 10,
+      "team_slot": 3,
+      "team_name": "Shit Leopards",
+      "player_name_raw": "Rashid Shaheed",
+      "nfl_team": "Sea",
+      "position": "WR"
+    },
+    {
+      "overall_pick": 99,
+      "round": 10,
+      "team_slot": 2,
+      "team_name": "ArtistFormerly",
+      "player_name_raw": "Travis Etienne Jr.",
+      "nfl_team": "NO",
+      "position": "RB"
+    },
+    {
+      "overall_pick": 100,
+      "round": 10,
+      "team_slot": 1,
+      "team_name": "Keion Sanders",
+      "player_name_raw": "Javonte Williams",
+      "nfl_team": "Dal",
+      "position": "RB"
+    },
+    {
+      "overall_pick": 101,
+      "round": 11,
+      "team_slot": 1,
+      "team_name": "Keion Sanders",
+      "player_name_raw": "Jayden Reed",
+      "nfl_team": "GB",
+      "position": "WR"
+    },
+    {
+      "overall_pick": 102,
+      "round": 11,
+      "team_slot": 2,
+      "team_name": "ArtistFormerly",
+      "player_name_raw": "Michael Pittman Jr.",
+      "nfl_team": "Pit",
+      "position": "WR"
+    },
+    {
+      "overall_pick": 103,
+      "round": 11,
+      "team_slot": 3,
+      "team_name": "Shit Leopards",
+      "player_name_raw": "Ollie Gordon II",
+      "nfl_team": "Mia",
+      "position": "RB"
+    },
+    {
+      "overall_pick": 104,
+      "round": 11,
+      "team_slot": 4,
+      "team_name": "Couch Cummanders",
+      "player_name_raw": "Jauan Jennings",
+      "nfl_team": "Min",
+      "position": "WR"
+    },
+    {
+      "overall_pick": 105,
+      "round": 11,
+      "team_slot": 5,
+      "team_name": "Fat Deebo",
+      "player_name_raw": "Cooper Kupp",
+      "nfl_team": "Sea",
+      "position": "WR"
+    },
+    {
+      "overall_pick": 106,
+      "round": 11,
+      "team_slot": 6,
+      "team_name": "Two balls no Kupp",
+      "player_name_raw": "Patrick Mahomes",
+      "nfl_team": "KC",
+      "position": "QB"
+    },
+    {
+      "overall_pick": 107,
+      "round": 11,
+      "team_slot": 7,
+      "team_name": "Big Swinging",
+      "player_name_raw": "Tank Bigsby",
+      "nfl_team": "Phi",
+      "position": "RB"
+    },
+    {
+      "overall_pick": 108,
+      "round": 11,
+      "team_slot": 8,
+      "team_name": "Moore Mediocre",
+      "player_name_raw": "Rhamondre Stevenson",
+      "nfl_team": "NE",
+      "position": "RB"
+    },
+    {
+      "overall_pick": 109,
+      "round": 11,
+      "team_slot": 9,
+      "team_name": "The Cucked Commish",
+      "player_name_raw": "Khalil Shakir",
+      "nfl_team": "Buf",
+      "position": "WR"
+    },
+    {
+      "overall_pick": 110,
+      "round": 11,
+      "team_slot": 10,
+      "team_name": "MILF Mafia",
+      "player_name_raw": "Baker Mayfield",
+      "nfl_team": "TB",
+      "position": "QB"
+    },
+    {
+      "overall_pick": 111,
+      "round": 12,
+      "team_slot": 10,
+      "team_name": "MILF Mafia",
+      "player_name_raw": "Trey Benson",
+      "nfl_team": "Ari",
+      "position": "RB"
+    },
+    {
+      "overall_pick": 112,
+      "round": 12,
+      "team_slot": 9,
+      "team_name": "The Cucked Commish",
+      "player_name_raw": "Austin Ekeler",
+      "nfl_team": "Was",
+      "position": "RB"
+    },
+    {
+      "overall_pick": 113,
+      "round": 12,
+      "team_slot": 8,
+      "team_name": "Moore Mediocre",
+      "player_name_raw": "Luther Burden III",
+      "nfl_team": "Chi",
+      "position": "WR"
+    },
+    {
+      "overall_pick": 114,
+      "round": 12,
+      "team_slot": 7,
+      "team_name": "Big Swinging",
+      "player_name_raw": "Jaydon Blue",
+      "nfl_team": "Dal",
+      "position": "RB"
+    },
+    {
+      "overall_pick": 115,
+      "round": 12,
+      "team_slot": 6,
+      "team_name": "Two balls no Kupp",
+      "player_name_raw": "Jayden Higgins",
+      "nfl_team": "Hou",
+      "position": "WR"
+    },
+    {
+      "overall_pick": 116,
+      "round": 12,
+      "team_slot": 5,
+      "team_name": "Fat Deebo",
+      "player_name_raw": "Quinshon Judkins",
+      "nfl_team": "Cle",
+      "position": "RB"
+    },
+    {
+      "overall_pick": 117,
+      "round": 12,
+      "team_slot": 4,
+      "team_name": "Couch Cummanders",
+      "player_name_raw": "David Njoku",
+      "nfl_team": "LAC",
+      "position": "TE"
+    },
+    {
+      "overall_pick": 118,
+      "round": 12,
+      "team_slot": 3,
+      "team_name": "Shit Leopards",
+      "player_name_raw": "Darnell Mooney",
+      "nfl_team": "NYG",
+      "position": "WR"
+    },
+    {
+      "overall_pick": 119,
+      "round": 12,
+      "team_slot": 2,
+      "team_name": "ArtistFormerly",
+      "player_name_raw": "Marvin Mims Jr.",
+      "nfl_team": "Den",
+      "position": "WR"
+    },
+    {
+      "overall_pick": 120,
+      "round": 12,
+      "team_slot": 1,
+      "team_name": "Keion Sanders",
+      "player_name_raw": "Ray Davis",
+      "nfl_team": "Buf",
+      "position": "RB"
+    },
+    {
+      "overall_pick": 121,
+      "round": 13,
+      "team_slot": 1,
+      "team_name": "Keion Sanders",
+      "player_name_raw": "Christian Kirk",
+      "nfl_team": "SF",
+      "position": "WR"
+    },
+    {
+      "overall_pick": 122,
+      "round": 13,
+      "team_slot": 2,
+      "team_name": "ArtistFormerly",
+      "player_name_raw": "Rachaad White",
+      "nfl_team": "Was",
+      "position": "RB"
+    },
+    {
+      "overall_pick": 123,
+      "round": 13,
+      "team_slot": 3,
+      "team_name": "Shit Leopards",
+      "player_name_raw": "Rashod Bateman",
+      "nfl_team": "Bal",
+      "position": "WR"
+    },
+    {
+      "overall_pick": 124,
+      "round": 13,
+      "team_slot": 4,
+      "team_name": "Couch Cummanders",
+      "player_name_raw": "Jerome Ford",
+      "nfl_team": "Was",
+      "position": "RB"
+    },
+    {
+      "overall_pick": 125,
+      "round": 13,
+      "team_slot": 5,
+      "team_name": "Fat Deebo",
+      "player_name_raw": "Brian Robinson",
+      "nfl_team": "Atl",
+      "position": "RB"
+    },
+    {
+      "overall_pick": 126,
+      "round": 13,
+      "team_slot": 6,
+      "team_name": "Two balls no Kupp",
+      "player_name_raw": "Bhayshul Tuten",
+      "nfl_team": "Jax",
+      "position": "RB"
+    },
+    {
+      "overall_pick": 127,
+      "round": 13,
+      "team_slot": 7,
+      "team_name": "Big Swinging",
+      "player_name_raw": "Chris Godwin",
+      "nfl_team": "TB",
+      "position": "WR"
+    },
+    {
+      "overall_pick": 128,
+      "round": 13,
+      "team_slot": 8,
+      "team_name": "Moore Mediocre",
+      "player_name_raw": "Colston Loveland",
+      "nfl_team": "Chi",
+      "position": "TE"
+    },
+    {
+      "overall_pick": 129,
+      "round": 13,
+      "team_slot": 9,
+      "team_name": "The Cucked Commish",
+      "player_name_raw": "Dont'e Thornton Jr.",
+      "nfl_team": "LV",
+      "position": "WR"
+    },
+    {
+      "overall_pick": 130,
+      "round": 13,
+      "team_slot": 10,
+      "team_name": "MILF Mafia",
+      "player_name_raw": "Cedric Tillman",
+      "nfl_team": "Cle",
+      "position": "WR"
+    },
+    {
+      "overall_pick": 131,
+      "round": 14,
+      "team_slot": 10,
+      "team_name": "MILF Mafia",
+      "player_name_raw": "Romeo Doubs",
+      "nfl_team": "NE",
+      "position": "WR"
+    },
+    {
+      "overall_pick": 132,
+      "round": 14,
+      "team_slot": 9,
+      "team_name": "The Cucked Commish",
+      "player_name_raw": "Tyjae Spears",
+      "nfl_team": "Ten",
+      "position": "RB"
+    },
+    {
+      "overall_pick": 133,
+      "round": 14,
+      "team_slot": 8,
+      "team_name": "Moore Mediocre",
+      "player_name_raw": "Woody Marks",
+      "nfl_team": "Hou",
+      "position": "RB"
+    },
+    {
+      "overall_pick": 134,
+      "round": 14,
+      "team_slot": 7,
+      "team_name": "Big Swinging",
+      "player_name_raw": "Najee Harris",
+      "nfl_team": "LAC",
+      "position": "RB"
+    },
+    {
+      "overall_pick": 135,
+      "round": 14,
+      "team_slot": 6,
+      "team_name": "Two balls no Kupp",
+      "player_name_raw": "Joshua Palmer",
+      "nfl_team": "Buf",
+      "position": "WR"
+    },
+    {
+      "overall_pick": 136,
+      "round": 14,
+      "team_slot": 5,
+      "team_name": "Fat Deebo",
+      "player_name_raw": "Hollywood Brown",
+      "nfl_team": "Phi",
+      "position": "WR"
+    },
+    {
+      "overall_pick": 137,
+      "round": 14,
+      "team_slot": 4,
+      "team_name": "Couch Cummanders",
+      "player_name_raw": "Tyler Allgeier",
+      "nfl_team": "Ari",
+      "position": "RB"
+    },
+    {
+      "overall_pick": 138,
+      "round": 14,
+      "team_slot": 3,
+      "team_name": "Shit Leopards",
+      "player_name_raw": "Broncos",
+      "nfl_team": "Den",
+      "position": "DEF"
+    },
+    {
+      "overall_pick": 139,
+      "round": 14,
+      "team_slot": 2,
+      "team_name": "ArtistFormerly",
+      "player_name_raw": "Keenan Allen",
+      "nfl_team": "LAC",
+      "position": "WR"
+    },
+    {
+      "overall_pick": 140,
+      "round": 14,
+      "team_slot": 1,
+      "team_name": "Keion Sanders",
+      "player_name_raw": "Wan'Dale Robinson",
+      "nfl_team": "Ten",
+      "position": "WR"
+    },
+    {
+      "overall_pick": 141,
+      "round": 15,
+      "team_slot": 1,
+      "team_name": "Keion Sanders",
+      "player_name_raw": "Eagles",
+      "nfl_team": "Phi",
+      "position": "DEF"
+    },
+    {
+      "overall_pick": 142,
+      "round": 15,
+      "team_slot": 2,
+      "team_name": "ArtistFormerly",
+      "player_name_raw": "Evan Engram",
+      "nfl_team": "Den",
+      "position": "TE"
+    },
+    {
+      "overall_pick": 143,
+      "round": 15,
+      "team_slot": 3,
+      "team_name": "Shit Leopards",
+      "player_name_raw": "Brenton Strange",
+      "nfl_team": "Jax",
+      "position": "TE"
+    },
+    {
+      "overall_pick": 144,
+      "round": 15,
+      "team_slot": 4,
+      "team_name": "Couch Cummanders",
+      "player_name_raw": "Xavier Legette",
+      "nfl_team": "Car",
+      "position": "WR"
+    },
+    {
+      "overall_pick": 145,
+      "round": 15,
+      "team_slot": 5,
+      "team_name": "Fat Deebo",
+      "player_name_raw": "Ravens",
+      "nfl_team": "Bal",
+      "position": "DEF"
+    },
+    {
+      "overall_pick": 146,
+      "round": 15,
+      "team_slot": 6,
+      "team_name": "Two balls no Kupp",
+      "player_name_raw": "Tucker Kraft",
+      "nfl_team": "GB",
+      "position": "TE"
+    },
+    {
+      "overall_pick": 147,
+      "round": 15,
+      "team_slot": 7,
+      "team_name": "Big Swinging",
+      "player_name_raw": "Brock Purdy",
+      "nfl_team": "SF",
+      "position": "QB"
+    },
+    {
+      "overall_pick": 148,
+      "round": 15,
+      "team_slot": 8,
+      "team_name": "Moore Mediocre",
+      "player_name_raw": "Adonai Mitchell",
+      "nfl_team": "NYJ",
+      "position": "WR"
+    },
+    {
+      "overall_pick": 149,
+      "round": 15,
+      "team_slot": 9,
+      "team_name": "The Cucked Commish",
+      "player_name_raw": "Elic Ayomanor",
+      "nfl_team": "Ten",
+      "position": "WR"
+    },
+    {
+      "overall_pick": 150,
+      "round": 15,
+      "team_slot": 10,
+      "team_name": "MILF Mafia",
+      "player_name_raw": "Vikings",
+      "nfl_team": "Min",
+      "position": "DEF"
+    },
+    {
+      "overall_pick": 151,
+      "round": 16,
+      "team_slot": 10,
+      "team_name": "MILF Mafia",
+      "player_name_raw": "Will Shipley",
+      "nfl_team": "Phi",
+      "position": "RB"
+    },
+    {
+      "overall_pick": 152,
+      "round": 16,
+      "team_slot": 9,
+      "team_name": "The Cucked Commish",
+      "player_name_raw": "Steelers",
+      "nfl_team": "Pit",
+      "position": "DEF"
+    },
+    {
+      "overall_pick": 153,
+      "round": 16,
+      "team_slot": 8,
+      "team_name": "Moore Mediocre",
+      "player_name_raw": "Bills",
+      "nfl_team": "Buf",
+      "position": "DEF"
+    },
+    {
+      "overall_pick": 154,
+      "round": 16,
+      "team_slot": 7,
+      "team_name": "Big Swinging",
+      "player_name_raw": "Isaac TeSlaa",
+      "nfl_team": "Det",
+      "position": "WR"
+    },
+    {
+      "overall_pick": 155,
+      "round": 16,
+      "team_slot": 6,
+      "team_name": "Two balls no Kupp",
+      "player_name_raw": "49ers",
+      "nfl_team": "SF",
+      "position": "DEF"
+    },
+    {
+      "overall_pick": 156,
+      "round": 16,
+      "team_slot": 5,
+      "team_name": "Fat Deebo",
+      "player_name_raw": "Theo Johnson",
+      "nfl_team": "NYG",
+      "position": "TE"
+    },
+    {
+      "overall_pick": 157,
+      "round": 16,
+      "team_slot": 4,
+      "team_name": "Couch Cummanders",
+      "player_name_raw": "Patriots",
+      "nfl_team": "NE",
+      "position": "DEF"
+    },
+    {
+      "overall_pick": 158,
+      "round": 16,
+      "team_slot": 3,
+      "team_name": "Shit Leopards",
+      "player_name_raw": "Brandon Aiyuk",
+      "nfl_team": "SF",
+      "position": "WR"
+    },
+    {
+      "overall_pick": 159,
+      "round": 16,
+      "team_slot": 2,
+      "team_name": "ArtistFormerly",
+      "player_name_raw": "Texans",
+      "nfl_team": "Hou",
+      "position": "DEF"
+    },
+    {
+      "overall_pick": 160,
+      "round": 16,
+      "team_slot": 1,
+      "team_name": "Keion Sanders",
+      "player_name_raw": "Kyle Pitts Sr.",
+      "nfl_team": "Atl",
+      "position": "TE"
+    }
+  ]
+}

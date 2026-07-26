@@ -208,3 +208,25 @@ did not do (roughly a dozen calls total).
 **Next step if this becomes a priority:** either accept 40-player top-tier coverage as a
 partial answer to #2, or price FantasyPros' paid API tier. Nothing was built against this
 tier — per instruction, report only.
+
+## Per-pick mock draft state logging (2026-07-26, ADR-045)
+
+`live_availability.py`'s positional-run term `R(p)` ships with an unvalidated prior
+(`delta=0.10`) because validating it (SS5(b) of `live_availability_adjustment.md`) needs mock
+drafts with the FULL draft state recorded at every pick, not just the final board. The current
+`mock_drafts`/`mock_picks` schema (ADR-042) logs only the final sequence of picks — sufficient
+for Level 1/2/Tertiary calibration and the Brier-vs-baseline test, but not for reconstructing
+what the model would have predicted for `R(p)` at each historical pick, which needs the room's
+state (who was gone, what each team had drafted) at that exact moment.
+
+**Like P3-1's ADP dispersion requirement, this is cheap to add now and unrecoverable later**: a
+mock draft that already happened without per-pick state logged cannot have that state
+reconstructed after the fact. Deliberately NOT added this session (explicit instruction — the
+mock schema is otherwise fixed to what the front end exports, ADR-042, and a schema addition
+needs its own decision, not a side effect of an unrelated feature).
+
+**Next step if this becomes a priority:** decide the per-pick state shape (likely: drafted
+counts per team, or the raw ordered pick list up to that point, from which counts are derived)
+and add it as an optional field to `mock_picks`/`mock_drafts`, same migration pattern ADR-043
+used for `drafter_type` (`ALTER TABLE ADD COLUMN`, not a rebuild — mock data already logged must
+survive the change).

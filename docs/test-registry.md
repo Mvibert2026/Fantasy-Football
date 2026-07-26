@@ -374,7 +374,7 @@ Where real differentiation likely lives.
 | 65 | Auction values as continuous value proxy | Finer-grained than ordinal ADP | `adp` | L | **BLOCKED** — no ADP source exists (ADR-018) |
 | 66 | ADP momentum (July→August rate of change) | Rising players often keep rising past fair value | `adp` | L | **BLOCKED** — no ADP source exists (ADR-018) |
 | 67 | Historical consensus-error analysis | Where has the market been *systematically* wrong? | ~~`adp`~~ `derived` | H | **PARTIAL — runnable now.** Not ADP-blocked; see note |
-| 68 | Positional run / cascade modeling | If I take X, how does the room respond? | `league` | H | SPEC |
+| 68 | Positional run / cascade modeling | If I take X, how does the room respond? | `league` | H | **IMPLEMENTED (ADR-045)** — `live_availability.py`'s `R(p)`; `delta=0.10` is an unvalidated prior, needs mocks with per-pick draft state (SS5(b), not built) |
 | 69 | Weeks 16–17 availability risk | Clinched teams rest starters; eliminated teams play backups | `nflverse` | M | NEW |
 | 70 | Unsupervised tier clustering | Cluster on projected points + variance instead of eyeballing breaks | `derived` | M | NEW |
 | 71 | Ensemble ADP weighted by historical accuracy | Which source has actually predicted best? | `adp` | M | **BLOCKED** — needs ≥2 ADP sources; zero exist (ADR-018) |

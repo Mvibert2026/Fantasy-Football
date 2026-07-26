@@ -1,0 +1,179 @@
+{
+  "contract_version": "1.7.0",
+  "generated_utc": "2026-07-26T17:39:50.964088+00:00",
+  "league_id": "yahoo_8_full",
+  "league_name": "YAHOO-default, 8 teams, full scoring",
+  "platform": "yahoo",
+  "teams": 8,
+  "rounds": 15,
+  "user_draft_slot": 4,
+  "draft_type": "snake",
+  "pick_sequence": [
+    4,
+    13,
+    20,
+    29,
+    36,
+    45,
+    52,
+    61,
+    68,
+    77,
+    84,
+    93,
+    100,
+    109,
+    116
+  ],
+  "roster": {
+    "starters": {
+      "QB": 1,
+      "RB": 2,
+      "WR": 3,
+      "TE": 1,
+      "DEF": 1,
+      "K": 1,
+      "FLEX": 1
+    },
+    "flex_eligible": [
+      "RB",
+      "WR"
+    ],
+    "bench": 5,
+    "ir": 1,
+    "kicker": true
+  },
+  "scoring": {
+    "offense": {
+      "passing_yards": {
+        "per": 25,
+        "bonuses": [
+          [
+            300,
+            1.0
+          ],
+          [
+            350,
+            1.5
+          ],
+          [
+            400,
+            2.0
+          ]
+        ]
+      },
+      "passing_td": 4,
+      "interception": -2,
+      "rushing_yards": {
+        "per": 10,
+        "bonuses": [
+          [
+            100,
+            1.0
+          ],
+          [
+            150,
+            1.5
+          ],
+          [
+            200,
+            2.0
+          ]
+        ]
+      },
+      "rushing_td": 6,
+      "receptions": 1.0,
+      "receiving_yards": {
+        "per": 10,
+        "bonuses": [
+          [
+            100,
+            1.0
+          ],
+          [
+            150,
+            1.5
+          ],
+          [
+            200,
+            2.0
+          ]
+        ]
+      },
+      "receiving_td": 6,
+      "return_td": 6,
+      "two_point_conversion": 2,
+      "fumbles_lost": -2,
+      "offensive_fumble_return_td": 6
+    },
+    "defense": {
+      "sacks": 1,
+      "interceptions": 2,
+      "fumble_recoveries": 2,
+      "touchdowns": 6,
+      "safeties": 2,
+      "blocked_kicks": 1,
+      "return_tds": 6,
+      "extra_point_returned": 2,
+      "points_allowed": [
+        [
+          0,
+          10
+        ],
+        [
+          7,
+          7
+        ],
+        [
+          14,
+          4
+        ],
+        [
+          21,
+          1
+        ],
+        [
+          28,
+          0
+        ],
+        [
+          35,
+          -1
+        ],
+        [
+          null,
+          -4
+        ]
+      ],
+      "points_allowed_note": "Tiers are [points_allowed_ceiling, bonus], inclusive upper bound. A null ceiling means NO UPPER BOUND (the open-ended top tier) -- it does not mean 'not available' as null does elsewhere in this contract."
+    }
+  },
+  "replacement_levels": {
+    "QB": 8,
+    "RB": 20,
+    "WR": 28,
+    "TE": 8
+  },
+  "positions_without_replacement_levels": [
+    "DEF",
+    "K"
+  ],
+  "positions_without_replacement_levels_note": "DEF, K are starting slot(s) with no scoring data ingested (no kicker or DST stats exist in this project). Do not derive a value for them from these files.",
+  "replacement_levels_note": "Derived from this league's 8 teams and starter counts, not hardcoded. See replacement_levels_flex_split_note in board.json for whether flex_split was measured for this specific league.",
+  "flex_split_assumption": {
+    "RB": 0.52,
+    "WR": 0.48
+  },
+  "flex_split_measured": false,
+  "flex_split_note": "NOT measured for this league (flex_split_measured is false): borrowed from the primary league's ADR-029 measurement as an explicitly flagged placeholder. A real measurement requires re-running that analysis under this league's own scoring rules, which has not been done.",
+  "playoff": {
+    "teams": 4,
+    "weeks": [
+      16,
+      17
+    ],
+    "reseeding": false
+  },
+  "trade_deadline": null,
+  "faab_budget": null
+}

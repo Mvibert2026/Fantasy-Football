@@ -712,3 +712,96 @@ full detail on those).
   treat a missing player as a bug or backfill a placeholder description for them.
 - **A front-end session is live against `data/export/`.** Do not change a schema without
   bumping `CONTRACT_VERSION` and notifying that session.
+
+---
+
+# SESSION HANDOFF -- 2026-07-26 (session 11)
+
+Four items from the user, all done this session: (0) SS5(a) lambda measurement run first, as
+instructed, (1) live-availability adjustment (2) N_t(p) wired into the recommendation engine
+(3) multi-config board/VBD matrix. Full detail in ADR-045/046/047, decisions.md. **399 tests
+passing** (368 at session start + 31 new: 8 lambda_estimation + 13 live_availability + 4
+strategy_balanced + 6 generate_config_matrix), contract version unchanged at **1.7.0** (nothing
+this session touched the front-end contract's shape, only board-instance count and
+simulated-strategy values).
+
+## What landed, in order
+
+1. **Real 2025 league draft ingested** (`data/real_drafts/2025_league_draft.json`, committed) --
+   the user supplied it as 6 screenshots, reconstructed into the `mock_drafts`/`mock_picks` JSON
+   shape, ingested via `ingest_mock_drafts.py` with `is_mock=0`. 145/160 picks resolved; 15
+   quarantined correctly (9 DEF -- no identity to resolve, per ADR-039 -- plus 5 name collisions/1
+   nickname mismatch). This is the project's first non-zero mock-validation data point ever.
+2. **ADR-045 -- live-availability adjustment.** `src/live_availability.py` (hazard model) +
+   `src/lambda_estimation.py` (SS5(a) measurement, run FIRST per instruction). Real result:
+   `lambda_hat=0.352` (not the 0.5 prior), `se_clustered=0.070`, `z=5.04`, n=160/10 clusters --
+   adopted as `DEFAULT_LAMBDA`, explicitly flagged as a small-cluster, one-season estimate, not a
+   settled measurement. `delta=0.10` ships unvalidated (SS5(b) needs per-pick mock state logging,
+   out of scope this session by instruction). Checks #1 and #7b written first, then #2-#9, all
+   passed on first implementation. 21 new tests.
+3. **ADR-046 -- N_t(p) wired into `draft_sim.strategy_balanced`,** replacing the flat "-8.0 if
+   unfilled starter" step function. Changes the `balanced` strategy's behavior for the WHOLE
+   draft, not just early rounds. `NEED_ADJUSTMENT_SCALE=10.0` is an explicit, unmeasured constant
+   (same posture as `NEED_PENALTY_PER_SURPLUS`). **`strategies.json` regenerated this session** to
+   pick up the changed `balanced` arm -- see below for the refreshed numbers. 4 new tests.
+4. **ADR-047 -- multi-config board/VBD matrix,** 24 configs (8/10/12/14 teams x
+   standard/half/full PPR x ESPN-default/Yahoo-default roster shape), board+league only, no
+   availability sim, no strategies. Platform defaults arrived mid-session from the user's
+   researcher pass (ESPN roster verified, scoring not; Yahoo fully verified, FLEX is RB/WR only
+   -- confirmed distinct from ESPN's RB/WR/TE flex). NFL.com and Sleeper deliberately excluded
+   (NFL.com's W/R-only flex is a third shape, not a variant; Sleeper has nothing confirmed).
+   Scoring axis varies reception value only; bonuses/TD/INT held at the project's existing
+   ruleset throughout (which happens to match ESPN's confirmed bonus tiers exactly). 6 new tests.
+
+## Numbers that moved
+
+- **`draft_sim.NEED_TARGETS`/`MAX_AT_POSITION` unchanged** -- ADR-046 only touches
+  `strategy_balanced`, not the opponent model (`opponent_pick`) or any other strategy.
+- **`strategies.json`'s `balanced` arm** -- regenerated this session (`generated_utc:
+  2026-07-26T17:56:30Z`). New margins vs. `bpa_consensus`: sigma=5 **+18.0**, sigma=10 **+27.5**,
+  sigma=20 **+13.2** (previously a flat, non-significant **+17** at sigma=10 that "swung both ways
+  across seasons" -- the new numbers are directionally similar in size but were not re-verified
+  against a season-by-season sign check this session; do that before quoting the new verdict text
+  in anything user-facing). Still not statistically significant at n=4 (`power_floor` unchanged),
+  same as every other strategy comparison in this project.
+- **`live_availability.DEFAULT_LAMBDA = 0.352`**, superseding the spec's 0.5 prior, per its own
+  SS5(a) decision rule.
+
+## Not done -- explicit scope cuts, not oversights
+
+- **SS5(b) run-detection validation.** Needs mock drafts with per-pick draft state logged, which
+  does not exist. Explicitly out of scope this session per instruction -- do not add per-pick
+  state logging without a separate decision, since the mock schema is otherwise fixed to what the
+  front end exports (ADR-042).
+- **`NEED_ADJUSTMENT_SCALE` calibration.** Unmeasured; a real calibration needs a swept-scale
+  comparison against `bpa_consensus` via the existing simulator. Not attempted.
+- **NFL.com and Sleeper roster shapes.** Deferred, not guessed. NFL.com needs its W/R-only flex
+  modeled as a genuinely distinct shape (not RB/WR/TE with a name change); Sleeper needs an actual
+  platform-confirmed source before anything is built.
+- **Yahoo/ESPN scoring bonus structures.** Not incorporated into the matrix -- only PPR value
+  varies; a platform-accurate bonus axis needs a verified source for each platform (ESPN's fetch
+  was blocked by bot detection; Yahoo's bonus tiers were never checked at all, only its PPR value).
+- **check #3 empirical validation against the shipped Prep-mode marginal.** Cannot currently be
+  done -- `availability_2026.csv` only tracks the top ~80 players individually; the rest of the
+  undrafted pool is tier-level only, so the full-pool hazard sum can't be reconstructed from the
+  shipped artifact. Synthetic self-consistency tests cover the math instead.
+
+## Traps for a fresh session
+
+- **`live_availability.POSITIONS` includes DEF; `draft_sim.POSITIONS` does not.** These are
+  deliberately different axes for deliberately different reasons (DEF has no scoring engine so
+  `draft_sim` auto-fills it via reserved rounds, but DEF is a real, contested pick competing for
+  opponents' attention, so the live-availability need model must include it). Do not try to
+  unify them.
+- **`lambda_estimation.py` reads `data/real_drafts/2025_league_draft.json` directly, never
+  `mock_picks`.** The mock table has no `position` column and can't resolve DEF identity at all --
+  reading through it would silently lose exactly the positions SS2's near-hard-cap claim rests on.
+- **24 new `LeagueConfig`s live flat in `data/leagues/`, same convention as `yahoo_standard_mock`.**
+  They are synthetic exploration configs, not real leagues the user is in -- do not mistake one for
+  a real, drafted league when reasoning about `nulls.json`'s `NOT_YET_RUN_FOR_THIS_LEAGUE` state.
+- **None of the 24 matrix configs have `nulls.json` findings or `strategies.json` at all** -- this
+  is correct, not a missing implementation; both are out of scope for this "board-only" pass.
+- Carried forward, still live: `RB_HANDCUFF` not implemented, archetype thresholds unverified
+  against real distributions, mock draft data collection now has exactly ONE real data point (not
+  zero, but nowhere near the ~30-mock decision-useful threshold), FantasyPros paid tier is a
+  budget decision for the user.
