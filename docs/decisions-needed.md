@@ -359,6 +359,55 @@ boring or lopsided, which may correlate with the outcomes being predicted. Recor
 "can partials be pooled" as a separate question for the analysis stage rather than assuming yes.
 
 
+## D-018 · Take the model's own prediction off the Mock Lab entry screen?
+**Status:** DEFAULTED · **Raised by:** strategist, ADR-D (thread 034) · **Needed before:** Frontend builds the entry surface
+
+**Rigorous default:** yes. During entry the shortlist is the **top five available by frozen board
+rank**, in board order, with **no probabilities shown**. A randomised 10 of 30 mocks show no shortlist
+at all (typeahead only). Review and calibration screens are unchanged.
+
+**Why.** Presenting the hazard model's own answer as the cheapest thing to record creates a feedback
+loop between the estimator and its own data collection. The design praised one direction of that loop —
+better calibration makes logging faster — but it is a single arrow: cheaper logging also makes the model
+look better calibrated. The resulting error is *differential* (correlated with the quantity measured),
+so it biases toward the claim and cannot be bounded from the contaminated data. At a 5% substitution
+rate it moves a bucket by ~3.3 points against a stated ±6 half-width.
+
+**Cost of rigour.** A number comes off a screen. Board-rank top-5 covers fewer picks than the hazard
+model's, so a few percent more picks need typing — measurable after the fact, since the hazard top-5 is
+still stored. The 10 blind mocks cost roughly **30 extra minutes across the entire programme**, and the
+headline calibration interval widens from a contaminated ±6 to an honest ±14 or so.
+
+**To loosen:** restore the hazard-model shortlist with probabilities. Then the absolute calibration
+claim ("when it says 33%, it happens a third of the time") is not defensible from this data at any
+sample size, and only the relative claim — hazard beats its baseline — survives.
+
+**Trigger for a later, real founder call:** after 6 mocks, if board-rank top-5 coverage is more than 10
+points below the hazard model's counterfactual coverage, a new entry is raised here with the measured
+minutes-per-mock cost attached. Not askable now — there is no number yet.
+
+---
+
+## D-019 · Widen the Mock Lab evidence ladder from ±6 to ±8–10?
+**Status:** DEFAULTED · **Raised by:** strategist, ADR-D · **Needed before:** Frontend builds the progress affordance
+
+**Rigorous default:** widen it. Every interval in Mock Lab is computed with a mock-level design effect,
+or by mock-level bootstrap.
+
+**Why.** `MOCK-LAB-SPEC.md` §5 states the ladder is "the real 95% Wilson half-width at that sample
+size." Wilson assumes independent Bernoulli trials, and picks within a mock are not independent — same
+drafters, same board trajectory, same session, same fatigue state. With ~32 picks per bucket per mock
+the design effect `1+(m−1)ρ` is 1.62 at ρ=0.02 and 2.55 at ρ=0.05, so the true half-width is 1.3–1.6×
+wider. The honest figure at 30 mocks is **±8 to ±10 points**.
+
+**Cost of rigour.** The one affordance designed to make the grind feel worthwhile gets visibly worse:
+every rung of the ladder moves the wrong way, and 30 mocks buys less than the screen currently promises.
+
+**To loosen:** nothing defensible. Shipping ±6 is the same false-precision failure this project
+criticises in competitors' composite scores, on the product's own headline claim.
+
+---
+
 ## Resolved
 
 | ID | Decision | Outcome |

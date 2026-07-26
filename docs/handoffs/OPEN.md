@@ -4,7 +4,7 @@
 Threads are the source of truth. Change a thread's `STATUS:`, then re-run sync.
 Protocol: [`README.md`](README.md).
 
-**30 open** · 6 resolved
+**29 open** · 7 resolved
 
 ---
 
@@ -61,12 +61,11 @@ not an omission. Start your session at your own heading.
 | [018](018-fantasypros-season-backfill.md) | Fantasypros season backfill | `pm` | OPEN | 0d | 019 (bootstrap CIs) |
 | [024](024-injury-ingestion-as-of-date.md) | Injury ingestion as of date | `pm` | OPEN | 0d | P3-2 (date-parametrised board refresh) |
 
-### `strategist` — 2 waiting
+### `strategist` — 1 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
 | [033](033-assistant-query-architecture.md) | Assistant query architecture | `pm` | OPEN | 0d | the assistant rebuild sprint |
-| [034](034-shortcut-bias-in-mock-logging.md) | Shortcut bias in mock logging | `pm` | OPEN | 0d | Mock Lab build (025, and the UI) |
 
 ### `researcher` — 1 waiting
 
@@ -105,4 +104,5 @@ _Nothing waiting on you._
 | [014](014-bootstrap-cleanup.md) | Bootstrap cleanup | `pm` → `backend` |
 | [015](015-settings-engineering-questions.md) | Settings engineering questions | `pm` → `backend` |
 | [004](004-strategist-open-questions.md) | Strategist open questions | `pm` → `strategist` |
+| [034](034-shortcut-bias-in-mock-logging.md) | Shortcut bias in mock logging | `pm` → `strategist` |
 

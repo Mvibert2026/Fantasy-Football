@@ -45,6 +45,14 @@ The signature claim is **calibrated availability**. It is currently **not calibr
 Until that number moves, availability output is an honest estimate, not a validated probability.
 This is a data-volume fact, not a defect, and stating it plainly is required by Principle #2.
 
+Mock-logging contamination control is **specified and must land before the first logged pick**
+(ADR-D, thread 034): entry shortlist ordered by frozen board rank with no probabilities shown, a
+seeded block-randomised blind arm of 10 of 30, `entry_mode`/dwell instrumentation, and a matcher
+forbidden from consulting model output. Retrofitting discards mocks, so this precedes collection.
+The realistic precision at 30 mocks is **±8 to ±10 points**, not the ±6 currently on the Mock Lab
+screen — Wilson ignores intra-mock correlation. Absolute calibration will rest on the 10 blind mocks
+(≈±14) because the sighted arm's absolute number is not contamination-free.
+
 Alpha detection is **closed until ~2028** (ADR-026) — the season-level bootstrap floor sits above
 the Benjamini-Hochberg threshold regardless of effect size. Do not reopen; it is a sample-size
 result, not a modelling failure.
@@ -66,8 +74,9 @@ full league rosters endpoint · weekly finishes / season stats tables · recompu
 
 ## Top open items
 
-1. **Per-pick draft-state logging** — must land *before* mock collection begins, or the mocks
-   collected cannot validate `delta` no matter how many there are.
+1. **Per-pick draft-state logging + ADR-D contamination instrumentation** — must land *before* mock
+   collection begins, or the mocks collected cannot validate `delta` no matter how many there are,
+   and cannot be defended against shortcut bias at all.
 2. **ADP snapshot capture** — unrecoverable if delayed; a past date's snapshot cannot be backfilled.
 3. **Mock drafts toward n=30** — gates the pre-registered availability decision rule.
 4. **FantasyPros paid tier decision** (~$72/yr) — free tier caps at 10 rows, reaches 40 players,
