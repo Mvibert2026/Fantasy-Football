@@ -17,18 +17,34 @@ import numpy as np
 import availability as av
 import db as dbmod
 import draft_sim as ds
+import league_config as lc
 from config import DEFAULT_CONFIG
 
 SEASON = 2026
-OUT_CSV = Path(__file__).resolve().parent.parent / "data" / "availability_2026.csv"
-OUT_TXT = Path(__file__).resolve().parent.parent / "data" / "availability_2026_summary.txt"
+DATA_DIR = Path(__file__).resolve().parent.parent / "data"
+
+
+def _out_paths(league_id: str) -> tuple[Path, Path]:
+    if league_id == lc.PRIMARY_LEAGUE_ID:
+        return DATA_DIR / "availability_2026.csv", DATA_DIR / "availability_2026_summary.txt"
+    d = DATA_DIR / "leagues" / league_id
+    return d / "availability.csv", d / "availability_summary.txt"
 
 
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--sims", type=int, default=4000)
     ap.add_argument("--seed", type=int, default=DEFAULT_CONFIG.random_seed)
+    ap.add_argument(
+        "--league", default=lc.PRIMARY_LEAGUE_ID,
+        help="league_id of a saved config under data/leagues/, or 'primary' (default)",
+    )
     args = ap.parse_args()
+    cfg = (
+        lc.CURRENT_LEAGUE if args.league == lc.PRIMARY_LEAGUE_ID else lc.LeagueConfig.load(args.league)
+    )
+    engine = None if cfg.is_primary else ds.DraftEngine(cfg)
+    OUT_CSV, OUT_TXT = _out_paths(cfg.league_id)
 
     conn = dbmod.connect()
     try:
@@ -45,7 +61,7 @@ def main() -> None:
     results: Dict[float, av.AvailabilityResult] = {}
     for sigma in ds.SIGMA_SWEEP:
         results[sigma] = av.simulate_availability(
-            data, sigma, args.sims, args.seed + int(sigma * 100), sources=sources
+            data, sigma, args.sims, args.seed + int(sigma * 100), sources=sources, engine=engine
         )
 
     picks = results[ds.DEFAULT_SIGMA].user_picks
@@ -101,8 +117,14 @@ def main() -> None:
     A("depends on how your league behaves and you should plan for both.")
     A("")
 
-    # --- headline: who survives to 18 and 23 -------------------------------
-    for pk in (18, 23):
+    # --- headline: who survives to the user's 2nd and 3rd picks ------------
+    # Was hardcoded (18, 23) -- the primary league's own picks[1] and
+    # picks[2]. Skips picks[0] deliberately: the very first pick has near-100%
+    # availability for anyone worth showing, so it is not an interesting
+    # headline. Found while regenerating for a 12-team league (ADR-041):
+    # those literal numbers don't exist in a differently-shaped draft, and
+    # this crashed with KeyError rather than silently showing wrong picks.
+    for pk in picks[1:3]:
         A("-" * 78)
         A(f"PICK {pk} — players most likely to still be there")
         A(f"  {'player':<24} {'pos':<4} {'ECR':>4}   TIGHT  NORMAL CHAOTIC")

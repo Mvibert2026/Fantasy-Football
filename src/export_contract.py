@@ -33,21 +33,38 @@ import numpy as np
 import availability as av
 import db as dbmod
 import draft_sim as ds
+import league_config as lc
 import make_board
 from config import DEFAULT_CONFIG
 from scoring import LEAGUE, ReplacementLevels
 
-CONTRACT_VERSION = "1.6.0"
+CONTRACT_VERSION = "1.7.0"
 SEASON = 2026
-EXPORT_DIR = Path(__file__).resolve().parent.parent / "data" / "export"
-AVAIL_CSV = Path(__file__).resolve().parent.parent / "data" / "availability_2026.csv"
+DATA_DIR = Path(__file__).resolve().parent.parent / "data"
+EXPORT_DIR = DATA_DIR / "export"
 
 # The 12-team convention public boards implicitly assume: 1QB/2RB/3WR/1TE, no
 # flex share -> QB12 / RB24 / WR36 / TE12. Differencing our board against this
-# one isolates the replacement-level effect exactly.
+# one isolates the replacement-level effect exactly. FIXED regardless of
+# which league is being built -- this is a reference point for "how does this
+# league's structure compare to the generic public convention", which is a
+# meaningful comparison for ANY league, not a per-league parameter.
 PUBLISHED_LEVELS = ReplacementLevels(
     teams=12, starters={"QB": 1, "RB": 2, "WR": 3, "TE": 1}, flex_slots=0, flex_split={}
 )
+
+
+def export_dir_for(league_id: str) -> Path:
+    """ADR-041: the primary league keeps the unprefixed data/export/ path so
+    the front-end session's existing sync is never disrupted. Every other
+    league gets its own directory, same filenames, same shape."""
+    return EXPORT_DIR if league_id == lc.PRIMARY_LEAGUE_ID else EXPORT_DIR / league_id
+
+
+def avail_csv_for(league_id: str) -> Path:
+    if league_id == lc.PRIMARY_LEAGUE_ID:
+        return DATA_DIR / "availability_2026.csv"
+    return DATA_DIR / "leagues" / league_id / "availability.csv"
 
 
 def _bye_weeks(season: int) -> Dict[str, Optional[int]]:
@@ -69,14 +86,14 @@ def _bye_weeks(season: int) -> Dict[str, Optional[int]]:
     return out
 
 
-def _load_availability_csv() -> Dict[str, dict]:
+def _load_availability_csv(csv_path: Path) -> Dict[str, dict]:
     by_player: Dict[str, Dict[str, Dict[str, float]]] = defaultdict(lambda: defaultdict(dict))
     by_tier: Dict[str, Dict[str, Dict[str, Dict[str, float]]]] = defaultdict(
         lambda: defaultdict(lambda: defaultdict(dict))
     )
-    if not AVAIL_CSV.exists():
+    if not csv_path.exists():
         return {"by_player": {}, "by_tier": {}}
-    with AVAIL_CSV.open(encoding="utf-8") as f:
+    with csv_path.open(encoding="utf-8") as f:
         for row in csv.DictReader(f):
             sig = f"sigma_{int(float(row['sigma']))}"
             if row["record_type"] == "player_available":
@@ -89,10 +106,13 @@ def _load_availability_csv() -> Dict[str, dict]:
     }
 
 
-def build_board_json(conn: sqlite3.Connection) -> dict:
-    ours, curves = make_board.build_board(conn, SEASON, n_bootstrap=2000)
+def build_board_json(conn: sqlite3.Connection, cfg: lc.LeagueConfig = lc.CURRENT_LEAGUE) -> dict:
+    levels, flex_split_measured = ReplacementLevels.from_league_config(cfg)
+    ours, curves = make_board.build_board(
+        conn, SEASON, levels=levels, n_bootstrap=2000, scoring_cfg=cfg.scoring
+    )
     published, _ = make_board.build_board(
-        conn, SEASON, levels=PUBLISHED_LEVELS, n_bootstrap=0
+        conn, SEASON, levels=PUBLISHED_LEVELS, n_bootstrap=0, scoring_cfg=cfg.scoring
     )
     pub_rank = {r.player: r.overall_rank for r in published}
 
@@ -109,7 +129,7 @@ def build_board_json(conn: sqlite3.Connection) -> dict:
         by_pos[r["position"]].append(r["player_name"])
     pos_rank = {n: i + 1 for pos, names in by_pos.items() for i, n in enumerate(names)}
 
-    avail = _load_availability_csv()["by_player"]
+    avail = _load_availability_csv(avail_csv_for(cfg.league_id))["by_player"]
 
     players = []
     for r in ours:
@@ -185,9 +205,17 @@ def build_board_json(conn: sqlite3.Connection) -> dict:
             "availability": avail.get(r.player, {}),
         })
 
+    # Positions this league rosters as starters but that have no scoring
+    # engine (K, DEF -- no kicker or DST stats are ingested, ADR-039/041).
+    # Generalizes the old DEF-only hardcode to any such position.
+    unsupported = sorted(
+        p for p in cfg.starters if p not in ReplacementLevels.SCOREABLE_POSITIONS
+    )
+
     return {
         "contract_version": CONTRACT_VERSION,
         "generated_utc": datetime.now(timezone.utc).isoformat(),
+        "league_id": cfg.league_id,
         "season": SEASON,
         "board_source": "fantasypros_ecr re-scored into league positional value structure",
         # The design contract's example shows "blend:4". We have ONE source.
@@ -214,7 +242,14 @@ def build_board_json(conn: sqlite3.Connection) -> dict:
             "R-squared is 0.16-0.27, so consensus rank explains under a third of the variance "
             "in what a player actually scores. Treat projections as weak."
         ),
-        "replacement_levels_used": ReplacementLevels().baselines(),
+        "replacement_levels_used": levels.baselines(),
+        "replacement_levels_flex_split_measured": flex_split_measured,
+        "replacement_levels_flex_split_note": (
+            None if flex_split_measured else
+            "This league's flex_split was not supplied, so the primary league's measured "
+            "split (ADR-029, 26 seasons under ITS scoring rules) is used as an explicitly "
+            "flagged placeholder, not a measurement for this league."
+        ),
         "published_levels_compared_against": PUBLISHED_LEVELS.baselines(),
         # DEF splits into two questions that had been collapsed into one flag.
         #
@@ -228,35 +263,58 @@ def build_board_json(conn: sqlite3.Connection) -> dict:
         # gsis_id and are dropped at ingest). So no DEF player appears here, and
         # `replacement_levels_used` deliberately excludes DEF: it lists the
         # levels THIS BOARD was built from, and DEF was not one of them.
-        "def_supported": False,
+        "def_supported": "DEF" in cfg.starters and "DEF" not in unsupported,
         "def_note": (
-            "DEF is a starting slot in this league (1 per team) but is permanently excluded "
-            "from the model: no DST data is ingested, so there is no DEF replacement level, "
-            "points projection, VBD or board row. See "
-            "league.json:positions_without_replacement_levels. Render this note where a DEF "
-            "number would go. Do not compute a DEF value from these files."
+            "DEF is a starting slot in this league but is permanently excluded from the "
+            "model: no DST data is ingested, so there is no DEF replacement level, points "
+            "projection, VBD or board row. See league.json:positions_without_replacement_levels. "
+            "Render this note where a DEF number would go. Do not compute a DEF value from "
+            "these files."
+        ) if "DEF" in cfg.starters else None,
+        # Generalizes def_supported/def_note (kept above, unchanged shape, for
+        # backward compatibility) to ANY starter position with no scoring
+        # engine -- a Yahoo-style league also rosters K, which has the exact
+        # same problem DEF does: no kicker stats are ingested either.
+        "unsupported_positions": unsupported,
+        "unsupported_positions_note": (
+            None if not unsupported else
+            f"{', '.join(unsupported)} {'is' if len(unsupported) == 1 else 'are'} rostered "
+            f"starting slot(s) with no scoring data ingested, so no replacement level, "
+            f"projection, VBD or board row exists for {'it' if len(unsupported) == 1 else 'them'}. "
+            f"See league.json:positions_without_replacement_levels."
         ),
         "players": players,
     }
 
 
-def build_availability_json() -> dict:
-    payload = _load_availability_csv()
+def build_availability_json(cfg: lc.LeagueConfig = lc.CURRENT_LEAGUE) -> dict:
+    payload = _load_availability_csv(avail_csv_for(cfg.league_id))
+    is_primary = cfg.is_primary
+    engine = None if is_primary else ds.DraftEngine(cfg)
+    user_picks = ds.user_pick_numbers() if is_primary else engine.user_pick_numbers()
+    need_targets = (
+        dict(ds.MECHANICAL_NEED_TARGETS) if is_primary else ds.mechanical_need_targets_for(cfg)
+    )
+    max_at_pos = (
+        {"QB": 3, "RB": 8, "WR": 9, "TE": 3} if is_primary
+        else ds.default_max_at_position_for(cfg)
+    )
     payload.update({
         "contract_version": CONTRACT_VERSION,
         "generated_utc": datetime.now(timezone.utc).isoformat(),
+        "league_id": cfg.league_id,
         "metadata": {
             "season": SEASON,
             "simulations_per_setting": 3000,
             "sigma_values": list(ds.SIGMA_SWEEP),
             "sigma_plain_english": (
-                "Sigma is how far the other nine teams stray from consensus, measured in draft "
-                "picks: 5 is a disciplined room, 10 is about one round of slippage (the "
+                "Sigma is how far the other opposing teams stray from consensus, measured in "
+                "draft picks: 5 is a disciplined room, 10 is about one round of slippage (the "
                 "default), 20 is chaotic. It is a guess, not fitted to observed drafts, which "
                 "is why every number is given at all three settings."
             ),
-            "user_draft_slot": ds.USER_SLOT,
-            "user_picks": ds.user_pick_numbers(),
+            "user_draft_slot": cfg.user_draft_slot,
+            "user_picks": user_picks,
             "reliability_note": (
                 "These probabilities never pass through the projection curve, so they are the "
                 "most reliable numbers in the project. They describe draft behaviour, not "
@@ -282,15 +340,21 @@ def build_availability_json() -> dict:
             # CSV) -- if a second source (MFL ADP, ADR-035) is wired into
             # run_availability.py, update this list in the same commit.
             "ranking_sources": [{"name": "fantasypros_ecr", "weight": 1.0}],
-            "mechanical_need_targets": dict(ds.MECHANICAL_NEED_TARGETS),
+            "mechanical_need_targets": need_targets,
             "mechanical_need_targets_note": (
                 "Per position: STARTERS[pos] + (FLEX_SLOTS if pos is flex-eligible else 0). "
-                "An UPPER BOUND per position, not a partition of the 2 shared flex slots -- a "
+                "An UPPER BOUND per position, not a partition of the shared flex slots -- a "
                 "team could plausibly need up to this many of ANY one eligible position, not "
-                "all three at once. Below this count a team is not penalised for taking the "
-                "position again; a team at or past MAX_AT_POSITION never takes another."
+                "all of them at once. Below this count a team is not penalised for taking the "
+                "position again; a team at or past max_at_position never takes another."
             ),
-            "max_at_position": {"QB": 3, "RB": 8, "WR": 9, "TE": 3},
+            "max_at_position": max_at_pos,
+            "max_at_position_note": (
+                "The primary league's values are a hand-set judgement call (how much bench "
+                "depth a manager hoards), not a formula. Other leagues use an explicitly "
+                "flagged heuristic instead (mechanical_need_targets + bench size) -- see "
+                "ADR-041; this has not been measured for any league."
+            ),
             "need_penalty_per_surplus": 25.0,
             "room_noise_drawn_once_per_draft": True,
             "room_noise_note": (
@@ -344,50 +408,81 @@ def _scoring_for_export(cfg: dict) -> dict:
     return out
 
 
-def build_league_json() -> dict:
-    levels = ReplacementLevels()
+def build_league_json(cfg: lc.LeagueConfig = lc.CURRENT_LEAGUE) -> dict:
+    levels, flex_split_measured = ReplacementLevels.from_league_config(cfg)
+    is_primary = cfg.is_primary
+    unsupported = sorted(
+        p for p in cfg.starters if p not in ReplacementLevels.SCOREABLE_POSITIONS
+    )
+    pick_sequence = ds.user_pick_numbers() if is_primary else ds.DraftEngine(cfg).user_pick_numbers()
+
+    if is_primary:
+        # Preserve the exact prose the primary league has always shipped --
+        # only a non-primary league gets the generalized, position-list
+        # version of these notes.
+        replacement_levels_note = (
+            "Derived from this league's 10 teams and starter counts, not hardcoded. Public "
+            "boards assume a 12-team RB24/WR36 convention; ours is RB30/WR40/TE10/QB10, "
+            "measured rather than assumed (ADR-029)."
+        )
+        positions_without_replacement_levels_note = (
+            "DEF is a starting slot (1 per team) with no replacement level, deliberately and "
+            "permanently. No DST data is ingested, so no DEF points projection, VBD or board "
+            "row exists. Do not derive a DEF value from these files. Render "
+            "board.json:def_note where a DEF number would otherwise go."
+        )
+    else:
+        replacement_levels_note = (
+            f"Derived from this league's {cfg.teams} teams and starter counts, not hardcoded. "
+            f"See replacement_levels_flex_split_note in board.json for whether flex_split was "
+            f"measured for this specific league."
+        )
+        positions_without_replacement_levels_note = (
+            None if not unsupported else
+            f"{', '.join(unsupported)} {'is a' if len(unsupported) == 1 else 'are'} starting "
+            f"slot(s) with no scoring data ingested (no kicker or DST stats exist in this "
+            f"project). Do not derive a value for {'it' if len(unsupported) == 1 else 'them'} "
+            f"from these files."
+        )
+
     return {
         "contract_version": CONTRACT_VERSION,
         # league.json was the only artifact shipping without this, so consumers
         # keying provenance on it fell back to an "unversioned" run id.
         "generated_utc": datetime.now(timezone.utc).isoformat(),
-        "teams": ds.N_TEAMS,
-        "rounds": ds.N_ROUNDS,
-        "user_draft_slot": ds.USER_SLOT,
-        "pick_sequence": ds.user_pick_numbers(),
+        "league_id": cfg.league_id,
+        "league_name": cfg.name,
+        "platform": cfg.platform,
+        "teams": cfg.teams,
+        "rounds": cfg.rounds,
+        "user_draft_slot": cfg.user_draft_slot,
+        "draft_type": cfg.draft_type,
+        "pick_sequence": pick_sequence,
         "roster": {
-            "starters": {**ds.STARTERS, "FLEX": ds.FLEX_SLOTS, "DEF": 1},
-            "flex_eligible": list(ds.FLEX_ELIGIBLE),
-            "bench": 6,
-            "ir": 1,
-            "kicker": False,
+            "starters": {**cfg.starters, "FLEX": cfg.flex_slots},
+            "flex_eligible": list(cfg.flex_eligible),
+            "bench": cfg.bench,
+            "ir": cfg.ir,
+            "kicker": "K" in cfg.starters,
         },
-        "scoring": _scoring_for_export(LEAGUE),
+        "scoring": _scoring_for_export(cfg.scoring),
         "replacement_levels": levels.baselines(),
-        # DEF is PERMANENTLY EXCLUDED, by decision (2026-07-25), and this field
-        # exists so that reads as a decision rather than an omission -- which is
-        # how the front end reasonably read it when roster.starters declared
-        # DEF:1 against a replacement_levels with no DEF key.
+        # DEF is PERMANENTLY EXCLUDED, by decision (2026-07-25, ADR-039), and
+        # this field exists so that reads as a decision rather than an
+        # omission. Generalized (ADR-041) to any unscored starter position --
+        # a Yahoo-style league also rosters K, which has the identical
+        # problem: no kicker stats are ingested either.
         #
-        # NOTE FOR A FUTURE SESSION, so this is not relitigated: DEF10 *is*
-        # derivable without any player data (10 teams x 1 DEF starter, the same
-        # arithmetic that yields QB10). It is left out anyway. A published level
-        # invites a downstream VBD, and the POINTS half genuinely does not exist
-        # -- no DST data is ingested. Publishing the rank alone would put a
-        # number in reach of a consumer who cannot see that distinction.
-        "positions_without_replacement_levels": ["DEF"],
-        "positions_without_replacement_levels_note": (
-            "DEF is a starting slot (1 per team) with no replacement level, deliberately and "
-            "permanently. No DST data is ingested, so no DEF points projection, VBD or board "
-            "row exists. Do not derive a DEF value from these files. Render "
-            "board.json:def_note where a DEF number would otherwise go."
-        ),
-        "replacement_levels_note": (
-            "Derived from this league's 10 teams and starter counts, not hardcoded. Public "
-            "boards assume a 12-team RB24/WR36 convention; ours is RB30/WR40/TE10/QB10, "
-            "measured rather than assumed (ADR-029)."
-        ),
+        # NOTE FOR A FUTURE SESSION, so this is not relitigated: DEF10/K10-
+        # style RANKS *are* derivable without any player data (teams x
+        # starters, the same arithmetic that yields QB10). They are left out
+        # anyway. A published level invites a downstream VBD, and the POINTS
+        # half genuinely does not exist for either position.
+        "positions_without_replacement_levels": unsupported,
+        "positions_without_replacement_levels_note": positions_without_replacement_levels_note,
+        "replacement_levels_note": replacement_levels_note,
         "flex_split_assumption": levels.flex_split,
+        "flex_split_measured": flex_split_measured,
         "flex_split_note": (
             "MEASURED, not assumed (ADR-029, 2026-07-25 -- this note previously said the "
             "opposite and was stale). Derived from 26 seasons: rank all flex-eligible players "
@@ -396,20 +491,31 @@ def build_league_json() -> dict:
             "sd 3.0) and the answer moves +/-1 rank by era window, so treat it as a measured "
             "midpoint, not a precise constant. TE is the robust part: zero flex slots in every "
             "window tested."
+        ) if is_primary else (
+            "NOT measured for this league (flex_split_measured is false): borrowed from the "
+            "primary league's ADR-029 measurement as an explicitly flagged placeholder. A real "
+            "measurement requires re-running that analysis under this league's own scoring "
+            "rules, which has not been done."
         ),
-        "playoff": {"teams": 4, "weeks": [16, 17], "reseeding": False},
-        "trade_deadline": "2026-11-28",
-        "faab_budget": 100,
+        "playoff": {
+            "teams": cfg.playoff_teams, "weeks": list(cfg.playoff_weeks),
+            "reseeding": cfg.reseeding,
+        },
+        "trade_deadline": cfg.trade_deadline,
+        "faab_budget": cfg.faab_budget,
     }
 
 
-def write_all(out_dir: Path, conn: sqlite3.Connection, strategies: Optional[dict] = None) -> List[Path]:
+def write_all(
+    out_dir: Path, conn: sqlite3.Connection, strategies: Optional[dict] = None,
+    cfg: lc.LeagueConfig = lc.CURRENT_LEAGUE,
+) -> List[Path]:
     out_dir.mkdir(parents=True, exist_ok=True)
     written = []
     artifacts = {
-        "board.json": build_board_json(conn),
-        "availability.json": build_availability_json(),
-        "league.json": build_league_json(),
+        "board.json": build_board_json(conn, cfg),
+        "availability.json": build_availability_json(cfg),
+        "league.json": build_league_json(cfg),
     }
     if strategies is not None:
         artifacts["strategies.json"] = strategies
@@ -427,11 +533,19 @@ def write_all(out_dir: Path, conn: sqlite3.Connection, strategies: Optional[dict
 
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--out", type=Path, default=EXPORT_DIR)
+    ap.add_argument("--out", type=Path, default=None)
+    ap.add_argument(
+        "--league", default=lc.PRIMARY_LEAGUE_ID,
+        help="league_id of a saved config under data/leagues/, or 'primary' (default)",
+    )
     args = ap.parse_args()
+    cfg = (
+        lc.CURRENT_LEAGUE if args.league == lc.PRIMARY_LEAGUE_ID else lc.LeagueConfig.load(args.league)
+    )
+    out_dir = args.out or export_dir_for(cfg.league_id)
     conn = dbmod.connect()
     try:
-        written = write_all(args.out, conn)
+        written = write_all(out_dir, conn, cfg=cfg)
     finally:
         conn.close()
     for p in written:

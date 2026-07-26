@@ -1,9 +1,13 @@
 {
-  "contract_version": "1.6.0",
-  "generated_utc": "2026-07-26T04:23:50.344536+00:00",
+  "contract_version": "1.7.0",
+  "generated_utc": "2026-07-26T05:31:32.170525+00:00",
+  "league_id": "primary",
+  "league_name": "Primary league (10-team half-PPR)",
+  "platform": "other",
   "teams": 10,
   "rounds": 16,
   "user_draft_slot": 3,
+  "draft_type": "snake",
   "pick_sequence": [
     3,
     18,
@@ -28,8 +32,8 @@
       "RB": 2,
       "WR": 3,
       "TE": 1,
-      "FLEX": 2,
-      "DEF": 1
+      "DEF": 1,
+      "FLEX": 2
     },
     "flex_eligible": [
       "RB",
@@ -161,6 +165,7 @@
     "WR": 0.48,
     "TE": 0.0
   },
+  "flex_split_measured": true,
   "flex_split_note": "MEASURED, not assumed (ADR-029, 2026-07-25 -- this note previously said the opposite and was stale). Derived from 26 seasons: rank all flex-eligible players under this league's exact rules, remove the mandated starters, and count who wins the 20 flex slots. Season-to-season variance is large (RB flex ranges 5 to 17, sd 3.0) and the answer moves +/-1 rank by era window, so treat it as a measured midpoint, not a precise constant. TE is the robust part: zero flex slots in every window tested.",
   "playoff": {
     "teams": 4,

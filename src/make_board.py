@@ -122,13 +122,21 @@ class BoardRow:
     delta_vs_consensus: int
 
 
-def _season_actual_points(conn: sqlite3.Connection, season: int) -> Dict[str, float]:
-    """Total points each player actually scored in `season`, under our rules."""
+def _season_actual_points(
+    conn: sqlite3.Connection, season: int, scoring_cfg: Optional[dict] = None
+) -> Dict[str, float]:
+    """Total points each player actually scored in `season`, under `scoring_cfg`
+    (defaults to this project's primary league's rules -- see
+    score_offensive_game's own cfg=None default). ADR-041: without this param,
+    a board built for a different league would silently score every player
+    under the PRIMARY league's scoring rules regardless of what that league's
+    LeagueConfig actually specifies -- a real parameterization gap, not a
+    hypothetical one."""
     totals: Dict[str, float] = {}
     for row in dbmod.actual_season_outcomes(conn, season):
         stats = {c: row[c] for c in dbmod.SCORING_STAT_COLUMNS}
         pid = row["player_id"]
-        totals[pid] = totals.get(pid, 0.0) + score_offensive_game(stats)
+        totals[pid] = totals.get(pid, 0.0) + score_offensive_game(stats, cfg=scoring_cfg)
     return totals
 
 
@@ -177,7 +185,7 @@ def resolve_training_seasons(
 
 
 def collect_observations(
-    conn: sqlite3.Connection, seasons: Sequence[int]
+    conn: sqlite3.Connection, seasons: Sequence[int], scoring_cfg: Optional[dict] = None
 ) -> Dict[int, Dict[str, List[tuple[int, float]]]]:
     """{season: {position: [(positional_rank, actual_points), ...]}}.
 
@@ -186,7 +194,7 @@ def collect_observations(
     """
     out: Dict[int, Dict[str, List[tuple[int, float]]]] = {}
     for season in seasons:
-        actuals = _season_actual_points(conn, season)
+        actuals = _season_actual_points(conn, season, scoring_cfg)
         per_pos: Dict[str, List[tuple[int, float]]] = {}
         for pos, rows in _positional_ranks(_consensus_board(conn, season)).items():
             limit = RELEVANT_DEPTH.get(pos)
@@ -225,7 +233,8 @@ def _fit_one(pos: str, pairs: Sequence[tuple[int, float]]) -> Optional[RankCurve
 
 
 def fit_rank_curves(
-    conn: sqlite3.Connection, target_season: int, training_seasons: Optional[Sequence[int]] = None
+    conn: sqlite3.Connection, target_season: int, training_seasons: Optional[Sequence[int]] = None,
+    scoring_cfg: Optional[dict] = None,
 ) -> Dict[str, RankCurve]:
     """Fit E[our_points | positional consensus rank] per position.
 
@@ -233,7 +242,7 @@ def fit_rank_curves(
     target season would leak its outcomes into its own board.
     """
     seasons = resolve_training_seasons(conn, target_season, training_seasons)
-    obs = collect_observations(conn, seasons)
+    obs = collect_observations(conn, seasons, scoring_cfg)
     pooled: Dict[str, List[tuple[int, float]]] = {p: [] for p in BOARD_POSITIONS}
     for per_pos in obs.values():
         for pos, pairs in per_pos.items():
@@ -253,6 +262,7 @@ def bootstrap_vbd_intervals(
     training_seasons: Optional[Sequence[int]] = None,
     n_bootstrap: int = DEFAULT_N_BOOTSTRAP,
     seed: int = DEFAULT_CONFIG.random_seed,
+    scoring_cfg: Optional[dict] = None,
 ) -> Dict[str, Dict[int, tuple[float, float]]]:
     """95% CI on VBD at each rank, resampling SEASONS (statistical-guardrails
     §7: season-level, not player-level, to respect within-season correlation).
@@ -261,7 +271,7 @@ def bootstrap_vbd_intervals(
     wide. That width is the honest result, not a defect to engineer away.
     """
     seasons = resolve_training_seasons(conn, target_season, training_seasons)
-    obs = collect_observations(conn, seasons)
+    obs = collect_observations(conn, seasons, scoring_cfg)
     baselines = levels.baselines()
     rng = np.random.default_rng(seed)
 
@@ -297,12 +307,14 @@ def build_board(
     training_seasons: Optional[Sequence[int]] = None,
     n_bootstrap: int = DEFAULT_N_BOOTSTRAP,
     seed: int = DEFAULT_CONFIG.random_seed,
+    scoring_cfg: Optional[dict] = None,
 ) -> tuple[List[BoardRow], Dict[str, RankCurve]]:
     levels = levels or ReplacementLevels()
     baselines = levels.baselines()
-    curves = fit_rank_curves(conn, season, training_seasons)
+    curves = fit_rank_curves(conn, season, training_seasons, scoring_cfg=scoring_cfg)
     intervals = bootstrap_vbd_intervals(
-        conn, season, levels, training_seasons, n_bootstrap=n_bootstrap, seed=seed
+        conn, season, levels, training_seasons, n_bootstrap=n_bootstrap, seed=seed,
+        scoring_cfg=scoring_cfg,
     )
     by_pos = _positional_ranks(_consensus_board(conn, season))
 

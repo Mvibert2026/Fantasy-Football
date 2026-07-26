@@ -478,3 +478,76 @@ Priority order unchanged from session 7, except that the six ADRs are now writte
   the contract version.
 - **New:** do not "fix" the missing DEF replacement level by deriving DEF10. It *is* derivable
   from league structure alone, and it is withheld deliberately — see ADR-039.
+
+---
+
+# SESSION HANDOFF -- 2026-07-26 (session 10, stopped mid-plan, token-limit-driven)
+
+Four-item plan from the user: (1) FantasyPros probe, (2) consensus-rank-mismatch diagnosis,
+(3) multi-league support, (4) player descriptions. **Items 1-2 done (prior message in this
+session). Items 3's two sub-items (implement + Yahoo mock test) done. Item 3's third sub-item
+(mock draft logging) NOT STARTED. Item 4 (player descriptions) NOT STARTED.** Stopped here
+deliberately rather than starting either of the two remaining pieces without room to finish them
+cleanly.
+
+## What's done and committed: ADR-041, multi-league support
+
+`src/league_config.py` (new), `src/draft_sim.py` (DraftEngine added, nothing existing touched),
+`src/scoring.py` (`ReplacementLevels.from_league_config`), `src/availability.py` (optional
+`engine` param), `src/make_board.py` (`scoring_cfg` param -- a real gap, fixed), `src/
+export_contract.py`/`src/export_static.py`/`src/run_availability.py` (all take `--league`,
+route to `data/export/<league_id>/` for non-primary leagues, primary stays unprefixed).
+
+**Verified, not assumed:** every rewrite was diffed against the previously-committed primary
+league output before moving to the next file. Zero numeric values changed for the primary
+league at any point -- only additive fields and a couple of explicitly-noted prose
+genericizations. Full detail, including the two real gaps found (make_board.py's missing
+scoring_cfg, run_availability.py's hardcoded pick numbers) and the gaps deliberately NOT fixed
+(backtest.py's separate constants, no kicker engine, RELEVANT_DEPTH, MAX_AT_POSITION/flex_split
+heuristics for new leagues) is in **ADR-041**, decisions.md.
+
+**Contract bumped 1.6.0 -> 1.7.0.** 288 tests passing (23 new: test_league_config.py,
+test_draft_engine.py, test_multi_league_export.py).
+
+**Yahoo-standard 12-team mock league built and proven**
+(`data/leagues/yahoo_standard_mock.json`, exports at `data/export/yahoo_standard_mock/`) --
+values are placeholders, the user said they'll correct them from a real lobby later. Full
+regeneration (~47s) produced a correct, structurally valid 6-file export set.
+
+## NOT done from the 4-item plan
+
+- **Mock draft logging (item 3's third sub-item).** Schema not built:
+  `mock_drafts(mock_id, league_config_id, platform, drafted_at, source, is_mock)` /
+  `mock_picks(mock_id, overall_pick, round, team_slot, mfl_id, player_name_raw)`, resolved
+  through the ADR-036 identity hub, unresolved names to a quarantine table. Primary consumer per
+  the user's brief: validating the availability model (predicted vs. observed availability by
+  position/tier with CIs -- will be underpowered at first, say so). Secondary: an ADP proxy,
+  always `is_mock`, never blended into real ADP. Explicitly NOT an opponent-behavior signal.
+  No ADR logged for this -- nothing was built.
+- **Player descriptions (item 4).** `archetype_taxonomy.md` was supplied by the user
+  (RB/WR/TE closed enums, `UNDETERMINED` fallback, evaluation order specified, thresholds
+  explicitly flagged as unverified conventions -- read and understood this session, not yet
+  implemented). Depends on Task B (mfl_id hub, already built, ADR-036) and the taxonomy file
+  itself. Nothing built: no archetype assignment code, no description generation, no
+  `license_tag='ai_generated'` enforcement test. No ADR logged.
+
+## Front-end notification: NOT YET SENT this round
+
+The user asked to notify the front-end session of the new directory convention once item 1
+landed. **This has not been sent yet** -- do this first thing next session if it wasn't sent
+before the process ended. Content: primary league unchanged at `data/export/`; a league switcher
+can target `data/export/<league_id>/` for any other league using the exact same file names/
+schema; `league_id` is now present on every artifact as a cross-check.
+
+## Traps for a fresh session
+
+- **`data/leagues/*.json` is tracked in git, not gitignored** -- it's config, not generated
+  output. Treat it like source, not like `data/export/`.
+- **`DraftEngine` is deliberately a duplicate of the free functions in `draft_sim.py`, not a
+  refactor of them.** Do not "clean this up" by merging them -- that was a considered and
+  rejected design, specifically to protect PR-003's ADR-028-verified reproducibility guarantee.
+- **`nulls.json` for a non-primary league is NOT a bug when it shows `NOT_YET_RUN_FOR_THIS_
+  LEAGUE`.** That is correct behavior, not a missing implementation -- see ADR-041's
+  league-invariance section.
+- **Only ADR-026 (alpha-detection closure) is confirmed to travel across leagues.** Every other
+  finding, including the ones in `nulls.json`, is league-specific until proven otherwise.
