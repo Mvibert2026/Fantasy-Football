@@ -35,12 +35,11 @@ function nameOf(row: BoardRow): string {
 }
 
 /**
- * Assembles context from the exports. Plain substring matching on names and glossary
- * terms -- the same reasoning as the news lane: no scoring until there is something
- * to tune it against.
+ * Player-, glossary-term-, and nulls-finding-specific context. Plain substring
+ * matching on names and glossary terms -- the same reasoning as the news lane: no
+ * scoring until there is something to tune it against.
  */
-export function retrieveContext(data: Dataset, rows: BoardRow[], question: string): ContextItem[] {
-  const q = question.toLowerCase();
+function retrieveNarrowContext(data: Dataset, rows: BoardRow[], q: string): ContextItem[] {
   const items: ContextItem[] = [];
 
   for (const row of rows) {
@@ -114,6 +113,94 @@ export function retrieveContext(data: Dataset, rows: BoardRow[], question: strin
   return items;
 }
 
+/**
+ * The fallback that replaces outright refusal: when nothing above matched a name,
+ * a glossary term, or a nulls keyword, hand over the two export files most likely
+ * to answer a general strategy or positional-valuation question -- strategies.json
+ * and every nulls.json finding -- rather than stopping at "nothing matched".
+ *
+ * This is not question-specific retrieval; it is "here is what this app measured,
+ * pick out what's relevant." The model is still bound by the renderer contract: it
+ * cannot state a number that is not in one of these items, and every claim is
+ * tagged INFERENCE with its provenance regardless of how the context arrived.
+ *
+ * Two things are included specifically so the model can give the caveated answer
+ * this fallback exists for, instead of either inventing one or refusing:
+ *   - `power_floor.plain_english`, so a strategy comparison doesn't get narrated as
+ *     statistically significant when the data cannot support that at n=4 seasons.
+ *   - An explicit statement that each strategy was simulated only against the
+ *     baseline, not against each other -- so a "which two strategies combine best"
+ *     question gets told that plainly rather than answered from nothing.
+ */
+function retrieveFallbackContext(data: Dataset): ContextItem[] {
+  const items: ContextItem[] = [];
+  const s = data.strategies;
+
+  for (const [i, strategy] of s.strategies.entries()) {
+    // Sigma 10 is the export's own default reading ("about one round of slippage");
+    // summarizing at one sigma keeps each strategy to one digestible context item
+    // instead of three near-duplicates.
+    const cell = strategy.by_sigma.find((c) => c.sigma === 10) ?? strategy.by_sigma[0];
+    if (!cell) continue;
+    const j = strategy.by_sigma.indexOf(cell);
+
+    const margin =
+      cell.margin_vs_baseline === null
+        ? ''
+        : ` Margin vs. the baseline: ${cell.margin_vs_baseline > 0 ? '+' : ''}${decimal(cell.margin_vs_baseline)} points.`;
+    const seasons =
+      cell.seasons_positive === null
+        ? ''
+        : ` Positive in ${integer(cell.seasons_positive)} of ${integer(s.power_floor.n_seasons)} simulated seasons.`;
+    const signTest = cell.sign_test_p === null ? '' : ` Sign-test p = ${decimal(cell.sign_test_p)}.`;
+
+    items.push({
+      id: `strategies.${i}.summary`,
+      text:
+        `Strategy "${strategy.name}"${strategy.is_baseline ? ' (the baseline every other strategy is measured against)' : ''}: ` +
+        `${strategy.verdict} At sigma ${integer(cell.sigma)}, mean roster points ${decimal(cell.mean_roster_points)}.` +
+        `${margin}${seasons}${signTest}`,
+      confidence: 'medium',
+      source_path: `strategies.json:strategies[${i}].by_sigma[${j}]`,
+    });
+  }
+
+  items.push({
+    id: 'strategies.power_floor',
+    text: s.power_floor.plain_english,
+    confidence: 'high',
+    source_path: 'strategies.json:power_floor.plain_english',
+  });
+
+  items.push({
+    id: 'strategies.not_compositional',
+    text:
+      'Each strategy above was simulated independently against the baseline, one at a time. There is no ' +
+      'simulation of combining two strategies into a single draft plan, and these numbers cannot be added ' +
+      'or averaged together to produce one -- that would need a new simulation run, not arithmetic on the ' +
+      'existing results.',
+    confidence: 'high',
+    source_path: 'strategies.json:strategies',
+  });
+
+  for (const [i, finding] of data.nulls.findings.entries()) {
+    items.push({
+      id: `nulls.${finding.id}.fallback`,
+      text: `We tested this and found nothing. ${finding.claim_tested}: ${finding.plain_language_summary}`,
+      confidence: 'high',
+      source_path: `nulls.json:findings[${i}].plain_language_summary`,
+    });
+  }
+
+  return items;
+}
+
+export function retrieveContext(data: Dataset, rows: BoardRow[], question: string): ContextItem[] {
+  const q = question.toLowerCase();
+  const narrow = retrieveNarrowContext(data, rows, q);
+  return narrow.length > 0 ? narrow : retrieveFallbackContext(data);
+}
+
 export async function runReasoningLane(
   data: Dataset,
   rows: BoardRow[],
@@ -122,6 +209,8 @@ export async function runReasoningLane(
   const context = retrieveContext(data, rows, question);
 
   if (context.length === 0) {
+    // Reachable only if strategies.json and nulls.json are both empty, which the
+    // fallback assumes they never are for this project.
     return {
       status: 'no_context',
       detail:
