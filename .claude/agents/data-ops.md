@@ -2,6 +2,7 @@
 name: data-ops
 description: Ingestion, snapshots, and data-capture work for the fantasy draft assistant. Use for ADP snapshot capture, mock draft logging, injury/news ingestion, FantasyPros season backfills, board re-pulls, and any scheduled or repeatable data pull. Do NOT use for statistical modelling, formula changes, or export-contract design — those belong to Backend.
 model: sonnet
+effort: low
 tools: Bash, Read, Write, Edit, Glob, Grep, WebFetch
 ---
 
