@@ -285,3 +285,55 @@ tier is ambiguous, say which tier you think it is and why before starting.
 
 Keep this file lean. When a section outgrows a paragraph or two, move it to a companion doc and
 link it here. An overloaded spec file gets ignored, which defeats its purpose.
+
+## Agent operating rules
+
+### Read at session start, in this order
+1. `docs/CURRENT-STATE.md` — canonical project state. Trust this.
+2. `docs/operating-model.md` — your role, effort tier, and evidence standards.
+3. `docs/founder-requests.md` — the standing backlog of what the founder has asked for.
+4. `docs/handoffs/OPEN.md` — your inbox. Open every thread where `TO:` includes your role and
+   `STATUS:` is `OPEN` or `BLOCKED-ON-YOU`.
+5. Only the specific ADR or doc your task names.
+
+**Do not read `docs/status.md` for current state.** It is an append-only historical log containing
+superseded figures stated in the same voice as current ones — three conflicting "current state"
+headers and roughly fifteen internal contradictions. Read it to learn what happened, never to learn
+what is true. Same hazard `docs/assistant-context.md` describes for `decisions.md`.
+
+### Inter-agent communication
+All of it goes through `docs/handoffs/`. Protocol in `docs/handoffs/README.md`. Never rely on a
+human to relay a message between agents — assume no human is in the loop.
+
+- Need something from another role? Open a thread. Specify it fully; a half-specified ask costs a
+  full session, not a minute.
+- Touched a thread? Append a reply and update its `STATUS:`, even if the reply is "no action taken,
+  because X." A thread with no reply is indistinguishable from a thread nobody opened.
+- Update `docs/handoffs/OPEN.md` in the same session you change a status.
+- Only the `TO:` role may set `STATUS: RESOLVED`.
+
+### Capture what the founder says — every session, no exceptions
+If the founder expresses a want, a constraint, a preference, or a "wouldn't it be good if" in your
+session, append it to `docs/founder-requests.md` before you finish. Do not judge whether it is
+important enough, and do not wait for it to be formally specced. Chat transcripts are invisible to
+every other agent and are discarded — a request that never reaches that file has, as far as this
+project is concerned, never been made.
+
+### Write back, every session
+- Update `docs/CURRENT-STATE.md` **in place** — replace stale lines, never append a new section.
+- Append the session narrative to `docs/status.md`.
+- New decision → an ADR in `docs/decisions.md`.
+- Contract schema change → bump the version **and** open a handoff thread to `frontend`.
+
+### Completion reporting
+Report commit hash and test count. Not prose summaries.
+
+**UI and visual work is never "done" on your own report.** State it as "built, pending screenshot
+verification," and attach a screenshot. A fully green test suite has already coexisted with an
+entirely missing screen in this project, because no test asserted the screen existed.
+
+### Dashboards
+`docs/dashboard.html` and `docs/roles-workflow-map.html` are point-in-time snapshots, not live
+systems. If you materially change project state, either regenerate them or note in your reply that
+they are stale. Better: replace `dashboard.html` with a generator script that reads
+`CURRENT-STATE.md` and `handoffs/OPEN.md`, so it can never drift.
