@@ -753,6 +753,75 @@ downstream check will catch. Per the standing rule, cross-source features must *
 coverage and refuse unresolved rows**, never drop them silently — the drops are non-random,
 skewing toward fringe roster spots where role changes actually happen.
 
+---
+
+**Status: IMPLEMENTED (2026-07-25, session 9), Task B.** `src/identity.py`. Built entirely from
+`ff_playerids` (already ingested, no re-fetch) — `players_canonical` (one row per `mfl_id`),
+`player_ids` (source, source_id, confidence, method, resolved_at), `player_id_collisions`.
+
+**Re-measured over the full 12,468-row crosswalk, not the earlier estimate:**
+
+| Source | Non-null | Collision groups | Resolvable (post-exclusion) |
+|---|---|---|---|
+| mfl_id | 100.0% | 0 | — (the hub) |
+| gsis | 62.1% | 10 | 61.9% |
+| pfr | 76.8% | 16 | 76.5% |
+| espn | 65.3% | 13 | 65.1% |
+| yahoo | 44.0% | 5 | 43.9% |
+| sleeper | 50.9% | 6 | 50.9% |
+| fantasypros | 38.3% | 2 | 38.3% |
+| sportradar | 59.6% | 5 | 59.5% |
+
+57 (source, source_id) pairs excluded to `player_id_collisions` project-wide. The prior estimate
+(62.1% / 10 collisions for gsis) is confirmed almost exactly — the small gap between "non-null"
+and "resolvable" in each row is the collision exclusion itself.
+
+**`depth_chart` is not a distinct ID space.** `depth_charts_weekly`/`depth_charts_snapshots` key
+rows by `gsis_id` (and `espn_id`), so a depth-chart row resolves through those spokes. Listed in
+the requested source enum for completeness; there is no `depth_chart_id` column to crosswalk.
+`resolve()` still accepts `"depth_chart"` as a valid source name and raises on anything not in
+the enum, but there will never be a row under it in `player_ids`.
+
+**Coverage restricted to the 378 board_2026 players — the number that matters, not the global
+rate.** Board players carry no external ID (rankings has name only), so this first name-matches
+against `players_canonical.display_name`: **402 of 408 matched (98.5%)** after normalizing
+suffixes (Jr./Sr./II/III/IV/V) and punctuation — normalization improved the raw exact-match rate
+from 91.2%. The remaining 6 are nicknames a simple normalizer cannot resolve (Hollywood Brown =
+Marquise Brown, Gabe Davis = Gabriel Davis) or very recent additions the crosswalk may not carry
+yet. **This name join feeds only the coverage REPORT, never `player_ids`** — a wrong match here
+mislabels a statistic, not a downstream join a feature would trust.
+
+Among the 402 matched, coverage is high for every source except Yahoo:
+
+| Source | Coverage of matched board players |
+|---|---|
+| gsis / espn / sportradar | 99.0% |
+| sleeper / fantasypros | 98.8% |
+| pfr | 99.0% |
+| yahoo | 80.6% |
+
+Board-player coverage is far better than the global rate for every source, which makes sense —
+the crosswalk is thinnest for players outside any current relevance (retired, practice-squad,
+never-active), and the board only contains players FantasyPros ranks.
+
+**Note: `board_players` was 408, not the 378 quoted elsewhere.** `board.json` holds 378 after
+depth-of-fit filtering; the `rankings` table for `season=2026, source='fantasypros_ecr'` that
+this coverage check queries directly holds 408 distinct names (30 more — likely players ranked
+by FantasyPros but outside the board's drafted-relevance cut). Flagging the discrepancy rather
+than silently reconciling it; it does not change any conclusion here.
+
+**`name_dob_match_candidates()` / `manually_confirm()` exist with zero consumers this session.**
+The requested schema names `method='name_dob_match'` as an enum value, so the function exists —
+but MFL ADP (ADR-035) resolves against `mfl_id` directly and needs no name matching at all.
+Nothing calls it in production. Birthdate narrowing is unimplemented for the same reason: no
+caller supplies one, and writing DOB-matching logic with no test case to verify it against would
+be exactly the over-engineering CLAUDE.md's gates flag. `manually_confirm()` stamps
+`method='manual'` so a human-confirmed pair is never visually indistinguishable from an automated
+crosswalk hit.
+
+**13 tests in `tests/test_identity.py`**, including the core invariant: a source_id shared by two
+`mfl_id`s must resolve to `None` for *both*, never a tiebreak.
+
 **Status: NOT STARTED** (this is Task B). Gates the feature pipeline.
 
 ### ADR-037: Player profiles are display-only, enforced by test
