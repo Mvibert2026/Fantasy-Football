@@ -16,11 +16,14 @@ no live endpoint.
 
 SCHEMA IS FIXED TO WHAT THE FRONT END EXPORTS -- do not add required fields
 without checking with that session first; the whole point of matching it
-exactly is that ingestion needs no translation.
+exactly is that ingestion needs no translation. `drafter_type` is the one
+OPTIONAL exception (ADR-043): 'human' | 'bot' | 'unknown', per pick, added
+specifically so the bot-seat discard gate can be checked instead of being
+permanently unenforceable.
 
     mock_drafts(mock_id, league_config_id, platform, drafted_at, source, is_mock)
     mock_picks(mock_id, overall_pick, round, team_slot, mfl_id, player_name_raw,
-               predicted_top, predicted_p, timestamp)
+               predicted_top, predicted_p, timestamp, drafter_type=optional)
 
 NAME RESOLUTION. `mfl_id` is trusted directly if the source file supplies it
 (validated against players_canonical, not blindly accepted). If null,
@@ -32,17 +35,15 @@ quarantine table is that "probably this player" is not the same as "this
 player", and calibration numbers computed from guessed identities would be
 silently wrong in a way nothing downstream could detect.
 
-GAP, NAMED NOT PATCHED: the protocol's discard gates (SS4) need TWO pieces of
-information this schema does not carry:
-  - Format-mismatch gate (10-team/3WR-2FLEX/no-kicker/half-PPR): CHECKABLE via
-    league_config_id -> LeagueConfig lookup. Implemented below
-    (`format_conforms()`).
-  - Bot-seat gate (>3 bot seats discarded): NOT CHECKABLE. Neither table
-    carries drafter_type per seat. `bot_seat_status` is recorded as
-    'unknown' for every ingested mock rather than silently passing the gate
-    or silently failing it -- a report consuming this data must filter
-    separately on that status, and this is a real question to raise with
-    whoever specs the front end's export next, not a decision made here.
+DISCARD GATES (protocol SS4), BOTH NOW CHECKABLE:
+  - Format-mismatch (10-team/3WR-2FLEX/no-kicker/half-PPR): via
+    league_config_id -> LeagueConfig lookup. `format_conforms()`.
+  - Bot-seat (>3 bot seats discarded): ADR-043. If NO pick in a mock supplies
+    `drafter_type`, the whole mock is `bot_seat_status='unknown'` -- flagged,
+    never silently included as passing or excluded as failing. If at least
+    one pick supplies it, the number of DISTINCT team_slots with
+    drafter_type='bot' is counted; >3 -> `bot_seat_status='excluded_too_many_bots'`
+    (a hard discard, same as format-mismatch), else `'conforms'`.
 """
 
 from __future__ import annotations
@@ -52,7 +53,7 @@ import sqlite3
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 
 import identity as idn
 import league_config as lc
@@ -69,6 +70,7 @@ _CREATE_SQL = [
         format_conforms INTEGER,
         format_conforms_note TEXT,
         bot_seat_status TEXT NOT NULL DEFAULT 'unknown',
+        bot_seat_count INTEGER,
         ingested_at TEXT NOT NULL
     )
     """,
@@ -83,6 +85,7 @@ _CREATE_SQL = [
         predicted_top TEXT,
         predicted_p REAL,
         timestamp TEXT,
+        drafter_type TEXT,
         resolution_method TEXT NOT NULL,
         PRIMARY KEY (mock_id, overall_pick)
     )
@@ -121,6 +124,20 @@ class MockDraftValidationError(ValueError):
 def ensure_tables(conn: sqlite3.Connection) -> None:
     for stmt in _CREATE_SQL:
         conn.execute(stmt)
+    _migrate_add_column(conn, "mock_drafts", "bot_seat_count", "INTEGER")
+    _migrate_add_column(conn, "mock_picks", "drafter_type", "TEXT")
+
+
+def _migrate_add_column(conn: sqlite3.Connection, table: str, column: str, sql_type: str) -> None:
+    """ADR-043 added drafter_type/bot_seat_count after mock_drafts/mock_picks
+    already existed for some earlier sessions. ALTER TABLE ADD COLUMN rather
+    than drop-and-rebuild (the pattern ingest_reference.py/identity.py use
+    elsewhere) -- those tables are rebuilt from an external source on every
+    run; these are an accumulating log, and dropping them would destroy
+    already-logged real mock drafts."""
+    existing = {r[1] for r in conn.execute(f'PRAGMA table_info("{table}")').fetchall()}
+    if column not in existing:
+        conn.execute(f'ALTER TABLE "{table}" ADD COLUMN "{column}" {sql_type}')
 
 
 def format_conforms(cfg: lc.LeagueConfig) -> tuple[bool, str]:
@@ -142,6 +159,29 @@ def format_conforms(cfg: lc.LeagueConfig) -> tuple[bool, str]:
     if reasons:
         return False, "; ".join(reasons)
     return True, "conforms to the 10-team/3WR-2FLEX/no-kicker/half-PPR gate"
+
+
+def _bot_seat_status(picks: List[dict]) -> Tuple[str, Optional[int]]:
+    """ADR-043. Bot-seat gate, protocol SS4: 'Mocks with >3 bot seats are
+    discarded.' Computed from ALL picks (resolved or not -- drafter_type is a
+    property of the SEAT, independent of whether the picked player's name
+    resolved) that carry a team_slot.
+
+    'unknown' if NO pick anywhere in the mock supplies drafter_type -- the
+    front end simply doesn't have this data for that mock, which is expected
+    to be common until whatever mock platform is used exposes it. Distinct
+    from 'conforms'/'excluded_too_many_bots', which both mean the data WAS
+    supplied and the count WAS checked.
+    """
+    any_supplied = any(p.get("drafter_type") is not None for p in picks)
+    if not any_supplied:
+        return "unknown", None
+    bot_seats = {
+        p.get("team_slot") for p in picks
+        if p.get("drafter_type") == "bot" and p.get("team_slot") is not None
+    }
+    n = len(bot_seats)
+    return ("excluded_too_many_bots" if n > 3 else "conforms"), n
 
 
 def _load_league_config(league_config_id: str) -> lc.LeagueConfig:
@@ -169,16 +209,18 @@ def ingest_mock_draft_file(conn: sqlite3.Connection, path: Path) -> IngestReport
             f"{path}: league_config_id={league_config_id!r} has no saved LeagueConfig"
         )
     conforms, conforms_note = format_conforms(cfg)
+    picks = raw.get("picks", [])
+    bot_seat_status, bot_seat_count = _bot_seat_status(picks)
 
     now = datetime.now(timezone.utc).isoformat()
     conn.execute(
         "INSERT OR REPLACE INTO mock_drafts "
         "(mock_id, league_config_id, platform, drafted_at, source, is_mock, "
-        " format_conforms, format_conforms_note, bot_seat_status, ingested_at) "
-        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'unknown', ?)",
+        " format_conforms, format_conforms_note, bot_seat_status, bot_seat_count, ingested_at) "
+        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
         (mock_id, league_config_id, str(raw["platform"]), str(raw["drafted_at"]),
          raw.get("source"), int(bool(raw.get("is_mock", True))),
-         int(conforms), conforms_note, now),
+         int(conforms), conforms_note, bot_seat_status, bot_seat_count, now),
     )
     conn.execute("DELETE FROM mock_picks WHERE mock_id=?", (mock_id,))
     conn.execute("DELETE FROM mock_pick_quarantine WHERE mock_id=?", (mock_id,))
@@ -195,7 +237,6 @@ def ingest_mock_draft_file(conn: sqlite3.Connection, path: Path) -> IngestReport
 
     resolved = 0
     quarantined = 0
-    picks = raw.get("picks", [])
     for p in picks:
         pick_missing = [f for f in REQUIRED_PICK_FIELDS if f not in p]
         if pick_missing:
@@ -244,10 +285,11 @@ def ingest_mock_draft_file(conn: sqlite3.Connection, path: Path) -> IngestReport
         conn.execute(
             "INSERT OR REPLACE INTO mock_picks "
             "(mock_id, overall_pick, round, team_slot, mfl_id, player_name_raw, "
-            " predicted_top, predicted_p, timestamp, resolution_method) "
-            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            " predicted_top, predicted_p, timestamp, drafter_type, resolution_method) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
             (mock_id, overall_pick, p.get("round"), p.get("team_slot"), mfl_id, name_raw,
-             p.get("predicted_top"), p.get("predicted_p"), p.get("timestamp"), method),
+             p.get("predicted_top"), p.get("predicted_p"), p.get("timestamp"),
+             p.get("drafter_type"), method),
         )
 
     conn.commit()

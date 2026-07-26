@@ -1111,7 +1111,7 @@ generalization, and export-function-level assertions (not just file inspection) 
 
 ## 2026-07-26 (session 10, item 3 continued) -- Mock draft logging
 
-### ADR-042: Mock draft validation instrument -- ingestion complete, Levels 1-2 of the report complete, Tertiary and Brier-baseline NOT built
+### ADR-042: Mock draft validation instrument -- ingestion + full report (Levels 1-2, Tertiary, Brier-vs-baseline)
 
 **Decision.** `src/ingest_mock_drafts.py` (file-based ingestion, matching the front end's schema
 exactly) + `src/mock_validation_report.py` (Levels 1-2 of `mock_validation_protocol.md`).
@@ -1137,34 +1137,73 @@ matches go to quarantine, never a guess -- the same invariant `resolve()` alread
 ID-based lookups, extended to names. A supplied `mfl_id` is validated against
 `players_canonical`, not trusted blindly.
 
-**Two protocol discard gates, one implemented, one named as a genuine schema gap:**
+**Both protocol discard gates now implemented** (bot-seat closed out in the same session by
+ADR-043 below):
 
-1. **Format-mismatch** (10-team/3WR-2FLEX/no-kicker/half-PPR) -- IMPLEMENTED
-   (`format_conforms()`), checked against the mock's `league_config_id` at ingestion, stored per
-   mock, never silently adjusted or reweighted.
-2. **Bot-seat gate** (>3 bot seats discarded) -- **NOT CHECKABLE from this schema.** Neither table
-   carries `drafter_type` per seat. Every ingested mock gets `bot_seat_status='unknown'` rather
-   than silently passing or silently failing the gate. `mock_validation_report.py` INCLUDES
-   unknown-status mocks (excluding all of them would make the report report zero mocks forever)
-   but states this loudly in every report's caveats. **This is a real question for whoever specs
-   the front end's export next** -- either the mock tool can report per-seat bot/human status and
-   it should be added to the schema, or it cannot and the gate is permanently unenforceable.
+1. **Format-mismatch** (10-team/3WR-2FLEX/no-kicker/half-PPR) -- `format_conforms()`, checked
+   against the mock's `league_config_id` at ingestion, stored per mock, never silently adjusted.
+2. **Bot-seat gate** (>3 bot seats discarded) -- see ADR-043.
 
-**Report: Levels 1-2 built, Tertiary and the Brier-vs-baseline test explicitly NOT built.**
+**Report: all four pieces built -- Levels 1-2, Tertiary, and the Brier-vs-baseline test.**
 Level 1 (positional depletion at the primary league's own first 7 picks -- computed as
 `ds.user_pick_numbers()[:7]`, confirmed to equal the protocol's literal [3,18,23,38,43,58,63])
 and Level 2 (per-player calibration, 3 buckets not 5, per the protocol's own reasoning that the
-board is fixed across mocks so effective N is ~40 players, not player x mock count) are real,
-tested, and reuse the already-shipped `data/availability_2026.csv` for predictions rather than
-re-simulating. **The protocol calls Tertiary (observed dispersion vs. the sigma schedule's
-implied SD) "the highest-value output of the whole exercise" -- it is not built.** Neither is the
-one-parameter rank-logistic Brier-score baseline (protocol SS1's actual pass/fail criterion).
-Both are real, well-specified remaining work, cut for time, not forgotten -- see status.md.
+board is fixed across mocks so effective N is ~40 players, not player x mock count) reuse the
+already-shipped `data/availability_2026.csv` for predictions rather than re-simulating.
 
-**Report correctly reports "no measurement", not a fabricated number, at n=0** (the actual
-current state -- zero mocks are logged). `_power_note()` scales its language at 0 / <10 / <30 /
->=30 mocks, matching the protocol's own power table exactly.
+**Tertiary (`level3_dispersion_report`)** -- the protocol calls this "the highest-value output of
+the whole exercise" -- runs a FRESH simulation at reduced `n_sims` (500, vs. production's
+3000-4000) rather than approximating SD from the shipped CSV's percentile summary, because an
+IQR-based SD estimate would assume near-normality the project has no basis for asserting. This
+runs REGARDLESS of mock count: the model-side "implied SD" is a property of the model alone and
+is always computable, so at 0 mocks the report still shows what the model currently predicts
+dispersion to be, with the observed side correctly `None`. Failure criterion 4 (SS5) is checked
+literally: observed SD outside `[0.5x, 2.0x]` of the implied SD **at sigma=10 specifically**, not
+a comparison against the sigma=5/20 simulated SDs (which happen to sit near that same band by
+construction of `SIGMA_SWEEP`, but the protocol's literal wording anchors the band to one
+reference number).
 
-**26 new tests** (`test_ingest_mock_drafts.py`, `test_mock_validation_report.py`), including a
-seeded (non-zero) case verifying the depletion-counting logic itself, not just the empty-state
-path. **316 tests passing project-wide.**
+**Brier-vs-baseline (`brier_vs_baseline_report`)** -- protocol SS1/SS5 criterion 2, **the actual
+pass/fail gate**, not a secondary diagnostic. Fits `P(survive) = sigmoid(a + b*(pick - rank))` by
+MLE (scipy, already a dependency) on the SAME conforming-mock pairs its Brier score is then
+computed on -- not a train/test split, matching how `backtest.py`'s own baseline arms are
+computed directly from the season being scored. **Note on the protocol's own text:** it labels
+this "a one-parameter logistic" while showing a two-parameter formula (`a` and `b`); the explicit
+formula was taken as authoritative over the prose label. Requires >=10 (player, pick) cells to
+fit at all; below that, reports `NOT_EVALUATED_INSUFFICIENT_DATA_FOR_BASELINE_FIT` rather than a
+degenerate fit.
+
+**Both new checks correctly report "no measurement", not a fabricated number, at n=0 mocks** --
+`_power_note()` scales language at 0 / <10 / <30 / >=30 mocks throughout the whole report,
+matching the protocol's own power table.
+
+**35 new tests** (`test_ingest_mock_drafts.py`, `test_mock_validation_report.py`) across this and
+the prior session's pass, including seeded (non-zero) cases for depletion counting, bot-seat
+filtering, the dispersion band, and the logistic fit's sign (not just convergence). **329 tests
+passing project-wide.**
+
+### ADR-043: Bot-seat gate -- `drafter_type` added as an optional per-pick field, decided not deferred
+
+**Decision.** `mock_picks.drafter_type` (`'human' | 'bot' | 'unknown'`, nullable) is added to the
+schema -- the ONE exception to "schema fixed to what the front end exports, no additions",
+because without it the protocol's `>3 bot seats discarded` gate is permanently unenforceable, not
+merely under-supported.
+
+**Behavior, exactly as decided:**
+- **No pick in a mock supplies `drafter_type` at all** -> `bot_seat_status='unknown'`. The whole
+  mock is flagged, not silently included as passing or excluded as failing.
+- **At least one pick supplies it** -> the number of DISTINCT `team_slot`s with `drafter_type=
+  'bot'` is counted (a seat picking multiple times counts once, not once per pick) ->
+  `bot_seat_status='conforms'` (<=3) or `'excluded_too_many_bots'` (>3, a HARD discard, same
+  treatment as `format_conforms=0`).
+- **`unknown` status mocks are INCLUDED in the report, with a caveat, not excluded.** Excluding
+  every `unknown` mock would make the report permanently show zero usable mocks until a mock
+  platform happens to expose per-seat bot/human status, which defeats the instrument's purpose.
+  `mock_validation_report.py` states the count of `unknown`-status mocks used in every render,
+  not as a footnote.
+
+**Migration, not a rebuild.** `mock_drafts`/`mock_picks` are an accumulating log, unlike the
+rebuild-from-source tables in `ingest_reference.py`/`identity.py` -- `ensure_tables()` now
+`ALTER TABLE ADD COLUMN`s the two new fields (`mock_picks.drafter_type`,
+`mock_drafts.bot_seat_count`) rather than dropping and recreating, so already-logged real mock
+data is never destroyed by a schema change.

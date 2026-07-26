@@ -163,17 +163,74 @@ def test_reingesting_same_mock_id_replaces_not_duplicates(tmp_path):
     assert n_picks == 1
 
 
-def test_bot_seat_status_is_unknown_never_silently_passed():
-    """The protocol's >3-bot-seats discard gate cannot be checked from this
-    schema (no drafter_type field). It must be flagged 'unknown', not
-    silently treated as passing."""
+def test_bot_seat_status_is_unknown_when_drafter_type_absent(tmp_path):
+    """ADR-043: absent drafter_type -> 'unknown', flagged, not silently
+    treated as passing or excluded."""
     conn = _conn_with_players()
-    imd.ensure_tables(conn)
-    conn.execute(
-        "INSERT INTO mock_drafts VALUES ('x','primary','p','2026-08-01',NULL,1,1,'ok','unknown','now')"
-    )
-    status = conn.execute("SELECT bot_seat_status FROM mock_drafts WHERE mock_id='x'").fetchone()[0]
-    assert status == "unknown"
+    path = _write(tmp_path, _conforming_draft([
+        {"overall_pick": 1, "team_slot": 1, "mfl_id": "1001"},
+        {"overall_pick": 2, "team_slot": 2, "mfl_id": "1002"},
+    ]))
+    imd.ingest_mock_draft_file(conn, path)
+    row = conn.execute(
+        "SELECT bot_seat_status, bot_seat_count FROM mock_drafts WHERE mock_id='m1'"
+    ).fetchone()
+    assert row == ("unknown", None)
+
+
+def test_bot_seat_status_conforms_at_three_bot_seats(tmp_path):
+    conn = _conn_with_players()
+    picks = [
+        {"overall_pick": i + 1, "team_slot": i + 1, "mfl_id": "1001",
+         "drafter_type": "bot" if i < 3 else "human"}
+        for i in range(6)
+    ]
+    path = _write(tmp_path, _conforming_draft(picks))
+    imd.ingest_mock_draft_file(conn, path)
+    row = conn.execute(
+        "SELECT bot_seat_status, bot_seat_count FROM mock_drafts WHERE mock_id='m1'"
+    ).fetchone()
+    assert row == ("conforms", 3)
+
+
+def test_bot_seat_status_excluded_at_four_bot_seats(tmp_path):
+    conn = _conn_with_players()
+    picks = [
+        {"overall_pick": i + 1, "team_slot": i + 1, "mfl_id": "1001",
+         "drafter_type": "bot" if i < 4 else "human"}
+        for i in range(6)
+    ]
+    path = _write(tmp_path, _conforming_draft(picks))
+    imd.ingest_mock_draft_file(conn, path)
+    row = conn.execute(
+        "SELECT bot_seat_status, bot_seat_count FROM mock_drafts WHERE mock_id='m1'"
+    ).fetchone()
+    assert row == ("excluded_too_many_bots", 4)
+
+
+def test_bot_seat_status_counts_distinct_seats_not_picks():
+    """A bot seat picks multiple times across the draft -- must count the
+    SEAT once, not once per pick."""
+    picks = [
+        {"overall_pick": 1, "team_slot": 1, "drafter_type": "bot"},
+        {"overall_pick": 11, "team_slot": 1, "drafter_type": "bot"},  # same seat, round 2
+        {"overall_pick": 2, "team_slot": 2, "drafter_type": "human"},
+    ]
+    status, n = imd._bot_seat_status(picks)
+    assert n == 1
+    assert status == "conforms"
+
+
+def test_drafter_type_stored_per_pick(tmp_path):
+    conn = _conn_with_players()
+    path = _write(tmp_path, _conforming_draft([
+        {"overall_pick": 1, "team_slot": 1, "mfl_id": "1001", "drafter_type": "human"},
+    ]))
+    imd.ingest_mock_draft_file(conn, path)
+    dt = conn.execute(
+        "SELECT drafter_type FROM mock_picks WHERE mock_id='m1' AND overall_pick=1"
+    ).fetchone()[0]
+    assert dt == "human"
 
 
 class TestFormatConforms:
