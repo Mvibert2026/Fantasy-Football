@@ -25,6 +25,7 @@ export function loadDatasetFromDisk(): Dataset {
     nulls: read('nulls'),
     strategies: read('strategies'),
     availability: read('availability'),
+    opponents: read('opponents'),
     feed: { contract_version: 'absent', generated_utc: 'never', items: [] },
   } as Dataset;
 }

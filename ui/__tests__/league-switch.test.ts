@@ -28,6 +28,7 @@ function secondLeagueFiles(leagueId: string): Record<string, { league_id?: strin
     nulls: { ...base.nulls, league_id: leagueId },
     strategies: { ...base.strategies, league_id: leagueId },
     availability: { ...base.availability, league_id: leagueId },
+    opponents: { ...base.opponents, league_id: leagueId },
   };
 }
 
@@ -188,6 +189,7 @@ describe('loadDataset for the default league', () => {
       nulls: { ...base.nulls, league_id: 'some-other-value' },
       strategies: base.strategies,
       availability: base.availability,
+      opponents: base.opponents,
     };
     installFetch(files, { leagues: [] });
     const data = await loadDataset(DEFAULT_LEAGUE_ID);

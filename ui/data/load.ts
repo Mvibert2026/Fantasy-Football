@@ -8,6 +8,7 @@ import type {
   RawGlossary,
   RawLeague,
   RawNulls,
+  RawOpponents,
   RawStrategies,
 } from './types';
 
@@ -62,6 +63,7 @@ export interface Dataset {
    */
   strategies: RawStrategies | null;
   availability: RawAvailability;
+  opponents: RawOpponents;
   /**
    * Zero items today. There is no ingested news corpus in the repo, so the artifact
    * is absent and this is a synthesised empty feed rather than a fetch failure.
@@ -93,6 +95,7 @@ function leagueIdsOf(d: Omit<Dataset, 'manifest' | 'feed'>): Record<string, stri
     nulls: d.nulls.league_id,
     ...(d.strategies ? { strategies: d.strategies.league_id } : {}),
     availability: d.availability.league_id,
+    opponents: d.opponents.league_id,
   };
 }
 
@@ -130,17 +133,18 @@ export async function loadDataset(leagueId: string = DEFAULT_LEAGUE_ID): Promise
     hasStrategies = 'strategies' in entry.artifacts;
   }
 
-  const [board, league, glossary, nulls, strategies, availability, feed] = await Promise.all([
+  const [board, league, glossary, nulls, strategies, availability, opponents, feed] = await Promise.all([
     fetchJson<RawBoard>('board', pathPrefix),
     fetchJson<RawLeague>('league', pathPrefix),
     fetchJson<RawGlossary>('glossary', pathPrefix),
     fetchJson<RawNulls>('nulls', pathPrefix),
     hasStrategies ? fetchJson<RawStrategies>('strategies', pathPrefix) : Promise.resolve(null),
     fetchJson<RawAvailability>('availability', pathPrefix),
+    fetchJson<RawOpponents>('opponents', pathPrefix),
     fetchFeedOrEmpty(pathPrefix),
   ]);
 
-  const data = { board, league, glossary, nulls, strategies, availability };
+  const data = { board, league, glossary, nulls, strategies, availability, opponents };
 
   let manifest: Manifest;
   if (leagueId === DEFAULT_LEAGUE_ID) {

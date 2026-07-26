@@ -166,6 +166,38 @@ export interface RawStrategies {
 }
 
 /**
+ * One opponent's profile. Every field beyond team_name/draft_slot/known_picks is
+ * nullable because it genuinely is null for most opponents in this league: the
+ * backend's own coverage_warning says so (7 of 9 have no behavioural data at
+ * all). `data_status` names exactly what's known and how, per player -- this is
+ * the field this screen leans on instead of inventing confidence where none exists.
+ */
+export interface RawOpponent {
+  /** Null for slots with no supplied identity -- 7 of 9 in the real export.
+   *  Render the slot number, never a blank or a fabricated name. */
+  team_name: string | null;
+  draft_slot_2026: number;
+  draft_slot_2025: number | null;
+  known_picks_2026: number[];
+  positional_tendencies: string | null;
+  first_pick_by_position: string | null;
+  consensus_tracking_behaviour: string | null;
+  notes: string;
+  cited_2025_picks: number[];
+  holds_picks_19_to_22: boolean;
+  data_status: string;
+}
+
+export interface RawOpponents {
+  contract_version: string;
+  generated_utc: string;
+  league_id?: string | null;
+  user_draft_slot: number;
+  coverage_warning: string;
+  opponents: RawOpponent[];
+}
+
+/**
  * The news feed contract. Nothing produces this yet -- there is no ingested corpus
  * anywhere in the repo, so the lane resolves to zero items and says so.
  *

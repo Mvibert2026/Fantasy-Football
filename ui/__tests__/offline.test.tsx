@@ -32,6 +32,7 @@ function installOfflineProxyFetch() {
     'data/nulls.json': data.nulls,
     'data/strategies.json': data.strategies,
     'data/availability.json': data.availability,
+    'data/opponents.json': data.opponents,
   };
 
   vi.stubGlobal(

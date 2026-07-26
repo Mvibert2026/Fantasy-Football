@@ -10,6 +10,7 @@ import { Availability } from './views/Availability';
 import { Board } from './views/Board';
 import { DraftRoom } from './views/DraftRoom';
 import { Methodology } from './views/Methodology';
+import { Opponents } from './views/Opponents';
 import { StrategyGuide } from './views/StrategyGuide';
 import { buildRows } from './data/board';
 import { buildLeagueConfig } from './data/league';
@@ -24,17 +25,20 @@ import { loadDataset, type Dataset } from './data/load';
  * sidebar, and a floating assistant dock, replacing the earlier horizontal tab
  * bar. See ui/components/shell/*.tsx for the per-component fidelity notes.
  *
- * Opponents, Draft mode and Season mode all have nav entries or a mode-switcher
- * position (ported, since the prototype's chrome includes them) but no content
- * behind them -- each renders an explicit "not built" pane rather than a stub
- * screen or a silently dead click. Availability is real: it reads availability.json
- * directly (see ui/views/Availability.tsx), now that the model no longer carries
- * the circular prior-year-repeat assumption that used to keep it out of scope
- * (ADR-033/034, contract 1.6.0). Glossary, previously a top-level tab, is not in
- * this nav: the prototype folds glossary content into Methodology ("METHODOLOGY &
- * GLOSSARY") and inline info-icon popovers, which is content work belonging to a
- * later step. The existing Glossary view is kept in the codebase, just unreachable
- * from navigation for now -- noted rather than silently dropped.
+ * Draft mode and Season mode have a mode-switcher position (ported, since the
+ * prototype's chrome includes them) but Season has no content behind it yet --
+ * it renders an explicit "not built" pane rather than a stub screen or a
+ * silently dead click. Availability and Opponents are both real: Availability
+ * reads availability.json directly (ui/views/Availability.tsx), now that the
+ * model no longer carries the circular prior-year-repeat assumption that used to
+ * keep it out of scope (ADR-033/034, contract 1.6.0); Opponents reads
+ * opponents.json directly (ui/views/Opponents.tsx), showing the real 7-of-9-no-
+ * data coverage honestly rather than refusing to render at all. Glossary,
+ * previously a top-level tab, is not in this nav: the prototype folds glossary
+ * content into Methodology ("METHODOLOGY & GLOSSARY") and inline info-icon
+ * popovers, which is content work belonging to a later step. The existing
+ * Glossary view is kept in the codebase, just unreachable from navigation for
+ * now -- noted rather than silently dropped.
  */
 
 const SOON_MAP = new Map(SOON_ITEMS.map((item) => [item.key, item]));
@@ -140,11 +144,9 @@ export function App() {
           ) : screen === 'availability' ? (
             <Availability data={data} rows={rows} />
           ) : screen === 'opponents' ? (
-            <NotBuilt
-              title="Opponents"
-              body="Not available in this build. Seven of nine opponents have no supplied draft history to work from."
-              badge="OUT OF SCOPE"
-            />
+            <div className="view" style={{ flex: 1, minHeight: 0 }}>
+              <Opponents data={data} />
+            </div>
           ) : screen === 'strategy' ? (
             // StrategyGuide/Methodology don't manage their own scroll region (they
             // relied on the old shell's <main className="view">) -- reproduced here
