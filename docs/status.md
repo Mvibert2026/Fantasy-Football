@@ -174,7 +174,8 @@ are simulated. Simulation SE is ~8 points against season swings of ±100 — **m
 would not narrow a single conclusion here; only more seasons would.**
 
 **The one consistent signal: reaching early for TE or QB costs 3–5% of roster points.**
-`elite_te_early` −92.9 and `qb_early` −115.4, both negative in **12 of 12** season×sigma cells.
+`elite_te_early` −96.1 ± 6 (restated from −92.9 per ADR-028 — unstable seed, not a model change)
+and `qb_early` −115.4, both negative in **12 of 12** season×sigma cells.
 Not significant (it cannot be), but perfectly consistent, large, and stable across the whole
 opponent-noise sweep. Corroborated by #45 (−226.4) and ADR-016 slot values.
 
@@ -368,3 +369,93 @@ Read this first in a fresh session, then `decisions.md` for the reasoning.
   bumping the contract version.
 - **Availability figures are circular right now** — they assume the prior-year repeat. See
   item 1 above.
+
+---
+
+# SESSION HANDOFF — 2026-07-25 (session 8, end)
+
+Short session, ended on a rate limit. Doc/contract reconciliation and backlog ADRs only — **no
+modelling work, no new features started.** Read this, then `decisions.md` ADR-033 to ADR-040.
+
+## State: 202 tests passing, contract v1.5.0, all committed
+
+Interpreter note, because it cost time this session: **`python` and `py` on PATH are broken
+Windows Store stubs.** The project's interpreter is
+`C:\Users\matth\miniconda3\envs\fantasyfootball\python.exe`. There is no venv in the repo.
+
+## Done this session
+
+| Item | Result |
+|---|---|
+| **`league.json` invalid JSON** | **FIXED** (ADR-040). Bare `Infinity` -> `null` ceiling + `points_allowed_note`. All three exporters now write `allow_nan=False`; a test parses every artifact with `parse_constant` set to raise |
+| **DEF** | **SETTLED** (ADR-039). Permanently excluded. `positions_without_replacement_levels: ["DEF"]` added; `def_supported` stays false. DST ingestion is NOT planned |
+| **1b — stale numbers** | **DONE.** `-92.9` -> **`-96.1 ± 6`** in `nulls.json`, test-registry #313, PR-003 (3 sites + a restatement note), status.md:177 |
+| **Six backlog ADRs** | **LOGGED** as ADR-033 to ADR-038. Plus ADR-039 (DEF) and ADR-040 (strict JSON) |
+| **Stale replacement-level prose** | **SWEPT.** `league.json.replacement_levels_note`, `glossary.json`, `make_board.py:310`, test-registry #34, data-contract.md all said RB28/WR41/TE11. The **values** were correct since 1.3.0 — only the prose was stale |
+| **`flex_split_note`** | **CORRECTED.** Said "an explicit tunable assumption, not a measurement"; ADR-029 measured it over 26 seasons |
+| Front-end session | Notified that the `Infinity` sanitiser in `scripts/sync-exports.mjs` is now dead code |
+
+Contract went **1.3.0 -> 1.4.0** (JSON bug fix) **-> 1.5.0** (DEF field, flex_split + nulls.json
+prose). `board.json` and `availability.json` regenerated **byte-identically** at 1.4.0 — the
+ADR-028 reproducibility fix holds across processes. No values moved this session.
+
+## Two corrections to the previous handoff
+
+1. **`.env` DOES NOT EXIST.** The session-7 handoff said the FantasyPros key "is in `.env`
+   (gitignored, verified)". There is no `.env` file, no `dotenv` in `requirements.txt`, and no
+   `os.environ` call anywhere in `src/`. **The FantasyPros probe cannot start until a key is
+   actually supplied.** Treat the prior line as false.
+2. **`TE T1 @23` needed no fix.** The handoff flagged it as reading 0.59 instead of 0.60 ± 0.02.
+   Nothing in this repo quotes 0.59 — the exports carry the raw 0.5963, which rounds to 0.60.
+   The stale 0.59 was in the external design handoff, not here. No change made; nothing to chase.
+
+## Mid-flight — ONE item, and it is trivial
+
+- **`strategies.json` is at `contract_version: 1.4.0`; the other six artifacts are at 1.5.0.**
+  It regenerated successfully (43,200 sims) but the process had imported `CONTRACT_VERSION`
+  before the 1.5.0 bump, so it stamped the older value. **Nothing else about it is stale** — it
+  carries the correct `-96.1`, and 1.5.0 changed no field this artifact contains (the 1.5.0
+  changes were all in `league.json` and `nulls.json`).
+  **To close it, one command, no side effects:** `python src/export_strategies.py` (~13 min).
+  The front-end session is aware and flags it as behind-expected rather than assuming stale.
+
+  **Worth recording — this run independently confirmed ADR-028.** The regenerated file differs
+  from the previous one in `contract_version` and `generated_utc` **and nothing else**: all
+  43,200 simulated drafts across 6 strategies x 4 seasons x 3 sigmas reproduced byte-identically
+  in a separate process. That is the property `stable_offset()` was introduced to guarantee, now
+  demonstrated rather than asserted — which is exactly the standard ADR-028 said the old
+  "seeded RNG, seed recorded" claim failed to meet.
+
+## Still open — nothing below was started
+
+Priority order unchanged from session 7, except that the six ADRs are now written up.
+
+1. **ADR-033 implementation — prior-year demotion.** The decision is logged; **the code is not
+   changed.** `availability.py` still has the `repeat_2025 / half_repeat / no_repeat` switch and
+   `availability.json` still ships `te_scenarios` (0.60 / 0.13 / 0.00). **The shipped availability
+   figures remain circular** — their entire spread comes from assuming two managers repeat their
+   2025 TE picks. Requires recomputing P(tier-1 TE at 23) under ADR-034 and reporting the delta
+   against 60/13/0.
+2. **ADR-034 — new availability model + client-side simulator.** Not started. Supersedes the
+   precomputed-draws export.
+3. **ADR-036 / Task B — `mfl_id` identity hub.** Not started. Gates the feature pipeline.
+4. **ADR-035 — MFL ADP.** Not started. Does **not** reopen the alpha track (ADR-026 closed it on
+   seasons, not sources).
+5. **ADR-037 profiles, ADR-038 all-teams draft state.** Not started.
+6. **FantasyPros probe.** Blocked on a key existing at all — see correction 1.
+7. **Feature pipeline (Task 8), query engine, Blocks 3/4/5.** Not started.
+8. **Re-pull the 2026 board in late August** when FantasyPros publishes preseason-final. Current
+   board is `is_preseason_final=0` and will move.
+
+## Traps (carried forward, all still live)
+
+- **`evaluative_adjustment` is 0 / unavailable.** The board holds no player-level opinion
+  (ADR-017). Do not build a "we disagree with the experts" view.
+- **145 of 378 players have a displayable projection.** The rest carry
+  `projection_within_fitted_range: false`. Do not render a number for them.
+- **7 of 9 opponents have no data.** No pick citations exist; none were invented.
+- **Availability figures are circular** until ADR-033 is implemented.
+- **A front-end session is live against `data/export/`.** Do not change a schema without bumping
+  the contract version.
+- **New:** do not "fix" the missing DEF replacement level by deriving DEF10. It *is* derivable
+  from league structure alone, and it is withheld deliberately — see ADR-039.

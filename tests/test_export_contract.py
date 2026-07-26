@@ -128,7 +128,86 @@ def test_single_consensus_source_is_declared_not_implied_as_a_blend():
 
 @pytest.mark.requires_db
 def test_def_is_declared_unsupported():
+    """DEF's replacement RANK is structural and IS published (league.json). Its
+    replacement POINTS are not, because no DST data is ingested -- so the board
+    carries no DEF row and `replacement_levels_used` (the levels this board was
+    actually built from) still excludes DEF."""
     board = _load("board.json")
     assert board["def_supported"] is False
     assert "DEF" not in board["replacement_levels_used"]
     assert not any(p["position"] == "DEF" for p in board["players"])
+
+
+def test_def_exclusion_is_declared_not_merely_absent():
+    """The front end read roster.starters declaring DEF:1 against a
+    replacement_levels with no DEF key as a contradiction. It is a decision:
+    DEF is permanently excluded for lack of DST data. The field makes that
+    legible without needing the docs."""
+    league = _load("league.json")
+    assert league["roster"]["starters"]["DEF"] == 1
+    assert league["positions_without_replacement_levels"] == ["DEF"]
+    assert "DEF" not in league["replacement_levels"]
+    assert "permanently" in league["positions_without_replacement_levels_note"]
+
+
+@pytest.mark.requires_db
+def test_no_def_value_of_any_kind_exists_in_the_exports():
+    """The invariant behind the exclusion: no DEF level, points, curve or board
+    row anywhere, so nothing downstream can pair a rank with a value and
+    manufacture a DEF number."""
+    board = _load("board.json")
+    league = _load("league.json")
+    assert not any(p["position"] == "DEF" for p in board["players"])
+    assert "DEF" not in board["replacement_levels_used"]
+    assert "DEF" not in board.get("curve_fits", {})
+    assert "DEF" not in league["replacement_levels"]
+
+
+def test_flex_split_is_described_as_measured_not_assumed():
+    """ADR-029 measured the split over 26 seasons; the note said 'not a
+    measurement' for two contract versions after that stopped being true."""
+    league = _load("league.json")
+    note = league["flex_split_note"]
+    assert "MEASURED" in note
+    assert "not a measurement" not in note
+
+
+def _reject_python_only_constants(constant: str):
+    raise AssertionError(
+        f"export contains the bare token `{constant}`, which is valid Python and "
+        f"INVALID JSON (RFC 8259). JSON.parse and fetch().json() both throw on it."
+    )
+
+
+@pytest.mark.parametrize(
+    "name",
+    [
+        "board.json",
+        "availability.json",
+        "league.json",
+        "strategies.json",
+        "glossary.json",
+        "nulls.json",
+        "opponents.json",
+    ],
+)
+def test_every_export_is_parseable_by_a_non_python_consumer(name):
+    """Python's json module accepts Infinity/-Infinity/NaN on BOTH sides by
+    default, so a round-trip inside Python cannot catch this -- league.json
+    shipped a bare `Infinity` for six commits while every Python test passed.
+    `parse_constant` is the hook that makes the reader as strict as a browser."""
+    p = EXPORT / name
+    if not p.exists():
+        pytest.skip(f"{name} not generated")
+    json.loads(p.read_text(encoding="utf-8"), parse_constant=_reject_python_only_constants)
+
+
+def test_open_ended_points_allowed_tier_is_null_not_infinity():
+    """The top DEF points-allowed tier has no upper bound. It is emitted as null
+    and labelled, because null means 'not available' everywhere else in the
+    contract and the difference matters to a consumer."""
+    league = _load("league.json")
+    tiers = league["scoring"]["defense"]["points_allowed"]
+    assert tiers[-1][0] is None, "open-ended tier must carry a null ceiling"
+    assert all(t[0] is not None for t in tiers[:-1]), "only the last tier is open-ended"
+    assert "NO UPPER BOUND" in league["scoring"]["defense"]["points_allowed_note"]

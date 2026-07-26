@@ -1,6 +1,6 @@
 {
-  "contract_version": "1.3.0",
-  "generated_utc": "2026-07-26T00:01:50.564481+00:00",
+  "contract_version": "1.5.0",
+  "generated_utc": "2026-07-26T00:39:59.952728+00:00",
   "preamble": "Findings we tested and did NOT confirm. Published draft guides rarely show these, which is precisely why they are here: a claim that has survived a real test is worth more than one that was never tested.",
   "findings": [
     {
@@ -21,7 +21,7 @@
       "id": "PR-003-elite-te",
       "claim_tested": "Taking an elite tight end early is worth the pick (#45)",
       "method": "Same simulation, elite-TE-early arm versus best-available.",
-      "result": "Consistently NEGATIVE: -92.9 points at the default setting, worse in 4 of 4 seasons at all three opponent settings (12 of 12 cells).",
+      "result": "Consistently NEGATIVE: -96.1 points at the default setting (seed-noise band +/-6; re-running across five fixed master seeds spans -100.7 to -85.2), worse in 4 of 4 seasons at all three opponent settings (12 of 12 cells). The sign never changes at any seed.",
       "plain_language_summary": "Reaching for a top tight end in the first three rounds cost roughly 3-5% of total roster points, every season we tested, under every assumption about how the room drafts. It cannot be called statistically significant \u2014 4 seasons cannot prove anything \u2014 but nothing about it wavered. A separate measurement put the cost at -226 points. Two different methods, same direction."
     },
     {

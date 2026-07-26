@@ -58,8 +58,9 @@ GLOSSARY = {
         "long_explanation": (
             "With 10 teams each starting 1 quarterback, roughly the 10th-best quarterback is "
             "the worst one anyone is forced to use — so QB10 is 'replacement level'. Our "
-            "levels are RB28, WR41, TE11, QB10, derived from this league's size and starting "
-            "requirements. Public rankings almost always assume a 12-team league with RB24 and "
+            "levels are RB30, WR40, TE10, QB10, measured against 26 seasons of who actually "
+            "wins the flex slots in a league shaped like ours. Public rankings almost always "
+            "assume a 12-team league with RB24 and "
             "WR36, which is simply a different league from ours. This is one of the few places "
             "we can be confidently more correct than a public board."
         ),
@@ -237,8 +238,10 @@ NULLS = [
         "claim_tested": "Taking an elite tight end early is worth the pick (#45)",
         "method": "Same simulation, elite-TE-early arm versus best-available.",
         "result": (
-            "Consistently NEGATIVE: -92.9 points at the default setting, worse in 4 of 4 "
-            "seasons at all three opponent settings (12 of 12 cells)."
+            "Consistently NEGATIVE: -96.1 points at the default setting (seed-noise band "
+            "+/-6; re-running across five fixed master seeds spans -100.7 to -85.2), worse "
+            "in 4 of 4 seasons at all three opponent settings (12 of 12 cells). The sign "
+            "never changes at any seed."
         ),
         "plain_language_summary": (
             "Reaching for a top tight end in the first three rounds cost roughly 3-5% of total "
@@ -361,7 +364,9 @@ def main() -> None:
     }
     for name, payload in payloads.items():
         p = args.out / name
-        p.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+        # allow_nan=False -- see export_contract.write_all. Bare Infinity/NaN is
+        # valid Python and invalid JSON; fail here, not in the browser.
+        p.write_text(json.dumps(payload, indent=2, allow_nan=False), encoding="utf-8")
         print(f"wrote {p}  ({p.stat().st_size:,} bytes)")
 
 

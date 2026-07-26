@@ -1,6 +1,6 @@
 {
-  "contract_version": "1.0.0",
-  "generated_utc": "2026-07-25T23:37:05.110506+00:00",
+  "contract_version": "1.4.0",
+  "generated_utc": "2026-07-26T00:47:00.935892+00:00",
   "baseline": "bpa_consensus",
   "seasons": [
     2021,
