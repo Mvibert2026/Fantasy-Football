@@ -33,8 +33,9 @@ export function AssistantDock({ where, children }: { where: string; children: Re
           padding: '9px 14px',
           background: 'var(--panel)',
           border: '1px solid var(--line2)',
+          borderRadius: 'var(--r-m)',
           cursor: 'pointer',
-          boxShadow: '0 10px 30px rgba(0,0,0,.45)',
+          boxShadow: 'var(--sh)',
         }}
       >
         <span style={{ width: 7, height: 7, background: 'var(--acc)' }} />
@@ -59,7 +60,9 @@ export function AssistantDock({ where, children }: { where: string; children: Re
         flexDirection: 'column',
         background: 'var(--panel)',
         border: '1px solid var(--line2)',
-        boxShadow: '0 18px 48px rgba(0,0,0,.5)',
+        borderRadius: 'var(--r-m)',
+        overflow: 'hidden',
+        boxShadow: 'var(--sh)',
       }}
     >
       <div

@@ -1,10 +1,38 @@
 @import './tokens.css';
 
+/*
+ * Radius on chrome only (FRONTEND-SPEC.md §2.3). Nothing gets a universal reset
+ * any more -- an unstyled element's browser-default 0 radius is exactly what data
+ * cells and table rows want, so they need no rule at all. Only chrome opts in.
+ */
 *,
 *::before,
 *::after {
   box-sizing: border-box;
-  border-radius: var(--radius);
+}
+
+button,
+input,
+select,
+textarea {
+  border-radius: 5px;
+}
+
+.card,
+.chip,
+.filter-pill,
+.table-wrap {
+  border-radius: var(--r-c);
+}
+
+.overlay,
+.modal,
+.popover {
+  border-radius: var(--r-m);
+}
+
+.pill {
+  border-radius: 999px;
 }
 
 html,

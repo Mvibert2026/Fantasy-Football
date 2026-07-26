@@ -269,7 +269,7 @@ export function Board({
                   background: active ? 'var(--panel2)' : 'transparent',
                   border: `1px solid ${active ? 'var(--line2)' : 'var(--line)'}`,
                   color: active ? (POSITION_COLOR[t] ?? 'var(--txt)') : 'var(--dim2)',
-                  fontFamily: 'var(--font-num)',
+                  letterSpacing: '.045em',
                   fontSize: 12,
                   fontWeight: 600,
                 }}
@@ -406,7 +406,6 @@ function BoardTable({
                 display: 'flex',
                 alignItems: 'center',
                 gap: 4,
-                fontFamily: 'var(--font-num)',
                 fontSize: 12,
                 letterSpacing: '.08em',
                 color: active ? 'var(--txt)' : 'var(--dim2)',
@@ -426,7 +425,7 @@ function BoardTable({
             key={`band-${item.tier}`}
             style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '13px 20px 6px' }}
           >
-            <span style={{ fontFamily: 'var(--font-num)', fontSize: 12, letterSpacing: '.1em', color: 'var(--dim)' }}>
+            <span style={{ fontSize: 12, letterSpacing: '.1em', color: 'var(--dim)' }}>
               TIER {item.tier.replace('T', '')}
             </span>
             <span style={{ flex: 1, height: 1, background: 'var(--line2)' }} />
@@ -471,17 +470,16 @@ function BoardRowLine({
         borderBottom: '1px solid var(--line)',
         cursor: 'pointer',
         background: selected ? 'var(--panel2)' : 'transparent',
-        fontFamily: 'var(--font-num)',
+        fontFamily: 'var(--font-ui)',
         fontSize: 13,
         color: 'var(--txt)',
       }}
     >
-      <span style={{ color: 'var(--dim2)' }}>
+      <span className="num" style={{ color: 'var(--dim2)' }}>
         <Value cell={row.overallRank} render={integer} />
       </span>
       <span
         style={{
-          fontFamily: 'var(--font-ui)',
           fontWeight: 600,
           fontSize: 14,
           color: startable === false ? 'var(--dim2)' : 'var(--txt)',
@@ -492,24 +490,24 @@ function BoardRowLine({
       >
         <Value cell={row.name} render={(v) => v} />
       </span>
-      <span style={{ color: POSITION_COLOR[row.raw.position] ?? 'var(--txt)', fontWeight: 600 }}>
+      <span style={{ letterSpacing: '.045em', color: POSITION_COLOR[row.raw.position] ?? 'var(--txt)', fontWeight: 600 }}>
         <Value cell={row.position} render={(v) => v} />
       </span>
-      <span style={{ color: 'var(--dim2)' }}>
+      <span style={{ letterSpacing: '.045em', color: 'var(--dim2)' }}>
         <Value cell={row.team} render={(v) => v} />
       </span>
-      <span style={{ color: 'var(--dim2)' }}>
+      <span className="num" style={{ color: 'var(--dim2)' }}>
         <Value cell={row.byeWeek} render={integer} />
       </span>
       <ProjCell row={row} />
-      <span style={{ color: 'var(--dim2)' }}>
+      <span className="num" style={{ color: 'var(--dim2)' }}>
         <Value cell={row.consensusRank} render={integer} />
       </span>
       <DeltaCell row={row} />
-      <span>
+      <span className="num">
         <Value cell={row.vbd} render={decimal} />
       </span>
-      <span style={{ color: 'var(--dim2)' }}>
+      <span style={{ letterSpacing: '.045em', color: 'var(--dim2)' }}>
         <Value cell={row.tierLabel} render={(v) => v} />
       </span>
     </div>
@@ -533,7 +531,7 @@ function ProjCell({ row }: { row: BoardRow }) {
   }
   const ci = row.interval.kind === 'present' ? `(${interval(row.interval.value.low, row.interval.value.high)})` : '';
   return (
-    <span>
+    <span className="num">
       <span style={{ fontWeight: 600 }}>{decimal(row.projectedPoints.value)}</span>{' '}
       <span style={{ color: 'var(--dim2)', fontSize: 12 }}>{ci}</span>
     </span>
@@ -554,5 +552,9 @@ function DeltaCell({ row }: { row: BoardRow }) {
   const d = row.deltaVsConsensus.value;
   const text = d > 2 ? `▲${integer(d)}` : d < -2 ? `▼${integer(Math.abs(d))}` : '·';
   const color = d > 2 ? 'var(--up)' : d < -2 ? 'var(--down)' : 'var(--dim2)';
-  return <span style={{ color, fontWeight: 600 }}>{text}</span>;
+  return (
+    <span className="num" style={{ color, fontWeight: 600 }}>
+      {text}
+    </span>
+  );
 }

@@ -1,53 +1,56 @@
 /*
- * Design tokens.
+ * Design tokens -- v2, ported from FRONTEND-SPEC.md §2 (the "full port" design
+ * spec, 26 Jul 2026), which supersedes the original design-handoff prototype's
+ * token set entirely. Two changes drove nearly everything else in this file:
  *
- * The values below are ported verbatim from the design handoff prototype
- * (design_handoff_draft_assistant/Draft Assistant.dc.html, §Design tokens in its
- * README). Fidelity is explicit and high: colours, type, density, spacing and
- * interactions are final per that document. These are not a reading or an
- * approximation.
+ *   1. Position and team codes (WR, LV, BUF) are now --f-ui, not mono. They are
+ *      labels, not measurements -- mono on them was what made the earlier board
+ *      read as a terminal dump. Mono is now scoped to numeric cells only, via
+ *      `font-variant-numeric: tabular-nums` applied per-cell, never globally.
+ *   2. Light mode is its own design, not a hue-inverted dark mode: elevation goes
+ *      up toward white and accents carry higher chroma, because light
+ *      backgrounds swallow desaturated colour that reads fine on dark ones.
  *
- * Two variable sets are defined side by side, on purpose:
+ * Two variable sets still coexist, on purpose:
  *
- *   1. The prototype's own names (--bg, --panel, --txt, --acc, --up, --down, ...),
- *      used verbatim by the new shell components (TopBar, Sidebar, AssistantDock,
- *      Board's control row) so that code mirrors the prototype's inline styles
- *      1:1, per the instruction to port rather than idiomatically translate.
- *   2. This app's pre-existing names (--fg, --border, --accent, ...), kept so the
- *      established view components (StrategyGuide, Glossary, Methodology, the
- *      assistant's claim tags) do not need a line-by-line rewrite in this pass --
- *      they simply inherit the new palette through their existing class names.
+ *   1. The spec's own names (--bg, --panel, --acc, --up, --down, ...), used
+ *      verbatim by shell components so code mirrors the spec's token table 1:1.
+ *   2. This app's pre-existing names (--fg, --border, --accent, ...), kept so
+ *      established view components inherit the new palette through their
+ *      existing class names rather than needing a line-by-line rewrite.
  *
- * Default (no attribute) is dark, matching the prototype's default state. The
- * theme toggle sets `data-theme="light"` on the root element directly -- there is
- * no system-preference fallback, matching the prototype's own toggle-only design.
+ * Default (no attribute) is dark. The theme toggle sets `data-theme="light"` on
+ * the root directly -- no system-preference fallback.
  */
 
 :root {
   color-scheme: dark;
 
-  /* ---- Prototype's own token names, used by the new shell verbatim ---- */
-  --bg: #0a0d12;
-  --panel: #0f131a;
-  --panel2: #151a23;
-  --line: #222937;
-  --line2: #2e3646;
-  --txt: #e7ecf3;
-  --dim: #8b95a7;
-  --dim2: #5b6474;
-  --up: #4cc9f0;
-  --down: #f0a35e;
-  --acc: #7dd3a0;
+  /* ---- Spec token names (§2.2), used by shell/view components verbatim ---- */
+  --bg: #090c10;
+  --panel: #14191f;
+  --panel2: #1c222a;
+  --s3: #232a33;
+  --line: #232a33;
+  --line2: #323a45;
+  --txt: #f1f4f8;
+  --dim: #98a2b1;
+  --dim2: #69737f;
+  --acc: #5ecf9e;
+  --down: #f0993f;
+  --up: #5bb4f2;
   --live: #ff5f56;
-  --qb: #b39ddb;
-  --rb: #4dd0b1;
-  --wr: #f2a65a;
-  --te: #6fa8ff;
-  --def: #94a0b0;
-  --soon: #3b4354;
+  --qb: #9d93c4;
+  --rb: #63b39b;
+  --wr: #c39468;
+  --te: #7d9fcf;
+  --def: #8b939f;
+  --soon: #39414e;
+  --sh: 0 1px 0 rgba(255, 255, 255, 0.03), 0 10px 28px rgba(0, 0, 0, 0.38);
 
-  /* Type pairing: sans for UI text, mono for every number (tabular alignment is
-     a stated requirement in the handoff, not a style preference). */
+  /* Type pairing (§2.1): sans for names/prose/nav/position-team-codes/labels;
+     mono for numeric cells ONLY, scoped per-cell via tabular-nums utility
+     classes below -- never set as a global font-variant-numeric. */
   --font-ui: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-num: 'IBM Plex Mono', ui-monospace, 'SF Mono', 'Cascadia Mono', monospace;
 
@@ -60,17 +63,23 @@
   --lh-tight: 1.25;
   --lh-body: 1.55;
 
-  --row-h: 28px;
+  --row-h: 30px;
   --pad-x: 10px;
   --pad-y: 5px;
   --gap: 12px;
   --gap-lg: 24px;
 
-  /* No border radius anywhere, 1px borders -- stated exactly, not approximated. */
+  /* Radius on chrome only (§2.3): zero on data cells/rows, 6px cards/buttons/
+     chips/table containers/inputs, 12px modals/overlays/popovers/the assistant
+     dock. Genuinely pill-shaped elements (archetype labels, severity chips) use
+     999px directly rather than a token, since nothing else should ever be that
+     round. */
+  --r-c: 6px;
+  --r-m: 12px;
   --radius: 0;
   --border-w: 1px;
 
-  /* ---- This app's existing names, remapped onto the prototype palette so the
+  /* ---- This app's existing names, remapped onto the spec palette so
      established view components pick up the new look without a rewrite ---- */
   --bg-sunken: var(--panel2);
   --bg-raised: var(--panel);
@@ -92,22 +101,24 @@
 
 :root[data-theme='light'] {
   color-scheme: light;
-  --bg: #f3f4f6;
+  --bg: #f4f6f8;
   --panel: #ffffff;
-  --panel2: #eef0f4;
-  --line: #dde1e8;
-  --line2: #c8cfda;
-  --txt: #111620;
-  --dim: #5c6675;
-  --dim2: #8d97a6;
-  --up: #0b7ea8;
-  --down: #b56a12;
-  --acc: #1c7f52;
-  --live: #d43b32;
-  --qb: #6b4fbb;
-  --rb: #0d7f6c;
-  --wr: #a25f10;
-  --te: #2b62c4;
-  --def: #5d6875;
-  --soon: #c3cad5;
+  --panel2: #eaeef3;
+  --s3: #ffffff;
+  --line: #e1e6ec;
+  --line2: #c7cfda;
+  --txt: #131821;
+  --dim: #4f5867;
+  --dim2: #79828f;
+  --acc: #0d8a57;
+  --down: #a85c07;
+  --up: #0a6ec2;
+  --live: #cf3a30;
+  --qb: #5b3ab0;
+  --rb: #07715c;
+  --wr: #8f5205;
+  --te: #1a55b5;
+  --def: #525c6b;
+  --soon: #c8cfda;
+  --sh: 0 1px 2px rgba(16, 22, 32, 0.07), 0 6px 18px rgba(16, 22, 32, 0.06);
 }

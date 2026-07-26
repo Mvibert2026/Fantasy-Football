@@ -351,10 +351,10 @@ export function DraftRoom({
                     <Value cell={r.overallRank} render={integer} />
                   </span>
                   <span style={{ fontWeight: 600, flex: 1 }}>{r.name.kind === 'present' ? r.name.value : ''}</span>
-                  <span style={{ fontFamily: 'var(--font-num)', fontSize: 11, color: POSITION_COLOR[r.raw.position] }}>
+                  <span style={{ fontSize: 11, letterSpacing: '.045em', color: POSITION_COLOR[r.raw.position] }}>
                     {r.raw.position}
                   </span>
-                  <span style={{ fontFamily: 'var(--font-num)', fontSize: 11, color: 'var(--dim2)', width: 34, textAlign: 'right' }}>
+                  <span style={{ fontSize: 11, letterSpacing: '.045em', color: 'var(--dim2)', width: 34, textAlign: 'right' }}>
                     {r.raw.team}
                   </span>
                 </div>
@@ -490,10 +490,10 @@ export function DraftRoom({
                 <span style={{ fontWeight: 600, fontSize: 13, flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {r.name.kind === 'present' ? r.name.value : ''}
                 </span>
-                <span style={{ fontFamily: 'var(--font-num)', fontSize: 11, fontWeight: 600, color: POSITION_COLOR[r.raw.position], width: 30 }}>
+                <span style={{ fontSize: 11, letterSpacing: '.045em', fontWeight: 600, color: POSITION_COLOR[r.raw.position], width: 30 }}>
                   {r.raw.position}
                 </span>
-                <span style={{ fontFamily: 'var(--font-num)', fontSize: 10, color: 'var(--dim2)', width: 26 }}>{r.raw.team}</span>
+                <span style={{ fontSize: 10, letterSpacing: '.045em', color: 'var(--dim2)', width: 26 }}>{r.raw.team}</span>
                 <span
                   onClick={(e) => {
                     e.stopPropagation();
@@ -560,11 +560,14 @@ export function DraftRoom({
                       <span onClick={() => openDetail(row)} style={{ fontWeight: 600, fontSize: i === 0 ? 20 : 15, cursor: 'pointer' }}>
                         {row.name.kind === 'present' ? row.name.value : ''}
                       </span>
-                      <span style={{ fontFamily: 'var(--font-num)', fontSize: 12, color: POSITION_COLOR[row.raw.position] }}>
+                      <span style={{ fontSize: 12, letterSpacing: '.045em', color: POSITION_COLOR[row.raw.position] }}>
                         {row.raw.position}
                       </span>
-                      <span style={{ fontFamily: 'var(--font-num)', fontSize: 11, color: 'var(--dim2)' }}>
-                        {row.raw.team} · BYE <Value cell={row.byeWeek} render={integer} />
+                      <span style={{ fontSize: 11, letterSpacing: '.045em', color: 'var(--dim2)' }}>
+                        {row.raw.team} · BYE{' '}
+                        <span className="num">
+                          <Value cell={row.byeWeek} render={integer} />
+                        </span>
                       </span>
                       <span style={{ flex: 1 }} />
                       <span style={{ fontFamily: 'var(--font-num)', fontSize: 11, color: 'var(--dim2)' }}>
