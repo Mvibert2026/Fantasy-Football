@@ -1207,3 +1207,85 @@ rebuild-from-source tables in `ingest_reference.py`/`identity.py` -- `ensure_tab
 `ALTER TABLE ADD COLUMN`s the two new fields (`mock_picks.drafter_type`,
 `mock_drafts.bot_seat_count`) rather than dropping and recreating, so already-logged real mock
 data is never destroyed by a schema change.
+
+---
+
+## 2026-07-26 (session 10, item 2) -- Player descriptions
+
+### ADR-044: Archetype assignment + display-only player descriptions
+
+**Decision.** `src/archetypes.py` (assignment) + `src/player_descriptions.py` (description
+generation + export), per `archetype_taxonomy.md` (the Strategist's brief, supplied by the user).
+
+**Implemented exactly as specified, not re-derived.** RB (5 of 6 labels -- see HANDCUFF below),
+WR (5 labels), TE (4 labels), evaluation order as stated (BELL_COW -> PASSING_DOWN -> EARLY_DOWN
+-> COMMITTEE for RB), confidence tiers (high >=12 games, medium 8-11, UNDETERMINED below 8),
+t-1 labeling (archetype for draft season S computed from season S-1 actuals only), rookies
+UNDETERMINED by construction, data floor at 2013 (offense_pct/snap_counts start then -- the
+taxonomy's own "binding floor for any archetype using both targets and snaps").
+
+**Thresholds are the taxonomy's stated conventions, not independently verified here.** The brief
+says so itself: "I have not measured those breaks... plot the actual distributions... before
+use." That verification pass was not performed. **Concretely visible in the live run:** Keenan
+Allen (2025 season, ts=0.224, op=0.555, adot=8.42) falls through EVERY WR criterion --
+HIGH_VOLUME needs op>=0.70 (fails), POSSESSION needs op>=0.60 (fails at 0.555), ROTATIONAL needs
+op<0.55 (fails at 0.555, just over) -- landing in the exact mid-mass gap the taxonomy warned
+about. Pinned as a regression test (`test_undetermined_mid_mass_gap`) rather than patched with a
+tie-breaker, since inventing one would be exactly the "forcing assignment" the taxonomy's SS0
+rejects.
+
+**RB_HANDCUFF NOT IMPLEMENTED -- named, not silently dropped.** Needs a preseason depth chart,
+which the taxonomy itself says is unavailable on any development season ("assignable live for
+2026... not validatable... treat separately"). A player who would otherwise qualify (low
+offense_pct, low volume) falls through to `RB_UNDETERMINED` rather than a guessed label.
+`test_handcuff_not_implemented_falls_through_to_undetermined` locks this in.
+
+**Data pipeline.** `carry_share`/`target_share` are SEASON-TOTAL ratios (sum player / sum team
+across the same weeks), not an average of nflverse's own per-week `target_share` column --
+chosen for consistency between the two shares (there is no equivalent pre-computed `carry_share`
+column to average instead) and to avoid small-sample weekly-ratio noise. `offense_pct` comes from
+`snap_counts` (already ingested, ADR from an earlier session), joined via the ADR-036 identity
+hub's `gsis -> mfl_id -> pfr` double-hop -- collision-excluded on both legs, same invariant as
+every other cross-source join in this project, not a shortcut through the raw `ff_playerids`
+table.
+
+**Live run, 2026 draft season (data season 2025):** 527 RB/WR/TE assigned, 237 high confidence,
+86 medium, 204 undetermined. Sanity-checked by name: Christian McCaffrey -> RB_BELL_COW, Derrick
+Henry -> RB_EARLY_DOWN, Travis Kelce/Zach Ertz -> TE_PRIMARY_RECEIVER -- all match the intuitive
+read of their actual 2025 roles.
+
+**Descriptions: deterministic templates, not a live language model call.** `license_tag=
+'ai_generated'` describes the CONTENT's nature (synthetic, assembled from measured data, never
+adapted from a real scout's text) -- not a claim that an LLM API was invoked at generation time.
+A live call would make output non-deterministic, contradicting "regeneratable... never
+hand-frozen" and "test-enforced": `test_description_is_deterministic_across_calls` asserts
+byte-identical text (excluding the `generated_at` timestamp) across repeated calls on the same
+assignment. This follows ADR-027's precedent directly: Layer 1 (facts) is pure and deterministic,
+an LLM-based Layer 2 renderer was explicitly deferred there for the identical reason.
+
+**UNDETERMINED produces NO description, enforced by tests, not just by the code path.**
+`generate_description()` returns `None` outright for any `*_UNDETERMINED` (or generic
+`UNDETERMINED`) archetype -- no placeholder sentence, no "not enough data" line attached to a
+named player. `test_no_description_for_undetermined_players_in_real_run` cross-checks this
+against a live `assign_for_season()` run, not just synthetic fixtures.
+
+**Display-only, enforced by a static scan, same pattern as ADR-028's `hash()` ban.**
+`TestDisplayOnlySeparationEnforced` fails if `narrate.py`, `scoring.py`, `make_board.py`,
+`backtest.py`, `candidate_rankings.py`, `draft_sim.py`, or `availability.py` contain the string
+`player_descriptions` or `archetypes` at all -- not "the field is unused," but "the import path
+does not exist," which is the stronger guarantee ADR-027's Fact/Renderer wall already
+established for narration. A second test asserts `narrate.py`'s `Fact.kind` enum never grows an
+`archetype`- or `player_description`-shaped entry, so a description can never reach the Facts
+pipeline that the front end's renderer is allowed to read from.
+
+**Export: a standalone artifact, deliberately NOT wired into `export_contract.py`'s board
+pipeline.** `player_descriptions.export_player_descriptions_json()` writes
+`data/export/player_descriptions.json` independently -- "never a model input" is easier to keep
+true when the description pipeline has no import path into the board-building code at all, not
+merely a promise not to read the field once it's there. Verified byte-identical across two
+independent runs against the same DB state (excluding timestamps) before committing, same
+verification discipline as every export change this session.
+
+**36 new tests** (`test_archetypes.py`, `test_player_descriptions.py`), including the static
+enforcement scan, the mid-mass-gap regression case, and export determinism/strict-JSON checks
+against the live DB.

@@ -597,3 +597,118 @@ predictions rather than re-simulating.
    archetype_taxonomy.md` this session -- confirm it's still there or ask for it again), start
    from the identity hub (ADR-036, already built) to resolve which players get which archetype.
 3. **No uncommitted work.** Working tree is clean at the end of this message.
+
+---
+
+# SESSION HANDOFF -- 2026-07-26 (session 10, closing)
+
+**Correction to the previous entry in this file:** it ended "No uncommitted work. Working tree
+is clean at the end of this message." That was true when written, but two more work items
+landed in this same session afterward (mock-validation gaps, player descriptions) before this
+close-out. Read this entry as the current one; the "no uncommitted work" line above it describes
+a mid-session checkpoint, not the session's actual end state.
+
+## What landed this session (full arc, in order)
+
+1. **FantasyPros probe (reported, nothing built against it).** Component projections are real
+   and carry `mflid` for a direct identity-hub join, but the free tier caps every response at 10
+   players with no working pagination -- cannot reach the 233 players who actually need
+   coverage. ADP is a genuinely separate dataset from ECR but comes from only 3 sources.
+2. **Consensus-rank mismatch diagnosed, not fixed.** The DynastyProcess mirror `ingest_rankings.py`
+   pulls from has no PPR-specific variant at all -- one unparameterized snapshot. The live API
+   supports `scoring=HALF` directly. Format and coverage are two separate blockers; only a paid
+   tier resolves both.
+3. **Multi-league support (ADR-041).** `league_config.py` (`LeagueConfig`, versioned) +
+   `draft_sim.DraftEngine` (a parallel implementation of the module's free functions, not a
+   refactor -- protects PR-003's ADR-028-verified reproducibility). Exports route to
+   `data/export/<league_id>/` for any non-primary league; the primary league's path is
+   unchanged. A 12-team Yahoo-standard mock league was built and run end-to-end, surfacing two
+   real gaps (both fixed): `make_board.py` had no `scoring_cfg` param at all, and
+   `run_availability.py`'s summary hardcoded pick numbers `(18, 23)`. Contract bumped
+   1.6.0 -> 1.7.0.
+4. **Mock draft logging (ADR-042) + the bot-seat schema decision (ADR-043).** File-based
+   ingestion matching the front end's exact schema; name resolution through the identity hub,
+   quarantine on anything unresolved or ambiguous. The validation report's four pieces are all
+   built: Level 1 (depletion), Level 2 (3-bucket calibration), Level 3/Tertiary (dispersion vs.
+   the sigma schedule's implied SD -- a fresh simulation, not an approximation), and the
+   Brier-vs-rank-logistic-baseline test (the protocol's actual pass/fail gate). `drafter_type`
+   added as an optional per-pick field so the bot-seat gate is checkable; absent -> the whole
+   mock is flagged `bot_seat_status='unknown'`, included with a caveat, never silently passed or
+   excluded.
+5. **Player descriptions (ADR-044).** `archetypes.py` assigns RB/WR/TE archetypes exactly per
+   `archetype_taxonomy.md` -- t-1 labels, 2013 data floor, rookies UNDETERMINED by construction,
+   RB_HANDCUFF explicitly not implemented (needs a depth chart). `player_descriptions.py`
+   generates deterministic, template-based descriptions (never a live LLM call --
+   `license_tag='ai_generated'` describes the content's nature, not the generation mechanism).
+   UNDETERMINED produces no description, enforced by tests against a live DB run, not just
+   fixtures. Display-only separation is enforced by a static-scan test (same pattern as
+   ADR-028's `hash()` ban): `player_descriptions`/`archetypes` must never appear in
+   `narrate.py`/`scoring.py`/`make_board.py`/`backtest.py`/`candidate_rankings.py`/
+   `draft_sim.py`/`availability.py`. Ships as a standalone `data/export/player_descriptions.json`,
+   deliberately outside `CONTRACT_VERSION`. **Live finding:** the taxonomy's own stated risk
+   (thresholds landing "mid-mass") is real -- Keenan Allen's actual 2025 season falls through
+   every WR criterion and lands UNDETERMINED. Pinned as a regression test, not patched around.
+
+## State
+
+**Contract version: 1.7.0** (unchanged by items 4-5 -- neither touches `CONTRACT_VERSION`;
+`player_descriptions.json` carries its own separate `export_version`).
+
+**368 tests passing**, confirmed by a fresh full-suite run at session close (341s). Test suite
+runtime is up from ~1.3 min to ~5.7 min this session, almost entirely from
+`archetypes`/`player_descriptions`'s DB-backed tests each independently recomputing
+`assign_for_season()` for ~500 players (15-60s per test, not cached). Worth a session-scoped
+pytest fixture if this becomes a recurring pain point -- `conftest.py` already has the pattern
+(the holdout-audit-log redirect fixture).
+
+**Commits this session, in order:** `9d5e0e9` (multi-league core) -> `459ab56` (multi-league
+export wiring + Yahoo mock) -> `733f969` (mock draft logging) -> `fa56716` (dispersion/Brier/
+bot-seat gate) -> **[this commit]** (player descriptions). Earlier in the session, before the
+multi-league work: `3ea587f` and several before it (contract-version stamp fix, availability
+model rewrite, identity hub, MFL ADP -- see prior handoff entries above this one in the file for
+full detail on those).
+
+## Next steps, priority order
+
+1. **RB_HANDCUFF.** Needs a preseason depth-chart join plus "is the rank-1 teammate BELL_COW"
+   logic. The taxonomy itself flags this as the one label needing data not validatable on any
+   development season -- real, scoped-out work, not forgotten.
+2. **Threshold verification for the archetype taxonomy.** The brief says outright it has not
+   measured whether its thresholds land in distribution valleys or mid-mass. The Keenan Allen
+   case is concrete evidence this isn't hypothetical. Plotting the actual usage-share
+   distributions per position and checking threshold placement is the next real methodology
+   task here -- Statistician-tier work per CLAUDE.md SS9, not an implementation task.
+3. **Mock draft data collection.** Every number in the validation report (Levels 1-3, Brier) is
+   correctly reporting "no measurement" because zero mocks are logged. The report exists and
+   works; it needs actual mock drafts run through it to produce anything. This is the highest
+   real-world-value next step if the September draft timeline matters.
+4. **FantasyPros paid tier** -- a pricing/budget decision for the user, not an engineering task.
+   Free tier's 10-player cap makes test-registry #2 unreachable at the free tier regardless of
+   what else changes.
+5. **`ingest_rankings.py`'s format fix** -- switch to the live FantasyPros API with
+   `scoring=HALF` for the ranking snapshot itself (separate from the paid-tier question, which
+   is about projection *coverage*, not this).
+6. **`backtest.py`'s own separate hardcoded roster constants** -- pre-existing duplication of
+   `draft_sim.py`'s (not introduced this session). Re-running the accuracy-track backtest harness
+   per league is materially bigger scope than the export-pipeline work already done.
+
+## Traps for a fresh session
+
+- **`DraftEngine` (draft_sim.py) is a deliberate duplicate of the module's free functions, not a
+  refactor of them.** Do not "clean this up" by merging them -- protecting PR-003's
+  ADR-028-verified byte-identical reproducibility was the explicit reason for the duplication.
+- **`nulls.json` for a non-primary league correctly shows `NOT_YET_RUN_FOR_THIS_LEAGUE`.** That
+  is not a missing implementation.
+- **Only ADR-026 (alpha-detection closure) is confirmed to travel across leagues.** Every other
+  finding is league-specific until proven otherwise, including everything in `nulls.json`.
+- **The mock-validation report's bot-seat gate needs `drafter_type` supplied by the front end to
+  do anything.** Absent it, every mock is `bot_seat_status='unknown'` -- correctly included with
+  a caveat, not a bug.
+- **`player_descriptions.json` is NOT part of the main contract.** It has no `CONTRACT_VERSION`
+  field and is not written by `export_contract.py`. Do not wire it in without a deliberate
+  decision -- the separation is what makes "never a model input" actually true rather than a
+  convention someone could forget.
+- **A player absent from `player_descriptions.json` has an UNDETERMINED archetype.** Do not
+  treat a missing player as a bug or backfill a placeholder description for them.
+- **A front-end session is live against `data/export/`.** Do not change a schema without
+  bumping `CONTRACT_VERSION` and notifying that session.
