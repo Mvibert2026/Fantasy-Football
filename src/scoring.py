@@ -136,8 +136,26 @@ class ReplacementLevels:
         default_factory=lambda: {"QB": 1, "RB": 2, "WR": 3, "TE": 1}
     )
     flex_slots: int = 2
+    # MEASURED, not assumed (2026-07-25). Previously {RB 0.40, WR 0.55, TE 0.05},
+    # which was a judgement call. Measured over 26 seasons of actual outcomes
+    # scored under THIS league's rules: rank all flex-eligible players, remove
+    # the mandated starters (RB20/WR30/TE10), and count who wins the 20 flex
+    # slots. Mean RB 10.4 / WR 9.5 / TE 0.1 -> shares 0.52 / 0.48 / 0.00,
+    # giving RB30 / WR40 / TE10.
+    #
+    # TWO CAVEATS THAT MATTER:
+    #  - Season-to-season variance is large: RB flex ranges 5 to 17, sd 3.0. The
+    #    mean is stable; any single season is not.
+    #  - The answer moves +/-1 rank by window (1999-2011 -> RB31/WR39;
+    #    2012-2019 -> RB29/WR41; post-2019 -> RB31/WR39). RB30/WR40 is the
+    #    midpoint, not a precise estimate.
+    # RB28 vs RB30 is INSIDE that noise. Adopted for consistency with the
+    # measurement, NOT as a claimed improvement.
+    #
+    # TE is the one robust result: 0 flex slots in every window tested. A tight
+    # end won a flex slot in 2 of 26 seasons, one slot each.
     flex_split: Dict[str, float] = field(
-        default_factory=lambda: {"RB": 0.40, "WR": 0.55, "TE": 0.05}
+        default_factory=lambda: {"RB": 0.52, "WR": 0.48, "TE": 0.00}
     )
 
     def baselines(self) -> Dict[str, int]:

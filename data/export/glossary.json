@@ -1,6 +1,6 @@
 {
-  "contract_version": "1.0.0",
-  "generated_utc": "2026-07-25T22:14:27.508350+00:00",
+  "contract_version": "1.3.0",
+  "generated_utc": "2026-07-26T00:01:50.564481+00:00",
   "terms": {
     "VBD": {
       "short_definition": "How many more points a player is expected to score than a freely-available replacement at the same position.",

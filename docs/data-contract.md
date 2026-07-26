@@ -1,6 +1,6 @@
 # Front-End Data Contract
 
-**Version 1.1.0** · generated into `data/export/` · authored 2026-07-25
+**Version 1.3.0** · generated into `data/export/` · authored 2026-07-25
 
 The UI reads these files and **never** touches `data/nfl.db`. Every artifact carries
 `contract_version` and `generated_utc`. Breaking changes bump the major version and are
@@ -177,6 +177,8 @@ assumption flagged as an assumption, playoff structure, trade deadline, FAAB.
 |---|---|---|
 | 1.0.0 | 2026-07-25 | Initial contract: board, availability, strategies, opponents, glossary, nulls, league |
 | 1.1.0 | 2026-07-25 | Added the narration layer (Fact schema + renderer contract). Additive only; no existing field changed |
+| 1.2.0 | 2026-07-25 | Design-handoff reconciliation: integer `id` and `tier`, `evaluative_adjustment` 0 + availability flag, `consensus_source_count`, `def_supported`, `projection_within_fitted_range` |
+| 1.3.0 | 2026-07-25 | **VALUE CHANGE, no schema change.** Replacement levels RB28/WR41/TE11 -> RB30/WR40/TE10 from measurement (ADR-029). Every `vbd`, `projected_points` and `overall_rank` in board.json moved. Re-fetch the board. |
 
 ---
 

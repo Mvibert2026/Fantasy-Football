@@ -557,3 +557,84 @@ than an analysis failure: the arithmetic was fine and the conclusion was fine, b
 presented as more solid than it was. "Seeded RNG, seed recorded" was in the standing
 requirements and was satisfied in letter while being false in practice. A claim of
 reproducibility is worth nothing unless something actually re-runs and compares.
+
+### ADR-029: Replacement levels re-derived from measurement — RB30/WR40/TE10/QB10
+
+**Was** RB28/WR41/TE11/QB10, from an assumed flex split of RB 0.40 / WR 0.55 / TE 0.05.
+**Now** RB30/WR40/TE10/QB10, from a measured split of RB 0.52 / WR 0.48 / TE 0.00.
+
+**Method.** Rank every flex-eligible player by points scored under this league's exact rules,
+remove the mandated starters (RB20/WR30/TE10), count who wins the 20 flex slots. 26 seasons,
+2025 holdout excluded. Scoring engine verified empirically rather than assumed: a 100-yard
+receiving game returns 13.5 against a generic half-PPR 12.5, and 200 yards stacks to 24.5.
+
+**Regime breakdown, because a pooled mean is the construct `src/regimes.py` says to distrust:**
+1999-2011 → RB31/WR39; 2012-2019 → RB29/WR41; post-2019 → RB31/WR39; last-10 → RB30/WR40.
+
+**This is explicitly NOT a claimed improvement.** RB flex ranges 5 to 17 across seasons (sd
+3.0), and the answer moves ±1 rank depending on window. RB28 vs RB30 is inside that noise.
+Adopted for consistency with measurement — the project should not carry an assumed constant
+when the thing it approximates is cheaply measurable — not because anything is expected to get
+better. No result is predicted to change.
+
+**TE is the one robust part.** Zero flex slots in every window tested; a tight end won a flex
+slot in 2 of 26 seasons. TE11 → TE10 is the best-supported element of the change.
+
+Downstream: every VBD changes, so `board.json` was regenerated and the data contract bumped to
+**v1.3.0**. Additivity re-verified across all 378 players.
+
+### ADR-030: Falling-TE claim refused on a code read, no measurement taken
+
+`elite_te_early` is `_positional_bias({"TE": -45.0}, early_rounds=3)`: it applies a 45-rank
+subsidy to tight ends in rounds 1-3 and then takes the argmin. **It never forces a TE — it is
+already value-conditioned**, with a 45-rank tolerance.
+
+The proposed "elite TE that *falls* to 23" policy is take-the-tier-1-TE-iff-he-is-the-highest-VBD-player,
+i.e. a **0-rank** subsidy. That is a strict subset of the 45-rank case: whenever a TE is
+genuinely best available, `elite_te_early` takes him too. **The fall cases are already inside
+the measured −96.1.**
+
+Per the red-team's own stated precondition, the pre-registration is **void** and the claim is
+refused. No measurement taken, no FDR budget consumed.
+
+One refinement the red-team did not state: in the conditional branch both policies select an
+*identical player*, so the hypothesis "conditional ≈ BPA" is true **by construction rather than
+by measurement** — the delta is exactly zero modulo path-dependence through later picks. That
+is a stronger closure than measuring parity would have been.
+
+The `+18` tier-1 TE weight stays out of the recommendation engine.
+
+### ADR-031: FTN cannot answer alignment — a structural absence, not a sample limit
+
+Slot-vs-outside alignment was ruled undeterminable from participation data and NGS cushion;
+FTN charting (2022+) was the remaining candidate. It fails, and the distinction matters.
+
+FTN is **play-level, not player-level**. All 29 columns describe the play, and **the table
+carries no player identifier at all**. There is nothing to attach an alignment to.
+`qb_location` is quarterback alignment, not receiver alignment.
+
+So this is not "determinable on four seasons" nor "not determinable at this sample size" — it
+is **not expressible in the source**. A short sample can be reported with a caveat; an absent
+dimension cannot be reported at all. Any factor requiring alignment is blocked across every
+ingested source.
+
+### ADR-032: Play-caller table parked, schema defect fixed pre-emptively
+
+Not ingested — 22 of 64 cells populated, the rest genuinely unknown because play-calling duty
+is usually unannounced until camp. A plausible-looking table that is wrong in a dozen places
+and gets ingested as fact is the failure being avoided.
+
+**The schema was fixed now rather than at ingestion time.** The source CSV keys on
+`(team, season)` with a single `play_caller`, which cannot represent a mid-season handoff —
+Cleveland 2025, Stefanski to Rees, is the cited case. `src/ingest_play_callers.py` keys on
+`(team, season, start_week)` with an explicit `end_week`: no change is one row spanning weeks
+1-18, a handoff is two rows.
+
+This is not cosmetic for test-registry #29/#30, which are *continuity* tests: a schema blind to
+mid-season changes scores a team that switched play-callers in week 8 as perfectly continuous —
+the exact opposite of the truth.
+
+Ingestion refuses to run without a verified file and validates confidence values, source
+citations, week ranges and key uniqueness before writing anything. Completion trigger is the
+ESPN 32-team roundup published in late August; precedent verified for 2024 (id 41018846) and
+2025 (id 46137832).

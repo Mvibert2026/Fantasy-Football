@@ -81,9 +81,25 @@ def test_defense_blowup_loss():
 
 
 def test_replacement_levels_match_spec():
+    """RB30/WR40/TE10/QB10 as of 2026-07-25, from the MEASURED flex split
+    (was RB28/WR41/TE11 under the assumed 0.40/0.55/0.05).
+
+    Pinned because a change here silently re-values every player on the board.
+    The measurement's own window-sensitivity is +/-1 rank, so this is not a
+    precise constant -- it is the midpoint, adopted for consistency with
+    measurement rather than as a claimed improvement."""
     levels = ReplacementLevels()
     baselines = levels.baselines()
-    assert baselines == {"QB": 10, "RB": 28, "WR": 41, "TE": 11}
+    assert baselines == {"QB": 10, "RB": 30, "WR": 40, "TE": 10}
+
+
+def test_te_wins_no_flex_slots():
+    """The one robust result of the flex measurement: TE won a flex slot in 2 of
+    26 seasons. Its share rounds to zero in every window tested, so the TE
+    replacement level equals its mandated count."""
+    levels = ReplacementLevels()
+    assert levels.flex_split["TE"] == 0.0
+    assert levels.baselines()["TE"] == levels.teams * levels.starters["TE"]
 
 
 def test_replacement_levels_are_tunable():

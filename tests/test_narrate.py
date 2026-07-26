@@ -37,7 +37,7 @@ def exports():
             },
         },
         "league.json": {
-            "replacement_levels": {"QB": 10, "RB": 28, "WR": 41, "TE": 11},
+            "replacement_levels": {"QB": 10, "RB": 30, "WR": 40, "TE": 10},
             "roster": {"starters": {"QB": 1, "RB": 2, "WR": 3, "TE": 1,
                                     "FLEX": 2, "DEF": 1}},
         },
@@ -60,7 +60,7 @@ def exports():
 
 
 def test_resolve_path_reaches_a_nested_value(exports):
-    assert narrate.resolve_path(exports, "league.json:replacement_levels.RB") == 28
+    assert narrate.resolve_path(exports, "league.json:replacement_levels.RB") == 30
 
 
 def test_resolve_path_indexes_lists(exports):
@@ -116,18 +116,18 @@ def test_availability_facts_are_high_confidence(exports):
 
 
 def test_replacement_crossing_detects_a_position_past_replacement(exports):
-    # only Gamma Tight (TE30) is left at TE; replacement is TE11
+    # only Gamma Tight (TE30) is left at TE; replacement is TE10
     state = DraftState(pick_number=18, taken_players=[])
     facts = narrate.replacement_crossing_facts(state, exports)
     te = next(f for f in facts if f.id.startswith("replacement_crossing.TE"))
-    assert te.value == pytest.approx(30 - 11)
+    assert te.value == pytest.approx(30 - 10)
     assert "freely available" in te.render_template()
 
 
 def test_replacement_crossing_reports_a_position_still_ahead_of_replacement(exports):
     facts = narrate.replacement_crossing_facts(DraftState(pick_number=1), exports)
     rb = next(f for f in facts if f.id.startswith("replacement_crossing.RB"))
-    assert rb.value == pytest.approx(1 - 28)
+    assert rb.value == pytest.approx(1 - 30)
     assert "still ahead" in rb.render_template()
 
 
@@ -270,7 +270,7 @@ SNAPSHOTS = {
         "to 10% at your next pick (23)."
     ),
     "replacement_crossing.TE.pick18": (
-        "The best TE left is TE30, and this league's replacement level is TE11 — so the "
+        "The best TE left is TE30, and this league's replacement level is TE10 — so the "
         "TE position is already past the point where the next one is close to freely "
         "available."
     ),

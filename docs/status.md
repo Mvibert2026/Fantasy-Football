@@ -276,3 +276,95 @@ Tasks 9 and 7 are done. Remaining, in order:
 Standing expectation, unchanged: the development set is **three seasons**, ~14 factors will be
 tested under FDR, and **"no significant alpha detected" is the likely and acceptable outcome.**
 Do not tune toward finding something.
+
+---
+
+# SESSION HANDOFF — 2026-07-25 (end of session)
+
+Read this first in a fresh session, then `decisions.md` for the reasoning.
+
+## Standing constraints (unchanged)
+
+- **2025 is the locked holdout.** `src/holdout.py` enforces it; reads raise outside a logged
+  context.
+- **Alpha detection is CLOSED for 2026** (ADR-026). 4 development seasons floor the exact sign
+  test at p=0.125, above 0.05 before any FDR correction. Reopens at n≥6 seasons (~2028).
+  PR-001 is FROZEN-FOR-FUTURE — do not run it.
+- **Seeded RNG, and prove it.** Never derive a seed from builtin `hash()` (ADR-028). Use
+  `config.stable_offset`. A static test enforces this.
+- **Every simulation-derived point estimate needs a seed-noise band.** See "Not yet done".
+
+## State: 191 tests passing, contract v1.3.0, everything committed
+
+| Area | Status |
+|---|---|
+| Data | 1999–2025 weekly stats, 11 reference tables, consensus 2021–2026 — all ingested |
+| Scoring | Clamp removed; negatives permitted |
+| Board | `data/export/board.json`, 378 players, regenerated at new replacement levels |
+| Availability | `data/availability_2026.csv` + summary; seed-audited, bands measured |
+| Simulator | `src/draft_sim.py`, reproducible after ADR-028 |
+| Narration | `src/narrate.py` layer 1 (Facts). Renderer NOT built — contract in ADR-027 |
+| Front-end contract | 7 artifacts in `data/export/`, documented in `data-contract.md` |
+
+## Decisions made this session
+
+- **ADR-028** — the −92.9/−98.6 discrepancy was `abs(hash(name)) % 1000`, a per-process salted
+  hash. Both figures were valid draws from a ±6 band. **Canonical value is −96.1** and two
+  separate processes now reproduce it byte-identically. No conclusion moved; `seasons_positive`
+  is 0/4 at every seed. Also fixed two instances in `backtest.py`.
+- **ADR-029** — replacement levels **RB28/WR41/TE11 → RB30/WR40/TE10**, from measurement, not
+  assumption. Adopted **for consistency with measurement, not as an improvement**: RB flex
+  ranges 5–17 (sd 3.0) and the answer moves ±1 by window. TE10 is the robust part (zero flex
+  slots in every window).
+- **ADR-030** — falling-TE claim **refused on a code read**. `elite_te_early` already
+  value-conditions (45-rank subsidy), so the fall cases are inside the −96.1. Pre-registration
+  void, no measurement, no FDR spend. `+18` tier-1 TE weight stays out of the recommendation
+  engine.
+- **ADR-031** — FTN cannot answer alignment. It is play-level with **no player identifier at
+  all**. Structural absence, not a sample limit.
+- **ADR-032** — play-callers parked; `(team, season, start_week, end_week)` schema fixed now so
+  mid-season handoffs (Cleveland 2025) cannot be ingested wrong.
+
+## Decided this session but NOT yet in an ADR — write these up
+
+1. **Prior-year behaviour is demoted to display-only.** The `repeat_2025 / half_repeat /
+   no_repeat` switch is to be deleted; it no longer selects between models. The 60/13/0 TE
+   table is circular — its entire spread came from assuming two managers repeat. **Still
+   present in `availability.py` and the exports.** Needs: removal, an ADR, and a recomputation
+   of P(tier-1 TE at 23) under the new model with the delta against 60/13/0 reported.
+2. **New availability model** — ranking mixture per manager, mechanical roster need, rank noise.
+   Ranking sources as a **posterior marginalised over**, never hard-assigned, never argmax.
+   Expect no separation before R4; if it never separates, that is the finding.
+3. **MFL ADP** as `adp_source='mfl_proxy'` — partially supersedes ADR-018. Joins natively on
+   `mfl_id`. Never present as this league's ADP.
+4. **Identity hub is `mfl_id`, not `gsis_id`** (62% populated, known collisions). Collisions go
+   to a table and are EXCLUDED; `resolve()` returns None, never guesses.
+5. **Profiles are display-only**, test-enforced never to reach board/backtest/scoring/Facts.
+6. **Draft state records all teams**, not just the user's; `team_slot` derived from snake order.
+
+## Mid-flight / not done
+
+- **1b — noise bands into docs.** `nulls.json`, test-registry, status and PR-003 still cite
+  −92.9/−98.6. Canonical is **−96.1 ± 6**. Availability bands measured and tight
+  (±1–4 points); **`TE T1 @23` should read 0.60 ± 0.02, not 0.59** — the only quoted figure
+  that fell outside its band.
+- **FantasyPros probe** — key is in `.env` (gitignored, verified). Probe schema BEFORE building:
+  component projections or ranks only? That is the difference between unblocking
+  test-registry #2 and not. If current-year only, it is an ACCURACY_INPUT, not a measured
+  improvement.
+- **Not started:** Task B identity resolution, feature pipeline, client-side simulator,
+  query engine, Blocks 3/4/5 (startability, expanded strategies, PDF guide).
+
+## Traps a fresh session will otherwise walk into
+
+- **`evaluative_adjustment` is 0 and `evaluative_adjustment_available` is false.** The board
+  holds no player-level opinion (ADR-017) — every player at the same positional rank gets an
+  identical projection. Do not build a "we disagree with the experts" view; it has no data.
+- **145 of 378 players have a displayable projection.** The rest are outside the fitted curve
+  depth and carry `projection_within_fitted_range: false`. Do not render a number for them.
+- **7 of 9 opponents have no data.** Slots are derived from supplied pick numbers; everything
+  else is null. No pick citations exist — none were invented.
+- **A front-end session is live against `data/export/`.** Do not change a schema without
+  bumping the contract version.
+- **Availability figures are circular right now** — they assume the prior-year repeat. See
+  item 1 above.

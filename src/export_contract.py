@@ -37,7 +37,7 @@ import make_board
 from config import DEFAULT_CONFIG
 from scoring import LEAGUE, ReplacementLevels
 
-CONTRACT_VERSION = "1.0.0"
+CONTRACT_VERSION = "1.3.0"
 SEASON = 2026
 EXPORT_DIR = Path(__file__).resolve().parent.parent / "data" / "export"
 AVAIL_CSV = Path(__file__).resolve().parent.parent / "data" / "availability_2026.csv"

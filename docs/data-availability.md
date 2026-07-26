@@ -485,3 +485,101 @@ still unjoinable in any given season.
 **Any feature built on leg B must state 92–95% coverage and refuse the unresolved rows rather
 than dropping them silently** — a silent drop is non-random, since unjoinable players skew
 toward fringe roster spots, which is exactly where role changes happen.
+
+---
+
+# 9. Further verifications (2026-07-25)
+
+## 9.1 Combined-source floors — targets AND snaps
+
+Any feature using **both** targets and snap counts inherits the later of the two floors:
+
+| Input | First usable | Note |
+|---|---|---|
+| `targets` | 1999–2002, **2009+** | 2003–2008 broken (§0) |
+| `snap_counts` | **2013** | No earlier data exists |
+| **Both together** | **2013** | |
+
+**Effective N = 12 seasons (2013–2024)** once the 2025 holdout is excluded.
+
+This bites harder than either floor alone. Target share is often described as a 21-season
+feature and snap share as a 13-season one; a metric combining them — snap-weighted target
+share, routes-per-snap proxies, opportunity share with a snap denominator — has **twelve**.
+That is the number such a factor must report, and it is thin enough that it should be weighed
+against simpler single-source alternatives before being built.
+
+## 9.2 FTN charting carries NO per-player alignment — and cannot
+
+The open question was whether FTN (2022+) could resolve slot-vs-outside alignment, which
+participation data and NGS cushion could not. **It cannot, and the reason is structural rather
+than a coverage gap.**
+
+FTN charting is **play-level, not player-level**. All 29 columns describe the play:
+`starting_hash`, `qb_location`, `n_offense_backfield`, `n_defense_box`, `is_no_huddle`,
+`is_motion`, `is_play_action`, `is_screen_pass`, `is_rpo`, `n_blitzers`, `n_pass_rushers`, and
+so on. **There is no player identifier of any kind in the table** — no `gsis_id`, no
+`player_id`, nothing to attach an alignment to.
+
+So this is not "not determinable on four seasons". It is **not determinable at all from FTN**,
+because FTN has no player dimension. `qb_location` is quarterback alignment (shotgun / under
+centre), not receiver alignment, and `n_offense_backfield` is a count.
+
+**Consequence:** slot-vs-outside alignment remains unavailable from every ingested source.
+Any factor requiring it is blocked, not merely sample-limited, and the distinction matters —
+a four-season sample can be reported with a caveat, an absent dimension cannot be reported at
+all.
+
+## 9.3 Play-caller data — parked, with the schema fixed in advance
+
+Not ingested. The supplied table has 22 of 64 cells populated; the rest are genuinely unknown
+because play-calling duty is usually unannounced until training camp.
+
+**The schema defect was fixed now rather than later** (`src/ingest_play_callers.py`). The source
+CSV keys on `(team, season)` with one `play_caller`, which cannot represent a mid-season
+handoff — the cited case being Cleveland 2025, where Stefanski handed play-calling to Rees
+partway through the season. The table now keys on `(team, season, start_week)` with an explicit
+`end_week`: no change is one row spanning weeks 1–18, a handoff is two rows.
+
+This matters specifically for test-registry #29/#30, which are *continuity* tests: a schema
+blind to mid-season changes would score a team that switched play-callers in week 8 as
+perfectly continuous.
+
+**Completion trigger:** the ESPN 32-team play-caller roundup, published late August. Precedent
+verified — the feature ran in [2024](https://www.espn.com/nfl/story/_/id/41018846/) and
+[2025](https://www.espn.com/nfl/story/_/id/46137832/). Ingestion refuses to run until a
+verified file exists and validates every row (confidence values, source citations, week ranges,
+key uniqueness) before writing anything.
+
+## 9.4 Flex-split measurement — replacement levels re-derived
+
+The 40/55/5 RB/WR/TE flex split was an assumption. It has been measured: rank every
+flex-eligible player by points **scored under this league's exact rules** (verified: a 100-yard
+receiving game returns 13.5, not the generic half-PPR 12.5, because the +1.0 bonus is applied;
+200 yards stacks to 24.5), remove the mandated starters (RB20/WR30/TE10), and count who wins
+the 20 flex slots.
+
+| Window | n | RB | WR | TE | Implied levels |
+|---|---|---|---|---|---|
+| full 1999–2024 | 26 | 10.4 | 9.5 | 0.1 | **RB30 / WR40 / TE10** |
+| regime 1999–2011 | 13 | 10.9 | 9.0 | 0.1 | RB31 / WR39 / TE10 |
+| regime 2012–2019 | 8 | 9.1 | 10.8 | 0.1 | RB29 / WR41 / TE10 |
+| post-2019 2020–2024 | 5 | 11.0 | 9.0 | 0.0 | RB31 / WR39 / TE10 |
+| last 10 2015–2024 | 10 | 10.3 | 9.7 | 0.0 | RB30 / WR40 / TE10 |
+
+**Adopted: RB30 / WR40 / TE10 / QB10** (was RB28 / WR41 / TE11).
+
+Three caveats that belong with the number:
+
+1. **Season-to-season variance is large.** RB flex ranges **5 to 17**, sd **3.0**. The mean is
+   stable; no individual season is.
+2. **The answer moves ±1 rank by window.** Three distinct level-sets appear across the five
+   windows tested. RB30/WR40 is the *midpoint*, not a precise estimate.
+3. **RB28 vs RB30 is inside that noise.** This was adopted **for consistency with measurement,
+   not as a claimed improvement.** No result is expected to change because of it.
+
+**TE is the one robust finding: zero flex slots in every window.** A tight end won a flex slot
+in 2 of 26 seasons, one slot each. TE11 → TE10 is the best-supported part of this change.
+
+Regime breakdown was reported deliberately: `src/regimes.py` documents breaks after 2011 and
+2019, so a pooled 26-season mean is exactly the construct that work says to distrust. It
+happens to agree with the last-10 window here, which is reassuring but was not assumed.

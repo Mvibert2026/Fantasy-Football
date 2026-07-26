@@ -1,6 +1,6 @@
 {
   "contract_version": "1.0.0",
-  "generated_utc": "2026-07-25T22:24:19.034780+00:00",
+  "generated_utc": "2026-07-25T23:37:05.110506+00:00",
   "baseline": "bpa_consensus",
   "seasons": [
     2021,
@@ -8,7 +8,7 @@
     2023,
     2024
   ],
-  "simulations_per_cell": 500,
+  "simulations_per_cell": 600,
   "seed": 20260725,
   "sigma_values": [
     5.0,
@@ -28,39 +28,39 @@
       "by_sigma": [
         {
           "sigma": 5.0,
-          "mean_roster_points": 2112.3,
-          "p_top4": 0.434,
+          "mean_roster_points": 2107.4,
+          "p_top4": 0.419,
           "margin_vs_baseline": null,
           "ci_low": null,
           "ci_high": null,
           "seasons_positive": null,
           "sign_test_p": null,
           "per_season_margin": null,
-          "simulation_se": 8.94
+          "simulation_se": 8.09
         },
         {
           "sigma": 10.0,
-          "mean_roster_points": 2150.2,
-          "p_top4": 0.514,
+          "mean_roster_points": 2146.5,
+          "p_top4": 0.483,
           "margin_vs_baseline": null,
           "ci_low": null,
           "ci_high": null,
           "seasons_positive": null,
           "sign_test_p": null,
           "per_season_margin": null,
-          "simulation_se": 8.48
+          "simulation_se": 7.99
         },
         {
           "sigma": 20.0,
-          "mean_roster_points": 2281.5,
-          "p_top4": 0.744,
+          "mean_roster_points": 2283.8,
+          "p_top4": 0.749,
           "margin_vs_baseline": null,
           "ci_low": null,
           "ci_high": null,
           "seasons_positive": null,
           "sign_test_p": null,
           "per_season_margin": null,
-          "simulation_se": 8.55
+          "simulation_se": 7.86
         }
       ],
       "verdict": "This is the baseline everything else is compared against."
@@ -71,57 +71,57 @@
       "by_sigma": [
         {
           "sigma": 5.0,
-          "mean_roster_points": 2073.3,
-          "p_top4": 0.385,
-          "margin_vs_baseline": -39.0,
-          "ci_low": -120.5,
-          "ci_high": 12.7,
+          "mean_roster_points": 2082.8,
+          "p_top4": 0.388,
+          "margin_vs_baseline": -24.6,
+          "ci_low": -95.3,
+          "ci_high": 26.9,
           "seasons_positive": 2,
           "sign_test_p": 1.0,
           "per_season_margin": {
-            "2021": 2.5,
-            "2022": -19.9,
-            "2023": 22.9,
-            "2024": -161.4
+            "2021": 2.0,
+            "2022": -13.0,
+            "2023": 40.3,
+            "2024": -127.7
           },
-          "simulation_se": 8.54
+          "simulation_se": 7.71
         },
         {
           "sigma": 10.0,
-          "mean_roster_points": 2130.2,
-          "p_top4": 0.46,
-          "margin_vs_baseline": -20.0,
-          "ci_low": -97.2,
-          "ci_high": 50.5,
+          "mean_roster_points": 2132.6,
+          "p_top4": 0.484,
+          "margin_vs_baseline": -13.9,
+          "ci_low": -93.4,
+          "ci_high": 68.1,
           "seasons_positive": 2,
           "sign_test_p": 1.0,
           "per_season_margin": {
-            "2021": -35.2,
-            "2022": 8.4,
-            "2023": 79.0,
-            "2024": -132.4
+            "2021": -34.3,
+            "2022": 1.2,
+            "2023": 102.3,
+            "2024": -124.9
           },
-          "simulation_se": 8.44
+          "simulation_se": 7.41
         },
         {
           "sigma": 20.0,
-          "mean_roster_points": 2273.7,
-          "p_top4": 0.712,
-          "margin_vs_baseline": -7.8,
-          "ci_low": -82.9,
-          "ci_high": 73.4,
+          "mean_roster_points": 2269.9,
+          "p_top4": 0.711,
+          "margin_vs_baseline": -13.9,
+          "ci_low": -79.9,
+          "ci_high": 54.8,
           "seasons_positive": 2,
           "sign_test_p": 1.0,
           "per_season_margin": {
-            "2021": -71.8,
-            "2022": 12.8,
-            "2023": 121.8,
-            "2024": -94.0
+            "2021": -58.3,
+            "2022": 11.7,
+            "2023": 92.5,
+            "2024": -101.4
           },
-          "simulation_se": 8.38
+          "simulation_se": 7.68
         }
       ],
-      "verdict": "No real difference from just taking the best player available. The margin is -20 points and it swings both ways across seasons (2 of 4 positive)."
+      "verdict": "No real difference from just taking the best player available. The margin is -14 points and it swings both ways across seasons (2 of 4 positive)."
     },
     {
       "name": "zero_rb",
@@ -129,57 +129,57 @@
       "by_sigma": [
         {
           "sigma": 5.0,
-          "mean_roster_points": 2144.3,
-          "p_top4": 0.479,
-          "margin_vs_baseline": 32.0,
-          "ci_low": -20.9,
-          "ci_high": 84.8,
-          "seasons_positive": 2,
-          "sign_test_p": 1.0,
-          "per_season_margin": {
-            "2021": 97.0,
-            "2022": 72.6,
-            "2023": -24.0,
-            "2024": -17.7
-          },
-          "simulation_se": 7.99
-        },
-        {
-          "sigma": 10.0,
-          "mean_roster_points": 2167.8,
-          "p_top4": 0.52,
-          "margin_vs_baseline": 17.6,
-          "ci_low": -14.7,
-          "ci_high": 50.7,
-          "seasons_positive": 2,
-          "sign_test_p": 1.0,
-          "per_season_margin": {
-            "2021": 70.2,
-            "2022": 29.4,
-            "2023": -21.3,
-            "2024": -8.0
-          },
-          "simulation_se": 8.13
-        },
-        {
-          "sigma": 20.0,
-          "mean_roster_points": 2307.9,
-          "p_top4": 0.794,
-          "margin_vs_baseline": 26.4,
-          "ci_low": 5.0,
-          "ci_high": 45.3,
+          "mean_roster_points": 2135.8,
+          "p_top4": 0.461,
+          "margin_vs_baseline": 28.4,
+          "ci_low": -8.3,
+          "ci_high": 66.9,
           "seasons_positive": 3,
           "sign_test_p": 0.625,
           "per_season_margin": {
-            "2021": 45.3,
-            "2022": 23.4,
-            "2023": -8.4,
-            "2024": 45.3
+            "2021": 89.1,
+            "2022": 41.1,
+            "2023": -17.1,
+            "2024": 0.5
           },
-          "simulation_se": 8.09
+          "simulation_se": 7.56
+        },
+        {
+          "sigma": 10.0,
+          "mean_roster_points": 2172.9,
+          "p_top4": 0.548,
+          "margin_vs_baseline": 26.4,
+          "ci_low": 7.5,
+          "ci_high": 45.2,
+          "seasons_positive": 3,
+          "sign_test_p": 0.625,
+          "per_season_margin": {
+            "2021": 53.9,
+            "2022": 34.0,
+            "2023": -1.4,
+            "2024": 19.2
+          },
+          "simulation_se": 7.34
+        },
+        {
+          "sigma": 20.0,
+          "mean_roster_points": 2303.3,
+          "p_top4": 0.777,
+          "margin_vs_baseline": 19.5,
+          "ci_low": -3.6,
+          "ci_high": 37.1,
+          "seasons_positive": 3,
+          "sign_test_p": 0.625,
+          "per_season_margin": {
+            "2021": 27.2,
+            "2022": 22.9,
+            "2023": -13.9,
+            "2024": 41.8
+          },
+          "simulation_se": 7.57
         }
       ],
-      "verdict": "No real difference from just taking the best player available. The margin is +18 points and it swings both ways across seasons (2 of 4 positive)."
+      "verdict": "No real difference from just taking the best player available. The margin is +26 points and it swings both ways across seasons (3 of 4 positive)."
     },
     {
       "name": "elite_te_early",
@@ -187,57 +187,57 @@
       "by_sigma": [
         {
           "sigma": 5.0,
-          "mean_roster_points": 2041.9,
-          "p_top4": 0.268,
-          "margin_vs_baseline": -70.4,
-          "ci_low": -121.4,
-          "ci_high": -19.3,
+          "mean_roster_points": 2045.1,
+          "p_top4": 0.28,
+          "margin_vs_baseline": -62.3,
+          "ci_low": -112.6,
+          "ci_high": -12.1,
           "seasons_positive": 0,
           "sign_test_p": 0.125,
           "per_season_margin": {
-            "2021": -13.0,
-            "2022": -119.6,
-            "2023": -123.2,
-            "2024": -25.7
+            "2021": -17.5,
+            "2022": -132.3,
+            "2023": -93.0,
+            "2024": -6.6
           },
-          "simulation_se": 7.93
+          "simulation_se": 7.29
         },
         {
           "sigma": 10.0,
-          "mean_roster_points": 2051.6,
+          "mean_roster_points": 2050.3,
           "p_top4": 0.293,
-          "margin_vs_baseline": -98.6,
-          "ci_low": -136.0,
-          "ci_high": -61.3,
+          "margin_vs_baseline": -96.1,
+          "ci_low": -133.7,
+          "ci_high": -58.6,
           "seasons_positive": 0,
           "sign_test_p": 0.125,
           "per_season_margin": {
-            "2021": -45.6,
-            "2022": -142.0,
-            "2023": -129.9,
-            "2024": -77.0
+            "2021": -62.2,
+            "2022": -147.8,
+            "2023": -119.7,
+            "2024": -54.9
           },
-          "simulation_se": 8.13
+          "simulation_se": 7.21
         },
         {
           "sigma": 20.0,
-          "mean_roster_points": 2207.9,
-          "p_top4": 0.616,
-          "margin_vs_baseline": -73.5,
-          "ci_low": -111.5,
-          "ci_high": -35.6,
+          "mean_roster_points": 2211.1,
+          "p_top4": 0.624,
+          "margin_vs_baseline": -72.7,
+          "ci_low": -115.1,
+          "ci_high": -30.3,
           "seasons_positive": 0,
           "sign_test_p": 0.125,
           "per_season_margin": {
-            "2021": -24.6,
-            "2022": -131.0,
-            "2023": -92.0,
-            "2024": -46.7
+            "2021": -13.3,
+            "2022": -114.1,
+            "2023": -116.1,
+            "2024": -47.3
           },
-          "simulation_se": 8.59
+          "simulation_se": 7.84
         }
       ],
-      "verdict": "Consistently worse than best-available in all 4 seasons, by about 99 points. That cannot be called statistically significant \u2014 with only 4 seasons the strongest possible result is p=0.125 \u2014 but the direction never wavers and the gap is large."
+      "verdict": "Consistently worse than best-available in all 4 seasons, by about 96 points. That cannot be called statistically significant \u2014 with only 4 seasons the strongest possible result is p=0.125 \u2014 but the direction never wavers and the gap is large."
     },
     {
       "name": "qb_early",
@@ -245,57 +245,57 @@
       "by_sigma": [
         {
           "sigma": 5.0,
-          "mean_roster_points": 2016.8,
+          "mean_roster_points": 2014.6,
           "p_top4": 0.236,
-          "margin_vs_baseline": -95.5,
-          "ci_low": -143.4,
-          "ci_high": -47.6,
+          "margin_vs_baseline": -92.8,
+          "ci_low": -143.5,
+          "ci_high": -36.9,
           "seasons_positive": 0,
           "sign_test_p": 0.125,
           "per_season_margin": {
-            "2021": -60.6,
-            "2022": -161.5,
-            "2023": -125.3,
-            "2024": -34.6
+            "2021": -80.4,
+            "2022": -164.5,
+            "2023": -115.6,
+            "2024": -10.7
           },
-          "simulation_se": 7.73
+          "simulation_se": 7.14
         },
         {
           "sigma": 10.0,
-          "mean_roster_points": 2020.4,
-          "p_top4": 0.24,
-          "margin_vs_baseline": -129.8,
-          "ci_low": -183.1,
-          "ci_high": -76.6,
+          "mean_roster_points": 2030.0,
+          "p_top4": 0.269,
+          "margin_vs_baseline": -116.5,
+          "ci_low": -165.1,
+          "ci_high": -68.7,
           "seasons_positive": 0,
           "sign_test_p": 0.125,
           "per_season_margin": {
-            "2021": -84.3,
-            "2022": -201.6,
-            "2023": -164.6,
-            "2024": -68.9
+            "2021": -79.6,
+            "2022": -193.6,
+            "2023": -135.1,
+            "2024": -57.7
           },
-          "simulation_se": 7.78
+          "simulation_se": 7.26
         },
         {
           "sigma": 20.0,
-          "mean_roster_points": 2174.8,
-          "p_top4": 0.561,
-          "margin_vs_baseline": -106.7,
-          "ci_low": -156.6,
-          "ci_high": -56.8,
+          "mean_roster_points": 2172.4,
+          "p_top4": 0.55,
+          "margin_vs_baseline": -111.4,
+          "ci_low": -168.9,
+          "ci_high": -53.9,
           "seasons_positive": 0,
           "sign_test_p": 0.125,
           "per_season_margin": {
-            "2021": -83.1,
-            "2022": -161.0,
-            "2023": -152.1,
-            "2024": -30.4
+            "2021": -73.9,
+            "2022": -168.9,
+            "2023": -168.9,
+            "2024": -33.9
           },
-          "simulation_se": 8.25
+          "simulation_se": 7.57
         }
       ],
-      "verdict": "Consistently worse than best-available in all 4 seasons, by about 130 points. That cannot be called statistically significant \u2014 with only 4 seasons the strongest possible result is p=0.125 \u2014 but the direction never wavers and the gap is large."
+      "verdict": "Consistently worse than best-available in all 4 seasons, by about 116 points. That cannot be called statistically significant \u2014 with only 4 seasons the strongest possible result is p=0.125 \u2014 but the direction never wavers and the gap is large."
     },
     {
       "name": "balanced",
@@ -303,57 +303,57 @@
       "by_sigma": [
         {
           "sigma": 5.0,
-          "mean_roster_points": 2125.1,
-          "p_top4": 0.457,
-          "margin_vs_baseline": 12.8,
-          "ci_low": -22.5,
-          "ci_high": 48.1,
-          "seasons_positive": 2,
-          "sign_test_p": 1.0,
-          "per_season_margin": {
-            "2021": 61.6,
-            "2022": 34.7,
-            "2023": -35.5,
-            "2024": -9.4
-          },
-          "simulation_se": 8.34
-        },
-        {
-          "sigma": 10.0,
-          "mean_roster_points": 2171.9,
-          "p_top4": 0.532,
-          "margin_vs_baseline": 21.7,
-          "ci_low": 5.1,
-          "ci_high": 37.0,
+          "mean_roster_points": 2116.3,
+          "p_top4": 0.434,
+          "margin_vs_baseline": 8.9,
+          "ci_low": -9.8,
+          "ci_high": 24.5,
           "seasons_positive": 3,
           "sign_test_p": 0.625,
           "per_season_margin": {
-            "2021": 33.0,
-            "2022": 41.0,
-            "2023": 16.9,
-            "2024": -4.2
+            "2021": 17.1,
+            "2022": 30.4,
+            "2023": -18.7,
+            "2024": 6.8
           },
-          "simulation_se": 8.29
+          "simulation_se": 8.01
+        },
+        {
+          "sigma": 10.0,
+          "mean_roster_points": 2163.0,
+          "p_top4": 0.521,
+          "margin_vs_baseline": 16.6,
+          "ci_low": 4.7,
+          "ci_high": 28.4,
+          "seasons_positive": 4,
+          "sign_test_p": 0.125,
+          "per_season_margin": {
+            "2021": 6.6,
+            "2022": 29.1,
+            "2023": 27.7,
+            "2024": 2.8
+          },
+          "simulation_se": 7.71
         },
         {
           "sigma": 20.0,
-          "mean_roster_points": 2289.6,
-          "p_top4": 0.745,
-          "margin_vs_baseline": 8.1,
-          "ci_low": -9.3,
-          "ci_high": 25.5,
-          "seasons_positive": 2,
-          "sign_test_p": 1.0,
+          "mean_roster_points": 2295.6,
+          "p_top4": 0.753,
+          "margin_vs_baseline": 11.8,
+          "ci_low": 0.3,
+          "ci_high": 27.3,
+          "seasons_positive": 3,
+          "sign_test_p": 0.625,
           "per_season_margin": {
-            "2021": -10.9,
-            "2022": 21.3,
-            "2023": 29.7,
-            "2024": -7.7
+            "2021": -3.0,
+            "2022": 35.2,
+            "2023": 3.7,
+            "2024": 11.3
           },
-          "simulation_se": 8.62
+          "simulation_se": 7.71
         }
       ],
-      "verdict": "No real difference from just taking the best player available. The margin is +22 points and it swings both ways across seasons (3 of 4 positive)."
+      "verdict": "No real difference from just taking the best player available. The margin is +17 points and it swings both ways across seasons (4 of 4 positive)."
     }
   ]
 }
