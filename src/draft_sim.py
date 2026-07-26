@@ -470,3 +470,244 @@ def convergence_check(res: SimResult, points: Sequence[int]) -> List[Tuple[int, 
         sub = np.array(res.user_points[:n])
         out.append((n, float(sub.mean()), float(sub.std(ddof=1) / np.sqrt(n))))
     return out
+
+
+# ============================================================= DraftEngine (ADR-041)
+#
+# Everything above this line is UNTOUCHED by the multi-league work and stays
+# byte-for-byte as it has always been. That is deliberate, not an oversight:
+# PR-003's numbers are ADR-028-verified byte-identically reproducible, and the
+# safest way to guarantee a parameterization pass cannot perturb them is to
+# not touch the code path that produces them at all.
+#
+# DraftEngine below is a SEPARATE, parallel implementation of the same
+# operations (pick order, opponent model, legality, lineup scoring), reading a
+# league_config.LeagueConfig instead of module globals. It duplicates logic
+# rather than refactoring the functions above into thin wrappers around it --
+# a "wrap the existing functions" design was considered and rejected because
+# even a behavior-preserving refactor of RNG-adjacent code risks changing call
+# order or floating-point accumulation order in some subtle way that a test
+# suite might not catch, and there is no reason to take that risk when the
+# duplication costs is one file's length.
+#
+# For the PRIMARY league, use the free functions above (opponent_pick,
+# pick_order, etc.) exactly as before -- nothing changed for them. For any
+# OTHER league, construct DraftEngine(cfg) and use its methods.
+
+import league_config as lc  # noqa: E402
+
+
+def mechanical_need_targets_for(cfg: "lc.LeagueConfig") -> Dict[str, float]:
+    """STARTERS[pos] + FLEX_SLOTS (if pos is flex-eligible), restricted to the
+    positions the scoring engine can actually compute (QB/RB/WR/TE) -- the
+    same formula as module-level MECHANICAL_NEED_TARGETS, generalized to any
+    league. An upper bound per position, not a partition of the shared flex
+    pool -- see MECHANICAL_NEED_TARGETS's comment for why."""
+    from scoring import ReplacementLevels
+
+    out = {}
+    for pos, n in cfg.starters.items():
+        if pos not in ReplacementLevels.SCOREABLE_POSITIONS:
+            continue
+        out[pos] = n + (cfg.flex_slots if pos in cfg.flex_eligible else 0)
+    return out
+
+
+def default_max_at_position_for(cfg: "lc.LeagueConfig") -> Dict[str, float]:
+    """No per-league human-behavior measurement exists for 'how many of this
+    position would a manager hoard' (MAX_AT_POSITION for the primary league is
+    itself an unmeasured judgement call, not a formula). Rather than invent a
+    plausible-looking number for a new league, this is an explicit, named
+    HEURISTIC: mechanical need target + bench size. Flagged in ADR-041 as a
+    placeholder, not a measurement -- the same posture the project already
+    takes with cfg.flex_split when it is not supplied."""
+    targets = mechanical_need_targets_for(cfg)
+    return {pos: t + cfg.bench for pos, t in targets.items()}
+
+
+class DraftEngine:
+    """League-parameterized equivalent of this module's free functions.
+    See the block comment above for why this is a parallel implementation
+    rather than a refactor of the existing (verified-reproducible) code."""
+
+    def __init__(
+        self,
+        cfg: "lc.LeagueConfig",
+        need_targets: Optional[Dict[str, float]] = None,
+        max_at_position: Optional[Dict[str, float]] = None,
+    ):
+        from scoring import ReplacementLevels
+
+        self.cfg = cfg
+        self.n_teams = cfg.teams
+        self.n_rounds = cfg.rounds
+        self.user_slot = cfg.user_draft_slot
+        # Only the positions the scoring engine can compute participate in the
+        # opponent model / legality logic. Unscored starter positions (K, DEF
+        # -- no scoring data ingested for either, ADR-039) are handled by
+        # RESERVED ROUNDS instead: one auto-filled, unsimulated round per such
+        # position, generalizing the primary engine's single hardcoded
+        # "final round is DEF" rule to however many unscored positions a
+        # league actually has.
+        self.scoreable_starters = {
+            p: n for p, n in cfg.starters.items() if p in ReplacementLevels.SCOREABLE_POSITIONS
+        }
+        self.unscored_starter_positions = tuple(
+            p for p, n in cfg.starters.items()
+            if p not in ReplacementLevels.SCOREABLE_POSITIONS and n > 0
+        )
+        self.flex_slots = cfg.flex_slots
+        self.flex_eligible = tuple(
+            p for p in cfg.flex_eligible if p in ReplacementLevels.SCOREABLE_POSITIONS
+        )
+        if cfg.league_id == lc.PRIMARY_LEAGUE_ID:
+            # Preserve the EXACT judgement-call numbers the primary league has
+            # always used, so nothing about its behavior changes.
+            self.need_targets = dict(NEED_TARGETS)
+            self.max_at_position = dict(MAX_AT_POSITION)
+        else:
+            self.need_targets = need_targets or mechanical_need_targets_for(cfg)
+            self.max_at_position = max_at_position or default_max_at_position_for(cfg)
+
+    # --------------------------------------------------------- pick order
+    def pick_order(self) -> List[int]:
+        order = []
+        for rnd in range(self.n_rounds):
+            teams = list(range(self.n_teams))
+            if rnd % 2 == 1:
+                teams.reverse()
+            order.extend(teams)
+        return order
+
+    def user_pick_numbers(self) -> List[int]:
+        order = self.pick_order()
+        me = self.user_slot - 1
+        return [i + 1 for i, t in enumerate(order) if t == me]
+
+    def reserved_rounds(self) -> List[int]:
+        """0-indexed round numbers auto-filled for unscored starter positions
+        (one round each, taken from the end -- generalizes the primary
+        engine's `rnd == N_ROUNDS - 1` DEF rule to N unscored positions)."""
+        n = len(self.unscored_starter_positions)
+        return list(range(self.n_rounds - n, self.n_rounds))
+
+    # --------------------------------------------------------- opponent model
+    def _need_penalty(self, counts: Dict[str, int], pos_name: str) -> float:
+        have = counts.get(pos_name, 0)
+        cap = self.max_at_position.get(pos_name, float("inf"))
+        if have >= cap:
+            return float("inf")
+        surplus = have - self.need_targets.get(pos_name, float("inf")) + 1
+        return NEED_PENALTY_PER_SURPLUS * surplus if surplus > 0 else 0.0
+
+    def opponent_pick(
+        self, effective_rank: np.ndarray, available: np.ndarray, counts: Dict[str, int],
+        data: SeasonData,
+    ) -> int:
+        scores = effective_rank.copy()
+        for name in self.scoreable_starters:
+            pen = self._need_penalty(counts, name)
+            if pen:
+                p = POSITIONS.index(name)
+                scores[data.positions == p] += pen
+        scores[~available] = np.inf
+        return int(np.argmin(scores))
+
+    # --------------------------------------------------------- user strategy
+    def legal_mask(self, state: DraftState, data: SeasonData) -> np.ndarray:
+        picks_left = self.n_rounds - 1 - state.round_number - len(self.unscored_starter_positions)
+        m = np.ones(len(data.positions), dtype=bool)
+        for name in self.scoreable_starters:
+            cap = self.max_at_position.get(name, float("inf"))
+            if state.my_counts.get(name, 0) >= cap:
+                p = POSITIONS.index(name)
+                m[data.positions == p] = False
+        needs = [n for n, c in self.scoreable_starters.items() if state.my_counts.get(n, 0) < c]
+        if needs and picks_left <= len(needs):
+            forced = np.zeros(len(data.positions), dtype=bool)
+            for n in needs:
+                forced |= data.positions == POSITIONS.index(n)
+            m &= forced
+        return m
+
+    def strategy_bpa(self, state: DraftState, available: np.ndarray, data: SeasonData,
+                      board: np.ndarray) -> int:
+        s = board.copy()
+        s[~available] = np.inf
+        mask = self.legal_mask(state, data)
+        s[~mask] = np.inf
+        return int(np.argmin(s))
+
+    # --------------------------------------------------------- lineup scoring
+    def weekly_optimal_points(self, roster: Sequence[int], data: SeasonData) -> float:
+        if not roster:
+            return 0.0
+        idx = np.array(roster)
+        pos = data.positions[idx]
+        total = 0.0
+        for wk in range(1, data.n_weeks + 1):
+            pts = data.weekly_points[idx, wk]
+            used = np.zeros(len(idx), dtype=bool)
+            wk_total = 0.0
+            for name, count in self.scoreable_starters.items():
+                p = POSITIONS.index(name)
+                cand = np.where((pos == p) & ~used)[0]
+                if len(cand) == 0:
+                    continue
+                best = cand[np.argsort(-pts[cand])][:count]
+                wk_total += pts[best].sum()
+                used[best] = True
+            flex_pool = np.where(
+                np.isin(pos, [POSITIONS.index(x) for x in self.flex_eligible]) & ~used
+            )[0]
+            if len(flex_pool):
+                best = flex_pool[np.argsort(-pts[flex_pool])][: self.flex_slots]
+                wk_total += pts[best].sum()
+            total += wk_total
+        return float(total)
+
+    def roster_is_legal(self, counts: Dict[str, int]) -> bool:
+        for name, need in self.scoreable_starters.items():
+            if counts.get(name, 0) < need:
+                return False
+        flex_capacity = sum(
+            counts.get(n, 0) - self.scoreable_starters.get(n, 0) for n in self.flex_eligible
+        )
+        return flex_capacity >= self.flex_slots
+
+    # --------------------------------------------------------- full draft
+    def simulate_one(
+        self, data: SeasonData, strategy, board: np.ndarray, sigma: float,
+        rng: np.random.Generator,
+    ) -> Tuple[List[int], List[List[int]], bool]:
+        n = len(data.player_ids)
+        effective_rank = data.consensus_rank + rng.normal(0.0, sigma, size=n)
+        available = np.ones(n, dtype=bool)
+        order = self.pick_order()
+        me = self.user_slot - 1
+        reserved = set(self.reserved_rounds())
+
+        rosters: List[List[int]] = [[] for _ in range(self.n_teams)]
+        counts: List[Dict[str, int]] = [{p: 0 for p in POSITIONS} for _ in range(self.n_teams)]
+
+        for pick_i, team in enumerate(order):
+            rnd = pick_i // self.n_teams
+            if rnd in reserved:
+                continue
+            if team == me:
+                state = DraftState(data.season, pick_i + 1, rnd, rosters[me], counts[me], available)
+                # `strategy` is a bound method or closure taking the same
+                # 4-arg shape as the module-level Strategy type -- pass
+                # engine.strategy_bpa (bound, so `self` is already captured),
+                # not the unbound free function.
+                choice = strategy(state, available, data, board)
+            else:
+                choice = self.opponent_pick(effective_rank, available, counts[team], data)
+            if not np.isfinite(choice) or not available[choice]:
+                continue
+            available[choice] = False
+            rosters[team].append(int(choice))
+            counts[team][POSITIONS[data.positions[choice]]] += 1
+
+        legal = self.roster_is_legal(counts[me])
+        return rosters[me], [rosters[t] for t in range(self.n_teams) if t != me], legal

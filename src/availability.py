@@ -172,6 +172,7 @@ def simulate_availability(
     track_top_n: int = 80,
     sources: Optional[Sequence[RankingSource]] = None,
     source_weights: Optional[Sequence[float]] = None,
+    engine: Optional["ds.DraftEngine"] = None,
 ) -> AvailabilityResult:
     """Record who is on the board at each user pick, across many drafts.
 
@@ -184,14 +185,34 @@ def simulate_availability(
           from `sources`/`source_weights` -- a fresh draw every draft, never a
           fixed per-team identity, which is what "marginalised over, never
           hard-assigned" means in practice;
-      (b) `ds.MECHANICAL_NEED_TARGETS` drives the positional-need penalty inside
-          `ds.opponent_pick`, derived from roster rules rather than assumed;
+      (b) mechanical positional need drives the opponent penalty, derived from
+          roster rules rather than assumed;
       (c) one shared Gaussian noise draw per draft (unchanged from before).
+
+    `engine` (ADR-041): None (default) reproduces the PRIMARY league's
+    behavior EXACTLY as before -- the module-level free functions, with
+    `targets=ds.MECHANICAL_NEED_TARGETS` explicitly, byte-for-byte identical
+    to every prior call. A `ds.DraftEngine` for another league uses its own
+    pick order, team count, round count and reserved (unscored-position)
+    rounds instead -- see DraftEngine's docstring for why this is a parallel
+    implementation rather than the free functions made generic.
     """
     rng = np.random.default_rng(seed)
-    order = ds.pick_order()
-    me = ds.USER_SLOT - 1
-    user_picks = ds.user_pick_numbers()
+    if engine is None:
+        order = ds.pick_order()
+        n_teams = ds.N_TEAMS
+        me = ds.USER_SLOT - 1
+        user_picks = ds.user_pick_numbers()
+        reserved_rounds = {ds.N_ROUNDS - 1}
+        positions = ds.POSITIONS
+    else:
+        order = engine.pick_order()
+        n_teams = engine.n_teams
+        me = engine.user_slot - 1
+        user_picks = engine.user_pick_numbers()
+        reserved_rounds = set(engine.reserved_rounds())
+        positions = ds.POSITIONS  # the scored-position axis is project-wide, not per-league
+
     pos_rank = positional_ranks(data)
     n = len(data.player_ids)
     top_ids = list(np.argsort(data.consensus_rank)[:track_top_n])
@@ -206,24 +227,24 @@ def simulate_availability(
         pos: {t: {p: 0 for p in user_picks} for t in TIERS[pos]} for pos in TIERS
     }
     best_dist: Dict[str, Dict[int, List[int]]] = {
-        pos: {p: [] for p in user_picks} for pos in ds.POSITIONS
+        pos: {p: [] for p in user_picks} for pos in positions
     }
 
     for _ in range(n_sims):
         # (a) per-team ranking-source assignment, freshly sampled this draft --
         # never fixed to a team across sims, i.e. marginalised, not hard-assigned.
-        team_source_idx = rng.choice(len(sources), size=ds.N_TEAMS, p=weights)
-        team_base_rank = source_ranks[team_source_idx]  # (N_TEAMS, n)
+        team_source_idx = rng.choice(len(sources), size=n_teams, p=weights)
+        team_base_rank = source_ranks[team_source_idx]  # (n_teams, n)
         # (c) one shared noise draw for the room this draft.
         room_noise = rng.normal(0.0, sigma, size=n)
         effective_by_team = team_base_rank + room_noise[None, :]
         available = np.ones(n, dtype=bool)
-        counts = [{p: 0 for p in ds.POSITIONS} for _ in range(ds.N_TEAMS)]
+        counts = [{p: 0 for p in positions} for _ in range(n_teams)]
 
         for pick_i, team in enumerate(order):
             pick_no = pick_i + 1
-            rnd = pick_i // ds.N_TEAMS
-            if rnd == ds.N_ROUNDS - 1:
+            rnd = pick_i // n_teams
+            if rnd in reserved_rounds:
                 continue
 
             if team == me:
@@ -233,30 +254,38 @@ def simulate_availability(
                         if available[i]:
                             avail_counts[i][pick_no] += 1
                     for pos, tiers in TIERS.items():
-                        p = ds.POSITIONS.index(pos)
+                        p = positions.index(pos)
                         for tname, (lo, hi) in tiers.items():
                             m = available & (data.positions == p) & (pos_rank >= lo) & (pos_rank <= hi)
                             if m.any():
                                 tier_counts[pos][tname][pick_no] += 1
-                    for pos in ds.POSITIONS:
-                        p = ds.POSITIONS.index(pos)
+                    for pos in positions:
+                        p = positions.index(pos)
                         m = available & (data.positions == p)
                         best_dist[pos][pick_no].append(
                             int(pos_rank[m].min()) if m.any() else 999
                         )
                 state = ds.DraftState(data.season, pick_no, rnd, [], counts[me], available)
-                choice = ds.strategy_bpa(state, available, data, data.consensus_rank)
+                if engine is None:
+                    choice = ds.strategy_bpa(state, available, data, data.consensus_rank)
+                else:
+                    choice = engine.strategy_bpa(state, available, data, data.consensus_rank)
             else:
-                # (b) mechanical need, not the judgement-call NEED_TARGETS.
-                choice = ds.opponent_pick(
-                    effective_by_team[team], available, counts[team], data,
-                    targets=ds.MECHANICAL_NEED_TARGETS,
-                )
+                if engine is None:
+                    # (b) mechanical need, not the judgement-call NEED_TARGETS.
+                    choice = ds.opponent_pick(
+                        effective_by_team[team], available, counts[team], data,
+                        targets=ds.MECHANICAL_NEED_TARGETS,
+                    )
+                else:
+                    choice = engine.opponent_pick(
+                        effective_by_team[team], available, counts[team], data
+                    )
 
             if choice is None or not available[choice]:
                 continue
             available[choice] = False
-            counts[team][ds.POSITIONS[data.positions[choice]]] += 1
+            counts[team][positions[data.positions[choice]]] += 1
 
     res = AvailabilityResult(sigma, n_sims, user_picks)
     res.player_avail = {
