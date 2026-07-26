@@ -77,9 +77,68 @@ class RankingSource:
 
 
 def default_ranking_sources(data: ds.SeasonData) -> List[RankingSource]:
-    """The only source today. A second entry (MFL ADP, ADR-035) is added here,
-    not by branching the simulation code -- that is the point of the mixture."""
+    """The only source SHIPPED by default. A second entry (MFL ADP, ADR-035,
+    `load_mfl_adp_source`) is available and tested but deliberately NOT wired
+    in here -- see that function's docstring for why."""
     return [RankingSource("fantasypros_ecr", data.consensus_rank)]
+
+
+def load_mfl_adp_source(
+    conn: sqlite3.Connection, data: ds.SeasonData, adp_source: str = "mfl_proxy"
+) -> Optional[RankingSource]:
+    """A second RankingSource built from ingested MFL ADP (ADR-035),
+    mfl_id-joined via the ADR-036 identity hub. Real, tested, and NOT the
+    default -- three reasons, stated so a future session does not "fix" this
+    into the default without addressing them:
+
+    1. MFL's own sample behind the snapshot ingested this session was
+       `totalDrafts=50` -- thin enough that treating it as an equal-weight
+       peer to FantasyPros ECR (built from far more analyst input) would be an
+       assumption, not a measurement, in exactly the sense CLAUDE.md SS6.3 warns
+       against ("every added parameter must earn its place against a
+       holdout"). No holdout comparison has been run.
+    2. MFL only covers the top ~230 players in a 10-team snapshot; the rest of
+       the ~600+ player universe has no MFL opinion at all. Unresolved players
+       fall back to their FantasyPros ECR rank (see below) so the array stays
+       usable, but that means "the MFL source" is actually a blend of real
+       MFL data at the top and a copy of the other source beneath it -- worth
+       knowing before trusting a mixture weight against it.
+    3. Wiring a second source into the SHIPPED availability.json changes its
+       output as a side effect of an ingestion task, which was not asked for
+       and was not the kind of change this session's other numeric moves
+       (ADR-034's TE T1@23) were bounds-checked for.
+
+    Returns None if no adp_snapshots rows exist for `adp_source` (never raises
+    -- an ingestion that has not run yet is a normal state, not an error).
+    """
+    row = conn.execute(
+        "SELECT MAX(retrieved_at) FROM adp_snapshots WHERE adp_source=?", (adp_source,)
+    ).fetchone()
+    if row is None or row[0] is None:
+        return None
+    latest = row[0]
+
+    mfl_to_pick: Dict[str, float] = {
+        r[0]: r[1] for r in conn.execute(
+            "SELECT mfl_id, average_pick FROM adp_snapshots "
+            "WHERE adp_source=? AND retrieved_at=?", (adp_source, latest),
+        ).fetchall()
+    }
+    gsis_to_mfl: Dict[str, str] = {
+        r[0]: r[1] for r in conn.execute(
+            "SELECT source_id, mfl_id FROM player_ids WHERE source='gsis'"
+        ).fetchall()
+    }
+
+    rank = data.consensus_rank.copy()  # fallback: FP-ECR rank for MFL-uncovered players
+    n_resolved = 0
+    for i, pid in enumerate(data.player_ids):
+        mfl_id = gsis_to_mfl.get(pid)
+        if mfl_id is not None and mfl_id in mfl_to_pick:
+            rank[i] = mfl_to_pick[mfl_id]
+            n_resolved += 1
+
+    return RankingSource(f"{adp_source}_{n_resolved}_of_{len(rank)}_resolved", rank)
 
 
 @dataclass

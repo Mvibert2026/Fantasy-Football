@@ -736,7 +736,52 @@ estimate.
 **Does NOT reopen the alpha track.** ADR-026 closed it on a count of *seasons*, not sources; an
 additional source does not move the sign-test floor.
 
-**Status: NOT STARTED.**
+---
+
+**Status: IMPLEMENTED (2026-07-25, session 9).** `src/ingest_mfl_adp.py` against the documented,
+free, no-login endpoint `https://api.myfantasyleague.com/{period}/export?TYPE=adp&...&JSON=1`.
+Descriptive User-Agent; 429 backoff honouring `Retry-After`; a new `adp_snapshots` table
+(`CLAUDE.md`'s own core-tables sketch reserved this name) keyed
+`(adp_source, mfl_id, retrieved_at)`, carrying `fcount`/`is_ppr`/`is_keeper`/`is_mock`/`cutoff`/
+`period` per row per ADR-024's "never a pre-blended estimate" rule. One fetch per UTC calendar
+day (`already_fetched_today()`), `--force` to bypass.
+
+**MFL's `id` field is confirmed to BE `mfl_id`, not a value requiring a crosswalk.** Verified
+against 10 sampled players (Ja'Marr Chase #1, Jahmyr Gibbs #2, Josh Allen #4, ...): 232/232
+(100%) resolved directly against `ff_playerids.mfl_id`. No name matching was needed or used —
+exactly as expected, since MFL is the source `mfl_id` itself comes from.
+
+**Deliberately NOT a separate table joined against `rankings`.** `rankings` already has
+`spread_sd`/`rank_best`/`rank_worst` (ADR-024) and CLAUDE.md's own `ranking_source` enum names
+`market_adp` for exactly this case — reusing it was considered and rejected, because wiring a new
+source into the table `make_board.py`/`backtest.py` read from risks changing board or backtest
+behaviour as a side effect of an ingestion task, which nobody asked for this session.
+
+**Sample size is small — flagged loudly, not buried.** `totalDrafts=50` behind this snapshot;
+individual players' `draftsSelectedIn` ranged 5-58. `main()` prints a caution below 100 drafts.
+This bounds what comes next.
+
+**`load_mfl_adp_source()` (in `availability.py`) exists, is tested, and is NOT wired into the
+shipped default.** It builds a second `RankingSource` for ADR-034's mixture, mfl_id-joined via
+the ADR-036 hub (`player_ids WHERE source='gsis'`, reverse-looked-up against `SeasonData`'s
+gsis-keyed player array). Against the live 2026 board: **138 of 378 players resolved to a real
+MFL average pick**; the remaining 240 fall back to their FantasyPros ECR rank, since MFL's
+snapshot only covers its own top ~232 picks across all rostered positions. Three reasons it stays
+off by default, so a future session does not flip it on without addressing them:
+
+1. A 50-draft sample is not an equal-weight peer to FantasyPros ECR's far larger analyst base —
+   giving it a mixture weight (even 0.5) is an assumption, not a measurement, in exactly the
+   sense CLAUDE.md §6.3 warns against. No holdout comparison has been run to justify any weight.
+2. "The MFL source" is a blend by construction (real MFL data at the top, a copy of FP-ECR
+   beneath) — worth knowing before trusting a mixture weight against it.
+3. Enabling it would change `data/export/availability.json`'s shipped output as a side effect of
+   an ingestion task. This session already moved that file once (ADR-034, bounds-checked against
+   a pre-declared bracket); a second silent move in the same session, unmeasured, is exactly the
+   failure shape ADR-025/028 both warned about.
+
+**9 tests in `tests/test_ingest_mfl_adp.py`**, covering format-metadata storage, the
+never-league_adp invariant, daily caching, and the fallback-to-consensus behaviour for
+MFL-uncovered players.
 
 ### ADR-036: The identity hub is `mfl_id`, not `gsis_id`
 
