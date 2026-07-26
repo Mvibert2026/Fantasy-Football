@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
 import type { BoardRow } from '../data/board';
-import { playerAvailabilityAtPick } from '../data/availability';
 import {
   currentOverallPick,
   isSlotOnClock,
@@ -15,21 +14,43 @@ import {
   type DraftPickRecord,
   type DraftState,
 } from '../data/draft';
+import { computeLiveAvailability, type LiveAvailabilityResult } from '../data/liveAvailability';
 import type { Dataset } from '../data/load';
 import type { LeagueConfig } from '../data/league';
 import { rankByRecommendation } from '../data/recommendation';
+import { depletionWarning, positionScarcity } from '../data/scarcity';
 import { useWatchlist } from '../data/useWatchlist';
 import { PlayerDetail } from '../components/PlayerDetail';
 import { Value } from '../components/Value';
-import { decimal, integer, percent } from '../lib/format';
+import { decimal, integer, percent, signed } from '../lib/format';
+
+/** §3.2's pane-width formula, using the spec's own defaults since this build has
+ *  no host props editor (see the module doc). Returns a grid-template-columns
+ *  value with each pane as a normalised percentage. */
+function paneColumns(boardPct = 35, centerPct = 40): string {
+  const board = Math.min(60, Math.max(20, boardPct));
+  const center = Math.min(65, Math.max(20, centerPct));
+  const right = Math.max(14, 100 - board - center);
+  const total = board + center + right;
+  return `minmax(0,${((board / total) * 100).toFixed(2)}%) minmax(0,${((center / total) * 100).toFixed(2)}%) minmax(0,${((right / total) * 100).toFixed(2)}%)`;
+}
+
+const SCARCITY_POSITIONS = ['QB', 'RB', 'WR', 'TE'] as const;
 
 /**
  * Draft Room, ported from the design handoff prototype
- * (design_handoff_draft_assistant/Draft Assistant.dc.html, lines 143-441): a
- * command bar (search-to-mark-pick, undo, on-clock/until-you/next-pick stats)
- * over a three-column grid -- available players, recommendation, roster + log.
- * Structure and interaction ported; content adapted to what this app can source
- * honestly. Explicit departures, each because the prototype's version needs data
+ * (design_handoff_draft_assistant/Draft Assistant.dc.html, lines 143-441) and
+ * upgraded to FRONTEND-SPEC.md §7.1/§3.2: a command bar (search-to-mark-pick,
+ * undo, on-clock/until-you/next-pick stats) over a three-pane grid -- available
+ * players, recommendation/scarcity, roster + log.
+ *
+ * Pane widths follow §3.2's formula exactly (board/center/right, clamped and
+ * normalised to 100%), using the spec's own defaults (35/40/25) -- this build has
+ * no host environment to expose the tweakable-props editor (§3.4) to, so the
+ * ratios are real but not user-adjustable, which is a smaller and more honest gap
+ * than building a props-editing UI nothing else in this app has a parallel for.
+ *
+ * Explicit departures, each because the prototype's or spec's version needs data
  * or a live simulator this build does not have:
  *
  *   - "Auto-fill to my pick" (prototype's simToMe, line 2083) is NOT built. It
@@ -37,16 +58,19 @@ import { decimal, integer, percent } from '../lib/format';
  *     export feature exists to keep real (item 2's whole point is picks usable as
  *     real mock-draft data) -- fabricating picks to fill screen space would work
  *     directly against that.
- *   - "IF YOU WAIT" shows this app's real Prep-mode availability figures (already
- *     built, ui/data/availability.ts) filtered to undrafted players, not a live
- *     conditional recompute. Labelled explicitly as an approximation: these are
- *     unconditional marginals that happen to still be on the board, not numbers
- *     re-simulated against the actual picks made so far. Building the real
- *     conditional simulator is separate, larger work (client_simulation_parameters
- *     exists in availability.json for exactly that, unused here).
- *   - Position scarcity bars and the decision-rules-with-evidence list (prototype
- *     lines 316-386) are not built this session -- polish beyond the six
- *     requested items, not required for a working draft room.
+ *   - Availability everywhere in this file (row badges, watchlist, per-pick
+ *     strip in the player sheet) is the real two-number model, ui/data/
+ *     liveAvailability.ts -- baseline and live shown together, never one
+ *     replacing the other, per §5.2's explicit display contract.
+ *   - The decision-rules-with-evidence list (prototype lines 367-384) is not
+ *     built -- there is no backtested rule set behind it in this project yet
+ *     (see docs/test-registry.md upstream); fabricating rule text would violate
+ *     the same "no rendered value without a named field" principle everything
+ *     else here follows.
+ *   - Hub tabs (Board / Opponents / Predictions, §7.1) are not yet folded into
+ *     this pane -- Opponents and a standalone Predictions table exist as their
+ *     own Prep-mode screens; duplicating them inside the draft hub is a follow-up,
+ *     not core to a working draft room.
  *   - The recommendation score (ui/data/recommendation.ts) is a simple,
  *     unvalidated stopgap formula, not a backtested model -- said so on screen.
  */
@@ -134,6 +158,8 @@ export function DraftRoom({
   const [selected, setSelected] = useState(0);
   const [positionTab, setPositionTab] = useState<PositionTab>('ALL');
   const [detailRow, setDetailRow] = useState<BoardRow | null>(null);
+  const [expandedRowId, setExpandedRowId] = useState<number | null>(null);
+  const [railTab, setRailTab] = useState<'queue' | 'watch'>('watch');
   const searchRef = useRef<HTMLInputElement>(null);
 
   function openDetail(row: BoardRow) {
@@ -258,16 +284,44 @@ export function DraftRoom({
     return rankByRecommendation(available, currentRound, unfilledPositions).slice(0, 6);
   }, [userOnClock, available, currentRound, unfilledPositions]);
 
-  const waitList = useMemo(() => {
+  const watchRows = useMemo(() => {
     if (userOnClock || nextUserPick === null) return [];
     return watchlist
       .map((name) => available.find((r) => r.name.kind === 'present' && r.name.value === name))
       .filter((r): r is BoardRow => !!r)
       .map((row) => ({
         row,
-        cell: playerAvailabilityAtPick(data, row.name.kind === 'present' ? row.name.value : '', nextUserPick),
+        avail: computeLiveAvailability({ data, league, row, targetPick: nextUserPick, picks: draft.picks, rowsById }),
       }));
-  }, [userOnClock, nextUserPick, watchlist, available, data]);
+  }, [userOnClock, nextUserPick, watchlist, available, data, league, draft.picks, rowsById]);
+
+  const queueRows = useMemo(() => {
+    if (userOnClock || nextUserPick === null) return [];
+    return draft.queue
+      .map((id) => rowsById.get(id))
+      .filter((r): r is BoardRow => !!r && !taken.has(r.id))
+      .map((row) => ({
+        row,
+        avail: computeLiveAvailability({ data, league, row, targetPick: nextUserPick, picks: draft.picks, rowsById }),
+      }));
+  }, [userOnClock, nextUserPick, draft.queue, taken, data, league, draft.picks, rowsById]);
+
+  const scarcityList = useMemo(
+    () =>
+      positionScarcity(
+        data,
+        rows,
+        draft.picks,
+        currentPick,
+        nextUserPick,
+        SCARCITY_POSITIONS,
+        Object.fromEntries(
+          league.thresholds.map((t) => [t.position, t.starters.kind === 'present' ? t.starters.value : 0]),
+        ),
+        teams,
+      ),
+    [data, rows, draft.picks, currentPick, nextUserPick, league.thresholds, teams],
+  );
 
   if (teams === 0 || rounds === 0 || userSlot === 0) {
     return (
@@ -454,7 +508,7 @@ export function DraftRoom({
         </div>
       </div>
 
-      <div style={{ flex: 1, minHeight: 0, display: 'grid', gridTemplateColumns: 'minmax(0,1.3fr) minmax(0,1fr) 300px' }}>
+      <div style={{ flex: 1, minHeight: 0, display: 'grid', gridTemplateColumns: paneColumns() }}>
         <div style={{ minHeight: 0, display: 'flex', flexDirection: 'column', borderRight: '1px solid var(--line)' }}>
           <div style={{ flex: 'none', padding: '8px 12px 6px', borderBottom: '1px solid var(--line)', display: 'flex', gap: 4 }}>
             {POSITION_TABS.map((t) => (
@@ -481,48 +535,96 @@ export function DraftRoom({
             {availableInTab.length} left
           </div>
           <div style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
-            {availableInTab.map((r) => (
-              <div
-                key={r.id}
-                onClick={() => openDetail(r)}
-                style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '6px 12px', borderBottom: '1px solid var(--line)', cursor: 'pointer' }}
-              >
-                <span style={{ fontFamily: 'var(--font-num)', fontSize: 11, color: 'var(--dim2)', width: 22, textAlign: 'right' }}>
-                  <Value cell={r.overallRank} render={integer} />
-                </span>
-                <span style={{ fontWeight: 600, fontSize: 13, flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {r.name.kind === 'present' ? r.name.value : ''}
-                </span>
-                <span style={{ fontSize: 11, letterSpacing: '.045em', fontWeight: 600, color: POSITION_COLOR[r.raw.position], width: 30 }}>
-                  {r.raw.position}
-                </span>
-                <span style={{ fontSize: 10, letterSpacing: '.045em', color: 'var(--dim2)', width: 26 }}>{r.raw.team}</span>
-                <span
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    if (r.name.kind === 'present') toggleWatch(r.name.value);
-                  }}
-                  title="Star to track availability on your next pick"
-                  style={{
-                    fontSize: 11,
-                    color: r.name.kind === 'present' && watchlist.includes(r.name.value) ? 'var(--down)' : 'var(--dim2)',
-                    cursor: 'pointer',
-                  }}
-                >
-                  {r.name.kind === 'present' && watchlist.includes(r.name.value) ? '★' : '☆'}
-                </span>
-                <span
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    recordPick(r.id, r.name.kind === 'present' ? r.name.value : '');
-                  }}
-                  title="Mark taken"
-                  style={{ fontFamily: 'var(--font-num)', fontSize: 10, color: 'var(--dim2)', border: '1px solid var(--line)', padding: '0 4px' }}
-                >
-                  ✕
-                </span>
-              </div>
-            ))}
+            {availableInTab.map((r) => {
+              const expanded = expandedRowId === r.id;
+              const delta = r.deltaVsConsensus.kind === 'present' ? r.deltaVsConsensus.value : null;
+              const deltaColor = delta === null ? 'var(--dim2)' : delta > 2 ? 'var(--up)' : delta < -2 ? 'var(--down)' : 'var(--dim2)';
+              const avail =
+                nextUserPick !== null
+                  ? computeLiveAvailability({ data, league, row: r, targetPick: nextUserPick, picks: draft.picks, rowsById })
+                  : null;
+              return (
+                <div key={r.id} style={{ borderBottom: '1px solid var(--line)' }}>
+                  <div
+                    onClick={() => openDetail(r)}
+                    style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '6px 12px', cursor: 'pointer' }}
+                  >
+                    <span className="num" style={{ fontSize: 11, color: 'var(--dim2)', width: 22, textAlign: 'right' }}>
+                      <Value cell={r.overallRank} render={integer} />
+                    </span>
+                    <span style={{ fontWeight: 600, fontSize: 13, flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {r.name.kind === 'present' ? r.name.value : ''}
+                    </span>
+                    <span style={{ fontSize: 11, letterSpacing: '.045em', fontWeight: 600, color: POSITION_COLOR[r.raw.position], width: 30 }}>
+                      {r.raw.position}
+                    </span>
+                    <span style={{ fontSize: 10, letterSpacing: '.045em', color: 'var(--dim2)', width: 26 }}>{r.raw.team}</span>
+                    <span
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setExpandedRowId(expanded ? null : r.id);
+                      }}
+                      title="Why this rank -- click to expand"
+                      className="num"
+                      style={{ fontSize: 11, fontWeight: 600, color: deltaColor, width: 30, textAlign: 'right', cursor: 'pointer' }}
+                    >
+                      {delta === null ? '—' : delta > 2 ? `▲${integer(delta)}` : delta < -2 ? `▼${integer(Math.abs(delta))}` : '·'}
+                    </span>
+                    {avail ? (
+                      <span
+                        className="num"
+                        title="baseline → live availability at your next pick"
+                        style={{ fontSize: 10, width: 58, textAlign: 'right', color: 'var(--dim2)' }}
+                      >
+                        <Value cell={avail.baseline} render={percent} />
+                        {avail.live !== null ? <span style={{ color: 'var(--acc)' }}> → {percent(avail.live)}</span> : null}
+                      </span>
+                    ) : null}
+                    <span
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (r.name.kind === 'present') toggleWatch(r.name.value);
+                      }}
+                      title="Star to track availability on your next pick"
+                      style={{
+                        fontSize: 11,
+                        color: r.name.kind === 'present' && watchlist.includes(r.name.value) ? 'var(--down)' : 'var(--dim2)',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      {r.name.kind === 'present' && watchlist.includes(r.name.value) ? '★' : '☆'}
+                    </span>
+                    <span
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        recordPick(r.id, r.name.kind === 'present' ? r.name.value : '');
+                      }}
+                      title="Mark taken"
+                      className="num"
+                      style={{ fontSize: 10, color: 'var(--dim2)', border: '1px solid var(--line)', padding: '0 4px' }}
+                    >
+                      ✕
+                    </span>
+                  </div>
+                  {expanded ? (
+                    <div style={{ padding: '0 12px 10px 43px', display: 'flex', flexDirection: 'column', gap: 3 }}>
+                      {r.replacementLevelsComponent.kind === 'present' ? (
+                        <div style={{ fontSize: 11, color: 'var(--dim)' }}>
+                          Replacement levels: <span className="num">{signed(r.replacementLevelsComponent.value)}</span>{' '}
+                          <span style={{ color: 'var(--dim2)' }}>({r.replacementLevelsComponent.path})</span>
+                        </div>
+                      ) : null}
+                      {r.scoringAndVbdComponent.kind === 'present' ? (
+                        <div style={{ fontSize: 11, color: 'var(--dim)' }}>
+                          Scoring and VBD method: <span className="num">{signed(r.scoringAndVbdComponent.value)}</span>{' '}
+                          <span style={{ color: 'var(--dim2)' }}>({r.scoringAndVbdComponent.path})</span>
+                        </div>
+                      ) : null}
+                    </div>
+                  ) : null}
+                </div>
+              );
+            })}
           </div>
         </div>
 
@@ -597,52 +699,92 @@ export function DraftRoom({
             </div>
           ) : (
             <div style={{ padding: 14 }}>
-              <div style={{ fontFamily: 'var(--font-num)', fontSize: 10, letterSpacing: '.12em', color: 'var(--dim2)' }}>
-                WATCHLIST — APPROXIMATE AVAILABILITY AT {nextUserPick ?? '—'}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
+                <span style={{ fontSize: 10, letterSpacing: '.12em', color: 'var(--dim2)' }}>POSITION SCARCITY</span>
+                <span style={{ flex: 1, height: 1, background: 'var(--line)' }} />
+                <span className="num" style={{ fontSize: 10, color: 'var(--dim2)' }}>
+                  vs. expected by pick {integer(currentPick)}
+                </span>
               </div>
-              <div style={{ marginTop: 6, fontSize: 11.5, color: 'var(--down)', lineHeight: 1.5 }}>
-                Approximate: reflects who's gone, not adjusted for opponent tendencies. Real Prep-mode
-                marginal probabilities, filtered to who's still on the board — not re-simulated
-                against picks made this draft.
-              </div>
-              {waitList.length === 0 ? (
-                <div style={{ marginTop: 10, fontSize: 12.5, color: 'var(--dim2)' }}>
-                  No players starred. Star a player from the available list to track them here.
-                </div>
-              ) : (
-                <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  {waitList.map(({ row, cell }) => {
-                    const p = cell.sigma10;
-                    const pct = p.kind === 'present' ? p.value : null;
-                    return (
-                      <div key={row.id} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                        <span style={{ width: 150, fontSize: 12.5, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                          {row.name.kind === 'present' ? row.name.value : ''}
+              <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 9 }}>
+                {scarcityList.map((s) => {
+                  const pct = s.total > 0 ? s.remaining / s.total : 0;
+                  const warning = depletionWarning(s, nextUserPick);
+                  return (
+                    <div key={s.pos}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                        <span style={{ fontSize: 12, fontWeight: 600, letterSpacing: '.045em', color: POSITION_COLOR[s.pos], width: 30 }}>
+                          {s.pos}
                         </span>
-                        <span style={{ flex: 1, height: 8, background: 'var(--line)', position: 'relative' }}>
+                        <span style={{ flex: 1, height: 10, background: 'var(--line)', position: 'relative' }}>
                           <span
                             style={{
                               position: 'absolute',
-                              left: 0,
-                              top: 0,
-                              bottom: 0,
-                              width: pct === null ? '0%' : `${Math.round(pct * 100)}%`,
-                              background: 'var(--acc)',
+                              inset: 0,
+                              width: `${Math.round(pct * 100)}%`,
+                              background: POSITION_COLOR[s.pos],
+                              opacity: 0.85,
                             }}
                           />
                         </span>
-                        <span style={{ fontFamily: 'var(--font-num)', fontSize: 12, width: 44, textAlign: 'right' }}>
-                          <Value cell={p} render={percent} />
+                        <span className="num" style={{ fontSize: 11, color: 'var(--dim)', width: 74, textAlign: 'right' }}>
+                          {s.remaining} / {s.total} left
+                        </span>
+                        <span
+                          className="num"
+                          style={{ fontSize: 11, width: 44, textAlign: 'right', color: s.pace > 0 ? 'var(--down)' : 'var(--dim2)' }}
+                        >
+                          {signed(s.pace)}
                         </span>
                       </div>
-                    );
-                  })}
-                </div>
-              )}
+                      {warning ? (
+                        <div style={{ marginTop: 4, marginLeft: 40, padding: '6px 9px', borderLeft: '2px solid var(--down)', background: 'var(--panel2)', fontSize: 11.5, color: 'var(--dim)' }}>
+                          {warning}
+                        </div>
+                      ) : null}
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div style={{ marginTop: 20, display: 'flex', gap: 4 }}>
+                <button
+                  aria-pressed={railTab === 'queue'}
+                  onClick={() => setRailTab('queue')}
+                  style={{ flex: 1, padding: '5px 0', background: railTab === 'queue' ? 'var(--panel2)' : 'transparent', border: `1px solid ${railTab === 'queue' ? 'var(--line2)' : 'var(--line)'}`, fontSize: 11.5, fontWeight: 600, color: railTab === 'queue' ? 'var(--txt)' : 'var(--dim2)' }}
+                >
+                  Queue ({draft.queue.length})
+                </button>
+                <button
+                  aria-pressed={railTab === 'watch'}
+                  onClick={() => setRailTab('watch')}
+                  style={{ flex: 1, padding: '5px 0', background: railTab === 'watch' ? 'var(--panel2)' : 'transparent', border: `1px solid ${railTab === 'watch' ? 'var(--line2)' : 'var(--line)'}`, fontSize: 11.5, fontWeight: 600, color: railTab === 'watch' ? 'var(--txt)' : 'var(--dim2)' }}
+                >
+                  Watchlist ({watchlist.length})
+                </button>
+              </div>
+              <div style={{ marginTop: 4, fontSize: 10, color: 'var(--dim2)' }}>
+                {railTab === 'queue'
+                  ? 'Draft-scoped, self-pruning: a queued player drops off the moment anyone drafts him.'
+                  : 'Account-wide: persists across leagues and seasons.'}
+              </div>
+
+              <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {(railTab === 'queue' ? queueRows : watchRows).length === 0 ? (
+                  <div style={{ fontSize: 12.5, color: 'var(--dim2)' }}>
+                    {railTab === 'queue'
+                      ? 'Nothing queued. Add a player from the available list or their detail panel.'
+                      : 'No players starred. Star a player from the available list to track them here.'}
+                  </div>
+                ) : (
+                  (railTab === 'queue' ? queueRows : watchRows).map(({ row, avail }) => (
+                    <AvailabilityRow key={row.id} row={row} avail={avail} />
+                  ))
+                )}
+              </div>
+
               <div style={{ marginTop: 20, padding: '11px 12px', border: '1px solid var(--line)', background: 'var(--panel2)' }}>
-                <div style={{ fontFamily: 'var(--font-num)', fontSize: 10, letterSpacing: '.12em', color: 'var(--dim2)' }}>
-                  NEXT DECISION
-                </div>
+                <div style={{ fontSize: 10, letterSpacing: '.12em', color: 'var(--dim2)' }}>NEXT DECISION</div>
                 <div style={{ marginTop: 7, fontSize: 13, lineHeight: 1.55, color: 'var(--dim)' }}>
                   {nextUserPick
                     ? `You pick at ${nextUserPick} (round ${roundOfPick(nextUserPick, teams)}), ${
@@ -791,6 +933,33 @@ export function DraftRoom({
           }}
         />
       ) : null}
+    </div>
+  );
+}
+
+/** One queue or watchlist row: baseline and live shown together, per §5.2's
+ *  display contract -- never one number replacing the other. */
+function AvailabilityRow({ row, avail }: { row: BoardRow; avail: LiveAvailabilityResult }) {
+  const pct = avail.live ?? (avail.baseline.kind === 'present' ? avail.baseline.value : null);
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+      <span style={{ width: 130, fontSize: 12.5, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+        {row.name.kind === 'present' ? row.name.value : ''}
+      </span>
+      <span style={{ flex: 1, height: 8, background: 'var(--line)', position: 'relative' }}>
+        <span
+          style={{
+            position: 'absolute',
+            inset: 0,
+            width: pct === null ? '0%' : `${Math.round(pct * 100)}%`,
+            background: 'var(--acc)',
+          }}
+        />
+      </span>
+      <span className="num" style={{ fontSize: 11, width: 70, textAlign: 'right', color: 'var(--dim)' }}>
+        <Value cell={avail.baseline} render={percent} />
+        {avail.live !== null ? <span style={{ color: 'var(--acc)' }}> → {percent(avail.live)}</span> : null}
+      </span>
     </div>
   );
 }
