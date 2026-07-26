@@ -1,6 +1,6 @@
 # Front-End Data Contract
 
-**Version 1.6.0** · generated into `data/export/` · authored 2026-07-25
+**Version 1.7.0** · generated into `data/export/` · authored 2026-07-25
 
 The UI reads these files and **never** touches `data/nfl.db`. Every artifact carries
 `contract_version` and `generated_utc`. Breaking changes bump the major version and are
@@ -16,6 +16,43 @@ python src/export_strategies.py   # strategies.json  (runs simulations, slow)
 
 `availability.json` reads `data/availability_2026.csv`, so run `src/run_availability.py`
 first if the board has moved.
+
+All three scripts accept `--league <league_id>` (default: the primary league). See
+"Multi-league exports" below.
+
+---
+
+## Multi-league exports (ADR-041)
+
+Every artifact now carries `league_id`. **The primary league's six artifacts stay at the
+unprefixed `data/export/` path** — this never changes, so nothing about existing consumers
+breaks. Any other league's six artifacts land at `data/export/<league_id>/`, same filenames,
+same shape.
+
+League configs themselves live at `data/leagues/<league_id>.json` (a `LeagueConfig`, see
+`src/league_config.py`) and are tracked in git — they are source data, not generated output.
+
+**Timing** (measured on the primary league and confirmed comparable on a 12-team mock):
+`board.json` + `league.json` regenerate in ~7s; a full `availability.json` recompute
+(`run_availability.py`, 3000 sims × 3 sigmas) takes ~45-60s; `strategies.json`
+(`export_strategies.py`, 43,200 simulated drafts) takes ~13 minutes regardless of which league.
+Board + availability can support a "recompute on settings change" UI flow with a loading state.
+Strategies is a background/queued job — this does not change per league, since the cost is
+simulation count, not league count.
+
+**Findings that do NOT carry across leagues.** `nulls.json`'s findings (PR-002, Hero RB,
+elite-TE, QB-early, board-vs-consensus) are computed under the PRIMARY league's exact scoring
+rules and roster shape. They are NOT re-run for other leagues — `nulls.json` for a non-primary
+league returns the same finding identities with `result: "NOT_YET_RUN_FOR_THIS_LEAGUE"` rather
+than either omitting the file or presenting the primary league's numbers as if they applied.
+The single exception is the alpha-detection closure (ADR-026), which is a function of how many
+consensus seasons exist, not of any league's rules — but that finding is not currently
+represented in `nulls.json` at all, so this is stated here for anyone reasoning about which
+project-level claims travel across leagues and which do not.
+
+**Known gap: no kicker or DST scoring engine exists.** A league that rosters K and/or DEF gets
+`unsupported_positions` listing both — no replacement level, projection, VBD or board row for
+either, for the same reason DEF has never had one (no scoring data ingested).
 
 ---
 
@@ -45,7 +82,9 @@ first if the board has moved.
 | `curve_fits` | obj | Per position: `r_squared`, `residual_sd`, `n_obs` for the projection fit |
 | `curve_caveat` | str | **Surface this in the UI.** R² is 0.16–0.27 |
 | `replacement_levels_used` | obj | `{QB:10, RB:30, WR:40, TE:10}` (ADR-029, measured) |
+| `replacement_levels_flex_split_measured` | bool | `false` means `flex_split` was borrowed from the primary league's ADR-029 measurement as a flagged placeholder, not measured for THIS league |
 | `published_levels_compared_against` | obj | `{QB:12, RB:24, WR:36, TE:12}` |
+| `unsupported_positions` | array | Starter positions with no scoring engine (always includes `DEF`; also `K` for a league that rosters one). Generalizes `def_supported`/`def_note`, which are unchanged for back-compat |
 | `players[]` | array | 378 records, sorted by `overall_rank` |
 
 Per player:
@@ -236,6 +275,7 @@ as QB10). It is still withheld, because publishing a rank invites a downstream V
 | 1.1.0 | 2026-07-25 | Added the narration layer (Fact schema + renderer contract). Additive only; no existing field changed |
 | 1.2.0 | 2026-07-25 | Design-handoff reconciliation: integer `id` and `tier`, `evaluative_adjustment` 0 + availability flag, `consensus_source_count`, `def_supported`, `projection_within_fitted_range` |
 | 1.3.0 | 2026-07-25 | **VALUE CHANGE, no schema change.** Replacement levels RB28/WR41/TE11 -> RB30/WR40/TE10 from measurement (ADR-029). Every `vbd`, `projected_points` and `overall_rank` in board.json moved. Re-fetch the board. |
+| 1.7.0 | 2026-07-25/26 | **Additive — multi-league (ADR-041).** All six per-league artifacts gain `league_id`. `board.json`/`league.json` gain `unsupported_positions`/`unsupported_positions_note` (generalizes `def_supported`/`def_note`, kept unchanged for back-compat), `replacement_levels_flex_split_measured`/`_note`. `league.json` gains `league_name`, `platform`, `draft_type`, `flex_split_measured`. **New export location convention:** the primary league stays at the unprefixed `data/export/` path (no change for existing consumers); every other league's six artifacts land at `data/export/<league_id>/`, same filenames, same shape. Minor prose genericization in `availability.json.metadata.sigma_plain_english` ("the other nine teams" → "the other opposing teams", no longer assumes 10 teams) and `league.json`'s DEF note. All primary-league VALUES verified unchanged — see ADR-041 |
 | 1.6.0 | 2026-07-25 | **BREAKING (removal).** `availability.json.te_scenarios[]` removed — implements ADR-033/034. The prior-year-manager-repeat assumption it encoded has been deleted from the model, not just the export. Added `availability.json.client_simulation_parameters` (ranking-source mixture, mechanical need targets, room-noise spec) so a client can recompute availability conditioned on live draft state instead of reading the unconditional marginals. `metadata.figures_are_unconditional_marginals` + `metadata.marginals_note` added. TE T1 @ pick 23 moves from 0.598 (old unconditional baseline) to ~0.59 under the new model — inside the pre-declared sanity bracket, not a reversal |
 | 1.5.1 | 2026-07-25 | **Additive, provenance only.** `league.json` gains `generated_utc` — it was the one artifact shipping without it, through five contract versions, so consumers keying a run id on it fell back to "unversioned". A test now asserts every artifact carries both `contract_version` and `generated_utc`, which is what this document's opening line has always claimed. No other field changed |
 | 1.5.0 | 2026-07-25 | **Additive.** `league.json` gains `positions_without_replacement_levels: ["DEF"]` + note (ADR-037 — DEF permanently excluded, stated as a decision rather than an absence). `board.json.def_note` reworded to match. `league.json.flex_split_note` corrected: it called the split "an explicit tunable assumption, not a measurement", which ADR-029 made false. `nulls.json` PR-003 elite-TE result restated −92.9 → **−96.1 ± 6** (ADR-028 seed fix; no conclusion moved). No existing field removed or retyped |

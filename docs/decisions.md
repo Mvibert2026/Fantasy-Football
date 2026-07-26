@@ -984,3 +984,125 @@ are two different blockers; only a paid tier resolves both.**
 
 **Not fixed this session** — diagnosis only, per instruction. `ingest_rankings.py` still pulls the
 DynastyProcess mirror; `PAGE_TYPE = "redraft-overall"` is unchanged.
+
+---
+
+## 2026-07-26 (session 10, items 1-2) — Multi-league support
+
+### ADR-041: LeagueConfig + DraftEngine, directory-per-league exports — IMPLEMENTED
+
+**Decision.** `src/league_config.py` (`LeagueConfig`, versioned, JSON save/load, `CURRENT_LEAGUE`
+= today's league as its first instance) + `draft_sim.DraftEngine` (a league-parameterized
+equivalent of the module's free functions). Every export function now takes a `cfg`, defaulting
+to `CURRENT_LEAGUE`.
+
+**`DraftEngine` is a parallel implementation, not a refactor.** Every function above the
+`DraftEngine` block in `draft_sim.py` is byte-for-byte untouched. A "wrap the existing functions"
+design was considered and rejected: PR-003's numbers are ADR-028-verified byte-identically
+reproducible, and even a behavior-preserving refactor of RNG-adjacent code risks changing call
+order or floating-point accumulation in some way a test suite might not catch. Verified directly
+(not just by test): `DraftEngine(CURRENT_LEAGUE)` reproduces `pick_order`/`opponent_pick`/
+`legal_mask`/`strategy_bpa` output identically to the module-level functions on real 2026 season
+data, and `availability.simulate_availability(engine=None)` -- the default -- is confirmed
+byte-identical to before this change.
+
+**Generalizes the single hardcoded "final round is DEF" rule to `reserved_rounds()`:** one
+auto-filled, unsimulated round per starter position with no scoring engine (K, DEF -- no kicker
+or DST stats are ingested for either). For the primary league this is exactly the old behavior.
+
+**`NEED_TARGETS`/`MAX_AT_POSITION` stay the primary league's exact judgement-call numbers** for
+`league_id="primary"` only. Any other league gets a mechanical formula
+(`starters[pos] + flex_slots` for eligible positions) instead of an invented human-behavior
+constant -- consistent with ADR-034's own reasoning for why the availability model prefers
+mechanical need over a guessed one.
+
+**Exports: directory-per-league, not an embedded dimension.** The primary league's six artifacts
+stay at the unprefixed `data/export/` path -- the front-end session's sync is never disrupted.
+Every other league's six artifacts land at `data/export/<league_id>/`, same filenames, same
+shape, each carrying `league_id`. Rejected embedding a `{leagues: {id: {...}}}` dimension inside
+each file: breaks the documented shape for every existing consumer immediately, balloons file
+size with N leagues, and a one-league change risks a shared-file lock/partial-write.
+
+**`nulls.json` findings do NOT carry across leagues.** PR-002/Hero-RB/elite-TE/QB-early/
+board-vs-consensus are computed under the primary league's exact scoring rules and roster shape
+(`spike_persistence.py`'s hardcoded 100/150/200 bonus thresholds; `draft_sim`'s STARTERS/scoring
+engine). Presenting them under a different `league_id` would misrepresent them as measured for
+that league. A non-primary league's `nulls.json` keeps each finding's identity/method but
+replaces `result`/`plain_language_summary` with `"NOT_YET_RUN_FOR_THIS_LEAGUE"`. **Only the
+alpha-detection closure (ADR-026) is structurally invariant** -- a function of how many consensus
+seasons exist, not of any league's rules -- confirmed correct in the design-note pass and
+unchanged here.
+
+**Timing, measured, not estimated:** `board.json`+`league.json` ~7s; a full `availability.json`
+recompute (3000 sims x 3 sigmas) ~45-60s; `strategies.json` (43,200 sims) ~13 min, unchanged by
+league count since the cost is simulation count. Board+availability can support a
+recompute-on-settings-change UI flow with a loading state; strategies stays a queued job.
+
+**Verified content-preserving for the primary league at every step**, not just "tests pass": each
+of `export_contract.py`/`export_static.py`/`run_availability.py`'s rewrites was diffed against
+`git show HEAD` (ignoring `generated_utc`/`contract_version`) before proceeding to the next file.
+Every diff was additive fields or explicitly-noted prose genericization (e.g. "the other nine
+teams" -> "the other opposing teams", `2` shared flex slots -> generic phrasing) -- zero numeric
+value changed for the primary league. Contract bumped 1.6.0 -> **1.7.0**.
+
+### Item 2 -- Yahoo-standard 12-team mock league: generated a complete valid export set, two real gaps found and fixed, both named
+
+Built `data/leagues/yahoo_standard_mock.json`: 12 teams, standard (0-PPR, no yardage bonuses)
+scoring, K+DEF rostered, 1 flex (not 2), slot 6. Ran the full fast-tier pipeline
+(`run_availability.py` -> `export_contract.py` -> `export_static.py`) against it with **zero
+further code changes beyond the two fixes below**. Result: 6 strict-JSON-valid artifacts at
+`data/export/yahoo_standard_mock/`, correct on inspection -- QB12/RB30/WR30/TE12 replacement
+levels (12 teams, 1 flex, borrowed RB/WR split), `unsupported_positions: ["DEF","K"]`,
+`roster.kicker: true`, 15 rounds, snake pick sequence starting `[6,19,30,43,...]`, 0-PPR/no-bonus
+scoring correctly threaded through every player's score, 11 of 11 opponents correctly generic
+(no named managers exist for a league that was never told any), `nulls.json` correctly showing
+`NOT_YET_RUN_FOR_THIS_LEAGUE` throughout.
+
+**Total regeneration time: ~47s** (41s availability + 6s board/league + 0.3s static) -- in the
+same range as the primary league, confirming the design note's prediction that league count
+does not change the fast-tier cost.
+
+**Two real parameterization gaps found, both fixed (named per instruction, not silently
+patched):**
+
+1. **`make_board.py`'s `_season_actual_points()` always scored every player under the PRIMARY
+   league's rules**, ignoring whatever league it was nominally building a board for -- there was
+   no `scoring_cfg` parameter at all before this session. This is not cosmetic: without the fix,
+   a Yahoo-standard board's VBD numbers would have been computed with the wrong PPR value and
+   wrong (nonexistent) yardage bonuses, silently. Fixed by threading `scoring_cfg` through
+   `_season_actual_points` -> `collect_observations` -> `fit_rank_curves`/`bootstrap_vbd_intervals`
+   -> `build_board`, defaulting to `None` (-> the primary league's `scoring.LEAGUE`) everywhere, so
+   the primary league's call sites are unaffected.
+2. **`run_availability.py`'s summary generator hardcoded pick numbers `(18, 23)`** for the
+   "headline" section -- the primary league's own `picks[1]`/`picks[2]`. Running against the
+   12-team mock raised `KeyError: 18`, since pick 18 does not exist in that league's sequence at
+   all. Fixed to `picks[1:3]` (verified to reproduce `[18, 23]` exactly for the primary league
+   before accepting the fix).
+
+**Deliberately NOT fixed, named instead of patched around:**
+
+- **`backtest.py` has its own separate, hardcoded `STARTER_SLOTS`/`FLEX_SLOTS`/`FLEX_ELIGIBLE`/
+  `ROSTER_PICKS`** (a pre-existing duplication of `draft_sim.py`'s constants, not introduced this
+  session). Re-running the accuracy-track backtest harness per league -- refitting curves,
+  re-locking holdouts -- is a materially larger task than "generate an export set" and was not
+  attempted.
+- **No kicker scoring engine exists**, and none was built. `_scoring_for_export` requires a
+  `defense.points_allowed` structure but nothing analogous for kickers; K is handled exactly like
+  DEF always has been (`unsupported_positions`), which is the right posture per ADR-039's own
+  logic, not a workaround.
+- **`RELEVANT_DEPTH` (`make_board.py`, curve-fitting depth per position) stays a fixed,
+  cross-league constant.** It plausibly should scale somewhat with league size; not measured or
+  parameterized this session.
+- **`MAX_AT_POSITION` for a non-primary league is an explicitly-flagged, unmeasured heuristic**
+  (`mechanical_need_targets + bench`), not a measurement -- the primary league's own numbers are
+  themselves a judgement call with no formula behind them, so there was nothing to generalize
+  from. Flagged in the export (`max_at_position_note`) rather than presented as derived.
+- **`flex_split` for a new league is a borrowed placeholder** (the primary league's ADR-029
+  measurement), flagged via `flex_split_measured: false` in both `board.json` and `league.json`.
+  A real measurement requires re-running that 26-season analysis under the new league's own
+  scoring rules, which was not attempted.
+
+**23 new tests** (`test_league_config.py`, `test_draft_engine.py`, `test_multi_league_export.py`),
+covering config validation, engine/primary-function parity, the mock league's structural
+generalization, and export-function-level assertions (not just file inspection) for both leagues.
+**288 tests passing project-wide.**

@@ -21,7 +21,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 import draft_sim as ds
-from export_contract import CONTRACT_VERSION, EXPORT_DIR
+import league_config as lc
+from export_contract import CONTRACT_VERSION, EXPORT_DIR, export_dir_for
 
 # Derived from the supplied pick numbers, not assumed: in a 10-team snake,
 # pick 19 -> round 2 slot 2, pick 20 -> round 2 slot 1, pick 21 -> round 3
@@ -39,7 +40,49 @@ KNOWN_OPPONENTS = {
     },
 }
 
-GLOSSARY = {
+def build_glossary(cfg: lc.LeagueConfig = lc.CURRENT_LEAGUE) -> dict:
+    """Two entries below cite this league's actual teams/replacement levels/
+    roster shape in prose. For the primary league these strings are UNCHANGED
+    from before this function existed (verified by diff at commit time) --
+    only a non-primary league gets genuinely different wording."""
+    g = dict(_GLOSSARY_BASE)
+    if cfg.is_primary:
+        return g
+
+    from scoring import ReplacementLevels
+
+    levels, _ = ReplacementLevels.from_league_config(cfg)
+    baselines = levels.baselines()
+    qb_n = cfg.starters.get("QB", 1)
+    levels_str = ", ".join(f"{p}{n}" for p, n in baselines.items())
+    g["replacement level"] = {
+        "short_definition": "The last player at a position who is realistically startable in "
+                            "this league.",
+        "long_explanation": (
+            f"With {cfg.teams} teams each starting {qb_n} quarterback"
+            f"{'s' if qb_n != 1 else ''}, roughly the QB{baselines.get('QB', qb_n * cfg.teams)} "
+            f"is the worst one anyone is forced to use — so that is 'replacement level'. This "
+            f"league's levels are {levels_str}. Public rankings almost always assume a 12-team "
+            f"league with RB24 and WR36, which may be a different league from this one."
+        ),
+    }
+    starters_str = ", ".join(
+        f"{n} {p}" for p, n in cfg.starters.items() if p in ReplacementLevels.SCOREABLE_POSITIONS
+    )
+    g["structural adjustment"] = {
+        "short_definition": "Rank movement caused by this league's rules and size, not by any "
+                            "opinion about the player.",
+        "long_explanation": (
+            f"This league is {cfg.teams} teams, starts {starters_str} and {cfg.flex_slots} "
+            f"flex. Those facts alone move players up and down relative to a generic public "
+            f"board. This is the part of the board we are most confident about: it is "
+            f"arithmetic about the rules, not a prediction about football."
+        ),
+    }
+    return g
+
+
+_GLOSSARY_BASE = {
     "VBD": {
         "short_definition": "How many more points a player is expected to score than a "
                             "freely-available replacement at the same position.",
@@ -188,7 +231,7 @@ GLOSSARY = {
     },
 }
 
-NULLS = [
+_NULLS_BASE = [
     {
         "id": "PR-002",
         "claim_tested": "Spike-week ability is a persistent player trait (test-registry #38)",
@@ -289,9 +332,44 @@ NULLS = [
 ]
 
 
-def build_opponents() -> dict:
+def build_nulls(cfg: lc.LeagueConfig = lc.CURRENT_LEAGUE) -> list:
+    """Every finding below (PR-002, Hero RB, elite-TE, QB-early, ADR-025) is a
+    computation run under the PRIMARY league's exact scoring rules and roster
+    shape (spike_persistence.py's bonus thresholds, draft_sim's STARTERS/
+    scoring engine). Per the ADR-041 league-invariance audit, none of them
+    are known to generalize to a structurally different league -- the
+    qualitative answer, not just the magnitude, could differ. Presenting the
+    primary league's numbers under a different league_id would misrepresent
+    them as measured for that league, which is exactly the failure mode this
+    project's whole nulls.json feature exists to avoid in the other
+    direction. For a non-primary league, findings are returned with their
+    identity and method intact but result/plain_language_summary replaced by
+    an explicit NOT_YET_RUN placeholder -- same schema, honest content."""
+    if cfg.is_primary:
+        return _NULLS_BASE
+    out = []
+    for finding in _NULLS_BASE:
+        f = dict(finding)
+        f["result"] = "NOT_YET_RUN_FOR_THIS_LEAGUE"
+        f["plain_language_summary"] = (
+            f"This was tested for the primary league under its own scoring rules and roster "
+            f"shape, not for '{cfg.name}'. Per ADR-041, results like this one are "
+            f"league-specific and are not assumed to generalize -- re-running the underlying "
+            f"analysis for this league has not been done."
+        )
+        out.append(f)
+    return out
+
+
+def build_opponents(cfg: lc.LeagueConfig = lc.CURRENT_LEAGUE) -> dict:
+    is_primary = cfg.is_primary
+    known = KNOWN_OPPONENTS if is_primary else {}
+    pick_order = ds.pick_order() if is_primary else ds.DraftEngine(cfg).pick_order()
+
     profiles = []
-    for name, info in KNOWN_OPPONENTS.items():
+    known_slots = set()
+    for name, info in known.items():
+        known_slots.add(info["draft_slot_2026"])
         profiles.append({
             "team_name": name,
             "draft_slot_2026": info["draft_slot_2026"],
@@ -309,14 +387,14 @@ def build_opponents() -> dict:
                 "a pick number, so no pick citation is possible."
             ),
         })
-    for slot in range(1, ds.N_TEAMS + 1):
-        if slot in (ds.USER_SLOT, 1, 2):
+    for slot in range(1, cfg.teams + 1):
+        if slot == cfg.user_draft_slot or slot in known_slots:
             continue
         profiles.append({
             "team_name": None,
             "draft_slot_2026": slot,
             "draft_slot_2025": None,
-            "known_picks_2026": [i + 1 for i, t in enumerate(ds.pick_order())
+            "known_picks_2026": [i + 1 for i, t in enumerate(pick_order)
                                  if t == slot - 1][:6],
             "positional_tendencies": None,
             "first_pick_by_position": None,
@@ -329,15 +407,18 @@ def build_opponents() -> dict:
                 "exists in this repository for this slot. Nothing is inferred."
             ),
         })
+    n_unknown = cfg.teams - 1 - len(known)
     return {
         "contract_version": CONTRACT_VERSION,
         "generated_utc": datetime.now(timezone.utc).isoformat(),
-        "user_draft_slot": ds.USER_SLOT,
+        "league_id": cfg.league_id,
+        "user_draft_slot": cfg.user_draft_slot,
         "coverage_warning": (
-            "7 of 9 opponents have NO data. The simulator therefore models all opponents "
-            "identically -- drafting to consensus with noise -- rather than with individual "
-            "tendencies. To populate these profiles the 2025 draft board (pick number, team, "
-            "player) must be supplied; it is not derivable from anything currently ingested."
+            f"{n_unknown} of {cfg.teams - 1} opponents have NO data. The simulator therefore "
+            f"models all opponents identically -- drafting to consensus with noise -- rather "
+            f"than with individual tendencies. To populate these profiles the prior season's "
+            f"draft board (pick number, team, player) must be supplied; it is not derivable "
+            f"from anything currently ingested."
         ),
         "opponents": profiles,
     }
@@ -345,25 +426,38 @@ def build_opponents() -> dict:
 
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--out", type=Path, default=EXPORT_DIR)
+    ap.add_argument("--out", type=Path, default=None)
+    ap.add_argument(
+        "--league", default=lc.PRIMARY_LEAGUE_ID,
+        help="league_id of a saved config under data/leagues/, or 'primary' (default)",
+    )
     args = ap.parse_args()
-    args.out.mkdir(parents=True, exist_ok=True)
+    cfg = (
+        lc.CURRENT_LEAGUE if args.league == lc.PRIMARY_LEAGUE_ID else lc.LeagueConfig.load(args.league)
+    )
+    out_dir = args.out or export_dir_for(cfg.league_id)
+    out_dir.mkdir(parents=True, exist_ok=True)
     stamp = datetime.now(timezone.utc).isoformat()
     payloads = {
         "glossary.json": {"contract_version": CONTRACT_VERSION, "generated_utc": stamp,
-                          "terms": GLOSSARY},
+                          "league_id": cfg.league_id, "terms": build_glossary(cfg)},
         "nulls.json": {"contract_version": CONTRACT_VERSION, "generated_utc": stamp,
+                       "league_id": cfg.league_id,
                        "preamble": (
                            "Findings we tested and did NOT confirm. Published draft guides "
                            "rarely show these, which is precisely why they are here: a claim "
                            "that has survived a real test is worth more than one that was "
                            "never tested."
+                       ) if cfg.is_primary else (
+                           "These findings were tested for the PRIMARY league and are shown "
+                           "here for reference only -- see each finding's result field. Per "
+                           "ADR-041, league-specific results are not assumed to generalize."
                        ),
-                       "findings": NULLS},
-        "opponents.json": build_opponents(),
+                       "findings": build_nulls(cfg)},
+        "opponents.json": build_opponents(cfg),
     }
     for name, payload in payloads.items():
-        p = args.out / name
+        p = out_dir / name
         # allow_nan=False -- see export_contract.write_all. Bare Infinity/NaN is
         # valid Python and invalid JSON; fail here, not in the browser.
         p.write_text(json.dumps(payload, indent=2, allow_nan=False), encoding="utf-8")

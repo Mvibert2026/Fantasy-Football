@@ -168,6 +168,46 @@ class ReplacementLevels:
             out[pos] = int(base)
         return out
 
+    # ----------------------------------------------------------- multi-league
+    SCOREABLE_POSITIONS = ("QB", "RB", "WR", "TE")
+
+    @classmethod
+    def from_league_config(cls, cfg) -> Tuple["ReplacementLevels", bool]:
+        """Build a ReplacementLevels from a league_config.LeagueConfig.
+
+        Returns (levels, flex_split_is_measured). `cfg.starters` may include
+        positions this scoring engine cannot compute (K, DEF -- no kicker or
+        DST scoring exists, ADR-039); those are filtered out here rather than
+        producing a replacement level with nothing behind it, the same
+        principle ADR-039 already established for DEF specifically.
+
+        `cfg.flex_split` is a MEASURED quantity for the primary league
+        (ADR-029, 26 seasons under its exact rules). A new league's true split
+        has not been measured. If `cfg.flex_split` is None, the primary
+        league's measured split is used as an EXPLICITLY FLAGGED placeholder
+        (the second return value is False) -- never silently, so a caller can
+        surface the caveat rather than presenting a borrowed number as this
+        league's own measurement.
+        """
+        starters = {
+            p: n for p, n in cfg.starters.items() if p in cls.SCOREABLE_POSITIONS
+        }
+        flex_eligible = tuple(p for p in cfg.flex_eligible if p in cls.SCOREABLE_POSITIONS)
+        if cfg.flex_split is not None:
+            flex_split = dict(cfg.flex_split)
+            measured = True
+        else:
+            # Placeholder: the primary league's measured split, restricted to
+            # this league's actual flex-eligible positions.
+            fallback = {"RB": 0.52, "WR": 0.48, "TE": 0.00}
+            flex_split = {p: fallback.get(p, 0.0) for p in flex_eligible}
+            measured = False
+        return (
+            cls(teams=cfg.teams, starters=starters, flex_slots=cfg.flex_slots,
+                flex_split=flex_split),
+            measured,
+        )
+
 
 def compute_vbd(
     season_points: Dict[str, List[Tuple[str, float]]], levels: ReplacementLevels = None
