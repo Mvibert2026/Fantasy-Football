@@ -4,7 +4,7 @@
 Threads are the source of truth. Change a thread's `STATUS:`, then re-run sync.
 Protocol: [`README.md`](README.md).
 
-**29 open** · 7 resolved
+**28 open** · 8 resolved
 
 ---
 
@@ -67,11 +67,9 @@ not an omission. Start your session at your own heading.
 |---|---|---|---|---|---|
 | [033](033-assistant-query-architecture.md) | Assistant query architecture | `pm` | OPEN | 0d | the assistant rebuild sprint |
 
-### `researcher` — 1 waiting
+### `researcher` — 0 waiting
 
-| ID | Subject | From | Status | Age | Blocks |
-|---|---|---|---|---|---|
-| [009](009-research-aggregation-audit.md) | Research aggregation audit | `pm` | OPEN | 0d | FR-001 spec |
+_Nothing waiting on you._
 
 ### `librarian` — 0 waiting
 
@@ -99,6 +97,7 @@ _Nothing waiting on you._
 | ID | Subject | From → To |
 |---|---|---|
 | [008](008-bootstrap-operating-model.md) | Bootstrap operating model | `pm` → `backend` |
+| [009](009-research-aggregation-audit.md) | Research aggregation audit | `pm` → `researcher` |
 | [010](010-install-agent-definitions.md) | Install agent definitions | `pm` → `backend` |
 | [013](013-nfl-db-tracked-in-git.md) | Nfl db tracked in git | `pm` → `backend` |
 | [014](014-bootstrap-cleanup.md) | Bootstrap cleanup | `pm` → `backend` |

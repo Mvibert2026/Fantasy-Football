@@ -900,3 +900,85 @@ Not escalated -- a methods question, decided. One future founder call has a pre-
 points, raise it with the measured minutes-per-mock cost attached). `D-018` and `D-019` added to
 `decisions-needed.md`, both `DEFAULTED`. Thread 034 `RESOLVED`; `OPEN.md` hand-edited (no Bash
 access to run `tools/handoffs.py sync` -- next session with Bash should re-run it to confirm).
+
+---
+
+# SESSION HANDOFF -- 2026-07-26 (researcher, thread 009: source-availability audit for FR-001)
+
+Audit only, as scoped -- no feature design, no UI. Deliverable is
+`docs/research/source-audit-2026-07.md`: 17 rows, every cell tagged
+`[VERIFIED]`/`[SNIPPET]`/`[SECONDARY]`/`[GAP]`, with *fetching* and *displaying* answered
+separately for every source because they diverge on almost all of them.
+
+## Sample quality, stated before the result
+
+Fifteen nominal sources are **five legal regimes**. The subscription-analyst class (PFF, 4for4,
+FootballGuys, ETR, Fantasy Life) is one decision unit, not five -- all paywalled, all bar
+reproduction of their output, none with a self-serve API -- and they agree for a structural reason
+(their product *is* the rankings), not by coincidence. The two sources that came out cleanest are
+the two the project already uses, which is selection rather than evidence that the field is
+permissive.
+
+## Viable today -- three
+
+1. **nflverse (`nflverse-data`)** -- CC-BY-4.0, the only source in the audit that affirmatively
+   permits display with attribution. `injuries` release verified live (assets from 2009, release
+   updated 2026-03-18); `schedules` updated the day of the audit. No rankings, no ADP, no takes.
+2. **MFL ADP** -- free, documented, no login, already ingested. Weakness is sample (n=50 drafts),
+   not law. Display permission is `[GAP]` -- unprohibited is not permitted.
+3. **FantasyPros ECR** -- DynastyProcess mirror verified alive (FP scrape 2026-07-24), so fetching
+   is settled and displaying is not: a mirror cannot convey rights its operator never held.
+
+## Five changes since the last audit; two change what is possible
+
+- **FantasyPros now sells tiered API licences.** Free = non-production/sample data; Premium
+  $8.99/mo = personal & non-commercial; **Commercial = redistribution rights + historical/bulk,
+  price not public.** Different object from D-000, which priced the site subscription. New entry
+  **D-020** in `decisions-needed.md`; `CURRENT-STATE.md` top-open-item 4 rewritten in place.
+- **NFL Fantasy is shutting down; ESPN is the NFL's official fantasy game from this season**
+  (ESPN Press Room, 2026-07-16). NFL.com data now inherits Disney's ToU -- the most restrictive in
+  the audit. Two candidates collapsed into one hard block.
+- **Thread 005's stated reason for not scraping FantasyPros does not survive checking.** Their
+  Terms of Use contain no anti-automation clause (checked all 32 sections). The binding clause is
+  *"not to sell, resell, reproduce, duplicate, copy or use for any commercial purposes."* The
+  conclusion holds; the risk moves from the fetch to the screen, which is the worse half for FR-001.
+  **Do not misread this as licence to scrape.**
+- **Yahoo moved** (`developer.yahoo.com/fantasysports/guide/` -> 308 -> `sports.yahoo.com/developer`)
+  and `football.fantasysports.yahoo.com/robots.txt` now blocks `ClaudeBot`, `Claude-Web` and
+  `anthropic-ai` by name. OAuth API remains sanctioned but its ToU carries a 24-hour data-deletion
+  rule and a no-competing-product clause; Yahoo ships a draft assistant.
+- **Two corrections to our own record:** FFC's block is narrower than we state (only `/adp/csv/` is
+  robots-disallowed; the HTML ADP pages are not) so the blocker is purely an unretrievable ToS; and
+  a **CBS ADP page exists that no prior audit catalogued** -- server-rendered, 140+ players, avg
+  pick + hi/lo + percent drafted, not robots-disallowed -- which fails anyway on a 2005 ToS clause
+  forbidding copying or storing any part of the Service. Recorded as checked-and-rejected so it is
+  not rediscovered.
+
+## For Data Ops, incidentally
+
+MFL's API notes say "Don't retry failed requests"; `src/ingest_mfl_adp.py` retries on 429 with
+backoff -- considerate in spirit, contrary in letter. MFL also grants ~2.5x higher rate limits to
+clients that register a User-Agent, and we have not registered. Free headroom, unclaimed. Not my
+thread to open.
+
+## The half of FR-001 that cannot be built
+
+**No audited source grants a licence to display third-party prose takes.** RotoWire, ETR, 4for4,
+FootballGuys, PFF and ESPN each prohibit reproduction in writing. Substitutes: headline + link +
+attribution via RSS (customary, not a licence -- RotoWire's feed is verified live and carries "All
+rights reserved"), and nflverse injury designations, which are facts not takes. Third-party takes
+on a screen is a licensing purchase, not an engineering task.
+
+## Blocked and stopped, not routed around
+
+ESPN, Underdog, PFF, FootballGuys, ETR, Fantasy Life (robots), Yahoo's public web ADP page
+(robots), CBS (ToS), FFC (ToS unretrievable -> conservative default). Specific clause for each in
+§6 of the artifact. No data page behind any of these was fetched. Open gaps are enumerated in §7
+and are not to be filled by inference.
+
+**No Bash access this session** -- `OPEN.md` hand-edited to mirror `tools/handoffs.py sync` output
+(thread 009 moved to Resolved, researcher inbox now empty, counts 28 open / 8 resolved), and
+**nothing was committed.** The next session with a shell should run `python tools/handoffs.py sync`
+and commit `docs/research/source-audit-2026-07.md`,
+`docs/handoffs/009-research-aggregation-audit.md`, `docs/handoffs/OPEN.md`,
+`docs/decisions-needed.md`, `docs/founder-requests.md`, `docs/CURRENT-STATE.md`, `docs/status.md`.

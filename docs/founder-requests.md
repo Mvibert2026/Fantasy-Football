@@ -56,6 +56,18 @@ yourself)? The Reddit voice-of-customer work points hard at comparison — the u
 explicitly against blind deference to an aggregate, and in favour of forming your own opinion. Those
 are different products with different data requirements.
 
+**Audit result, 2026-07-26 (researcher, thread 009 → `docs/research/source-audit-2026-07.md`).**
+Two of the "established facts" above need correcting, and one new founder decision falls out.
+- *FFC "not scrapeable"* — narrower than stated. Only `/adp/csv/` is robots-disallowed; the HTML ADP
+  pages are not. FFC stays blocked, but on unretrievable ToS rather than on robots.txt.
+- *FantasyPros* — the 10-row cap describes the old free API. FantasyPros now sells tiered API
+  licences, and **redistribution rights exist only on the Commercial tier** (price not public);
+  Premium is $8.99/mo and expressly personal/non-commercial. New entry **D-020** in
+  `docs/decisions-needed.md`.
+- *The "takes" half of this request cannot be built from any audited source.* Every prose source —
+  RotoWire, ETR, 4for4, FootballGuys, PFF, ESPN — prohibits reproduction of its content in writing.
+  Third-party takes on a screen is a licensing purchase, not an engineering task.
+
 ---
 
 ## FR-002 — Reduce founder involvement over time

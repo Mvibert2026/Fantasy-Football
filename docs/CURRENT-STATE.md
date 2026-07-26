@@ -79,8 +79,11 @@ full league rosters endpoint · weekly finishes / season stats tables · recompu
    and cannot be defended against shortcut bias at all.
 2. **ADP snapshot capture** — unrecoverable if delayed; a past date's snapshot cannot be backfilled.
 3. **Mock drafts toward n=30** — gates the pre-registered availability decision rule.
-4. **FantasyPros paid tier decision** (~$72/yr) — free tier caps at 10 rows, reaches 40 players,
-   none of the 233 that need projections. Cannot be engineered around.
+4. **FantasyPros licence decision (D-020)** — the source audit (`docs/research/source-audit-2026-07.md`,
+   2026-07-26) found FantasyPros now sells tiered **API** licences: Free = non-production/sample data,
+   Premium $8.99/mo = personal & non-commercial, **Commercial = redistribution rights, price not
+   public**. D-000 (no purchase, use the logged-in CSV export) settled *retrieval* and still holds;
+   *displaying* ECR to anyone but the founder is unlicensed on every tier below Commercial.
 5. **Full league rosters endpoint** — the Opponents tab cannot render anything real without it.
 
 ## Hard dates

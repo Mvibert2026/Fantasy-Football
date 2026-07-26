@@ -408,8 +408,39 @@ criticises in competitors' composite scores, on the product's own headline claim
 
 ---
 
+## D-020 · Which FantasyPros licence does the research section need?
+**Status:** OPEN · **Raised by:** researcher, thread 009 audit · **Needed before:** FR-001 is specced
+
+**Rigorous default:** build nothing that *displays* a third-party ranking beyond what the current
+licence permits. Concretely: FantasyPros ECR may be used for our own computation and shown to the
+founder alone; it does not go on any surface another person can see until a licence covering that
+exists.
+
+**Why this is a new decision and not D-000 again.** D-000 priced the *site subscription* and
+correctly chose the logged-in CSV export. The audit found something D-000 did not evaluate:
+FantasyPros now sells a tiered **API** licence, and **"redistribution rights" is a named feature of
+the Commercial tier only** `[VERIFIED]`. Free is non-production/sample data. Premium is $8.99/mo and
+expressly "personal & non-commercial". So retrieval has three cheap legal routes and display to a
+third party has exactly one, whose price is not public. The same shape holds for the CSV export the
+founder already uses: sanctioned retrieval, no display licence.
+
+**Cost of rigour.** FR-001's comparison view ships showing our own numbers, MFL proxy ADP, and
+nflverse injury designations — and for anyone other than the founder, an ECR column that cannot be
+rendered. That is a visibly thinner screen than the feature request implies.
+
+**To loosen:** two separable asks, and they should not be bundled. (a) *Stay private:* confirm the
+product remains single-user, in which case Premium at $8.99/mo is sufficient and the question is
+$108/yr, not a negotiation. (b) *Go public:* authorise a Commercial-tier sales conversation with
+FantasyPros. Only (b) unblocks showing ECR to another human.
+
+**Related and unanswerable by us:** displaying third-party *prose takes* — the other half of FR-001 —
+is prohibited in writing by every source audited. That is a purchase, not a build. See
+`docs/research/source-audit-2026-07.md` §5.
+
+---
+
 ## Resolved
 
 | ID | Decision | Outcome |
 |---|---|---|
-| D-000 | FantasyPros paid tier | **DECIDED** — no purchase. Use the logged-in CSV export; no scraper will be written. |
+| D-000 | FantasyPros paid tier | **DECIDED** — no purchase. Use the logged-in CSV export; no scraper will be written. *(Scope note, 2026-07-26: this decided the site subscription. The API licence tiers are a separate question — see D-020.)* |
