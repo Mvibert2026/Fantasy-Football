@@ -10,6 +10,7 @@ import {
   tierPositions,
   type SigmaCell,
 } from '../data/availability';
+import { dotsFilled, freqText } from '../data/liveAvailability';
 import type { Dataset } from '../data/load';
 import { Value } from '../components/Value';
 import { percent } from '../lib/format';
@@ -246,6 +247,11 @@ export function Availability({ data, rows }: { data: Dataset; rows: BoardRow[] }
               ) : (
                 <div style={{ marginTop: 5, fontSize: 13, color: 'var(--dim2)' }}>No data for this combination.</div>
               )}
+              {spotlight && spotlight[sigma].kind === 'present' ? (
+                <div style={{ marginTop: 8 }}>
+                  <SpotlightDots value={(spotlight[sigma] as { kind: 'present'; value: number }).value} />
+                </div>
+              ) : null}
               <div style={{ marginTop: 6, fontFamily: 'var(--font-num)', fontSize: 12, color: 'var(--dim2)' }}>
                 sigma {sigma.replace('sigma', '')} shown large · range across all three settings above
               </div>
@@ -292,6 +298,26 @@ export function Availability({ data, rows }: { data: Dataset; rows: BoardRow[] }
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+/** §5.3's dot array: a bare percentage reads as more decisive than this model
+ *  supports, so the headline spotlight number always carries "N in 10 drafts"
+ *  alongside it, not instead of it. */
+function SpotlightDots({ value }: { value: number }) {
+  const filled = dotsFilled(value);
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+      <div style={{ display: 'flex', gap: 3 }}>
+        {Array.from({ length: 10 }, (_, i) => (
+          <span
+            key={i}
+            style={{ width: 7, height: 7, borderRadius: '50%', background: i < filled ? 'var(--acc)' : 'var(--line2)' }}
+          />
+        ))}
+      </div>
+      <span style={{ fontSize: 11, color: 'var(--dim2)' }}>{freqText(value)}</span>
     </div>
   );
 }
