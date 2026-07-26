@@ -1,0 +1,86 @@
+/*
+ * Design tokens -- the single swap point for the visual layer.
+ *
+ * The design reference did not reach this session, so the values below are a
+ * defensible reading of the language that was described: no border radius anywhere,
+ * 1px borders, high density. Everything visual is a token here; restyling to the real
+ * reference is an edit to this file, not to any component.
+ *
+ * Density rules encoded here: a board row is --row-h tall and the table is meant to
+ * be scanned at a draft table, so numerals are tabular and monospaced to keep columns
+ * aligned, and the type scale is tight.
+ */
+
+:root {
+  color-scheme: light dark;
+
+  /* Type pairing: sans for text, mono for every number. */
+  --font-ui: ui-sans-serif, -apple-system, 'Segoe UI', system-ui, sans-serif;
+  --font-num: ui-monospace, 'SF Mono', 'Cascadia Mono', 'Consolas', monospace;
+
+  --fs-xs: 11px;
+  --fs-sm: 12px;
+  --fs-base: 13px;
+  --fs-lg: 16px;
+  --fs-xl: 22px;
+
+  --lh-tight: 1.25;
+  --lh-body: 1.55;
+
+  /* Density */
+  --row-h: 28px;
+  --pad-x: 10px;
+  --pad-y: 5px;
+  --gap: 12px;
+  --gap-lg: 24px;
+
+  /* Geometry: no radius, 1px rules. */
+  --radius: 0;
+  --border-w: 1px;
+
+  /* Light */
+  --bg: #ffffff;
+  --bg-sunken: #f6f6f4;
+  --bg-raised: #ffffff;
+  --fg: #16150f;
+  --fg-muted: #62605a;
+  --fg-faint: #8f8c85;
+  --border: #d8d5cd;
+  --border-strong: #16150f;
+
+  --accent: #7a3b1d;
+  --accent-bg: #f2e6df;
+
+  /* Semantics. Positive delta means our board likes the player more than consensus. */
+  --pos: #245c3a;
+  --neg: #8a2c22;
+
+  /* The sparse state is a first-class visual, not a disabled one. */
+  --sparse-fg: #7c7870;
+  --sparse-rule: repeating-linear-gradient(
+    90deg,
+    var(--border) 0 3px,
+    transparent 3px 6px
+  );
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #12120f;
+    --bg-sunken: #1a1a16;
+    --bg-raised: #161612;
+    --fg: #ece9e0;
+    --fg-muted: #a3a096;
+    --fg-faint: #74716a;
+    --border: #33322c;
+    --border-strong: #ece9e0;
+
+    --accent: #d38a5f;
+    --accent-bg: #2a1d14;
+
+    --pos: #6dbb8b;
+    --neg: #d9796c;
+
+    --sparse-fg: #86837b;
+  }
+}
