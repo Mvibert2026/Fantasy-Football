@@ -2,7 +2,7 @@
 ID: 058
 FROM: pm
 TO: frontend
-STATUS: OPEN
+STATUS: RESOLVED
 OPENED: 2026-07-27
 BLOCKS: draft-day usability
 ---
@@ -173,3 +173,167 @@ rather than reporting the work as visually verified.
 
 **File boundary:** `frontend/` only. Coordinate with threads 027, 028, 040, 049 and 051 — several
 touch the same surfaces, and the suggester fixes in 051 are on the same screen.
+
+---
+### frontend · 2026-07-27
+
+Branch `frontend/058-draft-board-design-gap` (off `origin/main` @ `67fc244`), scoped to everything
+on the Draft/Board screen except the pick-entry/suggester (thread 063's territory, same file,
+`DraftRoom.tsx` — not touched). Sections A, B and C landed in full; D and E/F partial. Audited every
+item against `docs/FRONTEND-SPEC.md` and, critically, the **actual interactive prototype source**
+(`docs/design-reference/prototype.dc.html`) rather than just the two screenshots — reading the real
+JS resolved two items the screenshot alone couldn't, both write-ups below.
+
+#### Corrections to this thread's reading (both confirmed by reading the prototype's JS, not guessing)
+
+1. **B1 — the design's ALL-tab tier grouping is NOT the same per-position tier field.** Your
+   screenshot shows "TIER 3" grouping a WR12, a QB2 and an RB10 together. I assumed at first this was
+   just reusing `tier_label` across positions and that the app was wrong not to. It isn't — the
+   prototype computes a **separate** `gtier` field (`board()`, ~line 2438-2452): sort the whole board
+   by a VBD-like score, cut a new tier bucket whenever the score gap exceeds 4.5 points (min bucket
+   size 2, max 9). That's a real, distinct clustering pass, not a relabeling. I confirmed directly
+   against our real `board.json` that `tier`/`tier_label` are strictly per-position (QB tier 1 stops
+   at positional rank 2, RB tier 1 runs to positional rank 4) — a QB1 and an RB4 sharing "T1" are not
+   the same value tier, and grouping them under one header the way the design does would misrepresent
+   the data. `DraftRoom.tsx` already restricted tier bands to a single position tab before this
+   thread (thread 029) for exactly this reason; that restriction is correct and stays. Opened
+   **thread 069** to backend asking whether a real `global_tier` field is worth adding — if it lands,
+   the ALL-tab grouping is a quick follow-up.
+2. **C3 — "CURRENT" is not a multi-league marker.** It's the §5.1 sim-staleness state
+   (CURRENT/STALE/NEVER GENERATED), computed from `sim_generated_at`/`sim_settings_hash` on whichever
+   single league is loaded — nothing to do with thread 040. Our real `league.json` has neither field
+   yet (matches the Settings-editor gap already on `CURRENT-STATE.md`), so I extended the identity
+   string with real `platform`/`draft_type` fields but did **not** append a fake "CURRENT" — a
+   decorative label with no real staleness computation behind it is exactly what Principle #2
+   forbids. Opened **thread 070** to backend to ask whether this is coming or correctly deferred.
+3. **E2 — the queue/watchlist "scope conflict" isn't real.** Re-checked: your "App: Account-wide..."
+   quote is this screen's *watchlist* tooltip, and your "Design: this draft only..." quote is the
+   *design's queue* tooltip. Both systems — the running app, the design, and `FRONTEND-SPEC.md` §6.10
+   — already agree: Queue is draft-scoped/self-pruning, Watchlist is account-wide/persistent, and the
+   app already renders exactly that distinction correctly (`railTab === 'queue' ? '...self-pruning...'
+   : '...account-wide...'`). No decision needed, nothing escalated to the founder — this was a
+   mismatched pairing of two quotes describing different objects, not a design/app disagreement.
+4. **D1/D3 were partly already built.** The roster requirement chips and the full MY PICKS section
+   both shipped in thread 049, before this thread was opened — "the app renders... a wrapped text
+   line" (D1) and "MY PICKS section absent" (D3) were both stale reads of an earlier app state. D1's
+   chips existed as data/text already; I restyled them into bordered boxes to match the design's
+   markup (below). D3 needed no work.
+
+#### Section A — Position Scarcity (built, in full)
+
+- **Legible pace.** `+2`/`±0`/`-1` → `"2 ahead of pace"` / `"on pace"` / `"1 behind pace"`
+  (`scarcity.ts::paceLabel`). Worth noting: the design reference itself still renders a bare digit
+  here (I zoomed the screenshot and it's genuinely un-labelled, coincidentally always `0` in its
+  sample data) — matching it pixel-for-pixel would not have satisfied your own stated ask, so I
+  built the explicit phrase the founder's own suggested remedy describes instead.
+- **Tier-depletion line** per position: `tier 1: N left` / `tier 1 gone · tier 2: N left` /
+  `tiers 1–2 gone` (`tierDepletionLine`).
+- **`N <50% by <pick>` line** per position (`under50Line`), rendered whether or not it crosses the
+  depletion-warning threshold.
+- **DEF added as a fifth row** — but honestly null, not fabricated. `board.json` has zero DEF players
+  (ADR-039, no DST data ingested) and its own `def_note` field says verbatim "Render this note where
+  a DEF number would go. Do not compute a DEF value from these files." — so the DEF row renders that
+  exact note, never a computed `0`/`±0`/`"tier 1: 0 left"`.
+- **Ordered by urgency**, not fixed QB/RB/WR/TE/DEF (`orderByUrgency`). FRONTEND-SPEC.md §5.5 doesn't
+  define a formula either way (checked in full) — this session's own rule: positions with no board
+  data sink to the bottom, then ascending by tier-1-remaining, ties broken by under-50 count then
+  pace. Flagging this as my own reasonable choice, same status as the existing recommendation score,
+  open to override.
+- **Traceability footer:** `board.position_remaining · board.position_tier · pace vs
+  board.consensus_rank`.
+- Honest-null discipline verified with a real regression test: `positionScarcity()` now returns
+  `pace`/`tier1Remaining`/`tier2Remaining`/`under50ByNext` as `number | null`, null exactly when there
+  is no board data for the position — never a computed zero standing in for "not tracked."
+
+#### Section B — board rows and sorting (built, in full)
+
+- **Positional rank label** (`WR12`, not bare `WR`) — `board.json:positional_label` was already a
+  real exported field ("RB1"/"WR1"-style, confirmed against the export), just not rendered on this
+  row before.
+- **SORT row**: Our rank / Consensus / Delta / Proj pts, a real comparator per key, applied before
+  tier-banding (which is now also gated to `sort === 'rank'`, matching the design's own
+  `S.sort==="rank"` guard — a tier band means nothing once the list isn't in rank order).
+- **DEF added to the position filter**, with an honest "No DEF players on this board" + `def_note`
+  empty state rather than a silently blank list.
+- **B5 (probability rendering)** — already correct pre-thread; `lib/format.ts::percent()`'s `<1%`
+  branch shipped before this thread (thread 037). Not touched.
+- **B6 (star affordance)** — checked the spec and the prototype source: the star toggle is real
+  (`toggleWatch`), already present on every board row pre-thread, and not removed. Your screenshot's
+  captured region for the design just didn't happen to show it in that crop.
+
+#### Section C — nav/chrome (built, mostly)
+
+- **Hub tabs** (`Board`/`Opponents`/`Predictions`): sentence case, boxed, filled active state —
+  matched the design's own tab markup exactly (background/border/radius/weight per active state),
+  not approximated.
+- **`DRAFT LIVE` badge** added to the top bar, gated on Draft mode being active — confirmed against
+  the prototype source that this is the design's *only* state here (no separate live-vs-dormant
+  distinction exists in the reference either).
+- **League identity string** extended with real `platform`/`draft_type` fields (both newly typed in
+  `league.ts`/`types.ts` — they already existed in the real export, just weren't read). No fake
+  "CURRENT" — see correction #2 above.
+- **Assistant placement** — already correct pre-thread. `App.tsx` mounts the assistant dock
+  regardless of mode, so it was already rendering on the Draft screen; this was a placement
+  misreading, not a missing feature (per your own instruction to check thread 032/D-014 first). Added
+  a `pick N` context via a new `onPickContext` callback so the dock now reads `Draft · pick 24`
+  matching the design, instead of just `Draft`.
+
+#### Section D — roster rail (partial)
+
+- **D1** (requirement chips): restyled from a comma-separated text line into bordered boxes matching
+  the design's checklist markup exactly, including its fill-state colour rule (filled = accent
+  border+text, started = default text, empty = dim).
+- **D2** (IR slot): added, sized from the real `league.json:roster.ir` — not the design mockup's own
+  hardcoded single IR row. Deliberately never auto-filled from the pick pool: this build has no
+  injury-designation data to decide what belongs on IR, and guessing would fabricate an assignment
+  (same reasoning this file already applies to `AUTO_FILL_PLACEHOLDER`).
+- **D3**: already built (see correction #4).
+
+#### Section E/F — Queue/Watchlist presentation, traceability audit (partial)
+
+- **E1** (tabs+table presentation) not built this session — deprioritised behind A/B/C per your own
+  ordering, and it's a real layout rebuild, not a quick fix.
+- **E2**: not a real conflict, see correction #3 — no founder escalation needed.
+- **E3** (empty-state copy) not built this session.
+- **E4** (traceability footer): added — `availability.baseline_p → availability.live_p ·
+  adjustment.need + adjustment.run`, mirroring the Position Scarcity panel's pattern, shown only when
+  the panel has real rows to trace.
+- **F** (full audit): only the two panels named in this thread got footers. I did not audit every
+  remaining panel (RECOMMENDED card, MY ROSTER, the board rows themselves) for a missing footer —
+  flagging this as a real remaining gap, not claiming it done.
+
+#### Backend follow-ups opened
+
+- **Thread 066** — asks whether a real `global_tier` field is worth adding for B1's ALL-tab grouping.
+- **Thread 067** — asks whether `sim_generated_at`/`sim_settings_hash`-style staleness fields are
+  coming for C3's badge, or correctly still deferred.
+
+#### Verification
+
+172 frontend tests passing (0 failing, 19 files — up from 154/18 baseline), `tsc -b --noEmit` clean.
+Two new test files: `ui/__tests__/draft-room-scarcity-and-sort.test.tsx` (12 tests, sections A/B/C/D2)
+and additions to `ui/__tests__/draft-room-recommendation.test.tsx` (D2 IR slot, updated chip-query for
+D1's new markup, updated hub-tab-label assertions for C1).
+
+**Screenshot status — stated plainly, not glossed over:** pixel screenshots were attempted and did
+not work in this sandbox. `computer{action:"screenshot"}` and `zoom` both timed out with "the Browser
+pane is not displayed, so the page is not compositing frames," against both the static design
+reference PNG and a running `npm run dev` instance. I did **not** treat this as a blocker to stop and
+report "unverified" — instead verified via live DOM/accessibility-tree inspection
+(`get_page_text`/`read_page`/`find`/`computer` clicks) against a real running dev server, which is
+weaker than a human-reviewed screenshot but stronger than reading the source and hoping: I confirmed
+live that DEF renders the honest-null scarcity row and `def_note` text, pace phrases render as words
+not bare signs, tier-depletion/under-50 lines render, board rows show `WR12`-style labels, SORT
+actually reorders rows, the DEF filter shows the honest empty state, hub tabs render sentence-case,
+the `DRAFT LIVE` badge appears in Draft mode, the league identity string includes
+`other · snake · 10T · PICK 3`, and the assistant context reads `Draft · pick N`. A later attempt to
+re-verify Section D/the queue footer live hit dev-server instability (repeated Vite HMR full-reloads,
+possibly from the concurrent thread-063 session sharing this machine, or a leftover background
+process) that made further clicks unreliable — I stopped rather than force it, and D2/E4 rest on the
+automated test suite plus code review only, not a second live check. Stating this explicitly per the
+project's screenshot-verification requirement rather than implying full visual coverage.
+
+Commit and push details in the session's final report. Setting `STATUS: RESOLVED` — the
+founder-prioritized sections (A, then B, then C) are complete and verified two ways; the remaining
+D/E/F items and both backend asks are tracked as explicit, named follow-ups rather than silently
+dropped.

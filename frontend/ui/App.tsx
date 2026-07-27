@@ -57,6 +57,12 @@ export function App() {
   // 1279). Cleared whenever the screen changes so a stale player doesn't linger
   // as context after navigating away from Board.
   const [focusedPlayer, setFocusedPlayer] = useState<string | null>(null);
+  // Thread 058 section C4: the current overall pick, reported by DraftRoom
+  // while Draft mode is active, so the assistant dock's context line can read
+  // "Draft · pick 24" (matching the design) instead of just "Draft". The
+  // assistant itself was already mounted on this screen before this thread --
+  // see the App() doc comment above -- this only enriches its context string.
+  const [draftPick, setDraftPick] = useState<number | null>(null);
 
   // Bumping this re-runs the load, which is how the Refresh control applies new exports
   // without a page reload.
@@ -94,8 +100,13 @@ export function App() {
   const screenLabel =
     mode !== 'prep' ? (mode === 'draft' ? 'Draft' : 'Season') : (soon?.label ?? NAV_LABEL.get(screen) ?? 'Board');
   const showsFocusedPlayer = mode === 'draft' || (mode === 'prep' && screen === 'board');
-  const assistantWhere =
-    showsFocusedPlayer && focusedPlayer ? `${screenLabel} · this player: ${focusedPlayer}` : screenLabel;
+  const assistantWhere = [
+    screenLabel,
+    mode === 'draft' && draftPick !== null ? `pick ${draftPick}` : null,
+    showsFocusedPlayer && focusedPlayer ? `this player: ${focusedPlayer}` : null,
+  ]
+    .filter((part): part is string => part !== null)
+    .join(' · ');
 
   function changeScreen(next: ScreenId) {
     setScreen(next);
@@ -105,6 +116,7 @@ export function App() {
   function changeMode(next: Mode) {
     setMode(next);
     setFocusedPlayer(null);
+    setDraftPick(null);
   }
 
   // The top bar -- and the league switcher inside it -- stays mounted through
@@ -130,7 +142,9 @@ export function App() {
       </div>
     );
   } else if (mode === 'draft') {
-    body = <DraftRoom data={data} rows={rows} league={league} onOpenPlayer={setFocusedPlayer} />;
+    body = (
+      <DraftRoom data={data} rows={rows} league={league} onOpenPlayer={setFocusedPlayer} onPickContext={setDraftPick} />
+    );
   } else if (mode === 'season') {
     body = <NotBuilt title="Season mode" body="Season mode is not built in this app yet." />;
   } else {

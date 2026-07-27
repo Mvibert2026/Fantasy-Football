@@ -4,7 +4,7 @@ import { buildLeagueConfig } from '../data/league';
 import { computeLiveAvailability } from '../data/liveAvailability';
 import type { DraftPickRecord } from '../data/draft';
 import { roundOfPick, teamSlotAtPick } from '../data/draft';
-import { depletionWarning, positionScarcity } from '../data/scarcity';
+import { depletionWarning, orderByUrgency, paceLabel, positionScarcity, tierDepletionLine, under50Line } from '../data/scarcity';
 import { verdictLine } from '../data/verdict';
 import { isMiscalibrated, wilsonInterval } from '../data/wilson';
 import { loadDatasetFromDisk } from './helpers';
@@ -177,16 +177,80 @@ describe('positionScarcity and depletionWarning (§5.5)', () => {
     expect(rb.total).toBe(rbRows.length);
     expect(rb.gone).toBe(2);
     expect(rb.remaining).toBe(rbRows.length - 2);
+    expect(rb.dataAvailable).toBe(true);
+  });
+
+  it('reports every derived field as an honest null, never a computed zero, for a position with no board data (DEF, ADR-039)', () => {
+    const starters: Record<string, number> = {};
+    for (const t of league.thresholds) {
+      starters[t.position] = t.starters.kind === 'present' ? t.starters.value : 0;
+    }
+    const scarcity = positionScarcity(data, rows, [], 3, 10, ['DEF'], starters, teams);
+    const def = scarcity.find((s) => s.pos === 'DEF')!;
+    expect(def.total).toBe(0);
+    expect(def.dataAvailable).toBe(false);
+    expect(def.pace).toBeNull();
+    expect(def.tier1Remaining).toBeNull();
+    expect(def.tier2Remaining).toBeNull();
+    expect(def.under50ByNext).toBeNull();
+    // The depletion warning and both line-builders must refuse to fabricate
+    // a claim from these nulls.
+    expect(depletionWarning(def, 10)).toBeNull();
+    expect(tierDepletionLine(def)).toBeNull();
+    expect(under50Line(def, 10)).toBeNull();
+  });
+
+  it('reports under50ByNext as an honest null (not 0) when there is no further user pick to probe, even with real board data', () => {
+    const starters: Record<string, number> = {};
+    for (const t of league.thresholds) {
+      starters[t.position] = t.starters.kind === 'present' ? t.starters.value : 0;
+    }
+    const scarcity = positionScarcity(data, rows, [], 3, null, ['RB'], starters, teams);
+    const rb = scarcity.find((s) => s.pos === 'RB')!;
+    expect(rb.dataAvailable).toBe(true);
+    expect(rb.under50ByNext).toBeNull();
+    expect(under50Line(rb, null)).toBe('not yet — no further pick of yours this draft');
   });
 
   it('fires the depletion warning only when every remaining tier-1 player is under 50% by the next pick', () => {
-    const scarce = { pos: 'TE', total: 10, remaining: 1, gone: 9, pace: 1, tier1Remaining: 1, under50ByNext: 1, startablePool: 12 };
+    const scarce = {
+      pos: 'TE', total: 10, remaining: 1, gone: 9, dataAvailable: true, expected: 8,
+      pace: 1, tier1Remaining: 1, tier2Remaining: 0, under50ByNext: 1, startablePool: 12,
+    };
     expect(depletionWarning(scarce, 23)).toMatch(/All 1 remaining tier-1 TE sit under 50%/);
 
     const notScarce = { ...scarce, under50ByNext: 0 };
     expect(depletionWarning(notScarce, 23)).toBeNull();
 
     expect(depletionWarning(scarce, null)).toBeNull();
+  });
+
+  it('paceLabel names the direction of the claim instead of a bare signed integer (§A1)', () => {
+    expect(paceLabel(null)).toBe('pace not yet computed');
+    expect(paceLabel(0)).toBe('on pace');
+    expect(paceLabel(2)).toBe('2 ahead of pace');
+    expect(paceLabel(-1)).toBe('1 behind pace');
+  });
+
+  it('tierDepletionLine renders the design\'s three phrasings from real tier counts', () => {
+    const base = {
+      pos: 'TE', total: 10, remaining: 3, gone: 7, dataAvailable: true, expected: 6,
+      pace: 1, under50ByNext: 1, startablePool: 12,
+    };
+    expect(tierDepletionLine({ ...base, tier1Remaining: 2, tier2Remaining: 1 })).toBe('tier 1: 2 left');
+    expect(tierDepletionLine({ ...base, tier1Remaining: 0, tier2Remaining: 1 })).toBe('tier 1 gone · tier 2: 1 left');
+    expect(tierDepletionLine({ ...base, tier1Remaining: 0, tier2Remaining: 0 })).toBe('tiers 1–2 gone');
+  });
+
+  it('orderByUrgency sinks positions with no board data to the bottom and orders the rest by tier-1 scarcity', () => {
+    const starters: Record<string, number> = {};
+    for (const t of league.thresholds) {
+      starters[t.position] = t.starters.kind === 'present' ? t.starters.value : 0;
+    }
+    const scarcity = positionScarcity(data, rows, [], 3, 10, ['QB', 'RB', 'WR', 'TE', 'DEF'], starters, teams);
+    const ordered = orderByUrgency(scarcity);
+    expect(ordered[ordered.length - 1]!.pos).toBe('DEF');
+    expect(ordered.every((s, i) => i === 0 || (s.tier1Remaining ?? Infinity) >= (ordered[i - 1]!.tier1Remaining ?? Infinity) || !s.dataAvailable)).toBe(true);
   });
 });
 

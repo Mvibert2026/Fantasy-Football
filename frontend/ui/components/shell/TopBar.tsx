@@ -54,9 +54,20 @@ export function TopBar({
   onSelectLeague: (id: string) => void;
   refreshSlot?: ReactNode;
 }) {
+  // Thread 058 section C3: a fuller identity string -- platform and draft
+  // type, both real league.json fields (confirmed against the export;
+  // ui/data/league.ts now plumbs them), placed ahead of the team/pick detail
+  // that was already here. Each piece renders only when present rather than
+  // guessing a value for an older export.
   const leagueDetail =
     league && league.teams.kind === 'present' && league.userSlot.kind === 'present'
-      ? `${league.teams.value}T · PICK ${league.userSlot.value}`
+      ? [
+          league.platform.kind === 'present' ? league.platform.value : null,
+          league.draftType.kind === 'present' ? league.draftType.value : null,
+          `${league.teams.value}T · PICK ${league.userSlot.value}`,
+        ]
+          .filter((part): part is string => part !== null)
+          .join(' · ')
       : league
         ? 'CONFIG UNAVAILABLE'
         : 'LOADING…';
@@ -81,6 +92,34 @@ export function TopBar({
           {WORDMARK_VERSION}
         </div>
       </div>
+
+      {/* Thread 058 section C2: a DRAFT LIVE badge, matching the design's
+          `isDraft` gate (docs/design-reference/prototype.dc.html line 41) --
+          shown whenever Draft mode is the active mode. The prototype has no
+          further state than this (no separate "dormant board" distinction
+          within Draft mode -- confirmed by reading its source: `isDraft:S.draft`
+          is the only condition gating this badge), so this is the one state
+          that exists to build, not a partial port of a richer state machine. */}
+      {mode === 'draft' ? (
+        <div
+          style={{
+            display: 'flex',
+            flex: 'none',
+            whiteSpace: 'nowrap',
+            alignItems: 'center',
+            gap: 7,
+            padding: '3px 9px',
+            border: '1px solid var(--live)',
+            color: 'var(--live)',
+            fontSize: 11,
+            fontWeight: 600,
+            letterSpacing: '.08em',
+          }}
+        >
+          <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--live)', animation: 'ffpulse 1.6s infinite' }} />
+          DRAFT LIVE
+        </div>
+      ) : null}
 
       <div style={{ flex: 1 }} />
 

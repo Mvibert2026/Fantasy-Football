@@ -55,13 +55,25 @@ describe('thread 049 item 3: roster slot chips', () => {
   it('renders one chip per startable slot type, filled/total, in QB/RB/WR/TE/FLEX/DEF/BN order', () => {
     renderDraftRoom();
     // Fresh draft, nothing picked yet -- every chip reads 0/<starters count>.
-    expect(screen.getByText(/QB 0\/1/)).toBeInTheDocument();
-    expect(screen.getByText(/RB 0\/2/)).toBeInTheDocument();
-    expect(screen.getByText(/WR 0\/3/)).toBeInTheDocument();
-    expect(screen.getByText(/TE 0\/1/)).toBeInTheDocument();
-    expect(screen.getByText(/FLEX 0\/2/)).toBeInTheDocument();
-    expect(screen.getByText(/DEF 0\/1/)).toBeInTheDocument();
-    expect(screen.getByText(/BN 0\/6/)).toBeInTheDocument();
+    // Thread 058 section D1: the chip's label and count are now two separate
+    // text nodes inside a bordered box (matching the design's own checklist
+    // markup), so a plain regex against a single text node no longer matches
+    // -- scope the query to each element's own full text content instead.
+    const hasText = (text: string) => (_content: string, el: Element | null) => el?.textContent === text;
+    expect(screen.getByText(hasText('QB 0/1'))).toBeInTheDocument();
+    expect(screen.getByText(hasText('RB 0/2'))).toBeInTheDocument();
+    expect(screen.getByText(hasText('WR 0/3'))).toBeInTheDocument();
+    expect(screen.getByText(hasText('TE 0/1'))).toBeInTheDocument();
+    expect(screen.getByText(hasText('FLEX 0/2'))).toBeInTheDocument();
+    expect(screen.getByText(hasText('DEF 0/1'))).toBeInTheDocument();
+    expect(screen.getByText(hasText('BN 0/6'))).toBeInTheDocument();
+  });
+});
+
+describe('thread 058 section D2: IR slot', () => {
+  it('renders an IR slot in the roster list, sized from the real league.json:roster.ir count', () => {
+    renderDraftRoom();
+    expect(screen.getByText('IR')).toBeInTheDocument();
   });
 });
 
@@ -136,15 +148,17 @@ describe('thread 049 item 1: Board/Opponents/Predictions tab shell', () => {
   });
 
   it('switching to Opponents/Predictions shows an honest not-wired-in state, not fabricated content', () => {
+    // Thread 058 section C1: hub tab labels are sentence case ("Opponents",
+    // not "OPPONENTS"), matching the design's boxed-tab treatment.
     renderDraftRoom();
-    fireEvent.click(screen.getByRole('button', { name: 'OPPONENTS' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Opponents' }));
     expect(screen.getByText(/Opponents is not wired into Draft mode yet/)).toBeInTheDocument();
     expect(screen.queryByPlaceholderText(/Mark pick/)).not.toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole('button', { name: 'PREDICTIONS' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Predictions' }));
     expect(screen.getByText(/Predictions is not wired into Draft mode yet/)).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole('button', { name: 'BOARD' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Board' }));
     expect(screen.getByPlaceholderText(/Mark pick/)).toBeInTheDocument();
   });
 });
