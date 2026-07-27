@@ -1,4 +1,4 @@
-import json
+﻿import json
 
 import pytest
 
@@ -153,25 +153,25 @@ def hlock(tmp_path):
 
 def test_load_season_allows_a_year_within_declared_scope(prereg_dir, hlock):
     (prereg_dir / "PR-910-x.md").write_text(CONFIRMATORY_SEALED, encoding="utf-8")
-    assert holdout.load_season(2022, "PR-910", lock=hlock, prereg_directory=prereg_dir) == 2022
+    assert holdout.load_season_registered(2022, "PR-910", lock=hlock, prereg_directory=prereg_dir) == 2022
 
 
 def test_load_season_rejects_a_year_outside_declared_scope(prereg_dir, hlock):
     (prereg_dir / "PR-910-x.md").write_text(CONFIRMATORY_SEALED, encoding="utf-8")
     with pytest.raises(holdout.HoldoutViolation, match="outside the data_scope"):
-        holdout.load_season(2019, "PR-910", lock=hlock, prereg_directory=prereg_dir)
+        holdout.load_season_registered(2019, "PR-910", lock=hlock, prereg_directory=prereg_dir)
 
 
 def test_load_season_rejects_the_holdout_when_registration_says_sealed(prereg_dir, hlock):
     (prereg_dir / "PR-910-x.md").write_text(CONFIRMATORY_SEALED, encoding="utf-8")
     with pytest.raises(holdout.HoldoutViolation, match="holdout_unsealed=false"):
-        holdout.load_season(2025, "PR-910", lock=hlock, prereg_directory=prereg_dir)
+        holdout.load_season_registered(2025, "PR-910", lock=hlock, prereg_directory=prereg_dir)
 
 
 def test_load_season_rejects_holdout_unsealed_flag_without_a_signed_log_entry(prereg_dir, hlock):
     (prereg_dir / "PR-911-x.md").write_text(CONFIRMATORY_UNSEALED, encoding="utf-8")
     with pytest.raises(holdout.HoldoutViolation, match="signed entry"):
-        holdout.load_season(2025, "PR-911", lock=hlock, prereg_directory=prereg_dir)
+        holdout.load_season_registered(2025, "PR-911", lock=hlock, prereg_directory=prereg_dir)
 
 
 def test_load_season_allows_the_holdout_with_flag_and_signed_log(prereg_dir, hlock):
@@ -180,7 +180,7 @@ def test_load_season_allows_the_holdout_with_flag_and_signed_log(prereg_dir, hlo
         "PR-911", family="F-LOADSEASON", reason="final look", approver="founder",
         log_path=prereg_dir / "UNSEAL_LOG.md",
     )
-    assert holdout.load_season(2025, "PR-911", lock=hlock, prereg_directory=prereg_dir) == 2025
+    assert holdout.load_season_registered(2025, "PR-911", lock=hlock, prereg_directory=prereg_dir) == 2025
     events = [e["event"] for e in hlock.access_log()]
     assert "FINAL_EVALUATION_OPENED" in events
     assert "ALLOWED" in events
@@ -189,7 +189,7 @@ def test_load_season_allows_the_holdout_with_flag_and_signed_log(prereg_dir, hlo
 def test_load_season_denial_is_still_logged_to_the_holdout_access_log(prereg_dir, hlock):
     (prereg_dir / "PR-910-x.md").write_text(CONFIRMATORY_SEALED, encoding="utf-8")
     with pytest.raises(holdout.HoldoutViolation):
-        holdout.load_season(2025, "PR-910", lock=hlock, prereg_directory=prereg_dir)
+        holdout.load_season_registered(2025, "PR-910", lock=hlock, prereg_directory=prereg_dir)
     # the registration-level check fires before HoldoutLock.guard is ever
     # called for 2025, so nothing is appended to the (unrelated) HoldoutLock
     # log for this specific case -- assert instead that the raise happened
