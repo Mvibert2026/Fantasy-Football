@@ -15,7 +15,11 @@ not variants. Registration: docs/reviews/fable-ranking-design-2026-07-27.md.
 | V5 | 2026-07-27 (session 3) | **Registered in the FABLE-EXT2 amendment BEFORE run (commit 1c16ab4).** = V3 with each player's own production removed from his OWN vacated numerators (kills the availability self-leak; arrivals already excluded self) | **run — THE CARRY CANDIDATE**: RB +0.057 [+0.018,+0.095] & VBD +0.032 (both CI-clear, 10/13), TE VBD +0.073; QB falls back to −0.125 (the V3 QB gain was ~all leak); consensus gap unmoved anywhere. `results/{usage,long}_v5clean.json` |
 | V6 | 2026-07-27 (session 3) | **Registered same amendment.** V4's QB-direct on V5's clean features (the hybrid-board candidate) | **run, rejected** — QB −0.141 [−0.201,−0.079], 1/13 folds; worse than the composition. QB is closed: nothing tried beats last-season points. `results/{usage,long}_v6qbclean.json` |
 
+| V7 | 2026-07-27 (session 4) | **Registered BEFORE any code existed (commit 5af349e; implementation bf1c2d1).** V5 + same-position rookie-arrival draft capital: rook_cap_same (Σ 1/√overall pick), rook_top64_same, rook_cap_x_vac (× self-excluded position-relevant vacated share). draft_picks 1980–2026, PFR→canon crosswalk with totality test. Registration incl. predictions and falsification rule: docs/reviews/FABLE-EXT3-2026-07-27.md | **run — FALSIFIED, not a carry candidate**: RB improved on neither co-primary (τ +0.057→+0.054, VBD +0.032→+0.018) and the consensus gap did not move (−0.110→−0.112). Rookie arrivals via draft capital eliminated as the RB-gap explanation. `results/{usage,long}_v7.json` |
+
 **Final tally (session 2): 2 model configurations evaluated (V1, V2) + 1 defect fix (F1).**
+**Final tally (session 4): V7 added, registered before its code existed; 7 model
+configurations total (V1–V7, + F1 fix). V5 remains the sole carry candidate.**
 **Final tally (session 3): 4 more configurations (V3, V4, V5, V6), each registered before its
 run; 6 configurations total. Multiplicity read: 6 configs × 4 positions × 2 arms — the V5 RB
 result is the one to trust most (registered direction AND magnitude band from V3's

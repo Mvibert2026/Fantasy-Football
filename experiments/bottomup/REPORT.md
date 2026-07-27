@@ -214,3 +214,63 @@ wants mixed provenance in the primary board anyway, every row must carry its sou
 traceability principle, and the RB −0.110 must be printed wherever the overlay is sold.
 V5's feature group belongs in ADR-E §4.1 (amendment queued with R3/R5/C3 for the
 F-BOTTOMUP-CORE registration), self-exclusion mandatory.
+
+---
+
+# Session-4 appendix — V7, the rookie-arrival hypothesis (2026-07-27)
+
+Registration: `docs/reviews/FABLE-EXT3-2026-07-27.md`, commit `5af349e`, frozen before any
+V7 code existed (implementation `bf1c2d1`). One configuration: V5 + three same-position
+rookie-arrival draft-capital features (`rook_cap_same` = Σ 1/√overall, `rook_top64_same`,
+`rook_cap_x_vac` interaction with the self-excluded vacated share). Both arms, same folds.
+
+## Result: the registered RB prediction FAILED — cleanly
+
+Usage arm (the registered primary), V5 → V7:
+
+| Pos | Δτ_b vs B1 | ΔVBD vs B1 | Consensus gap (n=4, descriptive) |
+|---|---|---|---|
+| RB | +0.057 → **+0.054** [+0.010,+0.097] | +0.032 → **+0.018** | −0.110 → **−0.112** |
+| WR | +0.036 → +0.044 [+0.014,+0.075] | +0.010 → +0.019 | −0.046 → −0.036 |
+| TE | +0.081 → +0.071 [−0.007,+0.153] | +0.073 → +0.048 | −0.016 → +0.001 |
+| QB (descriptive, closed) | −0.125 → −0.151 | −0.210 → −0.208 | −0.241 → −0.275 |
+
+Registered falsification rule: *"RB fails to improve on BOTH co-primaries vs V5 AND the RB
+consensus gap does not narrow by ≥ 0.02."* All three conditions met: Δτ_b 0.057→0.054 (down),
+ΔVBD 0.032→0.018 (down), gap −0.110→−0.112 (unmoved; per-season 2021–2024: −0.123/−0.236/
+−0.063/−0.027 vs V5's −0.100/−0.234/−0.077/−0.027). The WR contradiction guard did not fire
+(WR Δ = +0.008, within the registered ≤0.02 band). Long arm, for completeness: RB τ_b
++0.036→+0.046, VBD flat, gap −0.114→−0.108 — a small tau movement in the predicted direction,
+short of every registered threshold, and reported as exactly that.
+
+**Verdict: rookie-driven situation change, as expressible through same-position draft
+capital, is ELIMINATED as the explanation of the RB consensus gap.** V7 does not replace V5
+as the carry candidate (decision rule: improved on neither co-primary). Audit posture: no §8
+trigger — mean season R² per position all inside bands (RB 0.184 / WR 0.300 usage); the one
+single-fold excursion (2022 WR 0.540) pre-exists in V5 (0.534) and is not V7-induced.
+
+## What this elimination means
+
+Two mechanisms are now tested and eliminated as the gap's explanation: vacated opportunity
+(V5) and rookie arrivals via draft capital (V7) — the two channels the ranking-design review
+ranked highest on residual-mispricing × feasibility. Remaining, per the registration's own
+list, in rough order of testability: (a) rookie *inclusion* — rookies themselves as
+mispriced universe members (C3's arm, reserved for the return-week registration; note it
+answers a different question — expanding who we rank — rather than fixing veteran ranks);
+(b) ECR's non-box-score information (camp/beat/injury timing) — not a feature family at all,
+partially the T-series' job; (c) coaching/scheme change (R2, gated on data licensing);
+(d) **no single channel** — ECR as an aggregate of many small edges. After two clean
+eliminations, (d) is now the working favourite, and its product consequence is already
+adopted: the consensus-anchored board with a labelled overlay (D7). Chasing the gap further
+has visibly diminishing returns; the next registered spend should be the confirmatory
+F-BOTTOMUP-CORE run on V5, not another gap hypothesis.
+
+## Prediction scorecard update
+
+The registered V7 RB prediction (gain +0.010..+0.030, gap narrowing 0.02–0.05) was wrong in
+direction. Running count across sessions 3–4: four of five registered prediction sets
+materially wrong, every miss on the side of over-crediting a situation story. The
+registration discipline converted each miss into a clean elimination instead of a shipped
+overfit — and the pattern is now strong enough to state as a standing prior: **in this
+project, situation narratives should be priced at half their intuitive weight before
+registration.**
