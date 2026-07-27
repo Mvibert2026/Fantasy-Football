@@ -2361,3 +2361,39 @@ a thread reply.
   (including a binary zip of unverified provenance) into a commit without being asked is exactly
   the kind of scope creep this closeout should avoid. Tests pass with it present on disk regardless
   of git-tracking status. Flagging for the founder/backend to decide whether it should be committed.
+
+## 2026-07-27 — backend, T5 verification + T4 real suspension wiring (workstream B, worktree round)
+
+Ran the backend workstream B tasks from this round's brief: verify T5 (freshness tripwire) end to
+end rather than take CURRENT-STATE.md's claim on faith, and close T4's real "not wired into the
+live board" gap.
+
+**T5 — traced every call site.** `export_contract.build_board_json` calls `fr.require_fresh(...)`
+unconditionally before every board build via the single shared `write_all` path every league
+config funnels through (primary + `ethans_expert_league` both go through `create_league` ->
+`write_all` -> `build_board_json`) — there is no per-league special case that could skip it.
+Found a real gap in test coverage, not in the mechanism: `freshness.py`'s pure functions were
+well unit-tested, but nothing proved the real entrypoint (`build_board_json`) against the real
+`data/nfl.db` actually raises. Added `tests/test_freshness.py::TestBoardBuildActuallyRefuses` (2
+tests, `@pytest.mark.requires_db`): one forces staleness via the existing `freshness_today`
+injection point and confirms `StaleSnapshotError`, the other confirms the real (actually-fresh)
+snapshot does not raise, so the first isn't trivially true. No code change needed — T5 was
+already solid, now proven solid.
+
+**T4 — built the real interim data, closed the wiring gap.** Ran an exhaustive WebSearch/WebFetch
+research pass (PED/personal-conduct/gambling angles, publication dates checked to screen out
+stale 2023/2024 suspensions bleeding into 2026-dated search results — caught and discarded
+Jameson Williams, Alvin Kamara, DK Metcalf, and confirmed Rashee Rice was explicitly ruled NOT
+suspended for 2026). Found exactly one real, current, unserved 2026 suspension (Charles Snowden,
+Cowboys DE, 3 games) — not fantasy-relevant, this league has no individual defensive-player
+scoring. Built `data/suspensions_2026.json`, honestly empty of entries, dated and sourced, per the
+project's "never fabricate to fill a gap" rule. Wired `src/suspensions.py` into
+`export_contract.build_board_json` via the same shared `write_all` path as T5, so every league
+gets it. Contract bumped 1.11.0 -> 1.12.0 (ADR-053) for the four new unconditional board-row
+fields; handoff 073 opened to frontend; thread 057 got a reply noting the interim close without
+claiming resolution (not the `TO:` role).
+
+T6 (roster status) spot-checked, unchanged, still green.
+
+Full suite run with the real `data/nfl.db` copied into the worktree per the DB-writer-slot
+instructions. See commit message for final test count.

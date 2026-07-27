@@ -1918,3 +1918,66 @@ fail immediately under an `elif`/max-only implementation). All three written aga
 and the existing `scoring.py` before confirming they pass, per this project's
 sanity-check-before-implementation rule. Full file: **19 passed** (`pytest tests/test_scoring.py
 -q`).
+
+## ADR-053 — T4 real interim suspension list wired into the live board; T5 freshness verified with real integration coverage (2026-07-27, backend, thread 057 partial close)
+
+**T5 (freshness tripwire) — verified, not rebuilt.** Traced every call site: `export_contract.
+build_board_json` calls `fr.require_fresh(conn, SEASON, make_board.SOURCE, cfg.
+freshness_max_age_days, ...)` unconditionally (default `enforce_freshness=True`) before building
+any board, and every league config funnels through this same function via `write_all` — there is
+no per-league special case to go stale silently in. `tests/test_freshness.py` had thorough unit
+coverage of the pure functions (`snapshot_age_days`/`check_freshness`/`require_fresh`) but no
+integration test proving the real entrypoint (`build_board_json` against the real `data/nfl.db`)
+actually raises. Added `TestBoardBuildActuallyRefuses` (2 tests): one forces staleness via the
+`freshness_today` injection point against the real rankings table and confirms
+`StaleSnapshotError` is raised; the other confirms the inverse (today's real, actually-fresh
+snapshot does NOT raise), so the first test can't be trivially true from a "always raises" bug.
+No code change was needed — T5 was already correctly wired for every league; this closes the gap
+between "documented as fixed" and "proven fixed."
+
+**T4 (interim suspensions) — real list built and wired, closing the "not wired into the live
+board" gap CURRENT-STATE.md previously flagged.** Ran an exhaustive WebSearch/WebFetch research
+pass (PED policy, personal-conduct policy, gambling policy angles; publication dates checked to
+screen out stale index bleed-through from 2023/2024 suspensions resurfacing in 2026-dated
+queries). Found exactly one real, current, unserved 2026 suspension: Charles Snowden (Cowboys
+DE, 3 games, personal-conduct policy / 2024 DUI, announced 2026-07-14, effective Week 4) — not
+included as a suspensions-mechanism entry because this board has no individual defensive-player
+scoring at all (ADR-039; DEF replacement level is permanently None), so his suspension has zero
+board consequence. Several other candidates surfaced and were confirmed NOT applicable: DK
+Metcalf's 2-game suspension covered the final 2 games of the already-complete 2025 season;
+Rashee Rice was explicitly ruled NOT suspended for 2026 (April 2026 NFL ruling); Jameson
+Williams/Alvin Kamara hits were stale 2023/2024 suspensions, already fully served. Per the
+project's "never fabricate or guess a name or game count" rule, none of these are listed as
+entries — the real list (`data/suspensions_2026.json`) is honestly empty of suspension rows,
+dated `as_of_date: 2026-07-27`, with every search source cited in `sources_checked`. This is a
+verified state, not an oversight, and should be re-run periodically (thread 057 remains open for
+the fuller structured-source question).
+
+**Wiring:** `export_contract.build_board_json` now loads `SUSPENSIONS_PATH` (defaults to
+`data/suspensions_2026.json`, overridable via a new `suspensions_path` parameter for testing) and
+calls `suspensions.apply_suspension_flags` over every board row before returning, applied via the
+same shared `write_all` path every league config uses — same "structural, not per-league"
+reasoning as T5. Because the real list is currently empty, this is presently a no-op on every
+board (every row gets `suspension_flag: False`), which is correct, not silent — the fields are
+still emitted unconditionally on every row.
+
+**Contract version bumped 1.11.0 → 1.12.0** (`CONTRACT_VERSION` in `src/export_contract.py`):
+`board.json` player rows gain `suspension_flag` / `suspension_games` /
+`projected_points_suspension_adjusted` / `suspension_adjustment_note` (previously entirely
+absent). Handoff opened to frontend (thread 073) since this is a new field set, same convention
+as ADR-050/051's `roster_status`/`scoring_format` additions.
+
+**Tests:** `tests/test_freshness.py` (+2, `TestBoardBuildActuallyRefuses`, `@pytest.mark.
+requires_db`), `tests/test_suspensions.py` (+6: `TestRealSuspensionList` covers the real list's
+shape/dating/sourcing and confirms it's a correct no-op when applied; `TestRealListWiredIntoBuildBoardJson`,
+`@pytest.mark.requires_db`, proves the wiring end-to-end against the real board — one test with a
+temp fixture pointed at a real ranked player's gsis_id, confirming the flag actually propagates
+through the full `build_board_json` pipeline into `board.json`'s player rows, not just that the
+mechanism works in isolation). `tests/test_rosters_export.py::test_contract_version_bumped`
+updated to assert `1.12.0`. Synthetic fixture (`tests/fixtures/suspensions_2026.json`) and its
+test class are unchanged — still a valid unit test of the mechanism itself, per the task's
+instruction not to delete it.
+
+**T6 (roster status) — spot-checked, not rebuilt.** `tests/test_roster_status.py` (6 tests,
+including the Tom Brady proxy-verification case) still passes unmodified; `src/roster_status.py`
+unchanged. No gap found.
