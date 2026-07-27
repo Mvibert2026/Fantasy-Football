@@ -32,6 +32,14 @@ error text. "Fixed it" is not a reply. "Fixed in `a1b2c3d`, 402 tests" is.
 **6. Do not resolve someone else's thread.** Only the `TO:` role may set `STATUS: RESOLVED`. If you
 think a thread is obsolete, say so in a reply and set `STATUS: OPEN` back to the originator.
 
+**7. Pull before starting work, push at close.** The repo now has a remote (`origin`); this
+directory only works as a message bus if every session sees the latest threads before acting and
+leaves its own writes visible to the next one.
+
+**8. A pull conflict is not yours to resolve alone.** Stop and escalate — the same rule as a
+contradiction between docs. Do not merge, rebase over, or discard either side's changes on your
+own authority.
+
 ---
 
 ## File format
