@@ -108,7 +108,8 @@ build-Predictions-tab — same verb, disjoint targets) is the required known-neg
 ingestion incl. README exclusion, idempotent re-sync, `next_free_id` reading filenames not
 frontmatter, stale-`NEW-*` check failure, `adr next` scan + the ADR-048 regression fixture, the
 049/051-vs-036 known-positive, the 027/028 known-negative, D-number stale-reference detection).
-Full suite: 528 passed. Commit hash on 062, per this thread's own instruction.
+Full suite: 528 passed. Commit `78a278b`. (Also reported on 062, per this thread's own
+instruction that 062 is the thread that specified the requirement.)
 
 Report of commit hash and test count is on **062**, per this thread's own note that 062 is the
 thread that specified the requirement. Setting `STATUS: RESOLVED` here — this is infra/code work
