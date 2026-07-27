@@ -1,5 +1,6 @@
 data/*.db
 data/raw/
+data/user pulled fantasy data/
 .env
 __pycache__/
 *.pyc
