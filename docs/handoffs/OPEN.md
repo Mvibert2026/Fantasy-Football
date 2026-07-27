@@ -4,7 +4,7 @@
 Threads are the source of truth. Change a thread's `STATUS:`, then re-run sync.
 Protocol: [`README.md`](README.md).
 
-**26 open** · 18 resolved
+**31 open** · 18 resolved
 
 ---
 
@@ -19,7 +19,7 @@ not an omission. Start your session at your own heading.
 |---|---|---|---|---|---|
 | [005](005-fantasypros-tier.md) | Fantasypros tier | `pm` | BLOCKED-ON-YOU | 0d | bootstrap CIs, full-board projections |
 
-### `backend` — 12 waiting
+### `backend` — 15 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
@@ -35,8 +35,11 @@ not an omission. Start your session at your own heading.
 | [037](037-audit-followups.md) | Audit followups | `pm` | OPEN | 0d | none |
 | [040](040-multi-league-slot-and-undo.md) | Multi league slot and undo | `pm` | OPEN | -1d | Mock Lab build, Settings build |
 | [042](042-strategies-json-stale-at-contract-1-7-0.md) | Strategies json stale at contract 1 7 0 | `frontend` | OPEN | 0d | none |
+| [044](044-roster-aware-recommendations.md) | Roster aware recommendations | `pm` | OPEN | -1d | none |
+| [045](045-simulation-lookahead.md) | Simulation lookahead | `pm` | OPEN | -1d | 044 (the roster-aware recommendation should use this once it exists) |
+| [047](047-manual-draft-setup-entry.md) | Manual draft setup entry | `pm` | OPEN | -1d | usable mock drafting |
 
-### `frontend` — 14 waiting
+### `frontend` — 17 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
@@ -54,16 +57,24 @@ not an omission. Start your session at your own heading.
 | [037](037-audit-followups.md) | Audit followups | `pm` | OPEN | 0d | none |
 | [040](040-multi-league-slot-and-undo.md) | Multi league slot and undo | `pm` | OPEN | -1d | Mock Lab build, Settings build |
 | [043](043-weekly-finishes-json-season-stats-json-ready-con.md) | Weekly finishes json season stats json ready con | `backend` | OPEN | 0d | none |
+| [044](044-roster-aware-recommendations.md) | Roster aware recommendations | `pm` | OPEN | -1d | none |
+| [047](047-manual-draft-setup-entry.md) | Manual draft setup entry | `pm` | OPEN | -1d | usable mock drafting |
+| [049](049-draft-mode-gap-list.md) | Draft mode gap list | `pm` | OPEN | -1d | none |
 
-### `data-ops` — 0 waiting
+### `data-ops` — 1 waiting
 
-_Nothing waiting on you._
+| ID | Subject | From | Status | Age | Blocks |
+|---|---|---|---|---|---|
+| [046](046-bottom-up-ranking-data.md) | Bottom up ranking data | `pm` | OPEN | -1d | bottom-up ranking framework |
 
-### `strategist` — 1 waiting
+### `strategist` — 4 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
 | [033](033-assistant-query-architecture.md) | Assistant query architecture | `pm` | OPEN | 0d | the assistant rebuild sprint |
+| [045](045-simulation-lookahead.md) | Simulation lookahead | `pm` | OPEN | -1d | 044 (the roster-aware recommendation should use this once it exists) |
+| [046](046-bottom-up-ranking-data.md) | Bottom up ranking data | `pm` | OPEN | -1d | bottom-up ranking framework |
+| [048](048-bottom-up-ranking-framework.md) | Bottom up ranking framework | `pm` | OPEN | -1d | bottom-up ranking build |
 
 ### `researcher` — 0 waiting
 

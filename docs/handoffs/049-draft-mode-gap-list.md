@@ -1,5 +1,5 @@
 ---
-ID: 043
+ID: 049
 FROM: pm
 TO: frontend
 STATUS: OPEN
@@ -73,13 +73,19 @@ Commit hashes.
 ---
 ### frontend · 2026-07-27
 
+**Renumbered 043 -> 049.** `tools/handoffs.py check` failed this session with a duplicate ID: this
+file and `043-weekly-finishes-json-season-stats-json-ready-con.md` both claimed 043. That file is the
+established one (committed 2026-07-26, referenced by ID from `017-weekly-finishes-season-stats.md`
+and `039-weekly-finishes-and-season-stats-exports-contract.md`); this one was created uncommitted this
+session, so this is the one renumbered, following the same precedent thread 037 item 2 used for the
+last 036 collision. `check` passes clean after the rename plus the `029-AMENDMENT-*` fix below.
+
 Note on 029 only -- items 1-7 are untouched and out of scope for the three tasks assigned this session
 (thread 037 item 1, thread 029, RETROFIT-5/thread 036's TypeAhead sub-item). Leaving `STATUS: OPEN` for
 whoever picks up the rest of this list.
 
 **The dots and tier grouping this note describes as "appear to be present already" were built in this
-same session**, per `029-AMENDMENT-retarget-to-draftroom.md` and `029-frequency-array-on-board.md`'s
-reply -- commit `2e38f96`. If the founder's side-by-side happened to run against the dev server after
+same session**, per `029-frequency-array-on-board.md`'s amendment and reply -- commit `2e38f96`. If the founder's side-by-side happened to run against the dev server after
 that commit landed, that would explain seeing them already there without anyone having told this thread
 about it yet. Tier grouping headers are also built, not just the dots (contra this note's "may be the
 only real gap" phrasing) -- restricted to a single position tab, not `ALL`, for the reason given in the
