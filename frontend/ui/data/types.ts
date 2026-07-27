@@ -80,6 +80,12 @@ export interface RawLeague {
   league_id?: string | null;
   /** Added contract 1.7.0 (ADR-041). Absent on an older export. */
   league_name?: string;
+  /** Real export field (confirmed against data/export/league.json), not yet
+   *  typed here before thread 058 -- e.g. "sleeper" | "espn" | "yahoo" |
+   *  "other". Optional so an older export without it doesn't fail to parse. */
+  platform?: string;
+  /** Real export field, e.g. "snake". Optional for the same reason as platform. */
+  draft_type?: string;
   teams: number;
   rounds: number;
   user_draft_slot: number;

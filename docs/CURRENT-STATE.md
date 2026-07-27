@@ -52,7 +52,7 @@ the pre-existing, already-flagged `test_handoffs.py::test_mailbox_health` (dupli
 | Agent infrastructure | **Live** | Six subagents in `.claude/agents/` (backend, frontend, data-ops, strategist, researcher, librarian), `/inbox` command, mailbox tooling at `tools/handoffs.py` + `tools/sprint_status.py`, mailbox health enforced in the test suite (`tests/test_handoffs.py`) |
 | Data contract | **1.11.0** | `CONTRACT_VERSION` in `src/export_contract.py`, read directly. Bumped this session (ADR-051): `board.json` gained top-level `scoring_format`; `board_source`/`consensus_source` now name `fantasypros_csv_2026draft`. |
 | Frontend location | `frontend/` subdirectory of this repo | Merged from `frontend-prep` via `git subtree add`, full history preserved. No longer a separate working copy. |
-| Frontend tests | **163 passing, 0 failing** (18 files) | Full suite, `npx vitest run`, single run, ~63s (thread 063: nine new tests, one per reopen-trigger table row, no existing test touched). |
+| Frontend tests | **181 passing, 0 failing** (19 files) | Full suite, `npx vitest run`, single run, ~47s, measured directly after merging both 063 and 058 together (was 154 before either; 063 alone would have been 163, 058 alone 172 — 181 confirms both sets of additions are present with no loss). |
 | Python modules | **36** in `src/` | `ls src/*.py \| wc -l` |
 | Export artifacts | **11** top-level files in `data/export/` | `ls data/export/*.json \| wc -l` |
 | Config matrix | 26 dirs under `data/export/` | board + league + availability stub only; **hazard model not rerun per config**; count is a raw directory count, not inspected for which are real league configs vs. scratch. The 26th is `ethans_expert_league` (real league 2, see below), not a scratch probe config. |
@@ -252,6 +252,34 @@ already-focused element) was found via the project's own `frontend/e2e/smoke.mjs
 harness and fixed with an explicit `onMouseDown` handler. `npm run smoke`: 16/16. Screenshot at
 `frontend/e2e/artifacts/draftroom.png`, real Chromium capture. See the thread 063 reply for the
 full root-cause narrative.
+
+**Draft board design-gap sections A/B/C, partial D/E/F** (thread 058, branch
+`frontend/058-draft-board-design-gap`, scoped away from thread 063's pick-entry/suggester
+territory in the same file): Position Scarcity's `+2`/`±0` pace is now a legible phrase
+(`"2 ahead of pace"` / `"on pace"` / `"1 behind pace"`), plus a per-position tier-depletion line
+(`tier 1 gone · tier 2: 1 left`) and an `N <50% by <pick>` line, DEF added as a fifth row rendering
+`board.json:def_note` verbatim (ADR-039 — no fabricated 0/±0 since there is no DEF board data at
+all), positions ordered by urgency (`scarcity.ts::orderByUrgency`, this session's own tie-break rule,
+not spec-mandated), and a `board.position_remaining · board.position_tier · pace vs
+board.consensus_rank` footer. Board rows now show `board.json:positional_label` (`WR12`, already a
+real field) instead of bare position; explicit SORT controls (Our rank / Consensus / Delta / Proj
+pts) added and applied before tier-banding; DEF added to the position filter with an honest empty
+state. Hub tabs (`Board`/`Opponents`/`Predictions`) restyled sentence-case/boxed per the design's own
+markup; a `DRAFT LIVE` badge added to the top bar; league identity string extended with real
+`platform`/`draft_type` fields (both newly typed in `league.ts`/`types.ts`); the assistant dock
+(already mounted on this screen pre-thread) now reports `pick N` context. IR slot added to the roster
+list sized from the real `league.json:roster.ir` (never auto-filled — no injury data exists to decide
+what belongs there); roster requirement chips restyled as bordered boxes; a matching traceability
+footer added to the Queue/Watchlist panel. **Audit findings, not built:** the design's ALL-tab tier
+grouping mixes positions under one header using a `gtier` field the prototype computes via its own
+VBD-gap clustering (~4.5pt gap, min bucket 2, max 9) — real backend export has no equivalent
+`global_tier` field, and fabricating one client-side would be an invented statistical judgment, so
+board banding stays position-scoped (already correct pre-thread); the design's "CURRENT" league badge
+turned out to be the §5.1 sim-staleness state (no `sim_generated_at`/`sim_settings_hash` in this
+export), not a multi-league marker, and isn't buildable without those backend fields. Full detail and
+corrections to the thread's reading in the thread 058 reply. (Frontend test count for this thread
+alone was 172, measured before 063 was merged in — see the PENDING-REMEASURE note in Build state
+above for the real post-merge count.)
 
 ## Not built / null-stated
 

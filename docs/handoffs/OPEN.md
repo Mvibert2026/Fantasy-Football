@@ -4,7 +4,7 @@
 Threads are the source of truth. Change a thread's `STATUS:`, then re-run sync.
 Protocol: [`README.md`](README.md).
 
-**45 open** · 25 resolved
+**46 open** · 26 resolved
 
 ---
 
@@ -20,7 +20,7 @@ not an omission. Start your session at your own heading.
 | [005](005-fantasypros-tier.md) | Fantasypros tier | `pm` | BLOCKED-ON-YOU | 1d | bootstrap CIs, full-board projections |
 | [068](068-acceptance-harness-design-captures.md) | Acceptance harness design captures | `design` | OPEN | 0d | design drift being caught by a diff rather than by the founder |
 
-### `backend` — 19 waiting
+### `backend` — 21 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
@@ -43,8 +43,10 @@ not an omission. Start your session at your own heading.
 | [060](060-draft-time-compute-architecture.md) | Draft time compute architecture | `pm` | OPEN | 0d | 059 (on-deck recommendations), 045 (lookahead), draft-day viability of everything computed live |
 | [064](064-current-state-verification.md) | Current state verification | `pm` | OPEN | 0d | any honest statement about project status |
 | [067](067-t1-multiformat-consensus-rescope.md) | T1 multiformat consensus rescope | `pm` | OPEN | 0d | T1 completion for leagues 2/3, board correctness for the non-primary leagues |
+| [071](071-global-tier-field-for-all-tab-board-grouping.md) | Global tier field for all tab board grouping | `frontend` | OPEN | 0d | 058 section B1 (design fidelity) |
+| [072](072-sim-staleness-fields-for-league-identity-current.md) | Sim staleness fields for league identity current | `frontend` | OPEN | 0d | 058 section C3 (design fidelity) |
 
-### `frontend` — 18 waiting
+### `frontend` — 17 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
@@ -62,7 +64,6 @@ not an omission. Start your session at your own heading.
 | [043](043-weekly-finishes-json-season-stats-json-ready-con.md) | Weekly finishes json season stats json ready con | `backend` | OPEN | 1d | none |
 | [047](047-manual-draft-setup-entry.md) | Manual draft setup entry | `pm` | OPEN | 0d | usable mock drafting |
 | [049](049-draft-mode-gap-list.md) | Draft mode gap list | `pm` | OPEN | 0d | none |
-| [058](058-draft-board-design-gap.md) | Draft board design gap | `pm` | OPEN | 0d | draft-day usability |
 | [059](059-on-deck-recommendations.md) | On deck recommendations | `pm` | OPEN | 0d | FR-006 (draft chatbot), calm-preparation use case |
 | [066](066-contract-1-10-0-board-json-rows-gained-roster-st.md) | Contract 1 10 0 board json rows gained roster st | `backend` | OPEN | 0d | none |
 | [069](069-board-json-contract-1-11-0-new-scoring-format-fi.md) | Board json contract 1 11 0 new scoring format fi | `backend` | OPEN | 0d | none |
@@ -156,6 +157,7 @@ _Nothing waiting on you._
 | [048](048-bottom-up-ranking-framework.md) | Bottom up ranking framework | `pm` → `strategist` |
 | [051](051-suggester-fixes.md) | Suggester fixes | `pm` → `frontend` |
 | [052](052-board-json-join-key.md) | Board json join key | `pm` → `backend, frontend` |
+| [058](058-draft-board-design-gap.md) | Draft board design gap | `pm` → `frontend` |
 | [061](061-competitor-recommendation-audit.md) | Competitor recommendation audit | `pm` → `researcher` |
 | [063](063-suggester-reopen-regression.md) | Suggester reopen regression | `pm` → `frontend` |
 | [065](065-mailbox-tooling-build-for-062.md) | Mailbox tooling build for 062 | `librarian` → `backend` |
