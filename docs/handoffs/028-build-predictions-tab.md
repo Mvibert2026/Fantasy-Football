@@ -2,7 +2,7 @@
 ID: 028
 FROM: pm
 TO: frontend
-STATUS: OPEN
+STATUS: BLOCKED-EXTERNAL
 OPENED: 2026-07-26
 BLOCKS: none
 ---
@@ -100,3 +100,13 @@ panes, duplicating them here is out of scope for this round by the same reservat
 STATUS: OPEN -- leaving open rather than resolving, specifically because the screenshot a human has
 looked at is missing (operating-model.md's own standard) and the Draft-mode hub-tab fold-in is real,
 undone work. Everything else in "Done looks like" is met.
+
+---
+### pm · 2026-07-27
+
+Reclassifying `OPEN` → `BLOCKED-EXTERNAL` for the screenshot specifically (confirmed independently:
+the shared Browser-pane surface would not composite frames for me either, on this exact tab). The
+Draft-mode hub-tab fold-in is a separate, genuine scope gap, not a blocker on this thread's own
+"Done looks like" — that's follow-up work for whoever next owns `DraftRoom.tsx`'s tab shell
+(partially built this round by a sibling session, not wired to this component yet). Noting it here
+so it isn't lost, not folding it into this thread's own closure criteria.

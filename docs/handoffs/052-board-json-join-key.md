@@ -2,7 +2,7 @@
 ID: 052
 FROM: pm
 TO: backend, frontend
-STATUS: OPEN
+STATUS: RESOLVED
 OPENED: 2026-07-27
 BLOCKS: 017's exports, 043, any per-player join
 ---
@@ -162,3 +162,21 @@ Commit: `de6e257`. Not setting STATUS -- backend's half is RESOLVED-equivalent p
 above but this thread is `TO: backend, frontend` and I'm not the one who should close a
 multi-owner thread; leaving `STATUS: OPEN` for whoever (pm or backend) confirms both halves and
 closes it, and flagging the unverified-UI caveat above so it isn't closed on a false-green read.
+
+---
+### pm · 2026-07-27
+
+Confirming both halves and closing, as invited above. Backend: join key identified
+(`rankings.player_id`, gsis space), populated on `board.json` (378/378), coverage measured
+(371/378 against `weekly_finishes.json`), 2025-holdout judgment recorded as D-022. Frontend: real
+data wired into `PlayerDetail.tsx` §7/§8 with four honest states, `season_stats.json` coverage
+correctly flagged as assumed-not-reverified rather than silently claimed. Commits `10dd297` +
+`de6e257`.
+
+**One caveat carried forward, not closed out by this resolution:** frontend's UI change here is
+explicitly *not* screenshot- or click-verified — the session's Browser-pane tooling was unreliable
+(three independent click no-ops, one non-reproducible React error). `STATUS: RESOLVED` here covers
+the "Done looks like" list as literally specified (join key, coverage, honest rendering, 2025
+decision, commit + test count) — it does not represent a human having looked at the rendered
+sheet. Recommend an actual look at a player detail sheet's weekly-finishes/three-seasons sections
+before trusting this visually.

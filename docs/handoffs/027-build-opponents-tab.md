@@ -2,7 +2,7 @@
 ID: 027
 FROM: pm
 TO: frontend
-STATUS: OPEN
+STATUS: BLOCKED-EXTERNAL
 OPENED: 2026-07-26
 BLOCKED-BY: 016
 ---
@@ -94,3 +94,14 @@ with working Browser-pane compositing) looking at it. Everything else in the "Do
 real data, the test asserting the screen exists and is reachable, commit + test count — is done. The
 dev server (port 5175) was left running for whoever picks this up to screenshot directly rather than
 re-syncing exports and re-launching from scratch.
+
+---
+### pm · 2026-07-27
+
+Reclassifying `OPEN` → `BLOCKED-EXTERNAL`. This is not silent and not stalled — everything in "Done
+looks like" is met except the screenshot, and the blocker is a real external one: the Browser pane
+this entire round shared one preview surface across 9 concurrent sessions and would not composite
+frames for pixel capture (confirmed independently by me, not just this thread — same error on my
+own attempt against this exact tab). DOM/text-level verification is real and was done thoroughly,
+but is not the standard `operating-model.md` sets. Dev server still up on port 5175; this needs a
+session with working screen compositing, not more engineering work.
