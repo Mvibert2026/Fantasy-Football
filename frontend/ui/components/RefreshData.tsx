@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { EXPECTED_CONTRACT } from '../data/contract';
+import { useDismissOnOutsideOrEscape } from '../lib/dismiss';
 
 /**
  * The Refresh control.
@@ -35,10 +36,41 @@ const CHANGE_LABEL: Record<ArtifactChange['change'], string> = {
   unchanged: 'unchanged',
 };
 
-export function RefreshData({ onApplied }: { onApplied: () => void }) {
+export function RefreshData({
+  onApplied,
+  boardGeneratedUtc = null,
+}: {
+  onApplied: () => void;
+  /**
+   * Task 1 (data freshness on load). Real, named field: `board.json:generated_utc`
+   * -- the timestamp the export was written, threaded down from App's loaded
+   * Dataset. Deliberately NOT the same claim as "is the underlying ranking
+   * snapshot stale": `src/freshness.py`'s T5 check (as_of_date/age_days/stale,
+   * measured against `rankings.as_of_date`) runs on every board build and is
+   * printed to the build console, but is never written into board.json or any
+   * other export artifact -- confirmed by reading `export_contract.py` directly,
+   * not assumed. So that number literally does not exist on the client to show.
+   * Rather than invent a second, client-side notion of "current" (or silently
+   * omit the question), the banner below states plainly that the export
+   * timestamp is all that's available and names why. Null (dataset not loaded
+   * yet) renders as "-", never a fabricated placeholder date.
+   */
+  boardGeneratedUtc?: string | null;
+}) {
   const [report, setReport] = useState<RefreshReport | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const wrapperRef = useRef<HTMLDivElement | null>(null);
+
+  // Thread 073: the report popover previously only closed via its own
+  // "Dismiss" button -- no click-outside, no Escape. The founder tried both
+  // of the ordinary ways to clear a floating message and neither worked.
+  // Every dismissible surface in this app must support both (see
+  // ui/lib/dismiss.ts); this was the confirmed failing case.
+  useDismissOnOutsideOrEscape(wrapperRef, Boolean(report || error), () => {
+    setReport(null);
+    setError(null);
+  });
 
   async function refresh() {
     setBusy(true);
@@ -62,17 +94,35 @@ export function RefreshData({ onApplied }: { onApplied: () => void }) {
   }
 
   return (
-    <>
+    <div ref={wrapperRef} style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 8 }}>
+      <span
+        className="num"
+        data-testid="freshness-note"
+        title={
+          'board.json:generated_utc is the export-file timestamp. It is NOT the same claim as ' +
+          '"is the underlying ranking snapshot stale" -- src/freshness.py computes that (T5) on ' +
+          'every board build but does not currently write it into any export artifact, so this ' +
+          'app cannot show it. This is an honest gap, not a silent omission.'
+        }
+        style={{ fontSize: 11, color: 'var(--dim2)', whiteSpace: 'nowrap' }}
+      >
+        {`exported ${boardGeneratedUtc ?? '—'} · snapshot freshness not exported by backend`}
+      </span>
       <button onClick={refresh} disabled={busy} title="Re-read data/export/ and report what changed">
         {busy ? 'Checking…' : 'Refresh data'}
       </button>
       {(report || error) && (
         <div className="refresh-report">
-          {error ? <p>{error}</p> : null}
+          {error ? (
+            <div className="refresh-head">
+              <p style={{ margin: 0 }}>{error}</p>
+              <button onClick={() => setError(null)}>Dismiss</button>
+            </div>
+          ) : null}
           {report ? <Report report={report} onDismiss={() => setReport(null)} /> : null}
         </div>
       )}
-    </>
+    </div>
   );
 }
 

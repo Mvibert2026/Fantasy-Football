@@ -1,4 +1,5 @@
-import { useState, type ReactNode } from 'react';
+import { useRef, useState, type ReactNode } from 'react';
+import { useDismissOnOutsideOrEscape } from '../../lib/dismiss';
 
 /**
  * The assistant's home in the shell: an anchored, collapsed pill by default, ported
@@ -17,6 +18,13 @@ import { useState, type ReactNode } from 'react';
 
 export function AssistantDock({ where, children }: { where: string; children: ReactNode }) {
   const [open, setOpen] = useState(false);
+  const panelRef = useRef<HTMLDivElement | null>(null);
+
+  // Thread 073 dismissible-surface audit: the expanded dock previously only
+  // collapsed via its own "—" button -- no click-outside, no Escape. Collapses
+  // to the pill (not a destructive close -- there is no other state to lose)
+  // matching the existing minimize affordance exactly.
+  useDismissOnOutsideOrEscape(panelRef, open, () => setOpen(false));
 
   if (!open) {
     return (
@@ -49,6 +57,7 @@ export function AssistantDock({ where, children }: { where: string; children: Re
 
   return (
     <div
+      ref={panelRef}
       style={{
         position: 'fixed',
         right: 18,

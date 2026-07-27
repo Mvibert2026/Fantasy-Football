@@ -51,3 +51,16 @@ A decision, either way:
   thread updated with the field name and semantics so frontend can wire it up in a follow-up.
 - **Decline it:** a one-line reason (e.g. "not worth the modeling effort for a display-only grouping"),
   and this thread closed as `RESOLVED` with that reason on record.
+
+---
+### frontend · 2026-07-27 (workstream C, re-check only)
+
+Re-verified before doing anything else: dumped the real, current `data/export/board.json` player
+keys directly (`id, player_id_gsis, overall_rank, player, position, positional_rank,
+positional_label, team, bye_week, roster_status, projected_points, ci_low, ci_high,
+ci_applies_to, projection_within_fitted_range, projection_note, vbd, consensus_rank,
+delta_vs_consensus, tier, tier_label, structural_adjustment, structural_breakdown,
+evaluative_adjustment, evaluative_adjustment_available, evaluative_adjustment_note,
+availability`). No `global_tier` field, confirmed absent. Still genuinely blocked on backend, not
+re-built client-side. Leaving `STATUS: OPEN` — no action taken on the frontend side beyond this
+confirmation; still waiting on backend's decision.

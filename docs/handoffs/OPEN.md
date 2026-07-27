@@ -44,6 +44,7 @@ not an omission. Start your session at your own heading.
 | [064](064-current-state-verification.md) | Current state verification | `pm` | OPEN | 0d | any honest statement about project status |
 | [071](071-global-tier-field-for-all-tab-board-grouping.md) | Global tier field for all tab board grouping | `frontend` | OPEN | 0d | 058 section B1 (design fidelity) |
 | [072](072-sim-staleness-fields-for-league-identity-current.md) | Sim staleness fields for league identity current | `frontend` | OPEN | 0d | 058 section C3 (design fidelity) |
+| [073](073-export-t5-freshness-result-onto-board-json.md) | Export t5 freshness result onto board json | `frontend` | OPEN | 0d | none |
 
 ### `frontend` — 18 waiting
 
