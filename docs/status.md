@@ -1772,3 +1772,44 @@ PlayerDetail.tsx" sentence under the weekly-finishes/season-stats paragraph is n
 pending visual verification). Did not run `tools/handoffs.py sync` per this round's explicit
 dispatch instruction. No founder statements surfaced this session (orchestrator-issued task, not a
 direct founder chat).
+
+---
+
+## 2026-07-27 — Backend: thread 064, CURRENT-STATE.md re-verification
+
+Rewrote `docs/CURRENT-STATE.md` in place against measured, not reported, facts. Full backend suite
+run: **512 passed, 0 failures** (201s). Full frontend suite run: **154 passed, 0 failing** (18
+files, 35s). Commit at verification time: `83170ccfc797471a853c1f7a7dbba3f65a5a0479`. 36 `src/`
+modules, 11 top-level export JSONs + 25 per-config directories (24 real + 1 scratch).
+
+Resolved the 2028/2029 alpha-detection "discrepancy": not a contradiction. ~2028 (ADR-026) is the
+general sign-test floor for beating consensus (n>=6 development seasons). ~2029 (ADR-A) was a
+narrower, stricter figure specific to testing `NEED_ADJUSTMENT_SCALE` under BH correction across a
+14-test family (n>=9 seasons) — and D-001 deleted that parameter on 2026-07-27, so the 2029 figure's
+originating question no longer has a live parameter attached. Both figures were correct for what
+they described; prior sessions (including this file) wrongly treated them as competing answers to
+the same question.
+
+Found a real decision/code drift: **D-001 decided to delete `NEED_ADJUSTMENT_SCALE`, but
+`src/draft_sim.py:284` still defines and uses it.** `decisions-needed.md` records the decision as
+made; the code was not touched. Flagged in CURRENT-STATE.md's "Top open items" as the top drift
+item — this is exactly the "decided vs implemented" trap the thread warned against.
+
+Also found and fixed a stale factual claim carried in CURRENT-STATE.md itself: "depth charts end
+2024" is false — `depth_charts_snapshots` covers through 2026-07-26 (349 daily snapshots, verified
+directly against the table). The `RB_HANDCUFF` archetype gap is a code gap (never computed), not a
+data gap; the two had been conflated.
+
+Removed the "Hard dates" section per D-009 (deadline removed by the founder, decided 2026-07-26).
+
+Added `tests/test_current_state.py` (4 tests): recorded commit must be HEAD or an ancestor of HEAD,
+`Last verified` must be within 14 days of the latest commit date, exactly one canonical header
+exists. This makes the file's own "never let this drift" rule enforceable rather than aspirational.
+
+Did not touch `docs/handoffs/` per thread 064's file boundary (thread 062/065 own mailbox tooling).
+Thread 064 itself is not marked RESOLVED here — that's a mailbox-side action out of this session's
+boundary; reply left for the mailbox owner.
+
+Commit: pending (this session's changes: `docs/CURRENT-STATE.md`, `tests/test_current_state.py`,
+`docs/status.md`). Test count: 512 backend (full suite) + 154 frontend (full suite) + 4 new
+staleness tests = 516 backend total.
