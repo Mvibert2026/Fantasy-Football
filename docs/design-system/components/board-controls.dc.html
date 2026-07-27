@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet" />
+<style>
+:root{--f-ui:'IBM Plex Sans',system-ui,sans-serif;--f-num:'IBM Plex Mono',ui-monospace,monospace;--bg:#090c10;--panel:#14191f;--panel2:#1c222a;--line:#232a33;--line2:#323a45;--txt:#f1f4f8;--dim:#98a2b1;--dim2:#69737f;--acc:#5ecf9e;--down:#f0993f;--up:#5bb4f2;--live:#ff5f56;--fail:#e5544b;--qb:#9d93c4;--rb:#63b39b;--wr:#c39468;--te:#7d9fcf;--def:#8b939f;--soon:#39414e;--r-0:0;--r-ctl:5px;--r-c:6px;--r-pill:999px;--hatch:repeating-linear-gradient(135deg,transparent 0 5px,rgba(240,153,63,.20) 5px 6px)}
+*{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--txt)}
+a{color:var(--up);text-decoration:none}a:hover{color:var(--txt)}
+button{cursor:pointer;font:inherit;color:inherit}
+</style>
+</helmet>
+<div style="min-height:100vh;padding:24px;font-family:var(--f-ui);font-size:13px">
+  <div style="max-width:940px">
+    <div style="font-family:var(--f-ui);font-size:10px;letter-spacing:.14em;color:var(--dim2)">COMPONENTS · PACEINDICATOR · REQUIREMENTCHIP · TABS</div>
+    <h1 style="margin:9px 0 0;font-size:24px;font-weight:700;letter-spacing:-.01em">Three additions from thread 058</h1>
+    <p style="margin-top:10px;font-size:14px;line-height:1.6;color:var(--dim);max-width:66ch;text-wrap:pretty">058 lists eighteen gaps between the running app and the design. Most are not design gaps — they name components that already exist in this system and were not composed into the screen. Two claims in the list are genuinely new and are specified here; one existing pattern is promoted out of <span style="font-family:var(--f-num);font-size:12px">notCounted</span> because a second surface now needs it.</p>
+    <div style="margin-top:8px;font-family:var(--f-num);font-size:10px;color:var(--dim2)">design · 2026-07-27 · handoff 058 sections A, B3, C1, D1</div>
+
+    <div style="margin-top:22px;display:flex;align-items:baseline;gap:10px">
+      <span style="font-family:var(--f-ui);font-size:9.5px;letter-spacing:.11em;color:var(--dim2)">1 · PACEINDICATOR — NEW</span>
+      <span style="flex:1;height:1px;background:var(--line)"></span>
+      <span style="font-family:var(--f-num);font-size:10px;color:var(--dim2)">058 §A</span>
+    </div>
+    <div style="margin-top:10px;padding:15px 16px;border:1px solid var(--line);background:var(--panel);border-radius:var(--r-c)">
+      <div style="font-size:13px;line-height:1.6;color:var(--dim);text-wrap:pretty">The claim: <strong style="color:var(--txt);font-weight:600">how many at this position have gone, against how many would be expected to have gone by this pick.</strong> A bare signed integer cannot make that claim — <span style="font-family:var(--f-num);font-size:12px">+2</span> does not say whether two more were taken or two fewer remain, and <span style="font-family:var(--f-num);font-size:12px">±0</span> currently means both "measured on pace" and "no baseline exists". Those are different claims and the null vocabulary already forbids collapsing them.</div>
+      <div style="margin-top:14px;display:grid;gap:1px;background:var(--line);border:1px solid var(--line)">
+        <div style="display:grid;grid-template-columns:52px 116px 1fr 148px;gap:12px;padding:7px 12px;background:var(--panel2);font-size:9.5px;letter-spacing:.11em;color:var(--dim2)">
+          <span>POS</span><span>TAKEN / EXPECTED</span><span>PACE</span><span>TIER DEPLETION</span>
+        </div>
+        <sc-for list="{{ pace }}" as="p" hint-placeholder-count="5">
+          <div style="display:grid;grid-template-columns:52px 116px 1fr 148px;gap:12px;padding:8px 12px;background:var(--panel);align-items:center">
+            <span style="font-family:var(--f-ui);font-size:11px;font-weight:600;letter-spacing:.045em;color:{{ p.posFg }}">{{ p.pos }}</span>
+            <span style="font-family:var(--f-num);font-size:12px;color:var(--txt);font-variant-numeric:tabular-nums">{{ p.count }}</span>
+            <span style="display:inline-flex;align-items:center;gap:7px;font-size:12.5px;color:{{ p.paceFg }};background:{{ p.paceBg }}">{{ p.paceGlyph }}{{ p.pace }}</span>
+            <span style="font-size:11.5px;color:{{ p.tierFg }}">{{ p.tier }}</span>
+          </div>
+        </sc-for>
+      </div>
+      <div style="margin-top:10px;font-family:var(--f-num);font-size:10px;color:var(--dim2)">board.position_remaining · board.position_tier · pace vs board.consensus_rank</div>
+      <div style="margin-top:13px;padding:12px 13px;border:1px solid var(--down);border-radius:var(--r-c)">
+        <div style="font-family:var(--f-ui);font-size:9.5px;letter-spacing:.11em;color:var(--down)">THE RULE</div>
+        <div style="margin-top:8px;font-size:12.5px;line-height:1.6;color:var(--dim);text-wrap:pretty">Pace renders as a phrase, never a bare sign. A measured zero renders <span style="font-family:var(--f-num);font-size:11.5px;color:var(--txt)">on pace</span>. No consensus baseline renders <span style="font-family:var(--f-num);font-size:11.5px;color:var(--txt)">—</span>. A baseline that exists but cannot yet be compared renders <span style="font-family:var(--f-num);font-size:11.5px;color:var(--txt)">not yet</span> and names the missing input. <strong style="color:var(--txt);font-weight:600">Nothing renders ±0.</strong> DEF has no published replacement level, so DEF pace is <span style="font-family:var(--f-num);font-size:11.5px;color:var(--txt)">—</span> until one exists — adding the row does not mean inventing the number.</div>
+      </div>
+    </div>
+
+    <div style="margin-top:22px;display:flex;align-items:baseline;gap:10px">
+      <span style="font-family:var(--f-ui);font-size:9.5px;letter-spacing:.11em;color:var(--dim2)">2 · REQUIREMENTCHIP — NEW</span>
+      <span style="flex:1;height:1px;background:var(--line)"></span>
+      <span style="font-family:var(--f-num);font-size:10px;color:var(--dim2)">058 §D1 · D2</span>
+    </div>
+    <div style="margin-top:10px;padding:15px 16px;border:1px solid var(--line);background:var(--panel);border-radius:var(--r-c)">
+      <div style="font-size:13px;line-height:1.6;color:var(--dim);text-wrap:pretty">The claim: <strong style="color:var(--txt);font-weight:600">a roster slot requirement and how much of it is met.</strong> Chip's <span style="font-family:var(--f-num);font-size:12px">tag</span> variant carries a derived fact but not a fraction, and the app currently renders this as a wrapped sentence — unscannable under a clock. The satisfied cue is the underline weight, not colour.</div>
+      <div style="margin-top:13px;display:flex;align-items:center;gap:7px;flex-wrap:wrap">
+        <sc-for list="{{ slots }}" as="s" hint-placeholder-count="8">
+          <span style="display:inline-flex;flex-direction:column;gap:4px;padding:4px 9px 3px;border:1px solid {{ s.bd }};border-radius:var(--r-c);background:{{ s.bg }}">
+            <span style="display:inline-flex;align-items:baseline;gap:6px">
+              <span style="font-family:var(--f-ui);font-size:10px;font-weight:600;letter-spacing:.045em;color:{{ s.fg }}">{{ s.slot }}</span>
+              <span style="font-family:var(--f-num);font-size:11px;color:{{ s.numFg }};font-variant-numeric:tabular-nums">{{ s.frac }}</span>
+            </span>
+            <span style="height:2px;background:{{ s.barBg }}"><span style="display:block;height:2px;width:{{ s.barW }};background:{{ s.barFg }}"></span></span>
+          </span>
+        </sc-for>
+      </div>
+      <div style="margin-top:12px;font-size:12.5px;line-height:1.6;color:var(--dim);text-wrap:pretty">IR is a slot like any other and takes the same chip. It renders whether or not anyone occupies it — an empty IR slot is a fact about the roster, and with injury and suspension handling now specified it is about to be read often.</div>
+      <div style="margin-top:9px;font-family:var(--f-num);font-size:10px;color:var(--dim2)">roster.slots[].required · roster.slots[].filled</div>
+    </div>
+
+    <div style="margin-top:22px;display:flex;align-items:baseline;gap:10px">
+      <span style="font-family:var(--f-ui);font-size:9.5px;letter-spacing:.11em;color:var(--dim2)">3 · TABS — PROMOTED FROM notCounted</span>
+      <span style="flex:1;height:1px;background:var(--line)"></span>
+      <span style="font-family:var(--f-num);font-size:10px;color:var(--dim2)">058 §C1</span>
+    </div>
+    <div style="margin-top:10px;padding:15px 16px;border:1px solid var(--line);background:var(--panel);border-radius:var(--r-c)">
+      <div style="font-size:13px;line-height:1.6;color:var(--dim);text-wrap:pretty">"Mode switch" sat in <span style="font-family:var(--f-num);font-size:12px">notCounted</span> because it appeared on one surface. Draft's Board / Opponents / Predictions is the second, so the promotion rule fires. Tabs sit <em>on</em> the panel they control, sentence case, filled active state — the separate all-caps strip above the content reads as global navigation and the founder called out the placement specifically.</div>
+      <div style="margin-top:14px;padding:0 0 14px;background:var(--panel2);border:1px solid var(--line);border-radius:var(--r-c)">
+        <div style="display:flex;gap:4px;padding:8px 8px 0">
+          <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="3">
+            <button style="padding:7px 14px;border:1px solid {{ t.bd }};border-bottom:none;border-radius:var(--r-c) var(--r-c) 0 0;background:{{ t.bg }};color:{{ t.fg }};font-size:12.5px;font-weight:{{ t.fw }}" style-hover="color:var(--txt)">{{ t.label }}</button>
+          </sc-for>
+        </div>
+        <div style="height:1px;background:var(--line)"></div>
+        <div style="padding:14px 15px;font-size:12.5px;color:var(--dim)">Panel content. The active tab's bottom edge is open to it — that adjacency is the whole point of moving them down here.</div>
+      </div>
+      <div style="margin-top:12px;font-size:12.5px;line-height:1.6;color:var(--dim);text-wrap:pretty">Active state is background plus border plus weight. Colour alone never carries it, same rule as Chip's filter variant.</div>
+    </div>
+
+    <div style="margin-top:22px;display:flex;align-items:baseline;gap:10px">
+      <span style="font-family:var(--f-ui);font-size:9.5px;letter-spacing:.11em;color:var(--dim2)">4 · SORT ROW — NOT A NEW COMPONENT</span>
+      <span style="flex:1;height:1px;background:var(--line)"></span>
+      <span style="font-family:var(--f-num);font-size:10px;color:var(--dim2)">058 §B3</span>
+    </div>
+    <div style="margin-top:10px;padding:15px 16px;border:1px solid var(--line);background:var(--panel);border-radius:var(--r-c)">
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <span style="font-family:var(--f-ui);font-size:9.5px;letter-spacing:.11em;color:var(--dim2)">SORT</span>
+        <sc-for list="{{ sorts }}" as="s" hint-placeholder-count="4">
+          <span style="padding:3px 10px;border:1px solid {{ s.bd }};border-radius:var(--r-c);background:{{ s.bg }};color:{{ s.fg }};font-size:12px;font-weight:{{ s.fw }};cursor:pointer">{{ s.label }}</span>
+        </sc-for>
+      </div>
+      <div style="margin-top:12px;font-size:12.5px;line-height:1.6;color:var(--dim);text-wrap:pretty">These are Chip <span style="font-family:var(--f-num);font-size:12px">filter</span> chips, which already specify the interactive radius and the selected treatment. What was missing is not a component but two rules: the active sort is always marked, and the choice persists for the session. Building this as a new component would be the third time something in this product got built twice.</div>
+    </div>
+
+    <div style="margin-top:22px;display:flex;align-items:baseline;gap:10px">
+      <span style="font-family:var(--f-ui);font-size:9.5px;letter-spacing:.11em;color:var(--dim2)">5 · ALREADY SPECIFIED — NOT DESIGN GAPS</span>
+      <span style="flex:1;height:1px;background:var(--line)"></span>
+      <span style="font-family:var(--f-num);font-size:10px;color:var(--dim2)">058 §B1 B2 C2 F</span>
+    </div>
+    <div style="margin-top:10px;border:1px solid var(--line);border-radius:var(--r-c);overflow:hidden">
+      <div style="display:grid;grid-template-columns:64px 1fr 1fr;gap:12px;padding:8px 13px;background:var(--panel2);font-size:9.5px;letter-spacing:.11em;color:var(--dim2)">
+        <span>058</span><span>WHAT IT ASKS FOR</span><span>WHERE IT ALREADY LIVES</span>
+      </div>
+      <sc-for list="{{ existing }}" as="e" hint-placeholder-count="4">
+        <div style="display:grid;grid-template-columns:64px 1fr 1fr;gap:12px;padding:9px 13px;background:var(--panel);border-top:1px solid var(--line);align-items:baseline">
+          <span style="font-family:var(--f-num);font-size:11px;color:var(--dim2)">{{ e.id }}</span>
+          <span style="font-size:12.5px;color:var(--dim)">{{ e.ask }}</span>
+          <span style="font-family:var(--f-num);font-size:11px;color:var(--acc)">{{ e.where }}</span>
+        </div>
+      </sc-for>
+    </div>
+    <div style="margin-top:11px;padding:13px 15px;border:1px solid var(--down);border-radius:var(--r-c)">
+      <div style="font-family:var(--f-ui);font-size:9.5px;letter-spacing:.11em;color:var(--down)">WHY THIS DISTINCTION MATTERS</div>
+      <div style="margin-top:8px;font-size:12.5px;line-height:1.6;color:var(--dim);text-wrap:pretty">Four of 058's items are components this system already defines, with variants, screens and rules written down. They are missing from the running app because the screen was composed without them — not because the design was silent. Filing them as design gaps would produce a second definition of each, which is precisely how ValuePair and TypeAhead each got built twice.</div>
+    </div>
+
+    <div style="margin-top:14px;padding:14px 16px;border:1px solid var(--line);background:var(--panel);border-radius:var(--r-c)">
+      <div style="font-family:var(--f-ui);font-size:9.5px;letter-spacing:.11em;color:var(--dim2)">PROPS</div>
+      <div style="margin-top:9px;font-family:var(--f-num);font-size:11.5px;line-height:1.75;color:var(--dim);white-space:pre-wrap">{{ props }}</div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1000,&quot;height&quot;:1400}}">
+class Component extends DCLogic{
+  renderVals(){
+    const P={RB:"var(--rb)",WR:"var(--wr)",TE:"var(--te)",QB:"var(--qb)",DEF:"var(--def)"};
+    return {
+      pace:[
+        {key:"rb",pos:"RB",posFg:P.RB,count:"12 / 9",pace:"3 more gone than expected",paceGlyph:"▲ ",paceFg:"var(--down)",paceBg:"transparent",tier:"tier 1 gone · tier 2: 1 left",tierFg:"var(--down)"},
+        {key:"wr",pos:"WR",posFg:P.WR,count:"14 / 14",pace:"on pace",paceGlyph:"",paceFg:"var(--dim)",paceBg:"transparent",tier:"tiers 1–2 gone",tierFg:"var(--dim)"},
+        {key:"te",pos:"TE",posFg:P.TE,count:"4 / 6",pace:"2 fewer gone than expected",paceGlyph:"▼ ",paceFg:"var(--acc)",paceBg:"transparent",tier:"tier 1: 2 left",tierFg:"var(--dim)"},
+        {key:"qb",pos:"QB",posFg:P.QB,count:"3 / 3",pace:"not yet — needs 4+ picks at position",paceGlyph:"",paceFg:"var(--dim2)",paceBg:"transparent",tier:"tier 1: 5 left",tierFg:"var(--dim)"},
+        {key:"def",pos:"DEF",posFg:P.DEF,count:"0 / —",pace:"—",paceGlyph:"",paceFg:"var(--dim2)",paceBg:"transparent",tier:"—",tierFg:"var(--dim2)"}
+      ],
+      slots:(()=>{
+        const rows=[["QB",0,1],["RB",1,2],["WR",3,3],["TE",0,1],["FLEX",0,2],["DEF",0,1],["IR",0,1],["BN",4,6]];
+        return rows.map(([slot,f,r])=>{
+          const met=f>=r;
+          return {key:slot,slot,frac:f+"/"+r,
+            bd:met?"var(--line2)":"var(--line)",bg:met?"var(--panel2)":"transparent",
+            fg:met?"var(--txt)":"var(--dim)",numFg:met?"var(--txt)":"var(--dim2)",
+            barBg:"var(--line)",barFg:met?"var(--acc)":"var(--dim2)",barW:Math.round(100*f/r)+"%"};
+        });
+      })(),
+      tabs:[
+        {key:"b",label:"Board",bg:"var(--panel)",bd:"var(--line)",fg:"var(--txt)",fw:"600"},
+        {key:"o",label:"Opponents",bg:"transparent",bd:"transparent",fg:"var(--dim2)",fw:"400"},
+        {key:"p",label:"Predictions",bg:"transparent",bd:"transparent",fg:"var(--dim2)",fw:"400"}
+      ],
+      sorts:[
+        {key:"1",label:"Our rank",bg:"var(--panel2)",bd:"var(--line2)",fg:"var(--txt)",fw:"600"},
+        {key:"2",label:"Consensus",bg:"transparent",bd:"var(--line)",fg:"var(--dim2)",fw:"400"},
+        {key:"3",label:"Delta",bg:"transparent",bd:"var(--line)",fg:"var(--dim2)",fw:"400"},
+        {key:"4",label:"Proj pts",bg:"transparent",bd:"var(--line)",fg:"var(--dim2)",fw:"400"}
+      ],
+      existing:[
+        {key:"b1",id:"B1",ask:"Tier bands grouping the board, with a count per band",where:"DataRow · variant tier-header"},
+        {key:"b2",id:"B2",ask:"Positional rank on the row — WR12, not WR",where:"Chip · variant code"},
+        {key:"c2",id:"C2",ask:"A DRAFT LIVE state indicator",where:"StatusBanner · variant live-draft"},
+        {key:"f",id:"F",ask:"Monospace footer naming the fields feeding a panel",where:"Disclosure · variant provenance-line"}
+      ],
+      props:"PaceIndicator\n  pos        position code\n  taken      int\n  expected   int | null       null renders — , never ±0\n  pace       'ahead' | 'behind' | 'on-pace' | 'not-yet' | 'none'\n  reason     string           required when pace is 'not-yet'\n  tierLine   string | null\n\nRequirementChip\n  slot       'QB'|'RB'|'WR'|'TE'|'FLEX'|'DEF'|'IR'|'BN'\n  filled     int\n  required   int\n  satisfied  derived           underline weight, never colour alone\n\nTabs\n  items      {id,label}[]      sentence case\n  active     id\n  placement  'on-panel'        the only supported value"
+    };
+  }
+}
+</script>
+</body>
+</html>

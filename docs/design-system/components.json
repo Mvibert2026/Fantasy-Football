@@ -1,7 +1,7 @@
 {
   "$schema": "draft-assistant/component-inventory/1",
-  "version": "1.0.0",
-  "generated": "2026-07-26",
+  "version": "1.1.0",
+  "generated": "2026-07-27",
   "scope": "Every reusable element across 17 states: Draft (4), Settings (6), Mock Lab (7).",
   "method": "Named by what the element claims, not where it sits. Two elements with the same claim are one component with variants, even if they were built twice.",
   "components": [
@@ -458,19 +458,103 @@
         }
       ],
       "rule": "Radius --r-m, --sh elevation, eyebrow + title + a strip of real numbers."
+    },
+    {
+      "id": "pace-indicator",
+      "name": "PaceIndicator",
+      "ref": "components/board-controls.dc.html",
+      "claim": "How many at a position have gone, against how many would be expected to have gone by this pick.",
+      "variants": [
+        {
+          "id": "ahead",
+          "treatment": "▲ + phrase in --down — more taken than expected"
+        },
+        {
+          "id": "behind",
+          "treatment": "▼ + phrase in --acc — fewer taken than expected"
+        },
+        {
+          "id": "on-pace",
+          "treatment": "'on pace' in --dim, no glyph — a MEASURED zero"
+        },
+        {
+          "id": "not-yet",
+          "treatment": "reason string in --dim2 naming the missing input. NO hatch — hatch is reserved for stale, and not-yet is a null claim, not a stale one."
+        },
+        {
+          "id": "none",
+          "treatment": "— , no baseline exists"
+        }
+      ],
+      "screens": [
+        "draft.board"
+      ],
+      "find": "058 §A. A bare signed integer was rendering three different claims: ahead, on pace, and no-baseline. ±0 expressed both a measured zero and an absent comparison.",
+      "rule": "Renders as a phrase, never a bare sign. NOTHING renders ±0. DEF carries no published replacement level, so DEF pace is — until one exists. not-yet must never borrow the stale hatch: value-state defines null as '--dim2, no hatch' and stale as '--dim2 + --hatch'. Collapsing them is the same substitution this component exists to prevent.",
+      "fields": "board.position_remaining · board.position_tier · pace vs board.consensus_rank"
+    },
+    {
+      "id": "requirement-chip",
+      "name": "RequirementChip",
+      "ref": "components/board-controls.dc.html",
+      "claim": "A roster slot requirement and how much of it is met.",
+      "variants": [
+        {
+          "id": "unmet",
+          "treatment": "transparent bg, --dim label, --dim2 underline"
+        },
+        {
+          "id": "partial",
+          "treatment": "underline width = filled/required"
+        },
+        {
+          "id": "satisfied",
+          "treatment": "--panel2 lift, --txt label, --acc underline at full width"
+        }
+      ],
+      "states": [
+        "QB RB WR TE FLEX DEF IR BN"
+      ],
+      "screens": [
+        "draft.roster-rail",
+        "mocklab.logging"
+      ],
+      "find": "058 §D1. The app rendered this as a wrapped sentence — unscannable under a clock. 058 §D2 flagged IR as missing; IR is not a special case.",
+      "rule": "Satisfied is carried by underline weight, never by colour alone. IR renders whether or not it is occupied.",
+      "fields": "roster.slots[].required · roster.slots[].filled",
+      "referenceData": "The reference file renders QB 0/1 (unmet), RB 1/2 and BN 4/6 (partial), WR 3/3 (satisfied) so all three variants are visible, per the every-variant-visible contract in DESIGN-SYSTEM.md."
+    },
+    {
+      "id": "tabs",
+      "name": "Tabs",
+      "ref": "components/board-controls.dc.html",
+      "claim": "Which view of this panel you are looking at.",
+      "variants": [
+        {
+          "id": "on-panel",
+          "treatment": "sentence case, boxed, filled active state, bottom edge open to the panel"
+        }
+      ],
+      "screens": [
+        "draft.board",
+        "draft.opponents",
+        "draft.predictions",
+        "mocklab"
+      ],
+      "find": "PROMOTED from notCounted 2026-07-27. Sat there as 'mode switch' with one surface; 058 §C1 is the second surface, so the promotion rule fires.",
+      "rule": "Active state is background + border + weight. Colour alone never carries it — same rule as Chip filter. Tabs sit on the panel they control, never in a separate strip above it."
     }
   ],
   "notCounted": [
     "nav rail item",
-    "mode switch",
     "sticky action bar",
     "assistant dock",
     "mini board grid",
     "CI whisker"
   ],
-  "notCountedWhy": "Each appears on exactly one surface and has no variants yet. Promote to a component the second a second screen needs it — that is the drift this inventory exists to catch.",
+  "notCountedWhy": "Each appears on exactly one surface and has no variants yet. Promote to a component the second a second screen needs it — that is the drift this inventory exists to catch. 'Mode switch' was promoted to Tabs on 2026-07-27 when handoff 058 supplied its second surface — the rule working as intended.",
   "files": {
-    "count": 6,
+    "count": 7,
     "list": [
       "components/value-pair.dc.html",
       "components/value-state.dc.html",
@@ -479,8 +563,39 @@
       "components/banner.dc.html",
       "components/progress.dc.html",
       "components/disclosure.dc.html",
-      "components/data-row.dc.html"
+      "components/data-row.dc.html",
+      "components/board-controls.dc.html"
     ],
-    "note": "Eight reference files cover twelve components. Stepper, TypeAhead and HeroBand share data-row.dc.html; IdentityChip shares chip.dc.html — each is anchored, not duplicated."
+    "note": "Nine reference files cover fifteen components. Stepper, TypeAhead and HeroBand share data-row.dc.html; IdentityChip shares chip.dc.html; PaceIndicator, RequirementChip and Tabs share board-controls.dc.html — each is anchored, not duplicated."
+  },
+  "amended": "2026-07-27 — three components added from handoff 058 (sections A, C1, D1). Four of 058's items were already specified and are recorded as composition gaps, not design gaps.",
+  "compositionGaps": {
+    "note": "Recorded 2026-07-27 from handoff 058. These are components this system already defines that the running app does not compose. They are NOT design gaps and must not be redesigned — that is how ValuePair and TypeAhead each got built twice.",
+    "items": [
+      {
+        "handoff": "058 §B1",
+        "ask": "tier bands with a per-band count",
+        "component": "data-row",
+        "variant": "tier-header"
+      },
+      {
+        "handoff": "058 §B2",
+        "ask": "positional rank on the row (WR12, not WR)",
+        "component": "chip",
+        "variant": "code"
+      },
+      {
+        "handoff": "058 §C2",
+        "ask": "DRAFT LIVE state indicator",
+        "component": "banner",
+        "variant": "live-draft"
+      },
+      {
+        "handoff": "058 §F",
+        "ask": "monospace footer naming the fields feeding a panel",
+        "component": "disclosure",
+        "variant": "provenance-line"
+      }
+    ]
   }
 }
