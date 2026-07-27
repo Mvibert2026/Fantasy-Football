@@ -29,3 +29,60 @@ away density — that trade is the ESPN 2025 mistake this product is explicitly 
 ## Done looks like
 Frequency arrays on Board availability badges, row height unchanged, screenshot attached showing
 before and after at the same viewport. Commit hash and test count.
+
+---
+
+## AMENDMENT applied — 2026-07-27, see `029-AMENDMENT-retarget-to-draftroom.md`
+
+Retargeted from `Board.tsx` to `DraftRoom.tsx` before this session started work. Read the amendment
+file in full before the reply below.
+
+---
+### frontend · 2026-07-27
+
+Built against `DraftRoom.tsx`, per the amendment -- not `Board.tsx`.
+
+**Dot array:** added a `RowDots` component to the availability cell in `DraftRoom.tsx`'s available-
+players list, next to the existing baseline→live text. Reused the same `dotsFilled`/`freqText`
+helpers (`ui/data/liveAvailability.ts`) that already back `Dots` in `PlayerDetail.tsx` and
+`SpotlightDots` in `Availability.tsx` -- this is the same component logic at a smaller scale (4px
+dots, 1.5px gap vs. the 6-7px used on those two screens), not a reimplementation. Same honesty rule
+as `PlayerDetail`'s `HON-02` fix: the array only renders when there is a real number behind it
+(`avail.live ?? avail.baseline` when baseline is present), never a fabricated zero-filled array when
+neither exists yet.
+
+**Tier grouping:** ported `Board.tsx`'s existing band-divider pattern (it already had this for the
+Prep board -- see thread 037 item 4, which is what surfaced that Board and DraftRoom each have half
+of the full spec). Headers read `TIER N -- M players left`. Restricted to a single position tab
+(not `ALL`), for the same reason `Board.tsx` restricts it: `tier_label` is assigned per position, so
+under `ALL`, consecutive rows from different positions can carry the same tier string without
+describing the same tier, and grouping them would misrepresent it as one group.
+
+**Row-height constraint (verified, not assumed):** ran the app in a real browser session (own dev-
+server instance on port 5174 via a new `prep-verify` entry added to `.claude/launch.json`, since
+another chat had port 5173's `prep` server running for this same repo). Measured a live row's
+`getBoundingClientRect().height` at 32.15px, then set the dot wrapper's `display` to `none` in the
+live DOM and re-measured: still 32.15px, identical. The row's height is governed by its 13px name
+text, not by the 4px dots, which is why this holds. Also confirmed: `TIER` headers render only on
+non-`ALL` tabs, dot fill counts (e.g. "7 in 10 drafts") track the underlying unrounded probability
+correctly against the rounded percent shown alongside it, and there is no horizontal overflow
+(`documentElement.scrollWidth === clientWidth`, pane `scrollWidth === clientWidth`).
+
+**Screenshot:** attempted twice (fresh preview-server start, `wait` before capture) -- the `computer`
+screenshot action failed both times with "the Browser pane is not displayed, so the page is not
+compositing frames," which appears to be an environment limitation of this session rather than an
+app problem (`get_page_text`, `read_page`, and `javascript_tool` all worked normally against the same
+live page). So: **built and verified live in a running browser via DOM measurement, but no actual
+screenshot image exists from this session.** Per the project's own evidence standard (`operating-
+model.md`: "a screenshot a human has looked at"), this does not clear the bar on its own -- reporting
+it as "built, pending screenshot verification," not done. Whoever can get a screenshot out of this
+environment (or the founder, glancing at the running app) should close the loop.
+
+`tsc -b --noEmit`: clean. No dedicated `DraftRoom.tsx` test file exists in the suite to run against
+this change; `ui/__tests__/draft.test.ts` (7 tests) and `ui/__tests__/board-filters.test.tsx` (13
+tests, covers `Board.tsx`'s unaffected tier-band code) both still pass. Commit `2e38f96`.
+
+Leaving `STATUS: BLOCKED-ON-YOU` is not right either since the ask (TO: frontend) is functionally
+done -- setting `STATUS: OPEN` rather than `RESOLVED` specifically because the screenshot half of
+"Done looks like" is unmet, and this project's postmortem is exactly a case of a screen being marked
+done without one.

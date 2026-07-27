@@ -115,3 +115,30 @@ thread's item 2 ask (fill the template, don't build the feature). Flipped 039's 
 not frontend. Ran `python tools/handoffs.py sync` afterward; `OPEN.md` regenerated clean.
 
 Items 1, 3, 4 untouched — leaving `STATUS: OPEN` on this thread for whoever picks those up.
+
+---
+### frontend · 2026-07-27
+
+Item 1 only, per this session's task assignment.
+
+**Finding before doing anything:** the `<1%` branch and its test coverage were **already in the
+working tree**, committed in `09391e4` — the same WIP checkpoint commit whose message says "Thread
+037 opened." `lib/format.ts::percent()` already has `if (n > 0 && n < 0.005) return '<1%';` with the
+`HON-05` doc comment, and `__tests__/format.test.ts` already asserted `percent(0)` → `'0%'` and
+several sub-half-percent values → `'<1%'` as distinct outputs. So the defect this item describes was
+fixed in the same session that opened the thread to report it — the thread just never got a closing
+reply, which is exactly the "thread with no reply is indistinguishable from a thread nobody opened"
+failure mode the protocol warns about.
+
+Added the one thing the ask specified literally that wasn't already present verbatim: a test
+asserting `percent(0.003)` → `'<1%'` specifically (existing tests covered 0.001/0.004/0.0049, not
+0.003), plus an explicit `not.toBe` assertion against `percent(0)` so the distinctness claim is
+checked directly rather than inferred from two separate expectations. `npx vitest run
+ui/__tests__/format.test.ts` → 5 passed (was 4). Commit `1d45d27`.
+
+No screenshot needed — this is a pure formatting-function unit test, not a rendered screen; nothing
+observable changed in any view (callers of `percent()` already had the corrected string since
+`09391e4`).
+
+Items 3 and 4 remain untouched — out of scope for this session's assignment. Leaving `STATUS: OPEN`
+since the thread as a whole (TO: frontend, backend) is not fully resolved.
