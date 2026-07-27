@@ -109,7 +109,8 @@ def build_features(store: SeasonStore, feature_season: int, pids: Sequence[str],
                 (ps.air_yards / ps.targets) if ps.targets else 0.0,  # aDOT proxy
             ]
         if situation is not None:
-            feats += situation.features_for(pid).as_list()
+            feats += situation.features_for(
+                pid, positions.get(pid, ps.position)).as_list()
         rows.append(FeatureRow(pid, positions.get(pid, ps.position),
                                np.array(feats, dtype=float), ps, p2))
     return rows
@@ -303,10 +304,11 @@ def _component_value(ps: PlayerSeason, comp: str, usage_arm: bool) -> float:
 def fit(store: SeasonStore, train_pair_seasons: List[int], usage_arm: bool,
         target_season: int, qb_td_cap: float = W_CAP_TD,
         vacated: bool = False, qb_direct: bool = False,
-        vac_exclude_self: bool = False) -> FittedModel:
+        vac_exclude_self: bool = False, rookies: bool = False) -> FittedModel:
     """train_pair_seasons: seasons s such that (features s-1 -> outcome s) is a
     training pair. All must be < target_season (asserted via data layer).
-    vacated: V3 situation features. qb_direct: V4 QB season-points ridge."""
+    vacated: V3 situation features. qb_direct: V4 QB season-points ridge.
+    rookies: V7 rookie-arrival draft capital (requires vacated)."""
     # Assemble training pairs
     pairs: List[Tuple[FeatureRow, PlayerSeason]] = []
     ps_pairs: List[Tuple[PlayerSeason, PlayerSeason]] = []
@@ -318,7 +320,8 @@ def fit(store: SeasonStore, train_pair_seasons: List[int], usage_arm: bool,
         universe = frozen_universe(store, s)
         outcome = store.player_seasons(s, for_target=target_season)
         positions = {pid: pos for pos, pids in universe.items() for pid in pids}
-        sit = (Situation(store, s, usage_arm, exclude_self=vac_exclude_self)
+        sit = (Situation(store, s, usage_arm, exclude_self=vac_exclude_self,
+                         rookies=rookies)
                if vacated else None)
         rows = build_features(store, s - 1, list(positions), positions,
                               usage_arm, target_season=s, situation=sit)

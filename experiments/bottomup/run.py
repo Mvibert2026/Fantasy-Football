@@ -56,7 +56,8 @@ def _opportunities_pg(ps) -> float:
 
 def run_arm(store: SeasonStore, arm: str, folds: List[int],
             qb_td_cap: Optional[float] = None, vacated: bool = False,
-            qb_direct: bool = False, vac_exclude_self: bool = False) -> dict:
+            qb_direct: bool = False, vac_exclude_self: bool = False,
+            rookies: bool = False) -> dict:
     from .situation import Situation
     usage_arm = arm == "usage"
     results: Dict[str, dict] = {}
@@ -74,8 +75,10 @@ def run_arm(store: SeasonStore, arm: str, folds: List[int],
         fit_kwargs = {} if qb_td_cap is None else {"qb_td_cap": qb_td_cap}
         model = fit(store, pair_seasons, usage_arm, target_season=t,
                     vacated=vacated, qb_direct=qb_direct,
-                    vac_exclude_self=vac_exclude_self, **fit_kwargs)
-        sit = (Situation(store, t, usage_arm, exclude_self=vac_exclude_self)
+                    vac_exclude_self=vac_exclude_self, rookies=rookies,
+                    **fit_kwargs)
+        sit = (Situation(store, t, usage_arm, exclude_self=vac_exclude_self,
+                         rookies=rookies)
                if vacated else None)
         rows = build_features(store, t - 1, list(positions), positions,
                               usage_arm, target_season=t, situation=sit)
@@ -231,6 +234,10 @@ def main() -> None:
                     help="V5/V6: remove the player's own production from "
                          "his own vacated shares (kills the availability "
                          "self-leak; registered amendment)")
+    ap.add_argument("--rookies", action="store_true",
+                    help="V7: same-position rookie-arrival draft capital "
+                         "(registered FABLE-EXT3 before this code existed; "
+                         "requires --vacated)")
     ap.add_argument("--tag", default="", help="output filename suffix")
     args = ap.parse_args()
     outdir = Path(args.out)
@@ -238,18 +245,24 @@ def main() -> None:
     store = SeasonStore(Path(args.db))
     for arm in args.arms.split(","):
         folds = LONG_FOLDS if arm == "long" else USAGE_FOLDS
+        if args.rookies and not args.vacated:
+            raise SystemExit("--rookies requires --vacated (V7 is V5 + rookie "
+                             "features, per registration)")
         results = run_arm(store, arm, folds, qb_td_cap=args.qb_td_cap,
                           vacated=args.vacated, qb_direct=args.qb_direct,
-                          vac_exclude_self=args.exclude_self_vacated)
+                          vac_exclude_self=args.exclude_self_vacated,
+                          rookies=args.rookies)
         summary = summarise(results, folds)
         payload = {"arm": arm, "folds": folds, "per_season": results,
                    "summary": summary,
                    "qb_td_cap_override": args.qb_td_cap,
                    "vacated": args.vacated, "qb_direct": args.qb_direct,
                    "vac_exclude_self": args.exclude_self_vacated,
+                   "rookies": args.rookies,
                    "registration":
                        "docs/reviews/fable-ranking-design-2026-07-27.md + "
-                       "docs/reviews/FABLE-EXT2-2026-07-27.md (V3/V4)",
+                       "docs/reviews/FABLE-EXT2-2026-07-27.md (V3/V4) + "
+                       "docs/reviews/FABLE-EXT3-2026-07-27.md (V7)",
                    "holdout_untouched": True}
         path = outdir / f"{arm}{args.tag}.json"
         path.write_text(json.dumps(payload, indent=1))

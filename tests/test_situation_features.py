@@ -18,7 +18,8 @@ sys.path.insert(0, str(ROOT))
 
 from experiments.bottomup import data as bdata  # noqa: E402
 from experiments.bottomup.data import PlayerSeason  # noqa: E402
-from experiments.bottomup.situation import N_FEATURES, Situation  # noqa: E402
+from experiments.bottomup.situation import (N_FEATURES, N_ROOKIE_FEATURES,  # noqa: E402
+                                            Situation)
 
 _CANDIDATES = [
     ROOT.parent.parent.parent / "data" / "nfl.db",
@@ -41,8 +42,9 @@ def _ps(pid, team, targets=0, receptions=0, carries=0, attempts=0):
 class FakeStore:
     """Duck-typed store: prior-season aggregates + weeks-1-4 rosters."""
 
-    def __init__(self, prior, early):
+    def __init__(self, prior, early, rookies=None):
         self._prior, self._early = prior, early
+        self._rookies = rookies or {}
 
     def player_seasons(self, season, *, for_target=None):
         assert for_target is None or season < for_target
@@ -50,6 +52,9 @@ class FakeStore:
 
     def early_rosters(self, season):
         return self._early
+
+    def rookie_draft_capital(self, season):
+        return self._rookies
 
 
 @pytest.fixture
@@ -148,6 +153,85 @@ def test_unknown_player_gets_zero_features(scenario):
     sit = Situation(scenario, 2020, usage_arm=True)
     fz = sit.features_for("NOBODY")
     assert fz.as_list() == [0.0] * N_FEATURES
+
+
+# ---------------------------------------------------------------- V7 rookies
+# Registration: docs/reviews/FABLE-EXT3-2026-07-27.md, frozen and committed
+# before situation.py grew the rookie code path.
+
+
+@pytest.fixture
+def rookie_scenario(scenario):
+    # KC drafts an RB at overall 10 (round 1) and a WR at overall 200;
+    # LV drafts nothing at the fantasy positions.
+    return FakeStore(scenario._prior, scenario._early,
+                     rookies={("KC", "RB"): [10], ("KC", "WR"): [200]})
+
+
+def test_v7_rookie_capital_for_incumbent_rb(rookie_scenario):
+    sit = Situation(rookie_scenario, 2020, usage_arm=True,
+                    exclude_self=True, rookies=True)
+    f2 = sit.features_for("P2", "RB")  # KC incumbent RB
+    assert len(f2.as_list()) == N_FEATURES + N_ROOKIE_FEATURES
+    cap, top64, interaction = f2.rookie
+    assert cap == pytest.approx(10 ** -0.5)
+    assert top64 == 1.0
+    # interaction = capital x KC's (self-excluded) vacated CARRY share (RB)
+    assert interaction == pytest.approx((10 ** -0.5) * (20 / 220))
+
+
+def test_v7_position_relevant_interaction_share(rookie_scenario):
+    sit = Situation(rookie_scenario, 2020, usage_arm=True,
+                    exclude_self=True, rookies=True)
+    f1 = sit.features_for("P1", "WR")  # KC WR: late-round WR rookie only
+    cap, top64, interaction = f1.rookie
+    assert cap == pytest.approx(200 ** -0.5)
+    assert top64 == 0.0  # overall 200 is not top-64
+    # WR interaction uses the vacated REC share, not the carry share
+    assert interaction == pytest.approx((200 ** -0.5) * (80 / 200))
+
+
+def test_v7_no_rookies_means_zero_triple(rookie_scenario):
+    sit = Situation(rookie_scenario, 2020, usage_arm=True,
+                    exclude_self=True, rookies=True)
+    f5 = sit.features_for("P5", "WR")  # LV drafted nobody
+    assert f5.rookie == (0.0, 0.0, 0.0)
+    assert len(f5.as_list()) == N_FEATURES + N_ROOKIE_FEATURES
+
+
+def test_v7_off_keeps_v5_vector_length(rookie_scenario):
+    sit = Situation(rookie_scenario, 2020, usage_arm=True, exclude_self=True)
+    assert len(sit.features_for("P2", "RB").as_list()) == N_FEATURES
+
+
+def test_v7_unknown_player_zero_padded(rookie_scenario):
+    sit = Situation(rookie_scenario, 2020, usage_arm=True,
+                    exclude_self=True, rookies=True)
+    fz = sit.features_for("NOBODY", "RB")
+    assert fz.as_list() == [0.0] * (N_FEATURES + N_ROOKIE_FEATURES)
+
+
+@needs_db
+def test_v7_crosswalk_totality_2003_2024():
+    """Every crosswalked draft_picks team code must be a canonical code
+    observed in that season's weekly stats — the registration's guard that
+    no PFR code fails to resolve (silent-zero hazard, T3/T9 lesson)."""
+    store = bdata.SeasonStore(DB_PATH)
+    pfr_codes = set(bdata.PFR_TEAM_MAP)
+    for season in range(2003, 2025):
+        observed = set(store.early_rosters(season).values())
+        rookie_teams = {team for team, _pos in
+                        store.rookie_draft_capital(season)}
+        assert not rookie_teams & pfr_codes, (season, rookie_teams & pfr_codes)
+        missing = rookie_teams - observed
+        assert not missing, f"{season}: unresolved team codes {missing}"
+
+
+@needs_db
+def test_v7_known_pick_2017_mccaffrey():
+    store = bdata.SeasonStore(DB_PATH)
+    caps = store.rookie_draft_capital(2017)
+    assert 8 in caps.get(("CAR", "RB"), []), "CMC 2017 overall 8 missing"
 
 
 @needs_db

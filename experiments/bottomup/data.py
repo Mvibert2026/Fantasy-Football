@@ -40,6 +40,18 @@ FRANCHISE_MAP = {"OAK": "LV", "SD": "LAC", "STL": "LA", "JAC": "JAX"}
 
 def canon_team(team: str) -> str:
     return FRANCHISE_MAP.get(team, team)
+
+
+# draft_picks carries PFR-era team codes (GNB, KAN, ...). Crosswalk declared
+# in the V7 registration (FABLE-EXT3-2026-07-27.md); identity elsewhere, then
+# canon_team so era codes (OAK/STL/...) land on the modern franchise.
+PFR_TEAM_MAP = {"GNB": "GB", "KAN": "KC", "NOR": "NO", "NWE": "NE",
+                "SFO": "SF", "TAM": "TB", "SDG": "LAC", "STL": "LA",
+                "OAK": "LV", "LVR": "LV", "LAR": "LA"}
+
+
+def pfr_canon_team(team: str) -> str:
+    return canon_team(PFR_TEAM_MAP.get(team, team))
 # ADR-016 draft-relevant depths (make_board.py RELEVANT_DEPTH) — universe rule.
 UNIVERSE_DEPTH = {"QB": 20, "RB": 45, "WR": 60, "TE": 20}
 
@@ -278,6 +290,37 @@ class SeasonStore:
         }
         self._early_cache[season] = out
         return out
+
+    _ROOKIE_SQL = """
+    SELECT team, position, pick FROM draft_picks
+    WHERE season = ? AND position IN ('QB','RB','WR','TE')
+      AND pick IS NOT NULL
+    """
+
+    def rookie_draft_capital(self, season: int
+                             ) -> Dict[Tuple[str, str], List[int]]:
+        """Season-`season` NFL draft picks at the four fantasy positions:
+        {(canonical team, position): [overall pick numbers]}.
+
+        Pre-season information — the draft is an April event, complete
+        before ADP forms — so reading season = target season is NOT a
+        look-ahead (V7 registration, FABLE-EXT3-2026-07-27.md). FB is
+        excluded by registration. Team codes are PFR-era and crosswalked
+        via pfr_canon_team; the crosswalk-totality test in
+        tests/test_situation_features.py is the guard that no code fails
+        to resolve (the T3/T9 lesson: a silent zero, not an error, is the
+        failure mode to fear).
+        """
+        if not hasattr(self, "_rookie_cache"):
+            self._rookie_cache: Dict[int, Dict[Tuple[str, str], List[int]]] = {}
+        if season in self._rookie_cache:
+            return self._rookie_cache[season]
+        out: Dict[Tuple[str, str], List[int]] = defaultdict(list)
+        for row in self.conn.execute(self._ROOKIE_SQL, (season,)):
+            out[(pfr_canon_team(row["team"]), row["position"])].append(
+                int(row["pick"]))
+        self._rookie_cache[season] = dict(out)
+        return self._rookie_cache[season]
 
     def birthdates(self) -> Dict[str, str]:
         if self._birthdates is None:
