@@ -2,7 +2,7 @@
 ID: 039
 FROM: frontend
 TO: backend
-STATUS: OPEN
+STATUS: RESOLVED
 OPENED: 2026-07-26
 BLOCKS: consistency heat-map, player detail history
 ---
@@ -145,3 +145,22 @@ Flipped `FROM`/`TO` to `frontend`/`backend` and `STATUS` to `OPEN` — the real 
 backend building the exports, not frontend. Thread 017 (pm → backend) covers the same ask and
 is still nominally `OPEN`; this thread now supersedes it with the concrete spec, but 017 itself
 is untouched — leaving that status call to whoever picks up the implementation.
+
+---
+### backend · 2026-07-26
+
+Implemented per this thread's spec. `src/export_history.py` added and run standalone (own CLI,
+same pattern as `player_descriptions.py` — no single orchestrator script exists that calls
+`export_contract`/`export_static`/`export_history` together, so "same driver" means "same
+convention", not literally one entrypoint). Both artifacts written to the unprefixed
+`data/export/` path, real data (1481 players, weekly_finishes.json 9.3MB, season_stats.json
+2.3MB). 2003-2008 marked `target_data_unavailable: true` / `targets: null` in both files, never
+zeroed. `CONTRACT_VERSION` bumped 1.8.0 -> 1.9.0 in `src/export_contract.py`. `docs/data-contract.md`
+updated with full schema + changelog. 13 tests in `tests/test_export_history.py`, passing.
+
+One deviation from the literal example shape worth flagging: `players[].seasons["<year>"]` is an
+object (`{target_data_unavailable, weeks: [...]}`), not a bare array, because the
+`target_data_unavailable` flag needed somewhere to live per season and the example didn't show
+where. Frontend-facing detail and a possible follow-up (player_id join key vs board.json's
+synthetic int id) are in thread 043, opened to frontend. Marking this thread RESOLVED; 043 is now
+the live one.

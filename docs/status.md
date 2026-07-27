@@ -1248,3 +1248,56 @@ include this session's additions. Full ADR entry in `docs/decisions.md`
 ("2026-07-26 -- ADR-C: pre-registration convention, extended (thread 020)"). Thread 020
 replied to and marked RESOLVED; `docs/handoffs/OPEN.md` re-synced via `tools/handoffs.py sync`.
 No founder statements surfaced this session.
+
+---
+## 2026-07-26 -- backend: weekly finishes / season stats exports (threads 017, 039, 043)
+
+Implemented thread 017's ask (pm), already spec'd concretely by thread 039 (frontend) earlier
+this session cycle. New `src/export_history.py` exports two artifacts from real
+`player_weekly_stats` data (`data/nfl.db`), same standalone-script pattern as
+`player_descriptions.py`:
+
+- `data/export/weekly_finishes.json` -- per player, per season, per week positional finish
+  (`RANK() OVER (PARTITION BY season, week, position ORDER BY fantasy_points_ppr DESC)`).
+- `data/export/season_stats.json` -- per player, per season aggregate (games, targets,
+  receptions, receiving/rushing yards and TDs, fantasy_points_ppr).
+
+Player universe: 1481 players with >=1 row for `season >= 2018` at QB/RB/WR/TE (matches the
+board population; this project ingests no K/DEF stats). Season detail rows go back as far as
+each player's own history allows.
+
+Hard constraint (carried from thread 017, checked directly before writing the constant):
+targets are present but not reliably measured for 2003-2008 -- league-wide `SUM(targets)`
+collapses to single digits those six seasons versus 16,000+ in adjacent years, a
+charting-coverage artifact, not a real football zero. Both files mark those season rows
+`target_data_unavailable: true` and emit `targets: null`, never `0`.
+
+Judgment call flagged rather than decided silently: 2025 data is included in both exports.
+`holdout.py`'s lock governs season 2025 for model *selection* (which ranking factors to use);
+nothing in this module selects a factor or fits a weight, it reshapes historical box scores for
+display (consistency heat-map, player detail history). Reasoning is in `export_history.py`'s
+module docstring; flagged in thread 043 to frontend and here in case a future session disagrees.
+
+`CONTRACT_VERSION` bumped 1.8.0 -> 1.9.0 in `src/export_contract.py`. All six per-league
+`CONTRACT_VERSION`-tagged artifacts (board/availability/league/rosters/glossary/nulls/opponents)
+regenerated so `test_committed_artifact_matches_current_contract_version` passes against the new
+constant -- this was NOT optional busywork: the bump alone breaks that regression test (added
+after a real incident, commit b39a548) until the committed files catch up. `docs/data-contract.md`
+updated with the new artifacts' schema and two changelog entries (1.9.0, plus a backfilled 1.8.0
+entry for `rosters.json` that was missing from the changelog -- noticed while editing, not
+otherwise investigated).
+
+13 new tests in `tests/test_export_history.py` (synthetic in-memory DB group + a `requires_db`
+real-data spot-check), all passing. Ran only the targeted export test files this session per
+instruction (other agents concurrently on the same DB) -- `tests/test_export_history.py` +
+`tests/test_export_contract.py`, 50 passed. Did NOT run the full suite; did NOT touch the
+pre-existing, unrelated `test_handoffs.py::test_mailbox_health` failure (threads 020/023/025
+resolved-with-no-artifact, 029 has no `TO:` role) -- out of scope for an export-path-only task,
+noted in CURRENT-STATE.md instead.
+
+Threads 017 and 039 replied to and marked RESOLVED by backend. New thread 043 opened to
+frontend with the concrete file paths/shapes and a flagged possible follow-up: `board.json`
+exposes no usable player-id join key today (`player_id_gsis` is always emitted `null`), so
+joining these new files to `board.json` client-side by `player_id` isn't yet possible -- may need
+a small `board.json` change if the heat-map wiring needs it. `docs/handoffs/OPEN.md` re-synced
+via `tools/handoffs.py sync`. No founder statements surfaced this session.
