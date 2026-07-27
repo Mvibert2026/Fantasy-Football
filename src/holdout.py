@@ -190,13 +190,21 @@ def walk_forward_splits(
 DEFAULT_LOCK = HoldoutLock()
 
 
-def load_season(
+def load_season_registered(
     year: int,
     prereg_id: str,
     lock: HoldoutLock = DEFAULT_LOCK,
     prereg_directory: Optional[Path] = None,
 ) -> int:
     """ADR-C's data-access guard (docs/adr-drafts/ADR-C-preregistration.md,
+
+    RENAMED from `load_season` (H2, session-1 overfitting review): the old
+    name collided with `draft_sim.load_season` — a DIFFERENT, ungated dataset
+    loader with four production callers (`ds.load_season`) — so a grep for
+    "load_season" made ungated season reads look prereg-gated. This function
+    had zero production callers at rename time, so the rename was free; it
+    stops being free the moment ADR-E wires it.
+
     thread 020): "All season data loads through one function... It reads the
     registration's data_scope.seasons and raises HoldoutViolation if `year`
     is outside it, or if `year == 2025` and `holdout_unsealed` is not `true`."
