@@ -1717,3 +1717,58 @@ under Built and working, which is now stale (order is BPA, not shuffled, per thr
 consolidated sync after all 9 agents finish) — set thread 051's `STATUS: RESOLVED` directly in its file;
 `docs/handoffs/OPEN.md` will pick that up on the next sync. No founder statements surfaced this session
 (orchestrator-issued task, not a direct founder chat).
+
+---
+
+**Frontend session, same 9-way round: thread 043 contract audit + thread 052 frontend half.**
+Two tasks, scoped to `lib/`, tests, and `PlayerDetail.tsx` only.
+
+Thread 043: did a real field-level audit rather than trusting the changelog's own claim. Pulled
+`data/export/board.json` on disk (`contract_version: 1.9.0`) and diffed its 26 player-row keys
+against `BOARD_TRACE_FIELDS` in `frontend/ui/data/trace-fields.ts` — exact match both directions,
+confirming no `CONTRACT_VERSION`-tagged field actually changed shape at 1.9.0, only two new
+sibling files (`weekly_finishes.json`/`season_stats.json`) were added, each carrying its own
+`export_version`. Recorded the audit outcome as a real `TRACE_CHANGELOG` entry (not just a bumped
+number) before setting `TRACE_CONTRACT = '1.9.0'`. `trace-fields.test.ts` went from the one
+pre-existing failure noted in `docs/CURRENT-STATE.md` to green (6/6). Set thread 043
+`STATUS: RESOLVED`.
+
+Thread 052: checked for a backend reply before starting per this round's dispatch instructions,
+found none, began building the honest "not yet joinable" fallback string for `PlayerDetail.tsx`
+§7/§8. Backend's join-key fix (ADR-048: `player_id_gsis` populated 378/378, 371/378 resolving
+against `weekly_finishes.json`) landed mid-session, so switched paths and wired the real data
+instead, per this thread's own instruction to do so once a key is confirmed. New
+`frontend/ui/data/playerHistory.ts` lazily fetches and module-caches the two history files
+(~11.6MB combined, not per-league, only needed once a player sheet opens) and joins on
+`player_id_gsis`. Four honest states kept distinct per Principle #2 — `loading`, `no-key` (this
+row specifically), fetch `error`, and `ready`-but-no-rows (the 7/378 real per-player misses,
+rendered with a different string than the old board-wide "not yet joinable" reason, since after
+the fix a per-player miss is a different claim). Each of §7/§8 wrapped in a small error boundary
+(`HistorySectionBoundary`) so a defect in the new rendering can't blank the rest of the sheet.
+
+**Not screenshot-verified, and flagging why rather than hedging.** This session independently hit
+the exact same Browser-pane limitation two sibling sessions in this same round also hit
+(`screenshot` timing out with "the Browser pane is not displayed, so the page is not compositing
+frames" every attempt) — but went further and found `computer.left_click` itself unreliable too,
+not just `screenshot`: three independent no-op tests on freshly-navigated, correctly-sized tabs
+(player-row select, theme toggle, nav-tab switch) all failed to produce any observable state
+change despite reporting success at valid coordinates. One click, early in the session before this
+was diagnosed, did produce a real React render error inside `PlayerDetail` (a structured component-
+stack error naming `Board`/`App`) that could not be reproduced afterward even after reducing the
+component to a single `return <div/>` as the literal first line of the function body — consistent
+with a one-time Vite Fast-Refresh artifact from that hot update (the DraftRoom sibling session's
+own entry above notes seeing this exact file mid-debug-stub, corroborating the timing), not
+confirmed as a real logic bug either way. TypeScript compiles clean (`tsc --noEmit` shows zero
+errors in any of the four files touched) and the full suite is green (154/154, 18 files, no
+regressions) — but per `docs/operating-model.md`'s own stated failure mode, a green suite is not
+evidence a screen renders. Recommend the next session with working Browser tooling, or the founder
+manually, open a player's detail sheet and look at §7/§8 before this is trusted as correct.
+
+Commit `de6e257` (thread 043 + 052, both files). `docs/CURRENT-STATE.md` not touched this round
+(reserved for backend/thread 052 per dispatch instructions) — the lines that should eventually
+change there: frontend test count (127→154, but that's mostly sibling work this round, not mine
+alone to attribute), contract 1.9.0's `TRACE_CONTRACT` drift now fixed, and the "Not yet wired into
+PlayerDetail.tsx" sentence under the weekly-finishes/season-stats paragraph is now stale (wired,
+pending visual verification). Did not run `tools/handoffs.py sync` per this round's explicit
+dispatch instruction. No founder statements surfaced this session (orchestrator-issued task, not a
+direct founder chat).

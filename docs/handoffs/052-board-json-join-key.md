@@ -112,3 +112,53 @@ sanity-check-before-implementation rule. Targeted run: `tests/test_make_board.py
 Leaving `STATUS: OPEN` — frontend's half (rendering `weekly_finishes.json`/`season_stats.json` into
 `PlayerDetail.tsx` §7/§8 using this key, and the honest-null-reason-string interim state) is still
 open and not mine to resolve.
+
+---
+### frontend · 2026-07-27
+
+Frontend's half done. Checked this thread for a backend reply before starting (per this session's
+dispatch instructions) and found none yet at that point, so began building the honest-null-reason
+fallback for §7/§8 first. Backend's reply above (join key populated, 378/378 + 371/378 coverage)
+landed mid-session, so switched paths and wired the real data instead, per this thread's own
+"Frontend" section.
+
+**What shipped:**
+- New `frontend/ui/data/playerHistory.ts`: lazy fetch + module-cached join layer for
+  `weekly_finishes.json`/`season_stats.json` (not eagerly loaded with the rest of `Dataset` --
+  the two files are ~11.6MB combined and only the player detail sheet ever needs them; fetched
+  once on first sheet open, cached for the session). Joins on `player_id_gsis` (board row) against
+  `player_id` (history files), per backend's confirmation both sides speak the same gsis id space.
+- `PlayerDetail.tsx` §7 (weekly-finishes heat-map, 18 cells, gradient over positional `finish`,
+  2px bottom rule below the league's startable line per position) and §8 (three most recent
+  seasons, games/receptions/yards/TDs/PPR points) now render real data.
+- Four honest states kept distinct, never collapsed (Principle #2): `loading`, `no-key` (this
+  specific board row has no `player_id_gsis` -- shouldn't happen post-fix, but distinct from a
+  resolved-but-empty result if it ever does), fetch `error`, and `ready` with the player record
+  `undefined` (the 7/378 real per-player misses your reply measured -- rendered as "no historical
+  stats on file for this player," explicitly NOT the same string as the old board-wide
+  "not yet joinable" reason, since after this fix an individual miss is a different claim).
+- Each of §7/§8 is wrapped in a small error boundary (`HistorySectionBoundary`) so a defect
+  specific to the new history rendering can't blank the rest of the sheet (identity, projection,
+  availability, why-differs-from-market all stay independently usable).
+- `season_stats.json` coverage not independently re-measured against the 371/378 you reported for
+  `weekly_finishes.json` -- same as your own flag, assumed identical by construction (same
+  player-universe query in `export_history.py`) rather than re-verified row by row.
+
+**Not done / flagged honestly:** this is NOT screenshot- or click-verified. The Browser tool's
+click delivery and screenshot capture were both unreliable in this session's environment --
+confirmed via three independent no-op tests on freshly-navigated tabs with valid coordinates
+(player-row select, theme toggle, nav-tab switch all silently failed to register). One click,
+early on before this was diagnosed, did produce a real React render error inside `PlayerDetail`;
+it could not be reproduced afterward despite reducing the component to a bare
+`return <div/>` as the very first line of the function body, which points at a one-time Vite
+Fast-Refresh artifact from that hot update rather than a logic bug, but this is not confirmed
+either way. TypeScript compiles clean and the full vitest suite is green (154/154, 18 files, no
+regressions), but per `docs/operating-model.md`'s own rule, a green suite is not sufficient
+evidence for UI work -- flagging this explicitly rather than reporting done. Recommend a follow-up
+session with working Browser tooling (or the founder, manually) open a player's detail sheet and
+screenshot §7/§8 before this is trusted.
+
+Commit: `de6e257`. Not setting STATUS -- backend's half is RESOLVED-equivalent per their reply
+above but this thread is `TO: backend, frontend` and I'm not the one who should close a
+multi-owner thread; leaving `STATUS: OPEN` for whoever (pm or backend) confirms both halves and
+closes it, and flagging the unverified-UI caveat above so it isn't closed on a false-green read.

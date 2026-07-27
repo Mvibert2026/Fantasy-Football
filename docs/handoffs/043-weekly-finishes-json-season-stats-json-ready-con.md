@@ -82,3 +82,29 @@ this session broke, and not silently ignorable either, since a red test in the s
 either way until someone checks. TRACE_CONTRACT's bump plus the actual weekly_finishes.json /
 season_stats.json wiring into PlayerDetail.tsx sections 7/8 remain unimplemented. Leaving
 STATUS: OPEN -- this note doesn't resolve the thread, just confirms the red test is on the map.
+
+---
+### frontend · 2026-07-27
+
+Resolving. Did a genuine field-level audit, not a version-number paper-over: pulled the real
+`data/export/board.json` on disk (`contract_version: 1.9.0`) and diffed its 26 player-row keys
+against `BOARD_TRACE_FIELDS` in `frontend/ui/data/trace-fields.ts` (which was still pinned to
+1.8.0's field set). Exact match, both directions -- nothing added, nothing dropped, nothing
+renamed. `player_id_gsis` is present as before and (at the time of this check, before thread 052
+landed) was still emitted null for all 378 players, confirming the bump really is a pure version
+marker as this thread's original body claimed. Wrote the audit outcome into `TRACE_CHANGELOG`
+as a real entry (not skipped) so the next session doesn't have to re-derive "no shape change"
+from source, then bumped `TRACE_CONTRACT` to `1.9.0`.
+
+`ui/__tests__/trace-fields.test.ts` is green: 6/6 tests passing (verified via
+`npx vitest run ui/__tests__/trace-fields.test.ts` and again in the full suite run,
+154/154 passing across 18 files, no regressions).
+
+Also actioned the second half of this thread's own ask (the join-key gap you flagged in the
+"Done looks like" section) -- see the frontend reply on thread 052 for the weekly_finishes.json/
+season_stats.json wiring into PlayerDetail.tsx §7/§8, since backend landed a working join key
+(thread 052/ADR-048) partway through this same session.
+
+Commit: `de6e257`.
+
+STATUS: RESOLVED.
