@@ -1,0 +1,86 @@
+{
+ "when": "2026-07-27T14:13:34.250Z",
+ "failures": 1,
+ "report": [
+  {
+   "name": "dev server reachable",
+   "ok": true,
+   "detail": "http://localhost:5173"
+  },
+  {
+   "name": "app rendered content",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "no load-failure banner",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "suggester closed on Draft-tab mount",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "pick counter readable",
+   "ok": true,
+   "detail": "pick=1"
+  },
+  {
+   "name": "suggester opens on click into field",
+   "ok": false,
+   "detail": ""
+  },
+  {
+   "name": "suggester closes on Escape",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "suggester opens on typing",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "five picks committed",
+   "ok": true,
+   "detail": "pick 1 -> 6"
+  },
+  {
+   "name": "suggester NEVER reopens after a commit (063)",
+   "ok": true,
+   "detail": "0/5 commits reopened it"
+  },
+  {
+   "name": "undo removes exactly one pick",
+   "ok": true,
+   "detail": "pick 6 -> 5"
+  },
+  {
+   "name": "suggester closed after undo (063)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "suggester closed on return to Draft tab (063)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "picks persist across reload",
+   "ok": true,
+   "detail": "pick 5 vs 5 after reload"
+  },
+  {
+   "name": "suggester closed after reload (063)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "no console errors during the loop",
+   "ok": true,
+   "detail": ""
+  }
+ ]
+}

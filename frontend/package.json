@@ -12,6 +12,7 @@
     "pretest": "node scripts/sync-exports.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
+    "smoke": "node e2e/smoke.mjs",
     "typecheck": "tsc -b --noEmit"
   },
   "dependencies": {
@@ -29,6 +30,7 @@
     "@types/react-dom": "^18.3.1",
     "@vitejs/plugin-react": "^4.3.4",
     "jsdom": "^25.0.1",
+    "playwright": "^1.62.0",
     "typescript": "^5.6.3",
     "vite": "^5.4.11",
     "vitest": "^2.1.8"
