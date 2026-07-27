@@ -13,33 +13,17 @@ session log and contains superseded figures presented in the same voice as curre
 hazard `docs/assistant-context.md` warns about for `decisions.md`. It is fine to read `status.md`
 to learn *what happened*; it is not fine to read it to learn *what is true*.
 
-**Last verified:** 2026-07-27, backend session (thread 064, narrowed scope) — build-state table
-below is measured directly from `git rev-parse HEAD`, the real backend/frontend test-suite runs,
-`CONTRACT_VERSION` in `src/export_contract.py`, and file counts in `src/`/`data/export/`. Nothing in
-this pass was inferred by reading source to determine what is or isn't built — see the note at the
-top of "Built and working" for that section's own verification status, which is separate and older.
-
-**Updated same-day, later session (ADR-050, branch `backend/t9-t5-t4-t6-correctness-floor`,
-commit `67fc244` base):** backend test count is now **585 passed, 0 failed** (`pytest ../tests -q`,
-full suite, real `nfl.db` copied into the worktree), up from 516 — T9/T5/T4/T6 added 32 new tests
-(`test_team_codes.py`, `test_freshness.py`, `test_roster_status.py`, `test_suspensions.py`, plus
-one added to `test_export_history.py`) net of no removals. `CONTRACT_VERSION` is now **1.10.0**.
-Frontend row below is unchanged/not re-verified this pass.
-
-**Updated same-day, later session still (ADR-051, thread 053/067, FR-015 steps 2+3):**
-`make_board.py`'s live/display consensus board (`SOURCE`) rewired from `fantasypros_ecr` (old,
-rank-only, format-blind DynastyProcess mirror) to `fantasypros_csv_2026draft` (founder's own
-FantasyPros Half-PPR CSV export). A new `TRAINING_SOURCE = "fantasypros_ecr"` constant keeps the
-rank->points curve fitting on the historical multi-season mirror (the new CSV source has no
-season history of its own yet) — see ADR-051 for why a straight swap would have silently emptied
-the board. `CONTRACT_VERSION` is now **1.11.0** (new `board.json` field: `scoring_format`).
-Primary board rebuilt: **511 players** (was 378 under the old source). `ethans_expert_league`
-board also rebuilt: 511 players. 2026 rookies confirmed present with real ranks (Jeremiyah Love
-#33, Carnell Tate #70, Jordyn Tyson #84). Handoff thread 069 opened to `frontend` (schema change;
-header needs a `scoring_format` display, currently unbuilt — visual confirmation pending).
-Backend test count: **603 passed, 1 failed** (`pytest tests/ -q`, full suite) — the 1 failure is
-the pre-existing, already-flagged `test_handoffs.py::test_mailbox_health` (duplicate handoff ID
-066), unrelated to this session.
+**Last verified:** 2026-07-27, sprint-closeout session (main @ `cf5935e`, post-merge with
+`origin/main`) — build-state table below is measured directly from `git rev-parse HEAD`, real
+backend/frontend full-suite runs, `CONTRACT_VERSION` in `src/export_contract.py`, and
+`tools/handoffs.py check`. `CONTRACT_VERSION` is **1.11.0** (ADR-051: `board.json` gained
+top-level `scoring_format`; `board_source`/`consensus_source` now name
+`fantasypros_csv_2026draft`; ADR-050: `board.json` gained `roster_status`, contract 1.10.0).
+Primary board and `ethans_expert_league` both rebuilt at 511 players; 2026 rookies confirmed
+present with real ranks (Jeremiyah Love #33, Carnell Tate #70, Jordyn Tyson #84). Half-PPR yardage
+bonuses independently verified to stack against the live Yahoo platform (ADR-052) — see §7 of
+`CLAUDE.md`. Handoff thread 069 (scoring_format display) and the trace-field-registry gate (below)
+are both still open to `frontend`, not touched this session.
 
 ---
 
@@ -47,12 +31,12 @@ the pre-existing, already-flagged `test_handoffs.py::test_mailbox_health` (dupli
 
 | | Value | Notes |
 |---|---|---|
-| Backend branch / commit | `master`, `c8738ed8cc8c3d8bfc4f7f23a2d771ecb85c33cf` | Local only — **no git remote configured** |
-| Backend tests | **516 passing, 0 failures** | Full suite, `pytest -q`, single run, 199s. No concurrent DB contention observed this run (checked for another active backend session first). |
-| Agent infrastructure | **Live** | Six subagents in `.claude/agents/` (backend, frontend, data-ops, strategist, researcher, librarian), `/inbox` command, mailbox tooling at `tools/handoffs.py` + `tools/sprint_status.py`, mailbox health enforced in the test suite (`tests/test_handoffs.py`) |
-| Data contract | **1.11.0** | `CONTRACT_VERSION` in `src/export_contract.py`, read directly. Bumped this session (ADR-051): `board.json` gained top-level `scoring_format`; `board_source`/`consensus_source` now name `fantasypros_csv_2026draft`. |
+| Backend branch / commit | `main`, `cf5935ef4bd3d79e8b51b480a207fb4b622f0cf3` | Pushed, in sync with `origin/main` (remote: `github.com/Mvibert2026/Fantasy-Football`) |
+| Backend tests | **607 passing, 0 failures** | Full suite, `pytest tests/ -q`, single run, ~417s, real `data/nfl.db`. |
+| Agent infrastructure | **Live** | Six subagents in `.claude/agents/` (backend, frontend, data-ops, strategist, researcher, librarian), `/inbox` command, mailbox tooling at `tools/handoffs.py` + `tools/sprint_status.py`, mailbox health enforced in the test suite (`tests/test_handoffs.py`) — **72 threads, 46 open, 0 stale** (`tools/handoffs.py check`, 2026-07-27) |
+| Data contract | **1.11.0** | `CONTRACT_VERSION` in `src/export_contract.py`, read directly. `board.json` carries `scoring_format` (ADR-051) and `roster_status` (ADR-050). |
 | Frontend location | `frontend/` subdirectory of this repo | Merged from `frontend-prep` via `git subtree add`, full history preserved. No longer a separate working copy. |
-| Frontend tests | **181 passing, 0 failing** (19 files) | Full suite, `npx vitest run`, single run, ~47s, measured directly after merging both 063 and 058 together (was 154 before either; 063 alone would have been 163, 058 alone 172 — 181 confirms both sets of additions are present with no loss). |
+| Frontend tests | **179 passing, 2 failing** (19 files) | Full suite, `npx vitest run`, single run, ~55s. The 2 failures are `ui/__tests__/trace-fields.test.ts` — **red by design**: `TRACE_CONTRACT` is still pinned to `1.9.0` and the trace registry doesn't know `roster_status` yet, correctly catching that nobody has acknowledged the 1.10.0/1.11.0 contract bumps in the frontend's own field registry. Not fixed here — frontend's to pick up (handoff 069 territory). |
 | Python modules | **36** in `src/` | `ls src/*.py \| wc -l` |
 | Export artifacts | **11** top-level files in `data/export/` | `ls data/export/*.json \| wc -l` |
 | Config matrix | 26 dirs under `data/export/` | board + league + availability stub only; **hazard model not rerun per config**; count is a raw directory count, not inspected for which are real league configs vs. scratch. The 26th is `ethans_expert_league` (real league 2, see below), not a scratch probe config. |
@@ -278,8 +262,8 @@ board banding stays position-scoped (already correct pre-thread); the design's "
 turned out to be the §5.1 sim-staleness state (no `sim_generated_at`/`sim_settings_hash` in this
 export), not a multi-league marker, and isn't buildable without those backend fields. Full detail and
 corrections to the thread's reading in the thread 058 reply. (Frontend test count for this thread
-alone was 172, measured before 063 was merged in — see the PENDING-REMEASURE note in Build state
-above for the real post-merge count.)
+alone was 172, measured before 063 was merged in — see Build state above for the real, current
+post-merge count.)
 
 ## Not built / null-stated
 

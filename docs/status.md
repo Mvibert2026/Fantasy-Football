@@ -2250,3 +2250,114 @@ check — stated plainly rather than implied.
 
 Full detail and both corrections appended to the `docs/handoffs/058-draft-board-design-gap.md`
 thread reply.
+
+---
+
+## 2026-07-27 — Sprint closeout (Claude Code, main working directory)
+
+**1. Quiesce.** No agents running (`TaskList` empty). `git status -sb` at start: `ahead 2, behind
+3`, plus the untracked pile described below.
+
+**2. The stash.** `stash@{0}` ("other-session-wip-t1-halfppr-2026-07-27") was checked for
+redundancy before touching it: grepped for its test names and ADR content against `main` — none
+of it existed there. Genuinely unique work (T2 live-Yahoo scoring verification, three new
+`test_scoring.py` tests, `tests/fixtures/league_scoring_live.json`), not a duplicate of the
+T9/T5/T6/T4/make_board work that had landed on `main` first. Applied (`stash apply`, not `pop`) to
+see the real conflicts: **5 files**, not the 4 named in the brief — `decisions.md`,
+`founder-requests.md`, `handoffs/053-founder-csv-ingestion.md`, `status.md`, and
+`frontend/e2e/artifacts/report.json` (unflagged going in). Resolved as append-only concatenation
+per instruction; `status.md` and `handoffs/053` needed the stash's content placed *before* the
+already-landed content, not after, because the already-landed entries explicitly say "after
+data-ops' crosswalk fix" / "before make_board.py rewires onto it" — textual evidence of real
+narrative order, not a guess. `founder-requests.md`'s FR-015 conflict was two independently-written,
+same-topic entries interleaved by git's line-based merge around a byte-identical founder quote;
+reconstructed as two complete, non-scrambled entries rather than hand-merged into one. `report.json`
+taken from either side then regenerated for real via `npm run smoke` (16/16) — not hand-edited.
+ADR-050 collision (stash's "yardage bonuses stack" ADR vs. already-landed T9/T5/T6/T4 ADR-050):
+renumbered the stash's to **ADR-052** via `tools/handoffs.py adr next`, every reference updated
+across `CLAUDE.md`, `CURRENT-STATE.md`, `ACTION-PLAN-2026-08.md`, `status.md`, `handoffs/067`.
+Backend suite green (607 passed) before committing (`fbd4ec3`); stash dropped only after.
+
+**3. Reconcile.** Before: `ahead 3, behind 3` (after the stash commit). `git merge origin/main`
+surfaced two more real conflicts, both in append-only/generated docs (`status.md`, `OPEN.md`) —
+`OPEN.md` regenerated via `sync` rather than hand-merged (its own header says "do not hand-edit").
+Merging in `origin/main`'s frontend/058 work surfaced a **third, independent thread-ID collision**
+(see below). Backend green (607 passed) and frontend green-modulo-red-by-design (179 passed, 2
+failed) on the merged tree before committing the merge (`cf5935e`). Pushed. After: `ahead 0, behind
+0`.
+
+**4. Unmerged branches.** `git branch -a` audited against `main` post-reconcile. Every branch is
+now merged except **`worktree-agent-a254f18ab4bde998e`** (tip `a246696`, "Backfill FantasyPros
+rankings 2021-2024; escalate live-API scoring=HALF switch," thread 018). Checked before flagging as
+a gap: thread 018 is `STATUS: RESOLVED` on `main`, but `a246696`'s actual code
+(`tests/test_ingest_rankings.py`, 5 tests) never merged. However `main` already carries an
+independent, later commit (`6ee3371`) that re-derives the *same* finding (DynastyProcess mirror has
+no half-PPR variant; live API caps at 10 rows/response; don't switch) with **more** tests (7, not
+5) and the same conclusion recorded in `src/ingest_rankings.py`'s own docstring. `a246696` is
+redundant, not missing work — safe to leave orphaned; not deleted (branch deletion not requested).
+`fable/ext-2026-07-27` untouched, per instruction.
+
+**5. Duplicate ID — two more instances, not one.** The named 066 collision: hand-typed
+`066-recurring-injury-suspension-feed.md` (untracked, predates this session) vs. the already-merged
+066 (`066-contract-1-10-0-...`). Renamed to the `NEW-*.md` convention, `sync` allocated **070**;
+every reference updated (`founder-requests.md`, `ACTION-PLAN-2026-08.md`, `status.md`). Separately,
+the `origin/main` merge (step 3) brought in `frontend/058`'s own hand-typed `069-global-tier-...`
+and `070-sim-staleness-...` threads, which collided with the 069/070 already on `main`. Same fix,
+same convention: renumbered to **071/072**, self-references in `058-draft-board-design-gap.md`
+updated. `test_mailbox_health` is green; `tools/handoffs.py check` reports 72 threads, 46 open, 0
+stale, all addressed.
+
+**6. Mailbox.** Synced last, after every status settled. 72 threads, 46 open, 0 stale. 24
+contradiction warnings printed by `check` — all pre-existing heuristic flags (antonym-verb
+shared-target pairs, mostly the already-known `randomise`/`randomize` false-positive pattern, plus
+4 references to already-`DECIDED` `D-021`) — reviewed, none are a new real contradiction, none
+re-litigated this round.
+
+**7. Tests.** Backend: **607 passed, 0 failed** (`pytest tests/ -q`, ~417s, real `data/nfl.db`).
+Frontend: **179 passed, 2 failed** (`npx vitest run`, ~55s). The 2 failures
+(`ui/__tests__/trace-fields.test.ts`) are **red by design** — `TRACE_CONTRACT` is pinned at `1.9.0`
+and the trace registry doesn't know `roster_status`, correctly catching that nobody has bumped it
+for the 1.10.0/1.11.0 contract changes. Not fixed here; it's frontend's open item (handoff 069).
+
+**8. State.** `docs/CURRENT-STATE.md` updated in place: the three stacked "Updated same-day, later
+session" paragraphs at the top (a pre-existing violation of this file's own in-place-edit rule)
+consolidated into one current statement; `Build state` table's branch/commit/remote line (stale
+`master`, no-remote) and both test-count rows corrected to measured figures; a dangling
+"PENDING-REMEASURE note" cross-reference (pointed at a note this edit removed) fixed to point at
+the table directly. All figures in this update are freshly measured this session, not copied from
+a thread reply.
+
+**9. Self-audit.**
+
+- **What the founder caught that the project should have:** the ADR-050 collision, correctly
+  identified as the *second* same-day numbering collision after 066. The project's own tooling
+  (`adr next`, the `NEW-*.md` allocator) was working correctly every time it was actually invoked —
+  it never produced a wrong number. The real finding: a **third** instance turned up mid-closeout
+  (thread 069/070 hand-typed on `frontend/058`), and all three collisions trace to branches that
+  forked *before* the allocator tooling existed (built same-day, thread 065) or to sessions that
+  never ran it. So this isn't "hard to reach" (it's documented in `docs/handoffs/README.md`, which
+  is required reading) or "easy to forget" once known — it's a rollout-lag problem plus a real
+  structural gap: the allocator only protects a single working copy at `sync`/`check` time, with
+  no mechanism to stop two independent branches from each picking the same free number before
+  either has seen the other's history. `CLAUDE.md` itself — the one file every agent is told is
+  "standing law," read first, before any handoff doc — never mentions the allocator or the
+  `NEW-*.md` convention at all. That's the concrete, fixable gap: a one-line pointer from
+  `CLAUDE.md` to `docs/handoffs/README.md`'s numbering rule would make it something an agent
+  can't miss rather than something they have to already know to go looking for.
+- **What any agent asserted this round that turned out wrong:** the stashed data-ops reply's own
+  claim — "ADR-050 added to `docs/decisions.md` (number from `tools/handoffs.py adr next`,
+  confirmed 50)" — was true when written and wrong by the time it landed, because a different
+  branch claimed 050 first and the number was never re-checked at merge time. Not a tooling bug;
+  the tool answers "what's free right now," not "what will still be free when this merges."
+- **What's stale, contradictory, or superseded:** the three-paragraph pileup at the top of
+  `CURRENT-STATE.md` (fixed, see step 8); the dangling `PENDING-REMEASURE` cross-reference (fixed);
+  `worktree-agent-a254f18ab4bde998e` (superseded, not deleted); the pile of untracked working-tree
+  content from the T1/T2 sessions (`data/leagues/ethans_expert_league.json`, the FantasyPros/FTN
+  CSV pulls under `data/user pulled fantasy data/`, the Yahoo/League-2 screenshots,
+  `docs/design-inbox/Fantasy football draft app.zip`, `scripts/rebuild_ethans_expert_league.py`,
+  `tests/fixtures/league_scoring_live.json`, `tests/test_league2_ethans_expert.py`,
+  `docs/handoffs/067-t1-multiformat-consensus-rescope.md`) was deliberately left untracked — none
+  of it was part of the named conflicts or the ID collisions, and sweeping an unreviewed pile
+  (including a binary zip of unverified provenance) into a commit without being asked is exactly
+  the kind of scope creep this closeout should avoid. Tests pass with it present on disk regardless
+  of git-tracking status. Flagging for the founder/backend to decide whether it should be committed.
