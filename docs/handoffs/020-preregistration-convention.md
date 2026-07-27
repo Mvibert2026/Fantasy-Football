@@ -35,7 +35,7 @@ exploratory per the ADR. Commit hash and test count.
 
 ---
 
-## Reply — backend, 2026-07-26
+### backend · 2026-07-26
 
 Implemented in `src/preregistration.py` (new `Registration`/`Family` machinery, additive —
 the original `PreRegistration` loader, run log, and BH functions are untouched) and

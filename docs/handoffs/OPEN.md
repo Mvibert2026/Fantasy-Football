@@ -4,7 +4,7 @@
 Threads are the source of truth. Change a thread's `STATUS:`, then re-run sync.
 Protocol: [`README.md`](README.md).
 
-**31 open** · 18 resolved
+**33 open** · 18 resolved
 
 ---
 
@@ -19,7 +19,7 @@ not an omission. Start your session at your own heading.
 |---|---|---|---|---|---|
 | [005](005-fantasypros-tier.md) | Fantasypros tier | `pm` | BLOCKED-ON-YOU | 0d | bootstrap CIs, full-board projections |
 
-### `backend` — 15 waiting
+### `backend` — 16 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
@@ -38,8 +38,9 @@ not an omission. Start your session at your own heading.
 | [044](044-roster-aware-recommendations.md) | Roster aware recommendations | `pm` | OPEN | -1d | none |
 | [045](045-simulation-lookahead.md) | Simulation lookahead | `pm` | OPEN | -1d | 044 (the roster-aware recommendation should use this once it exists) |
 | [047](047-manual-draft-setup-entry.md) | Manual draft setup entry | `pm` | OPEN | -1d | usable mock drafting |
+| [050](050-sprint-3-runbook.md) | Sprint 3 runbook | `pm` | OPEN | -1d | none |
 
-### `frontend` — 17 waiting
+### `frontend` — 18 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
@@ -60,6 +61,7 @@ not an omission. Start your session at your own heading.
 | [044](044-roster-aware-recommendations.md) | Roster aware recommendations | `pm` | OPEN | -1d | none |
 | [047](047-manual-draft-setup-entry.md) | Manual draft setup entry | `pm` | OPEN | -1d | usable mock drafting |
 | [049](049-draft-mode-gap-list.md) | Draft mode gap list | `pm` | OPEN | -1d | none |
+| [051](051-suggester-fixes.md) | Suggester fixes | `pm` | OPEN | -1d | none |
 
 ### `data-ops` — 1 waiting
 

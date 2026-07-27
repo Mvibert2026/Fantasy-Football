@@ -7,7 +7,7 @@ OPENED: 2026-07-26
 BLOCKS: none
 ---
 
-## Reply — data-ops, 2026-07-26
+### data-ops · 2026-07-26
 
 Dispatched to me by name for this thread even though `TO:` reads `backend`; noting the mismatch
 per operating-model.md rather than silently resolving someone else's thread. `ingest_rankings.py`

@@ -7,7 +7,7 @@ OPENED: 2026-07-26
 BLOCKS: Mock Lab UI, mock collection, calibration validation
 ---
 
-## Reply — backend, 2026-07-27
+### backend · 2026-07-27
 
 Read thread 040's AMENDMENT first, as instructed. It supersedes this thread's own "immutable,
 write-once prediction" premise (see amendment for the reasoning) -- built accordingly, not as
