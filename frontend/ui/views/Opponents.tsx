@@ -1,4 +1,5 @@
-import type { RawRoster } from '../data/types';
+import { pickNumbersForSlot } from '../data/draft';
+import type { RawRoster, RawRosters } from '../data/types';
 import type { Dataset } from '../data/load';
 
 /**
@@ -32,6 +33,19 @@ import type { Dataset } from '../data/load';
  * older than 1.8.0 (this artifact isn't in the required per-league set); the
  * card then states plainly that roster data isn't available for this league,
  * rather than a blank section or an invented "0 of everything" row.
+ *
+ * `next #N` in the card header (02-draft-opponents.md's card anatomy, thread
+ * 027) is pure snake-order arithmetic, not a prediction: rosters.json's
+ * `picks_ingested` (how many real, is_mock=0 picks have been logged so far)
+ * plus league.json's `teams`/`rounds` and the opponent's own `draft_slot_2026`
+ * feed the same `pickNumbersForSlot` helper DraftRoom/PlayerDetail already use
+ * for the user's own next pick (ui/data/draft.ts) -- imported read-only here,
+ * not duplicated. Three distinct states, per Principle #2: no rosters.json for
+ * this league renders no badge at all (the roster section below already says
+ * why); rosters.json present but this team has no picks left within the
+ * league's round count renders `next --`; otherwise the real upcoming overall
+ * pick number. This is only "whose turn arithmetic says is next," which is
+ * public schedule math, never an inference about what a team will do.
  */
 
 const POSITION_COLOR: Record<string, string> = {
@@ -42,14 +56,39 @@ const POSITION_COLOR: Record<string, string> = {
   DEF: 'var(--def)',
 };
 
-/** `QB×qb, RB×rb, WR×wr, TE×te, DEF×def` order per the spec's slot order --
- *  FLEX is rendered separately, right after, since its eligible-position set
- *  differs from a single-position starter row. */
-const STARTER_ORDER = ['QB', 'RB', 'WR', 'TE', 'DEF'];
+/** `QB, RB, WR, TE` order per the spec's slot order, up to FLEX. DEF and FLEX
+ *  are rendered separately right after (see RosterSection) -- the spec's full
+ *  order is `QB, RB, WR, TE, FLEX, DEF`, with FLEX BEFORE DEF, confirmed
+ *  against both the written spec and the reference screenshot's row order,
+ *  not after it as an earlier pass here had it. */
+const STARTER_ORDER = ['QB', 'RB', 'WR', 'TE'];
+
+/** Positions the STILL NEEDS chips can render for, per the spec's `want`
+ *  formula (QB/RB/WR/TE/DEF -- FLEX is absorbed into the RB/WR +1, never its
+ *  own chip). Kept separate from STARTER_ORDER above so moving DEF out of the
+ *  row-rendering order doesn't silently drop its needs chip too. */
+const CHIP_POSITIONS = ['QB', 'RB', 'WR', 'TE', 'DEF'];
+
+/** Pure arithmetic: the next overall pick number at which `slot` is on the
+ *  clock, given how many real picks have been logged so far. `undefined`
+ *  (distinct from `null`) means "no rosters.json for this league" -- see the
+ *  module doc for the three-state trace. */
+function nextPickForOpponent(
+  rosters: RawRosters | null,
+  teams: number,
+  rounds: number,
+  slot: number,
+): number | null | undefined {
+  if (!rosters) return undefined;
+  const current = rosters.picks_ingested + 1;
+  return pickNumbersForSlot(teams, slot, rounds).find((p) => p >= current) ?? null;
+}
 
 export function Opponents({ data }: { data: Dataset }) {
   const o = data.opponents;
   const rostersBySlot = new Map((data.rosters?.rosters ?? []).map((r) => [r.team_slot, r]));
+  const teams = data.league.teams;
+  const rounds = data.league.rounds;
 
   return (
     <div className="stack">
@@ -62,6 +101,7 @@ export function Opponents({ data }: { data: Dataset }) {
         {o.opponents.map((opp, i) => {
           const hasContext =
             opp.positional_tendencies || opp.first_pick_by_position || opp.consensus_tracking_behaviour;
+          const nextPick = nextPickForOpponent(data.rosters, teams, rounds, opp.draft_slot_2026);
           return (
             <div
               key={`${opp.draft_slot_2026}-${i}`}
@@ -86,9 +126,17 @@ export function Opponents({ data }: { data: Dataset }) {
                 >
                   {opp.team_name ?? `Slot ${opp.draft_slot_2026} (no team name supplied)`}
                 </span>
-                <span className="num" style={{ fontSize: 12, color: 'var(--dim2)' }}>
-                  slot {opp.draft_slot_2026}
-                </span>
+                {nextPick === undefined ? null : (
+                  <span
+                    className="num"
+                    style={{ fontSize: 11.5, letterSpacing: '.04em', color: 'var(--dim2)', whiteSpace: 'nowrap' }}
+                  >
+                    next{' '}
+                    <span style={{ color: 'var(--txt)', fontWeight: 600 }}>
+                      {nextPick === null ? '—' : `#${nextPick}`}
+                    </span>
+                  </span>
+                )}
               </div>
               {opp.holds_picks_19_to_22 ? (
                 <span
@@ -169,25 +217,34 @@ function RosterSection({ roster }: { roster: RawRoster | null }) {
   }
 
   const { starters, flex, bench } = roster.roster_slots;
-  const starterRows = STARTER_ORDER.filter((pos) => starters[pos]).map((pos) => ({
+  // Rendering order is QB, RB, WR, TE, FLEX, DEF -- the spec's slot order
+  // (02-draft-opponents.md) with FLEX before DEF, not after it. DEF is kept
+  // out of STARTER_ORDER (QB/RB/WR/TE only) so it can be placed after FLEX
+  // without a second, differently-ordered list to keep in sync.
+  const preFlexRows = STARTER_ORDER.filter((pos) => starters[pos]).map((pos) => ({
     pos,
     ...starters[pos]!,
   }));
+  const defGroup = starters['DEF'];
+  const allStarterGroups = defGroup ? [...preFlexRows, { pos: 'DEF', ...defGroup }] : preFlexRows;
   const totalStarterSlots =
-    starterRows.reduce((sum, s) => sum + s.required, 0) + flex.required;
+    allStarterGroups.reduce((sum, s) => sum + s.required, 0) + flex.required;
   const filledStarterSlots =
-    starterRows.reduce((sum, s) => sum + s.filled, 0) + flex.filled;
+    allStarterGroups.reduce((sum, s) => sum + s.filled, 0) + flex.filled;
 
   const needsChips = Object.entries(roster.needs).filter(
-    ([pos, n]) => STARTER_ORDER.includes(pos) && n > 0,
+    ([pos, n]) => CHIP_POSITIONS.includes(pos) && n > 0,
   );
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-      {starterRows.map((s) => (
+      {preFlexRows.map((s) => (
         <RosterSlotRow key={s.pos} label={s.pos} color={POSITION_COLOR[s.pos] ?? 'var(--txt)'} group={s} />
       ))}
       <RosterSlotRow label="FLEX" color="var(--dim2)" group={flex} />
+      {defGroup ? (
+        <RosterSlotRow label="DEF" color={POSITION_COLOR['DEF'] ?? 'var(--txt)'} group={defGroup} />
+      ) : null}
 
       <div style={{ marginTop: 2, fontSize: 11, color: 'var(--dim2)' }}>
         <span className="num">
