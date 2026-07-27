@@ -145,6 +145,13 @@ draft interface is one thing the engine drives. Under that reading, several item
 
 - `backtest.py` has no bootstrap confidence intervals anywhere. Its point estimates are, in the
   project's own words, close to meaningless.
+  **Correction, 2026-07-27 (backend, thread 019):** this claim is stale. Season-level bootstrap
+  CIs (`bootstrap_season_ci`, `paired_bootstrap_delta_ci`) were built in an earlier session
+  (ADR-021/ADR-028) and every reported metric already carries an interval and its n. Thread 019
+  asked for this build and was closed as already-satisfied rather than re-implemented. What
+  remains true from this bullet: at n=4-5 seasons every interval is `degenerate=True` and wide —
+  the honesty problem this bullet raises is real, just already surfaced by the existing code
+  rather than absent from it.
 - `_rank_correlation` pools positions, so it can report healthy numbers for a model with zero real
   skill.
 - There is no draft-slot simulation metric, so no strategy question can currently be answered

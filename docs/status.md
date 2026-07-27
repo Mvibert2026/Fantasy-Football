@@ -1142,3 +1142,33 @@ concrete test list. Spec only -- not implemented this session. Flipped 039's `FR
 
 Replied in thread 037 itself (not resolved -- items 1, 3, 4 are out of scope for this session and
 remain open). Ran `sync`; `OPEN.md` regenerated clean. No founder statements surfaced this session.
+
+---
+
+### backend session, 2026-07-27 -- thread 019 (bootstrap confidence intervals)
+
+Assigned to build season-level bootstrap CIs in `backtest.py`. Read the spec, then read the file:
+`bootstrap_season_ci` and `paired_bootstrap_delta_ci` already exist, already wired into
+`run_backtest_multi` for every arm and every paired delta, already tested (27 tests in
+`test_backtest.py`), and already documented as ADR-021 with the seed-stability follow-up ADR-028.
+This landed in an earlier session under a different task label (commit `fb2948a`, refined at
+`70538c9`) and thread 019 was simply never closed against it -- a mailbox bookkeeping gap, not a
+missing capability.
+
+Did not re-implement. Verified instead: resampling unit is the season (not player-week), n is
+reported beside every interval including the degenerate n=0/n=1 cases, `MIN_SEASONS_FOR_STABLE_CI
+= 8` flags every current real run (n=4-5) as `degenerate=True` with an explicit note rather than a
+silently-narrow interval, and the paired-delta path resamples identical season indices for both
+arms. Ran `tests/test_backtest.py` only (not the full suite, per instruction to avoid DB
+contention with concurrently-running agents): **27 passed, 57.5s**.
+
+Closed thread 019 `RESOLVED` with the audit trail above. Corrected a stale claim in
+`docs/founder-requests.md` FR-005 ("`backtest.py` has no bootstrap confidence intervals anywhere")
+that is no longer true -- added an inline correction rather than deleting the original bullet.
+Did not touch thread 021 (per-position rank correlation) -- also edits `backtest.py` and was
+explicitly deferred to avoid a same-file collision this round. Ran `sync`; `OPEN.md` regenerated
+(019 now shows resolved). `test_handoffs.py::test_mailbox_health` fails, but on two pre-existing,
+unrelated issues (023 resolved with no reply artifact; untracked 029 amendment file with no `TO:`
+role) -- confirmed via `git status` that neither is something this session touched or introduced.
+No founder statements surfaced this session. No commit made -- no code changed; the only changes
+are to `docs/` (handoff thread, `OPEN.md`, `CURRENT-STATE.md`, `founder-requests.md`, this file).

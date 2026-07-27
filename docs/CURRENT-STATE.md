@@ -10,8 +10,9 @@ session log and contains superseded figures presented in the same voice as curre
 hazard `docs/assistant-context.md` warns about for `decisions.md`. It is fine to read `status.md`
 to learn *what happened*; it is not fine to read it to learn *what is true*.
 
-**Last verified:** 2026-07-27, read directly from the working tree (frontend session: display-repair
-diagnosis, Opponents wiring verification, mailbox duplicate-ID fix, thread 038/041).
+**Last verified:** 2026-07-27, read directly from the working tree (backend session: thread 019
+bootstrap-CI verification; frontend session: display-repair diagnosis, Opponents wiring
+verification, mailbox duplicate-ID fix, thread 038/041).
 
 ---
 
