@@ -239,3 +239,148 @@ describe('RETROFIT-5: DraftRoom pick-entry TypeAhead', () => {
     expect(state.picks[0]!.entryMode).toBeNull();
   });
 });
+
+/**
+ * Thread 063 (regression of 051): the founder reported the suggester "seems to
+ * trigger every pick." Root cause, confirmed by reading the code rather than
+ * guessing: 051's fix only guarded the *mount/remount* programmatic focus()
+ * call (setSearchInputRef's ref callback). It missed that `recordPick` --
+ * invoked on every commit, from every commit site (digit shortcut, typed/
+ * pasted Enter, clicking a candidate row, and the board row's own "mark
+ * taken" X, which is how an opponent's pick gets logged) -- also called
+ * `searchRef.current?.focus()` directly, unguarded, immediately after every
+ * commit (kept deliberately, for fast keyboard re-entry). That refocus went
+ * through the exact same onFocus handler as a real click, with no suppression
+ * flag set for this call site, so the very next commit's own refocus looked
+ * exactly like a genuine user focus and reopened the popover -- "opens every
+ * pick" is a literal, not approximate, description of what the code did.
+ *
+ * The fix (frontend/ui/views/DraftRoom.tsx): a single shared helper,
+ * `refocusSearchWithoutOpening`, used at both of this component's actual
+ * programmatic-focus call sites (mount/remount, and post-commit refocus).
+ * Same guard mechanism 051 introduced (`suppressNextFocusOpen`), completed to
+ * cover the call site 051 missed -- not a second, competing guard.
+ * `recordPick` now also explicitly closes the panel on commit
+ * (`setSuggesterOpen(false)`), matching the stated rule "closes on ... commit"
+ * for the case where the panel was already open going into that commit.
+ *
+ * One test per row of the reopen-trigger table in docs/handoffs/
+ * 063-suggester-reopen-regression.md, in the table's own order, so a future
+ * regression on any single trigger is pinned to exactly one failing test.
+ */
+describe('thread 063: suggester opens ONLY on explicit user intent (regression fix)', () => {
+  it('row 1 -- click into the pick-entry field: opens', () => {
+    renderDraftRoom();
+    const input = screen.getByPlaceholderText(/Mark pick 1/) as HTMLInputElement;
+    expect(screen.queryByTestId('suggester-dropdown')).not.toBeInTheDocument();
+    fireEvent.focus(input);
+    expect(screen.getByTestId('suggester-dropdown')).toBeInTheDocument();
+  });
+
+  it('row 2 -- typing into the field: opens', async () => {
+    renderDraftRoom();
+    const input = screen.getByPlaceholderText(/Mark pick 1/) as HTMLInputElement;
+    expect(screen.queryByTestId('suggester-dropdown')).not.toBeInTheDocument();
+    await userEvent.type(input, 'a');
+    expect(screen.getByTestId('suggester-dropdown')).toBeInTheDocument();
+  });
+
+  it('row 3 -- a pick is committed (yours or an opponent\'s): does not open, and closes if it was open -- this is the reported regression', () => {
+    renderDraftRoom();
+    const input = screen.getByPlaceholderText(/Mark pick 1/) as HTMLInputElement;
+
+    // "Yours": commit via the digit shortcut while the panel is genuinely
+    // open (the exact sequence the founder described -- focus it, then use
+    // the 1-5 fast-entry path).
+    fireEvent.focus(input);
+    expect(screen.getByTestId('suggester-dropdown')).toBeInTheDocument();
+    fireEvent.keyDown(input, { key: '1' });
+    // Before the fix: this reopened via the post-commit refocus's onFocus.
+    expect(screen.queryByTestId('suggester-dropdown')).not.toBeInTheDocument();
+    expect(loadDraftState(leagueId).picks).toHaveLength(1);
+
+    // "An opponent's": logging a pick via the board row's own "mark taken" X
+    // is a *different* commit site than the search box entirely -- it must
+    // not open the panel either, whether or not the panel is currently
+    // showing.
+    const markTaken = screen.getAllByTitle('Mark taken')[0]!;
+    fireEvent.click(markTaken);
+    expect(loadDraftState(leagueId).picks).toHaveLength(2);
+    expect(screen.queryByTestId('suggester-dropdown')).not.toBeInTheDocument();
+  });
+
+  it('row 4 -- the board updates or recomputes: does not open', () => {
+    const { rerender } = renderDraftRoom();
+    expect(screen.queryByTestId('suggester-dropdown')).not.toBeInTheDocument();
+    // Simulate a recompute publishing fresh row objects (new references, same
+    // underlying data) without any user interaction.
+    const recomputedRows = rows.map((r) => ({ ...r }));
+    rerender(<DraftRoom data={data} rows={recomputedRows} league={league} />);
+    expect(screen.queryByTestId('suggester-dropdown')).not.toBeInTheDocument();
+  });
+
+  it('row 5 -- component mount / page load / refresh: does not open, even though the field autofocuses', () => {
+    renderDraftRoom();
+    expect(screen.queryByTestId('suggester-dropdown')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('candidate-row-1')).not.toBeInTheDocument();
+  });
+
+  it('row 6 -- league switch: does not open', () => {
+    const { rerender } = renderDraftRoom();
+    expect(screen.queryByTestId('suggester-dropdown')).not.toBeInTheDocument();
+    const switchedData = {
+      ...data,
+      manifest: {
+        ...data.manifest,
+        artifacts: {
+          ...data.manifest.artifacts,
+          board: { ...data.manifest.artifacts.board!, league_id: 'a-different-league' },
+        },
+      },
+    };
+    rerender(<DraftRoom data={switchedData} rows={rows} league={league} />);
+    expect(screen.queryByTestId('suggester-dropdown')).not.toBeInTheDocument();
+  });
+
+  it('row 7 -- returning to the Draft tab from another tab (unmount then remount): does not open', () => {
+    const { unmount } = renderDraftRoom();
+    unmount();
+    renderDraftRoom();
+    expect(screen.queryByTestId('suggester-dropdown')).not.toBeInTheDocument();
+  });
+
+  it('row 8 -- undo: does not open', () => {
+    renderDraftRoom();
+    const input = screen.getByPlaceholderText(/Mark pick 1/) as HTMLInputElement;
+    fireEvent.keyDown(input, { key: '1' }); // log a pick, unfocused-dropdown path
+    expect(loadDraftState(leagueId).picks).toHaveLength(1);
+    expect(screen.queryByTestId('suggester-dropdown')).not.toBeInTheDocument();
+
+    fireEvent.keyDown(screen.getByPlaceholderText(/Mark pick 2/), { key: 'Backspace' }); // undo
+    expect(loadDraftState(leagueId).picks).toHaveLength(0);
+    expect(screen.queryByTestId('suggester-dropdown')).not.toBeInTheDocument();
+  });
+
+  it('row 9 -- programmatic focus from any source in this component does not open it, and is decoupled from focus itself actually moving', () => {
+    renderDraftRoom();
+    const input = screen.getByPlaceholderText(/Mark pick 1/) as HTMLInputElement;
+    // Mount's own autofocus already ran by this point -- confirm it really did
+    // move DOM focus (the "auto-focus is fine" half of the rule) while leaving
+    // the panel shut (the "but it must not open" half).
+    expect(document.activeElement).toBe(input);
+    expect(screen.queryByTestId('suggester-dropdown')).not.toBeInTheDocument();
+
+    // Now the post-commit path: blur first, via the real DOM method (not
+    // fireEvent.blur, which only dispatches the event without actually
+    // moving document.activeElement) so the refocus below is a genuine focus
+    // transition -- jsdom, like real browsers, does not fire a focus event
+    // from calling .focus() on an element that is already the active
+    // element, so blurring first is what makes this an honest check of the
+    // post-commit call site rather than an accidental no-op.
+    input.blur();
+    expect(document.activeElement).not.toBe(input);
+    fireEvent.keyDown(input, { key: '1' });
+    expect(document.activeElement).toBe(input); // fast-entry refocus still happened
+    expect(screen.queryByTestId('suggester-dropdown')).not.toBeInTheDocument(); // but did not open it
+  });
+});

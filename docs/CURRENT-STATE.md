@@ -30,7 +30,7 @@ top of "Built and working" for that section's own verification status, which is 
 | Agent infrastructure | **Live** | Six subagents in `.claude/agents/` (backend, frontend, data-ops, strategist, researcher, librarian), `/inbox` command, mailbox tooling at `tools/handoffs.py` + `tools/sprint_status.py`, mailbox health enforced in the test suite (`tests/test_handoffs.py`) |
 | Data contract | **1.9.0** | `CONTRACT_VERSION` in `src/export_contract.py`, read directly. |
 | Frontend location | `frontend/` subdirectory of this repo | Merged from `frontend-prep` via `git subtree add`, full history preserved. No longer a separate working copy. |
-| Frontend tests | **154 passing, 0 failing** (18 files) | Full suite, `npx vitest run`, single run, ~31s. |
+| Frontend tests | **163 passing, 0 failing** (18 files) | Full suite, `npx vitest run`, single run, ~63s (thread 063: nine new tests, one per reopen-trigger table row, no existing test touched). |
 | Python modules | **36** in `src/` | `ls src/*.py \| wc -l` |
 | Export artifacts | **11** top-level files in `data/export/` | `ls data/export/*.json \| wc -l` |
 | Config matrix | 25 dirs under `data/export/` | board + league + availability stub only; **hazard model not rerun per config**; count is a raw directory count, not inspected for which are real league configs vs. scratch |
@@ -157,6 +157,19 @@ DraftRoom's exported log is treated as calibration input. `lib/format.ts::percen
 the thread asked for and closed the reply loop. None of this is screenshot-verified — verified via
 live DOM/state measurement in a real (non-screenshotting) browser session instead; see thread
 replies for detail.
+
+**Thread 063 (regression of 051), resolved:** the suggester was reopening on every commit. Root
+cause was `recordPick`'s post-commit refocus call (kept deliberately, for fast keyboard re-entry)
+going through the same `onFocus` handler as a real click with no suppression flag set for that
+specific call site — 051 only guarded the mount/remount autofocus call, not this one. Fixed via a
+shared `refocusSearchWithoutOpening` helper used at both programmatic-focus call sites, plus an
+explicit `setSuggesterOpen(false)` on every commit. A second, related defect (a real click on the
+field silently failed to open the panel on the very first click after page load, since mount
+autofocus already held focus and a browser fires no `focus` event from clicking an
+already-focused element) was found via the project's own `frontend/e2e/smoke.mjs` Playwright
+harness and fixed with an explicit `onMouseDown` handler. `npm run smoke`: 16/16. Screenshot at
+`frontend/e2e/artifacts/draftroom.png`, real Chromium capture. See the thread 063 reply for the
+full root-cause narrative.
 
 ## Not built / null-stated
 

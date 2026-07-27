@@ -273,6 +273,38 @@ export function DraftRoom({
     }
   }, []);
 
+  // Thread 063 root-cause fix: 051 only guarded the *mount/remount* focus()
+  // call above (setSearchInputRef). It missed that recordPick -- called on
+  // every single commit, from every commit site (digit shortcut, typed/pasted
+  // Enter, clicking a candidate row, and the board row's "mark taken" X for
+  // logging an opponent's pick) -- also calls searchRef.current?.focus()
+  // directly, for the documented "fast keyboard entry" reason (digits 1-5
+  // should keep working pick after pick without reaching for the mouse). That
+  // second call site went through the same onFocus handler with no suppress
+  // flag set, so the *next* pick's genuine-looking focus event reopened the
+  // popover every time -- "opens every pick" is literally what that code did.
+  //
+  // This helper is the single choke point both call sites should use: it
+  // re-focuses (preserving the fast-entry behaviour) while suppressing the
+  // *next* focus event from being treated as user intent. Guarded on
+  // `document.activeElement` rather than setting the flag unconditionally:
+  // if the field already has focus (the common case -- committing via a
+  // digit shortcut never blurs the field), calling .focus() again is a
+  // browser no-op and fires no focus event at all, so nothing would ever
+  // consume the flag and it would leak into suppressing the *next real*
+  // click-to-focus later on. Only arm the suppression when we know a focus
+  // event will actually fire.
+  const refocusSearchWithoutOpening = useCallback(() => {
+    const el = searchRef.current;
+    if (!el || document.activeElement === el) return;
+    suppressNextFocusOpen.current = true;
+    try {
+      el.focus();
+    } catch {
+      // Best-effort, same reasoning as setSearchInputRef above.
+    }
+  }, []);
+
   function openDetail(row: BoardRow) {
     setDetailRow(row);
     onOpenPlayer?.(row.name.kind === 'present' ? row.name.value : null);
@@ -386,7 +418,17 @@ export function DraftRoom({
     setQuery('');
     setSelected(0);
     setQueryEntryMode('typed');
-    searchRef.current?.focus();
+    // Thread 063: the rule states the panel "closes on ... commit" -- if it
+    // happened to be open (a genuine focus/typing session that ended in a
+    // commit), a commit must close it, not leave it standing open showing the
+    // next pick's shortlist uninvited. Independent of the reopen-prevention
+    // fix below: this is "commit closes it", that one is "commit must never
+    // *open* it".
+    setSuggesterOpen(false);
+    // Was a bare `searchRef.current?.focus()` -- see
+    // refocusSearchWithoutOpening's comment for why that reopened the
+    // suggester on every single commit.
+    refocusSearchWithoutOpening();
   }
 
   /** Removes one pick and renumbers everything after it -- overallPick/round/
@@ -803,6 +845,21 @@ export function DraftRoom({
             <input
               ref={setSearchInputRef}
               value={query}
+              onMouseDown={() => {
+                // Thread 063: a real click is unambiguous user intent
+                // regardless of whether the field already had focus. Browsers
+                // do not fire a `focus` event from clicking an element that is
+                // already the active one (true here on the very first click
+                // after mount, since setSearchInputRef's autofocus already
+                // moved focus to this field before the user could click it) --
+                // relying on onFocus alone silently no-ops that click. A real
+                // mousedown on this element is never fired by this
+                // component's own programmatic .focus() calls (JS focus()
+                // does not synthesize mouse events), so this is a safe,
+                // independent "did the user actually click here" signal, not
+                // a second mechanism competing with onFocus's suppress flag.
+                setSuggesterOpen(true);
+              }}
               onFocus={() => {
                 // Thread 051 item 2: open on a real focus -- but not the
                 // programmatic autofocus the ref callback just fired on

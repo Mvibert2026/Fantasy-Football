@@ -1,6 +1,6 @@
 {
- "when": "2026-07-27T14:13:34.250Z",
- "failures": 1,
+ "when": "2026-07-27T18:32:57.363Z",
+ "failures": 0,
  "report": [
   {
    "name": "dev server reachable",
@@ -29,7 +29,7 @@
   },
   {
    "name": "suggester opens on click into field",
-   "ok": false,
+   "ok": true,
    "detail": ""
   },
   {
