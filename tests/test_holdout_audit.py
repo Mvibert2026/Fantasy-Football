@@ -100,6 +100,7 @@ def test_reviewed_set_matches_log():
 # Modules that legitimately open raw connections (ingestion + the DAL).
 CONNECT_ALLOWLIST = {
     "db.py",
+    "ingest_fantasypros_csv.py",
     "ingest_mfl_adp.py",
     "ingest_mock_drafts.py",
     "ingest_play_callers.py",

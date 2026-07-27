@@ -1983,3 +1983,23 @@ nickname indexing, K/PK dual-key from `load_players()`, alias-table entry). Targ
 (`-k "ranking or crosswalk or fantasypros"`): 34 passed. Full suite: 604 passed, 1 failed
 (`test_handoffs.py::test_mailbox_health`, duplicate handoff ID 066 between two untracked files
 that predate this session — unrelated to this work, flagged not fixed). Commit: see git log.
+
+## 2026-07-27 — backend — make_board.py rewired onto fantasypros_csv_2026draft (ADR-051, FR-015 steps 2+3)
+
+Picked up FR-015 steps 2/3 after data-ops' crosswalk fix (step 1, thread 053). Rewired
+`src/make_board.py`'s live consensus `SOURCE` from `fantasypros_ecr` to `fantasypros_csv_2026draft`.
+Discovered mid-task that a straight swap would break the rank->points curve fit (new source has
+no historical seasons), so introduced a `TRAINING_SOURCE` constant to keep curve fitting on
+`fantasypros_ecr`'s 2021-2025 history while the display board moves to the new source. Full
+reasoning in ADR-051, `docs/decisions.md`.
+
+Updated `export_contract.py`: `board_source`/`consensus_source` renamed, new `scoring_format`
+field added to `board.json` (contract 1.10.0 -> 1.11.0), fixed a latent `team_of`/`positional_rank`
+lookup that was hardcoded to the old source literal independent of `make_board.SOURCE`.
+
+Rebuilt primary and `ethans_expert_league` boards: player count 378 -> 511. Confirmed 2026 rookies
+(Love/Tate/Tyson) present with real ranks. Opened handoff 069 to frontend for the `scoring_format`
+type/display (schema change). Full suite: 603 passed, 1 failed (pre-existing mailbox duplicate-ID
+issue, unrelated, not fixed).
+
+Commit: see `git log` for this session's hash.

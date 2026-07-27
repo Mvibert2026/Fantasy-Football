@@ -4,7 +4,7 @@
 Threads are the source of truth. Change a thread's `STATUS:`, then re-run sync.
 Protocol: [`README.md`](README.md).
 
-**44 open** · 25 resolved
+**45 open** · 25 resolved
 
 ---
 
@@ -44,7 +44,7 @@ not an omission. Start your session at your own heading.
 | [064](064-current-state-verification.md) | Current state verification | `pm` | OPEN | 0d | any honest statement about project status |
 | [067](067-t1-multiformat-consensus-rescope.md) | T1 multiformat consensus rescope | `pm` | OPEN | 0d | T1 completion for leagues 2/3, board correctness for the non-primary leagues |
 
-### `frontend` — 17 waiting
+### `frontend` — 18 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
@@ -65,6 +65,7 @@ not an omission. Start your session at your own heading.
 | [058](058-draft-board-design-gap.md) | Draft board design gap | `pm` | OPEN | 0d | draft-day usability |
 | [059](059-on-deck-recommendations.md) | On deck recommendations | `pm` | OPEN | 0d | FR-006 (draft chatbot), calm-preparation use case |
 | [066](066-contract-1-10-0-board-json-rows-gained-roster-st.md) | Contract 1 10 0 board json rows gained roster st | `backend` | OPEN | 0d | none |
+| [069](069-board-json-contract-1-11-0-new-scoring-format-fi.md) | Board json contract 1 11 0 new scoring format fi | `backend` | OPEN | 0d | none |
 
 ### `data-ops` — 7 waiting
 

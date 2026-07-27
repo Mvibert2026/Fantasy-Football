@@ -26,6 +26,21 @@ full suite, real `nfl.db` copied into the worktree), up from 516 — T9/T5/T4/T6
 one added to `test_export_history.py`) net of no removals. `CONTRACT_VERSION` is now **1.10.0**.
 Frontend row below is unchanged/not re-verified this pass.
 
+**Updated same-day, later session still (ADR-051, thread 053/067, FR-015 steps 2+3):**
+`make_board.py`'s live/display consensus board (`SOURCE`) rewired from `fantasypros_ecr` (old,
+rank-only, format-blind DynastyProcess mirror) to `fantasypros_csv_2026draft` (founder's own
+FantasyPros Half-PPR CSV export). A new `TRAINING_SOURCE = "fantasypros_ecr"` constant keeps the
+rank->points curve fitting on the historical multi-season mirror (the new CSV source has no
+season history of its own yet) — see ADR-051 for why a straight swap would have silently emptied
+the board. `CONTRACT_VERSION` is now **1.11.0** (new `board.json` field: `scoring_format`).
+Primary board rebuilt: **511 players** (was 378 under the old source). `ethans_expert_league`
+board also rebuilt: 511 players. 2026 rookies confirmed present with real ranks (Jeremiyah Love
+#33, Carnell Tate #70, Jordyn Tyson #84). Handoff thread 069 opened to `frontend` (schema change;
+header needs a `scoring_format` display, currently unbuilt — visual confirmation pending).
+Backend test count: **603 passed, 1 failed** (`pytest tests/ -q`, full suite) — the 1 failure is
+the pre-existing, already-flagged `test_handoffs.py::test_mailbox_health` (duplicate handoff ID
+066), unrelated to this session.
+
 ---
 
 ## Build state
@@ -35,7 +50,7 @@ Frontend row below is unchanged/not re-verified this pass.
 | Backend branch / commit | `master`, `c8738ed8cc8c3d8bfc4f7f23a2d771ecb85c33cf` | Local only — **no git remote configured** |
 | Backend tests | **516 passing, 0 failures** | Full suite, `pytest -q`, single run, 199s. No concurrent DB contention observed this run (checked for another active backend session first). |
 | Agent infrastructure | **Live** | Six subagents in `.claude/agents/` (backend, frontend, data-ops, strategist, researcher, librarian), `/inbox` command, mailbox tooling at `tools/handoffs.py` + `tools/sprint_status.py`, mailbox health enforced in the test suite (`tests/test_handoffs.py`) |
-| Data contract | **1.10.0** | `CONTRACT_VERSION` in `src/export_contract.py`, read directly. Bumped this session (ADR-050, T6): `board.json` rows gained `roster_status`. |
+| Data contract | **1.11.0** | `CONTRACT_VERSION` in `src/export_contract.py`, read directly. Bumped this session (ADR-051): `board.json` gained top-level `scoring_format`; `board_source`/`consensus_source` now name `fantasypros_csv_2026draft`. |
 | Frontend location | `frontend/` subdirectory of this repo | Merged from `frontend-prep` via `git subtree add`, full history preserved. No longer a separate working copy. |
 | Frontend tests | **163 passing, 0 failing** (18 files) | Full suite, `npx vitest run`, single run, ~63s (thread 063: nine new tests, one per reopen-trigger table row, no existing test touched). |
 | Python modules | **36** in `src/` | `ls src/*.py \| wc -l` |

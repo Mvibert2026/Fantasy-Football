@@ -180,8 +180,11 @@ def test_never_infers_a_team_need_beyond_slot_arithmetic():
 
 
 def test_contract_version_bumped():
-    # 1.10.0 (this session, T6): board.json rows gained roster_status.
-    assert ec.CONTRACT_VERSION == "1.10.0"
+    # 1.11.0 (thread 053/067): board.json's consensus/board_source rewired onto
+    # fantasypros_csv_2026draft, and board.json gained a top-level scoring_format
+    # field (previously absent -- the old fantasypros_ecr mirror carried no
+    # confirmed scoring format at all).
+    assert ec.CONTRACT_VERSION == "1.11.0"
 
 
 # -- real-DB test: today's actual state must be the empty case ---------------

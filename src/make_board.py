@@ -82,7 +82,29 @@ from config import DEFAULT_CONFIG
 from scoring import ReplacementLevels, score_offensive_game
 
 BOARD_POSITIONS = ("QB", "RB", "WR", "TE")  # no kicker in this league; DST handled separately
-SOURCE = "fantasypros_ecr"
+# Thread 053/067 (ADR pending): SOURCE is the CURRENT-SEASON consensus board
+# the app displays and ranks against -- rewired here from the old
+# `fantasypros_ecr` DynastyProcess mirror (rank-only, no scoring-format info,
+# effectively capped) onto the founder's own FantasyPros Half-PPR CSV export
+# (real scoring_format, tier, bye_week, sos_season columns; see
+# ingest_fantasypros_csv.py).
+#
+# TRAINING_SOURCE stays on `fantasypros_ecr` deliberately. The rank->points
+# curve (fit_rank_curves) needs MULTIPLE PRIOR SEASONS of consensus rank data
+# to fit against -- `fantasypros_csv_2026draft` is a single one-off 2026 pull
+# with no season history at all (see rankings table: fantasypros_ecr has
+# 2021-2025, the new CSV source has only 2026). Pointing the curve fit at
+# SOURCE would silently starve every position of training observations
+# (collect_observations would return empty per season, _fit_one would return
+# None for lack of >=5 points, and build_board would drop every position from
+# the board with no error). Swapping the *training* source is a real
+# statistical-methodology change (a different rank methodology / player pool
+# feeding the E[points | rank] curve) and is deliberately NOT made in this
+# pass -- only the current-season display/consensus source changes. Revisit
+# once fantasypros_csv_2026draft (or a successor CSV source) has multiple
+# seasons on file.
+SOURCE = "fantasypros_csv_2026draft"
+TRAINING_SOURCE = "fantasypros_ecr"
 DEFAULT_OUTPUT_DIR = Path(__file__).resolve().parent.parent / "data"
 DEFAULT_N_BOOTSTRAP = 2000
 
@@ -148,11 +170,13 @@ def _season_actual_points(
     return totals
 
 
-def _consensus_board(conn: sqlite3.Connection, season: int) -> List[sqlite3.Row]:
+def _consensus_board(
+    conn: sqlite3.Connection, season: int, source: str = SOURCE
+) -> List[sqlite3.Row]:
     return conn.execute(
         "SELECT player_id, player_name, position, adp_rank FROM rankings "
         "WHERE source = ? AND season = ? ORDER BY adp_rank",
-        (SOURCE, season),
+        (source, season),
     ).fetchall()
 
 
@@ -168,7 +192,8 @@ def _positional_ranks(rows: Sequence[sqlite3.Row]) -> Dict[str, List[sqlite3.Row
 
 
 def resolve_training_seasons(
-    conn: sqlite3.Connection, target_season: int, training_seasons: Optional[Sequence[int]] = None
+    conn: sqlite3.Connection, target_season: int, training_seasons: Optional[Sequence[int]] = None,
+    source: str = TRAINING_SOURCE,
 ) -> List[int]:
     if training_seasons is None:
         training_seasons = [
@@ -176,7 +201,7 @@ def resolve_training_seasons(
             for r in conn.execute(
                 "SELECT DISTINCT season FROM rankings WHERE source = ? AND season < ? "
                 "ORDER BY season",
-                (SOURCE, target_season),
+                (source, target_season),
             ).fetchall()
         ]
     leaking = [s for s in training_seasons if s >= target_season]
@@ -193,18 +218,24 @@ def resolve_training_seasons(
 
 
 def collect_observations(
-    conn: sqlite3.Connection, seasons: Sequence[int], scoring_cfg: Optional[dict] = None
+    conn: sqlite3.Connection, seasons: Sequence[int], scoring_cfg: Optional[dict] = None,
+    source: str = TRAINING_SOURCE,
 ) -> Dict[int, Dict[str, List[tuple[int, float]]]]:
     """{season: {position: [(positional_rank, actual_points), ...]}}.
 
     A ranked player with no stat line scored zero -- a bust is an outcome, not
     a missing observation (statistical-guardrails.md §2).
+
+    `source` defaults to TRAINING_SOURCE (the historical `fantasypros_ecr`
+    mirror), not SOURCE -- these are the prior-season consensus boards the
+    rank->points curve trains on, and only TRAINING_SOURCE has multi-season
+    history on file.
     """
     out: Dict[int, Dict[str, List[tuple[int, float]]]] = {}
     for season in seasons:
         actuals = _season_actual_points(conn, season, scoring_cfg)
         per_pos: Dict[str, List[tuple[int, float]]] = {}
-        for pos, rows in _positional_ranks(_consensus_board(conn, season)).items():
+        for pos, rows in _positional_ranks(_consensus_board(conn, season, source=source)).items():
             limit = RELEVANT_DEPTH.get(pos)
             if limit is None:
                 continue
@@ -316,7 +347,13 @@ def build_board(
     n_bootstrap: int = DEFAULT_N_BOOTSTRAP,
     seed: int = DEFAULT_CONFIG.random_seed,
     scoring_cfg: Optional[dict] = None,
+    source: str = SOURCE,
 ) -> tuple[List[BoardRow], Dict[str, RankCurve]]:
+    """`source` is the CURRENT-SEASON consensus board being ranked (default:
+    SOURCE, the live fantasypros_csv_2026draft board). It is independent of
+    the historical rank->points curve fit, which always trains on
+    TRAINING_SOURCE via fit_rank_curves/bootstrap_vbd_intervals regardless of
+    this argument -- see the SOURCE/TRAINING_SOURCE split note above."""
     levels = levels or ReplacementLevels()
     baselines = levels.baselines()
     curves = fit_rank_curves(conn, season, training_seasons, scoring_cfg=scoring_cfg)
@@ -324,7 +361,7 @@ def build_board(
         conn, season, levels, training_seasons, n_bootstrap=n_bootstrap, seed=seed,
         scoring_cfg=scoring_cfg,
     )
-    by_pos = _positional_ranks(_consensus_board(conn, season))
+    by_pos = _positional_ranks(_consensus_board(conn, season, source=source))
 
     # Replacement points per position = the curve's value at that position's
     # replacement rank (QB10/RB30/WR40/TE10 for this 10-team league; ADR-029).
@@ -385,16 +422,25 @@ def board_ranking_for_season(
     conn: sqlite3.Connection, season: int, levels: Optional[ReplacementLevels] = None
 ) -> Dict[str, int]:
     """The re-scored consensus board as a {player_id: rank} config, for use as
-    the PRIMARY baseline arm in backtest.py (Task 5b)."""
-    board, _ = build_board(conn, season, levels=levels, n_bootstrap=0)
-    return board_as_ranking(board, conn, season)
+    the PRIMARY baseline arm in backtest.py (Task 5b).
+
+    Backtests run over HISTORICAL seasons, which only exist under
+    TRAINING_SOURCE ('fantasypros_ecr', 2021-2025) -- SOURCE
+    ('fantasypros_csv_2026draft') is a 2026-only one-off pull with no
+    historical seasons on file. Explicitly uses TRAINING_SOURCE here (not the
+    build_board/board.json default of SOURCE) so this baseline arm keeps
+    working for every backtest season, not just 2026."""
+    board, _ = build_board(conn, season, levels=levels, n_bootstrap=0, source=TRAINING_SOURCE)
+    return board_as_ranking(board, conn, season, source=TRAINING_SOURCE)
 
 
-def board_as_ranking(board: Sequence[BoardRow], conn: sqlite3.Connection, season: int) -> Dict[str, int]:
+def board_as_ranking(
+    board: Sequence[BoardRow], conn: sqlite3.Connection, season: int, source: str = SOURCE
+) -> Dict[str, int]:
     """The board as a {player_id: rank} config, for use as a backtest baseline."""
     name_to_id = {
         (r["player_name"] or r["player_id"]): r["player_id"]
-        for r in _consensus_board(conn, season)
+        for r in _consensus_board(conn, season, source=source)
     }
     return {
         name_to_id[r.player]: r.overall_rank
@@ -424,7 +470,7 @@ def main() -> None:
         train = [
             r[0] for r in conn.execute(
                 "SELECT DISTINCT season FROM rankings WHERE source = ? AND season < ? "
-                "ORDER BY season", (SOURCE, args.season)
+                "ORDER BY season", (TRAINING_SOURCE, args.season)
             ).fetchall()
         ]
     finally:

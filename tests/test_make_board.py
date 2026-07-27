@@ -25,6 +25,26 @@ def test_board_row_carries_player_id_field():
     assert row.player_id == "00-0000001"
 
 
+def test_source_is_the_new_fantasypros_csv_2026draft_not_the_old_ecr_mirror():
+    """Thread 053/067: SOURCE (the live display/consensus board) was rewired
+    off the old, rank-only, format-blind fantasypros_ecr DynastyProcess
+    mirror onto the founder's own FantasyPros Half-PPR CSV export. A
+    regression back to fantasypros_ecr here would silently re-cap the board
+    and drop scoring_format/tier/bye_week/sos_season with no test noticing --
+    exactly the failure shape this file's own docstrings warn about."""
+    assert make_board.SOURCE == "fantasypros_csv_2026draft"
+
+
+def test_training_source_stays_on_the_historical_ecr_mirror():
+    """TRAINING_SOURCE must stay 'fantasypros_ecr': the rank->points curve
+    needs multiple prior seasons of consensus data to fit against, and
+    fantasypros_csv_2026draft is a single one-off 2026 pull with no season
+    history of its own. Pointing training at SOURCE would silently starve
+    every position's curve fit (see make_board.py's SOURCE/TRAINING_SOURCE
+    docstring)."""
+    assert make_board.TRAINING_SOURCE == "fantasypros_ecr"
+
+
 def test_fit_one_recovers_a_known_log_curve():
     # points = 300 - 50*ln(rank), exactly
     pairs = [(r, 300 - 50 * math.log(r)) for r in range(1, 31)]
@@ -144,7 +164,14 @@ def test_collect_observations_respects_relevant_depth(seeded_conn):
 
 
 def test_build_board_is_sorted_by_vbd_descending(seeded_conn):
-    board, _ = make_board.build_board(seeded_conn, 2025, n_bootstrap=0)
+    # The fixture only seeds 'fantasypros_ecr' rows (make_board.TRAINING_SOURCE).
+    # make_board.SOURCE (the live display board) is now
+    # 'fantasypros_csv_2026draft' (thread 053/067 rewire) -- explicitly
+    # building against the fixture's source keeps this test about the
+    # curve-fit/VBD-sort behaviour, not about which literal SOURCE points at.
+    board, _ = make_board.build_board(
+        seeded_conn, 2025, n_bootstrap=0, source=make_board.TRAINING_SOURCE
+    )
     vbds = [r.vbd for r in board]
     assert vbds == sorted(vbds, reverse=True)
     assert [r.overall_rank for r in board] == list(range(1, len(board) + 1))
@@ -152,20 +179,20 @@ def test_build_board_is_sorted_by_vbd_descending(seeded_conn):
 
 def test_delta_vs_consensus_sign_convention(seeded_conn):
     """Positive delta means OUR board is higher on the player than consensus."""
-    board, _ = make_board.build_board(seeded_conn, 2025, n_bootstrap=0)
+    board, _ = make_board.build_board(seeded_conn, 2025, n_bootstrap=0, source=make_board.TRAINING_SOURCE)
     for r in board:
         assert r.delta_vs_consensus == r.consensus_rank - r.overall_rank
 
 
 def test_board_as_ranking_maps_back_to_player_ids(seeded_conn):
-    board, _ = make_board.build_board(seeded_conn, 2025, n_bootstrap=0)
-    ranking = make_board.board_as_ranking(board, seeded_conn, 2025)
+    board, _ = make_board.build_board(seeded_conn, 2025, n_bootstrap=0, source=make_board.TRAINING_SOURCE)
+    ranking = make_board.board_as_ranking(board, seeded_conn, 2025, source=make_board.TRAINING_SOURCE)
     assert set(ranking.values()) == set(range(1, len(board) + 1))
     assert all(pid.startswith("RB") for pid in ranking)
 
 
 def test_write_board_csv_includes_confidence_interval_columns(seeded_conn, tmp_path):
-    board, _ = make_board.build_board(seeded_conn, 2025, n_bootstrap=50)
+    board, _ = make_board.build_board(seeded_conn, 2025, n_bootstrap=50, source=make_board.TRAINING_SOURCE)
     out = tmp_path / "board_test.csv"
     make_board.write_board_csv(board, out)
     with out.open(encoding="utf-8") as f:
@@ -181,7 +208,7 @@ def test_bootstrap_intervals_are_reproducible_under_a_fixed_seed(seeded_conn):
 
 
 def test_bootstrap_interval_brackets_the_point_estimate(seeded_conn):
-    board, _ = make_board.build_board(seeded_conn, 2025, n_bootstrap=300)
+    board, _ = make_board.build_board(seeded_conn, 2025, n_bootstrap=300, source=make_board.TRAINING_SOURCE)
     top = board[0]
     assert top.vbd_lo <= top.vbd <= top.vbd_hi
 

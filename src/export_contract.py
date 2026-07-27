@@ -41,7 +41,7 @@ import team_codes as tc
 from config import DEFAULT_CONFIG
 from scoring import LEAGUE, ReplacementLevels
 
-CONTRACT_VERSION = "1.10.0"
+CONTRACT_VERSION = "1.11.0"
 SEASON = 2026
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 EXPORT_DIR = DATA_DIR / "export"
@@ -159,10 +159,24 @@ def build_board_json(
     )
     pub_rank = {r.player: r.overall_rank for r in published}
 
+    # Must match the source `ours`/`published` were built from (make_board.SOURCE)
+    # -- these rows feed team_of/pos_rank (positional_rank, positional_label,
+    # team) for the SAME players `ours` ranks. Using a different, stale source
+    # here would silently desync team/positional-rank display from the board's
+    # actual player set (thread 053/067 rewire finding).
     meta = conn.execute(
-        "SELECT player_name, team, position, adp_rank FROM rankings "
-        "WHERE source='fantasypros_ecr' AND season=?", (SEASON,)
+        "SELECT player_name, team, position, adp_rank, scoring_format FROM rankings "
+        "WHERE source=? AND season=?", (make_board.SOURCE, SEASON)
     ).fetchall()
+    # scoring_format is a column the old fantasypros_ecr mirror never carried
+    # (NULL for every row); the new CSV source has a real value per row
+    # (thread 053, ingest_fantasypros_csv.py). Read it from the data rather
+    # than hardcoding "half_ppr" here, so a future source/league with a
+    # different confirmed format doesn't silently mislabel itself.
+    scoring_formats = {r["scoring_format"] for r in meta if r["scoring_format"]}
+    board_scoring_format = (
+        next(iter(scoring_formats)) if len(scoring_formats) == 1 else None
+    )
     team_of = {r["player_name"]: r["team"] for r in meta}
     byes = _bye_weeks(SEASON)
 
@@ -280,15 +294,31 @@ def build_board_json(
         "generated_utc": datetime.now(timezone.utc).isoformat(),
         "league_id": cfg.league_id,
         "season": SEASON,
-        "board_source": "fantasypros_ecr re-scored into league positional value structure",
+        "board_source": (
+            "fantasypros_csv_2026draft re-scored into league positional value structure"
+        ),
         # The design contract's example shows "blend:4". We have ONE source.
         # ADR-018: no market ADP is obtainable within CLAUDE.md §10, so there is
         # nothing to blend. Stated explicitly so the UI does not imply a blend.
-        "consensus_source": "fantasypros_ecr",
+        "consensus_source": "fantasypros_csv_2026draft",
         "consensus_source_count": 1,
         "consensus_source_note": (
             "Single source. Expert consensus rank, NOT market average draft position, and not "
-            "a blend of several providers. No ADP source is legally obtainable (ADR-018)."
+            "a blend of several providers. No ADP source is legally obtainable (ADR-018). "
+            "Rewired off the old fantasypros_ecr DynastyProcess mirror (thread 053/067): that "
+            "source was rank-only, format-blind, and effectively capped; this is the founder's "
+            "own FantasyPros export with a confirmed scoring format (see scoring_format below) "
+            "and real tier/bye/sos columns. The historical rank->points curve this board's "
+            "projections/VBD are fitted on (curve_fits above) still trains on fantasypros_ecr's "
+            "multi-season history (2021-2025) -- fantasypros_csv_2026draft is a single one-off "
+            "2026 pull with no season history of its own yet."
+        ),
+        "scoring_format": board_scoring_format,
+        "scoring_format_note": (
+            "Read from rankings.scoring_format for this board's source, not hardcoded. Null "
+            "if the source rows don't carry a confirmed scoring format (e.g. the old "
+            "fantasypros_ecr mirror never populated this column) or carry more than one "
+            "distinct value."
         ),
         "consensus_state": "preseason_moving",
         "attribution_is_additive": True,

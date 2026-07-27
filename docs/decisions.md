@@ -1780,3 +1780,65 @@ this project's sanity-check-before-implementation rule (`tests/test_team_codes.p
 `tests/test_freshness.py`, `tests/test_suspensions.py`, `tests/test_roster_status.py`), plus the
 pre-existing `tests/test_floor_checks.py::test_t3_...` as the T9 regression pin. See session
 report for the full pass count.
+
+## ADR-051 — make_board.py rewired onto fantasypros_csv_2026draft; SOURCE/TRAINING_SOURCE split introduced (2026-07-27, backend, thread 053/067)
+
+**What changed.** `src/make_board.py`'s live/display consensus board (`SOURCE`) moved off the old
+`fantasypros_ecr` DynastyProcess mirror onto the founder's own FantasyPros Half-PPR CSV export
+(`fantasypros_csv_2026draft`, ingested by `src/ingest_fantasypros_csv.py`, data-ops session earlier
+this day). The old source was rank-only (no scoring format), effectively capped, and ambiguous
+about which scoring format it reflected; the new source carries a confirmed `scoring_format` and
+real `tier`/`bye_week`/`sos_season` columns.
+
+**Why this needed a split, not a straight swap.** `fantasypros_csv_2026draft` is a single, one-off
+2026 pull with no season history (`rankings` table: only `season=2026` under that source).
+`make_board.py`'s rank-\>points curve (the thing that turns consensus rank into `projected_points`
+and `vbd`) is fit on MULTIPLE PRIOR SEASONS — `fantasypros_ecr` has 2021-2025. Pointing the curve
+fit at the new source would silently starve every position of training observations
+(`collect_observations` returns empty per season, `_fit_one` returns `None` under 5 points, and
+`build_board` drops every position from the board with **no error raised** — an empty board, not a
+crash). This was caught before landing, not discovered after.
+
+**Resolution:** two module constants, not one.
+- `SOURCE = "fantasypros_csv_2026draft"` — the CURRENT-SEASON consensus board that is displayed,
+  ranked, and reported in `board.json`'s `board_source`/`consensus_source`/`scoring_format` fields.
+- `TRAINING_SOURCE = "fantasypros_ecr"` — stays the historical source the rank->points curve
+  fits against (2021-2025), completely independent of which source is on display. This is a
+  genuine, deliberate divergence between "what the board looks like" and "what the projection
+  model was fitted on" — flagged so a future session doesn't "simplify" it into one constant
+  without re-deriving multi-season history for the CSV source first.
+- `_consensus_board`, `collect_observations`, `resolve_training_seasons`, `build_board`,
+  `board_as_ranking` all gained an explicit `source` parameter (defaulting to the constant that
+  was already implicit in each call site) so callers needing the historical source
+  (`board_ranking_for_season`, the backtest baseline arm — **backtests run over historical
+  seasons that only exist under TRAINING_SOURCE**) don't silently break against a 2026-only source.
+
+**export_contract.py:**
+- `board_source` / `consensus_source` updated to name `fantasypros_csv_2026draft`.
+- New top-level `board.json` field `scoring_format`, read from `rankings.scoring_format` for the
+  live source's rows (not hardcoded) — `null` if absent or mixed. This is the field the app header
+  needs to show the confirmed Half-PPR format.
+- The `team_of`/`positional_rank` lookup (previously hardcoded to `fantasypros_ecr` literally, a
+  latent bug independent of `make_board.SOURCE`) now reads `make_board.SOURCE` so it stays in sync
+  with whichever players `ours` actually contains.
+- `CONTRACT_VERSION` bumped **1.10.0 -> 1.11.0** (new field). Handoff thread opened to `frontend`
+  (see `docs/handoffs/OPEN.md`).
+- `av.default_ranking_sources()`'s hardcoded `"fantasypros_ecr"` label (Monte Carlo opponent-model
+  `ranking_sources` block in `build_availability_json`) was deliberately **not** touched — that
+  subsystem's consensus source is independent of `make_board.SOURCE` and out of this rewire's scope;
+  flagged for a future session if that model is ever pointed at the new CSV source too.
+
+**Rebuilt boards, measured:**
+| | Old (`fantasypros_ecr`) | New (`fantasypros_csv_2026draft`) |
+|---|---|---|
+| Primary league board player count | 378 | 511 |
+| `ethans_expert_league` board player count | (not previously rebuilt this session) | 511 |
+| 2026 rookies spot-checked (Jeremiyah Love / Carnell Tate / Jordyn Tyson) | present | present, real ranks (#33 / #70 / #84) |
+
+**Tests:** two tests added pinning `make_board.SOURCE`/`TRAINING_SOURCE` to their expected literal
+values (`tests/test_make_board.py`); four existing fixture-backed tests updated to pass
+`source=make_board.TRAINING_SOURCE` explicitly since the shared fixture only seeds
+`fantasypros_ecr` rows; `tests/test_rosters_export.py::test_contract_version_bumped` updated to
+1.11.0. `tests/test_holdout_audit.py`'s `CONNECT_ALLOWLIST` gained `ingest_fantasypros_csv.py`
+(same-shape ingestion script as the other allowlisted `ingest_*.py` files; this was a gap in the
+allowlist from the earlier data-ops session, mechanical fix, not part of the rewire itself).
