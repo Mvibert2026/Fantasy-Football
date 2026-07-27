@@ -14,7 +14,7 @@ import {
   type DraftPickRecord,
   type DraftState,
 } from '../data/draft';
-import { computeLiveAvailability, type LiveAvailabilityResult } from '../data/liveAvailability';
+import { computeLiveAvailability, dotsFilled, freqText, type LiveAvailabilityResult } from '../data/liveAvailability';
 import type { Dataset } from '../data/load';
 import type { LeagueConfig } from '../data/league';
 import { rankByRecommendation } from '../data/recommendation';
@@ -184,6 +184,33 @@ export function DraftRoom({
     () => (positionTab === 'ALL' ? available : available.filter((r) => r.raw.position === positionTab)),
     [available, positionTab],
   );
+
+  // Thread 029 (amended to target this screen, not Board.tsx): tier grouping
+  // with headers, ported from Board.tsx's own band-divider pattern. Restricted
+  // to a single position, same restriction Board.tsx applies and for the same
+  // reason -- board.json's tier_label is assigned per position, so under "ALL"
+  // consecutive rows from different positions can share a tier string (e.g. both
+  // "T2") without describing the same tier, and a band would misrepresent that
+  // as one group.
+  const bandsEnabled = positionTab !== 'ALL';
+  const boardItems = useMemo(() => {
+    const items: Array<{ kind: 'band'; tier: string; count: number } | { kind: 'row'; row: BoardRow }> = [];
+    if (bandsEnabled) {
+      let lastTier: string | null = null;
+      for (const row of availableInTab) {
+        const tier = row.tierLabel.kind === 'present' ? row.tierLabel.value : null;
+        if (tier !== null && tier !== lastTier) {
+          lastTier = tier;
+          const count = availableInTab.filter((r) => r.tierLabel.kind === 'present' && r.tierLabel.value === tier).length;
+          items.push({ kind: 'band', tier, count });
+        }
+        items.push({ kind: 'row', row });
+      }
+    } else {
+      for (const row of availableInTab) items.push({ kind: 'row', row });
+    }
+    return items;
+  }, [availableInTab, bandsEnabled]);
 
   const currentPick = currentOverallPick(draft.picks);
   const currentRound = teams > 0 ? roundOfPick(currentPick, teams) : 0;
@@ -535,7 +562,31 @@ export function DraftRoom({
             {availableInTab.length} left
           </div>
           <div style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
-            {availableInTab.map((r) => {
+            {boardItems.map((item) => {
+              if (item.kind === 'band') {
+                return (
+                  <div
+                    key={`band-${item.tier}`}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 8,
+                      padding: '5px 12px',
+                      background: 'var(--panel2)',
+                      borderBottom: '1px solid var(--line)',
+                    }}
+                  >
+                    <span style={{ fontFamily: 'var(--font-num)', fontSize: 10, letterSpacing: '.1em', color: 'var(--dim)' }}>
+                      TIER {item.tier.replace(/^T/, '')}
+                    </span>
+                    <span style={{ flex: 1 }} />
+                    <span style={{ fontFamily: 'var(--font-num)', fontSize: 10, color: 'var(--dim2)' }}>
+                      {item.count} player{item.count === 1 ? '' : 's'} left
+                    </span>
+                  </div>
+                );
+              }
+              const r = item.row;
               const expanded = expandedRowId === r.id;
               const delta = r.deltaVsConsensus.kind === 'present' ? r.deltaVsConsensus.value : null;
               const deltaColor = delta === null ? 'var(--dim2)' : delta > 2 ? 'var(--up)' : delta < -2 ? 'var(--down)' : 'var(--dim2)';
@@ -543,6 +594,10 @@ export function DraftRoom({
                 nextUserPick !== null
                   ? computeLiveAvailability({ data, league, row: r, targetPick: nextUserPick, picks: draft.picks, rowsById })
                   : null;
+              // Same honesty rule as PlayerDetail's HON-02: only plot the dot array
+              // when there is a real number behind it (live or baseline) -- a
+              // zero-filled array is visually indistinguishable from a genuine 0%.
+              const dotsValue = avail ? avail.live ?? (avail.baseline.kind === 'present' ? avail.baseline.value : null) : null;
               return (
                 <div key={r.id} style={{ borderBottom: '1px solid var(--line)' }}>
                   <div
@@ -592,6 +647,7 @@ export function DraftRoom({
                         )}
                       </span>
                     ) : null}
+                    {dotsValue !== null ? <RowDots value={dotsValue} /> : null}
                     <span
                       onClick={(e) => {
                         e.stopPropagation();
@@ -972,6 +1028,28 @@ function AvailabilityRow({ row, avail }: { row: BoardRow; avail: LiveAvailabilit
         <Value cell={avail.baseline} render={percent} />
         {avail.live !== null ? <span style={{ color: 'var(--acc)' }}> → {percent(avail.live)}</span> : null}
       </span>
+    </div>
+  );
+}
+
+/** Thread 029 (amended to DraftRoom): the 10-dot frequency array, ported from
+ *  the same component already on the player detail sheet and the Availability
+ *  Explorer (`Dots` in PlayerDetail.tsx, `SpotlightDots` in Availability.tsx) --
+ *  ten dots, N filled, is how this product says a probability instead of
+ *  stating a bare percentage. Sized down (4px dots, 1.5px gap -- the two larger
+ *  siblings use 6-7px) so it fits inline in the board row without adding a
+ *  second line: the constraint is density must not move, and the row's height
+ *  is set by its 13px name text, which this is well under. */
+function RowDots({ value }: { value: number }) {
+  const filled = dotsFilled(value);
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 1.5, flex: 'none' }} title={freqText(value)}>
+      {Array.from({ length: 10 }, (_, i) => (
+        <span
+          key={i}
+          style={{ width: 4, height: 4, borderRadius: '50%', background: i < filled ? 'var(--acc)' : 'var(--line2)' }}
+        />
+      ))}
     </div>
   );
 }
