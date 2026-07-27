@@ -55,7 +55,9 @@ def _opportunities_pg(ps) -> float:
 
 
 def run_arm(store: SeasonStore, arm: str, folds: List[int],
-            qb_td_cap: Optional[float] = None) -> dict:
+            qb_td_cap: Optional[float] = None, vacated: bool = False,
+            qb_direct: bool = False) -> dict:
+    from .situation import Situation
     usage_arm = arm == "usage"
     results: Dict[str, dict] = {}
     for t in folds:
@@ -71,9 +73,10 @@ def run_arm(store: SeasonStore, arm: str, folds: List[int],
         positions = {pid: pos for pos, pids in universe.items() for pid in pids}
         fit_kwargs = {} if qb_td_cap is None else {"qb_td_cap": qb_td_cap}
         model = fit(store, pair_seasons, usage_arm, target_season=t,
-                    **fit_kwargs)
+                    vacated=vacated, qb_direct=qb_direct, **fit_kwargs)
+        sit = Situation(store, t, usage_arm) if vacated else None
         rows = build_features(store, t - 1, list(positions), positions,
-                              usage_arm, target_season=t)
+                              usage_arm, target_season=t, situation=sit)
         preds = predict(model, rows)
         actual = store.actuals(t)
         prior = store.player_seasons(t - 1, for_target=t)
@@ -216,6 +219,12 @@ def main() -> None:
     ap.add_argument("--qb-td-cap", type=float, default=None,
                     help="exploratory variant: override the QB pass-TD "
                          "shrinkage cap (registered default 0.20)")
+    ap.add_argument("--vacated", action="store_true",
+                    help="V3: vacated/arrived-opportunity features "
+                         "(registered look-ahead: weeks-1-4 rosters)")
+    ap.add_argument("--qb-direct", action="store_true",
+                    help="V4: QB-only direct season-points ridge with "
+                         "prior-points features")
     ap.add_argument("--tag", default="", help="output filename suffix")
     args = ap.parse_args()
     outdir = Path(args.out)
@@ -223,13 +232,16 @@ def main() -> None:
     store = SeasonStore(Path(args.db))
     for arm in args.arms.split(","):
         folds = LONG_FOLDS if arm == "long" else USAGE_FOLDS
-        results = run_arm(store, arm, folds, qb_td_cap=args.qb_td_cap)
+        results = run_arm(store, arm, folds, qb_td_cap=args.qb_td_cap,
+                          vacated=args.vacated, qb_direct=args.qb_direct)
         summary = summarise(results, folds)
         payload = {"arm": arm, "folds": folds, "per_season": results,
                    "summary": summary,
                    "qb_td_cap_override": args.qb_td_cap,
+                   "vacated": args.vacated, "qb_direct": args.qb_direct,
                    "registration":
-                       "docs/reviews/fable-ranking-design-2026-07-27.md",
+                       "docs/reviews/fable-ranking-design-2026-07-27.md + "
+                       "docs/reviews/FABLE-EXT2-2026-07-27.md (V3/V4)",
                    "holdout_untouched": True}
         path = outdir / f"{arm}{args.tag}.json"
         path.write_text(json.dumps(payload, indent=1))

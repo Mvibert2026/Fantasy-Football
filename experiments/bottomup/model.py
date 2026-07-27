@@ -54,8 +54,10 @@ def _pg(total: float, games: int) -> float:
 
 def build_features(store: SeasonStore, feature_season: int, pids: Sequence[str],
                    positions: Dict[str, str], usage_arm: bool,
-                   target_season: int) -> List[FeatureRow]:
-    """Feature vectors from seasons feature_season (=target-1) and -1 more."""
+                   target_season: int, situation=None) -> List[FeatureRow]:
+    """Feature vectors from seasons feature_season (=target-1) and -1 more.
+    `situation`: an optional situation.Situation for target_season (V3);
+    when present its 6 features are appended to every vector."""
     prior = store.player_seasons(feature_season, for_target=target_season)
     prior2 = (store.player_seasons(feature_season - 1, for_target=target_season)
               if feature_season - 1 >= 1999 else {})
@@ -106,6 +108,8 @@ def build_features(store: SeasonStore, feature_season: int, pids: Sequence[str],
                 _pg(ps.air_yards, g) if AIR_YARDS_RELIABLE(feature_season) else 0.0,
                 (ps.air_yards / ps.targets) if ps.targets else 0.0,  # aDOT proxy
             ]
+        if situation is not None:
+            feats += situation.features_for(pid).as_list()
         rows.append(FeatureRow(pid, positions.get(pid, ps.position),
                                np.array(feats, dtype=float), ps, p2))
     return rows
@@ -261,6 +265,19 @@ class FittedModel:
     shrinkers: Dict[str, Shrinker]
     bonus: Dict[str, BonusTable]
     cap_bind_counts: Dict[str, int] = field(default_factory=dict)
+    qb_direct: Optional[Ridge] = None       # V4: QB season-points ridge
+
+
+def _qb_extra(r: FeatureRow) -> List[float]:
+    """V4's three QB-only features: prior points, prior ppg, prior-2 ppg."""
+    ppg = r.prior.ppg or 0.0
+    p2 = (r.prior2.ppg or 0.0) if r.prior2 is not None else 0.0
+    return [r.prior.points, ppg, p2]
+
+
+def _qb_direct_X(rows: List[FeatureRow]) -> np.ndarray:
+    return np.hstack([np.vstack([r.x for r in rows]),
+                      np.array([_qb_extra(r) for r in rows], dtype=float)])
 
 
 S1_COMPONENTS = {
@@ -284,21 +301,25 @@ def _component_value(ps: PlayerSeason, comp: str, usage_arm: bool) -> float:
 
 
 def fit(store: SeasonStore, train_pair_seasons: List[int], usage_arm: bool,
-        target_season: int, qb_td_cap: float = W_CAP_TD) -> FittedModel:
+        target_season: int, qb_td_cap: float = W_CAP_TD,
+        vacated: bool = False, qb_direct: bool = False) -> FittedModel:
     """train_pair_seasons: seasons s such that (features s-1 -> outcome s) is a
-    training pair. All must be < target_season (asserted via data layer)."""
+    training pair. All must be < target_season (asserted via data layer).
+    vacated: V3 situation features. qb_direct: V4 QB season-points ridge."""
     # Assemble training pairs
     pairs: List[Tuple[FeatureRow, PlayerSeason]] = []
     ps_pairs: List[Tuple[PlayerSeason, PlayerSeason]] = []
     train_season_aggs: List[Dict[str, PlayerSeason]] = []
     from .data import frozen_universe  # local import to avoid cycle
+    from .situation import Situation  # local import to avoid cycle
     for s in train_pair_seasons:
         assert s < target_season, "training pair season >= target"
         universe = frozen_universe(store, s)
         outcome = store.player_seasons(s, for_target=target_season)
         positions = {pid: pos for pos, pids in universe.items() for pid in pids}
+        sit = Situation(store, s, usage_arm) if vacated else None
         rows = build_features(store, s - 1, list(positions), positions,
-                              usage_arm, target_season=s)
+                              usage_arm, target_season=s, situation=sit)
         for r in rows:
             out = outcome.get(r.pid)
             if out is None:
@@ -352,6 +373,14 @@ def fit(store: SeasonStore, train_pair_seasons: List[int], usage_arm: bool,
     # ---- S3 bonus tables
     for kind in ("pass", "rush", "rec"):
         m.bonus[kind] = fit_bonus_table(train_season_aggs, kind)
+
+    # ---- V4: QB direct season-points ridge (replaces S1/S2/S3 at QB only)
+    if qb_direct:
+        qb_rows = [(r, out) for r, out in pairs if r.position == "QB"]
+        if len(qb_rows) >= 30:
+            Xq = _qb_direct_X([r for r, _ in qb_rows])
+            yq = np.array([out.points for _, out in qb_rows])
+            m.qb_direct = fit_ridge(Xq, yq)
     return m
 
 
@@ -372,6 +401,12 @@ def predict(m: FittedModel, rows: List[FeatureRow]
         }
         Xg = np.vstack([[r.prior.games, r.x[10]] for r in prows])
         games = np.clip(m.games[pos].predict(Xg), 1.0, 17.0)
+        if pos == "QB" and m.qb_direct is not None:
+            pts = np.clip(m.qb_direct.predict(_qb_direct_X(prows)), 0, None)
+            for i, r in enumerate(prows):
+                g = float(games[i])
+                out[r.pid] = (float(pts[i]), float(pts[i]) / g, g)
+            continue
         for i, r in enumerate(prows):
             p = r.prior
             ppg = 0.0

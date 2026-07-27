@@ -31,6 +31,15 @@ from scoring import score_offensive_game  # noqa: E402
 
 HOLDOUT_SEASON = 2025  # sealed; never evaluated, never featured
 POSITIONS = ("QB", "RB", "WR", "TE")
+
+# Franchise canonicalisation, measured 2026-07-27: player_weekly_stats uses
+# modern codes from 2003 onward regardless of city; old codes exist only in
+# 1999-2002 rows. Cross-season joins spanning that seam need this map.
+FRANCHISE_MAP = {"OAK": "LV", "SD": "LAC", "STL": "LA", "JAC": "JAX"}
+
+
+def canon_team(team: str) -> str:
+    return FRANCHISE_MAP.get(team, team)
 # ADR-016 draft-relevant depths (make_board.py RELEVANT_DEPTH) — universe rule.
 UNIVERSE_DEPTH = {"QB": 20, "RB": 45, "WR": 60, "TE": 20}
 
@@ -235,6 +244,40 @@ class SeasonStore:
                 f"(holdout {HOLDOUT_SEASON})"
             )
         return self._load_season(target_season)
+
+    _EARLY_SQL = """
+    SELECT player_id, team, COUNT(*) AS n FROM player_weekly_stats
+    WHERE season = ? AND season_type = 'REG' AND week <= 4
+      AND team IS NOT NULL AND team != ''
+    GROUP BY player_id, team
+    """
+
+    def early_rosters(self, season: int) -> Dict[str, str]:
+        """Weeks-1-4 franchise membership for `season`: {pid: canonical team}.
+
+        THE REGISTERED V3 LOOK-AHEAD EXCEPTION (FABLE-EXT2-2026-07-27.md):
+        when called with the target season this reads target-season rows —
+        but only (player_id, team, week<=4 counts), never a production
+        column. The holdout stays sealed. Modal team; deterministic
+        tie-break by team code.
+        """
+        if season >= HOLDOUT_SEASON:
+            raise HoldoutViolation(
+                f"early_rosters({season}) is at/after the sealed holdout"
+            )
+        if not hasattr(self, "_early_cache"):
+            self._early_cache: Dict[int, Dict[str, str]] = {}
+        if season in self._early_cache:
+            return self._early_cache[season]
+        votes: Dict[str, List[Tuple[int, str]]] = defaultdict(list)
+        for row in self.conn.execute(self._EARLY_SQL, (season,)):
+            votes[row["player_id"]].append((row["n"], row["team"]))
+        out = {
+            pid: canon_team(max(v, key=lambda nv: (nv[0], nv[1]))[1])
+            for pid, v in votes.items()
+        }
+        self._early_cache[season] = out
+        return out
 
     def birthdates(self) -> Dict[str, str]:
         if self._birthdates is None:
