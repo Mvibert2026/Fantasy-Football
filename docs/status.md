@@ -1845,3 +1845,58 @@ narrowed the rest):
 `tests/test_current_state.py` (added in the earlier, now-partially-superseded pass) is unaffected
 by the scope correction and still passes — it checks commit ancestry and verification-date
 freshness, both of which remain true statements about the file regardless of section content.
+
+## 2026-07-27 — Frontend: thread 063, suggester reopen regression (fixed at root cause)
+
+Founder reported the pick-entry suggester "opens every pick" despite thread 051's fix. Read 051's
+own reply in full first — it really did fix what it targeted (click-outside/Escape dismiss, no
+auto-open on mount, BPA order). It just didn't cover the call site that fires on every commit.
+
+**Root cause:** `DraftRoom.tsx`'s `recordPick` (the function every commit funnels through — digit
+shortcut, typed/pasted Enter, clicking a candidate row, and the board row's own "mark taken" X for
+logging an opponent's pick) ends with a bare `searchRef.current?.focus()`, kept deliberately for
+fast keyboard re-entry. That call goes through the same `onFocus` handler 051 wired up, but 051's
+`suppressNextFocusOpen` flag was only ever set at the *other* programmatic-focus call site (the
+mount/remount ref callback). So every commit's own refocus looked exactly like a genuine user click
+and reopened the popover — literally on every pick, not approximately.
+
+**Fix:** one shared helper, `refocusSearchWithoutOpening`, used at both of this component's actual
+programmatic-focus call sites. Same guard mechanism 051 introduced, completed — not a second,
+competing guard. It also fixes a latent leak in the original mechanism: it only arms the suppress
+flag when `document.activeElement !== el`, since calling `.focus()` on an already-focused element
+fires no `focus` event in real browsers, so unconditionally arming it (harmless at 051's one call
+site, which is always a genuine remount) would have left it stuck `true` and wrongly suppressed the
+*next* real click at this new call site — a fourth, quieter regression waiting to happen.
+`recordPick` also now explicitly closes the panel on commit (`setSuggesterOpen(false)`), satisfying
+the rule's "closes on ... commit" for the case where it was genuinely open going into a commit.
+
+**A second, related defect found via the project's own smoke harness:** `frontend/e2e/smoke.mjs`
+(already in the tree, not written this session) checks every row of thread 063's trigger table
+against a real Chromium session and caught that a real click on the field silently did nothing on
+the very first click after page load — mount autofocus already holds real DOM focus by then, and
+browsers do not fire a new `focus` event from clicking an already-focused element, so `onFocus`-only
+detection meant the panel's *opening* trigger was itself unreliable. Confirmed pre-existing via
+`git show HEAD:frontend/e2e/artifacts/report.json` (already recorded this exact failure before this
+session). Fixed with an `onMouseDown` handler on the input — a real mousedown is never produced by
+this component's own `.focus()` calls, so it's an independent, unambiguous user-intent signal.
+
+**Anti-pattern search:** `grep -rn "\.focus()" ui` (excluding tests) — exactly three call sites,
+all in `DraftRoom.tsx`, all now accounted for. No other component infers open/visible state from
+DOM focus, no other effect is keyed on draft/pick state to drive an open-style side effect.
+
+**Verification:** the two new tests that map to the actual regression (row 3 and row 9 of the new
+`describe` block) were confirmed to fail against the un-fixed source via `git stash` on just
+`DraftRoom.tsx`, then re-verified passing after `git stash pop`. Full suite 163/163 passing (18
+files, was 154), nine net-new tests (one per trigger-table row), no existing test modified. `tsc -b
+--noEmit` clean. `npm run smoke`: 16/16 (was 15/16 before the `onMouseDown` fix; the one prior
+failure was the second defect above, not a smoke-harness flake — confirmed by finding and killing a
+stale leftover dev-server process from an earlier invocation that was silently serving pre-fix code
+to two consecutive smoke runs before that was noticed).
+
+Screenshot: `frontend/e2e/artifacts/draftroom.png` (real Chromium capture from the smoke run,
+mid-draft state, dropdown correctly closed after commits). Reporting as built and screenshot-
+verified per this project's evidence standard for UI work.
+
+Branch `frontend/063-suggester-reopen-fix`. `docs/CURRENT-STATE.md` frontend-test-count line and
+the DraftRoom paragraph updated in place. Thread 063 replied and set `STATUS: RESOLVED` (only the
+`frontend` role, the thread's `TO:`, is permitted to do so).
