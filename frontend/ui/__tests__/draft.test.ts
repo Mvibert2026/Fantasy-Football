@@ -102,7 +102,15 @@ describe('toDraftLog', () => {
       mockId: 'mock-abc',
       queue: [],
       picks: [
-        { overallPick: 1, round: 1, teamSlot: 1, playerId: 5, playerName: 'Bijan Robinson', timestamp: '2026-08-01T00:00:00.000Z' },
+        {
+          overallPick: 1,
+          round: 1,
+          teamSlot: 1,
+          playerId: 5,
+          playerName: 'Bijan Robinson',
+          timestamp: '2026-08-01T00:00:00.000Z',
+          entryMode: 'shortcut',
+        },
       ],
     };
     const log = toDraftLog(state);
@@ -114,11 +122,25 @@ describe('toDraftLog', () => {
         team_slot: 1,
         player_name_raw: 'Bijan Robinson',
         timestamp: '2026-08-01T00:00:00.000Z',
+        entry_mode: 'shortcut',
       },
     ]);
-    // Exactly these five fields -- no mfl_id, no playerId leaking through.
+    // Exactly these six fields -- no mfl_id, no playerId leaking through.
     expect(Object.keys(log[0]!).sort()).toEqual(
-      ['mock_id', 'overall_pick', 'player_name_raw', 'round', 'team_slot', 'timestamp'].sort(),
+      ['entry_mode', 'mock_id', 'overall_pick', 'player_name_raw', 'round', 'team_slot', 'timestamp'].sort(),
     );
+  });
+
+  it('RETROFIT-5: a pick recorded before entry_mode existed exports as an explicit null, never a guessed mode', () => {
+    const state: DraftState = {
+      leagueId: 'default',
+      mockId: 'mock-abc',
+      queue: [],
+      picks: [
+        { overallPick: 1, round: 1, teamSlot: 1, playerId: 5, playerName: 'Bijan Robinson', timestamp: '2026-08-01T00:00:00.000Z' },
+      ],
+    };
+    const log = toDraftLog(state);
+    expect(log[0]!.entry_mode).toBeNull();
   });
 });

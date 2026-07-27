@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
 import type { BoardRow } from '../data/board';
 import {
   currentOverallPick,
@@ -13,6 +13,7 @@ import {
   toDraftLog,
   type DraftPickRecord,
   type DraftState,
+  type EntryMode,
 } from '../data/draft';
 import { computeLiveAvailability, dotsFilled, freqText, type LiveAvailabilityResult } from '../data/liveAvailability';
 import type { Dataset } from '../data/load';
@@ -36,6 +37,19 @@ function paneColumns(boardPct = 35, centerPct = 40): string {
 }
 
 const SCARCITY_POSITIONS = ['QB', 'RB', 'WR', 'TE'] as const;
+
+/** Fisher-Yates, used only for the pick-entry shortlist's display order
+ *  (RETROFIT-5) -- never for anything that feeds a ranking or a score. */
+function shuffled<T>(arr: T[]): T[] {
+  const copy = arr.slice();
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    const tmp = copy[i]!;
+    copy[i] = copy[j]!;
+    copy[j] = tmp;
+  }
+  return copy;
+}
 
 /**
  * Draft Room, ported from the design handoff prototype
@@ -156,11 +170,42 @@ export function DraftRoom({
   const [watchlist, toggleWatch] = useWatchlist();
   const [query, setQuery] = useState('');
   const [selected, setSelected] = useState(0);
+  // RETROFIT-5: which of 'typed' / 'pasted' the current query's content came
+  // from, so a commit while the query is non-empty logs the right entry_mode.
+  // Reset to 'typed' on every commit/clear -- 'pasted' describes only the
+  // content currently sitting in the field, not some sticky mode.
+  const [queryEntryMode, setQueryEntryMode] = useState<'typed' | 'pasted'>('typed');
   const [positionTab, setPositionTab] = useState<PositionTab>('ALL');
   const [detailRow, setDetailRow] = useState<BoardRow | null>(null);
   const [expandedRowId, setExpandedRowId] = useState<number | null>(null);
   const [railTab, setRailTab] = useState<'queue' | 'watch'>('watch');
-  const searchRef = useRef<HTMLInputElement>(null);
+  // Typed `| null` explicitly (rather than the bare `useRef<HTMLInputElement>(null)`
+  // form) so this is a mutable ref -- the callback below writes `.current`
+  // itself instead of handing that job to React's own `ref={searchRef}` wiring.
+  const searchRef = useRef<HTMLInputElement | null>(null);
+  // RETROFIT-5 / ML-02: autofocus re-asserted whenever the input node
+  // (re)attaches, not a one-shot guard -- a guard that fires once silently
+  // stops re-focusing after any remount (switching leagues, switching the top
+  // nav away and back), which breaks the field's "never needs the mouse"
+  // claim. useCallback keeps this function's identity stable so React only
+  // invokes it on real mount/unmount, not on every render.
+  const setSearchInputRef = useCallback((el: HTMLInputElement | null) => {
+    searchRef.current = el;
+    // Synchronous, not deferred behind requestAnimationFrame: React calls a
+    // ref callback during the commit phase, after the node is already
+    // attached to the document, so it is already focusable here. A rAF
+    // wrapper was tried first and measurably failed in a backgrounded/
+    // automated browser tab (rAF callbacks are throttled or never fire while
+    // a tab isn't the active one) -- direct focus() has no such dependency.
+    if (el) {
+      try {
+        el.focus();
+      } catch {
+        // Best-effort -- a focus() on a since-unmounted node is a no-op risk,
+        // never worth crashing the draft room over.
+      }
+    }
+  }, []);
 
   function openDetail(row: BoardRow) {
     setDetailRow(row);
@@ -225,7 +270,7 @@ export function DraftRoom({
     saveDraftState(next);
   }
 
-  function recordPick(playerId: number | null, playerName: string) {
+  function recordPick(playerId: number | null, playerName: string, entryMode: EntryMode) {
     if (draftComplete || !playerName.trim()) return;
     const overallPick = currentOverallPick(draft.picks);
     const round = roundOfPick(overallPick, teams);
@@ -237,10 +282,12 @@ export function DraftRoom({
       playerId,
       playerName,
       timestamp: new Date().toISOString(),
+      entryMode,
     };
     persist({ ...draft, picks: [...draft.picks, entry], queue: pruneQueue(draft.queue, playerId) });
     setQuery('');
     setSelected(0);
+    setQueryEntryMode('typed');
     searchRef.current?.focus();
   }
 
@@ -270,29 +317,88 @@ export function DraftRoom({
     if (!q) return [];
     return available
       .filter((r) => r.name.kind === 'present' && r.name.value.toLowerCase().includes(q))
-      .slice(0, 8);
+      .slice(0, 5); // RETROFIT-5: 5 slots, matching the digit keys that commit them.
   }, [query, available]);
 
+  /**
+   * RETROFIT-5's default (no-query) shortlist: top 5 still-available players by
+   * real board rank (`overallRank`, board.json's own field -- never a fabricated
+   * "probability this player goes next," which this codebase has no model for;
+   * see the entry_mode doc comment in ui/data/draft.ts for why that departure
+   * from the Mock Lab reference is deliberate). Shuffled so a digit no longer
+   * encodes our confidence -- "press 1 for our top pick" is exactly the reflex
+   * the design note asks to break.
+   *
+   * Re-shuffles only when the underlying top-5 *set* changes (keyed on the ids,
+   * joined into a stable string) or the pick advances -- not on every render,
+   * or the candidates would reorder under the user's cursor while they're
+   * still deciding.
+   */
+  const defaultCandidateIds = useMemo(() => {
+    return available
+      .map((r) => ({ row: r, rank: r.overallRank.kind === 'present' ? r.overallRank.value : null }))
+      .filter((x): x is { row: BoardRow; rank: number } => x.rank !== null)
+      .sort((a, b) => a.rank - b.rank)
+      .slice(0, 5)
+      .map((x) => x.row.id);
+  }, [available]);
+  const defaultCandidates = useMemo(() => {
+    const byId = defaultCandidateIds.map((id) => rowsById.get(id)).filter((r): r is BoardRow => !!r);
+    return shuffled(byId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- reshuffle key is
+    // the id SET (defaultCandidateIds.join) plus the pick clock, deliberately
+    // narrower than every dep ESLint would ask for.
+  }, [defaultCandidateIds.join(','), currentPick, rowsById]);
+
+  const candidates = query.trim() ? searchResults : defaultCandidates;
+
+  function commitCandidate(row: BoardRow, mode: EntryMode) {
+    if (row.name.kind === 'present') recordPick(row.id, row.name.value, mode);
+  }
+
   function onSearchKeyDown(e: KeyboardEvent<HTMLInputElement>) {
+    // RETROFIT-5: digits 1-5 commit the corresponding candidate directly,
+    // whichever list is showing -- the common case is one keystroke, no
+    // typing at all.
+    if (/^[1-5]$/.test(e.key)) {
+      const i = Number(e.key) - 1;
+      const hit = candidates[i];
+      if (hit) {
+        e.preventDefault();
+        commitCandidate(hit, 'shortcut');
+      }
+      return;
+    }
     if (e.key === 'ArrowDown') {
       e.preventDefault();
-      setSelected((s) => Math.min(searchResults.length - 1, s + 1));
+      setSelected((s) => Math.min(candidates.length - 1, s + 1));
     } else if (e.key === 'ArrowUp') {
       e.preventDefault();
       setSelected((s) => Math.max(0, s - 1));
     } else if (e.key === 'Enter') {
       e.preventDefault();
-      const hit = searchResults[selected];
+      const hit = candidates[selected];
       if (hit && hit.name.kind === 'present') {
-        recordPick(hit.id, hit.name.value);
+        // Committing the highlighted row from the un-typed default shortlist is
+        // still a shortcut (no search performed); committing a typed/pasted
+        // search match is not.
+        commitCandidate(hit, query.trim() ? queryEntryMode : 'shortcut');
       } else if (query.trim()) {
         // No board match -- log the raw text (a kicker, a DST, a rookie off this
         // board). Real data entry beats refusing to record what actually happened.
-        recordPick(null, query.trim());
+        recordPick(null, query.trim(), queryEntryMode);
       }
     } else if (e.key === 'Escape') {
       setQuery('');
       setSelected(0);
+      setQueryEntryMode('typed');
+    } else if (e.key === 'Backspace' && !query) {
+      // RETROFIT-5: Backspace on an empty field undoes the last pick -- the
+      // field itself has nothing left to delete, so the key is free to mean
+      // something else.
+      e.preventDefault();
+      const last = draft.picks[draft.picks.length - 1];
+      if (last) removePick(last.overallPick);
     }
   }
 
@@ -388,9 +494,15 @@ export function DraftRoom({
           >
             <span style={{ fontFamily: 'var(--font-num)', fontSize: 11, color: 'var(--dim2)' }}>/</span>
             <input
-              ref={searchRef}
+              ref={setSearchInputRef}
               value={query}
               onChange={(e) => {
+                // RETROFIT-5 entry_mode: a native 'insertFromPaste' input event
+                // means this change's content arrived via paste, not keystrokes.
+                // Not supported in every environment (e.g. jsdom in tests) --
+                // falls back to 'typed', the safe default, when absent.
+                const inputType = (e.nativeEvent as InputEvent).inputType;
+                setQueryEntryMode(inputType === 'insertFromPaste' ? 'pasted' : 'typed');
                 setQuery(e.target.value);
                 setSelected(0);
               }}
@@ -398,13 +510,13 @@ export function DraftRoom({
               placeholder={
                 draftComplete
                   ? 'Draft complete'
-                  : `Mark pick ${currentPick} (team ${onClockSlot}${userOnClock ? ' — you' : ''}) — type a player name`
+                  : `Mark pick ${currentPick} (team ${onClockSlot}${userOnClock ? ' — you' : ''}) — 1-5 to commit, or type a name`
               }
               disabled={draftComplete}
               style={{ flex: 1, height: 36, background: 'transparent', border: 0, outline: 'none', fontSize: 14 }}
             />
           </div>
-          {searchResults.length > 0 ? (
+          {!draftComplete && candidates.length > 0 ? (
             <div
               style={{
                 position: 'absolute',
@@ -416,10 +528,16 @@ export function DraftRoom({
                 border: '1px solid var(--line2)',
               }}
             >
-              {searchResults.map((r, i) => (
+              {!query.trim() ? (
+                <div style={{ padding: '5px 10px', fontFamily: 'var(--font-num)', fontSize: 9.5, letterSpacing: '.08em', color: 'var(--dim2)' }}>
+                  TOP 5 BY BOARD RANK, STILL AVAILABLE — ORDER RANDOMISED
+                </div>
+              ) : null}
+              {candidates.map((r, i) => (
                 <div
                   key={r.id}
-                  onClick={() => r.name.kind === 'present' && recordPick(r.id, r.name.value)}
+                  data-testid={`candidate-row-${i + 1}`}
+                  onClick={() => commitCandidate(r, query.trim() ? queryEntryMode : 'shortcut')}
                   onMouseEnter={() => setSelected(i)}
                   style={{
                     display: 'flex',
@@ -431,6 +549,12 @@ export function DraftRoom({
                     borderBottom: '1px solid var(--line)',
                   }}
                 >
+                  <span
+                    className="num"
+                    style={{ fontSize: 11, fontWeight: 700, color: 'var(--acc)', width: 14, textAlign: 'right' }}
+                  >
+                    {i + 1}
+                  </span>
                   <span style={{ fontFamily: 'var(--font-num)', fontSize: 11, color: 'var(--dim2)', width: 26 }}>
                     <Value cell={r.overallRank} render={integer} />
                   </span>
@@ -444,8 +568,10 @@ export function DraftRoom({
                 </div>
               ))}
               <div style={{ padding: '5px 10px', fontFamily: 'var(--font-num)', fontSize: 10, color: 'var(--dim2)', display: 'flex', gap: 14 }}>
+                <span>1-5 commit</span>
                 <span>↑↓ navigate</span>
                 <span>⏎ mark taken</span>
+                <span>⌫ on empty undoes last</span>
                 <span>esc clear</span>
               </div>
             </div>
@@ -665,7 +791,7 @@ export function DraftRoom({
                     <span
                       onClick={(e) => {
                         e.stopPropagation();
-                        recordPick(r.id, r.name.kind === 'present' ? r.name.value : '');
+                        recordPick(r.id, r.name.kind === 'present' ? r.name.value : '', 'shortcut');
                       }}
                       title="Mark taken"
                       className="num"
@@ -747,7 +873,7 @@ export function DraftRoom({
                         score {decimal(score)}
                       </span>
                       <button
-                        onClick={() => recordPick(row.id, row.name.kind === 'present' ? row.name.value : '')}
+                        onClick={() => recordPick(row.id, row.name.kind === 'present' ? row.name.value : '', 'shortcut')}
                         style={{ padding: '4px 10px', background: 'var(--acc)', border: 0, color: '#08120c', fontWeight: 700, fontSize: 12 }}
                       >
                         Draft
@@ -991,7 +1117,7 @@ export function DraftRoom({
           queue={draft.queue}
           onToggleQueue={toggleQueue}
           onMarkTaken={(id, name) => {
-            recordPick(id, name);
+            recordPick(id, name, 'shortcut');
             setDetailRow(null);
             onOpenPlayer?.(null);
           }}

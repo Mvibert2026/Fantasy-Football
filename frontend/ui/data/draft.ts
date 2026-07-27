@@ -20,6 +20,35 @@
  * pick; this is its inverse, pick -> (round, slot).
  */
 
+/**
+ * RETROFIT-5 (design_handoff_draft_assistant/screens/01-draft-board.md): how the
+ * pick was committed, so shortcut-entered picks can be examined for
+ * systematically different behaviour rather than argued about.
+ *
+ * This is a deliberately smaller, three-value set scoped to this screen only --
+ * NOT the same field as `mock_picks.entry_mode` in ADR-D
+ * (docs/adr-drafts/ADR-D-mock-logging-instrumentation.md), which is a closed
+ * eight-value enum with its own contamination-control machinery
+ * (`shortlist_source`, `predictions_visible`, write-once hazard-model fields,
+ * a blind-arm design) for Mock Lab's calibration-logging pipeline specifically.
+ * That ADR is Status: Proposed and scoped to `mock_picks`/`mock_drafts`; it does
+ * not name this screen. If this screen's exported log is ever wired into
+ * calibration (`toDraftLog` below already documents itself as matching the
+ * backend's mock-logging schema "field-for-field"), the two entry_mode
+ * vocabularies will need to be reconciled deliberately, not silently -- flagged
+ * in the thread reply for this retrofit rather than resolved here.
+ *
+ *   - 'shortcut' -- committed a displayed candidate without typing: a digit
+ *     key, Enter on the un-typed default shortlist, or a click on a candidate
+ *     row, a board-list row's mark-taken control, the recommended-pick button,
+ *     or the player-detail sheet's mark-taken button.
+ *   - 'typed'    -- the query field held text the user typed, then committed
+ *     (a filtered match or the no-match free-text fallback).
+ *   - 'pasted'   -- same as 'typed', but the query's content arrived via a
+ *     paste event rather than keystrokes.
+ */
+export type EntryMode = 'shortcut' | 'typed' | 'pasted';
+
 export interface DraftPickRecord {
   overallPick: number;
   round: number;
@@ -31,6 +60,13 @@ export interface DraftPickRecord {
    *  player (kicker, DST, a rookie not on this board) entered by free text. */
   playerName: string;
   timestamp: string;
+  /** Optional (not `entryMode: EntryMode | null`) so a pick literal written
+   *  before RETROFIT-5 -- an old test, an old localStorage record -- still
+   *  type-checks; every read path normalises the missing case to an explicit
+   *  `null` via `?? null`, never a fabricated 'shortcut' (Principle #2: an
+   *  explicit null is a real state, distinct from any of the three real
+   *  modes). Every pick `recordPick` writes going forward sets a real value. */
+  entryMode?: EntryMode | null;
 }
 
 export interface DraftState {
@@ -69,7 +105,10 @@ export function loadDraftState(leagueId: string): DraftState {
     return {
       leagueId,
       mockId: parsed.mockId ?? newMockId(),
-      picks: parsed.picks ?? [],
+      // entryMode didn't exist before RETROFIT-5 -- an old stored pick has no
+      // honest value to backfill, so it stays `null` rather than being guessed
+      // as 'shortcut'.
+      picks: (parsed.picks ?? []).map((p) => ({ ...p, entryMode: p.entryMode ?? null })),
       queue: parsed.queue ?? [],
     };
   } catch {
@@ -151,6 +190,9 @@ export interface DraftLogEntry {
   team_slot: number;
   player_name_raw: string;
   timestamp: string;
+  /** See `EntryMode` -- `null` for picks logged before RETROFIT-5, never a
+   *  fabricated 'shortcut'. */
+  entry_mode: EntryMode | null;
 }
 
 export function toDraftLog(state: DraftState): DraftLogEntry[] {
@@ -161,5 +203,6 @@ export function toDraftLog(state: DraftState): DraftLogEntry[] {
     team_slot: p.teamSlot,
     player_name_raw: p.playerName,
     timestamp: p.timestamp,
+    entry_mode: p.entryMode ?? null,
   }));
 }
