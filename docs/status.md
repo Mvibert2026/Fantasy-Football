@@ -1301,3 +1301,84 @@ exposes no usable player-id join key today (`player_id_gsis` is always emitted `
 joining these new files to `board.json` client-side by `player_id` isn't yet possible -- may need
 a small `board.json` change if the heat-map wiring needs it. `docs/handoffs/OPEN.md` re-synced
 via `tools/handoffs.py sync`. No founder statements surfaced this session.
+
+---
+## 2026-07-27 -- frontend: thread 037 item 1, thread 029 (DraftRoom dots/tiers), RETROFIT-5 TypeAhead
+
+Three tasks, in order. Ran at escalated effort throughout per the long-fidelity-port lesson in
+operating-model.md, and read each spec section fully before touching code rather than skimming.
+
+**Thread 037 item 1** -- found the `<1%` fix already shipped in `09391e4`, the same WIP checkpoint
+commit whose message says "thread 037 opened" -- the defect was fixed in the same session that
+reported it, but the thread never got a closing reply. Added the one literal thing the ask asked
+for that wasn't already present verbatim (`percent(0.003)` exactly, plus an explicit `not.toBe`
+against `percent(0)`). `format.test.ts`: 4 -> 5 tests. Commit `1d45d27`.
+
+**Thread 029** (amended mid-flight from `Board.tsx` to `DraftRoom.tsx` -- read the amendment file
+before starting, per its own instruction) -- added the 10-dot frequency array to DraftRoom's
+available-player rows (reusing `dotsFilled`/`freqText`, the same helpers `PlayerDetail.tsx` and
+`Availability.tsx` already use, at a smaller 4px/1.5px-gap scale) and tier-band grouping headers
+(`TIER N -- M players left`), ported from `Board.tsx`'s own existing band-divider code and
+restricted to a single position tab for the same reason `Board.tsx` restricts it (`tier_label` is
+per-position). The hard constraint was row height must not change: verified by measuring a live
+row's `getBoundingClientRect().height` in a real running browser session with the dot wrapper
+programmatically hidden vs. shown -- identical (32.15px both ways) -- rather than assuming it from
+the dots' small size. Commit `2e38f96`.
+
+**RETROFIT-5 / thread 036's TypeAhead sub-item** -- ported the pick-entry key-handling logic from
+the Mock Lab *design-reference* mockup (`docs/design-reference/mock-lab/03-logging.dc.html`'s
+`Component` class; there is no Mock Lab *application* code in this repo -- its UI remains unbuilt
+per CURRENT-STATE.md, only a backend store exists, thread 025 -- so the reference HTML's own
+`onKey`/`log`/`undo` functions are the actual thing ported, not a paraphrase of them) into
+`DraftRoom.tsx`: digit keys 1-5 commit a shortlisted candidate directly, Backspace on an empty
+field undoes the last pick, autofocus re-asserted via a stable ref callback on every input-node
+attach, the default (no-query) shortlist is the top 5 available players by real board rank
+shuffled per pick, and every commit path now records `entryMode` (`'shortcut' | 'typed' |
+'pasted'`), threaded through `DraftPickRecord` into `toDraftLog`'s export.
+
+Two things flagged rather than silently resolved, both written into the thread 036 reply in full:
+(1) the Mock Lab reference's shortlist shows a synthetic "probability this player goes next"
+number with no real backend model behind it in this codebase -- built the DraftRoom shortlist
+ordered by real board rank instead, with no probability shown, to avoid a Principle #1 violation;
+(2) `docs/adr-drafts/ADR-D-mock-logging-instrumentation.md` (Status: Proposed, Strategist-authored)
+explicitly rejects shortlist randomisation and visible probabilities for Mock Lab's own logging
+screen on calibration-contamination grounds -- doesn't block this build (ADR-D is scoped to Mock
+Lab's own `mock_picks` tables, which don't exist yet, and no next-pick probability is shown here
+at all, so the contamination mechanism it worries about doesn't apply as built) but the two
+`entry_mode` vocabularies (this one, ADR-D's richer 8-value one) will need deliberate reconciliation
+before `DraftRoom`'s exported log is ever treated as calibration input.
+
+New `ui/__tests__/draft-room-typeahead.test.tsx`, 9 tests, including a 20-independent-mount
+statistical check that the shuffle actually varies displayed order rather than merely being
+capable of it. Live-browser verification (own dev-server instance, port 5174, to avoid another
+concurrent session's 5173 server) caught a real bug the jsdom suite could not: the first
+autofocus implementation deferred `focus()` behind `requestAnimationFrame` and silently failed in
+a backgrounded tab (rAF throttled/never firing off-screen); fixed to a synchronous `focus()` in
+the ref callback. Commit `82eb2d8`; thread reply commit `c3d5d3c`.
+
+**Mailbox hygiene**, found via `tools/handoffs.py check` at session end, not part of the three
+tasks but fixed since check was failing on things this session's own file changes exposed:
+`029-AMENDMENT-retarget-to-draftroom.md` had no `TO:`/frontmatter and was invisible to `check` as
+its own unaddressed thread -- folded into `029-frequency-array-on-board.md` where it belonged, the
+fragment file removed. A concurrent session's new `043-draft-mode-gap-list.md` collided with the
+established `043-weekly-finishes-...-ready-con.md` (committed 2026-07-26) -- renumbered the newer,
+uncommitted one to 049, same precedent thread 037 item 2 used for the last 036 duplicate. `check`
+now passes except three pre-existing failures this session did not touch or cause and is not
+equipped to fix blind (`020-preregistration-convention.md`, `023-consensus-rank-and-ingest-
+fixes.md`, `025-mock-lab-backend.md`, all "RESOLVED with no reply") -- flagged in CURRENT-STATE.md
+and here rather than silently left for the next `check` run to rediscover.
+
+Also found, running the full frontend suite once at the end (not just targeted files, since the
+three tasks were small enough to allow it): `ui/__tests__/trace-fields.test.ts` is red --
+`TRACE_CONTRACT` pinned at 1.8.0 vs. `board.json` now 1.9.0. This is the concurrent backend
+session's thread 043 (the correctly-numbered one) contract bump, already properly flagged to
+frontend in that thread; replied there confirming the red test is the expected, known consequence
+of it, not something this session broke, and that the actual `TRACE_CONTRACT` bump plus
+`weekly_finishes.json`/`season_stats.json` wiring into `PlayerDetail.tsx` remain unimplemented --
+out of scope tonight.
+
+Frontend test count: 127 total (was ~120 before this session's three additions), 126 passing, 1
+failing (the pre-existing trace-fields/contract-drift issue above, not caused by this session).
+`tsc -b --noEmit` clean throughout. `docs/handoffs/OPEN.md` re-synced via `tools/handoffs.py sync`
+(49 threads, 31 open). No founder statements surfaced this session -- all instructions came from
+the dispatching session, not from the founder directly.

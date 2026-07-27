@@ -13,7 +13,10 @@ to learn *what happened*; it is not fine to read it to learn *what is true*.
 **Last verified:** 2026-07-27, read directly from the working tree (backend session: thread 019
 bootstrap-CI verification, thread 017/039 `weekly_finishes.json`/`season_stats.json` export
 implementation (contract 1.9.0); frontend session: display-repair diagnosis, Opponents wiring
-verification, mailbox duplicate-ID fix, thread 038/041).
+verification, mailbox duplicate-ID fix, thread 038/041; second frontend session, same day: thread
+037 item 1 (`<1%` test literal), thread 029 (DraftRoom dot array + tier grouping, retargeted off
+Board.tsx per its amendment), RETROFIT-5/thread 036 (Mock Lab TypeAhead back-port to DraftRoom pick
+entry), plus mailbox hygiene — duplicate ID 043 and an orphaned no-`TO:` fragment file, both fixed).
 
 ---
 
@@ -26,7 +29,7 @@ verification, mailbox duplicate-ID fix, thread 038/041).
 | Agent infrastructure | **Live** | Six subagents in `.claude/agents/` (backend, frontend, data-ops, strategist, researcher, librarian), `/inbox` command, mailbox tooling at `tools/handoffs.py` + `tools/sprint_status.py`, mailbox health enforced in the test suite (`tests/test_handoffs.py`) |
 | Data contract | **1.9.0** | Bumped from 1.8.0 this session (thread 017/039: new `weekly_finishes.json`/`season_stats.json`, own `export_version`, not itself `CONTRACT_VERSION`-tagged — same pattern as `player_descriptions.json`). All six per-league `CONTRACT_VERSION`-tagged artifacts regenerated and verified matching 1.9.0. `strategies.json` is still stale at 1.7.0 pending backend re-running its export (thread 042, open, untouched this session). `assistant-context.md` still says 1.6.0 — fix on next touch |
 | Frontend location | `frontend/` subdirectory of this repo | Merged from `frontend-prep` @ `7276a2d`..`d7cd321` via `git subtree add` (commit `2df3716`), full history preserved. No longer a separate working copy. |
-| Frontend tests | **116 passing** (15 files) | `npm run build` and `npm test` both verified green from `frontend/` after `npm install` (thread 041, this session); `node_modules` is gitignored and must be reinstalled per checkout |
+| Frontend tests | **126 passing, 1 failing** (127 total, 16 files) | New this session: `format.test.ts` (+1, thread 037 item 1), `draft.test.ts` (+2, `entryMode`), new `draft-room-typeahead.test.tsx` (+9, RETROFIT-5). The 1 failure (`trace-fields.test.ts`, `TRACE_CONTRACT` pinned at 1.8.0 vs. `board.json` now 1.9.0) is **pre-existing contract drift from the concurrent backend session's thread 043 bump, not caused by this session** — flagged in a reply to that thread, not fixed here (real work: `TRACE_CONTRACT` bump + wiring `weekly_finishes.json`/`season_stats.json` into `PlayerDetail.tsx` §7/§8, out of scope tonight). `node_modules` is gitignored and must be reinstalled per checkout |
 | Python modules | 35 in `src/` (`mock_lab_store.py` added 2026-07-27, thread 025; `preregistration.py`/`holdout.py` extended, not added, thread 020; `export_history.py` added 2026-07-27, thread 017/039) | |
 | Export artifacts | 8 + `player_descriptions.json` + `weekly_finishes.json` + `season_stats.json` | `rosters.json` added (thread 016), wired into the Opponents tab and verified rendering live (thread 038/041). `weekly_finishes.json`/`season_stats.json` added this session (thread 017/039) — 1481 players, real `player_weekly_stats` data, 2003-2008 target-derived fields explicitly `target_data_unavailable`/`null`, never zeroed; NOT per-league (written once, unprefixed path only). All three of `player_descriptions.json`/`weekly_finishes.json`/`season_stats.json` version independently, by design |
 | Config matrix | 24 dirs under `data/export/` | board + league + availability stub only; **hazard model not rerun per config**; each config's `write_all` now also emits `rosters.json` (empty-roster state, not yet regenerated for all 24 configs this session) |
@@ -94,6 +97,26 @@ target-derived fields explicitly `target_data_unavailable: true`/`targets: null`
 zeroed. Not yet wired into `PlayerDetail.tsx`'s consistency heat-map / three-seasons section —
 that is frontend's next step, thread 043 open to frontend, flags a possible `player_id` vs
 `board.json`'s synthetic `id` join-key gap.
+
+**DraftRoom pick-entry TypeAhead + availability presentation** (thread 029 retargeted off
+`Board.tsx`, thread 037 item 1, RETROFIT-5/thread 036): `DraftRoom.tsx`'s available-player rows now
+carry the same 10-dot frequency array as the player detail sheet / Availability Explorer, and rows
+group under `TIER N — M players left` headers (restricted to a single position tab, since
+`tier_label` is per-position — mixing under `ALL` would merge unrelated tiers sharing a label); row
+height verified unchanged by live measurement. Pick entry backported from the Mock Lab
+design-reference mockup (there is no Mock Lab application code — its UI remains unbuilt, only the
+backend store above): digits 1-5 commit a shortlisted candidate directly, Backspace on an empty
+field undoes the last pick, autofocus re-asserted on every input-node attach (not a one-shot guard),
+default shortlist is the top 5 available by real board rank shuffled per pick (no fabricated
+"predicted next pick" probability — this codebase has no model for that target), and every pick now
+records `entryMode` (`'shortcut' | 'typed' | 'pasted'`), exported through `toDraftLog`. Deliberately
+a smaller vocabulary than ADR-D's `mock_picks.entry_mode` (Status: Proposed, Mock-Lab-scoped) — not
+yet reconciled with it; flagged in the thread 036 reply as needing deliberate resolution before
+DraftRoom's exported log is treated as calibration input. `lib/format.ts::percent()`'s `<1%` branch
+(thread 037 item 1) was already shipped in `09391e4`; this session only added the literal test case
+the thread asked for and closed the reply loop. None of this is screenshot-verified — verified via
+live DOM/state measurement in a real (non-screenshotting) browser session instead; see thread
+replies for detail.
 
 ## Not built / null-stated
 

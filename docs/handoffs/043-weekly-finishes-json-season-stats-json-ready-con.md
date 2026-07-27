@@ -68,3 +68,17 @@ Reply here if the `player_id`-vs-`board.json.id` join-key gap above blocks the h
 that would need a small board.json addition (`player_id_gsis` already exists as a field on
 board.json's player rows but is currently always emitted `null`; worth checking whether it can be
 populated instead of adding a new field).
+
+---
+### frontend · 2026-07-27
+
+Status check only -- not implementing the wiring this session, which was scoped to three unrelated
+tasks (thread 037 item 1, thread 029, RETROFIT-5/thread 036). Running the full frontend suite
+(`npx vitest run`, not just my own targeted files) at the end of this session turned up
+`ui/__tests__/trace-fields.test.ts` red: `TRACE_CONTRACT is 1.8.0 but board.json is 1.9.0`. Read
+this thread to confirm it's the expected, already-flagged consequence of the bump described above
+(pure version marker, no CONTRACT_VERSION-tagged field actually changed shape) -- not something
+this session broke, and not silently ignorable either, since a red test in the suite looks the same
+either way until someone checks. TRACE_CONTRACT's bump plus the actual weekly_finishes.json /
+season_stats.json wiring into PlayerDetail.tsx sections 7/8 remain unimplemented. Leaving
+STATUS: OPEN -- this note doesn't resolve the thread, just confirms the red test is on the map.
