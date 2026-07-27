@@ -37,7 +37,7 @@ Frontend row below is unchanged/not re-verified this pass.
 | Agent infrastructure | **Live** | Six subagents in `.claude/agents/` (backend, frontend, data-ops, strategist, researcher, librarian), `/inbox` command, mailbox tooling at `tools/handoffs.py` + `tools/sprint_status.py`, mailbox health enforced in the test suite (`tests/test_handoffs.py`) |
 | Data contract | **1.10.0** | `CONTRACT_VERSION` in `src/export_contract.py`, read directly. Bumped this session (ADR-050, T6): `board.json` rows gained `roster_status`. |
 | Frontend location | `frontend/` subdirectory of this repo | Merged from `frontend-prep` via `git subtree add`, full history preserved. No longer a separate working copy. |
-| Frontend tests | **PENDING-REMEASURE** | Two independent branches each added tests (063: +9 reopen-trigger tests, 154→163; 058: +18 on top of a pre-063 base, 154→172) and neither count reflects the merge of both. Re-measuring immediately after this merge, see note below. |
+| Frontend tests | **181 passing, 0 failing** (19 files) | Full suite, `npx vitest run`, single run, ~47s, measured directly after merging both 063 and 058 together (was 154 before either; 063 alone would have been 163, 058 alone 172 — 181 confirms both sets of additions are present with no loss). |
 | Python modules | **36** in `src/` | `ls src/*.py \| wc -l` |
 | Export artifacts | **11** top-level files in `data/export/` | `ls data/export/*.json \| wc -l` |
 | Config matrix | 25 dirs under `data/export/` | board + league + availability stub only; **hazard model not rerun per config**; count is a raw directory count, not inspected for which are real league configs vs. scratch |
