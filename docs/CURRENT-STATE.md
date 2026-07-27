@@ -111,8 +111,20 @@ this source** — that is a board-builder decision left open for backend/thread 
 Full detail: handoff 053's 2026-07-27 data-ops reply.
 
 Still true, unrelated to this fix: no per-league-2 format pull exists either, and the live API
-remains capped. Open decision for founder/backend unchanged: pay for a FantasyPros paid tier, or
-find another half-PPR-native *live* source, if a fresher-than-one-time CSV pull is ever needed.
+remains capped. **Re-scoped and costed 2026-07-27 (handoff 067, data-ops reply, workstream D).**
+Paid FantasyPros API tiers are real ($8.99/mo Premium, personal-use production keys; custom-priced
+Commercial) but whether either tier removes the specific 10-row cap on the rankings endpoint is
+**unverified** — the public pricing page describes call-frequency ("higher/highest rate limits"),
+not a per-response row ceiling, and the actual endpoint reference could not be pulled to check
+directly. No better free/live half-PPR-native alternative was found (Sleeper ADP and Underdog ADP
+are both the wrong shape — ADP not expert consensus; FFC is blocked by robots.txt regardless).
+Recommendation: continue with the DynastyProcess mirror as positional-order input plus the
+one-time manual CSV where it exists ($0, no new build), with each league's board tagged with which
+input it used — League 2 currently has **no** manual CSV pull at all and is running on the
+unscored mirror alone, which must be flagged rather than presented as equivalent to Westwood's. If
+the founder wants Option 1 tested, a one-month $8.99 trial plus one live call against the
+known-capped endpoint is cheap enough to greenlight without further data-ops research.
+Board-builder per-league tagging (backend's piece of thread 067) is not done yet.
 
 **T2 — CLOSED, 2026-07-27 (ADR-052).** CLAUDE.md §7's "verify against live league settings"
 caveat is resolved: the primary league ("Westwood", Yahoo, 10 teams) scoring table matches

@@ -2527,6 +2527,43 @@ from the prior 179/181-total baseline (+13: 11 dismiss tests, 2 freshness-banner
 --noEmit` clean. `node_modules` had to be installed fresh in this worktree (`npm install`, 184
 packages) — worktrees do not share `node_modules` with the main checkout.
 
-Replied to threads 058, 071, 072, opened 073. `docs/handoffs/OPEN.md` refreshed via `tools/
+Replied to threads 058, 071, 072, opened 074. `docs/handoffs/OPEN.md` refreshed via `tools/
 handoffs.py sync`. Commit hash and final test count in the session's closing report.
+
+## 2026-07-27 — data-ops: T1 multiformat consensus rescope (handoff 067, workstream D)
+
+Task: re-scope T1's consensus-pull format-awareness follow-on for the leagues actually in scope
+(Westwood, Ethan's Expert League; ESPN still out) and cost three options, per this round's brief.
+
+**Integration note (added at merge time):** this session's worktree was built from git history and
+never saw `docs/handoffs/067-t1-multiformat-consensus-rescope.md` — that file was real (248 lines,
+containing the actual verified league-2 scoring transcription and the founder's 12->10 team-count
+correction) but had sat **untracked** in the main checkout since an earlier session, so it wasn't
+part of any commit this worktree branched from. The agent noticed the mismatch, said so plainly,
+and reconstructed a shorter stand-in rather than silently fabricating continuity. Separately, the
+real file was committed to `main` directly (commit `fa2c52a`) while this round's four workstreams
+were running in the background. At merge time: the real 248-line file was kept as the base: this
+session's actual new content (the Option 1/2/3 cost analysis below) was appended as a new dated
+reply on top of it; the reconstructed pm-opening/data-ops stand-in sections were discarded as
+redundant with the real history. Nothing this session measured or found was lost.
+
+**Findings:**
+- FantasyPros API pricing (`fantasypros.com/api-data/`) is real: Free $0, Premium $8.99/mo
+  (personal-use production keys, "higher rate limits"), Commercial (custom, "highest rate limits").
+  Whether any tier removes the specific 10-row cap on the rankings/consensus endpoint is
+  **unverified** — the page describes call-frequency limits, not a per-response row ceiling, and
+  the endpoint reference (`api.fantasypros.com/public/v2/docs`) could not be fetched to check.
+- No better live half-PPR-native alternative found: Sleeper (ADP only, wrong shape), Underdog
+  (ADP only, best-ball scoring), FFC (robots.txt-blocked regardless, ADP not consensus).
+- Recommended Option 3: keep DynastyProcess mirror (positional order, `scoring.py` applies real
+  per-league rules downstream) + the existing one-time manual FantasyPros CSV where it exists
+  (Westwood only), with each league's exported board explicitly tagged with which input it used.
+  League 2 has zero manual-CSV coverage today and must not be presented as equivalent to Westwood.
+  Cost: $0, no new build. If founder wants Option 1 tested, a $8.99 one-month trial + one live call
+  against the already-capped endpoint is the cheap way to get a real answer.
+
+**Write-back:** reply appended to the real `docs/handoffs/067-t1-multiformat-consensus-rescope.md`,
+`STATUS: OPEN` unchanged (backend's board-builder tagging piece, item 4, not done). `CURRENT-STATE.md`'s
+consensus-pull paragraph updated in place with the sharper cost estimate. No ingestion run this
+session — 0 rows ingested/quarantined.
 
