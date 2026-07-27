@@ -38,7 +38,7 @@ not an omission. Start your session at your own heading.
 | [033](033-assistant-query-architecture.md) | Assistant query architecture | `pm` | OPEN | 0d | the assistant rebuild sprint |
 | [036](036-mocklab-staleness-retrofit.md) | Mocklab staleness retrofit | `pm` | OPEN | 0d | Mock Lab build |
 | [037](037-audit-followups.md) | Audit followups | `pm` | OPEN | 0d | none |
-| [039](039-weekly-finishes-and-season-stats-exports-contract.md) | Weekly finishes and season stats exports contract | `backend` | BLOCKED-ON-YOU | 0d | consistency heat-map, player detail history |
+| [039](039-weekly-finishes-and-season-stats-exports-contract.md) | Weekly finishes and season stats exports contract | `frontend` | OPEN | 0d | consistency heat-map, player detail history |
 | [040](040-multi-league-slot-and-undo.md) | Multi league slot and undo | `pm` | OPEN | -1d | Mock Lab build, Settings build |
 | [042](042-strategies-json-stale-at-contract-1-7-0.md) | Strategies json stale at contract 1 7 0 | `frontend` | OPEN | 0d | none |
 

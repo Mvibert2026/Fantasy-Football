@@ -1110,3 +1110,35 @@ compositing in this session), not an app defect. DOM/console/build/test evidence
 a correctly rendering app. Told the user this plainly rather than asserting a screenshot exists.
 
 No founder statements surfaced this session -- `docs/founder-requests.md` untouched.
+
+## 2026-07-26 -- backend: thread 037 item 2 (duplicate thread IDs, mailbox check)
+
+Worked item 2 only of `docs/handoffs/037-audit-followups.md` (pm-raised, backend+frontend).
+Verified rather than trusted the prior-session summary: `python tools/handoffs.py check` exits 0
+clean (42 threads); `pytest tests/test_handoffs.py -v` and the full suite both green, 423
+passed/0 failed.
+
+Determined which hypothesis explained the undetected `036` duplicate ID: neither "check never ran"
+nor "check ran but didn't fire" was fully right. `tests/test_handoffs.py` hardcoded the `py`
+launcher (broken Windows Store stub on this machine) from creation (`b4093d8`) until `6feece2`
+fixed it to `sys.executable` -- so the test failed for an unrelated reason for a stretch, but that
+was fixed *before* the `036` duplicate was introduced (`ee30e6f`). The duplicate-detection logic in
+`cmd_check` was present and correct throughout. So `check` did run and did fire (422/1), but that
+failing state was committed anyway inside a WIP checkpoint (`09391e4`) instead of being fixed
+pre-commit -- a process gap, not a tooling gap. Fixed in `4928a24` (prior frontend session, already
+on disk before this session started).
+
+Proved `check` still catches duplicates: copied an existing thread file to a scratch duplicate ID,
+ran `check` (exit 1, named both files), deleted the scratch file, re-ran `check` (exit 0 clean). No
+scratch artifacts left behind.
+
+Filled in thread 039's `Ask`/`Why`/`Done looks like` -- they were still the unfilled
+`handoffs.py new` template (frontend had correctly refused to guess and set
+`STATUS: BLOCKED-ON-YOU`). Spec: `weekly_finishes.json` + `season_stats.json` exports from
+`player_weekly_stats`, field shapes matching `api-contract.json`'s `player.get` response, the
+2003-2008 target-data-unavailable constraint carried over from thread 017, contract bump to 1.9.0,
+concrete test list. Spec only -- not implemented this session. Flipped 039's `FROM`/`TO` to
+`frontend`/`backend` and `STATUS` to `OPEN` since backend now owns the next action.
+
+Replied in thread 037 itself (not resolved -- items 1, 3, 4 are out of scope for this session and
+remain open). Ran `sync`; `OPEN.md` regenerated clean. No founder statements surfaced this session.

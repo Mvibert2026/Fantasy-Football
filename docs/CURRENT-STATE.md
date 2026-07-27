@@ -78,8 +78,9 @@ which is the correct state, not a bug).
 Predictions tab (**absent from the shipped app**) · Season mode entirely · Settings editor ·
 Mock Lab UI and backend · Compare tray · live "Ask the assistant" wiring · LLM prose renderer
 (deliberately deferred — hallucination risk, reasoning stated in code) · `RB_HANDCUFF` archetype
-(depth charts end 2024) · weekly finishes / season stats tables (thread 039, blocked on backend —
-no real spec supplied yet) · recompute progress streaming.
+(depth charts end 2024) · weekly finishes / season stats tables (thread 039, spec now filled in
+2026-07-26 — `weekly_finishes.json`/`season_stats.json`, contract 1.9.0 — implementation still
+pending) · recompute progress streaming.
 
 ## Top open items
 

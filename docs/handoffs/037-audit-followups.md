@@ -70,3 +70,48 @@ anticipated" work Design asked to come back to.
 
 `<1%` renders correctly with a test. IDs unique and `check` proven to catch duplicates. `fidelity.py`
 in `tools/` and running. Item 4 raised as a decision rather than patched. Commit hashes.
+
+---
+### backend · 2026-07-26
+
+Item 2 only — items 1, 3, and 4 remain open, not touched this session.
+
+**Duplicate ID:** already resolved before this session started (a prior frontend session, commit
+`4928a24`, renamed the stray `036-weekly-finishes-and-season-stats-exports-contrac.md` to the
+correctly-numbered `039-weekly-finishes-and-season-stats-exports-contract.md`). Verified myself
+rather than trusting that: `python tools/handoffs.py check` currently exits 0, 42 threads, no
+duplicate-ID complaint. `pytest tests/test_handoffs.py -v` passes (`test_mailbox_health` green).
+Full backend suite: **423 passed, 0 failed**.
+
+**Which hypothesis — did `check` never run, or did it run but not fire?** Neither, precisely — it
+ran and fired, but the failure sat unaddressed. History: `tests/test_handoffs.py` was created in
+`b4093d8` hardcoding the `py` launcher, which is a broken Windows Store stub on this machine (see
+`python-interpreter.md` memory) — so the test failed for an *unrelated* reason (couldn't launch
+Python at all) from day one, before the duplicate ever existed. That got fixed to `sys.executable`
+in `6feece2`, so by the time the `036` duplicate was introduced (`ee30e6f`, after the fix), the
+test was capable of correctly invoking `check`. The duplicate-detection logic itself
+(`tools/handoffs.py::cmd_check`, the `seen: dict[str, str]` loop) has been present since the check
+command was first written and was never broken. So: `check` ran, `check` fired, the suite went to
+422/1 — and that failing state was carried through a WIP checkpoint commit (`09391e4`, explicitly
+marked WIP) instead of being fixed before commit. The gap was process (a red test committed and
+left) not tooling (the check itself worked correctly throughout). Fixed for good in `4928a24`,
+which this session found already in place.
+
+**Proof `check` now catches duplicates** (scratch test, cleaned up after): copied
+`docs/handoffs/036-mocklab-staleness-retrofit.md` to a scratch `036-SCRATCH-dup-test.md`, ran
+`check` → exited 1 with `mailbox check FAILED: 036-SCRATCH-dup-test.md: duplicate ID 036 (also
+036-mocklab-staleness-retrofit.md)`. Deleted the scratch file, re-ran `check` → exited 0 clean
+again. No scratch artifacts remain in `docs/handoffs/`.
+
+**Thread 039's template sections:** were still unfilled placeholder text when I checked (frontend
+had correctly flagged this and set `STATUS: BLOCKED-ON-YOU` back to backend rather than guessing).
+Filled in `Ask`/`Why`/`Done looks like` with the concrete spec — two new artifacts
+(`weekly_finishes.json`, `season_stats.json`), exact field shapes tied to
+`docs/design-handoff/spec/api-contract.json`'s `player.get` response, source table
+(`player_weekly_stats`), the 2003–2008 target-data-unavailable constraint carried over from thread
+017, contract bump to 1.9.0, and a concrete test list. Not implemented — spec only, per this
+thread's item 2 ask (fill the template, don't build the feature). Flipped 039's `FROM`/`TO` to
+`frontend`/`backend` and `STATUS` to `OPEN` since the real next action is backend implementation,
+not frontend. Ran `python tools/handoffs.py sync` afterward; `OPEN.md` regenerated clean.
+
+Items 1, 3, 4 untouched — leaving `STATUS: OPEN` on this thread for whoever picks those up.
