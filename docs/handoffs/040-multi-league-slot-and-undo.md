@@ -154,3 +154,43 @@ open, still blocks Mock Lab UI and Settings build per this thread's own text.
 Backend's piece of this thread (undo architecture + slot acceptance in storage) is done. Leaving
 STATUS as-is since item 1 remains open and this thread is addressed to both backend and frontend --
 not setting RESOLVED unilaterally on a thread with unresolved scope outside my piece.
+
+### backend · 2026-07-27
+
+Item 1 (real league creation) built: `src/league_builder.py` -- `create_league(name, teams,
+starters, flex_slots, flex_eligible, bench, ir, user_draft_slot, ...)` builds and saves a
+`LeagueConfig` from plain, founder-facing parameters; `export_league(cfg, out_dir, conn)`
+recomputes board/league/availability/rosters for it via the existing
+`export_contract.write_all`; `create_and_export_league(...)` chains both. `unique_league_id()`
+handles name-to-id slugging and collisions, refusing the reserved `primary` id.
+
+Checked the consequence this thread flagged -- per-format replacement levels -- directly rather
+than assuming. It was already correct: `scoring.ReplacementLevels.from_league_config()` and
+`export_contract.build_board_json(conn, cfg)` (ADR-041/047) already derive replacement levels
+from whichever `LeagueConfig` is passed, not from a shared default. `league_builder.py` doesn't
+touch that arithmetic -- it only makes a config reachable from plain inputs instead of a
+hand-built `LeagueConfig()` call. Confirmed with a DB-backed test: a 14-team, 1.0-PPR,
+2RB/2WR/1TE-starter probe league created and exported through this new path gets
+`board.json["replacement_levels_used"] == {"QB":14, ...}`, not the founder league's
+`{"QB":10,"RB":30,"WR":40,"TE":10}`.
+
+`flex_split` is deliberately never set by `create_league` -- a new league's split is
+unmeasured, so `from_league_config` takes its existing flagged-placeholder path
+(`measured=False`) rather than this module silently presenting a borrowed number as the new
+league's own.
+
+Scope boundary, stated plainly: this is the backend capability only. No API layer, no job
+queue/polling, no tier-1/tier-2 distinction, no shadow-recompute-then-apply state machine --
+that is `docs/design-handoff/settings/SETTINGS-EDITOR-SPEC.md` SS7's contract for the Settings
+editor UI itself, unbuilt, not this round's scope. `export_league()` is synchronous/blocking
+(~7-10s per ADR-047's existing timing), the same shape `write_all` already has for the 24
+pre-generated configs -- a future API layer wraps this in a job rather than replacing it.
+
+Full detail: ADR-048 in `docs/decisions.md`. Tests: `tests/test_league_builder.py`, 19 passed
+(one DB-backed integration test, rest pure). `tests/test_league_config.py` +
+`tests/test_multi_league_export.py` re-run targeted, 26 passed, no regression.
+
+Item 1 is now done for backend's scope (the capability behind the Settings editor). Not setting
+STATUS: RESOLVED unilaterally -- this thread is `TO: backend, frontend` and item 1 also names
+the Settings editor UI itself, which is frontend scope and untouched this round. Frontend or PM
+should close it once the UI side is addressed or explicitly deferred.
