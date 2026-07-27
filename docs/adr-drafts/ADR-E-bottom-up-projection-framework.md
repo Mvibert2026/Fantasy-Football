@@ -6,6 +6,7 @@
 **Owner:** Strategist (spec) / Backend (feasibility + execution)
 **Thread:** 048 (methodology half). Data half is thread 046 (`data-ops`).
 **Depends on:** ADR-C (pre-registration), ADR-016 (log-linear rank→points curve), PR-002 (spike-week null), `src/regimes.py`, `src/holdout.py`
+**Amended:** E-A1 (2026-07-27, below) — S1's output becomes a week-indexed vector; N3 week-leverage weights specified; sonnet work order in §A1.7
 
 ---
 
@@ -479,6 +480,166 @@ acceptable result so that it cannot later be reframed as a failed sprint.
   position and model, the embargo is costing two folds for nothing and can be dropped by amendment. Note
   the asymmetry: discovering the embargo was unnecessary is cheap, discovering it was necessary after
   shipping is not.
+
+## AMENDMENT E-A1 (2026-07-27, Fable session 4) — R3: the week-indexed projection object; N3: week-leverage weights
+
+**Status: adopted into this draft.** Written to be executable by a sonnet `backend` agent without
+further strategist input — the work order is §A1.7. Everything above this line is unchanged except
+where this amendment explicitly supersedes it (§2's *target* is untouched; §2's *output object* is
+widened). The V5 vacated/arrived feature group, R5 (calibration family) and C3 (rookie universe
+rule) are **not** part of this amendment — they remain queued for the return-week registration
+discussion, per `ACTION-PLAN-2026-08.md`.
+
+### A1.1 What changes, and why
+
+The founder's decomposition — **points = games played × points per game × usage ramp** — is
+already half-mandated by §2 (games × ppg, both reported). What §2's season-total target erases is
+*which weeks* the games occur in. Suspension valuation (games 1–N missed), bye cost, injury-ramp
+valuation, the no-reseed playoff structure (CLAUDE.md §7), and every in-season consumer
+(`fable-in-season-2026-07-27.md` §2) are statements about *when*. A season total cannot express
+any of them at any model quality. The fix is cheap at design time: **S1's output object becomes a
+week-indexed vector; the season total becomes its uniform-weight integral.** No new estimation is
+introduced in v1 — the vector is bookkeeping over quantities S1 already produces.
+
+### A1.2 The object, defined exactly
+
+For player p, target season t:
+
+- `W_t` — the NFL week set for season t (1–17 through 2020, 1–18 from 2021). `G_max(t) = |W_t| − 1`
+  (one bye) is the scheduled-games count.
+- `q_p` — per-active-week play rate: `q_p = Ĝ_p / G_max(t)`, where `Ĝ_p` is §2's base-rate
+  games projection, unchanged.
+- `Z_p ⊆ W_t` — **structural zeros**, all knowable pre-season with `as_of` discipline:
+  the team's bye week (published schedule); suspension weeks 1..N (T4's source, status as of the
+  pre-draft date); pre-season-announced absences (PUP ⇒ weeks 1–4 minimum, season-ending IR).
+- **Availability:** `a_p(w) = 0` for `w ∈ Z_p`, else `q_p` (capped at 1; a cap event is logged —
+  it means Ĝ_p exceeded the weeks available).
+- **Opportunity:** `u_p(w) = u_p × r_p(w)` — S1's per-game opportunity vector times a
+  **usage ramp** `r_p(w)`, default ≡ 1. Ramp forms (injury recovery, suspension re-entry,
+  rookie ramp) are hooks: any non-unit ramp requires its own registered test before it ships.
+- **Week points:** `ŷ_p(w) = a_p(w) × S3(S2(u_p(w)))` — S2/S3 unchanged, applied at the week's
+  opportunity level (S3's bonus integration already keys on per-game volume, so it composes).
+
+**Binding identities, asserted in tests, not inspected:**
+
+- **I1:** `Σ_w a_p(w) = Ĝ_p` when `Z_p` contains only the bye. Each additional structural zero
+  reduces expected games by exactly `q_p` — this *is* T4's games-adjustment, falling out
+  mechanically rather than being a bespoke formula.
+- **I2:** with `r ≡ 1`, `Σ_w ŷ_p(w)` equals the season-aggregate projection to float tolerance.
+  The vector must reproduce the number the backtests score, or it is a second model in disguise.
+- **I3:** the leverage-weighted integral (§A1.3) with `leverage ≡ 1` equals season points.
+
+### A1.3 N3 — week-leverage weights, specified once, every consumer named
+
+`leverage(w; league_config) → weight ≥ 0`, **normalised to mean 1** over the league's scored weeks
+(regular ∪ playoff weeks, both read from `league_config` — never hardcoded).
+
+**Semantics (the measured form, N2's job):** `leverage(w)` = the marginal effect of one expected
+win in week w on P(championship), estimated by the season simulator via paired perturbation
+(`fable-in-season-2026-07-27.md` §4). Until N2 exists, the interim form below applies.
+
+**Interim default (unvalidated, D-004-style):** shape 1.0 on regular weeks, 2.0 on playoff weeks,
+then normalised to mean 1 — for this league (15 regular + 2 playoff) that is ≈ 0.895 / 1.789.
+The utility **refuses to emit weights without a provenance label** (`interim_hand_set_v1` vs
+`simulated`), and every surfaced number downstream carries it. Structural asymmetry, encoded as a
+comment and a test guard: **no reseeding + 4-team playoff means early losses compound** — the
+interim deliberately does not discount weeks 1–4, and N2's measurement is expected to *raise*
+early-week leverage relative to mid-season, not lower it. Refinements are checked against the
+simulator, never hand-tuned twice.
+
+**Unit bridge, stated because it will otherwise be glossed:** leverage is defined on *wins*;
+consumers apply it to *points*. The bridge (points → win probability, locally linear) is an
+approximation — fine for ranking deltas, and stated wherever a leverage-weighted number ships.
+
+**Config discrepancy to verify (founder, one minute):** `league_config.py` says
+`playoff_weeks=(16,17)`; the founder's session-4 note says "championships are weeks 15–17."
+The utility reads config, so whichever is right is a one-line config fix that corrects every
+consumer at once — but it must be verified against the live platform (T2-adjacent), not assumed.
+
+**Consumers (the complete list — this primitive is built once):**
+
+1. **T4 suspension valuation:** cost = `V_L(vector without suspension zeros) − V_L(vector with
+   them)` — a difference of two integrals, no bespoke formula. Games 1–N are the *low*-leverage
+   end under the interim shape, so a 6-game suspension costs less than 6/17 of season value —
+   subject to the early-loss asymmetry note above.
+2. **Bye-week cost:** `leverage(bye_w) × ŷ_p^{cond}` — near-uniform across weeks 5–14 today; the
+   machinery is free and becomes meaningful under measured weights.
+3. **R3's leverage-weighted value:** `V_L(p) = Σ_w leverage(w) × ŷ_p(w)` — the draft-time
+   "championship-weighted value" column.
+4. **In-season start/sit thresholds and trade valuation** (future, N2/N4): rest-of-season
+   truncated integrals against the same weights.
+5. **Injury-recovery / missed-early-weeks valuation:** the same integral with a ramp `r_p(w)`.
+6. **N2 season simulator:** consumes the vector for weekly team scores; *produces* the measured
+   weights that replace the interim.
+
+### A1.4 Guardrails specific to the vector
+
+- **Look-ahead:** for backtest seasons, nothing in `a_p`, `u_p`, `r_p` may use target-season
+  information beyond pre-season-known structural zeros (published schedule; suspensions with
+  `as_of` ≤ pre-draft date). The experiments' weeks-1–4 roster canon assignment (V3/V5, disclosed
+  look-ahead) is **not** permitted in the production vector.
+- **This is not a weekly projection.** No opponent, no home/away, no weather. Surfacing
+  `ŷ_p(w)` as a "Week w projection" in any UI or export is **forbidden**; permitted uses are
+  integrals and structural-zero displays. Start/sit remains the genuinely new modelling lift (N4).
+- **No week-level calibration claim.** v1 validates identities I1–I3 only. Week-level accuracy is
+  unmeasured and stays unclaimed.
+
+### A1.5 Interim forms that remain valid (nothing stalls if the vector slips)
+
+- **All backtesting and F-BOTTOMUP-CORE:** unaffected. Confirmatory metrics stay season-level;
+  the vector integrates to the same number (I2).
+- **N3 alone (action plan 5.3)** can land without the vector: consumers use
+  `ppg × Σ leverage(w)` sums with `q_p ≈ Ĝ_p/G_max`. This amendment only adds the mean-1
+  normalisation and the provenance requirement to 5.3's spec.
+- **T4-interim** (fixture + board flag) is unchanged. Until the vector lands, a crude adjusted
+  total `season_points × (1 − n_susp/G_max)`, labelled crude, is acceptable; the vector replaces
+  it mechanically.
+- **Bye cost interim:** `leverage(bye_w) × season_points/Ĝ_p`.
+
+### A1.6 What would falsify or revisit this amendment
+
+- N2 measures leverage ≈ flat (playoff within CI of regular): the interim 2.0 overweights the
+  playoffs; every interim-labelled number is restated, which the provenance flag makes findable.
+- Per-position games base rates differ materially by depth tier: `q_p` from a position-level rate
+  is too crude — revisit via a registered test, not a silent refit.
+- If the vector's bookkeeping cost exceeds its consumer value (no consumer ships by the time
+  ADR-E builds), collapse back to season aggregates by amendment — the identities make the
+  collapse lossless.
+
+### A1.7 Work order, sonnet-executable
+
+**R3-A — `src/week_leverage.py` (backend, ~0.25 session, no dependencies).** The N3 utility.
+`week_leverage(cfg: LeagueConfig) -> WeekLeverage` with `weights: dict[int, float]`,
+`source: str`, mean-1 invariant. Playoff and regular weeks from `cfg`; shape 1:2 interim;
+normalise after shaping. Tests: mean 1 over scored weeks; playoff/regular ratio == 2.0 exactly
+after normalisation check; changing `cfg.playoff_weeks` moves the weights (config-driven, no
+constants); constructing without a known `source` raises; docstring carries the unvalidated
+label and the early-loss asymmetry note verbatim.
+
+**R3-B — `src/week_vector.py` (backend, ~1 session; needs R3-A, the T4-interim fixture, and
+schedule byes).** The vector over the *live board* (the current ADR-017 curve projection — this
+does not wait for the bottom-up model):
+- `q_pos`: per-position mean play rate measured once from `player_weekly_stats` seasons
+  2015–2024 within board-relevant depths (historical constant, not target-season data; record the
+  query in the module docstring; test pins the values).
+- `ppĝ_p = projected_points / (q_pos × G_max)`; `a_p(w)` per §A1.2 with byes from the schedule
+  and suspension weeks from the T4 fixture; `ŷ_p(w) = a_p(w) × ppĝ_p`.
+- Emits: suspension-adjusted season points, `V_L`, `bye_leverage`. **Internal module only — no
+  export-contract change** (a contract change is a version bump + a `frontend` thread, and is
+  deliberately out of this order's scope; the PM sequences it).
+- Tests: I1/I2/I3 identities; a suspension of n weeks reduces the total by exactly
+  `n × q_pos × ppĝ_p`; a player with a null bye (the live JAC/LAR defect, T3) gets an unchanged
+  vector plus a logged warning — not a crash and not a silent zero — until T9 lands, with a test
+  pinning that behaviour.
+
+**R3-C — binding on the ADR-E confirmatory build (no work now).** When S1 is implemented, it
+emits the vector natively (`q` from the fitted games model, ramp hooks in place), asserts
+I1–I3 per fold, and the confirmatory target remains the season integral.
+
+Order: R3-A anytime; R3-B after the T4-interim fixture exists (action plan Day 3–4); R3-C at
+build time. None of it blocks, or is blocked by, this week's T1/T5/T2 critical path.
+
+---
 
 ## Measurements needed from `backend` (I cannot run these)
 
