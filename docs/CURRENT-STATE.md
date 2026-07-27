@@ -55,7 +55,7 @@ the pre-existing, already-flagged `test_handoffs.py::test_mailbox_health` (dupli
 | Frontend tests | **163 passing, 0 failing** (18 files) | Full suite, `npx vitest run`, single run, ~63s (thread 063: nine new tests, one per reopen-trigger table row, no existing test touched). |
 | Python modules | **36** in `src/` | `ls src/*.py \| wc -l` |
 | Export artifacts | **11** top-level files in `data/export/` | `ls data/export/*.json \| wc -l` |
-| Config matrix | 25 dirs under `data/export/` | board + league + availability stub only; **hazard model not rerun per config**; count is a raw directory count, not inspected for which are real league configs vs. scratch |
+| Config matrix | 26 dirs under `data/export/` | board + league + availability stub only; **hazard model not rerun per config**; count is a raw directory count, not inspected for which are real league configs vs. scratch. The 26th is `ethans_expert_league` (real league 2, see below), not a scratch probe config. |
 
 ## Statistical constants in force
 
@@ -93,6 +93,49 @@ Recorded as what each decision *says*, not verified against implementation:
 
 No other entries in `decisions-needed.md` were applied this pass — this list is deliberately
 narrower than earlier attempts at a full sweep.
+
+**League 2 ("Ethan's Expert League", Yahoo 834236) — config + board built, 2026-07-27
+(handoff 067, data-ops piece); teams corrected to 10 same day (pm reply, founder override).**
+Real `LeagueConfig` at `data/leagues/ethans_expert_league.json` (**10 teams — founder directive,
+overriding the screenshot's "Max Teams: 12," which was transcribed correctly but reflects the
+platform's configured slot count, not expected real participants; do not revert to 12 by
+re-reading the screenshot**; no yardage bonuses, INT -1, K starter slot, 1 FLEX). Board exported
+to `data/export/ethans_expert_league/`, its own measured replacement levels
+(`QB10/RB25/WR35/TE10` — distinct from both the primary league's `QB10/RB30/WR40/TE10` and the
+earlier, now-superseded 12-team build's `QB12/RB30/WR42/TE12`), K and DEF correctly excluded from
+ranking (ADR-039 filter). Rebuilt via `scripts/rebuild_ethans_expert_league.py`. 6 tests in
+`tests/test_league2_ethans_expert.py`, all passing. `user_draft_slot=1` is an unresolved
+placeholder — founder has not supplied their actual slot in this league.
+
+**Consensus-pull format-awareness — partially unblocked 2026-07-27 (handoff 053).** The live-API
+plan above is still dead (10-player cap, unfixed). But the founder manually downloaded a full,
+uncapped, browser-side FantasyPros export with **Half PPR confirmed selected at export time** —
+575 players, no cap. Ingested via `src/ingest_fantasypros_csv.py` into `rankings` as
+`source='fantasypros_csv_2026draft'` (kept separate from the existing `fantasypros_ecr` mirror,
+which still has zero format info — both coexist during the transition). `rankings` gained four
+columns (`scoring_format`, `tier`, `bye_week`, `sos_season`); a new `rankings_quarantine` table
+holds unresolved rows with reasons. **465 of 575 rows ingested, 110 quarantined** (32 DST — no
+individual gsis_id by construction, same permanent gap `fantasypros_ecr` already documents; 78
+skill/K players — mostly 2025 rookies not yet in nflreadpy's static id crosswalk, plus a handful of
+nickname-vs-legal-name mismatches like "Hollywood Brown"/Marquise Brown that were correctly left
+unresolved rather than fuzzy-matched). ADP is recovered as `ADP = RK + delta` where `delta` is the
+CSV's `ECR VS. ADP` column (populated on 327/575 rows in this pull, not the 566/579 the founder's
+original file showed — the two counts are from different pulls); sign convention was inferred by
+direction-matching against the same-day Underdog ADP pull, not documented by FantasyPros — see the
+module docstring for the worked cross-check. **`make_board.py` has NOT been rewired to consume
+this source** — that is a board-builder decision left open for backend/thread 067, not done here.
+Full detail: handoff 053's 2026-07-27 data-ops reply.
+
+Still true, unrelated to this fix: no per-league-2 format pull exists either, and the live API
+remains capped. Open decision for founder/backend unchanged: pay for a FantasyPros paid tier, or
+find another half-PPR-native *live* source, if a fresher-than-one-time CSV pull is ever needed.
+
+**T2 — CLOSED, 2026-07-27 (ADR-052).** CLAUDE.md §7's "verify against live league settings"
+caveat is resolved: the primary league ("Westwood", Yahoo, 10 teams) scoring table matches
+CLAUDE.md §7 / `scoring.py`'s `LEAGUE` value-for-value, yardage bonuses confirmed to stack, and
+team count / roster shape (1 QB/3 WR/2 RB/1 TE/2 FLEX/1 DEF, 6 bench, 1 IR) are now known. Fixture
+at `tests/fixtures/league_scoring_live.json`. Two DEF-side discrepancies found and flagged (not
+fixed, DEF scoring has no consumer) — see ADR-052.
 
 ## Validation status — read this before quoting the product's core claim
 

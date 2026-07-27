@@ -89,6 +89,123 @@ cross-check between files 1 and 2 reported, per-analyst ranks stored raw with ho
 `strategist` reply on whether the disagreement signal is worth pursuing and what would test it.
 
 ---
+### pm · 2026-07-27
+
+**This thread just became higher priority than originally scoped.** Thread 067 (T1 multi-league
+consensus rescope) found that T1's live-data plan never actually worked — the FantasyPros live
+API caps every response at 10 players (`docs/deferred.md`, known since 2026-07-25), and the
+board currently runs on a shared, unscored, format-blind mirror for every league including the
+primary one. File 2 in this thread's own ask (`FantasyPros ALL Rankings`, 575-579 rows, no cap)
+is the actual fix, sitting unused.
+
+**Scoring format confirmed:** founder had **Half PPR** selected on FantasyPros' site when
+exporting this CSV. That matches both leagues currently in scope (Westwood is 0.5 PPR + yardage
+bonuses; league 2 "Ethan's Expert League" is also 0.5 PPR, no bonuses) — the same ECR list should
+serve both, since `scoring.py` applies each league's actual point rules downstream of the ranking
+order. Founder can pull STD/PPR exports too if a later league needs them, but not right now
+("the site is slow") — do not ask again, wait for it to be offered.
+
+Recommend prioritizing file 2's ingestion (the ECR/tiers/bye/SOS data) ahead of files 1 and 3 if
+time is constrained this session — it is the one that unblocks T1/board-correctness for both
+current leagues; the Underdog ADP and 3-analyst disagreement files are valuable but not
+draft-blocking the way file 2 is.
+
+---
+### data-ops · 2026-07-27
+
+**File 2 done. Files 1 and 3 NOT attempted this session** — per the PM's own reprioritization,
+time went entirely into file 2 plus its schema/quarantine work. Leaving them for a follow-up
+session; they are not draft-blocking.
+
+**Source file used:** `data/user pulled fantasy data/FantasyPros_2026_Draft_ALL_Rankings (1).csv`
+(575 data rows). Note: a *different* partial pull of the same export
+(`data/raw/founder-export/2026-07-27/fantasypros-all-rankings.csv`, staged by some earlier session,
+timestamped 2026-07-26 21:39) already existed in the target directory with slightly different
+`RK`/`ECR VS. ADP` values for at least two players (Jonathan Taylor / CeeDee Lamb rows 8-9 swapped
+with different deltas) — it was not ingested and not deleted, just left alone; flagging in case
+someone assumes it's authoritative. The file this thread named explicitly was used as source of
+truth and copied to `data/raw/founder-export/2026-07-27/FantasyPros_2026_Draft_ALL_Rankings.csv`.
+
+**Ingestion:** `src/ingest_fantasypros_csv.py` (new). `rankings` table extended with four new
+columns (`scoring_format`, `tier`, `bye_week`, `sos_season`) via `ALTER TABLE ADD COLUMN` —
+existing `fantasypros_ecr` rows get NULL in all four, harmless. New `rankings_quarantine` table
+for unresolved rows.
+
+- **Rows ingested: 465** into `rankings` as `source='fantasypros_csv_2026draft'`,
+  `ranking_source='expert'`, `season=2026`, `as_of_date='2026-07-27'`, `scoring_format='half_ppr'`
+  (founder-confirmed, stored as fact not assumption), `is_preseason_final=0`.
+- **Rows quarantined: 110** into `rankings_quarantine`, all with reasons, none dropped silently:
+  - 32 DST rows — no individual `gsis_id` exists for team defenses in nflreadpy's crosswalk by
+    construction. Same permanent gap `src/ingest_rankings.py` already documents for the
+    DynastyProcess mirror; not a defect of this file.
+  - 78 skill/K rows — name+position not found in `nflreadpy.load_ff_playerids()`. Spot-checked a
+    sample: mostly 2025 rookies (Jeremiyah Love, Carnell Tate, Jordyn Tyson, etc.) not yet present
+    in the static crosswalk snapshot, plus a handful of legal-name-vs-nickname mismatches (e.g.
+    "Hollywood Brown" vs. crosswalk's "Marquise Brown", "Chig Okonkwo" vs. "Chigoziem Okonkwo").
+    Per CLAUDE.md, these were **not** fuzzy-matched — a human or a future crosswalk refresh should
+    resolve them, not this ingestion guessing. Full list with reasons is in `rankings_quarantine`
+    and printed by the script.
+  - One label fix applied (not a guess): the CSV uses `K` for kickers, nflreadpy's crosswalk uses
+    `PK` — mapped explicitly in code with a comment, this is a documented label difference, not an
+    inference.
+- **UPSIDE/BUST columns:** confirmed placeholder ("Coach Upside/Bust rating" in every row of this
+  file) — not parsed, not stored, per this thread's instruction.
+- **Source name chosen:** `fantasypros_csv_2026draft` — distinguishes from the existing
+  `fantasypros_ecr` mirror (`PRAGMA table_info(rankings)` checked first; `source` values before
+  this were `{'fantasypros_ecr'}`). Both now coexist.
+- **ADP sign-convention finding:** `ADP = RK + delta`, where `delta` is the numeric value of
+  `ECR VS. ADP` (e.g. `+2` → `-2`, `0`, or blank/`-` → NULL). Verified by cross-checking direction
+  (not magnitude — different platforms, not expected to match exactly) against
+  `data/raw/founder-export/2026-07-27/underdog-adp.csv` on 4 overlapping players: positive delta
+  consistently meant the player's Underdog ADP rank was *later* (worse) than their FantasyPros ECR
+  rank, negative meant *earlier*. Full worked table is in the script's module docstring
+  (`src/ingest_fantasypros_csv.py`). This is inference from a same-day external file, not a
+  documented FantasyPros convention — flag if it needs re-verification later.
+- **`ECR VS. ADP` population:** 327/575 rows in this specific CSV, not 566/579 — that figure in
+  this thread's opening ask appears to be from a different pull of the file (the founder's original
+  579-row count doesn't match this file's 575 rows either). Not investigated further; recorded as
+  observed, not corrected to match the expected figure.
+- **Board builder:** NOT rewired. `make_board.py` still reads whatever it currently reads (not
+  audited in depth this session) — per this thread's scope boundary, that call belongs to backend
+  via thread 067, flagged there as an open item rather than changed here.
+- **Tests:** `tests/test_ingest_fantasypros_csv.py` (new), 7 tests, all passing — covers the
+  parsing helpers (position-rank stripping, SOS star parsing, name normalization), the RK+delta ADP
+  sign convention with the same worked example as the docstring, and schema/quarantine-table
+  idempotent creation. Full-suite run was in progress at session end; will report count separately
+  if it finishes before handoff.
+- **Commit:** not committed this session (see reply for hash if/when committed).
+
+`docs/CURRENT-STATE.md` updated in place with a summary of this ingestion.
+
+Leaving `STATUS: OPEN` — strategist's file-3 disagreement-signal analysis and files 1/3 ingestion
+are both still outstanding on this thread.
+
+---
+### pm · 2026-07-27 (sequencing directive from founder)
+
+**Founder, directly, in a Claude Code session:** *"Do not rewire make_board.py yet. Fix the
+crosswalk first. 78 skill players from the Half-PPR CSV failed to resolve, including 2026 rookies
+who may go in the first few rounds. Rewiring the board onto the new source before those resolve
+makes them invisible — worse than the wrong-format board they'd replace, because a missing player
+gives no signal at all."* Full entry: [[FR-015]] in `founder-requests.md`.
+
+**Sequence, binding on this thread and 067:**
+1. `data-ops` refreshes the crosswalk against the 78 unresolved skill/K rows in
+   `rankings_quarantine` (`source='fantasypros_csv_2026draft'`). **No silent fuzzy matching** — any
+   fuzzy match must be gated at a stated threshold and every match logged. Report anything still
+   unresolved by name, don't drop it.
+2. Only then does `backend` rewire `make_board.py` onto `fantasypros_csv_2026draft` (thread 067's
+   open item).
+3. Rebuild and confirm: total player count, 2026 rookie class present, app header shows the new
+   source/scoring format.
+
+The 32 quarantined DST rows are **structural, not a bug** (no individual `gsis_id` for team
+defenses, by construction) — leave them quarantined, out of scope for this fix.
+
+Dispatching `data-ops` for step 1 now.
+
+---
+
 
 ## data-ops reply — 2026-07-27 — FR-015 crosswalk refresh (skill/K quarantine only)
 

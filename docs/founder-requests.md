@@ -318,6 +318,154 @@ a methodology preference. Applied to V7 this session (registered `5af349e`, code
 falsified honestly). Any agent running an experiment in this repo owes the registration
 commit first.
 
+## FR-011 · Draft date — readiness target, not the real date, and it's provisional
+
+**Raised:** 2026-07-27, Claude Code (PM session). **Status:** `SPECCED`.
+
+> "Draft date: 30 August 2026, provisional. T-7d = 23 August. Anchor the pre-mortem checklist
+> to it. Mark provisional so it can move."
+
+**Resolved during this session, do not re-litigate without new founder input:** the screenshots
+in `docs/screenshots/League Settings *.png` show the Westwood (Yahoo, primary) league's actual
+scheduled draft is **2026-09-07**, not 2026-08-30. Asked directly; founder's answer: *"let's just
+use August 30th to make sure everything is ready then"* — 2026-08-30 is a deliberate **readiness
+buffer target**, not a claim about when any league actually drafts. Do not treat the two dates as
+a contradiction to resolve; they are different things (target-ready-by vs. actual-draft-date) and
+both are true. T-7d = 2026-08-23 anchors the pre-mortem checklist. The other two leagues' (see
+FR-012) actual draft dates are still unknown.
+
+---
+
+## FR-012 · Three real leagues, not one — T1 must pull consensus per scoring format
+
+**Raised:** 2026-07-27, Claude Code (PM session). **Status:** `SCOPING` — blocked on founder
+data for leagues 2 and 3. **Thread:** [067](handoffs/067-t1-multiformat-consensus-rescope.md).
+
+> "MULTIPLE DRAFTS, and this changes T1's scope. Three leagues: Primary: custom scoring,
+> current config. Yahoo: different scoring, different team count. ESPN: different scoring,
+> different team count. T1 must pull consensus per scoring format, not just half-PPR, and the
+> board must build per league with team count carried through — replacement levels move with
+> roster count. Coordinate with the multi-league thread rather than opening new work."
+
+**Clarified this session, in order, because the first framing was wrong:** the founder dropped
+Yahoo league-settings screenshots (`docs/screenshots/League Settings 2-5.png`, `League Info
+1.png`) that turned out to match CLAUDE.md §7's documented scoring exactly, for a 10-team league
+named "Westwood." Asked directly rather than assumed: **Westwood is the primary league** (just
+Yahoo-hosted) — it is not a separate "Yahoo, different scoring" league. Asked a follow-up because
+that changed the count: it is still **three leagues total** — Westwood (Yahoo, primary, 10 teams,
+scoring now confirmed), **a second, distinct Yahoo league** (different scoring, different team
+count, no data yet), and **an ESPN league** (~12 or 14 teams, founder unsure which, different
+scoring, no data yet).
+
+**What this resolves for free:** CLAUDE.md §7's "known gaps — league size not yet confirmed" is
+answered for the primary league: **10 teams**, roster shape QB/WR/WR/WR/RB/RB/TE/W-R-T/W-R-T/DEF
++ 6 bench + 1 IR, per `League Settings 4.png`. Backend session closing T2 (see FR-013) is updating
+CLAUDE.md and CURRENT-STATE.md with this.
+
+**What this does not resolve:** leagues 2 and 3's scoring/team-count/roster data. No agent can
+synthesize this — it needs the same two screenshots Westwood provided (league-settings page +
+scoring table), from the founder, for each of the other two leagues.
+
+**Update, same day:** founder supplied league 2's data (`docs/screenshots/Yahoo League 2
+settings*.png`) — "Ethan's Expert League," Yahoo, 12 teams, offline draft, **no yardage bonus
+tiers** (a real scoring difference from Westwood, not just team count), INT at Yahoo's default
+-1, and a Kicker starter slot Westwood doesn't have. Full transcription in thread 067's reply.
+Founder explicitly said ESPN (league 3) is "not ready just yet" — thread 067 is unblocked for
+league 2 and proceeding without waiting on ESPN.
+
+**Correction, same day:** *"Ethan's expert league may likely only end up being 10 people, treat
+it as a 10 person league unless otherwise directed."* The screenshot's "Max Teams: 12" is the
+platform's configured slot count, not a confirmed roster of 12 real participants — the founder
+expects it to fill to 10. Building/replacement-levels should use **10**, not 12, until the
+founder says otherwise. This is a founder override of a measured screenshot value, not a
+correction of a transcription error — keep both facts on record (screenshot says 12, founder
+directs treating it as 10) rather than quietly overwriting one with the other.
+
+**Cost, stated per the founder's own instruction to say what it costs:** T1 was budgeted 1
+sonnet-session-unit for one format (half-PPR, matches Westwood — no rework needed there). Adding
+leagues 2/3 is roughly **+1 to +1.5 session-units**, and carries a hard data ceiling: FantasyPros
+only exposes STD/HALF/PPR presets, not arbitrary custom scoring. Each of leagues 2/3 gets matched
+to its *closest* preset with the divergence explicitly flagged (which knobs differ, by how much)
+— never silently presented as that league's true consensus. Full spec and dependency on the
+founder's screenshots: thread 067.
+
+---
+
+## FR-013 · Yardage bonuses VERIFIED to stack — T2 closed
+
+**Raised:** 2026-07-27, Claude Code (PM session). **Status:** `SHIPPED`.
+
+> "VERIFIED: yardage bonuses STACK at thresholds. Founder confirmed from the live platform page
+> today. The existing >= loop in scoring.py is correct. Record the verification with today's
+> date in decisions.md and close T2's open question. Founder has Yahoo screenshots for the
+> fixture."
+
+**Resolution:** the screenshots are `docs/screenshots/League Settings 2-5.png` (Westwood/Yahoo,
+primary league) — the same ones that resolved FR-012's team-count question. Backend session
+dispatched this turn to: transcribe the scoring table into `tests/fixtures/league_scoring_live.json`,
+assert it against `scoring.LEAGUE`, and record an ADR in `decisions.md` closing T2 with today's
+date. One honesty note carried into that ADR: the screenshot shows the threshold *tiers*, not a
+worked example proving additive stacking — the stacking determination itself rests on the
+founder's direct platform verification, not on something visible in the settings page. That
+distinction should be stated in the ADR, not glossed over.
+
+---
+
+## FR-014 · Recurring injury and suspension feed, full NFL
+
+**Raised:** 2026-07-27, Claude Code (PM session). **Status:** `SPECCED`. **Thread:**
+[070](handoffs/070-recurring-injury-suspension-feed.md).
+
+> "NEW: recurring injury and suspension feed, full NFL. Injuries: automatable from nflverse
+> (2009+, includes practice participation). Build the recurring pull. Suspensions: no reliable
+> structured source. Maintained watchlist plus a weekly researcher web sweep. Do not build a
+> probability model — known suspensions only, deterministic games deduction. Both feed
+> E[games_played] per ADR-E Amendment E-A1. Make it recurring, not one-off. State the cadence."
+
+**Resolution:** dispatched as thread 070 to `data-ops` + `researcher`. Cadence specified in the
+thread: injuries pulled weekly in-season (nflverse practice reports move week to week);
+suspensions get a weekly researcher sweep on the same cycle so both land in the same
+`as_of_date` window. Explicitly **not** a probability model — a hand-maintained watchlist with
+`current_as_of`, feeding E[games_played] as a deterministic deduction, per the founder's own
+instruction and consistent with [[FR-007]] (table stakes are unconditional, not traded against
+edge). Cross-references thread 057 (still open) to avoid re-litigating whether a structured
+suspension source exists if that thread already answered it.
+
+---
+## FR-015 · Crosswalk before board rewire — sequencing directive on thread 053
+
+**Raised:** 2026-07-27, Claude Code (PM/orchestration session). **Status:** `IN PROGRESS`.
+**Thread:** [053](handoffs/053-founder-csv-ingestion.md).
+
+> "Do not rewire make_board.py yet. Fix the crosswalk first. 78 skill players from the Half-PPR
+> CSV failed to resolve, including 2026 rookies who may go in the first few rounds. Rewiring the
+> board onto the new source before those resolve makes them invisible — worse than the
+> wrong-format board they'd replace, because a missing player gives no signal at all."
+
+**The reasoning, worth keeping attached to the rule.** A visibly-wrong-format board still shows
+every player, so the founder can mentally discount it. A board silently missing 78 names —
+including rookies who could go round 1-3 — gives zero signal on those players and no visible cue
+that anything is wrong. Founder judged the second failure mode strictly worse than the first,
+which is why sequencing (crosswalk fix before rewire) matters more than speed here.
+
+**Explicit instruction on method:** no silent fuzzy matching on the crosswalk refresh. If fuzzy
+matching is used at all, it must be gated at a stated threshold and every match logged. Anything
+still unresolved after the refresh gets reported by name, not dropped quietly.
+
+**Explicit exclusion:** the 32 quarantined DST/defense rows are **structural, not a bug** — no
+individual `gsis_id` exists for team defenses by construction (same permanent gap
+`src/ingest_rankings.py` already documents). Leave them quarantined; they are not part of this
+fix.
+
+**Sequence directed:**
+1. Refresh the player-ID crosswalk against the 78 unresolved skill/K names from thread 053's
+   ingestion (`rankings_quarantine` table, `source='fantasypros_csv_2026draft'`).
+2. Only then rewire `make_board.py` onto `fantasypros_csv_2026draft`.
+3. Rebuild and confirm: total player count, that the 2026 rookie class is present on the board,
+   and that the app header shows the new source and scoring format.
+
+---
+
 ## FR-015 · Fix the crosswalk before rewiring the board onto the new CSV source
 
 **Raised:** 2026-07-27 (founder directive, relayed via Claude Code session to `data-ops`).

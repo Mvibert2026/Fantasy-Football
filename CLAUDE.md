@@ -181,8 +181,10 @@ supports it.
 
 ## 7. League settings
 
-Half-PPR with yardage bonuses. Reconstructed from a prior session — **verify against the live
-league settings before relying on these for scoring.**
+Half-PPR with yardage bonuses. **Verified against the live Yahoo platform 2026-07-27** (league
+"Westwood", ID 154693, primary league — see ADR-052, `tests/fixtures/league_scoring_live.json`).
+Matches value-for-value. Yardage bonuses confirmed to **stack** at thresholds (a player crossing
+multiple thresholds gets all applicable bonuses, not just the highest one).
 
 | Category | Value |
 |---|---|
@@ -199,11 +201,15 @@ league settings before relying on these for scoring.**
 | Fumble lost | −2 |
 | Offensive fumble return TD | 6 |
 
-**Structural constraints:** 4-team playoff, no reseeding. A slow start is unusually costly —
-this is a real constraint the model should account for, not a preference.
+**Structural constraints:** 4-team playoff, weeks 16–17, no reseeding — confirmed 2026-07-27
+against the live platform and matches `league_config.py`'s `playoff_weeks=(16,17)` exactly (see
+ADR-052). A slow start is unusually costly — this is a real constraint the model should account
+for, not a preference.
 
-**Known gaps:** league size (number of teams) not yet confirmed. Roster/starter requirements
-not yet captured. Both are required inputs for tier and replacement-level calculations.
+**Known gaps — RESOLVED for the primary league, 2026-07-27 (ADR-052):** 10 teams. Roster shape 1
+QB / 3 WR / 2 RB / 1 TE / 2 FLEX (W-R-T) / 1 DEF, 6 bench, 1 IR. Both are required inputs for
+tier and replacement-level calculations. (Two other leagues exist with different scoring/team
+counts, still unconfirmed — see `docs/founder-requests.md` FR-012.)
 
 The yardage bonuses matter more than they look — they reward ceiling outcomes over floor, which
 should influence how variance is valued in rankings. Do not silently drop bonuses when

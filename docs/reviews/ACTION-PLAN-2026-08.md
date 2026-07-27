@@ -353,3 +353,44 @@ baseline on the branch is now **539 passed + 1 by-design failure (T3)**.
 registered prediction sets across sessions 3–4 were materially wrong, every miss
 over-crediting a situation story. Halve the intuitive weight of situation narratives before
 freezing a prediction band. (This is a calibration note, not a rule change.)
+
+---
+
+## PM AMENDMENT (2026-07-27) — D3/D6 resolved, T1 re-scoped to three leagues
+
+**D6 — RESOLVED.** Draft date target: **2026-08-30** (readiness buffer, provisional so it can
+move). T-7d = 2026-08-23. This is a deliberate buffer, not the real date: the Westwood (Yahoo,
+primary) league's actual scheduled draft is **2026-09-07**, confirmed from
+`docs/screenshots/League Settings 2.png`. Founder's own words, asked directly: *"let's just use
+August 30th to make sure everything is ready then."* The other two leagues (see below) have
+draft dates not yet known. Full capture: `docs/founder-requests.md` FR-011.
+
+**D3/T2 — RESOLVED.** Founder confirmed from the live platform that yardage bonuses **stack** at
+thresholds (`scoring.py`'s existing `>=` loop is correct, no code change). Founder-supplied
+Yahoo screenshots (`docs/screenshots/League Settings 2-5.png`) are the T2 fixture source,
+dispatched to backend this session to land as `tests/fixtures/league_scoring_live.json` +
+`decisions.md` ADR-052. Full capture: FR-013.
+
+**Bonus resolution the screenshots weren't asked for but answered anyway:** Westwood turns out
+to be the **primary league itself** (Yahoo-hosted), not a separate "Yahoo, different scoring"
+league as originally framed. This closes CLAUDE.md §7's "league size not yet confirmed" gap —
+**10 teams** — and supplies the roster shape (QB/3WR/2RB/TE/2 FLEX/DEF, 6 bench, 1 IR) for the
+first time.
+
+**T1 is now three leagues, not one — re-scoped, does not change the critical path order.**
+Westwood needs no rework (T1 as originally scoped already targets its exact format). Two more
+leagues exist: a second, distinct Yahoo league and an ESPN league (~12-14 teams, founder
+unsure which), both with different scoring and team counts, **neither with data supplied yet**.
+This is now thread 067 (`data-ops`, `backend`), blocked on the founder providing the same two
+screenshots Westwood provided, for each of the other two leagues. Estimated added cost:
+**+1 to +1.5 session-units** on top of T1's original 1, contingent on how far each league's
+scoring sits from a FantasyPros STD/HALF/PPR preset (see thread 067 for the full cost argument).
+Do not silently absorb this into T1's original 1-unit estimate — it was budgeted for one format,
+not three.
+
+**New work order, T4's `data feed` half formalized:** the founder additionally directed a
+**recurring** injury pull (nflverse, weekly in-season) plus a hand-maintained suspension
+watchlist with a **weekly researcher sweep** — explicitly not a probability model. Dispatched as
+thread 070 (`data-ops`, `researcher`), feeding E[games_played] per ADR-E Amendment E-A1. This
+formalizes and extends T4-interim/T4/T6 beyond this week's interim fixture into a standing,
+dated cadence — see thread 070 for the full spec. Full capture: FR-014.

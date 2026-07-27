@@ -1846,6 +1846,164 @@ narrowed the rest):
 by the scope correction and still passes — it checks commit ancestry and verification-date
 freshness, both of which remain true statements about the file regardless of section content.
 
+## 2026-07-27 — Backend: T2 closed, ADR-052, live league-scoring fixture
+
+Dispatched to close T2 (CLAUDE.md §7 "verify against live league settings") using screenshots
+the founder pulled from the live Yahoo platform (`docs/screenshots/League Info 1.png`, `League
+Settings 2-5.png`) plus the founder's direct confirmation that yardage bonuses STACK.
+
+- Added `tests/fixtures/league_scoring_live.json`: transcribed offense + defense scoring, team
+  count (10), roster shape, playoff structure, sourced/dated/attributed in `_meta`. Fixture's own
+  note is explicit that the screenshot proves tier boundaries, not the stacking mechanic — the
+  founder's platform check is the actual evidence for stacking, not the screenshot.
+- Reviewed `src/scoring.py::score_offensive_game` (lines 61-63/70-72/80-82): three independent
+  `>=` loops with no `elif`/max-reduction, confirmed structurally correct for stacking. Not
+  modified, per the founder's instruction.
+- Added 4 tests to `tests/test_scoring.py`: fixture-vs-`LEAGUE` field comparison, metadata
+  sanity (teams/roster/playoff weeks), and a dedicated 425-rushing-yard stacking case (47.0,
+  all three thresholds). `pytest tests/test_scoring.py -q`: 19 passed.
+- Found two DEF-side discrepancies while transcribing (blocked_kicks 2 vs code's 1; points_allowed
+  tier boundaries off-by-one at every threshold, verified by direct call). Flagged in the fixture
+  and ADR-052, not fixed — DEF scoring has zero consumers in this codebase (ADR-039), and this
+  session's scope was offense-only per the founder's instruction not to touch scoring.py logic.
+- Checked playoff weeks: screenshot says "Week 16 and 17," `league_config.py` already has
+  `playoff_weeks=(16,17)`. No discrepancy — resolves the FR-009 verification rider.
+- ADR-052 added to `docs/decisions.md` (number from `tools/handoffs.py adr next`, confirmed 52).
+- Updated `docs/CURRENT-STATE.md` in place (T2 closed note) and `CLAUDE.md` §7 in place (scoring
+  verified, known-gaps team-size/roster resolved, playoff weeks confirmed) — no other lines
+  touched in either file, per scope.
+- Did not touch scoring.py logic, the multiformat consensus work (thread 067), or the
+  injury/suspension feed work (thread 070) — all explicitly out of scope for this session.
+
+## 2026-07-27 — data-ops: League 2 config/board built, consensus-pull premise corrected (handoff 067)
+
+Worked handoff 067's data-ops piece (league 2, "Ethan's Expert League", Yahoo 834236). ESPN/league
+3 explicitly not attempted (not supplied yet, per instruction).
+
+**Verified transcription** in the handoff against the actual screenshots
+(`docs/screenshots/Yahoo League 2 settings.png`–`...4.png`) before building on it — exact match,
+no discrepancies (12 teams, no yardage bonus tiers anywhere, INT -1, K scored per the stated FG/PAT
+table, DEF/ST identical to the primary league tier-for-tier, roster QB/WR/WR/WR/RB/RB/TE/W-R-T/K/
+DEF/BN×5/IR).
+
+**Corrected a false premise in the handoff before acting on it.** The ask assumed the primary
+league's consensus pull already hits `api.fantasypros.com` with `type=ST&scoring=HALF`. Reading
+`src/ingest_rankings.py` in full showed this is not what exists: the only working path is the
+DynastyProcess mirror via `nflreadpy.load_ff_rankings()`, which is unscored and shared across every
+league, primary included. `rankings` table has no `scoring_format` column
+(`PRAGMA table_info(rankings)` checked directly). The FantasyPros live API that would support a
+real per-format pull is still capped at 10 players/response regardless of position filter — this
+was already documented in `docs/deferred.md` (2026-07-25 probe) and I re-confirmed it live this
+session (`type=ST&scoring=HALF&position=RB` → 10 rows out of 71 experts' worth of ranked players).
+Did not build a pull against a data source already known to fail at the coverage this project
+needs — that would be presenting a plausible-looking-but-broken artifact, which CLAUDE.md's
+honest-nulls rule forbids. Flagged as an open decision (pay for FantasyPros' paid tier, or find a
+different half-PPR-native source) rather than worked around.
+
+**Built what was buildable without that data:**
+- `data/leagues/ethans_expert_league.json` — real `LeagueConfig` via `league_builder.create_league()`
+  matching league 2's transcribed settings exactly (bonus lists zeroed, INT -1, K starter slot,
+  12 teams, 1 flex). `user_draft_slot=1` is an explicit, flagged placeholder — not supplied by the
+  founder yet.
+- `data/export/ethans_expert_league/{board,league,availability,rosters}.json` via
+  `league_builder.export_league()`. Measured: `replacement_levels_used =
+  {"QB":12,"RB":30,"WR":42,"TE":12}`, confirmed distinct from the primary league's RB30/WR40/TE10/
+  QB10; `unsupported_positions=["DEF","K"]`, `def_supported=false` (ADR-039's filter correctly
+  fires on a config whose `starters` includes `"K"` for the first time — the thread's own flagged
+  open question).
+- `tests/test_league2_ethans_expert.py` — 6 new tests, all passing: config-field correctness
+  against transcribed settings, replacement levels differing from the primary league, K/DEF
+  exclusion, flex-split-unmeasured flag, strict-JSON board output. Same pattern as thread 040's
+  generic 14-team probe league (`tests/test_multi_league_export.py`).
+
+**Not attempted / left open:** item 4 (board-builder "raises on wrong format" assertion) — no such
+assertion exists to extend, given item 1's finding; left for backend. ESPN/league 3 — not supplied.
+Founder's real draft slot in league 2 — not supplied.
+
+**Rows:** 0 new rows ingested (no new consensus pull built, per the finding above). 0 rows
+quarantined. **Sources attempted:** FantasyPros live API (`api.fantasypros.com`,
+`type=ST&scoring=HALF&position=RB`) — re-probed, confirmed still capped at 10 rows/response,
+free-tier limitation, not attempted for ingestion. No other sources touched this session.
+
+**Tests:** 564 passed, 1 pre-existing failure (`test_floor_checks.py::
+test_t3_every_board_player_has_a_bye_week`, JAC/LAR team-code mapping, unrelated to this session,
+already flagged in the action plan). New test count: 6 (`tests/test_league2_ethans_expert.py`).
+
+**Commit:** not made — told not to commit/push this session. Working tree HEAD unchanged at
+`22059e5ff5408f895343e64a315037a12fd23cf6`. New/changed files: `data/leagues/ethans_expert_league.json`,
+`data/export/ethans_expert_league/*.json`, `tests/test_league2_ethans_expert.py`,
+`docs/handoffs/067-t1-multiformat-consensus-rescope.md` (reply appended, `STATUS` left `OPEN`),
+`docs/handoffs/OPEN.md`, `docs/CURRENT-STATE.md`.
+
+## data-ops session, 2026-07-27 (league 2 teams correction, handoff 067)
+
+Founder override applied: "Ethan's expert league may likely only end up being 10 people, treat
+it as a 10 person league unless otherwise directed." Rebuilt `data/leagues/ethans_expert_league.json`
+and its exports at `teams=10` (was 12, built earlier the same day). Nothing else about the league
+changed — same roster shape, same scoring overrides (no yardage bonuses, INT -1), same
+`user_draft_slot=1` placeholder.
+
+Rebuilt via new script `scripts/rebuild_ethans_expert_league.py` (calls
+`league_builder.create_and_export_league`), same path the original build used. Measured
+replacement levels for the 10-team build: `QB10/RB25/WR35/TE10` — confirmed distinct from both
+the primary league's `QB10/RB30/WR40/TE10` (same QB number by coincidence — both are 10 teams x 1
+QB starter with no flex QB eligibility — but RB/WR differ because league 2 has only 1 flex slot
+vs. primary's 2) and the now-superseded 12-team build's `QB12/RB30/WR42/TE12`.
+
+Updated `tests/test_league2_ethans_expert.py`: `teams=10` throughout, replacement-levels
+assertion now pins the exact `{"QB":10,"RB":25,"WR":35,"TE":10}` dict rather than only asserting
+inequality with the primary. Added docstring/comment notes (module docstring, inline comments at
+the `teams=10` kwarg, and the new rebuild script's docstring) recording that the screenshot said
+"Max Teams: 12" and this is a founder override, not a transcription fix — same convention already
+used for `user_draft_slot=1`'s placeholder flag. `LeagueConfig` has no free-text metadata field,
+so this is recorded in code comments/docstrings + this doc + the 067 handoff reply, not a new
+schema field for one instance.
+
+`tests/test_league2_ethans_expert.py`: 6/6 passing. Full suite run in background this session
+(2min+ runtime); see commit/report for final count.
+
+Sources/scope: did not touch item 1/2 (FantasyPros consensus-pull format-awareness, still open),
+did not touch Westwood/primary league, did not touch ESPN/league 3 (no data supplied). No
+commit/push made per instruction.
+
+Files touched: `data/leagues/ethans_expert_league.json`, `data/export/ethans_expert_league/*.json`,
+`tests/test_league2_ethans_expert.py`, `scripts/rebuild_ethans_expert_league.py`,
+`docs/CURRENT-STATE.md`, `docs/handoffs/067-t1-multiformat-consensus-rescope.md` (reply appended,
+`STATUS` left `OPEN`).
+
+---
+
+## 2026-07-27 — data-ops: FantasyPros founder CSV (file 2 of handoff 053) ingested
+
+Founder manually downloaded an uncapped FantasyPros "ALL Rankings" export (575 players, Half PPR
+confirmed selected at export) — this fixes the format-blindness/10-row-cap problem the board's
+existing `fantasypros_ecr` mirror has (see handoff 053, thread 067). Ingested as a new, separate
+`rankings.source = 'fantasypros_csv_2026draft'`; the old `fantasypros_ecr` mirror is untouched and
+both coexist during the transition.
+
+New file: `src/ingest_fantasypros_csv.py`. `rankings` table gained four columns (`scoring_format`,
+`tier`, `bye_week`, `sos_season`) via `ALTER TABLE ADD COLUMN`. New `rankings_quarantine` table for
+unresolved player names.
+
+- 465/575 rows ingested. 110/575 quarantined with reasons (32 DST — no gsis_id by construction,
+  same as the existing mirror's known gap; 78 skill/K players — mostly 2025 rookies not yet in
+  nflreadpy's static id crosswalk, plus a few legal-name/nickname mismatches deliberately left
+  unresolved rather than fuzzy-matched).
+- ADP recovered as `ADP = RK + delta` (`delta` = the CSV's `ECR VS. ADP` column, populated on
+  327/575 rows). Sign convention inferred by direction-matching against a same-day Underdog ADP
+  pull (4 overlapping players) — not a documented FantasyPros convention, worked example in the
+  module docstring.
+- `UPSIDE`/`BUST` columns confirmed placeholder text in every row — not stored.
+- `make_board.py` NOT rewired to use the new source — left as an open item for backend/thread 067,
+  per this session's scope boundary.
+- Files 1 (Underdog ADP) and 3 (three-analyst disagreement) from the same handoff were **not**
+  attempted this session, per the PM's explicit reprioritization toward file 2. Left for follow-up.
+- New tests: `tests/test_ingest_fantasypros_csv.py`, 7 passing (parsing helpers, ADP sign
+  convention, schema/quarantine idempotency).
+
+Full detail and reasoning in the 2026-07-27 data-ops reply on `docs/handoffs/053-founder-csv-ingestion.md`.
+`docs/CURRENT-STATE.md` updated in place. No commit made.
+
 ## 2026-07-27 — Frontend: thread 063, suggester reopen regression (fixed at root cause)
 
 Founder reported the pick-entry suggester "opens every pick" despite thread 051's fix. Read 051's

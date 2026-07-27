@@ -1,6 +1,12 @@
+import json
+import os
+
 import pytest
 
-from scoring import ReplacementLevels, compute_vbd, score_defense_game, score_offensive_game
+from scoring import LEAGUE, ReplacementLevels, compute_vbd, score_defense_game, score_offensive_game
+
+FIXTURES_DIR = os.path.join(os.path.dirname(__file__), "fixtures")
+LIVE_FIXTURE_PATH = os.path.join(FIXTURES_DIR, "league_scoring_live.json")
 
 
 @pytest.mark.parametrize(
@@ -127,3 +133,69 @@ def test_compute_vbd_handles_position_with_fewer_players_than_baseline():
     season_points = {"TE": [("OnlyTE", 50.0)]}
     vbd = compute_vbd(season_points, levels)
     assert vbd["OnlyTE"] == pytest.approx(0.0)  # replacement = itself, no crash
+
+
+# --------------------------------------------------------------------------
+# T2 / ADR-050: live-league verification fixture (docs/screenshots, 2026-07-27)
+# --------------------------------------------------------------------------
+#
+# These tests were written to check `scoring.LEAGUE` against the fixture
+# BEFORE loosening or otherwise touching scoring.py, per this project's
+# sanity-check-before-implementation rule. `scoring.py` is not expected to
+# change as a result -- the founder's own verification is that its `>=` loop
+# is already correct; this is confirmation, not a fix.
+
+
+def _load_live_fixture():
+    with open(LIVE_FIXTURE_PATH) as f:
+        return json.load(f)
+
+
+def test_live_fixture_offense_matches_scoring_league():
+    """Field-by-field: the live-verified Yahoo scoring table (Westwood,
+    primary league, verified 2026-07-27) must match scoring.LEAGUE['offense']
+    exactly. A mismatch here means either the fixture was mistranscribed or
+    scoring.py has drifted from the real league settings."""
+    fixture = _load_live_fixture()
+    live_offense = fixture["offense"]
+    code_offense = LEAGUE["offense"]
+
+    assert set(live_offense.keys()) == set(code_offense.keys())
+
+    for key, live_val in live_offense.items():
+        code_val = code_offense[key]
+        if isinstance(live_val, dict):
+            assert live_val["per"] == code_val["per"], key
+            # bonuses transcribed as JSON lists of [threshold, bonus]; code
+            # stores them as a list of tuples -- compare as tuples.
+            assert [tuple(b) for b in live_val["bonuses"]] == code_val["bonuses"], key
+        else:
+            assert live_val == code_val, key
+
+
+def test_live_fixture_metadata_sanity():
+    """Non-scoring facts captured alongside the scoring table this session
+    (T2/FR-012/FR-013): team count and roster shape for the primary league."""
+    fixture = _load_live_fixture()
+    meta = fixture["_meta"]
+    assert meta["teams"] == 10
+    assert meta["league_name"] == "Westwood"
+    assert meta["platform"] == "Yahoo"
+    assert meta["roster_positions"]["FLEX_WRT"] == 2
+    # Matches league_config.py's playoff_weeks=(16,17) -- confirmed against
+    # the live screenshot this session, not a discrepancy (see ADR-050).
+    assert meta["playoffs"]["weeks"] == [16, 17]
+
+
+def test_yardage_bonuses_stack_all_applicable_thresholds():
+    """The behavior this whole fixture exists to verify: a player crossing
+    MULTIPLE yardage bonus thresholds gets ALL of them added, not just the
+    highest one. 425 rushing yards clears the 100/150/200 thresholds, so the
+    expected score includes all three bonuses (1.0 + 1.5 + 2.0), on top of
+    425/10 = 42.5 yardage points. If scoring.py ever changed to an
+    if/elif-highest-only shape, this test would catch it even though the
+    existing >= loop (scoring.py, the per-threshold loops in
+    score_offensive_game) already does this correctly."""
+    stats = {"rushing_yards": 425}
+    # 425/10 = 42.5, + 1.0 (100) + 1.5 (150) + 2.0 (200) = 47.0
+    assert score_offensive_game(stats) == pytest.approx(47.0)

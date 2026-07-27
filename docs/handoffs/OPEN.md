@@ -76,8 +76,8 @@ not an omission. Start your session at your own heading.
 | [054](054-ftn-and-sleeper-harvest.md) | Ftn and sleeper harvest | `pm` | OPEN | 0d | any subscription decision |
 | [055](055-ffc-adp-history-harvest.md) | Ffc adp history harvest | `pm` | OPEN | 0d | 046, 048 (bottom-up ranking), any ADP-vs-value work, availability model calibration |
 | [057](057-timeseries-data-audit.md) | Timeseries data audit | `pm` | OPEN | 0d | injury-aware rankings, ADP drift model, suspension correctness guarantee, Fable Addendum 2 |
-| [066](066-recurring-injury-suspension-feed.md) | Recurring injury suspension feed | `pm` | OPEN | 0d | T4 (suspensions/roster-status table stakes), E[games_played] per ADR-E Amendment E-A1 |
 | [067](067-t1-multiformat-consensus-rescope.md) | T1 multiformat consensus rescope | `pm` | OPEN | 0d | T1 completion for leagues 2/3, board correctness for the non-primary leagues |
+| [070](070-recurring-injury-suspension-feed.md) | Recurring injury suspension feed | `pm` | OPEN | 0d | T4 (suspensions/roster-status table stakes), E[games_played] per ADR-E Amendment E-A1 |
 
 ### `strategist` — 5 waiting
 
@@ -95,7 +95,7 @@ not an omission. Start your session at your own heading.
 |---|---|---|---|---|---|
 | [054](054-ftn-and-sleeper-harvest.md) | Ftn and sleeper harvest | `pm` | OPEN | 0d | any subscription decision |
 | [057](057-timeseries-data-audit.md) | Timeseries data audit | `pm` | OPEN | 0d | injury-aware rankings, ADP drift model, suspension correctness guarantee, Fable Addendum 2 |
-| [066](066-recurring-injury-suspension-feed.md) | Recurring injury suspension feed | `pm` | OPEN | 0d | T4 (suspensions/roster-status table stakes), E[games_played] per ADR-E Amendment E-A1 |
+| [070](070-recurring-injury-suspension-feed.md) | Recurring injury suspension feed | `pm` | OPEN | 0d | T4 (suspensions/roster-status table stakes), E[games_played] per ADR-E Amendment E-A1 |
 
 ### `librarian` — 1 waiting
 

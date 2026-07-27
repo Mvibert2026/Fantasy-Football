@@ -79,3 +79,22 @@ Print this. Times relative to the draft clock.
 - A recommendation that looks insane probably reflects a data gap from the list above — trust
   your read of the room over a row you can't explain (the model's own docs say the availability
   numbers are honest estimates, not calibrated probabilities, at n=1 mock).
+
+---
+
+## PM NOTE (2026-07-27) — dates anchored, and this checklist is now single-league among three
+
+**Dates, per founder confirmation (`docs/founder-requests.md` FR-011):** T-7 days = **2026-08-23**,
+T-1 day = **2026-08-29**, T-0 = **2026-08-30**. 2026-08-30 is a deliberate readiness-buffer
+target, not the Westwood/primary league's real draft date (that's 2026-09-07, confirmed from
+`docs/screenshots/League Settings 2.png`) — the founder chose to build to the earlier date on
+purpose. Treat both as true; they are not in conflict.
+
+**Gap this checklist doesn't yet cover:** it was written against one league. The founder now has
+three (`docs/founder-requests.md` FR-012) — Westwood (Yahoo, primary, covered above), a second
+Yahoo league, and an ESPN league — the latter two with different scoring, different team counts,
+and **no draft dates confirmed yet**. This checklist's items (T1 format assertion, T2 scoring
+fixture, T4 suspension list, the dry run) are all Westwood-scoped as written. Whoever runs this
+checklist for leagues 2/3 needs either a per-league copy or an explicit read that every item here
+means "for Westwood" until thread 067 (T1 re-scope) and the founder's league-2/3 data land. Not
+resolving that gap here — flagging it so it isn't discovered at T-1 day.

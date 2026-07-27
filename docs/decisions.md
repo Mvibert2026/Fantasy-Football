@@ -1693,7 +1693,6 @@ project's sanity-check-before-implementation rule. `tests/test_make_board.py` +
 `tests/test_export_contract.py` + `tests/test_export_history.py`: **71 passed** (targeted run,
 not full suite — concurrent-agent DB contention this round per dispatch instructions).
 
-
 ### ADR-050: T9 team-code crosswalk, T5 freshness tripwire, T6 interim roster-status proxy, T4 interim suspension mechanism (fable-table-stakes-2026-07-27.md)
 
 **Context.** Four work orders from the table-stakes review (FR-007: correctness floor before
@@ -1842,3 +1841,80 @@ values (`tests/test_make_board.py`); four existing fixture-backed tests updated 
 1.11.0. `tests/test_holdout_audit.py`'s `CONNECT_ALLOWLIST` gained `ingest_fantasypros_csv.py`
 (same-shape ingestion script as the other allowlisted `ingest_*.py` files; this was a gap in the
 allowlist from the earlier data-ops session, mechanical fix, not part of the rewire itself).
+
+---
+
+### ADR-052: Yardage bonuses verified to STACK — T2 closed, live scoring fixture added
+
+**Decision.** T2 (`docs/reviews/ACTION-PLAN-2026-08.md`) and pre-mortem failure #4
+(`docs/reviews/fable-draft-day-premortem-2026-07-27.md`) are **CLOSED**. CLAUDE.md §7's league
+scoring table has been verified against the live Yahoo platform for the project's primary
+league, "Westwood" (league ID 154693, 10 teams), and matches value-for-value.
+
+**What was actually verified, and by what evidence — stated precisely because the two pieces of
+evidence prove different things.**
+- The scoring *tiers themselves* (25 yds/pt with +1/+1.5/+2 at 300/350/400 passing, same 10
+  yds/pt shape with +1/+1.5/+2 at 100/150/200 for rushing and receiving, 4pt pass TD, -2 INT,
+  0.5 PPR, 6pt rush/rec TD, etc.) are directly visible in `docs/screenshots/League Settings
+  2.png`–`5.png`, dated 2026-07-27, and were cross-checked field-by-field against CLAUDE.md §7
+  and `scoring.py`'s `LEAGUE` dict — an exact match.
+- The **stacking mechanic** — that a player crossing multiple thresholds in one game gets *all*
+  applicable bonuses added, not just the highest one — is **not** visible on the Yahoo settings
+  screenshot. That page shows tier boundaries, not a worked multi-threshold example. The actual
+  evidence for stacking is the founder's own statement, made directly to the PM session today,
+  that this was confirmed by checking the live platform's behavior (not just its settings page).
+  This ADR is honest about that distinction rather than implying the screenshot alone proves
+  additive-vs-replacing.
+
+**`scoring.py` reviewed, found already correct, not modified.** `score_offensive_game()` (`src/
+scoring.py`) implements the bonus logic as three independent `for threshold, bonus in
+off[...]["bonuses"]: if <yardage> >= threshold: score += bonus` loops — passing at lines 61–63,
+rushing at lines 70–72, receiving at lines 80–82. Because each loop iterates every threshold
+tuple and unconditionally adds the bonus for every one that the yardage total clears (there is
+no `elif`, no `break`, no "take the max" reduction), a player who clears all three thresholds
+gets all three bonuses added. This is structurally the stacking behavior the founder confirmed
+on the platform. No change was made to this file — per the founder's own instruction, this
+session's job was to verify the claim and add a test, not to "improve" already-correct code.
+
+**Fixture added.** `tests/fixtures/league_scoring_live.json` — the live-verified offense scoring
+table, sourced from the screenshots, dated 2026-07-27, tagged with league identity (Westwood,
+Yahoo, primary, 10 teams), roster shape, and playoff structure. Includes a `_meta.note` stating
+explicitly that the fixture proves the tiers, not the stacking mechanic (see above). Also
+transcribes the defense/special-teams table for completeness (per the founder's instruction),
+flagged as unconsumed by any code path (ADR-039, no DST scoring ingested).
+
+**Two discrepancies found while transcribing, flagged rather than silently fixed or silently
+ignored, both confined to the DEF side which nothing in the codebase consumes:**
+1. `blocked_kicks`: screenshot value is 2, `scoring.py`'s `LEAGUE["defense"]["blocked_kicks"]` is
+   1.
+2. `points_allowed` tier boundaries are **off by one** at every threshold. Screenshot bands are
+   0→10, 1–6→7, 7–13→4, 14–20→1, 21–27→0, 28–34→−1, 35+→−4 (upper-bound-inclusive). `scoring.py`'s
+   `points_allowed` list `[(0,10),(7,7),(14,4),(21,1),(28,0),(35,-1),(inf,-4)]`, walked with a
+   first-match `pa <= ceiling` loop, actually returns 7.0 (not 4.0) for `pa=7` and 4.0 (not 1.0)
+   for `pa=14` — verified directly by calling `score_defense_game` (`{"sacks":0,
+   "points_allowed": 7}` → 7.0; `{"points_allowed": 14}` → 4.0). Neither is fixed here: DEF
+   scoring has zero consumers in this codebase (ADR-039), and this session's scope was offense
+   verification without touching `scoring.py`'s logic. Left as a documented known gap in the
+   fixture's `_blocked_kicks_discrepancy` / `points_allowed_tiers_note` fields for whoever
+   eventually wires up DEF scoring.
+
+**Team count and roster shape, closed as a side effect (feeds FR-012/CLAUDE.md §7 "known
+gaps").** 10 teams; QB / WR / WR / WR / RB / RB / TE / W-R-T / W-R-T / DEF starters, 6 bench, 1
+IR — read directly off `League Settings 4.png`'s roster-positions row and cross-checked against
+`League Info 1.png`'s 10-team list.
+
+**Playoff weeks — checked, no discrepancy found (resolves the open verification rider from
+FR-009/ADR-E amendment E-A1).** `League Settings 3.png` states "4 teams - Week 16 and 17."
+`src/league_config.py:56` already has `playoff_weeks: Tuple[int, ...] = (16, 17)`. These match
+exactly. The "championships are weeks 15–17" phrasing that appears elsewhere in the docs
+(`docs/adr-drafts/ADR-E-bottom-up-projection-framework.md`, `docs/reviews/ACTION-PLAN-2026-08.md`)
+is not corroborated by this screenshot and should not be treated as authoritative over it.
+
+**Tests.** `tests/test_scoring.py`: added `test_live_fixture_offense_matches_scoring_league`
+(field-by-field fixture-vs-`LEAGUE` comparison), `test_live_fixture_metadata_sanity` (team
+count, roster shape, playoff weeks), and `test_yardage_bonuses_stack_all_applicable_thresholds`
+(425 rushing yards → 47.0, exercising all three rushing bonus tiers at once — a case that would
+fail immediately under an `elif`/max-only implementation). All three written against the fixture
+and the existing `scoring.py` before confirming they pass, per this project's
+sanity-check-before-implementation rule. Full file: **19 passed** (`pytest tests/test_scoring.py
+-q`).
