@@ -18,6 +18,7 @@ export type ScreenId =
   | 'board'
   | 'availability'
   | 'opponents'
+  | 'predictions'
   | 'strategy'
   | 'method'
   | 'glossary'
@@ -33,11 +34,18 @@ export interface SoonItem {
   body: string;
 }
 
-/** Verbatim from the prototype's `nav` array (line 2128), same order. */
+/** The prototype's `nav` array (line 2128), same order, plus 'predictions' --
+ *  thread 028 (docs/handoffs/028-build-predictions-tab.md), inserted right after
+ *  'opponents' to match the reference design's Board/Opponents/Predictions
+ *  ordering (docs/design-reference/reference/03-draft-predictions.png). Not in
+ *  the original prototype array, so no longer strictly verbatim -- see
+ *  ui/views/Predictions.tsx's module doc for why this is a Prep-mode sidebar
+ *  entry rather than a Draft-mode hub tab. */
 export const NAV_MAIN: Array<{ key: ScreenId; label: string }> = [
   { key: 'board', label: 'Board' },
   { key: 'availability', label: 'Availability' },
   { key: 'opponents', label: 'Opponents' },
+  { key: 'predictions', label: 'Predictions' },
   { key: 'strategy', label: 'Strategy Guide' },
   { key: 'method', label: 'Methodology' },
   { key: 'glossary', label: 'Glossary' },

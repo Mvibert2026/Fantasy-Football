@@ -12,6 +12,7 @@ import { DraftRoom } from './views/DraftRoom';
 import { Glossary } from './views/Glossary';
 import { Methodology } from './views/Methodology';
 import { Opponents } from './views/Opponents';
+import { Predictions } from './views/Predictions';
 import { StrategyGuide } from './views/StrategyGuide';
 import { buildRows } from './data/board';
 import { buildLeagueConfig } from './data/league';
@@ -146,6 +147,10 @@ export function App() {
           ) : screen === 'opponents' ? (
             <div className="view" style={{ flex: 1, minHeight: 0 }}>
               <Opponents data={data} />
+            </div>
+          ) : screen === 'predictions' ? (
+            <div className="view" style={{ flex: 1, minHeight: 0 }}>
+              <Predictions data={data} rows={rows} league={league} />
             </div>
           ) : screen === 'strategy' ? (
             // StrategyGuide/Methodology don't manage their own scroll region (they
