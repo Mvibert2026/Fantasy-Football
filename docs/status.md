@@ -1954,3 +1954,32 @@ constraint.
   guard in `test_export_history.py` for the OAK-era canonicalization gap found while wiring T9.
   Full suite: **585 passed, 0 failed** (`pytest ../tests -q` from `src/`, real `nfl.db` copied
   into the worktree first per the known worktree-needs-DB issue).
+
+## 2026-07-27 — data-ops: FR-015 crosswalk refresh (78 skill/K quarantine rows)
+
+Founder directive: fix the FantasyPros CSV crosswalk before `make_board.py` rewires onto it
+(`docs/founder-requests.md` FR-015, `docs/handoffs/053-founder-csv-ingestion.md`). Did **not**
+touch `make_board.py` — explicitly out of scope, blocked pending backend.
+
+`src/ingest_fantasypros_csv.py::build_crosswalk()` previously used only
+`nflreadpy.load_ff_playerids()`, a static snapshot missing most 2026 draft-class rookies. Layered
+`nflreadpy.load_players()` on top (a separately-refreshed nflreadpy source that already carries
+real `gsis_id`s for these rookies), plus indexed each player's `football_name`
+(nickname/short-form field) against the same id — both exact-field matches, no fuzzy matching.
+Added exactly one hand-verified, explicitly logged alias (`("hollywood brown", "WR") ->
+"marquise brown"`, Marquise Brown's own adopted nickname, absent from every nflreadpy name field
+under any spelling) — logged at ingest time, not silently applied.
+
+Result: 465/575 -> **539/575** rows now resolve into `rankings`. Quarantine: 110 -> **36** (32
+DST, structural/out-of-scope, unchanged; 78 skill/K -> **5** skill/K genuinely unresolved —
+Tommy Myers, Devonte Boyd, Matt Hibner, Graig Cooper, Desmond Reid — named individually in the
+handoff-053 reply, absent from `load_ff_playerids()`, `load_players()`, and the 2025
+`load_rosters()` snapshot; almost certainly undrafted rookies nflreadpy hasn't picked up yet, not
+a normalization gap. One (Matt Hibner) flagged for a founder/backend judgment call: a "Matthew
+Hibner" exists at the right team/position but the CSV's "Matt" isn't backed by any exact field.
+
+4 new tests added to `tests/test_ingest_fantasypros_csv.py` (load_players fallback, football_name
+nickname indexing, K/PK dual-key from `load_players()`, alias-table entry). Targeted suite
+(`-k "ranking or crosswalk or fantasypros"`): 34 passed. Full suite: 604 passed, 1 failed
+(`test_handoffs.py::test_mailbox_health`, duplicate handoff ID 066 between two untracked files
+that predate this session — unrelated to this work, flagged not fixed). Commit: see git log.

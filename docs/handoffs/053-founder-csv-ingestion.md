@@ -87,3 +87,80 @@ at positions the project has already declined to model.
 Three sources ingested with source attribution on every row, best-ball caveat in the schema, ADP
 cross-check between files 1 and 2 reported, per-analyst ranks stored raw with honest nulls. Then a
 `strategist` reply on whether the disagreement signal is worth pursuing and what would test it.
+
+---
+
+## data-ops reply — 2026-07-27 — FR-015 crosswalk refresh (skill/K quarantine only)
+
+**Scope:** founder directive FR-015 (`docs/founder-requests.md`) — resolve the 78 skill/K rows
+quarantined by `src/ingest_fantasypros_csv.py`'s first run (name/position not found in
+`nflreadpy.load_ff_playerids()`). `make_board.py` was **not** touched, per explicit instruction.
+
+**Root cause.** `load_ff_playerids()` is a static snapshot that hadn't picked up most 2026
+draft-class rookies yet. `nflreadpy.load_players()` (a different, more frequently refreshed
+nflreadpy source) already carries real `gsis_id`s for the same players — confirmed by direct
+lookup (e.g. Jeremiyah Love `00-0041027`, Carnell Tate `00-0041438`, Jordyn Tyson `00-0041029`,
+all absent from `ff_playerids`, all present in `load_players()`).
+
+**Fix, `src/ingest_fantasypros_csv.py::build_crosswalk()`:**
+1. Layered `load_players()` on top of `load_ff_playerids()` as a second exact-match source
+   (`ff_playerids` keeps priority when both have an entry). Fixed 72/79 skill/K quarantine rows.
+2. Also indexed each player's `football_name` (nickname/short form field, e.g. "Mitch" for
+   "Mitchell Tinsley") against the same `gsis_id` — an exact match against a real nflverse field,
+   not fuzzy matching. Fixed "Mitch Tinsley" (RK 453).
+3. `load_players()` labels kickers `"K"` natively; `ff_playerids`-era code expects `"PK"`. Both
+   position keys are populated from `load_players()` rows so kicker lookups work either way
+   (fixed Andy Borregales RK 228, Trey Smack RK 378 — both actually resolved in step 1 already
+   since `load_players()` also had them under the RB/WR/TE keys they needed... note: both are `K`,
+   resolved via the K/PK dual-key logic).
+4. Added one hand-verified, explicitly logged alias — **not fuzzy matching, a single curated
+   entry checked against public reporting**: `("hollywood brown", "WR") -> "marquise brown"`.
+   Marquise Brown's own adopted nickname is not present under any spelling in either nflreadpy
+   name field, so no exact-field fix was possible. Logged at ingest time
+   (`[alias] 'Hollywood Brown' (WR) -> 'marquise brown' via _KNOWN_ALIASES -> gsis_id=00-0035662`).
+   No other aliases were added — every other quarantine row was resolved via an exact field
+   match or is reported below as still unresolved.
+
+**Before / after (this run, `source='fantasypros_csv_2026draft'`, `season=2026`,
+`as_of_date='2026-07-27'`):**
+
+| | Before | After |
+|---|---|---|
+| Rows ingested into `rankings` | 465 / 575 | 539 / 575 |
+| Rows quarantined | 110 | 36 |
+| — DST (structural, out of scope) | 32 | 32 |
+| — skill/K unresolved | 78 | 5 |
+
+**Still unresolved, named individually (not dropped, still quarantined with reason
+`"name/position not found in nflreadpy ff_playerids crosswalk"`):**
+
+- Tommy Myers (FA, TE) — RK 389. No player under any spelling of "Myers" in `load_ff_playerids()`,
+  `load_players()`, or the 2025 `load_rosters()` snapshot at TE.
+- Devonte Boyd (FA, WR) — RK 467. No "Devonte Boyd" in any of the three sources checked.
+- Matt Hibner (BAL, TE) — RK 493. A "Matthew Hibner" (`00-0040879`, BAL, TE) exists and is
+  almost certainly the same person, but `football_name` for that record is "Matthew", not "Matt"
+  — the CSV's short form isn't backed by any exact field, so this was left unresolved rather than
+  guessed. Flagging for founder/backend judgment call: fuzzy-match "Matt"↔"Matthew" explicitly,
+  or add as a second hand-verified alias if confirmed.
+- Graig Cooper (FA, RB) — RK 520. No "Graig Cooper" in any of the three sources checked
+  (nearest name-match, "Craig Cooper", also absent).
+- Desmond Reid (FA, RB) — RK 565. No "Desmond Reid" in any of the three sources checked.
+
+All five are almost certainly undrafted 2026 rookies not yet on any 53-man roster snapshot
+nflreadpy has picked up (no 2025 `load_rosters()` entry either) — genuinely absent from every
+source checked, not a normalization gap. Re-check once rosters update closer to Week 1.
+
+**Files changed:** `src/ingest_fantasypros_csv.py` (`build_crosswalk()`, `_KNOWN_ALIASES`, alias
+lookup + logging in `ingest()`), `tests/test_ingest_fantasypros_csv.py` (4 new tests: load_players
+fallback, football_name nickname indexing, K/PK dual-key, alias table entry).
+
+**Tests:** `pytest tests/ -k "ranking or crosswalk or fantasypros"` → 34 passed. Full suite
+(`pytest -q`) → 604 passed, 1 failed. The 1 failure (`test_handoffs.py::test_mailbox_health`,
+duplicate handoff ID 066 between `066-recurring-injury-suspension-feed.md` and
+`066-contract-1-10-0-board-json-rows-gained-roster-st.md`) predates this session (both files
+already existed, untracked, before this task started) and is unrelated to the crosswalk work —
+flagging, not fixing, since it's outside this task's scope.
+
+`make_board.py` rewire remains blocked pending backend pickup, per FR-015. This reply resolves the
+crosswalk half of that block for skill/K players; the 5 named above and the 32 DST rows remain
+quarantined by design/absence, not by oversight.

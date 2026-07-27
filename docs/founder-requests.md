@@ -317,3 +317,21 @@ The founder has now stated this as the project's definition of done for experime
 a methodology preference. Applied to V7 this session (registered `5af349e`, code after,
 falsified honestly). Any agent running an experiment in this repo owes the registration
 commit first.
+
+## FR-015 · Fix the crosswalk before rewiring the board onto the new CSV source
+
+**Raised:** 2026-07-27 (founder directive, relayed via Claude Code session to `data-ops`).
+**Status:** DONE — see `docs/handoffs/053-founder-csv-ingestion.md` data-ops reply, 2026-07-27.
+
+> "Do not rewire make_board.py yet. Fix the crosswalk first. 78 skill players from the Half-PPR
+> CSV failed to resolve, including 2026 rookies who may go in the first few rounds. Rewiring the
+> board onto the new source before those resolve makes them invisible — worse than the
+> wrong-format board they'd replace, because a missing player gives no signal at all."
+
+Resolved 72/78 via a `nflreadpy.load_players()` supplement to the existing `load_ff_playerids()`
+crosswalk (rookies present in the former, missing from the static latter snapshot) plus one
+hand-verified nickname alias (Hollywood Brown -> Marquise Brown, explicitly logged, not fuzzy
+matching). 5 named players remain genuinely unresolved (Tommy Myers, Devonte Boyd, Matt Hibner,
+Graig Cooper, Desmond Reid) — absent from every source checked, most likely undrafted rookies not
+yet on a roster snapshot. `make_board.py` rewire is still blocked on backend pickup, but the
+crosswalk half of the block this directive named is resolved.
