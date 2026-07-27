@@ -1411,7 +1411,7 @@ is building that screen this round. `export_league()` is a synchronous, blocking
 (~7-10s per existing config-matrix timing), same shape `write_all` already has for the 24
 pre-generated configs.
 
-ADR-048 in `docs/decisions.md`. Sanity-check tests (`tests/test_league_builder.py`) written
+ADR-049 in `docs/decisions.md`. Sanity-check tests (`tests/test_league_builder.py`) written
 before `league_builder.py` per the standing non-negotiable ordering rule.
 
 Tests: `tests/test_league_builder.py` 19 passed; `tests/test_league_config.py` +

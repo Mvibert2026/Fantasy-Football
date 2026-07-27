@@ -1571,7 +1571,7 @@ Tests: 65 passed (`tests/test_preregistration.py` + `tests/test_holdout.py`, `-q
 run — full suite not run this session per instruction, to avoid DB contention with concurrent
 agents).
 
-### ADR-048: `league_builder.py` — real league creation from founder-facing parameters (thread 040 item 1)
+### ADR-049: `league_builder.py` — real league creation from founder-facing parameters (thread 040 item 1)
 
 **Decision.** Added `src/league_builder.py`: `create_league(name, teams, starters, flex_slots,
 flex_eligible, bench, ir, user_draft_slot, ...)` builds and saves a `LeagueConfig` from plain

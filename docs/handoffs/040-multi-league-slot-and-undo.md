@@ -186,7 +186,7 @@ editor UI itself, unbuilt, not this round's scope. `export_league()` is synchron
 (~7-10s per ADR-047's existing timing), the same shape `write_all` already has for the 24
 pre-generated configs -- a future API layer wraps this in a job rather than replacing it.
 
-Full detail: ADR-048 in `docs/decisions.md`. Tests: `tests/test_league_builder.py`, 19 passed
+Full detail: ADR-049 in `docs/decisions.md`. Tests: `tests/test_league_builder.py`, 19 passed
 (one DB-backed integration test, rest pure). `tests/test_league_config.py` +
 `tests/test_multi_league_export.py` re-run targeted, 26 passed, no regression.
 
