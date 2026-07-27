@@ -4,7 +4,7 @@
 Threads are the source of truth. Change a thread's `STATUS:`, then re-run sync.
 Protocol: [`README.md`](README.md).
 
-**29 open** · 14 resolved
+**29 open** · 15 resolved
 
 ---
 
@@ -19,7 +19,7 @@ not an omission. Start your session at your own heading.
 |---|---|---|---|---|---|
 | [005](005-fantasypros-tier.md) | Fantasypros tier | `pm` | BLOCKED-ON-YOU | 0d | bootstrap CIs, full-board projections |
 
-### `backend` — 16 waiting
+### `backend` — 15 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
@@ -27,7 +27,6 @@ not an omission. Start your session at your own heading.
 | [002](002-per-pick-draft-state.md) | Per pick draft state | `pm` | OPEN | 0d | 007 (mock collection, not yet opened) |
 | [012](012-sprint-1-runbook.md) | Sprint 1 runbook | `pm` | OPEN | 0d | none |
 | [017](017-weekly-finishes-season-stats.md) | Weekly finishes season stats | `pm` | OPEN | 0d | consistency view, player detail history |
-| [020](020-preregistration-convention.md) | Preregistration convention | `pm` | OPEN | 0d | test #53 |
 | [021](021-per-position-rank-correlation.md) | Per position rank correlation | `pm` | OPEN | 0d | D-002, D-003 |
 | [022](022-test-suite-speedup.md) | Test suite speedup | `pm` | OPEN | 0d | none |
 | [025](025-mock-lab-backend.md) | Mock lab backend | `pm` | OPEN | 0d | Mock Lab UI, mock collection, calibration validation |
@@ -40,7 +39,7 @@ not an omission. Start your session at your own heading.
 | [040](040-multi-league-slot-and-undo.md) | Multi league slot and undo | `pm` | OPEN | -1d | Mock Lab build, Settings build |
 | [042](042-strategies-json-stale-at-contract-1-7-0.md) | Strategies json stale at contract 1 7 0 | `frontend` | OPEN | 0d | none |
 
-### `frontend` — 13 waiting
+### `frontend` — 14 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
@@ -57,6 +56,7 @@ not an omission. Start your session at your own heading.
 | [036](036-mocklab-staleness-retrofit.md) | Mocklab staleness retrofit | `pm` | OPEN | 0d | Mock Lab build |
 | [037](037-audit-followups.md) | Audit followups | `pm` | OPEN | 0d | none |
 | [040](040-multi-league-slot-and-undo.md) | Multi league slot and undo | `pm` | OPEN | -1d | Mock Lab build, Settings build |
+| [043](043-weekly-finishes-json-season-stats-json-ready-con.md) | Weekly finishes json season stats json ready con | `backend` | OPEN | 0d | none |
 
 ### `data-ops` — 0 waiting
 
@@ -115,6 +115,7 @@ _Nothing waiting on you._
 | [016](016-league-rosters-endpoint.md) | League rosters endpoint | `pm` → `backend` |
 | [018](018-fantasypros-season-backfill.md) | Fantasypros season backfill | `pm` → `data-ops` |
 | [019](019-bootstrap-confidence-intervals.md) | Bootstrap confidence intervals | `pm` → `backend` |
+| [020](020-preregistration-convention.md) | Preregistration convention | `pm` → `backend` |
 | [023](023-consensus-rank-and-ingest-fixes.md) | Consensus rank and ingest fixes | `pm` → `backend` |
 | [024](024-injury-ingestion-as-of-date.md) | Injury ingestion as of date | `pm` → `data-ops` |
 | [034](034-shortcut-bias-in-mock-logging.md) | Shortcut bias in mock logging | `pm` → `strategist` |

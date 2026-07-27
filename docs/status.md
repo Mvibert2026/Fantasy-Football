@@ -1172,3 +1172,79 @@ unrelated issues (023 resolved with no reply artifact; untracked 029 amendment f
 role) -- confirmed via `git status` that neither is something this session touched or introduced.
 No founder statements surfaced this session. No commit made -- no code changed; the only changes
 are to `docs/` (handoff thread, `OPEN.md`, `CURRENT-STATE.md`, `founder-requests.md`, this file).
+
+## 2026-07-27 (backend session) — Mock Lab live-logging store (thread 025), event-sourced per 040 amendment
+
+Built `src/mock_lab_store.py` and `tests/test_mock_lab_store.py` (20 tests, written before the
+implementation). New tables `mocklab_drafts`/`mocklab_picks`, separate from the existing batch
+`mock_drafts`/`mock_picks` (`ingest_mock_drafts.py`) -- this is the pick-at-a-time live-logging
+path thread 025 asked for; reconciling the two paths is deferred, not merged silently.
+
+Read thread 040's AMENDMENT first, as instructed, before designing anything. It overturns thread
+025's own "immutable, write-once prediction" premise: an availability prediction is a pure function
+of board state at pick N, so undo-then-replay under the SAME model version reproduces exactly what
+live entry would have produced -- not hindsight contamination. The real risk is regrading an old
+mock under a NEWER model. Built accordingly: `mocklab_picks` is an append-only truncatable log (the
+only source of truth), predictions are derived on demand, `mocklab_drafts.model_version` is pinned
+at creation, and `replay_predictions` refuses outright once the module's current `MODEL_VERSION` has
+moved past the pinned value. No `voided_by_undo` flag, no undo counter -- the amendment explicitly
+retracts that bookkeeping.
+
+Prediction source is stated honestly rather than faked: wiring the real, reviewed hazard model
+(`live_availability.py`) to an arbitrary slot needs a general-purpose prep-mode Monte-Carlo marginal
+that today only exists for the founder's own primary-league pick sequence. That's real modelling
+work, not this session's scope, and guessing it would be an unmeasured constant. Shipped instead is
+ADR-D's own D-3 model-free baseline (`adp_rank_exp_v1`, unfitted rank-exponential decay, `DECAY_K`
+fixed by fiat) -- the same baseline ADR-D already specs co-measuring, not a stand-in pretending to be
+the hazard model. Follow-up flagged in ADR-046, not scheduled.
+
+Brier scoring and calibration bucketing built over the derived predictions (thread 025 item 3).
+ADR-D's dwell/entry-mode/blind-arm instrumentation (thread 034) is explicitly out of scope --
+different owners (frontend entry surface + strategist), separate open thread.
+
+Ran only `pytest tests/test_mock_lab_store.py` (20 passed, 0.2s) per instruction to avoid full-suite
+DB contention with concurrent agents; the combined suite total is not independently re-verified this
+session. ADR-046 written in `docs/decisions.md`. `docs/CURRENT-STATE.md` updated in place (module
+count, Built/Not-built lines, test-count caveat). No export-contract change -- no export artifact
+exists for this yet, so no version bump and no thread opened to frontend.
+
+Replied to threads 025 (RESOLVED, scope delivered as described, gap flagged) and 040 (backend's
+undo/slot portion addressed; league-creation item 1 remains open, not this thread's scope).
+
+## 2026-07-27 — Backend: thread 020, ADR-C pre-registration convention
+
+Implemented ADR-C (`docs/adr-drafts/ADR-C-preregistration.md`) in `src/preregistration.py`
+and `src/holdout.py`, extending the existing `docs/preregistration/` tree rather than
+replacing it -- PR-001..003 and the two `.jsonl` logs are untouched, and their own tests
+still pass.
+
+Landed: a nine-field confirmatory / four-field exploratory registration format
+(`Registration`, `load_registration`, `require_confirmatory`); the amendment mechanism whose
+one rule with teeth is `data_seen: true` irreversibly rewriting `mode: exploratory` into the
+file with no override; content-hash integrity checking (`check_registration` catches a
+silent edit with no matching `amendments:` entry); family manifests
+(`docs/preregistration/families/*.yaml`) that fix the BH denominator before tests run, with
+closed families reopening on a new confirmatory test and `closed-unsealed` families never
+reopening; and `holdout.load_season(year, prereg_id)`, the primary data-access guard, which
+raises `HoldoutViolation` outside a registration's declared `data_scope.seasons` and, for the
+2025 holdout specifically, requires both `data_scope.holdout_unsealed: true` and a signed
+entry in a new `docs/preregistration/UNSEAL_LOG.md` -- the second check is defense-in-depth
+beyond the ADR's literal text, added because the front-matter flag alone is a value anyone
+could flip.
+
+Scoped tightly per dispatch instruction (only `src/preregistration.py` and the holdout guard,
+to avoid colliding with other agents editing other files this round). Explicitly deferred and
+flagged, not silently dropped: the `prereg` CLI (`prereg new`/`prereg check` as a pre-commit
+or CI gate) and retrofitting PR-001..003 into the new format. Nothing currently stops an
+analysis script from skipping `require_confirmatory` -- the guard exists but isn't wired to
+an enforced entrypoint, which is the natural next thread. Also flagged: no PyYAML is
+installed in this environment, so nested front-matter fields are restricted to single-line
+YAML flow style and parsed with a small hand-rolled parser rather than full YAML.
+
+65 new tests (`tests/test_preregistration.py` + `tests/test_holdout.py`, targeted run, all
+pass). Full suite not re-run this session per instruction, to avoid DB contention with other
+agents running concurrently -- the previously-recorded 423 count is not yet re-verified to
+include this session's additions. Full ADR entry in `docs/decisions.md`
+("2026-07-26 -- ADR-C: pre-registration convention, extended (thread 020)"). Thread 020
+replied to and marked RESOLVED; `docs/handoffs/OPEN.md` re-synced via `tools/handoffs.py sync`.
+No founder statements surfaced this session.

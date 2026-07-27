@@ -21,12 +21,12 @@ verification, mailbox duplicate-ID fix, thread 038/041).
 | | Value | Notes |
 |---|---|---|
 | Backend branch / commit | `master`, on top of `09391e4` (frontend WIP checkpoint) | Local only — **no git remote configured** |
-| Backend tests | **423 passing, 0 failures** | Re-measured 2026-07-26 (this session, `-m pytest -q`): **107-119s**, down from ~5.7 min — session-scoped caching of the expensive real-data archetype/description computation (thread 022). The prior "1 pre-existing failure" (`test_handoffs.py::test_mailbox_health`, duplicate thread ID 036 across two files) is fixed — thread 041 (frontend session) found a leftover, never-deleted `036-weekly-finishes-and-season-stats-exports-contrac.md` left behind when that thread was renumbered to 039 in an earlier session, and removed it. |
+| Backend tests | **423 passing, 0 failures** as of 2026-07-26, **+20 more** in `tests/test_mock_lab_store.py` added 2026-07-27 (thread 025), **+44 more** in `tests/test_preregistration.py`/`tests/test_holdout.py` added 2026-07-27 (thread 020, ADR-C) — all verified passing in isolation only. Full suite not re-run this session (concurrent-agent DB contention; instruction was to run targeted tests only), so the combined total is not yet independently confirmed | Re-measured 2026-07-26 (this session, `-m pytest -q`): **107-119s**, down from ~5.7 min — session-scoped caching of the expensive real-data archetype/description computation (thread 022). The prior "1 pre-existing failure" (`test_handoffs.py::test_mailbox_health`, duplicate thread ID 036 across two files) is fixed — thread 041 (frontend session) found a leftover, never-deleted `036-weekly-finishes-and-season-stats-exports-contrac.md` left behind when that thread was renumbered to 039 in an earlier session, and removed it. |
 | Agent infrastructure | **Live** | Six subagents in `.claude/agents/` (backend, frontend, data-ops, strategist, researcher, librarian), `/inbox` command, mailbox tooling at `tools/handoffs.py` + `tools/sprint_status.py`, mailbox health enforced in the test suite (`tests/test_handoffs.py`) |
 | Data contract | **1.8.0** | Bumped from 1.7.0 (thread 016: new `rosters.json` artifact). Frontend's `EXPECTED_CONTRACT` and all top-level export artifacts except `strategies.json` already read 1.8.0 (verified thread 041); `strategies.json` is stale at 1.7.0 pending backend re-running its export (thread 042, open). `assistant-context.md` still says 1.6.0 — fix on next touch |
 | Frontend location | `frontend/` subdirectory of this repo | Merged from `frontend-prep` @ `7276a2d`..`d7cd321` via `git subtree add` (commit `2df3716`), full history preserved. No longer a separate working copy. |
 | Frontend tests | **116 passing** (15 files) | `npm run build` and `npm test` both verified green from `frontend/` after `npm install` (thread 041, this session); `node_modules` is gitignored and must be reinstalled per checkout |
-| Python modules | 33 in `src/` | |
+| Python modules | 34 in `src/` (`mock_lab_store.py` added 2026-07-27, thread 025; `preregistration.py`/`holdout.py` extended, not added, thread 020) | |
 | Export artifacts | 8 + `player_descriptions.json` | `rosters.json` added (thread 016), wired into the Opponents tab and verified rendering live (thread 038/041). `player_descriptions.json` versions independently, by design |
 | Config matrix | 24 dirs under `data/export/` | board + league + availability stub only; **hazard model not rerun per config**; each config's `write_all` now also emits `rosters.json` (empty-roster state, not yet regenerated for all 24 configs this session) |
 
@@ -72,12 +72,26 @@ mostly undated at the source and dropped, 2025 has no `date_modified` column ups
 `rosters.json`/`opponents.json`-backed, honest "not supplied"/"partial"/empty-roster null states,
 5/5 tests passing) · league rosters export (`rosters.json`, mechanical starters/flex/bench/needs
 from real draft picks on file; currently all-empty because the real 2026 draft hasn't started,
-which is the correct state, not a bug).
+which is the correct state, not a bug) · **Mock Lab live-logging store** (`src/mock_lab_store.py`,
+thread 025, ADR-046: `mocklab_drafts`/`mocklab_picks`, pick-at-a-time create/append/undo/close,
+event-sourced per the thread 040 amendment — undo truncates and replays, no voided records, no
+undo count; predictions derived on demand and guarded by a `model_version` pin, not stored;
+Brier/calibration scoring built over an unfitted rank-decay baseline pending the real hazard model
+being wired for arbitrary slots — see ADR-046 gap note; no UI, no export artifact yet) ·
+**ADR-C pre-registration convention** (thread 020, `src/preregistration.py`/`src/holdout.py`,
+additive to the original PR-001..003 mechanism): nine-field confirmatory / four-field exploratory
+registration format, the data_seen-amendment-irreversibly-demotes-to-exploratory rule, content-hash
+integrity checking, family manifests fixing the BH denominator, and `holdout.load_season(year,
+prereg_id)` tying season reads to a registration's declared scope with a signed-unseal-log
+requirement on top of the front-matter flag. **Not yet enforced at any entrypoint** — the `prereg`
+CLI/pre-commit gate and the PR-001..003 retrofit are deferred, see thread 020 reply.
 
 ## Not built / null-stated
 
 Predictions tab (**absent from the shipped app**) · Season mode entirely · Settings editor ·
-Mock Lab UI and backend · Compare tray · live "Ask the assistant" wiring · LLM prose renderer
+Mock Lab UI (backend store now exists, thread 025 — see Built and working) · Compare tray ·
+league creation / real multi-league slot support (thread 040 item 1, open) · live "Ask the
+assistant" wiring · LLM prose renderer
 (deliberately deferred — hallucination risk, reasoning stated in code) · `RB_HANDCUFF` archetype
 (depth charts end 2024) · weekly finishes / season stats tables (thread 039, spec now filled in
 2026-07-26 — `weekly_finishes.json`/`season_stats.json`, contract 1.9.0 — implementation still

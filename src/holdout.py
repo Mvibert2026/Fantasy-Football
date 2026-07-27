@@ -188,3 +188,64 @@ def walk_forward_splits(
 
 
 DEFAULT_LOCK = HoldoutLock()
+
+
+def load_season(
+    year: int,
+    prereg_id: str,
+    lock: HoldoutLock = DEFAULT_LOCK,
+    prereg_directory: Optional[Path] = None,
+) -> int:
+    """ADR-C's data-access guard (docs/adr-drafts/ADR-C-preregistration.md,
+    thread 020): "All season data loads through one function... It reads the
+    registration's data_scope.seasons and raises HoldoutViolation if `year`
+    is outside it, or if `year == 2025` and `holdout_unsealed` is not `true`."
+
+    This is the primary, cheapest-layer defense: it ties a season read to a
+    specific pre-registration rather than trusting a caller to remember which
+    seasons that analysis was allowed to see. Every call -- allowed or
+    refused -- is still logged via the existing HoldoutLock (unchanged
+    schema), and an unseal additionally requires a signed
+    docs/preregistration/UNSEAL_LOG.md entry, not just the registration's own
+    `holdout_unsealed` flag (a front-matter value anyone could flip).
+
+    Returns `year` unchanged on success, matching `HoldoutLock.guard`'s
+    "assert and return" shape.
+    """
+    import preregistration as prereg  # local import: holdout.py has no other
+
+    # dependency on preregistration.py, and callers of the plain HoldoutLock
+    # API (e.g. release_for_final_fit during production refit) should not pay
+    # for or require it.
+
+    directory = prereg_directory or prereg.PREREG_DIR
+    reg = prereg.load_registration(prereg_id, directory=directory)
+    seasons = list(reg.data_scope.get("seasons", []) or [])
+    if year not in seasons:
+        raise HoldoutViolation(
+            f"season {year} is outside the data_scope.seasons declared by {prereg_id} "
+            f"({seasons}). Widening scope after seeing data is a data_seen amendment "
+            f"and demotes the registration to exploratory (ADR-C) -- amend the "
+            f"registration deliberately, before running, rather than passing a wider "
+            f"year here."
+        )
+    if year != lock.season:
+        return lock.guard([year], purpose=f"prereg {prereg_id}")[0]
+
+    unsealed_flag = bool(reg.data_scope.get("holdout_unsealed", False))
+    if not unsealed_flag:
+        raise HoldoutViolation(
+            f"season {year} is the LOCKED HOLDOUT and {prereg_id} declares "
+            f"holdout_unsealed=false. Unsealing requires a signed "
+            f"docs/preregistration/UNSEAL_LOG.md entry (prereg.append_unseal_log) "
+            f"before this registration may read it."
+        )
+    if not prereg.unseal_is_logged(prereg_id, log_path=directory / "UNSEAL_LOG.md"):
+        raise HoldoutViolation(
+            f"{prereg_id} declares holdout_unsealed=true but has no signed entry in "
+            f"docs/preregistration/UNSEAL_LOG.md. The front-matter flag alone is not "
+            f"sufficient (ADR-C defense-in-depth) -- call prereg.append_unseal_log() "
+            f"first, with a named approver."
+        )
+    with lock.final_evaluation(reason=f"prereg {prereg_id}: signed unseal on file"):
+        return lock.guard([year], purpose=f"prereg {prereg_id}")[0]

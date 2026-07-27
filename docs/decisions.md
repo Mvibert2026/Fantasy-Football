@@ -1444,3 +1444,130 @@ property, not a league-size one.
 `(platform, teams, ppr)` triples present, no duplicates) and one real-DB smoke export
 (`espn_12_full`) confirming the whole `write_all` pipeline round-trips through strict JSON
 without crashing.
+
+## 2026-07-27 — ADR-046: Mock Lab live-logging store, event-sourced (thread 025 + 040 amendment)
+
+**What.** `src/mock_lab_store.py`, new tables `mocklab_drafts` / `mocklab_picks`. Pick-at-a-time
+live logging (create → append → undo → close) for the ~29 un-logged mocks the product's
+calibration claim depends on, per thread 025. Separate from `ingest_mock_drafts.py` /
+`mock_drafts` / `mock_picks`, which remain the batch, after-the-fact ingestion path — reconciling
+the two (closed mocklab draft → batch JSON shape) is deliberately deferred, not silently merged.
+
+**The design thread 025 specified was superseded before this was built, not after.** 025 asked for
+write-once, immutable prediction storage. Thread 040's AMENDMENT (2026-07-27, same day) corrected
+the PM's own earlier undo design and, with it, 025's premise: an availability prediction is a pure
+function of board state at pick N, so recomputing it after an undo — with the SAME model version
+that made the original call — reproduces exactly what live entry would have produced. That is not
+hindsight contamination. The actual risk is regrading an old mock under a NEWER model, which would
+inflate calibration for free without the model improving at anything.
+
+So the store is event-sourced: `mocklab_picks` is an append-only, truncatable log and the only
+source of truth. Predictions are derived on demand (`predict_next_pick` / `replay_predictions`),
+never stored. `mocklab_drafts.model_version` is pinned at creation; `replay_predictions` raises
+`ModelVersionMismatch` the moment the module's current `MODEL_VERSION` has moved past the pinned
+value, and there is no override. That one comparison is the entire safeguard. Per the amendment,
+there is deliberately **no** `voided_by_undo` flag and **no** undo counter — that bookkeeping
+belonged to the retracted design and would misrepresent a now-ordinary action as costly.
+
+Thread 040 item 2 (slot) is satisfied narrowly: `create_mock(..., slot, teams)` accepts any slot
+1..teams, validated against the caller's own league config rather than assuming the founder's
+slot 3. Deriving a full pick sequence from an arbitrary slot/team-count and wiring the *reviewed*
+hazard model (`live_availability.py`, ADR-045) to it is **not** done here — see gap below.
+
+**The gap, stated rather than papered over.** The reviewed hazard model predicts survival to a
+future pick from a prep-mode Monte-Carlo marginal (P0) that today exists only for the founder's
+own primary-league pick sequence (`data/availability_2026.csv`). A general P0 source for arbitrary
+slots/configs is real modelling work, not wiring, and guessing it would be exactly the unmeasured
+constant CLAUDE.md prohibits. What ships instead is ADR-D's own D-3 model-free baseline
+(`baseline_id/MODEL_VERSION = "adp_rank_exp_v1"`): probability of being the next pick decays by a
+fixed, **unfitted** exponential (`DECAY_K = 0.15`, chosen by fiat per ADR-D, not measured — zero
+parameters estimated from any mock data, so no SE is owed) in the player's frozen consensus board
+rank among the undrafted pool. This is not a stand-in pretending to be the hazard model; it is the
+same baseline ADR-D already specs co-measuring alongside it. **Follow-up, not yet scheduled:** wire
+the real hazard model in once a general P0 source exists, bump `MODEL_VERSION`, and old mocks stay
+correctly frozen under their own pinned version rather than silently regraded.
+
+**Brier scoring and calibration bucketing** (`brier_score`, `calibration_buckets`) are built over
+the derived-baseline predictions, per thread 025 item 3. `calibration_buckets` skips (not errors on,
+not silently pools) mocks whose pinned version no longer matches current `MODEL_VERSION`, returning
+the skip count so a caller can see coverage was reduced.
+
+**ADR-D's dwell/entry-mode/blind-arm instrumentation (thread 034) is explicitly out of scope here**
+— that is frontend entry-surface + strategist statistical design, not storage, and remains a
+separate open thread. This store's schema does not preclude adding those columns to
+`mocklab_picks` later; it does not add them now.
+
+**Tests written first**, per CLAUDE.md's non-negotiable ordering: `tests/test_mock_lab_store.py`,
+20 tests, covering slot validation, duplicate-mock/duplicate-pick rejection, closed-mock rejection,
+undo-truncates-not-voids, undo-then-reentry pick-number reuse, absence of any undo counter, the
+model-version-mismatch refusal (and that it is silent/permitted when unchanged), Brier bounds and
+a zero-Brier degenerate case, and calibration bucket skip-counting. All 20 pass in isolation
+(`pytest tests/test_mock_lab_store.py`, not run against the full suite this session per instruction
+to avoid DB contention with concurrent agents).
+
+**No contract/export-schema change.** This is server-side storage with no export artifact yet;
+Mock Lab UI wiring and any resulting `mocks.json`/similar export are follow-up work for whichever
+session builds the UI against this store.
+
+## 2026-07-26 — ADR-C: pre-registration convention, extended (thread 020)
+
+Implemented `docs/adr-drafts/ADR-C-preregistration.md` in `src/preregistration.py` and
+`src/holdout.py`, extending (not replacing) the existing `docs/preregistration/` tree —
+PR-001..003 and the two `.jsonl` logs keep their filenames and schemas.
+
+**What landed:**
+- A second, richer registration format (`Registration` dataclass, `load_registration`,
+  `require_confirmatory`) alongside the original flat `PreRegistration` loader: nine typed
+  front-matter fields for confirmatory tests (`id`, `test_registry_id`, `family`, `mode`,
+  `question`, `metric`, `threshold`, `data_scope`, `frozen`), four for exploratory
+  (`id`, `mode`, `question`, `frozen`). `resampling_unit` defaults to `season` for
+  confirmatory registrations and any other value requires a non-empty `power_note` — the
+  default is the guardrail, not an option to configure around.
+- **The one rule with teeth:** `record_amendment(..., data_seen=True)` irreversibly rewrites
+  `mode: exploratory` into the file itself, with no override flag. `Registration.effective_mode`
+  also demotes in memory even if a caller never re-checks the file, so a demoted registration
+  cannot gate a confirmatory run either way (`require_confirmatory` raises).
+- **Content-hash integrity** (`compute_content_hash`, `verify_content_hash`,
+  `check_registration`): a registration mutated on disk without a matching `amendments:` entry
+  fails `check_registration` — the mechanism the ADR calls out as necessary because "a silent
+  edit is a valid commit and nobody re-reads history."
+- **Family manifests** (`docs/preregistration/families/*.yaml`, `open_family`,
+  `register_confirmatory_test`, `Family.m`/`status`) fix the BH denominator before tests run.
+  Adding a confirmatory test to a `closed` family reopens it and increments `m` (recomputing
+  and republishing prior BH adjustments in that family is a manual follow-up this session does
+  not automate — flagged, not silently skipped). A `closed-unsealed` family
+  (`close_family_after_unseal`) never reopens — "one look is one look."
+- **`holdout.load_season(year, prereg_id)`** — the ADR's primary data-access guard. Raises
+  `HoldoutViolation` if `year` falls outside the registration's `data_scope.seasons`, or if
+  `year` is the locked 2025 holdout and `data_scope.holdout_unsealed` is not `true`.
+  Defense-in-depth beyond the ADR's literal text: even a registration declaring
+  `holdout_unsealed: true` is refused unless `docs/preregistration/UNSEAL_LOG.md` also carries
+  a signed, named-approver entry for that `prereg_id` (`unseal_is_logged` /
+  `append_unseal_log`) — the front-matter flag alone is a value anyone could flip; the log
+  entry is the audit trail. A successful unsealed read is routed through the existing
+  `HoldoutLock.final_evaluation` context, so it lands in the same, already-trusted
+  `holdout_access_log.jsonl` rather than a second log.
+- **`validate_exploratory_artifact`** rejects `p_value`/`ci_lower`/`ci_upper`/`significant` keys
+  on any result reported under `mode: exploratory` — point estimates and plots only.
+
+**Deliberately deferred, out of scope for this session** (restricted to
+`src/preregistration.py` and the holdout guard while other agents worked other files in
+parallel): the `prereg` CLI (scaffolding new registrations, `prereg check` as a pre-commit
+hook/CI gate) and retrofitting PR-001..003 into the new front-matter fields. The ADR's
+existing loader (`load_preregistration`/`require_preregistration`) and PR-001..003 are
+untouched and still pass their own tests unchanged. Both deferred items are real gaps — there
+is currently no enforcement stopping an analysis script from running without calling
+`require_confirmatory` by hand — and should be the next thread if this convention is to have
+its intended teeth rather than being available-but-optional.
+
+**No YAML dependency available in the environment** (`import yaml` fails — no PyYAML
+installed), so nested fields (`data_scope`, `frozen`, each `amendments` entry) are restricted
+to single-line YAML *flow* style (`{k: v, k2: [a, b]}`) and parsed with a small hand-rolled
+flow parser, rather than adopting multi-line YAML block mappings that would need a real
+parser to get right. This is a real constraint on the format, not a stylistic choice, and
+should be revisited if a `pyyaml` dependency is later added to the project.
+
+Tests: 65 passed (`tests/test_preregistration.py` + `tests/test_holdout.py`, `-q`, targeted
+run — full suite not run this session per instruction, to avoid DB contention with concurrent
+agents).
+
