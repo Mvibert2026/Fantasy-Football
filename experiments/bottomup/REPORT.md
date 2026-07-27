@@ -129,3 +129,88 @@ the full decomposition at the one position where decomposition hurts.
   on 2–5 pairs and are noisier; the per-season series shows no era cliff, but
   the confirmatory run should use the registered LOSO protocol.
 - `k` grid for S2 is coarse; caps bind frequently at TD/INT stats (by design).
+
+---
+
+# Session-3 appendix (2026-07-27): V3–V6 — vacated opportunity and the QB arm
+
+Registrations: `docs/reviews/FABLE-EXT2-2026-07-27.md`, frozen and committed before each run
+(`678615c` for V3/V4; `1c16ab4` for V5/V6). Four configurations this session; six total across
+both sessions, plus fix F1. Holdout 2025: never read.
+
+**One line: clean vacated/arrived-opportunity features (V5) give the model its best
+last-season-rank results yet at RB (+0.057 [+0.018,+0.095]) and TE (VBD +0.073
+[+0.034,+0.118]) — and move the consensus gap NOWHERE; at QB, nothing in six configurations
+beats ranking by last season's points, and the one result that appeared to (V3) was an
+availability leak that the clean rerun eliminated.**
+
+## The leak, named before the numbers
+
+V3 as registered assigns a no-early-appearance player to his old franchise, whose vacated
+pool includes his own production: his own `vac_*_share` then encodes "not playing early in
+season t". Class size (usage folds): QB 14/260 — ~1 per fold in a 20-player universe. V3's
+QB numbers below are therefore an UPPER BOUND with a known intra-season availability leak;
+V5 (self-excluded) is the only carry candidate. V3 is retained in the table because the
+V3−V5 spread *measures* the leak's worth — at QB, essentially all of it.
+
+## Usage arm (folds 2012–2024, n=13), Δτ_b model−B1, with VBD-capture Δ
+
+| Pos | V1 (no situation) | V3 (leaky) | **V5 (clean — carry)** | V6 (clean+QB-direct) | V5 ΔVBD |
+|---|---|---|---|---|---|
+| QB | −0.108 [−0.212,−0.013] | −0.018 [−0.120,+0.080] | **−0.125 [−0.218,−0.026]** | −0.141 [−0.201,−0.079] | −0.210 [−0.315,−0.124] |
+| RB | +0.041 [+0.001,+0.080] | +0.040 | **+0.057 [+0.018,+0.095]** (10/13) | = V5 | **+0.032 [+0.002,+0.063]** |
+| WR | +0.043 [+0.017,+0.071] | +0.033 | **+0.036 [+0.007,+0.067]** (9/13) | = V5 | +0.010 [−0.011,+0.033] |
+| TE | +0.073 [−0.005,+0.152] | +0.091 | **+0.081 [+0.006,+0.160]** (8/13) | = V5 | **+0.073 [+0.034,+0.118]** |
+
+Absolute τ_b, V5 usage arm: QB +0.151 / RB +0.352 / WR +0.394 / TE +0.330 (B1: +0.275 /
++0.296 / +0.358 / +0.248). Long arm (n=23) V5: QB −0.035 / RB +0.036 [+0.006,+0.066] /
+WR +0.014 / TE +0.030 — same shape, smaller, consistent with the edge living in the usage
+tier. No R² left its registered ceiling band; no §8 audit trigger fired (WR season R² 0.287).
+
+## Consensus (ECR, 2021–2024, n=4, DESCRIPTIVE, veterans-only common universe)
+
+Mean paired Δτ (model − ECR), V1 → V5: QB −0.223 → −0.241 · RB −0.110 → −0.110 ·
+WR −0.033 → −0.046 · TE −0.001 → −0.016. Per-season V5 deltas: QB all 4 negative;
+RB all 4 negative; WR 3/4 negative; TE 2/2 split. **The consensus gap did not narrow at any
+position.**
+
+## Findings against the registered predictions (the scorecard)
+
+1. **R1's diagnosis splits in two.** "Vacated opportunity is real signal the model lacks" —
+   CONFIRMED at RB (both co-primaries CI-clear, 10/13 folds; V3's registered RB magnitude
+   band +0.05..+0.08 is hit by the CLEAN variant at +0.057) and TE (VBD). "Vacated
+   opportunity explains the consensus gap" — **REFUTED at every position: the gap moved
+   nowhere.** Consensus already prices this information; the feature lifts us relative to
+   naive persistence, not relative to the market. The leading hypothesis for the consensus
+   gap is eliminated as tested. Remaining candidates: rookie-driven situation change (the
+   registered blind spot — arrivals are production-visible only), depth-chart/coaching
+   information, injury-status timing, and plain aggregation efficiency.
+2. **QB is closed.** Six configurations (V1, V2, V3, V4, V5, V6) across two sessions: none
+   beats B1; the direct ridge *containing prior points as a feature* (V6) still loses
+   −0.141, because at n≈18–20 QBs/fold a regularised 28-feature ridge cannot rediscover
+   "weight prior points 1, everything else 0". The PM's hypothesis is refuted in mechanism
+   (QB attempts/g y2y r=0.62 ≈ RB/WR — volume is NOT unusually team-stable) but confirmed in
+   consequence: QB points persistence lives in the efficiency+rushing bundle S2 deliberately
+   shrinks, and last-season-points rank carries it whole. Stop spending on QB modelling
+   until a genuinely new information source exists (e.g. team pass-attempt projections from
+   Vegas totals — no odds table yet, R-order territory).
+3. **Prediction scorecard, stated plainly:** of the four registered prediction sets this
+   session, three were materially wrong (V3: RB flat where gain was predicted, QB gain 5×
+   the predicted band — leak; V5: QB fell below the predicted floor — the "genuine QB
+   situation channel" is ≈0; V6: QB outside the predicted band on the wrong side). The
+   registration discipline is what caught the leak and prevented a false "QB solved"
+   headline. This is the system working, and the numbers above should be read with exactly
+   that scepticism.
+
+## Product recommendation (the mandate's hybrid-board question)
+
+Measured evidence: consensus ≥ our best clean model at ALL positions (RB by −0.110, QB by
+−0.241, WR/TE within noise). Therefore: (a) a position-hybrid RANKING (bottom-up RB/WR/TE +
+consensus QB) is better than pure bottom-up but still not better than pure consensus as a
+ranking; (b) the honest 2026 board stays consensus-anchored, with the bottom-up model
+published as a LABELLED independent overlay at RB/WR/TE — where it demonstrably beats naive
+persistence and sits within noise of ECR — and not offered at QB at all; (c) if the founder
+wants mixed provenance in the primary board anyway, every row must carry its source per the
+traceability principle, and the RB −0.110 must be printed wherever the overlay is sold.
+V5's feature group belongs in ADR-E §4.1 (amendment queued with R3/R5/C3 for the
+F-BOTTOMUP-CORE registration), self-exclusion mandatory.
