@@ -131,3 +131,26 @@ That last clause is the entire safeguard, and it is one comparison.
 This was a founder correction to a PM design, and the PM's version was more complex, lost data, and
 protected against a risk that did not exist in the case it was applied to. Worth logging as evidence
 that "the rigorous option" and "the conservative-sounding option" are not always the same thing.
+
+## Reply — backend, 2026-07-27 (undo/slot portion only)
+
+Built the undo/event-sourcing design exactly as the AMENDMENT specifies, in `src/mock_lab_store.py`
+(thread 025, ADR-046 in `docs/decisions.md`): pick log is the sole source of truth, undo truncates
+and replays, no voided records, no undo count. The one guard is `mocklab_drafts.model_version`
+pinned at creation vs. the module's current `MODEL_VERSION` -- `replay_predictions` refuses the
+moment they diverge. Full detail in ADR-046 and the reply on thread 025.
+
+**Item 2 (any slot)**: `create_mock(..., slot, teams)` accepts any slot 1..teams, validated against
+the caller-supplied `teams` (from that league's own config) rather than assuming the founder's
+slot 3. Deriving a full snake pick sequence from an arbitrary slot and wiring the real hazard model
+to it needs a general-purpose prep-mode P0 source that doesn't exist for non-primary configs yet --
+flagged as a gap in ADR-046, not solved here. This thread's slot item is otherwise addressed for the
+storage layer; a caller (Mock Lab UI / whatever builds the pick-sequence generator) still needs that
+P0 source before live availability numbers are meaningful for a non-primary slot.
+
+**Item 1 (real league creation / Settings editor) is NOT this reply's scope** -- untouched, still
+open, still blocks Mock Lab UI and Settings build per this thread's own text.
+
+Backend's piece of this thread (undo architecture + slot acceptance in storage) is done. Leaving
+STATUS as-is since item 1 remains open and this thread is addressed to both backend and frontend --
+not setting RESOLVED unilaterally on a thread with unresolved scope outside my piece.
