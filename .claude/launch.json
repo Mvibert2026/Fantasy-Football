@@ -30,6 +30,12 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": ["--prefix", "frontend", "run", "dev", "--", "--port", "5188", "--strictPort"],
       "port": 5188
+    },
+    {
+      "name": "frontend-073-dismiss-freshness",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "frontend", "run", "dev", "--", "--port", "5189", "--strictPort"],
+      "port": 5189
     }
   ]
 }

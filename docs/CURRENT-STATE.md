@@ -36,7 +36,7 @@ are both still open to `frontend`, not touched this session.
 | Agent infrastructure | **Live** | Six subagents in `.claude/agents/` (backend, frontend, data-ops, strategist, researcher, librarian), `/inbox` command, mailbox tooling at `tools/handoffs.py` + `tools/sprint_status.py`, mailbox health enforced in the test suite (`tests/test_handoffs.py`) — **72 threads, 46 open, 0 stale** (`tools/handoffs.py check`, 2026-07-27) |
 | Data contract | **1.11.0** | `CONTRACT_VERSION` in `src/export_contract.py`, read directly. `board.json` carries `scoring_format` (ADR-051) and `roster_status` (ADR-050). |
 | Frontend location | `frontend/` subdirectory of this repo | Merged from `frontend-prep` via `git subtree add`, full history preserved. No longer a separate working copy. |
-| Frontend tests | **179 passing, 2 failing** (19 files) | Full suite, `npx vitest run`, single run, ~55s. The 2 failures are `ui/__tests__/trace-fields.test.ts` — **red by design**: `TRACE_CONTRACT` is still pinned to `1.9.0` and the trace registry doesn't know `roster_status` yet, correctly catching that nobody has acknowledged the 1.10.0/1.11.0 contract bumps in the frontend's own field registry. Not fixed here — frontend's to pick up (handoff 069 territory). |
+| Frontend tests | **192 passing, 2 failing** (21 files) | Full suite, `npm test` (runs `pretest`'s export sync first — a bare `npx vitest run` fails all 16 data-backed files with `public/data/_manifest.json` ENOENT), single run, ~40-60s. The 2 failures are still `ui/__tests__/trace-fields.test.ts` — **red by design**: `TRACE_CONTRACT` is still pinned to `1.9.0` and the trace registry doesn't know `roster_status` yet. Not fixed here — still handoff 069 territory, not touched this session. The +13 tests vs the prior 179/181 count are thread 073's dismissible-surface audit (11 tests: RefreshData Escape/outside-click/inside-click ×4, PlayerDetail Escape/backdrop-click/other-key ×3, AssistantDock open/Escape/outside/inside ×4) plus the freshness-banner coverage (2 tests). |
 | Python modules | **36** in `src/` | `ls src/*.py \| wc -l` |
 | Export artifacts | **11** top-level files in `data/export/` | `ls data/export/*.json \| wc -l` |
 | Config matrix | 26 dirs under `data/export/` | board + league + availability stub only; **hazard model not rerun per config**; count is a raw directory count, not inspected for which are real league configs vs. scratch. The 26th is `ethans_expert_league` (real league 2, see below), not a scratch probe config. |
@@ -146,6 +146,48 @@ session's instruction to not sink real effort into resolving it. **Do not treat 
 settled until a session with the digging in scope confirms one.**
 
 ## Built and working
+
+**Thread 073 (workstream C, 2026-07-27): dismissible-surface audit + data-freshness-on-load.**
+Fixed the confirmed failing case first — the "Refresh data" popover
+(`frontend/ui/components/RefreshData.tsx`) previously closed ONLY via its own Dismiss button, no
+click-outside, no Escape; the founder could not clear it. Added a shared hook
+(`frontend/ui/lib/dismiss.ts`, `useDismissOnOutsideOrEscape`) and wired it into all three real
+dismissible overlays found in an audit of the whole app: the refresh popover, `PlayerDetail.tsx`
+(the click-outside backdrop already worked pre-audit; Escape did not, despite the close button
+being labelled "esc" with the key never actually wired), and `AssistantDock.tsx`'s expanded panel
+(neither existed before). The fourth candidate surface, DraftRoom's search suggester, was already
+correct (thread 051/063) and untouched. One enumerated test per surface (11 new tests total), not
+one generic test covering all three, per the project's own stated reasoning for why that
+granularity matters. All three verified live in a real running dev server (real Escape/mousedown
+DOM events dispatched, DOM state checked after a render-flush wait) — screenshot compositing was
+attempted and failed with the same "Browser pane is not displayed" error thread 058 hit; this is a
+sandbox limitation, not a skipped step.
+
+Separately, **data freshness on load**: found that `src/freshness.py`'s T5 check
+(`as_of_date`/`age_days`/`stale`) runs on every board build inside `export_contract.py`'s
+`build_board_json()` but is only ever printed to the build console — it is never attached to
+`board.json`'s returned dict, so no such field reaches the frontend (confirmed by dumping the real
+export's top-level keys; only `generated_utc`, the file-write timestamp, is present — a different
+claim). Rather than fabricate a client-side staleness computation, opened **thread 073** (a second
+one, to backend) asking for the real fields, and shipped an honest gap banner instead
+(`RefreshData.tsx`, `data-testid="freshness-note"`): shows the real `generated_utc`, states
+plainly that snapshot freshness isn't exported. Also closed a real structural gap: previously a
+plain page reload could silently serve an hours-old `public/data/` copy unless the dev server was
+restarted or "Refresh data" was clicked by hand. Fixed with `frontend/server/autoSync.ts`, a Vite
+dev-middleware that re-syncs `data/export/` -> `public/data/` on every request under `/data/`
+(coalesced, so a page load's ~10 parallel fetches cost one directory copy, not ten; fails open with
+a console error rather than taking the whole app down on a transient mid-write read). Verified
+live: `public/data/_manifest.json`'s `synced_utc` advances on a plain `fetch('/data/board.json')`
+with no button click and no server restart.
+
+Re-verified thread 058's four named board items (tier bands, positional rank, sort controls, DEF
+filter) before doing anything — all four confirmed already built this sprint, no rework done.
+Re-verified threads 071 (`global_tier`) and 072 (`sim_generated_at`/`sim_settings_hash`) against the
+live current exports — both fields confirmed still absent, both threads left `OPEN` (genuinely
+blocked on backend, not filled with an invented client-side substitute).
+
+192 passing / 2 pre-existing-red-by-design frontend tests (see Build state table), `tsc -b --noEmit`
+clean.
 
 **Last verified 2026-07-26 — not re-verified, EXCEPT the four bullets below (2026-07-27, ADR-050,
 this session, directly measured).**

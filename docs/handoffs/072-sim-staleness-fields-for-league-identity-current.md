@@ -47,3 +47,19 @@ A decision, either way:
   once they exist.
 - **Not yet / correctly deferred:** confirmation that this stays out of scope until the Settings
   editor lands, and this thread closed `RESOLVED` on that basis.
+
+---
+### frontend · 2026-07-27 (workstream C, re-check only)
+
+Re-verified before doing anything else: dumped the real, current `data/export/league.json` top
+level directly. Neither `sim_generated_at` nor `sim_settings_hash` is present (confirmed keys:
+`contract_version, generated_utc, league_id, league_name, platform, teams, rounds,
+user_draft_slot, draft_type, pick_sequence, roster, scoring, replacement_levels,
+positions_without_replacement_levels, positions_without_replacement_levels_note, ...`). Still
+genuinely blocked on backend/the Settings editor, not fabricated client-side. While in this area I
+did separately find and report a related-but-distinct gap in new thread **073**: `src/freshness.py`'s
+T5 snapshot-staleness check (`as_of_date`/`age_days`/`stale`) runs on every board build but is
+printed to the console only, never attached to `board.json`'s output dict — a different field from
+this thread's `sim_generated_at`/`sim_settings_hash` ask, but the same shape of problem (a real
+backend computation with no export path yet). Leaving `STATUS: OPEN` here — no action taken beyond
+this confirmation.

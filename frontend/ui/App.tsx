@@ -199,7 +199,12 @@ export function App() {
         leagues={displayLeagues}
         leagueId={leagueId}
         onSelectLeague={setLeagueId}
-        refreshSlot={<RefreshData onApplied={() => setReloadKey((k) => k + 1)} />}
+        refreshSlot={
+          <RefreshData
+            onApplied={() => setReloadKey((k) => k + 1)}
+            boardGeneratedUtc={data?.board.generated_utc ?? null}
+          />
+        }
       />
 
       <div style={{ flex: 1, minHeight: 0, display: 'flex' }}>{body}</div>

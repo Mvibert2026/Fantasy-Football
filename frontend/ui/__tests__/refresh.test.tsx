@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { RefreshData } from '../components/RefreshData';
@@ -61,6 +61,24 @@ const CHANGED = {
 describe('Refresh data control', () => {
   afterEach(() => vi.unstubAllGlobals());
 
+  // Task 1 (data freshness on load): board.json:generated_utc is a real, named
+  // field; the underlying ranking-snapshot staleness (src/freshness.py's T5
+  // check) is a different claim that the backend does not export anywhere, so
+  // it must read as an honest gap here, never a silently-omitted question.
+  it('shows the real board.json:generated_utc timestamp and names the T5 staleness gap explicitly', () => {
+    render(<RefreshData onApplied={vi.fn()} boardGeneratedUtc="2026-07-27T20:10:55.274740+00:00" />);
+
+    const note = screen.getByTestId('freshness-note');
+    expect(note).toHaveTextContent('2026-07-27T20:10:55.274740+00:00');
+    expect(note).toHaveTextContent('snapshot freshness not exported by backend');
+  });
+
+  it('renders an honest dash, not a fabricated date, when the dataset has not loaded yet', () => {
+    render(<RefreshData onApplied={vi.fn()} />);
+
+    expect(screen.getByTestId('freshness-note')).toHaveTextContent('exported —');
+  });
+
   it('says "no update available" instead of doing nothing visible', async () => {
     stubRefresh(NO_CHANGE);
     const onApplied = vi.fn();
@@ -121,5 +139,53 @@ describe('Refresh data control', () => {
 
     await userEvent.click(screen.getByRole('button', { name: /dismiss/i }));
     expect(screen.queryByText(/no update available/i)).not.toBeInTheDocument();
+  });
+
+  // Thread 073: this was the confirmed failing case -- the founder could not
+  // clear this exact message, because the "Dismiss" button covered above was
+  // the ONLY way to close it. Escape and click-outside are enumerated as
+  // their own tests so either regressing independently fails on its own.
+  it('closes on Escape', async () => {
+    stubRefresh(NO_CHANGE);
+    render(<RefreshData onApplied={vi.fn()} />);
+
+    await userEvent.click(screen.getByRole('button', { name: /refresh data/i }));
+    expect(await screen.findByText(/no update available/i)).toBeInTheDocument();
+
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(screen.queryByText(/no update available/i)).not.toBeInTheDocument();
+  });
+
+  it('closes on a click outside the popover', async () => {
+    stubRefresh(NO_CHANGE);
+    render(<RefreshData onApplied={vi.fn()} />);
+
+    await userEvent.click(screen.getByRole('button', { name: /refresh data/i }));
+    expect(await screen.findByText(/no update available/i)).toBeInTheDocument();
+
+    fireEvent.mouseDown(document.body);
+    expect(screen.queryByText(/no update available/i)).not.toBeInTheDocument();
+  });
+
+  it('does not close on a click inside the popover (e.g. the artifact table)', async () => {
+    stubRefresh(CHANGED);
+    render(<RefreshData onApplied={vi.fn()} />);
+
+    await userEvent.click(screen.getByRole('button', { name: /refresh data/i }));
+    expect(await screen.findByText(/1 artifact\(s\) changed/i)).toBeInTheDocument();
+
+    fireEvent.mouseDown(screen.getByText('board'));
+    expect(screen.getByText(/1 artifact\(s\) changed/i)).toBeInTheDocument();
+  });
+
+  it('the unreachable-server error also closes on Escape (it previously had no dismiss control at all)', async () => {
+    stubRefresh(null, false);
+    render(<RefreshData onApplied={vi.fn()} />);
+
+    await userEvent.click(screen.getByRole('button', { name: /refresh data/i }));
+    expect(await screen.findByText(/could not be reached/i)).toBeInTheDocument();
+
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(screen.queryByText(/could not be reached/i)).not.toBeInTheDocument();
   });
 });

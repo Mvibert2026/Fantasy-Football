@@ -483,3 +483,22 @@ matching). 5 named players remain genuinely unresolved (Tommy Myers, Devonte Boy
 Graig Cooper, Desmond Reid) — absent from every source checked, most likely undrafted rookies not
 yet on a roster snapshot. `make_board.py` rewire is still blocked on backend pickup, but the
 crosswalk half of the block this directive named is resolved.
+
+---
+
+## FR-016 · The "refresh data" popover could not be cleared
+
+**Raised:** 2026-07-27 (founder, relayed into this round's frontend task rather than a direct
+Claude Code session — capturing it here now since it had not reached this file yet, per the
+capture-every-session rule).
+**Status:** SHIPPED — see `docs/handoffs/073-...md` and the frontend workstream-C session,
+2026-07-27.
+
+The founder reported that the "Refresh data" popover in the top bar (`frontend/ui/components/
+RefreshData.tsx`) would not clear. Root cause: the popover only ever closed via its own in-panel
+"Dismiss" button — no click-outside, no Escape — so the two ordinary ways a person tries to get
+rid of a floating message both silently did nothing. Fixed, and the whole app audited for the same
+gap class (two more real instances found and fixed: `PlayerDetail.tsx`'s side sheet was missing
+Escape despite its close button being labelled "esc"; `AssistantDock.tsx`'s expanded panel had
+neither). 11 new enumerated tests, one per surface. See `docs/status.md`'s 2026-07-27 workstream-C
+entry for full detail.

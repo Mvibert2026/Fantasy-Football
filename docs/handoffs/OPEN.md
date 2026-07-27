@@ -42,9 +42,9 @@ not an omission. Start your session at your own heading.
 | [059](059-on-deck-recommendations.md) | On deck recommendations | `pm` | OPEN | 0d | FR-006 (draft chatbot), calm-preparation use case |
 | [060](060-draft-time-compute-architecture.md) | Draft time compute architecture | `pm` | OPEN | 0d | 059 (on-deck recommendations), 045 (lookahead), draft-day viability of everything computed live |
 | [064](064-current-state-verification.md) | Current state verification | `pm` | OPEN | 0d | any honest statement about project status |
-| [067](067-t1-multiformat-consensus-rescope.md) | T1 multiformat consensus rescope | `pm` | OPEN | 0d | T1 completion for leagues 2/3, board correctness for the non-primary leagues |
 | [071](071-global-tier-field-for-all-tab-board-grouping.md) | Global tier field for all tab board grouping | `frontend` | OPEN | 0d | 058 section B1 (design fidelity) |
 | [072](072-sim-staleness-fields-for-league-identity-current.md) | Sim staleness fields for league identity current | `frontend` | OPEN | 0d | 058 section C3 (design fidelity) |
+| [073](073-export-t5-freshness-result-onto-board-json.md) | Export t5 freshness result onto board json | `frontend` | OPEN | 0d | none |
 
 ### `frontend` — 17 waiting
 
@@ -68,7 +68,7 @@ not an omission. Start your session at your own heading.
 | [066](066-contract-1-10-0-board-json-rows-gained-roster-st.md) | Contract 1 10 0 board json rows gained roster st | `backend` | OPEN | 0d | none |
 | [069](069-board-json-contract-1-11-0-new-scoring-format-fi.md) | Board json contract 1 11 0 new scoring format fi | `backend` | OPEN | 0d | none |
 
-### `data-ops` — 7 waiting
+### `data-ops` — 6 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
@@ -77,7 +77,6 @@ not an omission. Start your session at your own heading.
 | [054](054-ftn-and-sleeper-harvest.md) | Ftn and sleeper harvest | `pm` | OPEN | 0d | any subscription decision |
 | [055](055-ffc-adp-history-harvest.md) | Ffc adp history harvest | `pm` | OPEN | 0d | 046, 048 (bottom-up ranking), any ADP-vs-value work, availability model calibration |
 | [057](057-timeseries-data-audit.md) | Timeseries data audit | `pm` | OPEN | 0d | injury-aware rankings, ADP drift model, suspension correctness guarantee, Fable Addendum 2 |
-| [067](067-t1-multiformat-consensus-rescope.md) | T1 multiformat consensus rescope | `pm` | OPEN | 0d | T1 completion for leagues 2/3, board correctness for the non-primary leagues |
 | [070](070-recurring-injury-suspension-feed.md) | Recurring injury suspension feed | `pm` | OPEN | 0d | T4 (suspensions/roster-status table stakes), E[games_played] per ADR-E Amendment E-A1 |
 
 ### `strategist` — 5 waiting

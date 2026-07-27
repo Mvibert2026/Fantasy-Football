@@ -1,4 +1,4 @@
-import { Component, useMemo, type ReactNode } from 'react';
+import { Component, useEffect, useMemo, type ReactNode } from 'react';
 import type { BoardRow } from '../data/board';
 import type { DraftPickRecord } from '../data/draft';
 import { currentOverallPick, nextPickForSlot, pickNumbersForSlot } from '../data/draft';
@@ -128,11 +128,30 @@ export function PlayerDetail({
   const delta = row.deltaVsConsensus.kind === 'present' ? row.deltaVsConsensus.value : null;
   const deltaColor = delta === null ? 'var(--dim2)' : delta > 0 ? 'var(--up)' : delta < 0 ? 'var(--down)' : 'var(--dim2)';
 
+  // Thread 073 dismissible-surface audit: click-outside already worked (the
+  // transparent click-catcher below calls onClose), but Escape did not -- the
+  // close button is literally labelled "esc" without the key ever being
+  // wired. Fixed here rather than via the shared ui/lib/dismiss.ts hook,
+  // because that hook's click-outside half would conflict with the existing,
+  // deliberately-transparent click-catcher pattern (§3.3); Escape alone is
+  // all this component is missing.
+  useEffect(() => {
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') onClose();
+    }
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, [onClose]);
+
   return (
     <>
       {/* Transparent click-catcher, not a scrim (§3.3) -- the board and the pick
           clock must stay visible while this panel is open. */}
-      <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 80, background: 'transparent' }} />
+      <div
+        data-testid="player-detail-backdrop"
+        onClick={onClose}
+        style={{ position: 'fixed', inset: 0, zIndex: 80, background: 'transparent' }}
+      />
       <div
         style={{
           position: 'fixed',
