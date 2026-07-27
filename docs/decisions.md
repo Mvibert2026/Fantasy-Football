@@ -1,5 +1,9 @@
 # Architecture Decision Log
 
+**Historical log, append-only. Do not read this for current decisions** — settled outcomes are in
+`docs/decisions-needed.md`'s Resolved table and `docs/CURRENT-STATE.md`. Read this only to learn what
+changed and when.
+
 ## 2026-07-25 — Data ingestion (Phase 1, Step 1)
 
 **Single wide `player_weekly_stats` table, schema generated from the source, not hand-typed.**

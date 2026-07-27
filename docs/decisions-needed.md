@@ -15,6 +15,12 @@ this file exists to prevent.
 **Status values:** `OPEN` (awaiting, default will be taken) · `DEFAULTED` (default taken, still
 reversible) · `DECIDED` (founder answered) · `LOCKED` (acted on, expensive to reverse)
 
+**This file is canonical for decision status.** `docs/decisions.md` is the append-only historical
+log of *why* — a reading hazard for "what's true now" per `docs/assistant-context.md`. When an entry
+here flips to `DECIDED`/`CLOSED`/`LOCKED` and that changes product behaviour, reflect it in
+`docs/CURRENT-STATE.md`/`docs/assistant-context.md` too, so the three documents can't silently
+diverge.
+
 ---
 
 ## D-001 · `NEED_ADJUSTMENT_SCALE` — delete, or keep tuning it?

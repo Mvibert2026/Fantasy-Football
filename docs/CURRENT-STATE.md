@@ -5,6 +5,9 @@ It is edited **in place**. When something changes, replace the affected line —
 section, never leave the old value "for contrast." If you find yourself adding a second version of
 a number that already appears here, you are doing it wrong.
 
+`docs/SNAPSHOT-*.md` files are frozen point-in-time captures, not rivals to this file — they drift
+the moment this file changes and this file always wins.
+
 Do **not** read `docs/status.md` to answer a current-state question. That file is an append-only
 session log and contains superseded figures presented in the same voice as current ones. Same
 hazard `docs/assistant-context.md` warns about for `decisions.md`. It is fine to read `status.md`
