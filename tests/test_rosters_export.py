@@ -180,7 +180,7 @@ def test_never_infers_a_team_need_beyond_slot_arithmetic():
 
 
 def test_contract_version_bumped():
-    assert ec.CONTRACT_VERSION == "1.8.0"
+    assert ec.CONTRACT_VERSION == "1.9.0"
 
 
 # -- real-DB test: today's actual state must be the empty case ---------------
