@@ -80,3 +80,49 @@ reason for it is discipline, not a data ceiling, and the ceiling I cited does no
 caveats, ingestion cost. Then ingest Tier 1.
 `strategist`: the framework ADR, with accuracy validation designed against 26 seasons and the
 beats-consensus question explicitly deferred and labelled as a separate claim.
+
+---
+### data-ops · 2026-07-27
+
+Tier 1 only, per this round's dispatch scope. Full findings:
+`docs/research/tier1-usage-source-inventory-2026-07.md`.
+
+**Headline: most of Tier 1 was already ingested and fresh** (prior sessions, `ingest_weekly_stats.py`
++ `ingest_reference.py`) — `ingested_at` on every relevant table is within the last ~48h. No stale
+re-pull was needed.
+
+- **Snap counts/share** — `snap_counts` table, 2013–2025, 324,611 rows. 2012 confirmed empty at
+  the nflverse source directly (not an ingestion gap); 2011 and earlier rejected outright by the
+  loader.
+- **Target share** — `player_weekly_stats.target_share`/`air_yards_share`/`wopr`, 1999–2025,
+  unreliable 2003–2008 (reconfirmed with a fresh league-wide `SUM(targets)` check this session —
+  numbers in the inventory doc). **Carry share** has no unreliable window (carries are fine
+  1999–2025) but is not precomputed — derive downstream. **Route participation has no ready
+  per-player nflverse source**; `load_participation` (2016–2025 only) and `load_ftn_charting`
+  (2022–2025 only) are both play-level, not per-player. Flagged as a real Tier 1 gap, not attempted.
+- **Red-zone/goal-line usage — the one genuine gap requiring a real decision.** No nflverse loader
+  gives this precomputed; the only path is aggregating `load_pbp` by `yardline_100`, and pbp is not
+  currently in `data/nfl.db` at all. A multi-GB historical pull with a nontrivial per-play
+  attribution job is not something I'm starting unilaterally on a low-effort ingestion pass against
+  a DB three backend sessions are concurrently writing to this round. `load_ff_opportunity`
+  (2006–2025, expected-points-based) is a cheaper existing proxy, not yet ingested — flagging it as
+  the likely next step rather than full pbp, pending your call.
+- **Air yards/aDOT** — `receiving_air_yards`/`passing_air_yards` 1999–2025 (2003–2008 unreliable,
+  same as target share). Real aDOT (not derived) exists in `ngs_receiving.avg_intended_air_yards`
+  and `ngs_passing.avg_intended_air_yards`, 2016–2025, already ingested.
+- **Tier 3 depth-chart blocker, re-checked as asked:** the "ends at 2024" framing is stale. The
+  source itself changed format mid-2025; `depth_charts_snapshots` (dt-timestamped, no season/week
+  column) covers 2025-08-03 through 2026-07-26 — 349 daily snapshots, already in the DB, most recent
+  ingested yesterday. This is the current form of the same nflverse source, not a workaround, and it
+  already reaches the present day. No other alternative source was needed or found.
+
+No new ingestion code written this round — everything Tier-1-mechanical was already current;
+verified against live loader calls, not assumed from table presence. Row counts above are as
+measured this session. No new tests (no new ingestion code). Commit: see session report.
+
+Standing priority note: ADP snapshot capture (CLAUDE.md standing priority) was explicitly out of
+scope for this round's dispatch instructions and was not touched this session — flagging so it
+isn't mistaken for "handled."
+
+Thread left `STATUS: OPEN` — strategist's half is sequenced for a later round per the dispatch
+instructions, not resolved here.

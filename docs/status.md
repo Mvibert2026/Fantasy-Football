@@ -1465,3 +1465,56 @@ New ADR: `docs/decisions.md` ADR-048. `docs/CURRENT-STATE.md` updated in place. 
 to and left `STATUS: OPEN` (frontend's half — wiring the two history exports into
 `PlayerDetail.tsx` using this key — is not resolved by this session and not backend's to close).
 No founder statements surfaced this session; all instructions came from the dispatching session.
+
+---
+
+## Data-ops session, 2026-07-27 — thread 046 Tier 1 source inventory
+
+Scope this round: thread 046, Tier 1 only (snap counts, target/carry share/route participation,
+red-zone/goal-line usage, air yards/aDOT). Tier 2/3 explicitly deferred; strategist's framework
+half of 046 is a later round.
+
+**Finding: Tier 1 was already substantially ingested and fresh** by prior sessions
+(`src/ingest_weekly_stats.py`, `src/ingest_reference.py`) — every relevant table's `ingested_at`
+was within ~48h of this session. No stale re-pull needed. Wrote
+`docs/research/tier1-usage-source-inventory-2026-07.md` with per-feature season coverage,
+verified live against `nflreadpy==0.1.5` loaders (not assumed from table presence):
+
+- Snap counts/share: `snap_counts`, 2013–2025, 324,611 rows (2012 confirmed empty at source, not
+  a gap).
+- Target share/air-yards-share/WOPR: `player_weekly_stats`, 1999–2025, reconfirmed unreliable
+  2003–2008 (fresh `SUM(targets)` check: collapses to single/low digits those six seasons vs.
+  ~17,500 adjacent). Carry share has no such hole but isn't precomputed. **Route participation has
+  no ready per-player nflverse source** — `load_participation` (2016–2025) and `load_ftn_charting`
+  (2022–2025) are both play-level only. Flagged as a real gap.
+- **Red-zone/goal-line usage: the one genuine new-ingestion gap.** No nflverse loader gives this
+  precomputed; needs `load_pbp` (not currently in `data/nfl.db`) aggregated by `yardline_100`, a
+  multi-GB pull with real attribution work — not started unilaterally against a DB three backend
+  sessions are concurrently writing to this round. `load_ff_opportunity` (2006–2025) flagged as a
+  cheaper proxy, not yet ingested.
+- Air yards/aDOT: same 2003–2008 hole as target share; real (non-derived) aDOT exists in
+  `ngs_receiving`/`ngs_passing.avg_intended_air_yards`, 2016–2025, already ingested.
+- **Tier 3 depth-chart blocker re-checked as asked, and the "ends at 2024" framing is stale**:
+  the source changed format mid-2025; `depth_charts_snapshots` (dt-timestamped) covers
+  2025-08-03 through 2026-07-26 (349 daily snapshots, already ingested, most recent from
+  yesterday) — the current form of the same source, already reaching the present day. No
+  alternative source needed.
+
+No new ingestion code or tables written this round — the mechanical work was already done and
+current; this session's contribution was verification and gap identification, not a pull.
+Reply appended to thread 046 (`### data-ops · 2026-07-27`), left `STATUS: OPEN` (strategist's
+half not due this round). `docs/CURRENT-STATE.md` intentionally not touched this round — reserved
+for thread 052 per dispatch instructions; candidate update noted here instead: Tier 1 usage-source
+inventory now exists, most fields already in `data/nfl.db` and current as of 2026-07-27, red-zone
+usage and per-player route participation are the two real remaining Tier 1 ingestion gaps, and the
+depth-chart Tier 3 blocker ("ends at 2024") is stale — current coverage exists via
+`depth_charts_snapshots` through the present day.
+
+Standing priority note: ADP snapshot capture was out of scope for this round's explicit dispatch
+instructions (Tier 1 only) and was not touched this session.
+
+No founder statements surfaced this session. Rows ingested: 0 (all Tier 1 tables already current).
+Rows quarantined: 0 (no new ingestion run). Sources attempted: none newly pulled — all
+verification calls against already-cached/live nflreadpy loaders, no source blocked. Tests: none
+added (no new ingestion code); no existing test suite run (out of scope, no code changed under
+`src/`).
