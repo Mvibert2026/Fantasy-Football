@@ -16,8 +16,15 @@ describe('percent (HON-05)', () => {
 
   it('renders anything under half a percent as <1%, never 0%', () => {
     expect(percent(0.001)).toBe('<1%');
+    expect(percent(0.003)).toBe('<1%');
     expect(percent(0.004)).toBe('<1%');
     expect(percent(0.0049)).toBe('<1%');
+  });
+
+  it('renders 0.003 and 0 as distinct outputs, per thread 037 item 1', () => {
+    expect(percent(0.003)).toBe('<1%');
+    expect(percent(0)).toBe('0%');
+    expect(percent(0.003)).not.toBe(percent(0));
   });
 
   it('renders 0.5% and above with normal rounding, not the <1% form', () => {
