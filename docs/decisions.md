@@ -1693,3 +1693,90 @@ project's sanity-check-before-implementation rule. `tests/test_make_board.py` +
 `tests/test_export_contract.py` + `tests/test_export_history.py`: **71 passed** (targeted run,
 not full suite — concurrent-agent DB contention this round per dispatch instructions).
 
+
+### ADR-050: T9 team-code crosswalk, T5 freshness tripwire, T6 interim roster-status proxy, T4 interim suspension mechanism (fable-table-stakes-2026-07-27.md)
+
+**Context.** Four work orders from the table-stakes review (FR-007: correctness floor before
+edge, unconditionally), taken as one parallel round while a separate session does DB-writing
+work on the half-PPR ECR swap. This round is `src/`+`tests/` only, no ingestion, no DB writes.
+
+**T9 — team-code crosswalk, fully landed.** `src/team_codes.py`: a flat variant->canonical
+mapping (canonical = current-era nflverse 2-3 letter code), covering every code variant this
+project's own tables were found to actually carry — FantasyPros (`JAC`/`LAR`), era relocations
+(`OAK`->`LV`, `SD`->`LAC`, `STL`->`LA`), and two different PFR-style abbreviation schemes found
+in `draft_picks` and `adp_snapshots` (`GNB`/`KAN`/`NWE`/`NOR`/`SFO`/`TAM`/`PHO`/`RAI`/`RAM`/`SDG`
+and `GBP`/`KCC`/`NEP`/`NOS`/`TBB`/`LVR`/`JAC`/`LAR` respectively) — 54 distinct codes total,
+verified by a DB sweep test (`tests/test_team_codes.py::test_every_distinct_team_code_...`)
+against `rankings`, `player_weekly_stats`, `snap_counts`, `draft_picks`,
+`depth_charts_snapshots`, `injuries`, `adp_snapshots`. No `play_callers` table currently exists
+in `nfl.db` despite being named in the review (the module `src/ingest_play_callers.py` exists
+but its table isn't populated in this DB) — not swept, flagged rather than silently skipped.
+`to_canonical()` raises `KeyError` on an unrecognized code (never guesses); `export_contract.py`
+wraps it in a fail-open `_canonical_team()` at the one call site that must not crash a whole
+board build over one bad code, so the existing T3 positive-coverage test remains the fail-loud
+mechanism instead of an uncaught exception.
+
+**Acceptance evidence.** `tests/test_floor_checks.py::test_t3_every_board_player_has_a_bye_week`
+was pinned RED by an earlier session with the exact live symptom (22 players, JAC/LAR
+unresolved). Wiring `team_codes.to_canonical()` into both sides of `export_contract.py`'s bye
+lookup (the `byes` dict's keys via `_bye_weeks()`, and the lookup key via `team_of.get()`) and
+regenerating `data/export/board.json` turns it green with no other change. This is measured, not
+asserted: reran the test before and after, red then green.
+
+**T5 — freshness tripwire, fully landed.** `src/freshness.py`: `snapshot_age_days()` (pure,
+injectable `today` for testability), `check_freshness()` (non-raising, always-computed report:
+`{as_of_date, age_days, max_age_days, stale}`), `require_fresh()` (raises `StaleSnapshotError` on
+stale-or-absent). `league_config.LeagueConfig.freshness_max_age_days: int = 3` — labeled a
+suggested default, not a measured constant, founder-tunable per league. Wired into
+`export_contract.build_board_json()`: prints the freshness report unconditionally (age surfaced
+even when comfortably fresh, per the work order's explicit ask) and raises before building if
+stale. Deliberately NOT wired into `make_board.build_board()` itself — that function is also the
+historical/backtest board-build path across training seasons, and gating it there would make
+backtests over old seasons fail on "staleness" that is meaningless outside the live-season
+context. The gate lives only in the live-board export path.
+
+**T4 — interim suspension mechanism, built but NOT wired into the live board.**
+`src/suspensions.py`: `load_suspensions()` (fixture loader), `adjust_for_suspension()`
+(deterministic games-played deduction, `SEASON_GAMES=17`, floors at 0, only applies when
+`appeal_status` is settled — `pending` flags without adjusting, an explicit
+`not_adjusted_pending_appeal` reason rather than guessing at a games count that could still
+change), `apply_suspension_flags()` (attaches flag/games/adjusted-points/reason to board-row-
+shaped dicts, same four keys on every row regardless of suspension status). `tests/fixtures/
+suspensions_2026.json` is **explicitly synthetic** — this session had no way to verify a real
+2026 suspension list against the pipeline (post-training-cutoff, thread 057 still open on
+whether any structured source exists), and fabricating one would violate the project's own "do
+not fill gaps with plausible-sounding invention" rule. Given the fixture's gsis_ids are fake and
+match no real player, wiring it into the live board would be cosmetic rather than meaningful, so
+it was deliberately left disconnected from `export_contract.py`. **Blocked-on-thread-057** for
+the real data; the mechanism is ready to receive it without further code changes once a real
+list exists.
+
+**T6 — interim roster-status proxy, fully landed on an existing signal, not a new ingest.**
+`contracts.is_active` already existed in `nfl.db` from an earlier ingest, but it means "this
+specific contract row is the player's current one," not "this player is on an NFL roster this
+week" — verified this is NOT a usable active-roster flag directly (Josh Allen, an active
+starter, carries `is_active=0` on his two older contracts and `is_active=1` only on the newest).
+The usable derived signal: a player with **zero** `is_active=1` rows across their entire
+contract history has no currently-active contract on file — verified against Tom Brady
+(`gsis_id 00-0019596`, retired 2023): all ~9 of his contract rows read `is_active=0`, the same
+shape a released/inactive player would show. `src/roster_status.py::contract_status()` returns
+`active` / `no_active_contract_on_file` / `unknown_no_contract_data` (rookies/undrafted players
+with zero contract rows — an honest "don't know," never inferred as retired). Wired into
+`export_contract.build_board_json()` as a new `roster_status` field on every board row,
+labeled in-code as a proxy, not a roster-status feed. **Full nflverse roster-status ingestion
+(active/IR/practice-squad, per-week) is out of scope for this round** — it needs new DB writes,
+which this session is deliberately not doing (parallel session doing DB-writing ECR-swap work).
+Smallest schema addition data-ops would need for the real thing: a `roster_status_weekly` (or
+similar) table from `nflreadpy.load_rosters()`/`load_rosters_weekly()`, keyed by
+`(gsis_id, season, week)` with a `status` enum (`ACT`/`IR`/`RES`/`PUP`/... per nflverse's own
+`status` column) and `as_of_date`.
+
+**Contract version bumped 1.9.0 -> 1.10.0** (board.json rows gained `roster_status`). Handoff
+thread opened to `frontend`. `tests/test_rosters_export.py::test_contract_version_bumped` updated
+to match (was pinning the pre-bump value).
+
+**Tests.** All four T-numbers' tests written before their implementation modules existed, per
+this project's sanity-check-before-implementation rule (`tests/test_team_codes.py`,
+`tests/test_freshness.py`, `tests/test_suspensions.py`, `tests/test_roster_status.py`), plus the
+pre-existing `tests/test_floor_checks.py::test_t3_...` as the T9 regression pin. See session
+report for the full pass count.

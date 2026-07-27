@@ -19,6 +19,13 @@ below is measured directly from `git rev-parse HEAD`, the real backend/frontend 
 this pass was inferred by reading source to determine what is or isn't built — see the note at the
 top of "Built and working" for that section's own verification status, which is separate and older.
 
+**Updated same-day, later session (ADR-050, branch `backend/t9-t5-t4-t6-correctness-floor`,
+commit `67fc244` base):** backend test count is now **585 passed, 0 failed** (`pytest ../tests -q`,
+full suite, real `nfl.db` copied into the worktree), up from 516 — T9/T5/T4/T6 added 32 new tests
+(`test_team_codes.py`, `test_freshness.py`, `test_roster_status.py`, `test_suspensions.py`, plus
+one added to `test_export_history.py`) net of no removals. `CONTRACT_VERSION` is now **1.10.0**.
+Frontend row below is unchanged/not re-verified this pass.
+
 ---
 
 ## Build state
@@ -28,7 +35,7 @@ top of "Built and working" for that section's own verification status, which is 
 | Backend branch / commit | `master`, `c8738ed8cc8c3d8bfc4f7f23a2d771ecb85c33cf` | Local only — **no git remote configured** |
 | Backend tests | **516 passing, 0 failures** | Full suite, `pytest -q`, single run, 199s. No concurrent DB contention observed this run (checked for another active backend session first). |
 | Agent infrastructure | **Live** | Six subagents in `.claude/agents/` (backend, frontend, data-ops, strategist, researcher, librarian), `/inbox` command, mailbox tooling at `tools/handoffs.py` + `tools/sprint_status.py`, mailbox health enforced in the test suite (`tests/test_handoffs.py`) |
-| Data contract | **1.9.0** | `CONTRACT_VERSION` in `src/export_contract.py`, read directly. |
+| Data contract | **1.10.0** | `CONTRACT_VERSION` in `src/export_contract.py`, read directly. Bumped this session (ADR-050, T6): `board.json` rows gained `roster_status`. |
 | Frontend location | `frontend/` subdirectory of this repo | Merged from `frontend-prep` via `git subtree add`, full history preserved. No longer a separate working copy. |
 | Frontend tests | **154 passing, 0 failing** (18 files) | Full suite, `npx vitest run`, single run, ~31s. |
 | Python modules | **36** in `src/` | `ls src/*.py \| wc -l` |
@@ -98,7 +105,24 @@ settled until a session with the digging in scope confirms one.**
 
 ## Built and working
 
-**Last verified 2026-07-26 — not re-verified.**
+**Last verified 2026-07-26 — not re-verified, EXCEPT the four bullets below (2026-07-27, ADR-050,
+this session, directly measured).**
+
+**T9 team-code crosswalk** (`src/team_codes.py`) — fixed the live JAC/LAR (FantasyPros) vs JAX/LA
+(nflverse) bye-week gap; `tests/test_floor_checks.py::test_t3_every_board_player_has_a_bye_week`
+went from measured-red (22 players, live symptom) to green by wiring the crosswalk into
+`export_contract.py`'s bye lookup and regenerating `board.json`, no other change. **T5 freshness
+tripwire** (`src/freshness.py`, `league_config.freshness_max_age_days=3` default) — live board
+build now refuses a stale/absent ECR snapshot and always prints its age. **T6 interim
+roster-status proxy** (`src/roster_status.py`) — `board.json` rows gained `roster_status`, derived
+from the pre-existing `contracts.is_active` column, verified against Tom Brady (retired, zero
+active-contract rows on file); explicitly labeled a proxy, not a real active/IR/PS feed (that
+needs new ingestion, out of this round's scope). **T4 interim suspension mechanism**
+(`src/suspensions.py`) — deterministic games-adjustment built and tested against a fixture, but
+the fixture is synthetic (no verified real 2026 suspension list was available to this session) and
+the mechanism is NOT wired into the live board; blocked on thread 057 for real data. Contract
+version bumped 1.9.0 → 1.10.0 for the `roster_status` field; handoff thread 066 opened to
+frontend.
 
 Board + VBD with format-corrected replacement levels · identity hub (`mfl_id`) with quarantine ·
 live-availability hazard model · need-weighted `strategy_balanced` · mock-draft ingestion and
@@ -177,4 +201,13 @@ assistant" wiring · LLM prose renderer
 4. **FantasyPros licence decision — CLOSED (D-020).** No licence needed while the product stays
    private/personal/founder-only. Reopens on any second user, alongside D-021.
 5. **`strategies.json` re-export** — stale at contract 1.7.0 while every other export artifact is
-   1.9.0; app's version banner correctly flags this (thread 042, open to backend).
+   now 1.10.0; app's version banner correctly flags this (thread 042, open to backend).
+6. **T4 real suspension data** — blocked on thread 057 (structured source still unresolved). The
+   deterministic games-adjustment mechanism exists (`src/suspensions.py`, ADR-050) but is not wired
+   into the live board; its only fixture is synthetic.
+7. **T6 full roster-status ingest** — the live `roster_status` field on `board.json` is a proxy
+   derived from `contracts.is_active` (ADR-050), not a real active/IR/practice-squad feed. Needs a
+   new `roster_status_weekly`-shaped table from `nflreadpy.load_rosters()`, which is a DB-writing
+   task, deliberately not done this round.
+8. **T7 depth-chart contradiction** — still unresolved (`SELECT MAX(dt) FROM depth_charts` not run
+   this pass; out of this round's scope).

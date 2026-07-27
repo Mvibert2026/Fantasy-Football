@@ -4,7 +4,7 @@
 Threads are the source of truth. Change a thread's `STATUS:`, then re-run sync.
 Protocol: [`README.md`](README.md).
 
-**42 open** · 23 resolved
+**43 open** · 23 resolved
 
 ---
 
@@ -42,7 +42,7 @@ not an omission. Start your session at your own heading.
 | [060](060-draft-time-compute-architecture.md) | Draft time compute architecture | `pm` | OPEN | 0d | 059 (on-deck recommendations), 045 (lookahead), draft-day viability of everything computed live |
 | [064](064-current-state-verification.md) | Current state verification | `pm` | OPEN | 0d | any honest statement about project status |
 
-### `frontend` — 17 waiting
+### `frontend` — 18 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
@@ -63,6 +63,7 @@ not an omission. Start your session at your own heading.
 | [058](058-draft-board-design-gap.md) | Draft board design gap | `pm` | OPEN | 0d | draft-day usability |
 | [059](059-on-deck-recommendations.md) | On deck recommendations | `pm` | OPEN | 0d | FR-006 (draft chatbot), calm-preparation use case |
 | [063](063-suggester-reopen-regression.md) | Suggester reopen regression | `pm` | OPEN | 0d | none |
+| [066](066-contract-1-10-0-board-json-rows-gained-roster-st.md) | Contract 1 10 0 board json rows gained roster st | `backend` | OPEN | 0d | none |
 
 ### `data-ops` — 5 waiting
 

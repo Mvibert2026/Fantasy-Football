@@ -64,6 +64,11 @@ class LeagueConfig:
     # supply a measured value or accept the explicitly-flagged placeholder in
     # ReplacementLevels.from_league_config().
     flex_split: Optional[Dict[str, float]] = None
+    # T5 (fable-draft-day-premortem-2026-07-27.md finding #2): board build
+    # refuses a live snapshot older than this. Founder-tunable per league --
+    # 3 days is the suggested default for in-season-of-draft-prep pulls, not
+    # a measured constant.
+    freshness_max_age_days: int = 3
 
     def __post_init__(self) -> None:
         if self.rounds is None:

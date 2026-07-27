@@ -180,7 +180,8 @@ def test_never_infers_a_team_need_beyond_slot_arithmetic():
 
 
 def test_contract_version_bumped():
-    assert ec.CONTRACT_VERSION == "1.9.0"
+    # 1.10.0 (this session, T6): board.json rows gained roster_status.
+    assert ec.CONTRACT_VERSION == "1.10.0"
 
 
 # -- real-DB test: today's actual state must be the empty case ---------------

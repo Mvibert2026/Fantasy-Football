@@ -146,6 +146,7 @@ def build_weekly_finishes(conn: sqlite3.Connection, player_ids: Optional[List[st
             team_of_player_season[(r["player_id"], r["season"])][r["team"]] += 1
 
     byes = _bye_weeks_by_season(sorted(seasons_seen))
+    import export_contract as ec  # T9: _canonical_team, see lookup below
 
     players = []
     for pid in sorted(by_player):
@@ -153,7 +154,14 @@ def build_weekly_finishes(conn: sqlite3.Connection, player_ids: Optional[List[st
         for season, weeks in sorted(by_player[pid].items()):
             team_counts = team_of_player_season.get((pid, season), {})
             primary_team = max(team_counts, key=team_counts.get) if team_counts else None
-            bye_week = byes.get(season, {}).get(primary_team) if primary_team else None
+            # T9: byes' keys are canonicalized (export_contract._bye_weeks);
+            # primary_team comes straight from player_weekly_stats.team,
+            # which for old seasons carries THAT era's code (e.g. "OAK",
+            # "STL") -- canonicalize the lookup key too, or every
+            # pre-relocation season's bye silently stops resolving the
+            # moment _bye_weeks' own keys became canonical.
+            canonical_team = ec._canonical_team(primary_team) if primary_team else None
+            bye_week = byes.get(season, {}).get(canonical_team) if canonical_team else None
 
             week_list = list(weeks.values())
             if bye_week is not None and bye_week not in weeks:
