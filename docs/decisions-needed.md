@@ -445,7 +445,6 @@ is prohibited in writing by every source audited. That is a purchase, not a buil
 |---|---|---|
 | D-000 | FantasyPros paid tier | **DECIDED** — no purchase. Use the logged-in CSV export; no scraper will be written. *(Scope note, 2026-07-26: this decided the site subscription. The API licence tiers are a separate question — see D-020.)* |
 | D-021 | Fantasy Football Calculator ADP history | **DECIDED 2026-07-27 — LOOSEN.** Founder authorised harvesting FFC ADP history back to 2007 for private use. See below. |
-| D-022 | Does displaying 2025 season facts in `weekly_finishes.json`/`season_stats.json` violate the 2025 holdout lock? | **DECIDED 2026-07-27 — NO.** See below. |
 
 ---
 
@@ -475,30 +474,129 @@ the default was wrong.
 
 ---
 
-## D-022 · 2025 in the history exports — does displaying it touch the holdout?
+# Founder decision round — 2026-07-27
 
-**Founder decision, recorded 2026-07-27 (raised by backend, thread 017/039; confirmed correct and
-asked to be recorded as decided by pm, thread 052):** *displaying 2025 historical facts in
-`weekly_finishes.json`/`season_stats.json` is NOT "touching the holdout."* `src/export_history.py`
-includes `seasons["2025"]` for every player with a 2025 row in `player_weekly_stats`.
+Six decisions settled in one sitting. Recorded here in full; the resolved table above is the index.
 
-**Reasoning.** CLAUDE.md §6.3 and `src/holdout.py`'s lock exist to stop 2025 *outcomes* from
-informing *model selection* — tuning a weight, choosing a factor, or picking a config because it
-scores well against 2025 is the violation `HoldoutViolation` is built to catch. Showing a user what
-actually happened to a player in a completed week of 2025 is fact display, not model selection: no
-parameter is fit against it, no ranking config is chosen because of it, and no backtest metric is
-computed from it. The two are different operations that happen to touch the same season, and the
-guardrail governs one of them, not the other.
+## D-003 · RESOLVED — show ranks, structurally flagged
 
-**Binding going forward.** This is now a settled distinction, not a per-session judgment call:
-- 2025 rows MAY appear in fact-display exports (history, weekly finishes, season totals) without
-  triggering `HoldoutViolation` review, provided nothing downstream fits a parameter to them.
-- 2025 rows MAY NOT be read through `holdout.py`'s season-loading path for training, backtesting, or
-  ranking-config selection without a pre-registered exception, exactly as before — this decision
-  changes nothing about that path.
-- Do not "fix" apparent 2025 exposure in the UI by hiding it — that would misrepresent the guardrail
-  as broader than it is. If a future session is unsure whether a specific consumer of 2025 data is
-  fact-display or model-selection, that is a real question to raise, not one this entry pre-answers
-  for every possible case.
+**Founder decision:** show rank numbers at TE/QB/DEF, with the unproven status made visible.
 
-**Executing threads:** `docs/handoffs/017...` / `039` (export implementation), `052` (this record).
+**Departure from the rigorous default,** which was tiers-only. Accepted: a thinner board at three
+positions is a real usability cost on draft day, and the founder is the only user and knows the
+caveat.
+
+**Implementation constraint — this is the part that matters.** A footnote or legend is not
+sufficient. Flags are ignored under a draft clock; that is the known failure mode and the reason the
+rigorous default existed. The unproven status must be **structural**: the rank number itself rendered
+in a visibly distinct treatment at those positions, unmissable without reading anything. Frontend to
+spec it against the design system rather than inventing a marker.
+
+**Re-evaluate** when per-position n rises materially above ~20. This is a decision about current
+sample size, not a permanent product choice.
+
+## D-015 / D-016 · RESOLVED — harvested drafts count, tagged, both numbers reported
+
+**Founder decision:** calibrate against harvested drafts *and* own drafts, showing both numbers
+side by side rather than one blended figure.
+
+**What this requires, and it is not optional:** two separately-computed calibration estimates, each
+labelled by population, displayed together with the gap between them visible. The harvested estimate
+is the working number; the own-drafts estimate is the one that matters and it will be noisy for a
+long time. **The two must never be averaged.**
+
+**The bias being accepted, stated plainly so it is not forgotten:** FFC mock drafters are not the
+founder's league. They are more aggressive on rookies, have no keeper dynamics, and abandon drafts
+partway. The convergence (or divergence) between the two numbers as real drafts accumulate is itself
+the most informative output of this design — if they track each other, harvested drafts are a valid
+proxy and the calibration problem is solved cheaply. If they diverge, we have learned something
+important that a blended number would have concealed.
+
+**D-016 follows:** other users' drafts are stored in the harvested pool, tagged by source, never
+silently merged into the personal pool.
+
+## D-017 · DEFAULTED — partial mocks accepted with `rounds_logged`
+
+Unchanged from the rigorous default. Accept them, record `rounds_logged`, filter or weight at
+analysis time rather than at entry. Newly relevant: harvested FFC drafts will include abandoned
+mocks, so this field is now load-bearing rather than a nicety.
+
+## D-001 / D-004 · RESOLVED — delete the knob, keep the bump with its kill switch
+
+**Founder deferred to the rigorous default** after the implications were explained in draft-day terms.
+
+- **`NEED_ADJUSTMENT_SCALE`: delete.** Do not adopt 10.0, do not fit a value. The need effect is
+  already measured as `lambda = 0.352`; a second unmeasured multiplier stacked on a measured effect is
+  the precise mechanism by which a model gets tuned to its author's expectations and becomes
+  unfalsifiable. If a bounded constraint is genuinely needed for numerical stability, that is a
+  different thing and must be argued as such.
+- **`delta = 0.10`: keep, visibly flagged as an unvalidated prior**, and honour the existing
+  pre-registered rule — if need+run does not beat marginal-only on Brier, it goes to zero
+  automatically without a further decision. Zeroing it now was considered and rejected: run behaviour
+  in drafts is real and well documented, so a hard zero is cleaner but likely less accurate.
+
+## D-007 · DEFERRED by founder — revisit before the draft
+
+**Founder decision:** leave it for now. He intends to set up GitLab once the tree is clean, and will
+attempt to resolve the flagged GitHub account first.
+
+**Risk restated once, then dropped.** The project exists on one disk. The exposure is not disk
+failure, it is the destructive git commands agents run routinely — a bad reset or rebase is currently
+unrecoverable. Repo is 11.5 MiB with the database untracked, so setup is minutes whenever he wants it.
+**PM will raise this exactly once more, before the draft.** Not to be re-raised in the interim.
+
+## Closed without founder input — standing positions already answered them
+
+| ID | Resolution |
+|---|---|
+| D-006 | **CLOSED.** Empirically resolved: `nfl.db` is not tracked, `.gitignore` covers it, repo is 11.5 MiB. No history rewrite needed. |
+| D-013 | **MOOT.** Single-user tool; the founder is the only editor. Re-opens if the product ever ships to a second human. |
+| D-020 | **CLOSED — no licence needed.** The founder has stated the tool is private, personal, and displayed to nobody. FantasyPros ECR may be used for our own computation and shown to him. Re-opens on any second user, alongside D-021. |
+
+---
+
+# New — raised 2026-07-27, unanswered
+
+## D-023 · A mixed-source board — bottom-up at some positions, the old curve at others?
+**Status:** OPEN · **Raised by:** strategist, ADR-E (thread 048) · **Needed before:** Backend ships any bottom-up projection
+
+*(Numbered from D-023: `D-022` was claimed the same day by the concurrent backend session for the
+2025-in-exports holdout question — see `status.md`, thread 052 entry.)*
+
+**Rigorous default:** adopt the bottom-up projection **per position independently**, only where it beat
+the refit baseline out-of-sample, and **name the source on each board row**. Positions that did not
+clear the bar keep the ADR-016 rank-derived curve.
+
+**Why.** Forcing one global adopt/reject either discards signal at the positions where it was
+demonstrated, or ships unearned signal at the positions where it was not — and which of the two
+happened would be invisible in the output. Per-position adoption is the only version where the claim
+attached to each row is true of that row.
+
+**Cost of rigour.** The board is heterogeneous. Two rows with the same `projected_points` were produced
+by different methods with different error characteristics, and cross-positional VBD comparisons
+inherit that. It also adds a per-row provenance field to the export contract and a visible marker in
+the UI.
+
+**To loosen:** say so, and the board uses one method everywhere — but then the weaker positions carry a
+projection whose accuracy was never demonstrated, presented identically to the ones where it was.
+
+---
+
+## D-024 · The live latency budget for simulation lookahead
+**Status:** OPEN · **Raised by:** strategist, ADR-F (thread 045) · **Needed before:** Backend sizes the simulation and decides which degraded rung is the live default
+
+**Rigorous default:** 2.0 s p95 from "opponent's pick entered" to "card updated," and **the card always
+names the mode that produced its number** — including at full quality. No silent degradation.
+
+**Why 2.0 s and not the pick clock.** The binding constraint is not the clock; it is that a user
+reading a card mid-draft will not wait, and a stale card is worse than a simpler one. Two founder
+inputs would sharpen this and only he has them: **the actual pick clock in the league**, and whether he
+would rather have a slower, fuller answer or a faster, explicitly-degraded one.
+
+**Cost of rigour.** A mode line on the card is visual noise on every pick, and a tight budget may force
+the lookahead down to a re-ranker of the VBD top-5 rather than an independent search.
+
+**To loosen:** say so, and the budget widens or the mode line moves into a tooltip. Note that silent
+degradation is *not* on offer as a loosening — a product whose central claim is rigour cannot have an
+invisible quality switch, and a user comparing this round's degraded number to last round's full one
+would not know they are different quantities.

@@ -2,7 +2,7 @@
 ID: 044
 FROM: pm
 TO: backend, frontend
-STATUS: OPEN
+STATUS: RESOLVED
 OPENED: 2026-07-27
 BLOCKS: none
 ---
@@ -77,3 +77,12 @@ is not derived from anything.
 Need and surplus exposed as named fields. The structural constraint implemented with a test covering
 the surplus case (three at a filled position while a mandatory slot is short). Card shows the roster
 line only when ordering actually changed. Screenshot. Commit hash and test count.
+
+---
+### pm · 2026-07-27
+
+Closing without an artifact under this thread's name — not an implementer delivery. Thread 059's own
+text: *"This absorbs the intent of thread 044 into this surface. Coordinate; do not build two
+roster-aware recommenders."* Verified against 059 directly (reconciliation pass, `docs/handoffs/RECONCILIATION-2026-07.md`).
+If roster-need/surplus disclosure lands, it lands under 059, not here. Superseded by
+[059](059-on-deck-recommendations.md).

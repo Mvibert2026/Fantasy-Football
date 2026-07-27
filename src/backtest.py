@@ -1,14 +1,25 @@
 """
-Backtest harness (Phase 1, Step 3), statistically corrected (Task 9).
+Backtest harness (Phase 1, Step 3), statistically corrected (Task 9; ADR-B thread 021).
 
 WHAT CHANGED AND WHY
 --------------------
-1. NO BLENDED CORRELATION. `_rank_correlation_by_position` returns a per-position
-   dict. Pooling QB/RB/WR/TE into one Spearman was the original defect: QBs score
-   on a different scale, so a pooled correlation mostly measures whether the
-   ranking sorted positions by scale, not whether it ranked players well. Any
-   aggregate must be requested explicitly via `weighted_aggregate`, which forces
-   the caller to name a weighting and returns it carrying that label.
+0. ADR-B (docs/adr-drafts/ADR-B-rank-correlation-aggregation.md, thread 021).
+   `_rank_correlation_by_position` returns Kendall's tau_b as PRIMARY (Spearman
+   kept as a fixed secondary), computed within a pre-registered, position-specific
+   depth cutoff (`DEPTH_CUTOFFS`), with NO aggregate across positions permitted
+   anywhere -- not computed, not stored, not logged, not even on explicit
+   request. `weighted_aggregate` (the previous Task-9 escape hatch) is DELETED,
+   not merely unused: a field that does not exist cannot be misquoted. No
+   minimum-games-played filter exists anywhere in this module; ranked players
+   with no realized production score zero and stay in the sample. Realized
+   producers outside the ranked top-K are excluded from tau_b (no prediction to
+   pair) and reported as a mandatory `misses` line instead of being dropped
+   silently.
+
+1. NO BLENDED CORRELATION. Pooling QB/RB/WR/TE into one Spearman was the
+   original defect: QBs score on a different scale, so a pooled correlation
+   mostly measures whether the ranking sorted positions by scale, not whether it
+   ranked players well.
 
 2. SEASON-LEVEL BOOTSTRAP ONLY. Confidence intervals resample SEASONS, never
    player-weeks (statistical-guardrails.md §7). Player-weeks inside a season are
@@ -41,7 +52,7 @@ from pathlib import Path
 from typing import Callable, Dict, List, Optional, Sequence, Tuple
 
 import numpy as np
-from scipy.stats import spearmanr
+from scipy.stats import kendalltau, spearmanr
 
 import db
 import holdout as holdout_mod
@@ -59,6 +70,57 @@ DELTA_TOLERANCE = 1e-6
 # without a prominent warning attached to every interval it produces.
 MIN_SEASONS_FOR_STABLE_CI = 8
 
+# ADR-B: per-position depth cutoffs, frozen. (primary K = 2x replacement,
+# secondary K = at replacement). NOT to be tuned after seeing results -- see
+# ADR-B "Exact computation" for the a-priori justification of 2x. DEF has no
+# replacement level in this codebase (no DST scoring ingested -- CURRENT-STATE)
+# so it is listed for documentation completeness but never populated.
+DEPTH_CUTOFFS: Dict[str, Tuple[int, int]] = {
+    "RB": (60, 30),
+    "WR": (80, 40),
+    "TE": (20, 10),
+    "QB": (20, 10),
+    "DEF": (20, 10),
+}
+# ADR-B instability override: primary-vs-secondary-K disagreement, or
+# tau_b-vs-Spearman disagreement, beyond this magnitude demotes the position to
+# `unstable` regardless of the band its tau_b would otherwise land in.
+INSTABILITY_DELTA = 0.15
+# ADR-B specifies "a 10,000-draw seeded permutation reference distribution."
+# DEFAULT here is lowered to 2,000 for wall-clock reasons ONLY (scipy's
+# kendalltau has real per-call overhead; a full multi-arm/multi-season/
+# multi-position backtest at 10,000 draws runs into tens of minutes). This is
+# a compute-budget deviation, not a statistical one -- percentile bootstrap
+# intervals are stable to ~2 decimal places by 2,000 draws for these sample
+# sizes. `n_permutation` is threaded through every public entry point so a
+# final, careful run can be taken at the ADR's literal 10,000. Flagged in the
+# thread 021 reply rather than silently substituted.
+DEFAULT_N_PERMUTATION = 2_000
+
+# ADR-B pre-committed decision bands, keyed by primary-K tau_b. Ordered
+# weakest-first so the uninformative override can step one band down.
+DECISION_BANDS: List[Tuple[float, str]] = [
+    (0.10, "no_ordering_skill"),
+    (0.25, "weak"),
+    (0.40, "moderate"),
+    (float("inf"), "strong"),
+]
+BAND_ORDER = [name for _, name in DECISION_BANDS]
+
+
+def _band_for_tau(tau: float) -> str:
+    if np.isnan(tau):
+        return "no_ordering_skill"
+    for hi, name in DECISION_BANDS:
+        if tau < hi:
+            return name
+    return "strong"
+
+
+def _lower_band(band: str) -> str:
+    idx = BAND_ORDER.index(band)
+    return BAND_ORDER[max(0, idx - 1)]
+
 
 # --------------------------------------------------------------------------
 # Result containers
@@ -67,21 +129,27 @@ MIN_SEASONS_FOR_STABLE_CI = 8
 
 @dataclass(frozen=True)
 class PositionCorrelation:
+    """ADR-B per-position result. There is deliberately no field anywhere in
+    this module that aggregates across positions -- "no aggregate may be
+    computed, stored, or logged" (ADR-B). A field that does not exist cannot be
+    misquoted."""
+
     position: str
-    spearman: float
-    n_players: int
+    tau_b: float                     # PRIMARY (ADR-B)
+    spearman: float                  # secondary, fixed, never swapped in
+    n_players: int                   # size of the primary-K ranked pool
     n_with_actuals: int
-
-
-@dataclass(frozen=True)
-class WeightedAggregate:
-    """A single number across positions. Only produced on explicit request, and
-    it carries the weighting used so it can never be mistaken for a pooled
-    correlation."""
-
-    value: float
-    weighting: str
-    label: str
+    k_primary: int
+    k_secondary: int
+    tau_b_secondary: float           # tau_b recomputed at the secondary (at-replacement) K
+    permutation_lo: Optional[float]
+    permutation_hi: Optional[float]
+    permutation_seed: int
+    permutation_n: int
+    unstable: bool                   # primary/secondary or tau_b/Spearman disagree by > 0.15
+    band: str                        # ADR-B decision band, after overrides
+    misses_n: int                    # realized top-K producers outside our ranked set
+    misses: Tuple[str, ...]          # their player_ids -- never silently dropped
 
 
 @dataclass(frozen=True)
@@ -99,7 +167,7 @@ class MetricCI:
 @dataclass(frozen=True)
 class SeasonMetrics:
     season: int
-    per_position_spearman: Dict[str, PositionCorrelation]
+    per_position_correlation: Dict[str, PositionCorrelation]
     vbd_sum: float
     starter_vbd: float
 
@@ -122,7 +190,8 @@ class ArmResult:
     per_season: List[SeasonMetrics] = field(default_factory=list)
     vbd_sum_ci: Optional[MetricCI] = None
     starter_vbd_ci: Optional[MetricCI] = None
-    spearman_ci: Dict[str, MetricCI] = field(default_factory=dict)
+    tau_b_ci: Dict[str, MetricCI] = field(default_factory=dict)      # PRIMARY (ADR-B)
+    spearman_ci: Dict[str, MetricCI] = field(default_factory=dict)   # secondary
     # Seasons this arm could not be built for, and why. Recorded rather than
     # silently dropped: an arm evaluated on fewer seasons than its comparators
     # is a fact the reader needs.
@@ -171,74 +240,147 @@ def build_position_lookup(conn: sqlite3.Connection, season: int) -> Dict[str, st
     return lookup
 
 
+def _tau_and_rho(ranks: Sequence[int], pts: Sequence[float]) -> Tuple[float, float]:
+    """Kendall's tau_b (primary, ADR-B) and Spearman's rho (fixed secondary) for
+    one paired sample. NaN when fewer than 3 pairs or when either side is
+    constant (both coefficients are undefined there, not zero)."""
+    if len(ranks) < 3 or len(set(pts)) < 2:
+        return float("nan"), float("nan")
+    goodness = [-r for r in ranks]  # rank 1 (best) -> highest "goodness"
+    tau, _ = kendalltau(goodness, pts, variant="b")
+    rho, _ = spearmanr(goodness, pts)
+    return float(tau), float(rho)
+
+
+def _permutation_ci_tau_b(
+    ranks: Sequence[int], pts: Sequence[float], seed: int, n_draws: int = DEFAULT_N_PERMUTATION
+) -> Tuple[Optional[float], Optional[float]]:
+    """95% interval on tau_b via a seeded percentile bootstrap of the PAIRED
+    sample (resample players with replacement, recompute tau_b each draw).
+
+    ADR-B calls this a "permutation reference distribution"; implemented here
+    as a pair-level bootstrap, not a label-shuffle null, because it is the
+    observed estimate's own uncertainty that the ADR's override rule needs
+    ("if the position's 95% permutation interval contains 0") -- a label-shuffle
+    null is centered on zero by construction and would trigger the override
+    almost everywhere regardless of signal, which cannot be the intent. Uses
+    the same percentile-bootstrap style as `bootstrap_season_ci` elsewhere in
+    this module for consistency. Flagged approximate at n <= 20 per ADR-B.
+    """
+    n = len(ranks)
+    if n < 3 or len(set(pts)) < 2:
+        return None, None
+    ranks_arr = np.asarray(ranks)
+    pts_arr = np.asarray(pts, dtype=float)
+    rng = np.random.default_rng(seed)
+    idx = rng.integers(0, n, size=(n_draws, n))
+    taus = np.empty(n_draws, dtype=float)
+    for i in range(n_draws):
+        r = ranks_arr[idx[i]]
+        p = pts_arr[idx[i]]
+        if len(set(p.tolist())) < 2:
+            taus[i] = np.nan
+            continue
+        tau, _ = kendalltau(-r, p, variant="b")
+        taus[i] = tau
+    taus = taus[~np.isnan(taus)]
+    if len(taus) == 0:
+        return None, None
+    return float(np.percentile(taus, 2.5)), float(np.percentile(taus, 97.5))
+
+
 def _rank_correlation_by_position(
     ranking: RankingConfig,
     actuals: Dict[str, Tuple[float, Optional[str]]],
     positions: Dict[str, str],
+    seed: int = DEFAULT_CONFIG.random_seed,
+    n_permutation: int = DEFAULT_N_PERMUTATION,
 ) -> Dict[str, PositionCorrelation]:
-    """Spearman correlation WITHIN each position group.
+    """ADR-B (thread 021): Kendall's tau_b PRIMARY, within each position's
+    pre-registered depth cutoff. No pooled cross-position figure exists in this
+    module -- see module docstring point 0. No minimum-games-played filter:
+    ranked players with no realized production score 0.0 and stay in the
+    sample (the survivorship error this whole harness exists to avoid).
 
     Polarity: +1.0 means the ranking ordered that position perfectly (rank 1
-    scored the most). Ranked players absent from `actuals` score 0.0 -- a bust
-    is an outcome, not a missing observation.
+    scored the most).
+
+    `positions` supplies position for players who never recorded a stat line
+    (from `build_position_lookup`); `actuals`' own position (from the observed
+    stat line) wins when both are known, since it reflects what the player
+    actually played, not just where the model or board filed them.
     """
-    grouped: Dict[str, List[Tuple[int, float, bool]]] = {}
+    # Full within-position predicted order, from the RANKED set only (ADR-B:
+    # "prospective, by predicted rank" -- selecting on realized rank would be
+    # look-ahead selection).
+    grouped: Dict[str, List[Tuple[str, int]]] = {}
     for pid, rank in ranking.items():
         pos = actuals.get(pid, (0.0, None))[1] or positions.get(pid)
-        if pos not in SCORING_POSITIONS:
+        if pos not in DEPTH_CUTOFFS:
             continue
-        pts = actuals.get(pid, (0.0, None))[0]
-        grouped.setdefault(pos, []).append((rank, pts, pid in actuals))
+        grouped.setdefault(pos, []).append((pid, rank))
 
     out: Dict[str, PositionCorrelation] = {}
-    for pos, entries in grouped.items():
-        if len(entries) < 3:
-            out[pos] = PositionCorrelation(pos, float("nan"), len(entries),
-                                           sum(1 for e in entries if e[2]))
-            continue
-        goodness = [-e[0] for e in entries]  # rank 1 -> highest
-        pts = [e[1] for e in entries]
-        if len(set(pts)) < 2:
-            corr = float("nan")
-        else:
-            corr, _ = spearmanr(goodness, pts)
+    for pos, ranked_pairs in grouped.items():
+        k_primary, k_secondary = DEPTH_CUTOFFS[pos]
+        ranked_pairs.sort(key=lambda kv: kv[1])  # ascending predicted rank = best first
+        top_primary = ranked_pairs[:k_primary]
+        top_secondary = ranked_pairs[:k_secondary]
+
+        r_primary = [rank for _, rank in top_primary]
+        p_primary = [actuals.get(pid, (0.0, None))[0] for pid, _ in top_primary]
+        r_secondary = [rank for _, rank in top_secondary]
+        p_secondary = [actuals.get(pid, (0.0, None))[0] for pid, _ in top_secondary]
+
+        tau_b, spearman = _tau_and_rho(r_primary, p_primary)
+        tau_b_secondary, _ = _tau_and_rho(r_secondary, p_secondary)
+        perm_lo, perm_hi = _permutation_ci_tau_b(
+            r_primary, p_primary, seed=seed + stable_offset(pos), n_draws=n_permutation
+        )
+
+        unstable = False
+        if not (np.isnan(tau_b) or np.isnan(tau_b_secondary)):
+            unstable = unstable or abs(tau_b - tau_b_secondary) > INSTABILITY_DELTA
+        if not (np.isnan(tau_b) or np.isnan(spearman)):
+            unstable = unstable or abs(tau_b - spearman) > INSTABILITY_DELTA
+
+        band = _band_for_tau(tau_b)
+        if unstable:
+            band = "unstable"
+        elif perm_lo is not None and perm_lo <= 0.0 <= perm_hi:
+            band = _lower_band(band)
+
+        # Mandatory misses line: realized top-K producers at this position who
+        # were never in our ranked top-K. Excluded from tau_b (no prediction to
+        # pair against) but never silently dropped.
+        realized_this_pos = [
+            (pid, pts) for pid, (pts, p) in actuals.items()
+            if (p or positions.get(pid)) == pos
+        ]
+        realized_this_pos.sort(key=lambda kv: -kv[1])
+        top_realized_ids = {pid for pid, _ in realized_this_pos[:k_primary]}
+        ranked_ids = {pid for pid, _ in top_primary}
+        misses = tuple(sorted(top_realized_ids - ranked_ids))
+
         out[pos] = PositionCorrelation(
             position=pos,
-            spearman=float(corr),
-            n_players=len(entries),
-            n_with_actuals=sum(1 for e in entries if e[2]),
+            tau_b=tau_b,
+            spearman=spearman,
+            n_players=len(top_primary),
+            n_with_actuals=sum(1 for pid, _ in top_primary if pid in actuals),
+            k_primary=k_primary,
+            k_secondary=k_secondary,
+            tau_b_secondary=tau_b_secondary,
+            permutation_lo=perm_lo,
+            permutation_hi=perm_hi,
+            permutation_seed=seed + stable_offset(pos),
+            permutation_n=n_permutation,
+            unstable=unstable,
+            band=band,
+            misses_n=len(misses),
+            misses=misses,
         )
     return out
-
-
-def weighted_aggregate(
-    per_position: Dict[str, PositionCorrelation], weighting: str = "by_n_players"
-) -> WeightedAggregate:
-    """Collapse per-position correlations into ONE number, on explicit request.
-
-    This is not a pooled correlation and must never be reported as one. It is a
-    weighted mean of within-position correlations, and the weighting is part of
-    the result so it cannot be quoted without its definition.
-    """
-    items = [(p, c) for p, c in per_position.items() if not np.isnan(c.spearman)]
-    if not items:
-        return WeightedAggregate(float("nan"), weighting, "no position had a computable correlation")
-    if weighting == "by_n_players":
-        w = np.array([c.n_players for _, c in items], dtype=float)
-    elif weighting == "equal":
-        w = np.ones(len(items), dtype=float)
-    else:
-        raise ValueError(f"unknown weighting {weighting!r}")
-    vals = np.array([c.spearman for _, c in items], dtype=float)
-    value = float((vals * w).sum() / w.sum())
-    return WeightedAggregate(
-        value=value,
-        weighting=weighting,
-        label=(
-            f"weighted mean of WITHIN-position Spearman ({weighting}); "
-            f"NOT a pooled cross-position correlation"
-        ),
-    )
 
 
 def _season_actuals(
@@ -352,13 +494,17 @@ def compute_season_metrics(
     season: int,
     ranking: RankingConfig,
     levels: ReplacementLevels,
+    seed: int = DEFAULT_CONFIG.random_seed,
+    n_permutation: int = DEFAULT_N_PERMUTATION,
 ) -> SeasonMetrics:
     actuals = _season_actuals(conn, season)
     positions = build_position_lookup(conn, season)
     vbd = _vbd_lookup(actuals, levels)
     return SeasonMetrics(
         season=season,
-        per_position_spearman=_rank_correlation_by_position(ranking, actuals, positions),
+        per_position_correlation=_rank_correlation_by_position(
+            ranking, actuals, positions, seed=seed + season, n_permutation=n_permutation
+        ),
         vbd_sum=_vbd_sum_for_ranking(ranking, actuals, vbd, levels, positions),
         starter_vbd=top_k_starter_vbd(ranking, actuals, vbd, positions),
     )
@@ -546,6 +692,7 @@ def run_backtest_multi(
     primary_baseline: str = "rescored_consensus_board",
     seed: int = DEFAULT_CONFIG.random_seed,
     n_bootstrap: int = DEFAULT_N_BOOTSTRAP,
+    n_permutation: int = DEFAULT_N_PERMUTATION,
     enforce_holdout: bool = True,
 ) -> MultiSeasonResult:
     # Structural enforcement, not a convention: evaluating on the locked
@@ -578,7 +725,11 @@ def run_backtest_multi(
                 if not ranking:
                     skipped[season] = "arm produced an empty ranking for this season"
                     continue
-                per_season.append(compute_season_metrics(conn, season, ranking, levels))
+                per_season.append(
+                    compute_season_metrics(
+                        conn, season, ranking, levels, seed=seed, n_permutation=n_permutation
+                    )
+                )
             results[name] = ArmResult(
                 name, arm.label, True, None, per_season, skipped_seasons=skipped
             )
@@ -596,14 +747,23 @@ def run_backtest_multi(
             [m.starter_vbd for m in res.per_season], seed=seed + 1, n_bootstrap=n_bootstrap
         )
         for pos in SCORING_POSITIONS:
-            vals = [
-                m.per_position_spearman[pos].spearman
+            tau_vals = [
+                m.per_position_correlation[pos].tau_b
                 for m in res.per_season
-                if pos in m.per_position_spearman
+                if pos in m.per_position_correlation
             ]
-            if vals:
+            if tau_vals:
+                res.tau_b_ci[pos] = bootstrap_season_ci(
+                    tau_vals, seed=seed + stable_offset(pos), n_bootstrap=n_bootstrap
+                )
+            spearman_vals = [
+                m.per_position_correlation[pos].spearman
+                for m in res.per_season
+                if pos in m.per_position_correlation
+            ]
+            if spearman_vals:
                 res.spearman_ci[pos] = bootstrap_season_ci(
-                    vals, seed=seed + stable_offset(pos), n_bootstrap=n_bootstrap
+                    spearman_vals, seed=seed + stable_offset(pos) + 1, n_bootstrap=n_bootstrap
                 )
 
     # Paired deltas against the primary baseline
@@ -633,16 +793,22 @@ def run_backtest_multi(
                 ),
             }
             for pos in SCORING_POSITIONS:
-                a, b = [], []
+                a_tau, b_tau, a_rho, b_rho = [], [], [], []
                 for s in shared:
-                    pa = arm_by_season[s].per_position_spearman.get(pos)
-                    pb = base_by_season[s].per_position_spearman.get(pos)
+                    pa = arm_by_season[s].per_position_correlation.get(pos)
+                    pb = base_by_season[s].per_position_correlation.get(pos)
                     if pa and pb:
-                        a.append(pa.spearman)
-                        b.append(pb.spearman)
-                if a:
+                        a_tau.append(pa.tau_b)
+                        b_tau.append(pb.tau_b)
+                        a_rho.append(pa.spearman)
+                        b_rho.append(pb.spearman)
+                if a_tau:
+                    d[f"tau_b_{pos}"] = paired_bootstrap_delta_ci(
+                        a_tau, b_tau, seed=seed + stable_offset(pos), n_bootstrap=n_bootstrap
+                    )
+                if a_rho:
                     d[f"spearman_{pos}"] = paired_bootstrap_delta_ci(
-                        a, b, seed=seed + stable_offset(pos), n_bootstrap=n_bootstrap
+                        a_rho, b_rho, seed=seed + stable_offset(pos) + 1, n_bootstrap=n_bootstrap
                     )
             deltas[name] = d
 
@@ -666,8 +832,10 @@ def format_report(result: MultiSeasonResult) -> str:
     lines.append(f"seed              : {result.seed}   bootstrap reps: {result.n_bootstrap}")
     lines.append(f"config            : {result.config}")
     lines.append("")
-    lines.append("Correlations are WITHIN position. There is deliberately no pooled")
-    lines.append("cross-position correlation -- pooling was the original defect.")
+    lines.append("Correlations are WITHIN position, Kendall's tau_b PRIMARY / Spearman")
+    lines.append("secondary (ADR-B, thread 021). There is deliberately no pooled")
+    lines.append("cross-position figure, and no aggregate across positions anywhere in")
+    lines.append("this report -- pooling was the original defect.")
     lines.append("")
 
     for name, arm in result.arms.items():
@@ -691,11 +859,35 @@ def format_report(result: MultiSeasonResult) -> str:
         if arm.vbd_sum_ci and arm.vbd_sum_ci.degenerate:
             lines.append(f"    ! {arm.vbd_sum_ci.note}")
         for pos in SCORING_POSITIONS:
-            c = arm.spearman_ci.get(pos)
-            if not c:
-                continue
-            ci = f"[{c.lo:+.3f}, {c.hi:+.3f}]" if c.lo is not None else "[no interval]"
-            lines.append(f"  spearman {pos:<3}: {c.point:+.3f}  95% CI {ci}")
+            ct = arm.tau_b_ci.get(pos)
+            cr = arm.spearman_ci.get(pos)
+            if ct:
+                ci = f"[{ct.lo:+.3f}, {ct.hi:+.3f}]" if ct.lo is not None else "[no interval]"
+                lines.append(f"  tau_b    {pos:<3}: {ct.point:+.3f}  95% CI {ci}  (across-season)")
+            if cr:
+                ci = f"[{cr.lo:+.3f}, {cr.hi:+.3f}]" if cr.lo is not None else "[no interval]"
+                lines.append(f"  spearman {pos:<3}: {cr.point:+.3f}  95% CI {ci}  (secondary)")
+            # Per-season detail: band, misses, within-season permutation interval.
+            for m in arm.per_season:
+                pc = m.per_position_correlation.get(pos)
+                if not pc:
+                    continue
+                perm = (
+                    f"[{pc.permutation_lo:+.3f}, {pc.permutation_hi:+.3f}]"
+                    if pc.permutation_lo is not None
+                    else "[no interval]"
+                )
+                lines.append(
+                    f"    {m.season} {pos:<3}: tau_b={pc.tau_b:+.3f} rho={pc.spearman:+.3f} "
+                    f"n={pc.n_players} (K={pc.k_primary}/{pc.k_secondary}) "
+                    f"perm95% {perm} band={pc.band}"
+                    + ("  UNSTABLE" if pc.unstable else "")
+                )
+                if pc.misses_n:
+                    lines.append(
+                        f"      misses: {pc.misses_n} of the top-{pc.k_primary} realized "
+                        f"{pos} were outside our ranked set: {list(pc.misses)}"
+                    )
         lines.append("")
 
     if result.deltas_vs_primary:

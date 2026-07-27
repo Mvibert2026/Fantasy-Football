@@ -90,6 +90,15 @@ and physically running mock drafts. Everything else should be migrating away fro
 
 ---
 
+**Addendum, 2026-07-27 (Fable extended-mandate session, captured per FR-003):** the founder,
+before going to sleep, said: *"you are allowed to run what you need to instead of ask me each
+time"* and *"I want you to do a lot of work without needing human intervention, don't let me
+stop you from doing what you were told."* Read as a session-scoped grant of overnight autonomy
+and a reaffirmation of FR-002's direction: when the founder is away, agents proceed under
+standing authorization rather than blocking on permission — within each mandate's own written
+isolation rules, which the same session kept fully in force (branch-only code, no master
+writes).
+
 ## FR-003 — All founder statements become common knowledge
 
 **Raised:** 2026-07-26, Cowork chat · **Status:** `SHIPPED`
@@ -185,3 +194,126 @@ CIs and the per-position correlation fix are prerequisites, not chores.
 **Not yet decided:** whether this justifies pulling simulation work ahead of the Opponents tab and
 other interface gaps before this season's draft. That is a founder call — see
 `docs/decisions-needed.md`.
+
+---
+
+## FR-006 · A conversational partner during the live draft
+
+**Raised:** 2026-07-27. **Status:** captured, not scheduled. Founder explicitly said not to build it
+now.
+
+> "I wonder if it makes sense to hook up a model to talk to during the draft about my draft and
+> strategy, I'd like that, we don't need to build it out now, but that's how I think I want it to
+> work."
+
+**What this actually is, and why it is not the same as the existing chatbot.** D-014 already reversed
+the LLM-renderer deferral and put a Haiku-backed assistant in the app for the founder to interrogate
+the back end while learning what is broken. That is a **debugging surface**. FR-006 is a different
+product: a **strategy interlocutor during a live draft**, under a clock, that knows the board state,
+the founder's roster, the survival probabilities, and the opponents' needs — and can be argued with.
+
+**Why this is architecturally significant rather than a feature request.** The current engine answers
+*"who should I take?"* with a ranked list and a probability. A conversational partner has to answer
+*"why not the other guy?"*, *"what happens if I wait a round?"*, and *"who's about to get squeezed at
+my position?"* — which are counterfactual and multi-step. Those are questions about the *simulation*,
+not the current board. It likely needs the lookahead work (thread 045) to be real, and it needs the
+recommendation to already carry its reasoning (thread 049) rather than having a model invent a
+rationale after the fact.
+
+**The failure mode to design against, stated now so it is not discovered later.** A chatty model with
+access to real probabilities will happily produce fluent justifications that are not the model's
+actual reasoning. That is the single most dangerous thing this project could ship — it would defeat
+the traceability discipline that everything else is built on, and it would do so persuasively. The
+constraint should be that the assistant may **only** surface computed quantities and may not generate
+a rationale the engine did not produce. Establish that before the feature is scoped, not during.
+
+**Dependencies:** 045 (lookahead), 049 (reasoned recommendation), 027/028 (opponents and predictions
+surfaces). Not startable before those.
+
+---
+
+## FR-007 · Cover every table stake, regardless of edge value
+
+**Raised:** 2026-07-27. **Status:** standing principle, effective immediately.
+
+> "I don't care if it's table stakes, not edge. By definition, we need all the table stakes covered."
+
+**Context.** The PM had characterised known-suspension handling as "table stakes, not alpha" and
+suggested it should not count toward the project's edge case. The founder rejected the implied
+prioritisation.
+
+**The principle.** Correctness floor comes before edge, unconditionally. It is not a trade-off to be
+weighed per feature.
+
+**Why this is stronger than it sounds, and why the PM was wrong.** Edge is worthless if the floor
+leaks. A ranking with a real 5% edge plus one catastrophic omission is *worse than consensus*, because
+the founder cannot tell which rows are affected and therefore cannot trust any of them. Table-stakes
+failures do not average out the way modelling error does — they are concentrated on individual
+players and severe. One suspended player ranked as a full-season starter discredits all 300 rows, and
+reasonably so.
+
+**Operational consequence.** A **table-stakes inventory** is now a required deliverable — the
+exhaustive list of things any credible ranking must get right, each with verified / not-verified /
+unknown status. Verification means an **executable check in the test suite**, not an assurance that
+someone looked. Items that cannot be re-verified after the next data refresh are not covered.
+
+This gates the edge work: no result from the proprietary ranking effort is worth reporting until the
+floor items are verified or explicitly listed as known gaps.
+
+**Specified in:** `docs/fable-mandate-2026-07-27.md` § 2C, Part 5.
+
+---
+
+## FR-008 · Move thinking out of the clock window
+
+**Raised:** 2026-07-27. **Status:** active — specified in `docs/handoffs/059-on-deck-recommendations.md`.
+
+> "Some of the 'on the clock' information and potential recommendations and considerations at my pick
+> would be nice instead of only on my pick. I'd like to be able to review those recommendations ahead
+> of time under less pressure."
+
+**The general principle, which extends past the originating feature.** The founder wants to do his
+reasoning in the fourteen picks *before* his turn, not in the ninety seconds *of* it. Any feature
+that shifts cognitive load out of the clock window is worth more than its apparent size, and any
+feature that adds load inside it should be justified against this.
+
+**The design consequence that makes it non-trivial.** A recommendation for a future pick cannot be
+the same object as a recommendation at that pick — the intervening picks have not happened. The
+honest form is **conditional**: a small decision tree over the likely board states, built from the
+survival model the product already computes. Showing the current recommendation early would be
+answering a question that has not been asked yet.
+
+**Why it matters strategically.** It converts the survival model from a number into a plan, and it is
+the object FR-006's draft-time chatbot needs in order to answer *"what happens if I wait a round?"*
+without inventing a rationale. Build order therefore runs FR-008 → FR-006, not the reverse.
+
+---
+
+## FR-009 · The projection must know WHICH weeks, not just how many
+
+**Raised:** 2026-07-27 (Fable session 4 mandate). **Status:** specified — ADR-E amendment E-A1
+(on branch `fable/ext-2026-07-27`), sonnet work orders R3-A/R3-B ready.
+
+> "Redefine the projection output as a week-indexed vector rather than a season aggregate.
+> Points = games played x points per game x usage ramp. [N3] is one primitive serving
+> suspension valuation (games 1–N missed are the LOW-leverage ones; championships are weeks
+> 15–17), bye cost, and in-season start/sit. Specify it once, name every consumer."
+
+Three consumers were blocked on the shape during Fable's absence: T4's suspension
+games-adjustment, bye-week cost, N3's leverage weights. All three now read from E-A1 §A1.
+One verification rider captured with it: the founder's "weeks 15–17" vs `league_config.py`'s
+`playoff_weeks=(16,17)` — check on the live platform during the T2 visit (one minute).
+
+## FR-010 · Registration-before-code as the deliverable standard
+
+**Raised:** 2026-07-27 (Fable session 4 mandate). **Status:** standing.
+
+> "Register the prediction BEFORE fitting, and commit the registration before the experiment
+> code exists... If you cannot finish the run, LAND THE REGISTRATION ANYWAY so a sonnet agent
+> can execute it in your absence. A registered, unexecuted experiment is a complete
+> deliverable; an unregistered finished one is not."
+
+The founder has now stated this as the project's definition of done for experiments, not just
+a methodology preference. Applied to V7 this session (registered `5af349e`, code after,
+falsified honestly). Any agent running an experiment in this repo owes the registration
+commit first.

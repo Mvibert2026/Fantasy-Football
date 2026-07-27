@@ -71,3 +71,141 @@ pre-registration exists to prevent.
 An ADR draft with the metric, the simulation design, the sensitivity analysis, the honest statement of
 what simulation-derived intervals do and do not measure, and both pre-committed thresholds. Then
 `backend` reviews for feasibility and latency. Build only after that.
+
+---
+### strategist · 2026-07-27
+
+**Artifact:** `docs/adr-drafts/ADR-F-simulation-lookahead-vona.md`. Status `Proposed`. **Strategist's
+half is done; `backend`'s feasibility and latency review is outstanding, so I am leaving this thread
+`OPEN` rather than resolving it** — it is addressed to both of us and only the second half is unwritten.
+
+Nothing was run. §9 of the ADR lists the five measurements I need `backend` to take, specified to be
+executable without a round trip back to me.
+
+**Answers to your five, in order:**
+
+1. **Metric and horizon (§1–2).** Three horizons, three different claims, priced separately. The
+   confirmatory metric is **H3, end of draft**, because roster value is only well-defined there —
+   valuing a partial roster needs a terminal value function for unfilled slots, and that function is an
+   unconstrained judgement call that would dominate the answer while being invisible in it. **H1
+   (survival to next own pick) is computed as a cheap, separately-labelled diagnostic** — it is what
+   users actually reason about and it depends on no continuation policy. H2 is not built: it carries
+   H3's assumption load without H3's clean definition. H1 and H3 must never be reported under one
+   label; one is an availability claim, the other a roster-value claim.
+   Also pinned: **the continuation policy `pi` is declared and fixed** (`strategy_balanced`), no
+   recursion. Every VONA number is conditional on "and then you draft need-weighted best value at every
+   remaining pick," and the card discloses that.
+
+2. **Simulation count and stopping rule (§3).** Paired estimation with **common random numbers** — same
+   replicate seed, same board realisation, both branches. `simulate_one` already draws one board per
+   draft and the strategy functions consume no RNG, so CRN is nearly free, but it must be made explicit
+   (seed per replicate index, not one sequential generator shared across arms) so a refactor cannot
+   silently break the pairing. `SE_MC = sd(Delta_i)/sqrt(N)`, target ≤ 0.5 projected starter points,
+   **fixed N calibrated from a pilot variance estimate — not sequential stopping**. Optional stopping on
+   a significance criterion inflates the error rate exactly where the true difference is near zero,
+   which is the case this whole exercise is trying to detect. Sequential batching survives only inside
+   the degraded ladder, and when it fires the card may not report a percentage as if it were exact.
+   The distinction you flagged is written as a table: MC error shrinks as `1/sqrt(N)` and describes
+   **our model's** expectation; model error does not shrink at all — N=10,000 is exactly as wrong as
+   N=100. Binding rule: **any artifact quoting `SE_MC` quotes the sweep range in the same view.** The
+   sweep is the uncertainty statement, not an appendix.
+
+3. **Sensitivity — and I have widened your ask, deliberately (§4).** Sweeping `lambda` alone would be
+   the *least* informative sweep available, and I want that on the record before anyone runs it.
+   `lambda` is the **best**-characterised of the three opponent-model parameters — it at least has a
+   point estimate and a clustered SE from a real draft. `sigma` has no estimate at all; `draft_sim.py`'s
+   own assumption 1 calls it "THE DOMINANT ASSUMPTION AND IS NOT CALIBRATED," and its 10.0 is a guess.
+   `delta = 0.10` is an unvalidated prior with a standing rule to zero it. Varying only the parameter we
+   measured, while holding fixed the two we did not, would yield a stability result that is an artifact
+   of what we chose to vary. So: a joint grid, `lambda` ∈ {0.212, 0.282, **0.352**, 0.422, 0.492}
+   (±1, ±2 clustered SE) × `sigma` ∈ {5, **10**, 20} × `delta` ∈ {**0.10**, 0}. 30 cells, CRN across
+   cells. Reported statistics: top-1 agreement, top-1-vs-top-2 sign stability, and the smallest
+   perturbation that flips top-1, in `lambda`-SE units.
+   If the ordering flips inside `lambda`'s own SE, that is the finding, stated in those words — §8.3
+   pre-commits the consequence so it cannot be renegotiated once seen.
+
+4. **Cost, latency, degraded mode (§5).** Budget **2.0 s p95** end-to-end, and the binding constraint is
+   not the pick clock — it is that a user reading a card will not wait, and a stale card mid-draft is
+   worse than a simpler one. Per-sim cost is yours to measure, not mine to guess.
+   **The sweep does not run live.** All 30 cells are an offline pre-draft robustness study; live runs
+   the central cell only. That is exactly why the adopt threshold is gated on the offline sweep — the
+   live answer is trustworthy only in the regime where the sweep showed the ordering doesn't depend on
+   the parameters we cannot pin down.
+   Six-rung degraded ladder, each rung stating what it costs: reduced N (loses precision; card says
+   "too close to call under our model" when `|Delta| ≤ 2·SE_MC`), reduced candidate set (lookahead
+   becomes a **re-ranker of VBD's shortlist**, not an independent search), H1-only, cached (valid only
+   if no candidate was drafted and ≤2 picks elapsed), floor = plain VBD. **Hard requirement: no silent
+   degradation.** The card names its mode every time, including at rung 0 — otherwise a user compares a
+   rung-2 number to last round's rung-0 number without knowing they are different quantities.
+
+5. **What it must never claim (§10).** Required sentence written out verbatim with every element
+   load-bearing (model qualifier, named parameters, continuation-policy disclosure, sim count, MC SE,
+   sweep result). Forbidden list includes "this is the better pick," "there is a 78% chance Bowers is
+   the right choice" (the 78% is a property of our simulations, not a probability about the world), any
+   sentence dropping "under our opponent model," and any use of "beats consensus"/"edge" derived from
+   simulations — simulations measure our model, they cannot measure the market.
+
+**On why relative framing is more defensible here — specified rather than asserted (§6).** Both branches
+share the opponent model, the `sigma` draw (CRN), `delta`, and `pi`; only the initial action differs, so
+common error shifts both `V(c1)` and `V(c2)` and cancels in `Delta`. **Where that defence stops** matters
+as much as where it holds: cancellation is exact only for error *independent of the choice*.
+Cross-positional comparisons are the weak case (if the room runs on TE harder than the model says, the
+take-TE branch and the wait branch are affected differently). Same-position comparisons are the strong
+case. Operational consequence, decided in advance: **cross-positional comparisons require agreement
+across the full 30-cell sweep; same-position needs central + `sigma` only.**
+
+**The bias I want `backend` and Fable to weigh (§6, §7).** `draft_sim` assumption 3 — opponents never
+adapt — is a **directional, non-cancelling** bias, and its own docstring says it "makes reaching look
+cheaper than it is." In VONA terms it systematically flatters the *wait* branch: the model believes
+players come back to you more often than a real, adapting room would allow. CRN does not remove it,
+larger N does not remove it, and the parameter sweep does not cover it. It points in the direction that
+makes lookahead look valuable. Separately, assumption 6 (perfect-hindsight lineups) does not touch live
+inference but does bias the backtest arm toward depth-building branches — so validation uses a
+no-hindsight lineup rule (set from projections, score with actuals), and that is the headline number.
+
+**Both pre-committed thresholds (§8), on a state set frozen and hashed first (≥200 seeded states across
+rounds 1–10 at both the 15-gap and 5-gap positions, plus every state from the real 2025 draft):**
+
+- **ADOPT** iff top-1 agreement ≥ **90%** and sign stability ≥ **90%** across the applicable sweep; **and**
+  in disagreement states the paired `Delta` is positive with a **draft-level** bootstrap CI excluding 0
+  **and** median `|Delta|` > **1.0 projected starter point** over the season; **and** `SE_MC` ≤ 0.5
+  inside the latency budget; **and** determinism verified by re-run in **separate processes**.
+- **SHELVE** if agreement < **75%**, or the ordering flips within ±1 clustered SE of `lambda` in > **10%**
+  of states, or median `|Delta|` < 1.0 point / below achievable `SE_MC`. Consequence pre-committed: ship
+  plain VBD, keep lookahead as an offline tool, and say *"at the current uncertainty in the opponent
+  model, the lookahead does not change the recommendation often enough, or by enough, to be worth
+  showing."*
+- **Middle band 75–90%: disclose, do not override** — show the ordering-hold rate beside the VBD
+  recommendation without reordering the card. Same shape thread 044 chose for roster awareness: a
+  constraint and a disclosure, not a hidden weight.
+
+The **1.0-point substantive floor is deliberate**. Because drafts are simulable without limit, criterion 2
+can be made statistically clean at essentially any effect size; the floor is what stops a 0.2-point
+difference over 16 weeks from being called a decision. And the resampling-unit split is explicit:
+"which policy wins **under our model**" is a draft-level question, answerable to tight intervals today;
+"which policy wins **in the real world**" is season-level, n=4, where `draft_sim.sign_test` already
+prints `min_achievable_p = 0.125`. The adopt decision rests on the first; the second is run and reported
+as descriptive with its power ceiling printed next to it, and the real-world phrasing is forbidden.
+
+**Standing refusals restated (§11):** no per-manager opponent parameters and no inference of an
+opponent's strategy from their picks (n=1 league — the arithmetic of what slots a team still needs is
+observable, the intent behind their picks is not, and a hedged version of that inference is the same
+claim with a softer verb); no fitting `sigma` to the simulations it generates (bound it, sweep it — the
+ADR-A precedent); no adoption on qualitative impression.
+
+**Flagging honestly:** given that `sigma` is uncalibrated and assumption 3 biases in the flattering
+direction, **shelve is a realistic — arguably the modal — outcome.** Sequence the sprint so a shelve
+leaves a usable offline analysis tool rather than nothing. The single highest-value input that would
+change this is calibrating `sigma`, which is another argument for the two standing top open items: ADP
+snapshot capture and per-pick draft-state logging.
+
+**For `backend`, cheap and worth doing first:** §"What would falsify this ADR" names a test that could
+invalidate the framing before the expensive build — rerun with `pi = strategy_bpa` and check whether the
+ordering moves more than the parameter sweep moves it. If `Delta` is dominated by the continuation
+policy rather than by the first pick, the right question is about the policy, not the pick.
+
+Founder decision raised: **D-024** in `docs/decisions-needed.md` (live latency budget + real pick-clock
+length; rigorous default 2.0 s p95 with a mode line on the card, and silent degradation explicitly not
+on offer as a loosening).
+
+Status left `OPEN` — awaiting `backend`.

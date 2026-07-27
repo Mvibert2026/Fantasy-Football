@@ -27,32 +27,49 @@ def test_correlation_is_returned_per_position_not_pooled():
         ("q1", 300.0, "QB"), ("q2", 250.0, "QB"), ("q3", 200.0, "QB"),
         ("r1", 150.0, "RB"), ("r2", 120.0, "RB"), ("r3", 90.0, "RB"),
     ])
-    out = backtest._rank_correlation_by_position(ranking, actuals, {})
+    out = backtest._rank_correlation_by_position(ranking, actuals, {}, n_permutation=200)
     assert set(out) == {"QB", "RB"}
+    assert out["QB"].tau_b == pytest.approx(1.0)
+    assert out["RB"].tau_b == pytest.approx(1.0)
     assert out["QB"].spearman == pytest.approx(1.0)
-    assert out["RB"].spearman == pytest.approx(1.0)
 
 
 def test_no_pooled_scalar_is_exposed_on_the_result():
-    """Regression guard: the original defect was a single blended correlation."""
+    """Regression guard: the original defect was a single blended correlation.
+    ADR-B (thread 021) goes further -- no aggregate across positions may exist
+    anywhere in this module, not even behind an explicit-request function."""
     assert not hasattr(backtest, "_rank_correlation")
+    assert not hasattr(backtest, "weighted_aggregate")
+    assert not hasattr(backtest, "WeightedAggregate")
     assert "correlation_with_actual_finish" not in backtest.SeasonMetrics.__annotations__
+
+
+def test_scalar_return_type_is_rejected():
+    """ADR-B: 'a scalar return type is a lint failure.' The function must always
+    return a per-position dict, never a bare float, even for a single position."""
+    ranking = {"w1": 1, "w2": 2, "w3": 3}
+    actuals = _actuals([("w1", 300.0, "WR"), ("w2", 200.0, "WR"), ("w3", 100.0, "WR")])
+    out = backtest._rank_correlation_by_position(ranking, actuals, {}, n_permutation=200)
+    assert isinstance(out, dict)
+    assert all(isinstance(v, backtest.PositionCorrelation) for v in out.values())
 
 
 def test_inverted_ranking_gives_negative_within_position_correlation():
     ranking = {"w1": 3, "w2": 2, "w3": 1}
     actuals = _actuals([("w1", 300.0, "WR"), ("w2", 200.0, "WR"), ("w3", 100.0, "WR")])
-    out = backtest._rank_correlation_by_position(ranking, actuals, {})
+    out = backtest._rank_correlation_by_position(ranking, actuals, {}, n_permutation=200)
+    assert out["WR"].tau_b == pytest.approx(-1.0)
     assert out["WR"].spearman == pytest.approx(-1.0)
 
 
 def test_busted_players_are_scored_zero_not_dropped():
     """A ranked player with no stat line busted; dropping him would be the
-    survivorship error (statistical-guardrails.md §2)."""
+    survivorship error (statistical-guardrails.md §2). No minimum-games filter
+    exists anywhere in this module (ADR-B)."""
     ranking = {"w1": 1, "ghost": 2, "w3": 3}
     actuals = _actuals([("w1", 300.0, "WR"), ("w3", 100.0, "WR")])
     positions = {"ghost": "WR"}
-    out = backtest._rank_correlation_by_position(ranking, actuals, positions)
+    out = backtest._rank_correlation_by_position(ranking, actuals, positions, n_permutation=200)
     assert out["WR"].n_players == 3
     assert out["WR"].n_with_actuals == 2
 
@@ -60,36 +77,85 @@ def test_busted_players_are_scored_zero_not_dropped():
 def test_position_group_with_too_few_players_returns_nan_not_a_number():
     ranking = {"t1": 1, "t2": 2}
     actuals = _actuals([("t1", 100.0, "TE"), ("t2", 50.0, "TE")])
-    out = backtest._rank_correlation_by_position(ranking, actuals, {})
+    out = backtest._rank_correlation_by_position(ranking, actuals, {}, n_permutation=200)
+    assert np.isnan(out["TE"].tau_b)
     assert np.isnan(out["TE"].spearman)
 
 
-# ----------------------------- weighted aggregate -----------------------------
+def test_depth_cutoff_restricts_the_ranked_pool_to_primary_k():
+    """WR primary K is 80 (ADR-B table). A 90-deep ranking must only pull the
+    top 80 into the primary-K sample, and the top 40 into the secondary."""
+    ranking = {f"w{i}": i for i in range(1, 91)}
+    actuals = _actuals([(f"w{i}", 1000.0 - i, "WR") for i in range(1, 91)])
+    out = backtest._rank_correlation_by_position(ranking, actuals, {}, n_permutation=200)
+    assert out["WR"].k_primary == 80
+    assert out["WR"].k_secondary == 40
+    assert out["WR"].n_players == 80
 
 
-def test_weighted_aggregate_carries_its_weighting_label():
-    per_pos = {
-        "QB": backtest.PositionCorrelation("QB", 0.5, 10, 10),
-        "RB": backtest.PositionCorrelation("RB", 0.9, 90, 90),
-    }
-    agg = backtest.weighted_aggregate(per_pos, weighting="by_n_players")
-    assert agg.value == pytest.approx((0.5 * 10 + 0.9 * 90) / 100)
-    assert "NOT a pooled" in agg.label
-    assert agg.weighting == "by_n_players"
+def test_realized_producers_outside_ranked_set_are_reported_as_misses_not_dropped():
+    """ADR-B: undrafted breakouts cannot enter a paired correlation (no
+    prediction to pair), but must never be silently omitted."""
+    ranking = {"w1": 1, "w2": 2, "w3": 3}
+    actuals = _actuals([
+        ("w1", 300.0, "WR"), ("w2", 200.0, "WR"), ("w3", 100.0, "WR"),
+        ("breakout", 500.0, "WR"),  # highest scorer of the four, never ranked
+    ])
+    out = backtest._rank_correlation_by_position(ranking, actuals, {}, n_permutation=200)
+    assert out["WR"].misses_n == 1
+    assert out["WR"].misses == ("breakout",)
+    # the miss must not have entered the paired sample
+    assert out["WR"].n_players == 3
 
 
-def test_weighted_aggregate_equal_weighting_differs_from_size_weighting():
-    per_pos = {
-        "QB": backtest.PositionCorrelation("QB", 0.5, 10, 10),
-        "RB": backtest.PositionCorrelation("RB", 0.9, 90, 90),
-    }
-    assert backtest.weighted_aggregate(per_pos, "equal").value == pytest.approx(0.7)
+def test_instability_flag_trips_when_primary_and_secondary_k_disagree():
+    """Construct a ranking that is perfect within the secondary-K (at-
+    replacement) group but scrambled in the extra players between secondary
+    and primary K, so primary-K tau_b and secondary-K tau_b diverge by more
+    than the 0.15 ADR-B threshold."""
+    # secondary K for TE is 10: perfectly ordered.
+    perfect = {f"t{i}": i for i in range(1, 11)}
+    perfect_pts = [(f"t{i}", 100.0 - i, "TE") for i in range(1, 11)]
+    # primary K for TE is 20: the extra 10 are anti-ordered against their rank.
+    scrambled = {f"t{i}": i for i in range(11, 21)}
+    scrambled_pts = [(f"t{i}", float(i), "TE") for i in range(11, 21)]  # low rank -> high pts
+    ranking = {**perfect, **scrambled}
+    actuals = _actuals(perfect_pts + scrambled_pts)
+    out = backtest._rank_correlation_by_position(ranking, actuals, {}, n_permutation=200)
+    te = out["TE"]
+    assert abs(te.tau_b - te.tau_b_secondary) > backtest.INSTABILITY_DELTA
+    assert te.unstable is True
+    assert te.band == "unstable"
 
 
-def test_weighted_aggregate_rejects_unknown_weighting():
-    per_pos = {"QB": backtest.PositionCorrelation("QB", 0.5, 10, 10)}
-    with pytest.raises(ValueError):
-        backtest.weighted_aggregate(per_pos, weighting="magic")
+def test_permutation_interval_is_seeded_and_reproducible():
+    ranking = {f"w{i}": i for i in range(1, 21)}
+    actuals = _actuals([(f"w{i}", 100.0 - i * 1.7 % 13, "WR") for i in range(1, 21)])
+    a = backtest._rank_correlation_by_position(ranking, actuals, {}, seed=99, n_permutation=500)
+    b = backtest._rank_correlation_by_position(ranking, actuals, {}, seed=99, n_permutation=500)
+    assert a["WR"].permutation_lo == b["WR"].permutation_lo
+    assert a["WR"].permutation_hi == b["WR"].permutation_hi
+    assert a["WR"].permutation_seed == b["WR"].permutation_seed
+
+
+def test_band_for_tau_thresholds_match_the_adr_b_table():
+    assert backtest._band_for_tau(0.05) == "no_ordering_skill"
+    assert backtest._band_for_tau(0.15) == "weak"
+    assert backtest._band_for_tau(0.30) == "moderate"
+    assert backtest._band_for_tau(0.50) == "strong"
+
+
+def test_uninformative_override_lowers_the_band_when_permutation_ci_spans_zero():
+    """A small, noisy sample should land in a band no higher than what its
+    tau_b implies, and drop one band if the 95% interval contains zero."""
+    ranking = {"t1": 1, "t2": 2, "t3": 3, "t4": 4}
+    # weak positive ordering, small n -- permutation interval should span 0.
+    actuals = _actuals([("t1", 50.0, "TE"), ("t2", 60.0, "TE"), ("t3", 40.0, "TE"), ("t4", 55.0, "TE")])
+    out = backtest._rank_correlation_by_position(ranking, actuals, {}, n_permutation=500)
+    te = out["TE"]
+    if te.permutation_lo is not None and te.permutation_lo <= 0.0 <= te.permutation_hi:
+        implied = backtest._band_for_tau(te.tau_b)
+        assert backtest.BAND_ORDER.index(te.band) <= backtest.BAND_ORDER.index(implied)
 
 
 # ----------------------------- bootstrap CIs -----------------------------
@@ -226,7 +292,10 @@ def test_multi_season_run_produces_cis_and_records_seed():
     assert board.available
     assert board.vbd_sum_ci is not None and board.vbd_sum_ci.lo is not None
     assert board.starter_vbd_ci is not None
-    # every position correlation reported must carry an interval
+    # every position correlation reported must carry an interval, both primary
+    # (tau_b) and secondary (Spearman)
+    for pos, ci in board.tau_b_ci.items():
+        assert ci.lo is not None and ci.hi is not None
     for pos, ci in board.spearman_ci.items():
         assert ci.lo is not None and ci.hi is not None
 
