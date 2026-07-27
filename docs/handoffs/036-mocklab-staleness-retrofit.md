@@ -84,3 +84,80 @@ those three files.** Do not implement from this summary alone.
 Configuration hash stamped and exported, unwritable without it. Three states implemented with `unknown`
 non-includable. Field-level not row-level staleness. Per-configuration aggregate with Brier suppressed
 on mixed selections. Test asserting a mock cannot be written without a stamp. Commit hash and test count.
+
+---
+### frontend · 2026-07-27
+
+**The "Also -- the TypeAhead back-port" sub-item only.** Everything else in this thread (the three-state
+staleness model, configuration-hash stamping, per-configuration aggregate, Brier suppression) is backend
+and Mock-Lab-UI work, none of it touched here, and this thread is not close to done as a whole -- leaving
+`STATUS: OPEN`.
+
+**The missing-amendments blocker no longer applies to this sub-item specifically.**
+`docs/design-handoff/screens/01-draft-board.md` has since arrived in the repo (pinned 26 Jul 2026, RETROFIT-5
+section present in full: key map, autofocus requirement, auto-advance, order randomisation, `entry_mode`).
+The other two files this thread named as missing -- `MOCK-LAB-SPEC.md` §5a and `mocklab-screen.json`
+checks ML-17-22 -- are about the staleness/config-hash work above, not about the TypeAhead port, so their
+absence doesn't block this piece.
+
+**Built:** ported the key-handling logic from the Mock Lab *design-reference* mockup
+(`docs/design-reference/mock-lab/03-logging.dc.html`'s `Component` class -- there is no Mock Lab
+*application* code in this repo to port from; Mock Lab's own UI and backend remain unbuilt per
+`docs/CURRENT-STATE.md`, so the reference HTML's `onKey`/`log`/`undo` functions are the actual thing
+ported, not a summary of them) into `DraftRoom.tsx`'s pick-entry input:
+
+- Digits 1-5 commit the shown candidate directly; Enter commits the highlighted one; arrows move the
+  highlight; Backspace on an empty field undoes the last pick; Escape clears the field.
+- Autofocus re-asserted via a stable ref callback on every (re)attach, not a one-shot guard (the ML-02
+  failure mode this thread's parent spec explicitly calls out). Caught a real bug here: the first
+  implementation deferred the `focus()` call behind `requestAnimationFrame` and it silently failed in a
+  backgrounded browser tab during live verification (rAF is throttled/never fires off-screen) --
+  jsdom's test environment did not catch this, only running it in an actual browser did. Fixed to a
+  synchronous `focus()` in the ref callback.
+- Default (no-query) shortlist: top 5 still-available players by real board rank, shuffled per pick.
+- `entry_mode` (`'shortcut' | 'typed' | 'pasted'`) recorded on every commit path, threaded through
+  `DraftPickRecord` and the "Export draft log" output.
+
+**One deliberate, load-bearing departure from the spec, flagged rather than silently resolved:** the
+Mock Lab reference's shortlist shows a "probability this player goes next" number computed by a
+synthetic softmax (`Math.exp(-(cons-avail[0].cons)/2.4)`) -- that formula exists only in the design
+mockup, not as real backend math, and this codebase has **no model that predicts "which player is
+picked next"** (the availability model predicts "still available at a *future* pick," a different
+target). Rendering a next-pick probability in `DraftRoom.tsx` would be inventing a number with no named
+backend field behind it -- a direct Principle #1 violation. Built the shortlist ordered by real board
+rank instead (`overallRank`, an honest field), with no probability shown on it at all.
+
+**A second thing worth flagging, found while implementing, not asked for in this thread:**
+`docs/adr-drafts/ADR-D-mock-logging-instrumentation.md` (Status: Proposed, Strategist-authored, scoped
+to Mock Lab's own `mock_picks`/`mock_drafts` tables) explicitly **rejects** randomising a prediction
+shortlist's order and **prohibits showing probabilities during entry**, for calibration-contamination
+reasons -- almost the opposite of what RETROFIT-5 asks for. The two do not actually conflict as built,
+for two reasons: (1) ADR-D is scoped to Mock Lab's own logging screen and tables, which don't exist yet,
+not to DraftRoom; and (2) because no next-pick probability is shown here at all (see above), the exact
+contamination mechanism ADR-D worries about -- a shortlist that *is* the model's own guess, with
+probabilities attached, so one keystroke both records data and agrees with the model -- doesn't apply to
+what got built. But `DraftRoom.tsx`'s own `toDraftLog` doc comment says its export "matches the backend's
+mock-logging schema field-for-field," and `entry_mode` here is a simpler 3-value vocabulary
+(`shortcut`/`typed`/`pasted`) than ADR-D's closed 8-value enum for `mock_picks.entry_mode`
+(`shortcut_digit`/`shortcut_enter`/`shortcut_arrow_enter`/`typed`/`paste_exact`/`paste_fuzzy`/
+`paste_confirmed`/`grid`). **If DraftRoom's exported log is ever wired into calibration, these two
+entry_mode vocabularies and the shortlist-source question need deliberate reconciliation against
+ADR-D by Strategist/Backend before that happens, not an assumption that this build already complies.**
+Not resolved here -- raising it because I found it, per this project's own rule that Red-team-adjacent
+findings get flagged rather than silently decided by whoever happens to notice.
+
+**Tests:** new `ui/__tests__/draft-room-typeahead.test.tsx`, 9 tests -- default-shortlist membership,
+digit-commit + auto-advance + `entry_mode`, backspace-undo (and non-undo mid-text), typed vs. pasted
+`entry_mode` via a real native `insertFromPaste` input event, Escape-without-committing, a legacy
+(pre-field) record round-tripping to an explicit `null` rather than a guessed mode, and a
+20-independent-mount statistical check that the shuffle actually varies the order (not just "capable
+of it" -- probability of a false pass is on the order of (1/120)^19). `tsc -b --noEmit` clean. Also
+verified live in a running browser (own dev-server instance, port 5174, to avoid another session's
+5173 server) -- this is where the autofocus bug above was actually caught, not in the test suite.
+Commit `82eb2d8`.
+
+**Not screenshot-verified.** The `computer` screenshot action failed in this session with "the Browser
+pane is not displayed, so the page is not compositing frames" (also hit and noted in the thread-029
+reply this same session) -- appears to be an environment limitation, not an app problem, since
+`javascript_tool`/`get_page_text`/`read_page` all worked normally against the same live page. Reporting
+this as built and verified by DOM/state inspection in a real browser, **not** as screenshot-verified.
