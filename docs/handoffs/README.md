@@ -38,6 +38,19 @@ think a thread is obsolete, say so in a reply and set `STATUS: OPEN` back to the
 
 Filename: `NNN-short-slug.md`, zero-padded, monotonically increasing. Never reuse a number.
 
+**Nobody types the number.** (W1, superseding the old "read the directory, add one" scheme,
+which collided four times in ~24 hours across threads 043/049/053 and ADR-048 — see
+`docs/reviews/fable-workflow-2026-07-27.md`.) To open a thread:
+
+- Agents: `python tools/handoffs.py new --from <you> --to <role> --subject "..."` — this writes
+  `NEW-<slug>.md` with no `ID:` field, then runs `sync`, which allocates the real ID immediately.
+- The PM: drop a file (same frontmatter shape, no `ID:`) into `docs/pm-outbox/` — its only write
+  surface into this directory now. `sync` ingests it the same way agents' `NEW-*.md` files are
+  ingested: next free ID scanned from filenames on disk, `ID:`/`OPENED:` stamped, renamed into
+  `docs/handoffs/`, hard-fails rather than overwrite an existing path. The PM no longer writes
+  numbered files directly into `docs/handoffs/`.
+- A `NEW-*.md` file left unallocated for more than a day (nobody ran `sync`) is a `check` failure.
+
 ```
 ---
 ID: 004
@@ -71,7 +84,9 @@ BLOCKS: 007
 | `BLOCKED-EXTERNAL` | Neither side can move — third-party access, data volume, a human decision |
 | `RESOLVED` | Done. Set only by the `TO:` role, with the artifact in the reply. |
 
-**Roles:** `pm`, `backend`, `frontend`, `data-ops`, `strategist`, `design`, `founder`
+**Roles:** `pm`, `backend`, `frontend`, `data-ops`, `strategist`, `researcher`, `librarian`,
+`design`, `founder`, `fable` — this list must match `ROLES` in `tools/handoffs.py`; the tool
+is the source of truth if the two ever drift again.
 
 `design` cannot read this repo. A thread addressed to `design` is a queue for the PM to carry over
 manually — mark it `TO: design VIA: pm` so it is obvious it needs a human hop.

@@ -23,6 +23,10 @@ Under-effort on statistical work is how a wrong constant ships with a confident 
 - 2025 is a locked holdout. Touching it outside pre-registered context raises `HoldoutViolation`.
 - Mock data is judge-only. It never feeds anything that fits a parameter.
 - Contract schema change → bump the version AND open a handoff thread to `frontend`.
+- ADR numbers come from `python tools/handoffs.py adr next`, never from memory or from reading
+  `docs/decisions.md` and adding one by hand — that scheme collided at ADR-048 (commit `1140586`,
+  two agents each computed max+1 from a stale read at the same time). The tool scans
+  `docs/decisions.md` and `docs/adr-drafts/` itself.
 
 End every session: update `docs/CURRENT-STATE.md` in place, append narrative to `docs/status.md`,
 reply in every inbox thread you touched, run `python tools/handoffs.py sync`. Report commit hash and
