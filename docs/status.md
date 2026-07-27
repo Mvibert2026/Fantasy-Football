@@ -1382,3 +1382,86 @@ failing (the pre-existing trace-fields/contract-drift issue above, not caused by
 `tsc -b --noEmit` clean throughout. `docs/handoffs/OPEN.md` re-synced via `tools/handoffs.py sync`
 (49 threads, 31 open). No founder statements surfaced this session -- all instructions came from
 the dispatching session, not from the founder directly.
+
+---
+
+## Backend session, 2026-07-27 (thread 040 item 1 — real league creation)
+
+Built `src/league_builder.py`: `create_league()` / `export_league()` /
+`create_and_export_league()`, the missing capability thread 040 item 1 named — naming a
+league, setting team count, roster shape, scoring rules, and draft slot from plain
+parameters, then recomputing board/replacement levels/tiers for it, rather than only
+offering the founder's hardcoded config or one of the 24 pre-generated combos in
+`generate_config_matrix.py`.
+
+Checked the thread's stated worry directly (per-format replacement levels being reused
+across leagues rather than measured per league) and found the underlying arithmetic
+(`scoring.ReplacementLevels.from_league_config`, `export_contract.build_board_json`) already
+does this correctly from ADR-041/047 — confirmed with a DB-backed integration test creating a
+14-team/1.0-PPR/2RB-2WR-1TE-starter probe league and asserting its `board.json` replacement
+levels are QB14, not the founder league's QB10, and differ from `{"QB":10,"RB":30,"WR":40,"TE":10}`
+outright. `league_builder.py` did not need to touch that arithmetic; it only makes the config
+reachable from names/numbers a person would type into a form instead of a hand-built
+`LeagueConfig()` call.
+
+Deliberately did NOT build: any API layer, job queue, polling, or the tier-1/tier-2
+shadow-recompute-then-apply state machine from `docs/design-handoff/settings/
+SETTINGS-EDITOR-SPEC.md` SS7 — that is the Settings editor UI's contract and no frontend agent
+is building that screen this round. `export_league()` is a synchronous, blocking recompute
+(~7-10s per existing config-matrix timing), same shape `write_all` already has for the 24
+pre-generated configs.
+
+ADR-048 in `docs/decisions.md`. Sanity-check tests (`tests/test_league_builder.py`) written
+before `league_builder.py` per the standing non-negotiable ordering rule.
+
+Tests: `tests/test_league_builder.py` 19 passed; `tests/test_league_config.py` +
+`tests/test_multi_league_export.py` re-run targeted, 26 passed, no regression. Full suite not
+run (concurrent-agent DB contention this round; targeted-only per dispatch instructions).
+
+No founder statements surfaced this session — all instructions came from the dispatching
+agent, not the founder directly.
+
+---
+
+## Backend session, 2026-07-27 — thread 052 (board.json join key), 9-way concurrent dispatch
+
+Task: establish and fix `board.json`'s null `player_id_gsis` join key (thread 052, flagged by pm
+off a note backend itself left closing thread 017/039).
+
+**Finding:** the field was specified and never populated, not structurally blocked.
+`make_board.build_board()` already had `rankings.player_id` per row (which `ingest_rankings.py`
+aliases from `gsis_id` at ingest) and simply never passed it to `BoardRow`;
+`export_contract.py::build_board_json` hardcoded `"player_id_gsis": None`. Added
+`player_id: Optional[str] = None` to `BoardRow` (`src/make_board.py`), populated it in
+`build_board()`, wired `export_contract.py` to use it.
+
+**Deliberately did not route through `mfl_id`** despite ADR-036 naming it the identity hub.
+`weekly_finishes.json`/`season_stats.json` (thread 017/039) already key on
+`player_weekly_stats.player_id`, the same gsis id space `rankings.player_id` already lived in.
+Both sides were already speaking gsis; wiring the field that already existed is not the same as
+inventing a competing scheme, and going through `mfl_id` instead would have cost coverage
+(ADR-036 measured that spoke at 62.1% with 10 collisions) for no benefit.
+
+**Coverage, measured:** board regenerated — 378/378 (100%) of board players now carry
+`player_id_gsis`. Cross-checked against `weekly_finishes.json`: 371/378 (98.15%) resolve; the 7
+misses are players with zero `player_weekly_stats` rows at all (likely rookies), an honest null,
+not a join failure.
+
+**No `CONTRACT_VERSION` bump** — the field already existed in the schema at this name/type, only
+its value changed. Documented as a non-bump changelog line in `docs/data-contract.md` instead.
+
+**2025-in-exports holdout question recorded DECIDED**, not left as a module comment:
+`docs/decisions-needed.md` D-022. Fact display of a completed season is not model selection, so
+it does not trigger the holdout lock; written in with a binding forward rule so nobody
+re-litigates it or hides 2025 from the UI as a "fix."
+
+Sanity-check tests written before the implementation (`test_board_row_carries_player_id_field`,
+`test_player_id_gsis_is_populated_and_matches_rankings_player_id`), both red first, both green
+after. Targeted run only per this round's dispatch instructions (concurrent DB contention risk):
+`tests/test_make_board.py` + `tests/test_export_contract.py` + `tests/test_export_history.py` —
+71 passed. Full suite not run this session.
+
+New ADR: `docs/decisions.md` ADR-048. `docs/CURRENT-STATE.md` updated in place. Thread 052 replied
+to and left `STATUS: OPEN` (frontend's half — wiring the two history exports into
+`PlayerDetail.tsx` using this key — is not resolved by this session and not backend's to close).
+No founder statements surfaced this session; all instructions came from the dispatching session.

@@ -16,7 +16,10 @@ implementation (contract 1.9.0); frontend session: display-repair diagnosis, Opp
 verification, mailbox duplicate-ID fix, thread 038/041; second frontend session, same day: thread
 037 item 1 (`<1%` test literal), thread 029 (DraftRoom dot array + tier grouping, retargeted off
 Board.tsx per its amendment), RETROFIT-5/thread 036 (Mock Lab TypeAhead back-port to DraftRoom pick
-entry), plus mailbox hygiene — duplicate ID 043 and an orphaned no-`TO:` fragment file, both fixed).
+entry), plus mailbox hygiene — duplicate ID 043 and an orphaned no-`TO:` fragment file, both fixed);
+third backend session, same day (9-way concurrent dispatch): thread 052's backend half —
+`board.json`'s `player_id_gsis` join key populated (ADR-048), coverage measured, D-022 (2025
+holdout-in-exports) recorded DECIDED.
 
 ---
 
@@ -94,9 +97,14 @@ CLI/pre-commit gate and the PR-001..003 retrofit are deferred, see thread 020 re
 1.9.0): `data/export/weekly_finishes.json` + `data/export/season_stats.json`, real
 `player_weekly_stats` data, 1481-player universe (`season >= 2018` at QB/RB/WR/TE), 2003-2008
 target-derived fields explicitly `target_data_unavailable: true`/`targets: null` rather than
-zeroed. Not yet wired into `PlayerDetail.tsx`'s consistency heat-map / three-seasons section —
-that is frontend's next step, thread 043 open to frontend, flags a possible `player_id` vs
-`board.json`'s synthetic `id` join-key gap.
+zeroed. **Join key fixed 2026-07-27 (thread 052, ADR-048):** `board.json`'s `player_id_gsis` was
+hardcoded `null`; now populated from `rankings.player_id` (already a gsis id) threaded through
+`make_board.BoardRow.player_id`. **378/378 board players carry it; 371/378 (98.15%) resolve
+against `weekly_finishes.json`** (the ~7 misses are players with no `player_weekly_stats` history
+at all — an honest null, not a join failure). No `CONTRACT_VERSION` bump — the field already
+existed in the schema, only its value changed. Still not wired into `PlayerDetail.tsx`'s
+consistency heat-map / three-seasons section — that is frontend's remaining half of thread 052 —
+but the join key that blocked it now exists and is measured.
 
 **DraftRoom pick-entry TypeAhead + availability presentation** (thread 029 retargeted off
 `Board.tsx`, thread 037 item 1, RETROFIT-5/thread 036): `DraftRoom.tsx`'s available-player rows now

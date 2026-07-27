@@ -1,6 +1,6 @@
 {
   "contract_version": "1.9.0",
-  "generated_utc": "2026-07-27T02:56:06.867560+00:00",
+  "generated_utc": "2026-07-27T04:14:27.858316+00:00",
   "league_id": "primary",
   "season": 2026,
   "board_source": "fantasypros_ecr re-scored into league positional value structure",
@@ -56,7 +56,7 @@
   "players": [
     {
       "id": 1,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0038542",
       "overall_rank": 1,
       "player": "Bijan Robinson",
       "position": "RB",
@@ -168,7 +168,7 @@
     },
     {
       "id": 2,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0036900",
       "overall_rank": 2,
       "player": "Ja'Marr Chase",
       "position": "WR",
@@ -280,7 +280,7 @@
     },
     {
       "id": 3,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0039139",
       "overall_rank": 3,
       "player": "Jahmyr Gibbs",
       "position": "RB",
@@ -392,7 +392,7 @@
     },
     {
       "id": 4,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0039075",
       "overall_rank": 4,
       "player": "Puka Nacua",
       "position": "WR",
@@ -504,7 +504,7 @@
     },
     {
       "id": 5,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0033280",
       "overall_rank": 5,
       "player": "Christian McCaffrey",
       "position": "RB",
@@ -616,7 +616,7 @@
     },
     {
       "id": 6,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0034857",
       "overall_rank": 6,
       "player": "Josh Allen",
       "position": "QB",
@@ -728,7 +728,7 @@
     },
     {
       "id": 7,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0038543",
       "overall_rank": 7,
       "player": "Jaxon Smith-Njigba",
       "position": "WR",
@@ -840,7 +840,7 @@
     },
     {
       "id": 8,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0036223",
       "overall_rank": 8,
       "player": "Jonathan Taylor",
       "position": "RB",
@@ -952,7 +952,7 @@
     },
     {
       "id": 9,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0036963",
       "overall_rank": 9,
       "player": "Amon-Ra St. Brown",
       "position": "WR",
@@ -1064,7 +1064,7 @@
     },
     {
       "id": 10,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0040122",
       "overall_rank": 10,
       "player": "Ashton Jeanty",
       "position": "RB",
@@ -1176,7 +1176,7 @@
     },
     {
       "id": 11,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0036358",
       "overall_rank": 11,
       "player": "CeeDee Lamb",
       "position": "WR",
@@ -1288,7 +1288,7 @@
     },
     {
       "id": 12,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0037248",
       "overall_rank": 12,
       "player": "James Cook III",
       "position": "RB",
@@ -1400,7 +1400,7 @@
     },
     {
       "id": 13,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0034796",
       "overall_rank": 13,
       "player": "Lamar Jackson",
       "position": "QB",
@@ -1512,7 +1512,7 @@
     },
     {
       "id": 14,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0036322",
       "overall_rank": 14,
       "player": "Justin Jefferson",
       "position": "WR",
@@ -1624,7 +1624,7 @@
     },
     {
       "id": 15,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0039040",
       "overall_rank": 15,
       "player": "De'Von Achane",
       "position": "RB",
@@ -1736,7 +1736,7 @@
     },
     {
       "id": 16,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0037238",
       "overall_rank": 16,
       "player": "Drake London",
       "position": "WR",
@@ -1848,7 +1848,7 @@
     },
     {
       "id": 17,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0037744",
       "overall_rank": 17,
       "player": "Trey McBride",
       "position": "TE",
@@ -1960,7 +1960,7 @@
     },
     {
       "id": 18,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0038597",
       "overall_rank": 18,
       "player": "Chase Brown",
       "position": "RB",
@@ -2072,7 +2072,7 @@
     },
     {
       "id": 19,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0035676",
       "overall_rank": 19,
       "player": "A.J. Brown",
       "position": "WR",
@@ -2184,7 +2184,7 @@
     },
     {
       "id": 20,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0036554",
       "overall_rank": 20,
       "player": "Nico Collins",
       "position": "WR",
@@ -2296,7 +2296,7 @@
     },
     {
       "id": 21,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0040666",
       "overall_rank": 21,
       "player": "Omarion Hampton",
       "position": "RB",
@@ -2408,7 +2408,7 @@
     },
     {
       "id": 22,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0039851",
       "overall_rank": 22,
       "player": "Drake Maye",
       "position": "QB",
@@ -2520,7 +2520,7 @@
     },
     {
       "id": 23,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0037247",
       "overall_rank": 23,
       "player": "George Pickens",
       "position": "WR",
@@ -2632,7 +2632,7 @@
     },
     {
       "id": 24,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0034844",
       "overall_rank": 24,
       "player": "Saquon Barkley",
       "position": "RB",
@@ -2744,7 +2744,7 @@
     },
     {
       "id": 25,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0037239",
       "overall_rank": 25,
       "player": "Chris Olave",
       "position": "WR",
@@ -2856,7 +2856,7 @@
     },
     {
       "id": 26,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0038134",
       "overall_rank": 26,
       "player": "Kenneth Walker III",
       "position": "RB",
@@ -2968,7 +2968,7 @@
     },
     {
       "id": 27,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0039067",
       "overall_rank": 27,
       "player": "Rashee Rice",
       "position": "WR",
@@ -3080,7 +3080,7 @@
     },
     {
       "id": 28,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0039338",
       "overall_rank": 28,
       "player": "Brock Bowers",
       "position": "TE",
@@ -3192,7 +3192,7 @@
     },
     {
       "id": 29,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0032764",
       "overall_rank": 29,
       "player": "Derrick Henry",
       "position": "RB",
@@ -3304,7 +3304,7 @@
     },
     {
       "id": 30,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0036912",
       "overall_rank": 30,
       "player": "DeVonta Smith",
       "position": "WR",
@@ -3416,7 +3416,7 @@
     },
     {
       "id": 31,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0036442",
       "overall_rank": 31,
       "player": "Joe Burrow",
       "position": "QB",
@@ -3528,7 +3528,7 @@
     },
     {
       "id": 32,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0037740",
       "overall_rank": 32,
       "player": "Garrett Wilson",
       "position": "WR",
@@ -3640,7 +3640,7 @@
     },
     {
       "id": 33,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0038120",
       "overall_rank": 33,
       "player": "Breece Hall",
       "position": "RB",
@@ -3752,7 +3752,7 @@
     },
     {
       "id": 34,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0040124",
       "overall_rank": 34,
       "player": "Tetairoa McMillan",
       "position": "WR",
@@ -3864,7 +3864,7 @@
     },
     {
       "id": 35,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0037840",
       "overall_rank": 35,
       "player": "Kyren Williams",
       "position": "RB",
@@ -3976,7 +3976,7 @@
     },
     {
       "id": 36,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0039064",
       "overall_rank": 36,
       "player": "Zay Flowers",
       "position": "WR",
@@ -4088,7 +4088,7 @@
     },
     {
       "id": 37,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0040126",
       "overall_rank": 37,
       "player": "Colston Loveland",
       "position": "TE",
@@ -4200,7 +4200,7 @@
     },
     {
       "id": 38,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0036410",
       "overall_rank": 38,
       "player": "Tee Higgins",
       "position": "WR",
@@ -4312,7 +4312,7 @@
     },
     {
       "id": 39,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0035700",
       "overall_rank": 39,
       "player": "Josh Jacobs",
       "position": "RB",
@@ -4424,7 +4424,7 @@
     },
     {
       "id": 40,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0039910",
       "overall_rank": 40,
       "player": "Jayden Daniels",
       "position": "QB",
@@ -4536,7 +4536,7 @@
     },
     {
       "id": 41,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0039915",
       "overall_rank": 41,
       "player": "Ladd McConkey",
       "position": "WR",
@@ -4648,7 +4648,7 @@
     },
     {
       "id": 42,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0036997",
       "overall_rank": 42,
       "player": "Javonte Williams",
       "position": "RB",
@@ -4760,7 +4760,7 @@
     },
     {
       "id": 43,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0036613",
       "overall_rank": 43,
       "player": "Jaylen Waddle",
       "position": "WR",
@@ -4872,7 +4872,7 @@
     },
     {
       "id": 44,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0036973",
       "overall_rank": 44,
       "player": "Travis Etienne Jr.",
       "position": "RB",
@@ -4984,7 +4984,7 @@
     },
     {
       "id": 45,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0040129",
       "overall_rank": 45,
       "player": "Emeka Egbuka",
       "position": "WR",
@@ -5096,7 +5096,7 @@
     },
     {
       "id": 46,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0040128",
       "overall_rank": 46,
       "player": "Tyler Warren",
       "position": "TE",
@@ -5208,7 +5208,7 @@
     },
     {
       "id": 47,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0039337",
       "overall_rank": 47,
       "player": "Malik Nabers",
       "position": "WR",
@@ -5320,7 +5320,7 @@
     },
     {
       "id": 48,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0040715",
       "overall_rank": 48,
       "player": "Cam Skattebo",
       "position": "RB",
@@ -5432,7 +5432,7 @@
     },
     {
       "id": 49,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0036389",
       "overall_rank": 49,
       "player": "Jalen Hurts",
       "position": "QB",
@@ -5544,7 +5544,7 @@
     },
     {
       "id": 50,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0035659",
       "overall_rank": 50,
       "player": "Terry McLaurin",
       "position": "WR",
@@ -5656,7 +5656,7 @@
     },
     {
       "id": 51,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0039361",
       "overall_rank": 51,
       "player": "Bucky Irving",
       "position": "RB",
@@ -5768,7 +5768,7 @@
     },
     {
       "id": 52,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0040735",
       "overall_rank": 52,
       "player": "Luther Burden III",
       "position": "WR",
@@ -5880,7 +5880,7 @@
     },
     {
       "id": 53,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0038996",
       "overall_rank": 53,
       "player": "Tucker Kraft",
       "position": "TE",
@@ -5992,7 +5992,7 @@
     },
     {
       "id": 54,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0031381",
       "overall_rank": 54,
       "player": "Davante Adams",
       "position": "WR",
@@ -6104,7 +6104,7 @@
     },
     {
       "id": 55,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0040784",
       "overall_rank": 55,
       "player": "Quinshon Judkins",
       "position": "RB",
@@ -6216,7 +6216,7 @@
     },
     {
       "id": 56,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0031408",
       "overall_rank": 56,
       "player": "Mike Evans",
       "position": "WR",
@@ -6328,7 +6328,7 @@
     },
     {
       "id": 57,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0040734",
       "overall_rank": 57,
       "player": "TreVeyon Henderson",
       "position": "RB",
@@ -6440,7 +6440,7 @@
     },
     {
       "id": 58,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0034827",
       "overall_rank": 58,
       "player": "DJ Moore",
       "position": "WR",
@@ -6552,7 +6552,7 @@
     },
     {
       "id": 59,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0039918",
       "overall_rank": 59,
       "player": "Caleb Williams",
       "position": "QB",
@@ -6664,7 +6664,7 @@
     },
     {
       "id": 60,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0037240",
       "overall_rank": 60,
       "player": "Jameson Williams",
       "position": "WR",
@@ -6776,7 +6776,7 @@
     },
     {
       "id": 61,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0036275",
       "overall_rank": 61,
       "player": "D'Andre Swift",
       "position": "RB",
@@ -6888,7 +6888,7 @@
     },
     {
       "id": 62,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0040663",
       "overall_rank": 62,
       "player": "Harold Fannin Jr.",
       "position": "TE",
@@ -7000,7 +7000,7 @@
     },
     {
       "id": 63,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0038124",
       "overall_rank": 63,
       "player": "Christian Watson",
       "position": "WR",
@@ -7112,7 +7112,7 @@
     },
     {
       "id": 64,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0035685",
       "overall_rank": 64,
       "player": "David Montgomery",
       "position": "RB",
@@ -7224,7 +7224,7 @@
     },
     {
       "id": 65,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0039919",
       "overall_rank": 65,
       "player": "Rome Odunze",
       "position": "WR",
@@ -7336,7 +7336,7 @@
     },
     {
       "id": 66,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0039849",
       "overall_rank": 66,
       "player": "Marvin Harrison Jr.",
       "position": "WR",
@@ -7448,7 +7448,7 @@
     },
     {
       "id": 67,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0040719",
       "overall_rank": 67,
       "player": "Bhayshul Tuten",
       "position": "RB",
@@ -7560,7 +7560,7 @@
     },
     {
       "id": 68,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0036355",
       "overall_rank": 68,
       "player": "Justin Herbert",
       "position": "QB",
@@ -7672,7 +7672,7 @@
     },
     {
       "id": 69,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0036970",
       "overall_rank": 69,
       "player": "Kyle Pitts Sr.",
       "position": "TE",
@@ -7784,7 +7784,7 @@
     },
     {
       "id": 70,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0035640",
       "overall_rank": 70,
       "player": "DK Metcalf",
       "position": "WR",
@@ -7896,7 +7896,7 @@
     },
     {
       "id": 71,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0037228",
       "overall_rank": 71,
       "player": "Jaylen Warren",
       "position": "RB",
@@ -8008,7 +8008,7 @@
     },
     {
       "id": 72,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0037664",
       "overall_rank": 72,
       "player": "Alec Pierce",
       "position": "WR",
@@ -8120,7 +8120,7 @@
     },
     {
       "id": 73,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0034348",
       "overall_rank": 73,
       "player": "Courtland Sutton",
       "position": "WR",
@@ -8232,7 +8232,7 @@
     },
     {
       "id": 74,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0035261",
       "overall_rank": 74,
       "player": "Tony Pollard",
       "position": "RB",
@@ -8344,7 +8344,7 @@
     },
     {
       "id": 75,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0039065",
       "overall_rank": 75,
       "player": "Sam LaPorta",
       "position": "TE",
@@ -8375,7 +8375,7 @@
     },
     {
       "id": 76,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0039893",
       "overall_rank": 76,
       "player": "Brian Thomas Jr.",
       "position": "WR",
@@ -8487,7 +8487,7 @@
     },
     {
       "id": 77,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0033921",
       "overall_rank": 77,
       "player": "Chris Godwin Jr.",
       "position": "WR",
@@ -8599,7 +8599,7 @@
     },
     {
       "id": 78,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0036875",
       "overall_rank": 78,
       "player": "Rhamondre Stevenson",
       "position": "RB",
@@ -8711,7 +8711,7 @@
     },
     {
       "id": 79,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0036971",
       "overall_rank": 79,
       "player": "Trevor Lawrence",
       "position": "QB",
@@ -8823,7 +8823,7 @@
     },
     {
       "id": 80,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0036252",
       "overall_rank": 80,
       "player": "Michael Pittman Jr.",
       "position": "WR",
@@ -8854,7 +8854,7 @@
     },
     {
       "id": 81,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0036555",
       "overall_rank": 81,
       "player": "Chuba Hubbard",
       "position": "RB",
@@ -8966,7 +8966,7 @@
     },
     {
       "id": 82,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0038117",
       "overall_rank": 82,
       "player": "Wan'Dale Robinson",
       "position": "WR",
@@ -8997,7 +8997,7 @@
     },
     {
       "id": 83,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0030506",
       "overall_rank": 83,
       "player": "Travis Kelce",
       "position": "TE",
@@ -9028,7 +9028,7 @@
     },
     {
       "id": 84,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0038606",
       "overall_rank": 84,
       "player": "Parker Washington",
       "position": "WR",
@@ -9059,7 +9059,7 @@
     },
     {
       "id": 85,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0036139",
       "overall_rank": 85,
       "player": "Rico Dowdle",
       "position": "RB",
@@ -9090,7 +9090,7 @@
     },
     {
       "id": 86,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0038559",
       "overall_rank": 86,
       "player": "Michael Wilson",
       "position": "WR",
@@ -9121,7 +9121,7 @@
     },
     {
       "id": 87,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0034960",
       "overall_rank": 87,
       "player": "Jakobi Meyers",
       "position": "WR",
@@ -9152,7 +9152,7 @@
     },
     {
       "id": 88,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0040730",
       "overall_rank": 88,
       "player": "RJ Harvey",
       "position": "RB",
@@ -9183,7 +9183,7 @@
     },
     {
       "id": 89,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0033288",
       "overall_rank": 89,
       "player": "George Kittle",
       "position": "TE",
@@ -9214,7 +9214,7 @@
     },
     {
       "id": 90,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0033077",
       "overall_rank": 90,
       "player": "Dak Prescott",
       "position": "QB",
@@ -9326,7 +9326,7 @@
     },
     {
       "id": 91,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0038997",
       "overall_rank": 91,
       "player": "Josh Downs",
       "position": "WR",
@@ -9357,7 +9357,7 @@
     },
     {
       "id": 92,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0040236",
       "overall_rank": 92,
       "player": "Kyle Monangai",
       "position": "RB",
@@ -9388,7 +9388,7 @@
     },
     {
       "id": 93,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0039916",
       "overall_rank": 93,
       "player": "Ricky Pearsall",
       "position": "WR",
@@ -9419,7 +9419,7 @@
     },
     {
       "id": 94,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0038041",
       "overall_rank": 94,
       "player": "Jake Ferguson",
       "position": "TE",
@@ -9450,7 +9450,7 @@
     },
     {
       "id": 95,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0038544",
       "overall_rank": 95,
       "player": "Quentin Johnston",
       "position": "WR",
@@ -9481,7 +9481,7 @@
     },
     {
       "id": 96,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0036919",
       "overall_rank": 96,
       "player": "Kenny Gainwell",
       "position": "RB",
@@ -9512,7 +9512,7 @@
     },
     {
       "id": 97,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0038994",
       "overall_rank": 97,
       "player": "Jordan Addison",
       "position": "WR",
@@ -9543,7 +9543,7 @@
     },
     {
       "id": 98,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0040691",
       "overall_rank": 98,
       "player": "Jaxson Dart",
       "position": "QB",
@@ -9574,7 +9574,7 @@
     },
     {
       "id": 99,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0036158",
       "overall_rank": 99,
       "player": "J.K. Dobbins",
       "position": "RB",
@@ -9605,7 +9605,7 @@
     },
     {
       "id": 100,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0039146",
       "overall_rank": 100,
       "player": "Jayden Reed",
       "position": "WR",
@@ -9636,7 +9636,7 @@
     },
     {
       "id": 101,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0038933",
       "overall_rank": 101,
       "player": "Dalton Kincaid",
       "position": "TE",
@@ -9667,7 +9667,7 @@
     },
     {
       "id": 102,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0037261",
       "overall_rank": 102,
       "player": "Khalil Shakir",
       "position": "WR",
@@ -9698,7 +9698,7 @@
     },
     {
       "id": 103,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0037256",
       "overall_rank": 103,
       "player": "Rachaad White",
       "position": "RB",
@@ -9729,7 +9729,7 @@
     },
     {
       "id": 104,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0039894",
       "overall_rank": 104,
       "player": "Xavier Worthy",
       "position": "WR",
@@ -9760,7 +9760,7 @@
     },
     {
       "id": 105,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0040130",
       "overall_rank": 105,
       "player": "Jayden Higgins",
       "position": "WR",
@@ -9791,7 +9791,7 @@
     },
     {
       "id": 106,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0033293",
       "overall_rank": 106,
       "player": "Aaron Jones Sr.",
       "position": "RB",
@@ -9822,7 +9822,7 @@
     },
     {
       "id": 107,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0037838",
       "overall_rank": 107,
       "player": "Isaiah Likely",
       "position": "TE",
@@ -9853,7 +9853,7 @@
     },
     {
       "id": 108,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0037816",
       "overall_rank": 108,
       "player": "Romeo Doubs",
       "position": "WR",
@@ -9884,7 +9884,7 @@
     },
     {
       "id": 109,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0037834",
       "overall_rank": 109,
       "player": "Brock Purdy",
       "position": "QB",
@@ -9915,7 +9915,7 @@
     },
     {
       "id": 110,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0039491",
       "overall_rank": 110,
       "player": "Jalen Coker",
       "position": "WR",
@@ -9946,7 +9946,7 @@
     },
     {
       "id": 111,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0039738",
       "overall_rank": 111,
       "player": "Blake Corum",
       "position": "RB",
@@ -9977,7 +9977,7 @@
     },
     {
       "id": 112,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0040667",
       "overall_rank": 112,
       "player": "Matthew Golden",
       "position": "WR",
@@ -10008,7 +10008,7 @@
     },
     {
       "id": 113,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0034351",
       "overall_rank": 113,
       "player": "Dallas Goedert",
       "position": "TE",
@@ -10039,7 +10039,7 @@
     },
     {
       "id": 114,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0039344",
       "overall_rank": 114,
       "player": "Jonathon Brooks",
       "position": "RB",
@@ -10070,7 +10070,7 @@
     },
     {
       "id": 115,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0037545",
       "overall_rank": 115,
       "player": "Rashid Shaheed",
       "position": "WR",
@@ -10101,7 +10101,7 @@
     },
     {
       "id": 116,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0036259",
       "overall_rank": 116,
       "player": "Jauan Jennings",
       "position": "WR",
@@ -10132,7 +10132,7 @@
     },
     {
       "id": 117,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0040242",
       "overall_rank": 117,
       "player": "Jacory Croskey-Merritt",
       "position": "RB",
@@ -10163,7 +10163,7 @@
     },
     {
       "id": 118,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0034753",
       "overall_rank": 118,
       "player": "Mark Andrews",
       "position": "TE",
@@ -10194,7 +10194,7 @@
     },
     {
       "id": 119,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0036407",
       "overall_rank": 119,
       "player": "Jerry Jeudy",
       "position": "WR",
@@ -10225,7 +10225,7 @@
     },
     {
       "id": 120,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0033873",
       "overall_rank": 120,
       "player": "Patrick Mahomes II",
       "position": "QB",
@@ -10256,7 +10256,7 @@
     },
     {
       "id": 121,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0031588",
       "overall_rank": 121,
       "player": "Stefon Diggs",
       "position": "WR",
@@ -10287,7 +10287,7 @@
     },
     {
       "id": 122,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0037525",
       "overall_rank": 122,
       "player": "Jordan Mason",
       "position": "RB",
@@ -10318,7 +10318,7 @@
     },
     {
       "id": 123,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0039855",
       "overall_rank": 123,
       "player": "Jalen McMillan",
       "position": "WR",
@@ -10349,7 +10349,7 @@
     },
     {
       "id": 124,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0036040",
       "overall_rank": 124,
       "player": "Juwan Johnson",
       "position": "TE",
@@ -10380,7 +10380,7 @@
     },
     {
       "id": 125,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0039384",
       "overall_rank": 125,
       "player": "Tyrone Tracy Jr.",
       "position": "RB",
@@ -10411,7 +10411,7 @@
     },
     {
       "id": 126,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0039890",
       "overall_rank": 126,
       "player": "Adonai Mitchell",
       "position": "WR",
@@ -10442,7 +10442,7 @@
     },
     {
       "id": 127,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0040718",
       "overall_rank": 127,
       "player": "Travis Hunter",
       "position": "WR",
@@ -10473,7 +10473,7 @@
     },
     {
       "id": 128,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0040583",
       "overall_rank": 128,
       "player": "Woody Marks",
       "position": "RB",
@@ -10504,7 +10504,7 @@
     },
     {
       "id": 129,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0038563",
       "overall_rank": 129,
       "player": "Tre Tucker",
       "position": "WR",
@@ -10535,7 +10535,7 @@
     },
     {
       "id": 130,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0038935",
       "overall_rank": 130,
       "player": "Brenton Strange",
       "position": "TE",
@@ -10566,7 +10566,7 @@
     },
     {
       "id": 131,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0039732",
       "overall_rank": 131,
       "player": "Bo Nix",
       "position": "QB",
@@ -10597,7 +10597,7 @@
     },
     {
       "id": 132,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0040727",
       "overall_rank": 132,
       "player": "Tre' Harris",
       "position": "WR",
@@ -10628,7 +10628,7 @@
     },
     {
       "id": 133,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0037263",
       "overall_rank": 133,
       "player": "Tyler Allgeier",
       "position": "RB",
@@ -10659,7 +10659,7 @@
     },
     {
       "id": 134,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0035719",
       "overall_rank": 134,
       "player": "Deebo Samuel Sr.",
       "position": "WR",
@@ -10690,7 +10690,7 @@
     },
     {
       "id": 135,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0037809",
       "overall_rank": 135,
       "player": "Chig Okonkwo",
       "position": "TE",
@@ -10721,7 +10721,7 @@
     },
     {
       "id": 136,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0039410",
       "overall_rank": 136,
       "player": "Ryan Flournoy",
       "position": "WR",
@@ -10752,7 +10752,7 @@
     },
     {
       "id": 137,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0039165",
       "overall_rank": 137,
       "player": "Zach Charbonnet",
       "position": "RB",
@@ -10783,7 +10783,7 @@
     },
     {
       "id": 138,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0039868",
       "overall_rank": 138,
       "player": "Troy Franklin",
       "position": "WR",
@@ -10814,7 +10814,7 @@
     },
     {
       "id": 139,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0038608",
       "overall_rank": 139,
       "player": "Kayshon Boutte",
       "position": "WR",
@@ -10845,7 +10845,7 @@
     },
     {
       "id": 140,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0039032",
       "overall_rank": 140,
       "player": "Tyjae Spears",
       "position": "RB",
@@ -10876,7 +10876,7 @@
     },
     {
       "id": 141,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0033090",
       "overall_rank": 141,
       "player": "Hunter Henry",
       "position": "TE",
@@ -10907,7 +10907,7 @@
     },
     {
       "id": 142,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0040138",
       "overall_rank": 142,
       "player": "Jaylin Noel",
       "position": "WR",
@@ -10938,7 +10938,7 @@
     },
     {
       "id": 143,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0026498",
       "overall_rank": 143,
       "player": "Matthew Stafford",
       "position": "QB",
@@ -10969,7 +10969,7 @@
     },
     {
       "id": 144,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0040162",
       "overall_rank": 144,
       "player": "Dylan Sampson",
       "position": "RB",
@@ -11000,7 +11000,7 @@
     },
     {
       "id": 145,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0040669",
       "overall_rank": 145,
       "player": "Isaac TeSlaa",
       "position": "WR",
@@ -11031,7 +11031,7 @@
     },
     {
       "id": 146,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0040189",
       "overall_rank": 146,
       "player": "Oronde Gadsden II",
       "position": "TE",
@@ -11062,7 +11062,7 @@
     },
     {
       "id": 147,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0034837",
       "overall_rank": 147,
       "player": "Calvin Ridley",
       "position": "WR",
@@ -11093,7 +11093,7 @@
     },
     {
       "id": 148,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0038611",
       "overall_rank": 148,
       "player": "Chris Rodriguez Jr.",
       "position": "RB",
@@ -11124,7 +11124,7 @@
     },
     {
       "id": 149,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0037291",
       "overall_rank": 149,
       "player": "Jalen Nailor",
       "position": "WR",
@@ -11155,7 +11155,7 @@
     },
     {
       "id": 150,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0036309",
       "overall_rank": 150,
       "player": "Darnell Mooney",
       "position": "WR",
@@ -11186,7 +11186,7 @@
     },
     {
       "id": 151,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0034383",
       "overall_rank": 151,
       "player": "Dalton Schultz",
       "position": "TE",
@@ -11217,7 +11217,7 @@
     },
     {
       "id": 152,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0037197",
       "overall_rank": 152,
       "player": "Isiah Pacheco",
       "position": "RB",
@@ -11248,7 +11248,7 @@
     },
     {
       "id": 153,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0036261",
       "overall_rank": 153,
       "player": "Brandon Aiyuk",
       "position": "WR",
@@ -11279,7 +11279,7 @@
     },
     {
       "id": 154,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0033106",
       "overall_rank": 154,
       "player": "Jared Goff",
       "position": "QB",
@@ -11310,7 +11310,7 @@
     },
     {
       "id": 155,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0040134",
       "overall_rank": 155,
       "player": "Pat Bryant",
       "position": "WR",
@@ -11341,7 +11341,7 @@
     },
     {
       "id": 156,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0033906",
       "overall_rank": 156,
       "player": "Alvin Kamara",
       "position": "RB",
@@ -11372,7 +11372,7 @@
     },
     {
       "id": 157,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0035229",
       "overall_rank": 157,
       "player": "T.J. Hockenson",
       "position": "TE",
@@ -11403,7 +11403,7 @@
     },
     {
       "id": 158,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0038393",
       "overall_rank": 158,
       "player": "Dontayvion Wicks",
       "position": "WR",
@@ -11434,7 +11434,7 @@
     },
     {
       "id": 159,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0039880",
       "overall_rank": 159,
       "player": "Malik Washington",
       "position": "WR",
@@ -11465,7 +11465,7 @@
     },
     {
       "id": 160,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0038454",
       "overall_rank": 160,
       "player": "Keaton Mitchell",
       "position": "RB",
@@ -11496,7 +11496,7 @@
     },
     {
       "id": 161,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0040705",
       "overall_rank": 161,
       "player": "Chimere Dike",
       "position": "WR",
@@ -11527,7 +11527,7 @@
     },
     {
       "id": 162,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0039793",
       "overall_rank": 162,
       "player": "AJ Barner",
       "position": "TE",
@@ -11558,7 +11558,7 @@
     },
     {
       "id": 163,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0039794",
       "overall_rank": 163,
       "player": "Braelon Allen",
       "position": "RB",
@@ -11589,7 +11589,7 @@
     },
     {
       "id": 164,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0038977",
       "overall_rank": 164,
       "player": "Tank Dell",
       "position": "WR",
@@ -11620,7 +11620,7 @@
     },
     {
       "id": 165,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0035228",
       "overall_rank": 165,
       "player": "Kyler Murray",
       "position": "QB",
@@ -11651,7 +11651,7 @@
     },
     {
       "id": 166,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0033040",
       "overall_rank": 166,
       "player": "Tyreek Hill",
       "position": "WR",
@@ -11682,7 +11682,7 @@
     },
     {
       "id": 167,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0037252",
       "overall_rank": 167,
       "player": "Greg Dulcich",
       "position": "TE",
@@ -11713,7 +11713,7 @@
     },
     {
       "id": 168,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0037746",
       "overall_rank": 168,
       "player": "Brian Robinson Jr.",
       "position": "RB",
@@ -11744,7 +11744,7 @@
     },
     {
       "id": 169,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0033908",
       "overall_rank": 169,
       "player": "Cooper Kupp",
       "position": "WR",
@@ -11775,7 +11775,7 @@
     },
     {
       "id": 170,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0036550",
       "overall_rank": 170,
       "player": "Rashod Bateman",
       "position": "WR",
@@ -11806,7 +11806,7 @@
     },
     {
       "id": 171,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0038555",
       "overall_rank": 171,
       "player": "Tank Bigsby",
       "position": "RB",
@@ -11837,7 +11837,7 @@
     },
     {
       "id": 172,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0040584",
       "overall_rank": 172,
       "player": "Gunnar Helm",
       "position": "TE",
@@ -11868,7 +11868,7 @@
     },
     {
       "id": 173,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0040170",
       "overall_rank": 173,
       "player": "Elic Ayomanor",
       "position": "WR",
@@ -11899,7 +11899,7 @@
     },
     {
       "id": 174,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0040729",
       "overall_rank": 174,
       "player": "Jack Bech",
       "position": "WR",
@@ -11930,7 +11930,7 @@
     },
     {
       "id": 175,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0033553",
       "overall_rank": 175,
       "player": "James Conner",
       "position": "RB",
@@ -11961,7 +11961,7 @@
     },
     {
       "id": 176,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0036264",
       "overall_rank": 176,
       "player": "Jordan Love",
       "position": "QB",
@@ -11992,7 +11992,7 @@
     },
     {
       "id": 177,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0039901",
       "overall_rank": 177,
       "player": "Keon Coleman",
       "position": "WR",
@@ -12023,7 +12023,7 @@
     },
     {
       "id": 178,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0036894",
       "overall_rank": 178,
       "player": "Pat Freiermuth",
       "position": "TE",
@@ -12054,7 +12054,7 @@
     },
     {
       "id": 179,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0034775",
       "overall_rank": 179,
       "player": "Christian Kirk",
       "position": "WR",
@@ -12085,7 +12085,7 @@
     },
     {
       "id": 180,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0039391",
       "overall_rank": 180,
       "player": "Kimani Vidal",
       "position": "RB",
@@ -12116,7 +12116,7 @@
     },
     {
       "id": 181,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0038976",
       "overall_rank": 181,
       "player": "Marvin Mims Jr.",
       "position": "WR",
@@ -12147,7 +12147,7 @@
     },
     {
       "id": 182,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0038129",
       "overall_rank": 182,
       "player": "Cade Otton",
       "position": "TE",
@@ -12178,7 +12178,7 @@
     },
     {
       "id": 183,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0039342",
       "overall_rank": 183,
       "player": "Xavier Legette",
       "position": "WR",
@@ -12209,7 +12209,7 @@
     },
     {
       "id": 184,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0038797",
       "overall_rank": 184,
       "player": "Emanuel Wilson",
       "position": "RB",
@@ -12240,7 +12240,7 @@
     },
     {
       "id": 185,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0040648",
       "overall_rank": 185,
       "player": "Tory Horton",
       "position": "WR",
@@ -12271,7 +12271,7 @@
     },
     {
       "id": 186,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0033885",
       "overall_rank": 186,
       "player": "David Njoku",
       "position": "TE",
@@ -12302,7 +12302,7 @@
     },
     {
       "id": 187,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0035535",
       "overall_rank": 187,
       "player": "Darius Slayton",
       "position": "WR",
@@ -12333,7 +12333,7 @@
     },
     {
       "id": 188,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0039875",
       "overall_rank": 188,
       "player": "Ray Davis",
       "position": "RB",
@@ -12364,7 +12364,7 @@
     },
     {
       "id": 189,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0034855",
       "overall_rank": 189,
       "player": "Baker Mayfield",
       "position": "QB",
@@ -12395,7 +12395,7 @@
     },
     {
       "id": 190,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0038619",
       "overall_rank": 190,
       "player": "Andrei Iosivas",
       "position": "WR",
@@ -12426,7 +12426,7 @@
     },
     {
       "id": 191,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0040737",
       "overall_rank": 191,
       "player": "Terrance Ferguson",
       "position": "TE",
@@ -12457,7 +12457,7 @@
     },
     {
       "id": 192,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0038951",
       "overall_rank": 192,
       "player": "Sean Tucker",
       "position": "RB",
@@ -12488,7 +12488,7 @@
     },
     {
       "id": 193,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0040131",
       "overall_rank": 193,
       "player": "Kyle Williams",
       "position": "WR",
@@ -12519,7 +12519,7 @@
     },
     {
       "id": 194,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0030279",
       "overall_rank": 194,
       "player": "Keenan Allen",
       "position": "WR",
@@ -12550,7 +12550,7 @@
     },
     {
       "id": 195,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0039874",
       "overall_rank": 195,
       "player": "Jaylen Wright",
       "position": "RB",
@@ -12581,7 +12581,7 @@
     },
     {
       "id": 196,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0039424",
       "overall_rank": 196,
       "player": "Devaughn Vele",
       "position": "WR",
@@ -12612,7 +12612,7 @@
     },
     {
       "id": 197,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0036244",
       "overall_rank": 197,
       "player": "Colby Parkinson",
       "position": "TE",
@@ -12643,7 +12643,7 @@
     },
     {
       "id": 198,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0038104",
       "overall_rank": 198,
       "player": "Tyquan Thornton",
       "position": "WR",
@@ -12674,7 +12674,7 @@
     },
     {
       "id": 199,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0040743",
       "overall_rank": 199,
       "player": "Tyler Shough",
       "position": "QB",
@@ -12705,7 +12705,7 @@
     },
     {
       "id": 200,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0034975",
       "overall_rank": 200,
       "player": "Justice Hill",
       "position": "RB",
@@ -12736,7 +12736,7 @@
     },
     {
       "id": 201,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0033555",
       "overall_rank": 201,
       "player": "Mack Hollins",
       "position": "WR",
@@ -12767,7 +12767,7 @@
     },
     {
       "id": 202,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0033881",
       "overall_rank": 202,
       "player": "Evan Engram",
       "position": "TE",
@@ -12798,7 +12798,7 @@
     },
     {
       "id": 203,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0031235",
       "overall_rank": 203,
       "player": "Odell Beckham Jr.",
       "position": "WR",
@@ -12829,7 +12829,7 @@
     },
     {
       "id": 204,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0040198",
       "overall_rank": 204,
       "player": "Ollie Gordon II",
       "position": "RB",
@@ -12860,7 +12860,7 @@
     },
     {
       "id": 205,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0035662",
       "overall_rank": 205,
       "player": "Hollywood Brown",
       "position": "WR",
@@ -12891,7 +12891,7 @@
     },
     {
       "id": 206,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0034829",
       "overall_rank": 206,
       "player": "Mike Gesicki",
       "position": "TE",
@@ -12922,7 +12922,7 @@
     },
     {
       "id": 207,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0037741",
       "overall_rank": 207,
       "player": "Jahan Dotson",
       "position": "WR",
@@ -12953,7 +12953,7 @@
     },
     {
       "id": 208,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0039811",
       "overall_rank": 208,
       "player": "MarShawn Lloyd",
       "position": "RB",
@@ -12984,7 +12984,7 @@
     },
     {
       "id": 209,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0040590",
       "overall_rank": 209,
       "player": "Konata Mumpfield",
       "position": "WR",
@@ -13015,7 +13015,7 @@
     },
     {
       "id": 210,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0040736",
       "overall_rank": 210,
       "player": "Mason Taylor",
       "position": "TE",
@@ -13046,7 +13046,7 @@
     },
     {
       "id": 211,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0033375",
       "overall_rank": 211,
       "player": "Tim Patrick",
       "position": "WR",
@@ -13077,7 +13077,7 @@
     },
     {
       "id": 212,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0038128",
       "overall_rank": 212,
       "player": "Malik Willis",
       "position": "QB",
@@ -13108,7 +13108,7 @@
     },
     {
       "id": 213,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0035537",
       "overall_rank": 213,
       "player": "Ty Johnson",
       "position": "RB",
@@ -13139,7 +13139,7 @@
     },
     {
       "id": 214,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0036988",
       "overall_rank": 214,
       "player": "Joshua Palmer",
       "position": "WR",
@@ -13170,7 +13170,7 @@
     },
     {
       "id": 215,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0039847",
       "overall_rank": 215,
       "player": "Theo Johnson",
       "position": "TE",
@@ -13201,7 +13201,7 @@
     },
     {
       "id": 216,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0040782",
       "overall_rank": 216,
       "player": "Isaiah Bond",
       "position": "WR",
@@ -13232,7 +13232,7 @@
     },
     {
       "id": 217,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0039921",
       "overall_rank": 217,
       "player": "Trey Benson",
       "position": "RB",
@@ -13263,7 +13263,7 @@
     },
     {
       "id": 218,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0037666",
       "overall_rank": 218,
       "player": "Jalen Tolbert",
       "position": "WR",
@@ -13294,7 +13294,7 @@
     },
     {
       "id": 219,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0037112",
       "overall_rank": 219,
       "player": "Jake Tonges",
       "position": "TE",
@@ -13325,7 +13325,7 @@
     },
     {
       "id": 220,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0031236",
       "overall_rank": 220,
       "player": "Brandin Cooks",
       "position": "WR",
@@ -13356,7 +13356,7 @@
     },
     {
       "id": 221,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0040586",
       "overall_rank": 221,
       "player": "Jaydon Blue",
       "position": "RB",
@@ -13387,7 +13387,7 @@
     },
     {
       "id": 222,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0033307",
       "overall_rank": 222,
       "player": "Kendrick Bourne",
       "position": "WR",
@@ -13418,7 +13418,7 @@
     },
     {
       "id": 223,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0039163",
       "overall_rank": 223,
       "player": "C.J. Stroud",
       "position": "QB",
@@ -13449,7 +13449,7 @@
     },
     {
       "id": 224,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0035208",
       "overall_rank": 224,
       "player": "Olamide Zaccheaus",
       "position": "WR",
@@ -13480,7 +13480,7 @@
     },
     {
       "id": 225,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0038558",
       "overall_rank": 225,
       "player": "Darnell Washington",
       "position": "TE",
@@ -13511,7 +13511,7 @@
     },
     {
       "id": 226,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0039798",
       "overall_rank": 226,
       "player": "Isaiah Davis",
       "position": "RB",
@@ -13542,7 +13542,7 @@
     },
     {
       "id": 227,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0038979",
       "overall_rank": 227,
       "player": "Cedric Tillman",
       "position": "WR",
@@ -13573,7 +13573,7 @@
     },
     {
       "id": 228,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0039355",
       "overall_rank": 228,
       "player": "Luke McCaffrey",
       "position": "WR",
@@ -13604,7 +13604,7 @@
     },
     {
       "id": 229,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0039066",
       "overall_rank": 229,
       "player": "Michael Mayer",
       "position": "TE",
@@ -13635,7 +13635,7 @@
     },
     {
       "id": 230,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0040202",
       "overall_rank": 230,
       "player": "Devin Neal",
       "position": "RB",
@@ -13666,7 +13666,7 @@
     },
     {
       "id": 231,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0040237",
       "overall_rank": 231,
       "player": "Tez Johnson",
       "position": "WR",
@@ -13697,7 +13697,7 @@
     },
     {
       "id": 232,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0037837",
       "overall_rank": 232,
       "player": "Calvin Austin III",
       "position": "WR",
@@ -13728,7 +13728,7 @@
     },
     {
       "id": 233,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0039356",
       "overall_rank": 233,
       "player": "Ja'Tavion Sanders",
       "position": "TE",
@@ -13759,7 +13759,7 @@
     },
     {
       "id": 234,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0038685",
       "overall_rank": 234,
       "player": "Chris Brooks",
       "position": "RB",
@@ -13790,7 +13790,7 @@
     },
     {
       "id": 235,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0037801",
       "overall_rank": 235,
       "player": "KaVontae Turpin",
       "position": "WR",
@@ -13821,7 +13821,7 @@
     },
     {
       "id": 236,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0034869",
       "overall_rank": 236,
       "player": "Sam Darnold",
       "position": "QB",
@@ -13852,7 +13852,7 @@
     },
     {
       "id": 237,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0040646",
       "overall_rank": 237,
       "player": "Jalen Royals",
       "position": "WR",
@@ -13883,7 +13883,7 @@
     },
     {
       "id": 238,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0040179",
       "overall_rank": 238,
       "player": "DJ Giddens",
       "position": "RB",
@@ -13914,7 +13914,7 @@
     },
     {
       "id": 239,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0033110",
       "overall_rank": 239,
       "player": "Tyler Higbee",
       "position": "TE",
@@ -13945,7 +13945,7 @@
     },
     {
       "id": 240,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0039792",
       "overall_rank": 240,
       "player": "Devontez Walker",
       "position": "WR",
@@ -13976,7 +13976,7 @@
     },
     {
       "id": 241,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0040522",
       "overall_rank": 241,
       "player": "Xavier Restrepo",
       "position": "WR",
@@ -14007,7 +14007,7 @@
     },
     {
       "id": 242,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0040238",
       "overall_rank": 242,
       "player": "LeQuint Allen Jr.",
       "position": "RB",
@@ -14038,7 +14038,7 @@
     },
     {
       "id": 243,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0039814",
       "overall_rank": 243,
       "player": "Erick All Jr.",
       "position": "TE",
@@ -14069,7 +14069,7 @@
     },
     {
       "id": 244,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0037742",
       "overall_rank": 244,
       "player": "Treylon Burks",
       "position": "WR",
@@ -14100,7 +14100,7 @@
     },
     {
       "id": 245,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0036415",
       "overall_rank": 245,
       "player": "Van Jefferson",
       "position": "WR",
@@ -14131,7 +14131,7 @@
     },
     {
       "id": 246,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0040142",
       "overall_rank": 246,
       "player": "Kaleb Johnson",
       "position": "RB",
@@ -14162,7 +14162,7 @@
     },
     {
       "id": 247,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0040739",
       "overall_rank": 247,
       "player": "Elijah Arroyo",
       "position": "TE",
@@ -14193,7 +14193,7 @@
     },
     {
       "id": 248,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0038621",
       "overall_rank": 248,
       "player": "DeMario Douglas",
       "position": "WR",
@@ -14224,7 +14224,7 @@
     },
     {
       "id": 249,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0040676",
       "overall_rank": 249,
       "player": "Cam Ward",
       "position": "QB",
@@ -14255,7 +14255,7 @@
     },
     {
       "id": 250,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0039451",
       "overall_rank": 250,
       "player": "Isaiah Williams",
       "position": "WR",
@@ -14286,7 +14286,7 @@
     },
     {
       "id": 251,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0039299",
       "overall_rank": 251,
       "player": "George Holani",
       "position": "RB",
@@ -14317,7 +14317,7 @@
     },
     {
       "id": 252,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0036628",
       "overall_rank": 252,
       "player": "John Bates",
       "position": "TE",
@@ -14348,7 +14348,7 @@
     },
     {
       "id": 253,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0030564",
       "overall_rank": 253,
       "player": "DeAndre Hopkins",
       "position": "WR",
@@ -14379,7 +14379,7 @@
     },
     {
       "id": 254,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0034272",
       "overall_rank": 254,
       "player": "Marquez Valdes-Scantling",
       "position": "WR",
@@ -14410,7 +14410,7 @@
     },
     {
       "id": 255,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0040177",
       "overall_rank": 255,
       "player": "Jordan James",
       "position": "RB",
@@ -14441,7 +14441,7 @@
     },
     {
       "id": 256,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0036637",
       "overall_rank": 256,
       "player": "Noah Gray",
       "position": "TE",
@@ -14472,7 +14472,7 @@
     },
     {
       "id": 257,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0032211",
       "overall_rank": 257,
       "player": "Tyler Lockett",
       "position": "WR",
@@ -14503,7 +14503,7 @@
     },
     {
       "id": 258,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0032464",
       "overall_rank": 258,
       "player": "Kalif Raymond",
       "position": "WR",
@@ -14534,7 +14534,7 @@
     },
     {
       "id": 259,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0033526",
       "overall_rank": 259,
       "player": "Samaje Perine",
       "position": "RB",
@@ -14565,7 +14565,7 @@
     },
     {
       "id": 260,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0036290",
       "overall_rank": 260,
       "player": "Cole Kmet",
       "position": "TE",
@@ -14596,7 +14596,7 @@
     },
     {
       "id": 261,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0039150",
       "overall_rank": 261,
       "player": "Bryce Young",
       "position": "QB",
@@ -14627,7 +14627,7 @@
     },
     {
       "id": 262,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0038752",
       "overall_rank": 262,
       "player": "Jake Bobo",
       "position": "WR",
@@ -14658,7 +14658,7 @@
     },
     {
       "id": 263,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0040581",
       "overall_rank": 263,
       "player": "Dont'e Thornton Jr.",
       "position": "WR",
@@ -14689,7 +14689,7 @@
     },
     {
       "id": 264,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0037563",
       "overall_rank": 264,
       "player": "Malik Davis",
       "position": "RB",
@@ -14720,7 +14720,7 @@
     },
     {
       "id": 265,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0035689",
       "overall_rank": 265,
       "player": "Dawson Knox",
       "position": "TE",
@@ -14751,7 +14751,7 @@
     },
     {
       "id": 266,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0036182",
       "overall_rank": 266,
       "player": "Nick Westbrook-Ikhine",
       "position": "WR",
@@ -14782,7 +14782,7 @@
     },
     {
       "id": 267,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0038618",
       "overall_rank": 267,
       "player": "Xavier Hutchinson",
       "position": "WR",
@@ -14813,7 +14813,7 @@
     },
     {
       "id": 268,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0040078",
       "overall_rank": 268,
       "player": "Brashard Smith",
       "position": "RB",
@@ -14844,7 +14844,7 @@
     },
     {
       "id": 269,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0033357",
       "overall_rank": 269,
       "player": "Taysom Hill",
       "position": "TE",
@@ -14875,7 +14875,7 @@
     },
     {
       "id": 270,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0036980",
       "overall_rank": 270,
       "player": "Elijah Moore",
       "position": "WR",
@@ -14906,7 +14906,7 @@
     },
     {
       "id": 271,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0035021",
       "overall_rank": 271,
       "player": "Ashton Dulin",
       "position": "WR",
@@ -14937,7 +14937,7 @@
     },
     {
       "id": 272,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0029892",
       "overall_rank": 272,
       "player": "Kyle Juszczyk",
       "position": "RB",
@@ -14968,7 +14968,7 @@
     },
     {
       "id": 273,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0033858",
       "overall_rank": 273,
       "player": "Jonnu Smith",
       "position": "TE",
@@ -14999,7 +14999,7 @@
     },
     {
       "id": 274,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0035710",
       "overall_rank": 274,
       "player": "Daniel Jones",
       "position": "QB",
@@ -15030,7 +15030,7 @@
     },
     {
       "id": 275,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0035406",
       "overall_rank": 275,
       "player": "Lil'Jordan Humphrey",
       "position": "WR",
@@ -15061,7 +15061,7 @@
     },
     {
       "id": 276,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0036849",
       "overall_rank": 276,
       "player": "Tutu Atwell",
       "position": "WR",
@@ -15092,7 +15092,7 @@
     },
     {
       "id": 277,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0036893",
       "overall_rank": 277,
       "player": "Najee Harris",
       "position": "RB",
@@ -15123,7 +15123,7 @@
     },
     {
       "id": 278,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0035631",
       "overall_rank": 278,
       "player": "Drew Sample",
       "position": "TE",
@@ -15154,7 +15154,7 @@
     },
     {
       "id": 279,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0035216",
       "overall_rank": 279,
       "player": "Diontae Johnson",
       "position": "WR",
@@ -15185,7 +15185,7 @@
     },
     {
       "id": 280,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0037614",
       "overall_rank": 280,
       "player": "John Metchie III",
       "position": "WR",
@@ -15216,7 +15216,7 @@
     },
     {
       "id": 281,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0037267",
       "overall_rank": 281,
       "player": "Jerome Ford",
       "position": "RB",
@@ -15247,7 +15247,7 @@
     },
     {
       "id": 282,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0035644",
       "overall_rank": 282,
       "player": "Noah Fant",
       "position": "TE",
@@ -15278,7 +15278,7 @@
     },
     {
       "id": 283,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0036626",
       "overall_rank": 283,
       "player": "Dyami Brown",
       "position": "WR",
@@ -15309,7 +15309,7 @@
     },
     {
       "id": 284,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0035500",
       "overall_rank": 284,
       "player": "Greg Dortch",
       "position": "WR",
@@ -15340,7 +15340,7 @@
     },
     {
       "id": 285,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0037005",
       "overall_rank": 285,
       "player": "Tommy Tremble",
       "position": "TE",
@@ -15371,7 +15371,7 @@
     },
     {
       "id": 286,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0038551",
       "overall_rank": 286,
       "player": "Kendre Miller",
       "position": "RB",
@@ -15402,7 +15402,7 @@
     },
     {
       "id": 287,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0033119",
       "overall_rank": 287,
       "player": "Jacoby Brissett",
       "position": "QB",
@@ -15433,7 +15433,7 @@
     },
     {
       "id": 288,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0040164",
       "overall_rank": 288,
       "player": "Jaylin Lane",
       "position": "WR",
@@ -15464,7 +15464,7 @@
     },
     {
       "id": 289,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0038839",
       "overall_rank": 289,
       "player": "Mitch Tinsley",
       "position": "WR",
@@ -15495,7 +15495,7 @@
     },
     {
       "id": 290,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0031610",
       "overall_rank": 290,
       "player": "Darren Waller",
       "position": "TE",
@@ -15526,7 +15526,7 @@
     },
     {
       "id": 291,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0038794",
       "overall_rank": 291,
       "player": "Jaleel McLaughlin",
       "position": "RB",
@@ -15557,7 +15557,7 @@
     },
     {
       "id": 292,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0040277",
       "overall_rank": 292,
       "player": "Jahdae Walker",
       "position": "WR",
@@ -15588,7 +15588,7 @@
     },
     {
       "id": 293,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0040009",
       "overall_rank": 293,
       "player": "Savion Williams",
       "position": "WR",
@@ -15619,7 +15619,7 @@
     },
     {
       "id": 294,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0034798",
       "overall_rank": 294,
       "player": "Durham Smythe",
       "position": "TE",
@@ -15650,7 +15650,7 @@
     },
     {
       "id": 295,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0038705",
       "overall_rank": 295,
       "player": "Emari Demercado",
       "position": "RB",
@@ -15681,7 +15681,7 @@
     },
     {
       "id": 296,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0038359",
       "overall_rank": 296,
       "player": "Xavier Smith",
       "position": "WR",
@@ -15712,7 +15712,7 @@
     },
     {
       "id": 297,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0037300",
       "overall_rank": 297,
       "player": "Michael Woods II",
       "position": "WR",
@@ -15743,7 +15743,7 @@
     },
     {
       "id": 298,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0035249",
       "overall_rank": 298,
       "player": "Josh Oliver",
       "position": "TE",
@@ -15774,7 +15774,7 @@
     },
     {
       "id": 299,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0023459",
       "overall_rank": 299,
       "player": "Aaron Rodgers",
       "position": "QB",
@@ -15805,7 +15805,7 @@
     },
     {
       "id": 300,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0033897",
       "overall_rank": 300,
       "player": "Joe Mixon",
       "position": "RB",
@@ -15836,7 +15836,7 @@
     },
     {
       "id": 301,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0040311",
       "overall_rank": 301,
       "player": "Theo Wease Jr.",
       "position": "WR",
@@ -15867,7 +15867,7 @@
     },
     {
       "id": 302,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0035298",
       "overall_rank": 302,
       "player": "Scotty Miller",
       "position": "WR",
@@ -15898,7 +15898,7 @@
     },
     {
       "id": 303,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0034159",
       "overall_rank": 303,
       "player": "Will Dissly",
       "position": "TE",
@@ -15929,7 +15929,7 @@
     },
     {
       "id": 304,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0035250",
       "overall_rank": 304,
       "player": "Devin Singletary",
       "position": "RB",
@@ -15960,7 +15960,7 @@
     },
     {
       "id": 305,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0039751",
       "overall_rank": 305,
       "player": "Jordan Whittington",
       "position": "WR",
@@ -15991,7 +15991,7 @@
     },
     {
       "id": 306,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0032392",
       "overall_rank": 306,
       "player": "Austin Hooper",
       "position": "TE",
@@ -16022,7 +16022,7 @@
     },
     {
       "id": 307,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0038573",
       "overall_rank": 307,
       "player": "Derius Davis",
       "position": "WR",
@@ -16053,7 +16053,7 @@
     },
     {
       "id": 308,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0039363",
       "overall_rank": 308,
       "player": "Isaac Guerendo",
       "position": "RB",
@@ -16084,7 +16084,7 @@
     },
     {
       "id": 309,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0039810",
       "overall_rank": 309,
       "player": "Jermaine Burton",
       "position": "WR",
@@ -16115,7 +16115,7 @@
     },
     {
       "id": 310,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0030061",
       "overall_rank": 310,
       "player": "Zach Ertz",
       "position": "TE",
@@ -16146,7 +16146,7 @@
     },
     {
       "id": 311,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0040154",
       "overall_rank": 311,
       "player": "Tai Felton",
       "position": "WR",
@@ -16177,7 +16177,7 @@
     },
     {
       "id": 312,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0030565",
       "overall_rank": 312,
       "player": "Geno Smith",
       "position": "QB",
@@ -16208,7 +16208,7 @@
     },
     {
       "id": 313,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0040208",
       "overall_rank": 313,
       "player": "Tahj Brooks",
       "position": "RB",
@@ -16239,7 +16239,7 @@
     },
     {
       "id": 314,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0035140",
       "overall_rank": 314,
       "player": "Mecole Hardman Jr.",
       "position": "WR",
@@ -16270,7 +16270,7 @@
     },
     {
       "id": 315,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0038115",
       "overall_rank": 315,
       "player": "Daniel Bellinger",
       "position": "TE",
@@ -16301,7 +16301,7 @@
     },
     {
       "id": 316,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0032775",
       "overall_rank": 316,
       "player": "Demarcus Robinson",
       "position": "WR",
@@ -16332,7 +16332,7 @@
     },
     {
       "id": 317,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0033955",
       "overall_rank": 317,
       "player": "Jeremy McNichols",
       "position": "RB",
@@ -16363,7 +16363,7 @@
     },
     {
       "id": 318,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0039816",
       "overall_rank": 318,
       "player": "Anthony Gould",
       "position": "WR",
@@ -16394,7 +16394,7 @@
     },
     {
       "id": 319,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0038046",
       "overall_rank": 319,
       "player": "Charlie Kolar",
       "position": "TE",
@@ -16425,7 +16425,7 @@
     },
     {
       "id": 320,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0036196",
       "overall_rank": 320,
       "player": "Gabe Davis",
       "position": "WR",
@@ -16456,7 +16456,7 @@
     },
     {
       "id": 321,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0037157",
       "overall_rank": 321,
       "player": "Bam Knight",
       "position": "RB",
@@ -16487,7 +16487,7 @@
     },
     {
       "id": 322,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0038090",
       "overall_rank": 322,
       "player": "Skyy Moore",
       "position": "WR",
@@ -16518,7 +16518,7 @@
     },
     {
       "id": 323,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0039144",
       "overall_rank": 323,
       "player": "Luke Musgrave",
       "position": "TE",
@@ -16549,7 +16549,7 @@
     },
     {
       "id": 324,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0036212",
       "overall_rank": 324,
       "player": "Tua Tagovailoa",
       "position": "QB",
@@ -16580,7 +16580,7 @@
     },
     {
       "id": 325,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0039796",
       "overall_rank": 325,
       "player": "Rasheen Ali",
       "position": "RB",
@@ -16611,7 +16611,7 @@
     },
     {
       "id": 326,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0036422",
       "overall_rank": 326,
       "player": "Adam Trautman",
       "position": "TE",
@@ -16642,7 +16642,7 @@
     },
     {
       "id": 327,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0040644",
       "overall_rank": 327,
       "player": "Trevor Etienne",
       "position": "RB",
@@ -16673,7 +16673,7 @@
     },
     {
       "id": 328,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0039912",
       "overall_rank": 328,
       "player": "Ben Sinnott",
       "position": "TE",
@@ -16704,7 +16704,7 @@
     },
     {
       "id": 329,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0039359",
       "overall_rank": 329,
       "player": "Cade Stover",
       "position": "TE",
@@ -16735,7 +16735,7 @@
     },
     {
       "id": 330,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0039373",
       "overall_rank": 330,
       "player": "Audric Estime",
       "position": "RB",
@@ -16766,7 +16766,7 @@
     },
     {
       "id": 331,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0039917",
       "overall_rank": 331,
       "player": "Michael Penix Jr.",
       "position": "QB",
@@ -16797,7 +16797,7 @@
     },
     {
       "id": 332,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0038547",
       "overall_rank": 332,
       "player": "Luke Schoonmaker",
       "position": "TE",
@@ -16828,7 +16828,7 @@
     },
     {
       "id": 333,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0040692",
       "overall_rank": 333,
       "player": "Jarquez Hunter",
       "position": "RB",
@@ -16859,7 +16859,7 @@
     },
     {
       "id": 334,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0039041",
       "overall_rank": 334,
       "player": "Elijah Higgins",
       "position": "TE",
@@ -16890,7 +16890,7 @@
     },
     {
       "id": 335,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0039364",
       "overall_rank": 335,
       "player": "Sione Vaki",
       "position": "RB",
@@ -16921,7 +16921,7 @@
     },
     {
       "id": 336,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0033217",
       "overall_rank": 336,
       "player": "Mo Alie-Cox",
       "position": "TE",
@@ -16952,7 +16952,7 @@
     },
     {
       "id": 337,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0039746",
       "overall_rank": 337,
       "player": "Will Shipley",
       "position": "RB",
@@ -16983,7 +16983,7 @@
     },
     {
       "id": 338,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0033537",
       "overall_rank": 338,
       "player": "Deshaun Watson",
       "position": "QB",
@@ -17014,7 +17014,7 @@
     },
     {
       "id": 339,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0040187",
       "overall_rank": 339,
       "player": "Mitchell Evans",
       "position": "TE",
@@ -17045,7 +17045,7 @@
     },
     {
       "id": 340,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0033923",
       "overall_rank": 340,
       "player": "Kareem Hunt",
       "position": "RB",
@@ -17076,7 +17076,7 @@
     },
     {
       "id": 341,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0034270",
       "overall_rank": 341,
       "player": "Tyler Conklin",
       "position": "TE",
@@ -17107,7 +17107,7 @@
     },
     {
       "id": 342,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0038738",
       "overall_rank": 342,
       "player": "Hunter Luepke",
       "position": "RB",
@@ -17138,7 +17138,7 @@
     },
     {
       "id": 343,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0039824",
       "overall_rank": 343,
       "player": "Jared Wiley",
       "position": "TE",
@@ -17169,7 +17169,7 @@
     },
     {
       "id": 344,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0040225",
       "overall_rank": 344,
       "player": "Thomas Fidone II",
       "position": "TE",
@@ -17200,7 +17200,7 @@
     },
     {
       "id": 345,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0034791",
       "overall_rank": 345,
       "player": "Nick Chubb",
       "position": "RB",
@@ -17231,7 +17231,7 @@
     },
     {
       "id": 346,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0040668",
       "overall_rank": 346,
       "player": "Shedeur Sanders",
       "position": "QB",
@@ -17262,7 +17262,7 @@
     },
     {
       "id": 347,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0040466",
       "overall_rank": 347,
       "player": "Raheim Sanders",
       "position": "RB",
@@ -17293,7 +17293,7 @@
     },
     {
       "id": 348,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0039405",
       "overall_rank": 348,
       "player": "Jawhar Jordan",
       "position": "RB",
@@ -17324,7 +17324,7 @@
     },
     {
       "id": 349,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0029604",
       "overall_rank": 349,
       "player": "Kirk Cousins",
       "position": "QB",
@@ -17355,7 +17355,7 @@
     },
     {
       "id": 350,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0040021",
       "overall_rank": 350,
       "player": "Phil Mafah",
       "position": "RB",
@@ -17386,7 +17386,7 @@
     },
     {
       "id": 351,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0036924",
       "overall_rank": 351,
       "player": "Michael Carter",
       "position": "RB",
@@ -17417,7 +17417,7 @@
     },
     {
       "id": 352,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0038440",
       "overall_rank": 352,
       "player": "Zavier Scott",
       "position": "RB",
@@ -17448,7 +17448,7 @@
     },
     {
       "id": 353,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0039923",
       "overall_rank": 353,
       "player": "J.J. McCarthy",
       "position": "QB",
@@ -17479,7 +17479,7 @@
     },
     {
       "id": 354,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0039407",
       "overall_rank": 354,
       "player": "Dylan Laube",
       "position": "RB",
@@ -17510,7 +17510,7 @@
     },
     {
       "id": 355,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0037258",
       "overall_rank": 355,
       "player": "Dameon Pierce",
       "position": "RB",
@@ -17541,7 +17541,7 @@
     },
     {
       "id": 356,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0036328",
       "overall_rank": 356,
       "player": "Antonio Gibson",
       "position": "RB",
@@ -17572,7 +17572,7 @@
     },
     {
       "id": 357,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0036972",
       "overall_rank": 357,
       "player": "Mac Jones",
       "position": "QB",
@@ -17603,7 +17603,7 @@
     },
     {
       "id": 358,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0039757",
       "overall_rank": 358,
       "player": "Terrell Jennings",
       "position": "RB",
@@ -17634,7 +17634,7 @@
     },
     {
       "id": 359,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0038896",
       "overall_rank": 359,
       "player": "Jacob Saylors",
       "position": "RB",
@@ -17665,7 +17665,7 @@
     },
     {
       "id": 360,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0033699",
       "overall_rank": 360,
       "player": "Austin Ekeler",
       "position": "RB",
@@ -17696,7 +17696,7 @@
     },
     {
       "id": 361,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0039398",
       "overall_rank": 361,
       "player": "Joe Milton III",
       "position": "QB",
@@ -17727,7 +17727,7 @@
     },
     {
       "id": 362,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0037557",
       "overall_rank": 362,
       "player": "Ronnie Rivers",
       "position": "RB",
@@ -17758,7 +17758,7 @@
     },
     {
       "id": 363,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0036567",
       "overall_rank": 363,
       "player": "Elijah Mitchell",
       "position": "RB",
@@ -17789,7 +17789,7 @@
     },
     {
       "id": 364,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0039021",
       "overall_rank": 364,
       "player": "Roschon Johnson",
       "position": "RB",
@@ -17820,7 +17820,7 @@
     },
     {
       "id": 365,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0039164",
       "overall_rank": 365,
       "player": "Anthony Richardson Sr.",
       "position": "QB",
@@ -17851,7 +17851,7 @@
     },
     {
       "id": 366,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0040651",
       "overall_rank": 366,
       "player": "Damien Martinez",
       "position": "RB",
@@ -17882,7 +17882,7 @@
     },
     {
       "id": 367,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0039471",
       "overall_rank": 367,
       "player": "Frank Gore Jr.",
       "position": "RB",
@@ -17913,7 +17913,7 @@
     },
     {
       "id": 368,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0036755",
       "overall_rank": 368,
       "player": "Jaret Patterson",
       "position": "RB",
@@ -17944,7 +17944,7 @@
     },
     {
       "id": 369,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0036945",
       "overall_rank": 369,
       "player": "Justin Fields",
       "position": "QB",
@@ -17975,7 +17975,7 @@
     },
     {
       "id": 370,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0040400",
       "overall_rank": 370,
       "player": "Donovan Edwards",
       "position": "RB",
@@ -18006,7 +18006,7 @@
     },
     {
       "id": 371,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0037085",
       "overall_rank": 371,
       "player": "Tyler Badie",
       "position": "RB",
@@ -18037,7 +18037,7 @@
     },
     {
       "id": 372,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0040206",
       "overall_rank": 372,
       "player": "Riley Leonard",
       "position": "QB",
@@ -18068,7 +18068,7 @@
     },
     {
       "id": 373,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0035243",
       "overall_rank": 373,
       "player": "Miles Sanders",
       "position": "RB",
@@ -18099,7 +18099,7 @@
     },
     {
       "id": 374,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0032268",
       "overall_rank": 374,
       "player": "Marcus Mariota",
       "position": "QB",
@@ -18130,7 +18130,7 @@
     },
     {
       "id": 375,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0035289",
       "overall_rank": 375,
       "player": "Gardner Minshew II",
       "position": "QB",
@@ -18161,7 +18161,7 @@
     },
     {
       "id": 376,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0031503",
       "overall_rank": 376,
       "player": "Jameis Winston",
       "position": "QB",
@@ -18192,7 +18192,7 @@
     },
     {
       "id": 377,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0026158",
       "overall_rank": 377,
       "player": "Joe Flacco",
       "position": "QB",
@@ -18223,7 +18223,7 @@
     },
     {
       "id": 378,
-      "player_id_gsis": null,
+      "player_id_gsis": "00-0040234",
       "overall_rank": 378,
       "player": "Quinn Ewers",
       "position": "QB",

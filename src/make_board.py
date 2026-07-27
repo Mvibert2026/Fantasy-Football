@@ -120,6 +120,14 @@ class BoardRow:
     vbd_hi: float
     consensus_rank: int
     delta_vs_consensus: int
+    # nflverse gsis-style id (rankings.player_id is aliased from gsis_id at
+    # ingest, ingest_rankings.py). Same id space as player_weekly_stats.player_id,
+    # the join key export_history.py's weekly_finishes.json/season_stats.json
+    # already use (thread 017/039) -- carrying it here, not a new identifier
+    # scheme, is what lets export_contract.py populate board.json's
+    # player_id_gsis instead of hardcoding None (thread 052). Optional because
+    # BoardRow is also hand-constructed in tests without needing an id.
+    player_id: Optional[str] = None
 
 
 def _season_actual_points(
@@ -352,6 +360,7 @@ def build_board(
                 consensus_rank=r["adp_rank"],
                 # positive => our board is higher on the player than consensus
                 delta_vs_consensus=r["adp_rank"] - overall,
+                player_id=r["player_id"],
             )
         )
     return board, curves

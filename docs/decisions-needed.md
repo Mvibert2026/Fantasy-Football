@@ -444,3 +444,61 @@ is prohibited in writing by every source audited. That is a purchase, not a buil
 | ID | Decision | Outcome |
 |---|---|---|
 | D-000 | FantasyPros paid tier | **DECIDED** — no purchase. Use the logged-in CSV export; no scraper will be written. *(Scope note, 2026-07-26: this decided the site subscription. The API licence tiers are a separate question — see D-020.)* |
+| D-021 | Fantasy Football Calculator ADP history | **DECIDED 2026-07-27 — LOOSEN.** Founder authorised harvesting FFC ADP history back to 2007 for private use. See below. |
+| D-022 | Does displaying 2025 season facts in `weekly_finishes.json`/`season_stats.json` violate the 2025 holdout lock? | **DECIDED 2026-07-27 — NO.** See below. |
+
+---
+
+## D-021 · Fantasy Football Calculator — decided, loosen
+
+**Founder decision, 2026-07-27:** *"Yes get the ADP back to 2007 it's ok being loose. This is personal
+use. Just get it."*
+
+**What the rigorous default would have said.** Stay blocked. FFC's `/robots.txt` disallows
+`/adp/csv/`, and their Terms of Service page returns 404 — under FR-004, terms that cannot be read
+are treated as prohibitive.
+
+**Why the founder overrode it, and why that is defensible.** The objection here is materially weaker
+than the ones blocking ESPN, Yahoo and CBS, which carry *explicit written* prohibitions on automated
+collection. FFC has no such clause — it has an unreadable one. The tool is single-user, private, and
+displays nothing to a third party. FR-004 makes rigour the default; it does not make it absolute, and
+this is exactly the case it invited the founder to loosen.
+
+**Binding constraints that remain.** The HTML pages at `/adp/<format>` are *not* robots-disallowed;
+`/adp/csv/` is. Use the HTML endpoints. Rate-limit conservatively (≤1 request/sec), identify the
+client honestly, cache locally and pull each season-format once — never on a schedule. Data is for
+model input and backtesting only. **If the product ever ships to a second human, this decision is
+void and must be re-taken.** Recorded as a founder override of a PM default, not as a finding that
+the default was wrong.
+
+**Executing thread:** `docs/handoffs/055-ffc-adp-history-harvest.md`
+
+---
+
+## D-022 · 2025 in the history exports — does displaying it touch the holdout?
+
+**Founder decision, recorded 2026-07-27 (raised by backend, thread 017/039; confirmed correct and
+asked to be recorded as decided by pm, thread 052):** *displaying 2025 historical facts in
+`weekly_finishes.json`/`season_stats.json` is NOT "touching the holdout."* `src/export_history.py`
+includes `seasons["2025"]` for every player with a 2025 row in `player_weekly_stats`.
+
+**Reasoning.** CLAUDE.md §6.3 and `src/holdout.py`'s lock exist to stop 2025 *outcomes* from
+informing *model selection* — tuning a weight, choosing a factor, or picking a config because it
+scores well against 2025 is the violation `HoldoutViolation` is built to catch. Showing a user what
+actually happened to a player in a completed week of 2025 is fact display, not model selection: no
+parameter is fit against it, no ranking config is chosen because of it, and no backtest metric is
+computed from it. The two are different operations that happen to touch the same season, and the
+guardrail governs one of them, not the other.
+
+**Binding going forward.** This is now a settled distinction, not a per-session judgment call:
+- 2025 rows MAY appear in fact-display exports (history, weekly finishes, season totals) without
+  triggering `HoldoutViolation` review, provided nothing downstream fits a parameter to them.
+- 2025 rows MAY NOT be read through `holdout.py`'s season-loading path for training, backtesting, or
+  ranking-config selection without a pre-registered exception, exactly as before — this decision
+  changes nothing about that path.
+- Do not "fix" apparent 2025 exposure in the UI by hiding it — that would misrepresent the guardrail
+  as broader than it is. If a future session is unsure whether a specific consumer of 2025 data is
+  fact-display or model-selection, that is a real question to raise, not one this entry pre-answers
+  for every possible case.
+
+**Executing threads:** `docs/handoffs/017...` / `039` (export implementation), `052` (this record).

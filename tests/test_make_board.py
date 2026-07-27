@@ -12,6 +12,19 @@ from scoring import ReplacementLevels
 # --------------------------- pure-function tests ---------------------------
 
 
+def test_board_row_carries_player_id_field():
+    """Thread 052: BoardRow must carry the gsis-style player_id so
+    export_contract.py can populate board.json's player_id_gsis instead of
+    hardcoding None. A field that silently vanished here would resurrect the
+    null-join bug without any test noticing."""
+    row = make_board.BoardRow(
+        overall_rank=1, player="Test Player", position="RB",
+        projected_points=100.0, vbd=50.0, vbd_lo=40.0, vbd_hi=60.0,
+        consensus_rank=1, delta_vs_consensus=0, player_id="00-0000001",
+    )
+    assert row.player_id == "00-0000001"
+
+
 def test_fit_one_recovers_a_known_log_curve():
     # points = 300 - 50*ln(rank), exactly
     pairs = [(r, 300 - 50 * math.log(r)) for r in range(1, 31)]

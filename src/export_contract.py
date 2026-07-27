@@ -148,7 +148,16 @@ def build_board_json(conn: sqlite3.Connection, cfg: lc.LeagueConfig = lc.CURRENT
             # usable as such. Derived from overall_rank so it is deterministic
             # for a given board generation.
             "id": r.overall_rank,
-            "player_id_gsis": None,
+            # Thread 052: was hardcoded None. rankings.player_id (which
+            # BoardRow.player_id now carries through, make_board.py) is a
+            # gsis_id -- ingest_rankings.py joins fantasypros_id -> gsis_id
+            # and aliases the result as player_id at ingest time -- the same
+            # id space player_weekly_stats.player_id uses, which is the join
+            # key weekly_finishes.json/season_stats.json expose (thread
+            # 017/039, src/export_history.py). Populating this field with
+            # that value, rather than inventing a second identifier scheme,
+            # is what makes board.json joinable to those two exports.
+            "player_id_gsis": r.player_id,
             "overall_rank": r.overall_rank,
             "player": r.player,
             "position": r.position,

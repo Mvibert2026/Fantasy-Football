@@ -1571,3 +1571,121 @@ Tests: 65 passed (`tests/test_preregistration.py` + `tests/test_holdout.py`, `-q
 run — full suite not run this session per instruction, to avoid DB contention with concurrent
 agents).
 
+### ADR-048: `league_builder.py` — real league creation from founder-facing parameters (thread 040 item 1)
+
+**Decision.** Added `src/league_builder.py`: `create_league(name, teams, starters, flex_slots,
+flex_eligible, bench, ir, user_draft_slot, ...)` builds and saves a `LeagueConfig` from plain
+parameters (not a hand-built dataclass call), `export_league(cfg, out_dir, conn)` recomputes
+board/league/availability/rosters for it via the existing `export_contract.write_all`, and
+`create_and_export_league(...)` chains both. This is the missing capability thread 040 named:
+before this, a "new league" meant either the founder's own hardcoded config or one of the 24
+pre-generated combinations in `generate_config_matrix.py` — there was no path from a person
+typing a name, team count, roster shape, scoring rules, and draft slot into a config that
+actually recomputes.
+
+**What was already correct and did NOT need fixing.** The thread's stated worry — that
+replacement levels might get reused across leagues instead of measured per format — turned out
+to already be handled. `scoring.ReplacementLevels.from_league_config()` (ADR-041) and
+`export_contract.build_board_json(conn, cfg)` (ADR-041/047) already derive replacement levels
+from whatever `LeagueConfig` is passed in, not from a module-level default; `tests/
+test_multi_league_export.py` already covered this for the 24-config matrix. `league_builder.py`
+does not touch that arithmetic at all — it only makes the *config* reachable from friendly
+inputs. `tests/test_league_builder.py::test_replacement_levels_differ_by_format` and
+`::test_create_and_export_league_board_uses_its_own_replacement_levels` (DB-backed) confirm
+this directly: a 14-team, 1.0-PPR, 2-RB/2-WR/1-TE-starter probe league gets `QB14` (not `QB10`)
+and a `board.json["replacement_levels_used"]` that is not `{"QB":10,"RB":30,"WR":40,"TE":10}`.
+
+**`flex_split` is deliberately never passed in by `create_league`.** A new league's true flex
+split has not been measured — ADR-029 measured the founder's specific league over 26 seasons
+under its exact scoring. Omitting it means `from_league_config` takes its existing explicit
+placeholder path (`measured=False`, primary league's split borrowed and flagged) rather than
+this module silently baking a borrowed number into the saved config as if it were this league's
+own.
+
+**League-id slugging.** `slugify()`/`unique_league_id()` turn a display name into a filesystem-
+and export-path-safe id (`data/leagues/<id>.json`, `data/export/<id>/`), reusing the same
+directory convention ADR-041/047 already established, and disambiguate collisions with a
+numeric suffix. The reserved `primary` id is refused — that identity belongs to
+`lc.CURRENT_LEAGUE` specifically.
+
+**What this explicitly does NOT build.** No API layer, no job queue/polling, no tier-1
+(instant) vs tier-2 (~60s recompute) distinction, no shadow-recompute-then-apply state
+machine — all of that is `docs/design-handoff/settings/SETTINGS-EDITOR-SPEC.md`'s contract for
+the Settings editor UI, which no frontend agent is building this round. `export_league()` is a
+synchronous, blocking call (~7-10s per the existing config-matrix timing, ADR-047) — the same
+shape `write_all` already has for the 24 pre-generated configs. A future API layer wraps this
+function in a job; this ADR does not attempt to guess that layer's shape.
+
+**Scope note.** `create_league` accepts a `scoring_overrides` dict (shallow-merged into the
+`offense` block of `scoring.LEAGUE`, deep-copied so the shared module constant is never
+mutated) plus a `ppr` shortcut for reception value — enough to cover the Settings spec's
+"Scoring rules" and "Yardage bonuses" editing surface (SS3) at the data layer. It does not
+validate scoring values for football-plausibility (e.g. a negative passing-yards divisor) — the
+existing `LeagueConfig.validate()` catches structural errors (roster/draft-slot/flex
+consistency); a bad scoring number would currently only surface as an implausible board, not a
+raised error. Flagged, not fixed here — same triage as the frontend contract requirements in
+the spec's SS7, which are also unimplemented pending an API layer.
+
+Tests: `tests/test_league_builder.py`, 19 passed (`-q`, targeted run; one `@pytest.mark.
+requires_db` integration test, the rest pure/tmp_path-isolated). `tests/test_league_config.py`
++ `tests/test_multi_league_export.py` re-run targeted, 26 passed, no regression — confirms this
+addition did not touch the existing per-config export path, only added a new entrypoint to it.
+
+### ADR-048: `board.json`'s `player_id_gsis` populated — the join key for the history exports
+
+**Decision.** `player_id_gsis` was a specified field the pipeline never populated — not a
+structural impossibility. `src/export_contract.py::build_board_json` hardcoded
+`"player_id_gsis": None` for every player (thread 052, raised by pm off a flag left in thread
+017/039's own reply). Fixed by threading the id `make_board.build_board` already has in hand
+straight through: `rankings.player_id` **is** a gsis_id (`src/ingest_rankings.py` joins
+`fantasypros_id -> gsis_id` and inserts the result *as* `player_id` — see that file's own
+`preseason ECR for season, joined to gsis_id` docstring), and it was simply being dropped on
+the floor between `_consensus_board()`'s row and `BoardRow`. Added `player_id: Optional[str] =
+None` to `BoardRow` (`src/make_board.py`), populated from `r["player_id"]` in `build_board()`,
+and wired it into `export_contract.py`'s `player_id_gsis` field.
+
+**Why gsis, not `mfl_id`, even though ADR-036 makes `mfl_id` the identity hub.** The thread-052
+ask worried about recreating the identity-resolution problem with a second, competing scheme.
+This is the opposite: `weekly_finishes.json`/`season_stats.json` (thread 017/039,
+`src/export_history.py`) already key every row on `player_weekly_stats.player_id`, which is
+nflverse's own gsis-format id — the same id space `rankings.player_id` already lived in before
+this fix, untouched. Routing through `mfl_id` instead would mean (a) resolving board's gsis ids
+through the ADR-036 hub's gsis spoke, which ADR-036 itself measured at only 62.1% crosswalk
+coverage with 10 collisions, a strictly worse number than the direct join measured below, and
+(b) adding `mfl_id` to `export_history.py`'s two files as a *second* key alongside their
+existing `player_id`, which is exactly the "second identifier scheme" thread 052 warned against.
+Using the id both sides already independently derive from nflverse is not a new scheme; it is
+finishing the wiring of the one that was already there.
+
+**Coverage, measured, not asserted.** Board regenerated (`data/export/board.json`, primary
+league config): **378/378 (100%)** of board players now carry a non-null `player_id_gsis`.
+Cross-referenced against `weekly_finishes.json`: **371/378 (98.15%)** of board `player_id_gsis`
+values resolve to a `weekly_finishes.json` player. The remaining ~7 are players on the board
+with zero rows in `player_weekly_stats` at all (no prior-season history — plausible for rookies
+entering the 2026 draft class) — an honest null on the history side, not a join failure on the
+key side. Not independently re-checked against `season_stats.json` (same `player_id` universe
+as `weekly_finishes.json` by construction in `export_history.py`, so the number would be
+identical or extremely close; flagged rather than silently assumed).
+
+**Not a `CONTRACT_VERSION` bump.** `player_id_gsis` already existed in the schema at this name,
+this type (`str|null`), this position — only the *value* changed, from always-null to actually
+populated. `docs/data-contract.md`'s own convention (see its 1.9.0 entry) reserves version bumps
+for shape changes; this is a data-quality fix to a field that was already contracted. Recorded
+in `docs/data-contract.md`'s changelog as a labeled non-bump entry so it isn't mistaken for
+silence.
+
+**2025-in-exports holdout question, recorded DECIDED.** Thread 052 also asked backend to record,
+not re-derive, whether including season 2025 in `weekly_finishes.json`/`season_stats.json`
+touches the holdout lock. It does not — displaying historical facts is not model selection.
+Written into `docs/decisions-needed.md` as **D-022, DECIDED**, with the reasoning and the
+binding going-forward rule, specifically so a future session does not "fix" this by hiding 2025
+from the UI.
+
+**Tests.** Added `test_board_row_carries_player_id_field` (`tests/test_make_board.py`) before
+the `BoardRow` field existed, and
+`test_player_id_gsis_is_populated_and_matches_rankings_player_id`
+(`tests/test_export_contract.py`) before `build_board_json` was wired — both red first, per this
+project's sanity-check-before-implementation rule. `tests/test_make_board.py` +
+`tests/test_export_contract.py` + `tests/test_export_history.py`: **71 passed** (targeted run,
+not full suite — concurrent-agent DB contention this round per dispatch instructions).
+

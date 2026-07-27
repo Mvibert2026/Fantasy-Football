@@ -75,6 +75,23 @@ def test_player_ids_are_unique_integers():
 
 
 @pytest.mark.requires_db
+def test_player_id_gsis_is_populated_and_matches_rankings_player_id():
+    """Thread 052: player_id_gsis was always emitted null. rankings.player_id
+    IS a gsis_id (ingest_rankings.py joins fantasypros_id -> gsis_id and
+    aliases it as player_id before insert), and player_weekly_stats.player_id
+    (the join key weekly_finishes.json/season_stats.json use, thread 017/039)
+    is the same nflverse gsis id space. board.json's player_id_gsis must
+    carry that same value directly -- not a second, competing identifier
+    scheme -- so a client can join board rows to the history exports."""
+    board = _load("board.json")
+    non_null = [p for p in board["players"] if p["player_id_gsis"] is not None]
+    assert non_null, "player_id_gsis is populated on zero players"
+    for p in non_null:
+        assert isinstance(p["player_id_gsis"], str)
+        assert p["player_id_gsis"].strip() != ""
+
+
+@pytest.mark.requires_db
 def test_tier_is_an_integer_as_the_contract_expects():
     board = _load("board.json")
     for p in board["players"]:
