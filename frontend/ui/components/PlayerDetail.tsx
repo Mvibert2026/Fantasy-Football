@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { Component, useMemo, type ReactNode } from 'react';
 import type { BoardRow } from '../data/board';
 import type { DraftPickRecord } from '../data/draft';
 import { currentOverallPick, nextPickForSlot, pickNumbersForSlot } from '../data/draft';
@@ -6,6 +6,8 @@ import { isPresent } from '../data/cell';
 import { computeLiveAvailability, dotsFilled, freqText, type LiveAvailabilityResult } from '../data/liveAvailability';
 import type { Dataset } from '../data/load';
 import type { LeagueConfig } from '../data/league';
+import { recentSeasonKeys, usePlayerHistory, type PlayerHistoryState } from '../data/playerHistory';
+import type { RawSeasonStatsPlayer, RawWeeklyFinishesPlayer, RawWeeklyFinishWeek } from '../data/types';
 import { initialsOf, teamColorOf } from '../data/teamColors';
 import { verdictLine } from '../data/verdict';
 import { Value } from './Value';
@@ -18,13 +20,32 @@ import { decimal, integer, percent, signed } from '../lib/format';
  * max-width 96vw), z-index 90, a TRANSPARENT click-catcher at z-index 80 -- no
  * dark scrim, so the board and the pick clock stay visible while it's open.
  *
- * Sections 6-9 (archetype, weekly finishes, three-season table, bullet
- * takeaways) collapse into one line per §8's rule for multiple empty sections on
- * one player ("one collapsed line naming everything missing at once, never three
- * stacked empty headers"): none of the four has a real field anywhere in this
- * app's exports, for any player, ever -- not a per-player gap, a permanent one.
- * Headshot: same story, §6.9's own admission -- no player in any real export has
- * an ESPN id, so every card renders initials on the team colour, always.
+ * Sections 6 (archetype) and 9 (bullet takeaways) collapse into one line per
+ * §8's rule for multiple empty sections on one player ("one collapsed line
+ * naming everything missing at once, never three stacked empty headers"):
+ * neither has a real field anywhere in this app's exports, for any player,
+ * ever -- not a per-player gap, a permanent one. Headshot: same story, §6.9's
+ * own admission -- no player in any real export has an ESPN id, so every card
+ * renders initials on the team colour, always.
+ *
+ * Sections 7 (weekly finishes / consistency heat-map) and 8 (three-season
+ * table) are a DIFFERENT claim from sections 6/9 and were deliberately NOT
+ * folded into that collapse even while blocked (thread 052, Principle #2).
+ * `weekly_finishes.json` / `season_stats.json` are real, non-empty, 1481-player
+ * exports (thread 017/039), keyed by nflverse `player_id`. Until thread 052
+ * landed, `board.json`'s matching field (`player_id_gsis`) was emitted null for
+ * every player (0 of 378, verified against the live export at the time), so
+ * these sections rendered an explicit "not yet joinable" reason instead of a
+ * fetch. Thread 052/ADR-048 fixed the join: `player_id_gsis` is now populated
+ * for 378/378 board players, and 371/378 (98.15%) resolve against
+ * `weekly_finishes.json`/`season_stats.json` -- the 7 misses are real,
+ * per-player absences (players with zero rows in `player_weekly_stats`,
+ * plausibly rookies), a DIFFERENT claim again from "board-wide unjoinable",
+ * so they get their own reason string too (`usePlayerHistory`'s `ready` state
+ * with `weeklyFinishes`/`seasonStats` undefined -- see
+ * `ui/data/playerHistory.ts`). "Not computed" (6/9), "not yet joinable"
+ * (historical, pre-052), and "no rows for this player" (post-052, 7 of 378)
+ * are three different claims and must never collapse into the same notice.
  *
  * `picks` is the live draft's pick log when opened from Draft mode, or `[]` in
  * Prep mode -- either way it feeds the same computeLiveAvailability call, so
@@ -71,6 +92,12 @@ export function PlayerDetail({
   const teams = league.teams.kind === 'present' ? league.teams.value : 0;
   const rounds = league.rounds.kind === 'present' ? league.rounds.value : 0;
   const userSlot = league.userSlot.kind === 'present' ? league.userSlot.value : 0;
+
+  // Sections 7/8 -- thread 052/ADR-048 join key. Re-fetches only when the
+  // player changes (module-cached across the whole session either way).
+  const history = usePlayerHistory(row.raw.player_id_gsis);
+  const startableLine = data.board.replacement_levels_used[row.raw.position] ?? null;
+  const startableLabel = startableLine !== null ? `${row.raw.position}${startableLine}` : null;
 
   const rowsById = useMemo(() => new Map(rows.map((r) => [r.id, r])), [rows]);
 
@@ -318,12 +345,36 @@ export function PlayerDetail({
               {row.evaluativeNote}
             </p>
 
-            {/* 6-9. Archetype, weekly finishes, three-season table, bullet
-                takeaways -- collapsed to one line per §8's multi-empty-section
-                rule. None of the four has ever had a real field in any export. */}
-            <p className="notice" style={{ marginTop: 18, fontSize: 12 }}>
-              Not computed: archetype, weekly finishes, season-by-season stats, and takeaways.
-              None of the four has a backend field in this build.
+            {/* 6. Archetype -- permanently absent, no field in any export, ever.
+                Previously collapsed with section 9 into one shared line under
+                §8's multi-empty-section rule; that only works when the empty
+                sections are adjacent, and 7/8 no longer are (they're a real,
+                distinct claim now -- see above). Each keeps its own one-line
+                header + notice instead, per §7.2's normal numbered layout. */}
+            <SectionHeader label="ARCHETYPE" />
+            <p className="notice" style={{ marginTop: 10, fontSize: 12 }}>
+              Not computed: archetype. No backend field in this build.
+            </p>
+
+            {/* 7. Weekly finishes / consistency heat-map. Real data as of
+                thread 052/ADR-048's join-key fix -- see WeeklyFinishesSection
+                below for the loading / no-key / error / no-rows-for-this-
+                player states, each a distinct claim per Principle #2. */}
+            <SectionHeader label="WEEKLY FINISHES" />
+            <HistorySectionBoundary label="weekly finishes">
+              <WeeklyFinishesSection history={history} startableLine={startableLine} startableLabel={startableLabel} />
+            </HistorySectionBoundary>
+
+            {/* 8. Three-season table. */}
+            <SectionHeader label="THREE SEASONS" />
+            <HistorySectionBoundary label="three-season table">
+              <ThreeSeasonSection history={history} />
+            </HistorySectionBoundary>
+
+            {/* 9. Bullet takeaways -- permanently absent, same as archetype. */}
+            <SectionHeader label="TAKEAWAYS" />
+            <p className="notice" style={{ marginTop: 10, fontSize: 12 }}>
+              Not computed: takeaways. No backend field in this build.
             </p>
           </div>
         </div>
@@ -388,6 +439,35 @@ export function PlayerDetail({
       </div>
     </>
   );
+}
+
+/**
+ * Sections 7/8 read real, freshly-wired historical data (thread 052/ADR-048)
+ * with several honest-null branches (loading / no-key / no-rows-for-this-
+ * player). A bug in any one of those branches, or in a single unexpected
+ * player's data shape, should never blank the whole sheet -- identity,
+ * projection, availability and the why-differs breakdown above are all
+ * independently useful even if the history sections have a defect. Scoped
+ * tightly to these two sections rather than wrapping the whole component.
+ */
+class HistorySectionBoundary extends Component<
+  { label: string; children: ReactNode },
+  { error: Error | null }
+> {
+  state: { error: Error | null } = { error: null };
+  static getDerivedStateFromError(error: Error) {
+    return { error };
+  }
+  render() {
+    if (this.state.error) {
+      return (
+        <p className="notice" style={{ marginTop: 10, fontSize: 12, color: 'var(--down)' }}>
+          Could not render {this.props.label}: {this.state.error.message}
+        </p>
+      );
+    }
+    return this.props.children;
+  }
 }
 
 function SectionHeader({ label }: { label: string }) {
@@ -510,6 +590,275 @@ function CorrPart({ label, value, note, field }: { label: string; value: string;
       <div style={{ marginTop: 4, fontSize: 12, lineHeight: 1.55, color: 'var(--dim)' }}>{note}</div>
       <div className="num" style={{ marginTop: 5, fontSize: 9, color: 'var(--dim2)' }}>
         {field}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Sections 7/8's shared state machine. `loading` / `no-key` / `error` are the
+ * same three strings for both sections modulo the file name; `ready` with the
+ * relevant player record `undefined` is the fourth, per-player state (thread
+ * 052: 7 of 378 board players have no rows at all in either file). None of
+ * these four collapse into each other or into section 6/9's "not computed" --
+ * see the file-top docstring for why that distinction is load-bearing.
+ */
+function HistoryFallback({ history, file }: { history: PlayerHistoryState; file: string }) {
+  if (history.status === 'loading') {
+    return (
+      <p className="notice" style={{ marginTop: 10, fontSize: 12 }}>
+        Loading {file}…
+      </p>
+    );
+  }
+  if (history.status === 'no-key') {
+    return (
+      <>
+        <p className="notice" style={{ marginTop: 10, fontSize: 12 }}>
+          This player's board row carries no player_id_gsis -- can't attach {file}. Distinct from
+          the 371/378 that do resolve (thread 052/ADR-048); this specific row is the exception.
+        </p>
+        <div className="num" style={{ marginTop: 5, fontSize: 9, color: 'var(--dim2)' }}>
+          board.json:player_id_gsis
+        </div>
+      </>
+    );
+  }
+  // history.status === 'error'
+  return (
+    <p className="notice" style={{ marginTop: 10, fontSize: 12 }}>
+      Could not load {file}: {history.status === 'error' ? history.message : ''}
+    </p>
+  );
+}
+
+function WeeklyFinishesSection({
+  history,
+  startableLine,
+  startableLabel,
+}: {
+  history: PlayerHistoryState;
+  startableLine: number | null;
+  startableLabel: string | null;
+}) {
+  if (history.status !== 'ready') {
+    return <HistoryFallback history={history} file="weekly_finishes.json" />;
+  }
+  if (!history.weeklyFinishes) {
+    return (
+      <>
+        <p className="notice" style={{ marginTop: 10, fontSize: 12 }}>
+          No historical stats on file for this player -- zero rows in player_weekly_stats (thread
+          052 measured 7 of 378 board players this way, plausibly rookies). The join key resolved;
+          there is simply no prior NFL history to show. Not the same claim as a join failure.
+        </p>
+        <div className="num" style={{ marginTop: 5, fontSize: 9, color: 'var(--dim2)' }}>
+          weekly_finishes.json:players[]
+        </div>
+      </>
+    );
+  }
+  return <WeeklyFinishesHeatmap player={history.weeklyFinishes} startableLine={startableLine} startableLabel={startableLabel} />;
+}
+
+function ThreeSeasonSection({ history }: { history: PlayerHistoryState }) {
+  if (history.status !== 'ready') {
+    return <HistoryFallback history={history} file="season_stats.json" />;
+  }
+  if (!history.seasonStats) {
+    return (
+      <>
+        <p className="notice" style={{ marginTop: 10, fontSize: 12 }}>
+          No historical stats on file for this player -- zero rows in player_weekly_stats (thread
+          052 measured 7 of 378 board players this way, plausibly rookies). The join key resolved;
+          there is simply no prior NFL history to show. Not the same claim as a join failure.
+        </p>
+        <div className="num" style={{ marginTop: 5, fontSize: 9, color: 'var(--dim2)' }}>
+          season_stats.json:players[]
+        </div>
+      </>
+    );
+  }
+  return <ThreeSeasonTable player={history.seasonStats} />;
+}
+
+/** §7.2 item 7: 18-cell heatmap, gradient over positional finish, 2px bottom
+ *  rule on cells below the startable line -- a redundant non-colour cue, not
+ *  a replacement for the gradient, since colour alone isn't an accessible
+ *  signal. Most recent season this player has in the export; weeks beyond 18
+ *  don't occur in an NFL season so `.slice` is a no-op guard, not a real cap. */
+function WeeklyFinishesHeatmap({
+  player,
+  startableLine,
+  startableLabel,
+}: {
+  player: RawWeeklyFinishesPlayer;
+  startableLine: number | null;
+  startableLabel: string | null;
+}) {
+  const [seasonKey] = recentSeasonKeys(player, 1);
+  if (!seasonKey) {
+    return (
+      <p className="notice" style={{ marginTop: 10, fontSize: 12 }}>
+        weekly_finishes.json has this player but no season rows under them.
+      </p>
+    );
+  }
+  const season = player.seasons[seasonKey]!;
+  const weeks = [...season.weeks].sort((a, b) => a.week - b.week).slice(0, 18);
+  return (
+    <div style={{ marginTop: 10 }}>
+      <div style={{ fontSize: 10, letterSpacing: '.08em', color: 'var(--dim2)' }}>
+        {seasonKey} SEASON · POSITIONAL FINISH BY WEEK
+      </div>
+      <div style={{ marginTop: 8, display: 'grid', gridTemplateColumns: 'repeat(9, 1fr)', gap: 4 }}>
+        {weeks.map((w) => (
+          <HeatCell key={w.week} week={w} startableLine={startableLine} />
+        ))}
+      </div>
+      <div style={{ marginTop: 6, fontSize: 10.5, lineHeight: 1.5, color: 'var(--dim2)' }}>
+        Darker = better positional finish that week.
+        {startableLabel ? ` Orange bottom rule = finished worse than this league's ${startableLabel} startable line.` : ''}
+      </div>
+      <div className="num" style={{ marginTop: 5, fontSize: 9, color: 'var(--dim2)' }}>
+        weekly_finishes.json:players[].seasons[{seasonKey}].weeks
+      </div>
+    </div>
+  );
+}
+
+function HeatCell({ week, startableLine }: { week: RawWeeklyFinishWeek; startableLine: number | null }) {
+  if (week.bye) {
+    return (
+      <div
+        className="num"
+        style={{
+          aspectRatio: '1',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontSize: 8,
+          color: 'var(--dim2)',
+          border: '1px dashed var(--line2)',
+        }}
+        title={`Week ${week.week}: bye`}
+      >
+        BYE
+      </div>
+    );
+  }
+  if (week.finish === null) {
+    // Honest "no row" state, per the artifact's own no_row_semantics_note --
+    // NOT a confirmed inactive/roster-status lookup, just an absent stat line.
+    return (
+      <div
+        className="num"
+        style={{ aspectRatio: '1', border: '1px solid var(--line)', background: 'var(--panel2)' }}
+        title={`Week ${week.week}: no recorded stat line (not a confirmed inactive)`}
+      />
+    );
+  }
+  const opacity = Math.max(0.12, Math.min(1, 1.15 - week.finish / 40));
+  const belowStartable = startableLine !== null && week.finish > startableLine;
+  return (
+    <div
+      style={{ position: 'relative', aspectRatio: '1', overflow: 'hidden' }}
+      title={`Week ${week.week}: finished ${week.finish} at position${belowStartable ? ' (below startable line)' : ''}`}
+    >
+      <div style={{ position: 'absolute', inset: 0, background: 'var(--acc)', opacity }} />
+      <div
+        className="num"
+        style={{
+          position: 'relative',
+          display: 'flex',
+          height: '100%',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontSize: 9,
+          fontWeight: 600,
+          color: 'var(--txt)',
+        }}
+      >
+        {week.finish}
+      </div>
+      {belowStartable ? (
+        <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: 2, background: 'var(--down)' }} />
+      ) : null}
+    </div>
+  );
+}
+
+/** §7.2 item 8: three most recent seasons on file (not always calendar-recent
+ *  -- a player with a gap shows their 3 most recent logged seasons, not 3
+ *  consecutive years padded with fabricated blanks). Targets are deliberately
+ *  not a column: 2003-2008 rows carry `target_data_unavailable`, and folding
+ *  a sometimes-null field into a dense numeric grid invites exactly the
+ *  0-vs-null confusion Principle #2 forbids -- called out in a footnote
+ *  instead, only when it actually applies to a shown season. */
+function ThreeSeasonTable({ player }: { player: RawSeasonStatsPlayer }) {
+  const seasons = [...player.seasons].sort((a, b) => b.year - a.year).slice(0, 3);
+  if (seasons.length === 0) {
+    return (
+      <p className="notice" style={{ marginTop: 10, fontSize: 12 }}>
+        season_stats.json has this player but no season rows under them.
+      </p>
+    );
+  }
+  const cols = '44px 32px 38px 50px 38px 50px 38px 52px';
+  const unavailableYears = seasons.filter((s) => s.target_data_unavailable).map((s) => s.year);
+  return (
+    <div style={{ marginTop: 10 }}>
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: cols,
+          gap: 2,
+          fontSize: 9,
+          letterSpacing: '.04em',
+          color: 'var(--dim2)',
+        }}
+      >
+        <span>YEAR</span>
+        <span>GM</span>
+        <span>REC</span>
+        <span>REC YD</span>
+        <span>REC TD</span>
+        <span>RSH YD</span>
+        <span>RSH TD</span>
+        <span>PPR PTS</span>
+      </div>
+      {seasons.map((s) => (
+        <div
+          key={s.year}
+          className="num"
+          style={{
+            display: 'grid',
+            gridTemplateColumns: cols,
+            gap: 2,
+            fontSize: 11.5,
+            padding: '5px 0',
+            borderTop: '1px solid var(--line)',
+          }}
+        >
+          <span>{s.year}</span>
+          <span>{integer(s.games)}</span>
+          <span>{integer(s.receptions)}</span>
+          <span>{integer(s.receiving_yards)}</span>
+          <span>{integer(s.receiving_tds)}</span>
+          <span>{integer(s.rushing_yards)}</span>
+          <span>{integer(s.rushing_tds)}</span>
+          <span style={{ color: 'var(--acc)', fontWeight: 600 }}>{decimal(s.fantasy_points_ppr)}</span>
+        </div>
+      ))}
+      {unavailableYears.length > 0 ? (
+        <p className="notice" style={{ marginTop: 8, fontSize: 10.5 }}>
+          Targets not reliably charted for {unavailableYears.join(', ')} (upstream charting-coverage
+          gap, not a real zero) -- season_stats.json:players[].seasons[].target_data_unavailable.
+          Not shown as its own column for that reason.
+        </p>
+      ) : null}
+      <div className="num" style={{ marginTop: 6, fontSize: 9, color: 'var(--dim2)' }}>
+        season_stats.json:players[].seasons
       </div>
     </div>
   );

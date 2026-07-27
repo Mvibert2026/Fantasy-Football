@@ -363,3 +363,64 @@ export interface Manifest {
   synced_utc: string;
   artifacts: Record<string, ArtifactManifestEntry>;
 }
+
+/**
+ * `weekly_finishes.json` / `season_stats.json` (thread 017/039, `src/export_history.py`).
+ * Outside `CONTRACT_VERSION` -- own `export_version`, unprefixed path only, same for
+ * every league (see `ui/data/playerHistory.ts` for the fetch/join layer). Keyed by
+ * nflverse `player_id` (a gsis id) -- joined to a board row via
+ * `RawBoardPlayer.player_id_gsis`, populated as of thread 052/ADR-048.
+ */
+export interface RawWeeklyFinishWeek {
+  week: number;
+  /** `RANK()` over positional fantasy_points_ppr that week; ties share a rank. Null
+   *  with `bye: false` means no recorded stat line -- not a confirmed inactive/roster
+   *  lookup, just the absence of a row (see the artifact's own no_row_semantics_note). */
+  finish: number | null;
+  bye: boolean;
+}
+
+export interface RawWeeklyFinishSeason {
+  target_data_unavailable: boolean;
+  weeks: RawWeeklyFinishWeek[];
+}
+
+export interface RawWeeklyFinishesPlayer {
+  player_id: string;
+  seasons: Record<string, RawWeeklyFinishSeason>;
+}
+
+export interface RawWeeklyFinishes {
+  export_version: string;
+  generated_utc: string;
+  note: string;
+  no_row_semantics_note: string;
+  players: RawWeeklyFinishesPlayer[];
+}
+
+export interface RawSeasonStatSeason {
+  year: number;
+  games: number;
+  /** Null, with `target_data_unavailable: true`, for 2003-2008 -- charting-coverage
+   *  gap upstream, never a fabricated 0. */
+  targets: number | null;
+  target_data_unavailable: boolean;
+  receptions: number;
+  receiving_yards: number;
+  receiving_tds: number;
+  rushing_yards: number;
+  rushing_tds: number;
+  fantasy_points_ppr: number;
+}
+
+export interface RawSeasonStatsPlayer {
+  player_id: string;
+  seasons: RawSeasonStatSeason[];
+}
+
+export interface RawSeasonStats {
+  export_version: string;
+  generated_utc: string;
+  note: string;
+  players: RawSeasonStatsPlayer[];
+}

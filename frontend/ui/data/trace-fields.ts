@@ -33,7 +33,7 @@ export interface TraceField {
 }
 
 /** The contract version the registry below is pinned against. */
-export const TRACE_CONTRACT = '1.8.0';
+export const TRACE_CONTRACT = '1.9.0';
 
 /**
  * Changes to the user-visible trace surface, newest first.
@@ -47,6 +47,24 @@ export const TRACE_CHANGELOG: ReadonlyArray<{
   kind: 'rename' | 'value' | 'added' | 'removed';
   summary: string;
 }> = [
+  {
+    version: '1.9.0',
+    kind: 'added',
+    summary:
+      'Audited field-by-field against the real data/export/board.json on disk (thread 043) before ' +
+      'bumping this pin, not just against the changelog claim. Confirmed: the 26 player-row keys ' +
+      'board.json actually carries are byte-for-byte the same set this registry already had ' +
+      'registered for 1.8.0 -- no addition, removal, or rename. `player_id_gsis` is present as ' +
+      'before and still emits null for all 378 players (verified by direct count on this export), ' +
+      'so it is not silently populated as part of this bump -- see thread 052, still open, tracking ' +
+      'the join-key gap separately. The only real change at 1.9.0 is two new sibling files, ' +
+      '`weekly_finishes.json` and `season_stats.json` (thread 017/039, `src/export_history.py`) -- ' +
+      'both carry their own `export_version` and are not `CONTRACT_VERSION`-tagged themselves, the ' +
+      'same pattern `player_descriptions.json` already uses, so neither belongs in this ' +
+      'board.json-scoped registry. This bump is a version-pin update with no rename to react to, ' +
+      'recorded here (rather than skipped) because the changelog is the audit trail that lets the ' +
+      'next session trust "no shape change" without re-deriving it from source.',
+  },
   {
     version: '1.8.0',
     kind: 'value',
