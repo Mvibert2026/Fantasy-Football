@@ -118,9 +118,25 @@ def resolve_snapshot_date(dates: list[str], season: int) -> tuple[str, bool]:
 def fetch_preseason_rankings(season: int) -> tuple[pl.DataFrame, str, bool]:
     """Preseason ECR for `season`, joined to gsis_id.
 
-    Rows nflreadpy cannot resolve to a gsis_id (team DSTs, fringe unrostered
-    players) are dropped: this table is player-keyed to match
-    player_weekly_stats.
+    Rows nflreadpy cannot resolve to a gsis_id are dropped, this table is
+    player-keyed to match player_weekly_stats. Two distinct populations fall
+    into that bucket, and thread 023 asked that the drop be a deliberate
+    decision, not an incidental join side effect:
+
+    - Team DSTs ("DST" position rows) have no gsis_id by construction --
+      nflverse's player-id crosswalk is individual-player-only, and this
+      league's `league.json` declares no DEF replacement level and never
+      will without ingested DST scoring (CURRENT-STATE.md). Retaining these
+      rows through the identity hub would mean carrying player_id=NULL rows
+      that nothing downstream can ever join to a stat line -- permanent,
+      unresolvable dead weight, not a gap that a future ingest closes. They
+      are discarded permanently and on purpose.
+    - Fringe/unrostered individual players occasionally fail the crosswalk
+      too (a real gap, not a structural one -- a future nflverse ID release
+      could resolve them). Those are also dropped here today because this
+      function has no quarantine sink to hold them in, but that is the
+      cheaper, still-imperfect half of the same line; DST is the
+      permanent, by-design half.
     """
     update_config(cache_mode="filesystem")
     all_rankings = nfl.load_ff_rankings(type="all")
@@ -132,6 +148,16 @@ def fetch_preseason_rankings(season: int) -> tuple[pl.DataFrame, str, bool]:
     )
     ids = nfl.load_ff_playerids().select(["fantasypros_id", "gsis_id"])
     joined = snap.join(ids, left_on="id", right_on="fantasypros_id", how="left")
+
+    unresolved = joined.filter(pl.col("gsis_id").is_null())
+    n_dst = unresolved.filter(pl.col("pos") == "DST").height
+    n_other = unresolved.height - n_dst
+    if unresolved.height:
+        print(
+            f"  {season}: dropping {unresolved.height} unresolved rows "
+            f"({n_dst} DST -- permanent, by design; {n_other} non-DST -- "
+            "crosswalk gap)"
+        )
     joined = joined.filter(pl.col("gsis_id").is_not_null())
 
     ranked = joined.sort("ecr").with_row_index("adp_rank", offset=1)

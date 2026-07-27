@@ -4,7 +4,7 @@
 Threads are the source of truth. Change a thread's `STATUS:`, then re-run sync.
 Protocol: [`README.md`](README.md).
 
-**30 open** · 12 resolved
+**29 open** · 14 resolved
 
 ---
 
@@ -19,7 +19,7 @@ not an omission. Start your session at your own heading.
 |---|---|---|---|---|---|
 | [005](005-fantasypros-tier.md) | Fantasypros tier | `pm` | BLOCKED-ON-YOU | 0d | bootstrap CIs, full-board projections |
 
-### `backend` — 18 waiting
+### `backend` — 16 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
@@ -27,11 +27,9 @@ not an omission. Start your session at your own heading.
 | [002](002-per-pick-draft-state.md) | Per pick draft state | `pm` | OPEN | 0d | 007 (mock collection, not yet opened) |
 | [012](012-sprint-1-runbook.md) | Sprint 1 runbook | `pm` | OPEN | 0d | none |
 | [017](017-weekly-finishes-season-stats.md) | Weekly finishes season stats | `pm` | OPEN | 0d | consistency view, player detail history |
-| [019](019-bootstrap-confidence-intervals.md) | Bootstrap confidence intervals | `pm` | OPEN | 0d | none |
 | [020](020-preregistration-convention.md) | Preregistration convention | `pm` | OPEN | 0d | test #53 |
 | [021](021-per-position-rank-correlation.md) | Per position rank correlation | `pm` | OPEN | 0d | D-002, D-003 |
 | [022](022-test-suite-speedup.md) | Test suite speedup | `pm` | OPEN | 0d | none |
-| [023](023-consensus-rank-and-ingest-fixes.md) | Consensus rank and ingest fixes | `pm` | OPEN | 0d | none |
 | [025](025-mock-lab-backend.md) | Mock lab backend | `pm` | OPEN | 0d | Mock Lab UI, mock collection, calibration validation |
 | [026](026-recompute-progress-streaming.md) | Recompute progress streaming | `pm` | OPEN | 0d | Settings editor build |
 | [032](032-assistant-dev-mode.md) | Assistant dev mode | `pm` | OPEN | 0d | none |
@@ -116,6 +114,8 @@ _Nothing waiting on you._
 | [015](015-settings-engineering-questions.md) | Settings engineering questions | `pm` → `backend` |
 | [016](016-league-rosters-endpoint.md) | League rosters endpoint | `pm` → `backend` |
 | [018](018-fantasypros-season-backfill.md) | Fantasypros season backfill | `pm` → `data-ops` |
+| [019](019-bootstrap-confidence-intervals.md) | Bootstrap confidence intervals | `pm` → `backend` |
+| [023](023-consensus-rank-and-ingest-fixes.md) | Consensus rank and ingest fixes | `pm` → `backend` |
 | [024](024-injury-ingestion-as-of-date.md) | Injury ingestion as of date | `pm` → `data-ops` |
 | [034](034-shortcut-bias-in-mock-logging.md) | Shortcut bias in mock logging | `pm` → `strategist` |
 | [038](038-rosters-json-artifact.md) | Rosters json artifact | `backend` → `frontend` |

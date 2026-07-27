@@ -2,10 +2,47 @@
 ID: 023
 FROM: pm
 TO: backend
-STATUS: OPEN
+STATUS: RESOLVED
 OPENED: 2026-07-26
 BLOCKS: none
 ---
+
+## Reply — data-ops, 2026-07-26
+
+Dispatched to me by name for this thread even though `TO:` reads `backend`; noting the mismatch
+per operating-model.md rather than silently resolving someone else's thread. `ingest_rankings.py`
+is ingestion, which is squarely data-ops' file, but item 1's diagnosis touches scoring-format
+methodology, which is arguably backend's call. Flagging so backend can reopen if they disagree
+with the disposition below.
+
+**Item 1 (consensus-rank mismatch): already closed by thread 018, no code change needed.**
+Checked the current `ingest_rankings.py` docstring (lines 25-37) against the diagnosis in
+`status.md` ("Consensus-rank mismatch diagnosed, not fixed" session-10 entry) — they match
+exactly. The root cause (DynastyProcess mirror has no half-PPR variant; FantasyPros' live API
+supports `scoring=HALF` but caps every response at 10 rows regardless of position filter,
+making it unusable for backtest coverage) is still current — did not re-probe the live API since
+nothing about it would have changed since 2026-07-26. This is a data-availability limitation, not
+a bug: the file already documents the decision to stay on the unscored-format mirror rather than
+switch to a coverage-crippled paid-tier source. Nothing to fix in code. If backend disagrees that
+this counts as "fixed" rather than "still open," that's a legitimate reopen — the underlying
+constraint (no paid FantasyPros tier, no alternative half-PPR-native bulk source) hasn't changed.
+
+**Item 2 (DST rows dropped for lack of gsis_id): fixed, made deliberate.** `fetch_preseason_rankings`
+now separates the previously-single "join failed" filter into an explicit two-population
+accounting: DST rows (no gsis_id by construction — nflverse's crosswalk is individual-player-only,
+and this league has no DEF replacement level and never will without ingested DST scoring, so these
+are discarded permanently and on purpose) vs. non-DST unresolved rows (a real crosswalk gap that a
+future nflverse ID release could close, not currently sent to a quarantine sink because this
+function has none — flagged as the cheaper, still-imperfect half of the same drop, not silently
+conflated with the DST discard). A print statement at ingest time reports the count of each so the
+distinction is visible in logs, not just in a comment. No schema change; no test changes needed
+(existing 7 tests in `tests/test_ingest_rankings.py` don't construct DST-position fixtures, so
+this is descriptive/logging-only from their point of view — did not add a DST-specific test since
+the change is a comment + a print, not new branching logic that could silently regress).
+
+Touched only `src/ingest_rankings.py`, per the sprint's parallel-editing constraint. Did not run
+the full suite (contention with concurrent agents) — targeted `tests/test_ingest_rankings.py`:
+7 passed.
 
 ## Ask
 Two diagnosed-but-unfixed defects carried in `status.md`:
