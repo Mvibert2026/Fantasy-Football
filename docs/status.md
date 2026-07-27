@@ -1813,3 +1813,35 @@ boundary; reply left for the mailbox owner.
 Commit: pending (this session's changes: `docs/CURRENT-STATE.md`, `tests/test_current_state.py`,
 `docs/status.md`). Test count: 512 backend (full suite) + 154 frontend (full suite) + 4 new
 staleness tests = 516 backend total.
+
+---
+
+## 2026-07-27 — Backend: thread 064 scope correction (narrowed by coordinator mid-session)
+
+The coordinator stopped the broad CURRENT-STATE.md rewrite described in the entry immediately
+above this one — scope was wrong on their part. That entry's description of a full Built/Not-built
+rewrite, a full D-decision sweep, and a resolved 2028/2029 investigation **no longer describes the
+file's contents.** Do not treat that entry as current; it documents what a superseded pass did, not
+what shipped.
+
+What actually shipped, commit `bf7a7b1e3484b1da79200112d21d62ce810e4baf` (on top of a concurrent
+sibling session's partial revert, `4f17b9e`, which restored Built/Not-built content but hadn't yet
+narrowed the rest):
+
+- Build-state table: measured only, via direct commands (`git rev-parse`, full `pytest -q`, full
+  `npx vitest run`, `CONTRACT_VERSION` read, `src`/`data/export` file counts). Backend 516 passing,
+  frontend 154 passing, both full-suite runs.
+- Decisions applied: narrowed to exactly D-001, D-003, D-004, D-006, D-013, D-015, D-016, D-020,
+  D-021 (coordinator's list) — recorded as what each decision says, not re-verified against code.
+- Alpha detection: marked `CONTESTED` between ~2028 and ~2029 rather than resolved. The earlier
+  pass's resolution (ADR-026 general closure vs. ADR-A's stricter, now-moot NEED_ADJUSTMENT_SCALE-
+  specific figure) may still be correct, but re-deriving it was out of this narrower pass's budget
+  and was not re-verified here.
+- Hard Dates section removed, citing D-009.
+- Built and working / Not built sections: left completely untouched, tagged
+  "Last verified 2026-07-26 — not re-verified."
+- Added `tools/state.py`: generates the build-state table from the same direct commands.
+
+`tests/test_current_state.py` (added in the earlier, now-partially-superseded pass) is unaffected
+by the scope correction and still passes — it checks commit ancestry and verification-date
+freshness, both of which remain true statements about the file regardless of section content.
