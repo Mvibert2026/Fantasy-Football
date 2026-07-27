@@ -135,6 +135,38 @@ class TestFinishVsByeDistinction:
                     assert "finish" in wk and "bye" in wk
 
 
+class TestByeLookupCanonicalizesEraTeamCodes:
+    def test_historical_era_code_still_resolves_after_t9(self, conn, monkeypatch):
+        """T9 regression guard: export_contract._bye_weeks() now returns
+        CANONICAL keys (e.g. 'LV' for the Raiders, not the 'OAK' a pre-2020
+        schedule pull would use). export_history's own lookup keys off
+        player_weekly_stats.team, which for an old season legitimately says
+        'OAK' -- this must still resolve, not silently go null the moment
+        _bye_weeks' keys became canonical."""
+        # P1 is on 'AAA' in the synthetic fixture -- add an OAK-era row so
+        # there's a real historical code to canonicalize.
+        conn.execute(
+            "INSERT INTO player_weekly_stats VALUES "
+            "('P1', 2015, 1, 'REG', 'WR', 'OAK', 5, 3, 40, 0, 0, 0, 8.0)"
+        )
+        conn.commit()
+
+        import export_history as eh_module
+
+        monkeypatch.setattr(
+            eh_module, "_bye_weeks_by_season",
+            lambda seasons: {2015: {"LV": 9}, 2025: {}, 2005: {}},
+        )
+        out = eh_module.build_weekly_finishes(conn, ["P1"])
+        p1 = next(p for p in out["players"] if p["player_id"] == "P1")
+        weeks_2015 = p1["seasons"]["2015"]["weeks"]
+        bye_entries = [w for w in weeks_2015 if w["bye"] is True]
+        assert bye_entries and bye_entries[0]["week"] == 9, (
+            "OAK-era player did not resolve against the canonical 'LV' bye "
+            "key -- the lookup side of the T9 canonicalization is missing"
+        )
+
+
 class TestPlayerUniverse:
     def test_universe_excludes_players_without_2018_plus_row(self, conn):
         # P1 has 2025 rows so qualifies; a player with only a 2005 row would not.

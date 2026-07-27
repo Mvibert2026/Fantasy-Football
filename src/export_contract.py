@@ -33,12 +33,15 @@ import numpy as np
 import availability as av
 import db as dbmod
 import draft_sim as ds
+import freshness as fr
 import league_config as lc
 import make_board
+import roster_status as rst
+import team_codes as tc
 from config import DEFAULT_CONFIG
 from scoring import LEAGUE, ReplacementLevels
 
-CONTRACT_VERSION = "1.9.0"
+CONTRACT_VERSION = "1.10.0"
 SEASON = 2026
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 EXPORT_DIR = DATA_DIR / "export"
@@ -67,6 +70,18 @@ def avail_csv_for(league_id: str) -> Path:
     return DATA_DIR / "leagues" / league_id / "availability.csv"
 
 
+def _canonical_team(code: Optional[str]) -> Optional[str]:
+    """T9: resolve a team code to its canonical franchise, failing OPEN (not
+    raising) if the code is unrecognized -- an unresolved code should show up
+    as a missing bye_week for that team (caught by the T3 positive-coverage
+    test), not crash the whole board build. team_codes.py is the source of
+    truth for the mapping itself."""
+    try:
+        return tc.to_canonical(code)
+    except KeyError:
+        return code
+
+
 def _bye_weeks(season: int) -> Dict[str, Optional[int]]:
     import nflreadpy as nfl
     import polars as pl
@@ -82,7 +97,10 @@ def _bye_weeks(season: int) -> Dict[str, Optional[int]]:
             s.filter((pl.col("home_team") == t) | (pl.col("away_team") == t))["week"].to_list()
         )
         missing = sorted(weeks - played)
-        out[t] = missing[0] if len(missing) == 1 else None
+        # T9: schedule team codes are already canonical (nflreadpy's own
+        # convention), but canonicalize anyway so this dict's keys always
+        # agree with whatever the caller canonicalizes its lookup key to.
+        out[_canonical_team(t)] = missing[0] if len(missing) == 1 else None
     return out
 
 
@@ -106,7 +124,32 @@ def _load_availability_csv(csv_path: Path) -> Dict[str, dict]:
     }
 
 
-def build_board_json(conn: sqlite3.Connection, cfg: lc.LeagueConfig = lc.CURRENT_LEAGUE) -> dict:
+def build_board_json(
+    conn: sqlite3.Connection,
+    cfg: lc.LeagueConfig = lc.CURRENT_LEAGUE,
+    enforce_freshness: bool = True,
+    freshness_today=None,
+) -> dict:
+    # T5 (fable-draft-day-premortem-2026-07-27.md finding #2): refuse to
+    # build the live board from a snapshot older than
+    # cfg.freshness_max_age_days, and always print the age -- even when
+    # comfortably fresh -- so staleness is visible before it is a problem,
+    # not only once it crosses the line. `enforce_freshness=False` exists
+    # only for callers that intentionally want the report without the raise
+    # (none currently do; kept for the same reason require_fresh/
+    # check_freshness are two functions in freshness.py rather than one with
+    # a raise flag).
+    checker = fr.require_fresh if enforce_freshness else fr.check_freshness
+    freshness_check = checker(
+        conn, SEASON, make_board.SOURCE, cfg.freshness_max_age_days,
+        today=freshness_today,
+    )
+    print(
+        f"[freshness] {make_board.SOURCE} as_of={freshness_check['as_of_date']} "
+        f"age={freshness_check['age_days']}d "
+        f"(max {freshness_check['max_age_days']}d) stale={freshness_check['stale']}"
+    )
+
     levels, flex_split_measured = ReplacementLevels.from_league_config(cfg)
     ours, curves = make_board.build_board(
         conn, SEASON, levels=levels, n_bootstrap=2000, scoring_cfg=cfg.scoring
@@ -141,6 +184,11 @@ def build_board_json(conn: sqlite3.Connection, cfg: lc.LeagueConfig = lc.CURRENT
             )
         tier_int = int(tier_label[1]) if tier_label and tier_label[1].isdigit() else 5
         team = team_of.get(r.player)
+        # T9: team_of is FantasyPros' spelling (e.g. JAC/LAR); byes is keyed
+        # by nflverse's canonical spelling (JAX/LA). Canonicalize the lookup
+        # key -- the export's "team" field itself stays as FantasyPros wrote
+        # it, since that's a display value, not a join key.
+        bye_lookup_team = _canonical_team(team) if team else None
         structural = (pub_rank.get(r.player, r.overall_rank) - r.overall_rank)
         players.append({
             # Stable integer id: the design contract keys availability and the
@@ -164,7 +212,13 @@ def build_board_json(conn: sqlite3.Connection, cfg: lc.LeagueConfig = lc.CURRENT
             "positional_rank": pr,
             "positional_label": f"{r.position}{pr}" if pr else None,
             "team": team,
-            "bye_week": byes.get(team) if team else None,
+            "bye_week": byes.get(bye_lookup_team) if bye_lookup_team else None,
+            # T6 (interim, no new ingestion): a PROXY, not a real roster-status
+            # feed -- see src/roster_status.py's docstring for exactly what it
+            # does and does not catch. "active" / "no_active_contract_on_file"
+            # / "unknown_no_contract_data". The UI must not present
+            # "no_active_contract_on_file" as a confirmed retirement.
+            "roster_status": rst.contract_status(conn, r.player_id),
             "projected_points": r.projected_points,
             "ci_low": None if np.isnan(r.vbd_lo) else r.vbd_lo,
             "ci_high": None if np.isnan(r.vbd_hi) else r.vbd_hi,

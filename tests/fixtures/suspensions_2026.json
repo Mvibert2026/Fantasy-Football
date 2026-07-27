@@ -1,0 +1,23 @@
+{
+  "_comment": "T4 INTERIM FIXTURE -- synthetic data only, per thread 057 (open, unresolved data source) and this session's report: no verified real 2026 suspension list was available to this session (post-training-cutoff, unconfirmable from the pipeline). These are placeholder entries proving the mechanism (deterministic games-adjusted deduction + explicit flag), NOT a claim about any real player. Replace with a founder/researcher-verified list before this feeds the live board -- see docs/handoffs/057-timeseries-data-audit.md.",
+  "season": 2026,
+  "as_of_date": "2026-07-27",
+  "suspensions": [
+    {
+      "player_name": "Synthetic Test Player One",
+      "gsis_id": "00-9999901",
+      "games": 6,
+      "appeal_status": "upheld",
+      "as_of_date": "2026-07-27",
+      "note": "SYNTHETIC fixture row -- not a real player or real suspension"
+    },
+    {
+      "player_name": "Synthetic Test Player Two",
+      "gsis_id": "00-9999902",
+      "games": 2,
+      "appeal_status": "pending",
+      "as_of_date": "2026-07-27",
+      "note": "SYNTHETIC fixture row -- not a real player or real suspension"
+    }
+  ]
+}

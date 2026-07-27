@@ -1900,3 +1900,57 @@ verified per this project's evidence standard for UI work.
 Branch `frontend/063-suggester-reopen-fix`. `docs/CURRENT-STATE.md` frontend-test-count line and
 the DraftRoom paragraph updated in place. Thread 063 replied and set `STATUS: RESOLVED` (only the
 `frontend` role, the thread's `TO:`, is permitted to do so).
+
+## 2026-07-27 — Backend: T9/T5/T4/T6 correctness-floor round (ADR-050, branch `backend/t9-t5-t4-t6-correctness-floor`)
+
+Parallel round while a separate session did DB-writing work on the half-PPR ECR swap — this round
+was `src/`+`tests/`+`tests/fixtures/` only, no ingestion, no DB writes, per the dispatch's hard
+constraint.
+
+- **T9 (fully landed).** `src/team_codes.py`: canonical crosswalk covering 54 code variants found
+  across `rankings`/`player_weekly_stats`/`snap_counts`/`draft_picks`/`depth_charts_snapshots`/
+  `injuries`/`adp_snapshots` (FantasyPros JAC/LAR, era relocations OAK/SD/STL, two different
+  PFR-style abbreviation schemes). Wired into `export_contract.py`'s bye-week lookup (both the
+  `byes` dict's keys and the `team_of` lookup key) and into `export_history.py`'s historical
+  lookup (which needed its own fix once `_bye_weeks()`'s keys became canonical — an OAK-era
+  player would otherwise have silently stopped resolving). Acceptance evidence: the pre-existing
+  `tests/test_floor_checks.py::test_t3_every_board_player_has_a_bye_week` was measured red before
+  (22 players, live JAC/LAR symptom) and measured green after, board regenerated, no other change.
+- **T5 (fully landed).** `src/freshness.py`: `snapshot_age_days`/`check_freshness`/
+  `require_fresh`. `league_config.LeagueConfig.freshness_max_age_days: int = 3` (labeled a
+  suggested default, not measured). Wired into `export_contract.build_board_json()` only — not
+  into `make_board.build_board()`, which is also the historical/backtest path across training
+  seasons and must not refuse on "staleness" that's meaningless outside the live-season context.
+  Live board build now prints the snapshot age unconditionally and raises `StaleSnapshotError`
+  before building if stale.
+- **T6 (interim, fully landed on an existing signal).** `src/roster_status.py`: derives
+  `active`/`no_active_contract_on_file`/`unknown_no_contract_data` from the pre-existing
+  `contracts.is_active` column (NOT itself a roster-status field — verified it means "current
+  contract row," not "current roster status," since active starter Josh Allen shows
+  `is_active=0` on his older contracts). The usable derived signal — zero `is_active=1` rows
+  across a player's whole history — was verified against Tom Brady (retired 2023, all ~9
+  contract rows `is_active=0`). Wired into `board.json` as a new `roster_status` field, labeled
+  in-code and in the data contract as a proxy. Full nflverse roster-status ingestion (active/IR/
+  practice-squad, per-week) is explicitly **out of scope** — needs new DB writes; smallest
+  schema addition data-ops would need is recorded in ADR-050 and CURRENT-STATE.md.
+- **T4 (interim mechanism built, not wired to the live board).** `src/suspensions.py`:
+  deterministic games-adjustment (`SEASON_GAMES=17`, floors at 0, only adjusts on a settled
+  appeal status, flags-without-adjusting on `pending`). `tests/fixtures/suspensions_2026.json`
+  is **explicitly synthetic** — no real 2026 suspension list was available to verify against the
+  pipeline (post-training-cutoff, thread 057 still unresolved on whether a structured source
+  exists at all), and fabricating one would violate the project's own anti-invention rule. Left
+  disconnected from `export_contract.py` since wiring a synthetic, no-real-player-matching
+  fixture into the live board would be cosmetic. Blocked on thread 057.
+- **Contract version bumped 1.9.0 → 1.10.0** (`roster_status` field, additive). Handoff thread
+  066 opened to `frontend`. `tests/test_rosters_export.py::test_contract_version_bumped` and
+  `docs/data-contract.md`'s header/changelog updated to match. Regenerated all six primary-league
+  export artifacts (`export_contract.py` + `export_static.py`) — an earlier full-suite run caught
+  three stale `contract_version` values in `glossary.json`/`nulls.json`/`opponents.json` before
+  `export_static.py` was rerun; fixed, reran, confirmed green.
+- **ADR-050** in `docs/decisions.md` records all four work orders' status, reasoning, and the
+  exact schema data-ops would need for T6's real version.
+- **Tests.** Every new module's tests were written before the module existed (`test_team_codes.py`,
+  `test_freshness.py`, `test_roster_status.py`, `test_suspensions.py`), plus a targeted regression
+  guard in `test_export_history.py` for the OAK-era canonicalization gap found while wiring T9.
+  Full suite: **585 passed, 0 failed** (`pytest ../tests -q` from `src/`, real `nfl.db` copied
+  into the worktree first per the known worktree-needs-DB issue).
