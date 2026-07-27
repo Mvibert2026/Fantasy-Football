@@ -24,6 +24,12 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": ["--prefix", "frontend", "run", "dev", "--", "--port", "5176", "--strictPort"],
       "port": 5176
+    },
+    {
+      "name": "frontend-058-scarcity",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "frontend", "run", "dev", "--", "--port", "5188", "--strictPort"],
+      "port": 5188
     }
   ]
 }

@@ -35,6 +35,11 @@ export interface LeagueConfig {
   rounds: Cell<number>;
   userSlot: Cell<number>;
   pickSequence: Cell<number[]>;
+  /** league.json:platform (thread 058 section C3) -- e.g. "sleeper". Absent on
+   *  an export that predates the field, never fabricated. */
+  platform: Cell<string>;
+  /** league.json:draft_type (thread 058 section C3) -- e.g. "snake". */
+  draftType: Cell<string>;
   thresholds: Threshold[];
   replacementLevelsNote: string;
   flexSplitNote: string;
@@ -135,6 +140,14 @@ export function buildLeagueConfig(data: Dataset): LeagueConfig {
     rounds: present(L.rounds, 'league.json:rounds', runId),
     userSlot: present(L.user_draft_slot, 'league.json:user_draft_slot', runId),
     pickSequence: present(L.pick_sequence, 'league.json:pick_sequence', runId),
+    platform:
+      L.platform === undefined
+        ? absent('league.json:platform', runId, 'This export predates league.json:platform.')
+        : present(L.platform, 'league.json:platform', runId),
+    draftType:
+      L.draft_type === undefined
+        ? absent('league.json:draft_type', runId, 'This export predates league.json:draft_type.')
+        : present(L.draft_type, 'league.json:draft_type', runId),
     thresholds,
     replacementLevelsNote: L.replacement_levels_note,
     flexSplitNote: L.flex_split_note,

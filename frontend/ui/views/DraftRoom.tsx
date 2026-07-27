@@ -20,7 +20,14 @@ import { computeLiveAvailability, dotsFilled, freqText, type LiveAvailabilityRes
 import type { Dataset } from '../data/load';
 import type { LeagueConfig } from '../data/league';
 import { rankByRecommendation } from '../data/recommendation';
-import { depletionWarning, positionScarcity } from '../data/scarcity';
+import {
+  depletionWarning,
+  orderByUrgency,
+  paceLabel,
+  positionScarcity,
+  tierDepletionLine,
+  under50Line,
+} from '../data/scarcity';
 import { useWatchlist } from '../data/useWatchlist';
 import { PlayerDetail } from '../components/PlayerDetail';
 import { Value } from '../components/Value';
@@ -37,7 +44,11 @@ function paneColumns(boardPct = 35, centerPct = 40): string {
   return `minmax(0,${((board / total) * 100).toFixed(2)}%) minmax(0,${((center / total) * 100).toFixed(2)}%) minmax(0,${((right / total) * 100).toFixed(2)}%)`;
 }
 
-const SCARCITY_POSITIONS = ['QB', 'RB', 'WR', 'TE'] as const;
+// Thread 058 section A item 4: DEF is a fifth scarcity row, matching the
+// design's five positions. board.json carries zero DEF players (ADR-039, no
+// DST data ingested) -- positionScarcity's `dataAvailable` gate renders that
+// honestly (see scarcity.ts), it does not fabricate a DEF board.
+const SCARCITY_POSITIONS = ['QB', 'RB', 'WR', 'TE', 'DEF'] as const;
 
 /** Thread 049 item 5: a placeholder pick used by "Auto-fill to my pick" (see
  *  autoFillToMyPick below) for opponent turns the user hasn't logged. Never a
@@ -132,15 +143,69 @@ const POSITION_COLOR: Record<string, string> = {
   RB: 'var(--rb)',
   WR: 'var(--wr)',
   TE: 'var(--te)',
+  DEF: 'var(--def)',
 };
 
-const POSITION_TABS = ['ALL', 'QB', 'RB', 'WR', 'TE'] as const;
+// Thread 058 section B4: DEF added to the position filter, matching the
+// design's ALL/QB/RB/WR/TE/DEF row. Selecting it shows an honest "no DEF
+// players on this board" empty state (see availableInTab below) rather than a
+// silently blank list -- board.json has no DEF rows at all (ADR-039).
+const POSITION_TABS = ['ALL', 'QB', 'RB', 'WR', 'TE', 'DEF'] as const;
 type PositionTab = (typeof POSITION_TABS)[number];
+
+// Thread 058 section B3: explicit sort controls, matching the design's
+// "SORT: Our rank | Consensus | Delta | Proj pts" row. FRONTEND-SPEC.md §7.1
+// names exactly these four sorts. Held in component state -- not written to
+// ffda_v6 localStorage, since §4.1's persisted-state shape does not include a
+// sort/filter field and this session is not extending that contract -- so
+// "persisted within session" here means "survives re-renders while the Draft
+// Room stays mounted," the same guarantee every other piece of this screen's
+// local state gets.
+const SORT_TABS = [
+  { key: 'rank', label: 'Our rank' },
+  { key: 'consensus', label: 'Consensus' },
+  { key: 'delta', label: 'Delta' },
+  { key: 'proj', label: 'Proj pts' },
+] as const;
+type SortKey = (typeof SORT_TABS)[number]['key'];
+
+/** Comparator per sort key. `consensus`/`delta`/`proj` fall back to keeping
+ *  rank order for any row missing the sort field, rather than throwing it to
+ *  the top or bottom of the list arbitrarily. */
+function compareBySort(a: BoardRow, b: BoardRow, sort: SortKey): number {
+  const rankA = a.overallRank.kind === 'present' ? a.overallRank.value : Number.POSITIVE_INFINITY;
+  const rankB = b.overallRank.kind === 'present' ? b.overallRank.value : Number.POSITIVE_INFINITY;
+  if (sort === 'consensus') {
+    const ca = a.consensusRank.kind === 'present' ? a.consensusRank.value : null;
+    const cb = b.consensusRank.kind === 'present' ? b.consensusRank.value : null;
+    if (ca !== null && cb !== null) return ca - cb;
+    if (ca !== null) return -1;
+    if (cb !== null) return 1;
+    return rankA - rankB;
+  }
+  if (sort === 'delta') {
+    const da = a.deltaVsConsensus.kind === 'present' ? a.deltaVsConsensus.value : null;
+    const db = b.deltaVsConsensus.kind === 'present' ? b.deltaVsConsensus.value : null;
+    if (da !== null && db !== null) return db - da; // biggest positive delta (we rank higher than consensus) first
+    if (da !== null) return -1;
+    if (db !== null) return 1;
+    return rankA - rankB;
+  }
+  if (sort === 'proj') {
+    const pa = a.projectedPoints.kind === 'present' ? a.projectedPoints.value : null;
+    const pb = b.projectedPoints.kind === 'present' ? b.projectedPoints.value : null;
+    if (pa !== null && pb !== null) return pb - pa;
+    if (pa !== null) return -1;
+    if (pb !== null) return 1;
+    return rankA - rankB;
+  }
+  return rankA - rankB;
+}
 
 interface RosterSlot {
   slot: string;
-  kind: 'starter' | 'flex' | 'bench';
-  position: string | null; // null for FLEX/BN, which accept multiple positions
+  kind: 'starter' | 'flex' | 'bench' | 'ir';
+  position: string | null; // null for FLEX/BN/IR, which accept multiple positions
   row: BoardRow | null;
 }
 
@@ -165,6 +230,17 @@ function buildRosterSlots(
   for (let i = 0; i < flexCount; i++) slots.push({ slot: 'FLEX', kind: 'flex', position: null, row: null });
   const bench = data.league.roster.bench ?? 0;
   for (let i = 0; i < bench; i++) slots.push({ slot: 'BN', kind: 'bench', position: null, row: null });
+  // Thread 058 section D2: an IR slot, one per league.json:roster.ir (a real
+  // field, already typed -- not the design mockup's hardcoded single IR row).
+  // Deliberately excluded from the fill-target search below, same as the
+  // design reference (docs/design-reference/prototype.dc.html line 2563,
+  // `slots.push({slot:"IR",p:null})` -- never filled from the generic pick
+  // pool): this build has no injury-designation data to decide which pick
+  // belongs on IR, and guessing would be exactly the kind of fabricated
+  // assignment Principle #1 forbids. It renders as a permanently-open slot
+  // until a real injury signal exists to drive it.
+  const ir = data.league.roster.ir ?? 0;
+  for (let i = 0; i < ir; i++) slots.push({ slot: 'IR', kind: 'ir', position: null, row: null });
   const flexEligible = new Set(data.league.roster.flex_eligible ?? []);
 
   for (const pick of userPicks) {
@@ -197,11 +273,19 @@ export function DraftRoom({
   rows,
   league,
   onOpenPlayer,
+  onPickContext,
 }: {
   data: Dataset;
   rows: BoardRow[];
   league: LeagueConfig;
   onOpenPlayer?: (name: string | null) => void;
+  /** Thread 058 section C4 audit finding: the assistant dock already renders
+   *  on this screen (App.tsx mounts it regardless of mode) -- this was a
+   *  placement/content gap, not a missing feature, per the thread's own
+   *  instruction to check first. Reports the current overall pick (or null
+   *  once the draft is complete / before league config loads) so App.tsx can
+   *  compose "Draft · pick 24", matching the design's assistant context line. */
+  onPickContext?: (pick: number | null) => void;
 }) {
   const leagueId = data.manifest.artifacts.board?.league_id ?? 'default';
   const [draft, setDraft] = useState<DraftState>(() => loadDraftState(leagueId));
@@ -214,6 +298,9 @@ export function DraftRoom({
   // content currently sitting in the field, not some sticky mode.
   const [queryEntryMode, setQueryEntryMode] = useState<'typed' | 'pasted'>('typed');
   const [positionTab, setPositionTab] = useState<PositionTab>('ALL');
+  // Thread 058 section B3: explicit sort controls (Our rank / Consensus /
+  // Delta / Proj pts), matching the design's SORT row.
+  const [sortMode, setSortMode] = useState<SortKey>('rank');
   const [detailRow, setDetailRow] = useState<BoardRow | null>(null);
   const [expandedRowId, setExpandedRowId] = useState<number | null>(null);
   const [railTab, setRailTab] = useState<'queue' | 'watch'>('watch');
@@ -323,9 +410,16 @@ export function DraftRoom({
 
   const taken = useMemo(() => takenPlayerIds(draft.picks), [draft.picks]);
   const available = useMemo(() => rows.filter((r) => !taken.has(r.id)), [rows, taken]);
-  const availableInTab = useMemo(
+  const availableInTabUnsorted = useMemo(
     () => (positionTab === 'ALL' ? available : available.filter((r) => r.raw.position === positionTab)),
     [available, positionTab],
+  );
+  // Thread 058 section B3: apply the active sort. Board-rank order is a plain
+  // slice (already board-rank ordered), matching every other sort's stable
+  // comparator rather than special-casing it.
+  const availableInTab = useMemo(
+    () => [...availableInTabUnsorted].sort((a, b) => compareBySort(a, b, sortMode)),
+    [availableInTabUnsorted, sortMode],
   );
 
   // Thread 029 (amended to target this screen, not Board.tsx): tier grouping
@@ -335,7 +429,25 @@ export function DraftRoom({
   // consecutive rows from different positions can share a tier string (e.g. both
   // "T2") without describing the same tier, and a band would misrepresent that
   // as one group.
-  const bandsEnabled = positionTab !== 'ALL';
+  //
+  // Thread 058 section B1 audit finding: the design reference's own ALL-tab
+  // tier bands (docs/design-reference/prototype.dc.html ~line 3424, `useG =
+  // S.filter==="ALL"`) do NOT mix each position's own tier under one header --
+  // they switch to a distinct `p.gtier` ("global tier"), computed once by
+  // walking the whole board sorted by score and cutting a new tier on a >4.5
+  // point score gap (min bucket size 2, max 9). That is a real, separate
+  // statistical clustering decision -- exactly the kind of judgment this
+  // codebase already treats as backend's to make and export (board.json ships
+  // `tier`/`tier_label`, always per-position -- confirmed directly against the
+  // real export: QB tier 1 stops at positional rank 2 while RB tier 1 runs to
+  // positional rank 4, so a QB1 and an RB4 sharing a tier LABEL are not
+  // describing the same value tier). Fabricating a global-tier bucketing
+  // algorithm client-side, on numbers never vetted for that use, would be
+  // exactly the kind of invented derived value Principle #1 forbids. So bands
+  // stay restricted to a single position tab until backend exports a real
+  // `global_tier` field (flagged to backend/PM in the thread reply) -- this is
+  // a correction to the thread's read of section B1, not a gap in this build.
+  const bandsEnabled = positionTab !== 'ALL' && sortMode === 'rank';
   const boardItems = useMemo(() => {
     const items: Array<{ kind: 'band'; tier: string; count: number } | { kind: 'row'; row: BoardRow }> = [];
     if (bandsEnabled) {
@@ -362,6 +474,15 @@ export function DraftRoom({
   const nextUserPick = teams > 0 ? nextPickForSlot(draft.picks, teams, userSlot, rounds) : null;
   const picksUntilYou = userOnClock ? 0 : nextUserPick !== null ? nextUserPick - currentPick : null;
   const draftComplete = teams > 0 && rounds > 0 && currentPick > teams * rounds;
+
+  // Thread 058 section C4: report the live pick number up to App.tsx for the
+  // assistant dock's context line ("Draft · pick 24"). Null once the draft is
+  // complete, or before league config resolves, rather than reporting a stale
+  // pick number that no longer describes anything real.
+  useEffect(() => {
+    onPickContext?.(teams > 0 && !draftComplete ? currentPick : null);
+    return () => onPickContext?.(null);
+  }, [onPickContext, teams, draftComplete, currentPick]);
 
   function persist(next: DraftState) {
     setDraft(next);
@@ -561,6 +682,13 @@ export function DraftRoom({
   const rosterChips = useMemo(() => {
     const counts = new Map<string, { filled: number; total: number }>();
     for (const s of rosterSlots) {
+      // Thread 058 section D2: IR is excluded from the requirement chips,
+      // matching the design's own checklist exactly (prototype.dc.html line
+      // 3778, `checklist` builds from a fixed {QB,RB,WR,TE,FLEX,DEF,BN} map
+      // with no IR key) -- IR appears in the roster slot list below instead.
+      // Without this guard, IR's null `position` would fall through to the
+      // 'BN' bucket and silently inflate the bench requirement.
+      if (s.kind === 'ir') continue;
       const key = s.kind === 'bench' ? 'BN' : s.kind === 'flex' ? 'FLEX' : (s.position ?? 'BN');
       const c = counts.get(key) ?? { filled: 0, total: 0 };
       c.total += 1;
@@ -694,17 +822,23 @@ export function DraftRoom({
 
   const scarcityList = useMemo(
     () =>
-      positionScarcity(
-        data,
-        rows,
-        draft.picks,
-        currentPick,
-        nextUserPick,
-        SCARCITY_POSITIONS,
-        Object.fromEntries(
-          league.thresholds.map((t) => [t.position, t.starters.kind === 'present' ? t.starters.value : 0]),
+      // Thread 058 section A item 5: ordered by urgency rather than a fixed
+      // QB/RB/WR/TE/DEF row order -- see orderByUrgency's doc comment in
+      // scarcity.ts for the exact tie-break rule and why FRONTEND-SPEC.md
+      // doesn't settle this (it doesn't specify a formula either way).
+      orderByUrgency(
+        positionScarcity(
+          data,
+          rows,
+          draft.picks,
+          currentPick,
+          nextUserPick,
+          SCARCITY_POSITIONS,
+          Object.fromEntries(
+            league.thresholds.map((t) => [t.position, t.starters.kind === 'present' ? t.starters.value : 0]),
+          ),
+          teams,
         ),
-        teams,
       ),
     [data, rows, draft.picks, currentPick, nextUserPick, league.thresholds, teams],
   );
@@ -720,10 +854,18 @@ export function DraftRoom({
     );
   }
 
+  // Thread 058 section C1: sentence case, boxed tabs sitting on the content
+  // panel with a filled active state -- not the all-caps underline strip this
+  // screen had before. Matches docs/design-reference/prototype.dc.html's own
+  // `dtabs` styling exactly (line ~3241-3244: active = panel2 background +
+  // line2 border + weight 600, rounded top corners only, border-bottom:0 so
+  // the active tab visually merges into the panel below; a trailing hairline
+  // spans the remaining width so inactive tabs still read as "on a rail").
+  // The founder named this tab's location/treatment specifically in thread 058.
   const HUB_TABS: Array<{ key: typeof hubTab; label: string }> = [
-    { key: 'board', label: 'BOARD' },
-    { key: 'opponents', label: 'OPPONENTS' },
-    { key: 'predictions', label: 'PREDICTIONS' },
+    { key: 'board', label: 'Board' },
+    { key: 'opponents', label: 'Opponents' },
+    { key: 'predictions', label: 'Predictions' },
   ];
 
   return (
@@ -732,10 +874,12 @@ export function DraftRoom({
         style={{
           flex: 'none',
           display: 'flex',
-          gap: 4,
-          padding: '6px 14px 0',
-          background: 'var(--panel2)',
-          borderBottom: '1px solid var(--line)',
+          alignItems: 'stretch',
+          gap: 2,
+          padding: '6px 8px 0',
+          background: 'var(--panel)',
+          minWidth: 0,
+          overflow: 'hidden',
         }}
       >
         {HUB_TABS.map((t) => (
@@ -745,19 +889,21 @@ export function DraftRoom({
             onClick={() => setHubTab(t.key)}
             style={{
               padding: '6px 14px',
-              background: 'transparent',
-              border: 0,
-              borderBottom: `2px solid ${hubTab === t.key ? 'var(--acc)' : 'transparent'}`,
+              background: hubTab === t.key ? 'var(--panel2)' : 'transparent',
+              borderTop: `1px solid ${hubTab === t.key ? 'var(--line2)' : 'transparent'}`,
+              borderLeft: `1px solid ${hubTab === t.key ? 'var(--line2)' : 'transparent'}`,
+              borderRight: `1px solid ${hubTab === t.key ? 'var(--line2)' : 'transparent'}`,
+              borderBottom: 0,
+              borderRadius: 'var(--r-c) var(--r-c) 0 0',
               color: hubTab === t.key ? 'var(--txt)' : 'var(--dim2)',
-              fontFamily: 'var(--font-num)',
-              fontSize: 11,
-              letterSpacing: '.08em',
-              fontWeight: 600,
+              fontSize: 12.5,
+              fontWeight: hubTab === t.key ? 600 : 400,
             }}
           >
             {t.label}
           </button>
         ))}
+        <span style={{ flex: 1, borderBottom: '1px solid var(--line2)' }} />
       </div>
 
       {hubTab === 'opponents' ? (
@@ -1022,9 +1168,47 @@ export function DraftRoom({
               </button>
             ))}
           </div>
-          <div style={{ flex: 'none', padding: '6px 12px', fontFamily: 'var(--font-num)', fontSize: 10, color: 'var(--dim2)' }}>
-            {availableInTab.length} left
+          <div
+            style={{
+              flex: 'none',
+              padding: '6px 12px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              borderBottom: '1px solid var(--line)',
+            }}
+          >
+            <span style={{ fontSize: 9, letterSpacing: '.09em', color: 'var(--dim2)', flex: 'none' }}>SORT</span>
+            {SORT_TABS.map((s) => (
+              <button
+                key={s.key}
+                aria-pressed={sortMode === s.key}
+                onClick={() => setSortMode(s.key)}
+                style={{
+                  padding: '3px 8px',
+                  background: 'transparent',
+                  border: 0,
+                  borderBottom: `1px solid ${sortMode === s.key ? 'var(--acc)' : 'transparent'}`,
+                  color: sortMode === s.key ? 'var(--txt)' : 'var(--dim2)',
+                  fontSize: 11,
+                }}
+              >
+                {s.label}
+              </button>
+            ))}
+            <div style={{ flex: 1 }} />
+            <span
+              title="Baseline → live-adjusted availability at your next pick"
+              style={{ fontFamily: 'var(--font-num)', fontSize: 10, color: 'var(--dim2)', flex: 'none' }}
+            >
+              {availableInTab.length} left
+            </span>
           </div>
+          {positionTab === 'DEF' && availableInTab.length === 0 ? (
+            <div style={{ padding: '12px', fontSize: 12.5, color: 'var(--dim2)', lineHeight: 1.5 }}>
+              No DEF players on this board. {data.board.def_note}
+            </div>
+          ) : null}
           <div style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
             {boardItems.map((item) => {
               if (item.kind === 'band') {
@@ -1074,8 +1258,12 @@ export function DraftRoom({
                     <span style={{ fontWeight: 600, fontSize: 13, flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {r.name.kind === 'present' ? r.name.value : ''}
                     </span>
-                    <span style={{ fontSize: 11, letterSpacing: '.045em', fontWeight: 600, color: POSITION_COLOR[r.raw.position], width: 30 }}>
-                      {r.raw.position}
+                    {/* Thread 058 section B2: positional rank (WR12), not bare
+                        position -- board.json:positional_label, already a real
+                        exported field (confirmed "RB1"/"WR1"-style against the
+                        real export), just not rendered on this row before. */}
+                    <span style={{ fontSize: 11, letterSpacing: '.045em', fontWeight: 600, color: POSITION_COLOR[r.raw.position], width: 38 }}>
+                      <Value cell={r.positionalLabel} render={(v) => v} />
                     </span>
                     <span style={{ fontSize: 10, letterSpacing: '.045em', color: 'var(--dim2)', width: 26 }}>{r.raw.team}</span>
                     <span
@@ -1309,7 +1497,7 @@ export function DraftRoom({
               ) : null}
             </div>
           ) : (
-            <div style={{ padding: 14 }}>
+            <div style={{ padding: 14 }} data-testid="position-scarcity">
               <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
                 <span style={{ fontSize: 10, letterSpacing: '.12em', color: 'var(--dim2)' }}>POSITION SCARCITY</span>
                 <span style={{ flex: 1, height: 1, background: 'var(--line)' }} />
@@ -1321,33 +1509,62 @@ export function DraftRoom({
                 {scarcityList.map((s) => {
                   const pct = s.total > 0 ? s.remaining / s.total : 0;
                   const warning = depletionWarning(s, nextUserPick);
+                  const tierLine = tierDepletionLine(s);
+                  const under50 = under50Line(s, nextUserPick);
                   return (
-                    <div key={s.pos}>
+                    <div key={s.pos} data-testid={`scarcity-row-${s.pos}`}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                         <span style={{ fontSize: 12, fontWeight: 600, letterSpacing: '.045em', color: POSITION_COLOR[s.pos], width: 30 }}>
                           {s.pos}
                         </span>
                         <span style={{ flex: 1, height: 10, background: 'var(--line)', position: 'relative' }}>
-                          <span
-                            style={{
-                              position: 'absolute',
-                              inset: 0,
-                              width: `${Math.round(pct * 100)}%`,
-                              background: POSITION_COLOR[s.pos],
-                              opacity: 0.85,
-                            }}
-                          />
+                          {s.dataAvailable ? (
+                            <span
+                              style={{
+                                position: 'absolute',
+                                inset: 0,
+                                width: `${Math.round(pct * 100)}%`,
+                                background: POSITION_COLOR[s.pos],
+                                opacity: 0.85,
+                              }}
+                            />
+                          ) : null}
                         </span>
                         <span className="num" style={{ fontSize: 11, color: 'var(--dim)', width: 74, textAlign: 'right' }}>
-                          {s.remaining} / {s.total} left
-                        </span>
-                        <span
-                          className="num"
-                          style={{ fontSize: 11, width: 44, textAlign: 'right', color: s.pace > 0 ? 'var(--down)' : 'var(--dim2)' }}
-                        >
-                          {signed(s.pace)}
+                          {s.dataAvailable ? `${s.remaining} / ${s.total} left` : 'no board data'}
                         </span>
                       </div>
+                      {s.dataAvailable ? (
+                        <>
+                          {/* Thread 058 section A item 1: the sign is now a
+                              full phrase ("2 ahead of pace" / "on pace" / "1
+                              behind pace"), not a bare +2/±0/-1 -- see
+                              paceLabel's doc comment in scarcity.ts for why
+                              the design reference itself doesn't demonstrate
+                              a fix here (it renders the same bare digit). */}
+                          <div
+                            style={{ marginTop: 3, marginLeft: 40, fontSize: 11, color: (s.pace ?? 0) > 0 ? 'var(--down)' : 'var(--dim2)' }}
+                            title={`gone ${s.gone} vs expected ${s.expected ?? '—'} by pick ${integer(currentPick)} (board.position_remaining · pace vs board.consensus_rank)`}
+                          >
+                            {paceLabel(s.pace)}
+                          </div>
+                          {tierLine ? (
+                            <div style={{ marginTop: 2, marginLeft: 40, fontSize: 11.5, color: 'var(--down)' }}>{tierLine}</div>
+                          ) : null}
+                          {under50 ? (
+                            <div style={{ marginTop: 2, marginLeft: 40, fontSize: 11, color: 'var(--dim2)' }}>{under50}</div>
+                          ) : null}
+                        </>
+                      ) : (
+                        // Thread 058 section A item 4 + honest-null discipline:
+                        // DEF has zero board rows (ADR-039, no DST data
+                        // ingested) -- one collapsed line naming that, quoting
+                        // board.json's own def_note, rather than three empty
+                        // sub-lines or a fabricated ±0/tier/under-50 claim.
+                        <div style={{ marginTop: 3, marginLeft: 40, fontSize: 11, color: 'var(--dim2)', lineHeight: 1.45 }}>
+                          {data.board.def_note}
+                        </div>
+                      )}
                       {warning ? (
                         <div style={{ marginTop: 4, marginLeft: 40, padding: '6px 9px', borderLeft: '2px solid var(--down)', background: 'var(--panel2)', fontSize: 11.5, color: 'var(--dim)' }}>
                           {warning}
@@ -1356,6 +1573,14 @@ export function DraftRoom({
                     </div>
                   );
                 })}
+              </div>
+              {/* Thread 058 section A item 6: traceability footer -- the
+                  panel names the exact fields feeding it, per docs/handoffs/
+                  058's requested `board.position_remaining · board.position_tier
+                  · pace vs board.consensus_rank`. This is also what makes the
+                  pace phrase interpretable without opening the code. */}
+              <div style={{ marginTop: 8, fontFamily: 'var(--font-num)', fontSize: 9.5, color: 'var(--dim2)' }}>
+                board.position_remaining · board.position_tier · pace vs board.consensus_rank
               </div>
 
               <div style={{ marginTop: 20, display: 'flex', gap: 4 }}>
@@ -1393,6 +1618,16 @@ export function DraftRoom({
                   ))
                 )}
               </div>
+              {/* Thread 058 section E4/F: traceability footer, matching the
+                  Position Scarcity panel's pattern and the design's own
+                  footer for this panel. Rendered whenever the panel has real
+                  rows to trace -- an empty queue/watchlist has nothing to
+                  attribute yet. */}
+              {(railTab === 'queue' ? queueRows : watchRows).length > 0 ? (
+                <div style={{ marginTop: 8, fontFamily: 'var(--font-num)', fontSize: 9.5, color: 'var(--dim2)' }}>
+                  availability.baseline_p → availability.live_p · adjustment.need + adjustment.run
+                </div>
+              ) : null}
 
               <div style={{ marginTop: 20, padding: '11px 12px', border: '1px solid var(--line)', background: 'var(--panel2)' }}>
                 <div style={{ fontSize: 10, letterSpacing: '.12em', color: 'var(--dim2)' }}>NEXT DECISION</div>
@@ -1419,26 +1654,37 @@ export function DraftRoom({
                 {userPicks.length} / {rosterSlots.length}
               </span>
             </div>
-            {/* Thread 049 item 3: fill state at a glance -- QB 0/1 · RB 0/2 · ...
-                -- aggregated from the same rosterSlots the list below already
-                builds, not a second computation. */}
-            <div
-              style={{
-                marginTop: 6,
-                fontFamily: 'var(--font-num)',
-                fontSize: 10.5,
-                color: 'var(--dim)',
-                display: 'flex',
-                flexWrap: 'wrap',
-                gap: '2px 6px',
-              }}
-            >
-              {rosterChips.map((c, i) => (
-                <span key={c.label}>
-                  {c.label} {c.filled}/{c.total}
-                  {i < rosterChips.length - 1 ? <span style={{ color: 'var(--dim2)' }}> ·</span> : null}
-                </span>
-              ))}
+            {/* Thread 058 section D1: requirement chips as bordered boxes,
+                not a wrapped comma-separated text line -- matching the
+                design's own checklist styling exactly (bd/fg: filled=accent,
+                partial=default text, empty=dim -- prototype.dc.html line
+                3778-3782). Fill state itself (thread 049 item 3) is unchanged,
+                still aggregated from the same rosterSlots the list below
+                builds, not a second computation -- only the presentation
+                changed here. */}
+            <div style={{ marginTop: 6, display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+              {rosterChips.map((c) => {
+                const filled = c.filled >= c.total;
+                const started = c.filled > 0;
+                return (
+                  <span
+                    key={c.label}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 5,
+                      padding: '2px 6px',
+                      border: `1px solid ${filled ? 'var(--acc)' : 'var(--line)'}`,
+                      borderRadius: 'var(--r-c)',
+                      fontFamily: 'var(--font-num)',
+                      fontSize: 10,
+                      color: filled ? 'var(--acc)' : started ? 'var(--txt)' : 'var(--dim2)',
+                    }}
+                  >
+                    <span style={{ color: 'var(--dim2)' }}>{c.label}</span> {c.filled}/{c.total}
+                  </span>
+                );
+              })}
             </div>
             <div style={{ marginTop: 8, display: 'flex', flexDirection: 'column', gap: 2 }}>
               {rosterSlots.map((s, i) => (
