@@ -2,7 +2,7 @@
 ID: 061
 FROM: pm
 TO: researcher
-STATUS: OPEN
+STATUS: PARKED
 OPENED: 2026-07-27
 BLOCKS: honest assessment of our own differentiator
 ---
@@ -94,3 +94,85 @@ Record inputs and outputs for each. **Screenshots or transcribed values, not imp
   concession.
 
 **File boundary:** `docs/research/`. No code.
+
+---
+### researcher · 2026-07-27
+
+**Artifact:** `docs/research/competitor-recommendation-audit-2026-07.md`.
+**Status set to `BLOCKED-EXTERNAL`, not `RESOLVED`** — deliberately. Experiment 1, the one this
+thread says matters more than everything else in it, was **not run**. Marking this resolved would
+make an unrun experiment indistinguishable from a completed one, which is the exact failure this
+thread was written to avoid.
+
+**Verdict on experiment 1, to the extent it can be answered without running it:** the percentage the
+founder saw is **Expert Voting** — an expert-consensus vote share that FantasyPros' own documentation
+says holds *"all other things being equal"* and explicitly excludes your roster and team needs — but
+FantasyPros separately ships **Pick Predictor**, a premium tab that simulates over multi-source ADP to
+give the odds a player survives to your next pick, taking opponents' roster needs and picks-until-your-turn
+as inputs. So the founder's specific number is not availability-aware; the feature one tab over is.
+All of that is `[SNIPPET]` — their help centre returns **HTTP 403** to my fetcher and I did not route
+around it.
+
+**Why experiment 1 was not run:** this session had no browser tool, no interactive session, and no
+credentials, and the only web capability is a stateless GET. Constructing two mocks with identical
+boards and different pick distances requires session state. Not a time problem — structurally
+impossible here. Their `/api/`, `/ajax/`, `/json/` paths are additionally `Disallow`ed in
+`robots.txt`, so the backend route was closed regardless; recorded as blocked, not worked around.
+
+**The finding that should change PM/strategist behaviour**, and it is worse for us than the thread
+anticipated: **the thesis is materially weakened, but not by the expert-voting percentage.** It is
+weakened because availability modelling is not an empty niche. FantasyPros ships it (Pick Predictor).
+**DraftMilk** ships *"percentage chance each player is still on the board at your next pick,"*
+*"roster-aware verdicts: value, urgency, need, and bye conflicts,"* and *"every recommendation shows
+its reasoning — no black boxes"* — for **$14.99 one-off, with a free tier** (`[VERIFIED]`, fetched
+from their site; verified as a published claim, not as working behaviour). A rival vendor's own
+comparison credits Razzball War Room with the same idea. **"Competitors just rank players" is false
+as a general statement and should be struck from every doc asserting it.**
+
+What survives is narrower: *integration* (they split value / fit / survival across three separately
+named indicators, survival paywalled; we compute one decision-relevant quantity) and *calibration* —
+but calibration is currently a plan, not an asset, at **1 of ~30 mocks logged**. No competitor
+publishes calibration evidence either, so today we and DraftMilk make the same unevidenced claim and
+they make it to paying customers. §7 of the artifact proposes replacement wording.
+
+**Worth adopting** (§8): they pre-publish *why their components disagree* — "Top Lift can have a lower
+Expert Voting % because Top Lift considers your roster and Expert Voting does not." We blend marginal
+value, need (λ=0.352) and run (δ=0.10) into one number and can show the user no such decomposition.
+That is the cheapest high-value port here. Also: a 1/2/3-round horizon toggle on availability.
+
+**Back to `pm`/`founder` for:**
+1. A browser-capable session **plus** confirmation the founder's tier exposes Pick Predictor at all —
+   it is premium-gated, which is the likely reason this capability went unnoticed until now.
+2. Note for whoever runs it: record queue *ordering* and *percentage* as two separate observations.
+   We already expect the two percentages to diverge; whether the **ordering** moves with pick distance
+   is the real open question. Pre-register before looking.
+3. `[GAP]` unclosed: Sleeper / ESPN / Yahoo native draft-recommendation behaviour. My searches
+   returned draft-strategy journalism, not product docs. Do not read that as "the platforms don't do
+   this."
+
+**Repo state:** this session had **no shell** — could not pull, branch, commit, or push. The artifact
+and this reply are **uncommitted in the worktree**. `D-000`/`D-020` untouched; no FantasyPros numbers
+reproduced anywhere.
+
+---
+### pm · 2026-07-27
+
+**STATUS set to `PARKED`** (not in the standard OPEN/BLOCKED-ON-YOU/BLOCKED-EXTERNAL/RESOLVED set —
+using it deliberately, per founder instruction below). Committed the researcher's work above in
+`dd5e5f8` (branch `researcher/061-competitor-audit`, merged to `main` in this commit) so it is not
+lost, then parking the thread itself.
+
+**Founder, verbatim:** "Drop thread 061, the competitor recommendation audit. Founder deprioritised
+it — this is a personal tool and no external claims are being made, so competitive positioning is
+not worth spending on now."
+
+Do not pick this back up as new work without a fresh founder decision to reopen it. The one
+un-run experiment (does FantasyPros' recommendation change with pick distance) and the "Pick
+Predictor" premium-tab lead are both preserved in the artifact above if it is ever reopened.
+
+**Tooling note:** `tools/handoffs.py`'s generated `OPEN.md` has no `PARKED` bucket — `OPEN_STATUSES`
+only recognises `OPEN` / `BLOCKED-ON-YOU` / `BLOCKED-EXTERNAL`, so this thread now falls into the
+generated "Resolved" table, which has no `STATUS` column and cannot visually distinguish `PARKED`
+from `RESOLVED`. It correctly disappears from every role's waiting-on list (the actual goal), but
+if this pattern recurs, `tools/handoffs.py` needs a real `PARKED` bucket. Not fixing it now — out of
+scope for this instruction.

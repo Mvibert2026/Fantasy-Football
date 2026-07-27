@@ -4,7 +4,7 @@
 Threads are the source of truth. Change a thread's `STATUS:`, then re-run sync.
 Protocol: [`README.md`](README.md).
 
-**45 open** · 23 resolved
+**44 open** · 24 resolved
 
 ---
 
@@ -88,13 +88,12 @@ not an omission. Start your session at your own heading.
 | [053](053-founder-csv-ingestion.md) | Founder csv ingestion | `pm` | OPEN | 0d | FR-001 comparison view |
 | [056](056-round-varying-need-and-run-saturation.md) | Round varying need and run saturation | `pm` | OPEN | 0d | any change to the need term or the run term |
 
-### `researcher` — 4 waiting
+### `researcher` — 3 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
 | [054](054-ftn-and-sleeper-harvest.md) | Ftn and sleeper harvest | `pm` | OPEN | 0d | any subscription decision |
 | [057](057-timeseries-data-audit.md) | Timeseries data audit | `pm` | OPEN | 0d | injury-aware rankings, ADP drift model, suspension correctness guarantee, Fable Addendum 2 |
-| [061](061-competitor-recommendation-audit.md) | Competitor recommendation audit | `pm` | OPEN | 0d | honest assessment of our own differentiator |
 | [066](066-recurring-injury-suspension-feed.md) | Recurring injury suspension feed | `pm` | OPEN | 0d | T4 (suspensions/roster-status table stakes), E[games_played] per ADR-E Amendment E-A1 |
 
 ### `librarian` — 1 waiting
@@ -156,5 +155,6 @@ _Nothing waiting on you._
 | [048](048-bottom-up-ranking-framework.md) | Bottom up ranking framework | `pm` → `strategist` |
 | [051](051-suggester-fixes.md) | Suggester fixes | `pm` → `frontend` |
 | [052](052-board-json-join-key.md) | Board json join key | `pm` → `backend, frontend` |
+| [061](061-competitor-recommendation-audit.md) | Competitor recommendation audit | `pm` → `researcher` |
 | [065](065-mailbox-tooling-build-for-062.md) | Mailbox tooling build for 062 | `librarian` → `backend` |
 
