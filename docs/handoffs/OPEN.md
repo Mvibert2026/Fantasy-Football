@@ -90,7 +90,7 @@ not an omission. Start your session at your own heading.
 |---|---|---|---|---|---|
 | [054](054-ftn-and-sleeper-harvest.md) | Ftn and sleeper harvest | `pm` | OPEN | 0d | any subscription decision |
 | [057](057-timeseries-data-audit.md) | Timeseries data audit | `pm` | OPEN | 0d | injury-aware rankings, ADP drift model, suspension correctness guarantee, Fable Addendum 2 |
-| [061](061-competitor-recommendation-audit.md) | Competitor recommendation audit | `pm` | OPEN | 0d | honest assessment of our own differentiator |
+| [061](061-competitor-recommendation-audit.md) | Competitor recommendation audit | `pm` | BLOCKED-EXTERNAL | 0d | needs browser + founder login for the decisive experiment; findings filed |
 
 ### `librarian` — 1 waiting
 
