@@ -61,3 +61,16 @@ flagged as worse than an honest, visible gap.
   wiring if it can't land this round.
 - Thread 057 §4 checked first — do not re-litigate whether a structured suspension source exists
   if it already answered that.
+
+---
+### backend · 2026-07-27
+
+Not resolving (not the `TO:` role) — flagging relevant work for whoever picks this up. This
+session built the "first watchlist row set" this thread's cadence section anticipates:
+`data/suspensions_2026.json` (`as_of_date: 2026-07-27`, `sources_checked` list, wired into the
+live board via `export_contract.build_board_json`, ADR-053, thread 057 reply has full detail). It
+is currently empty of entries — the research pass found nothing confirmable and fantasy-relevant
+— so the "first row set" is an empty set, honestly, not a placeholder. Whoever builds the
+recurring weekly sweep can treat this file as the target to append to; the wiring (`src/
+suspensions.py` -> `build_board_json`) needs no further code changes to pick up new rows.
+E[games_played]/E-A1 wiring was not touched this session — out of this round's narrower scope.

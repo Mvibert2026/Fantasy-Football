@@ -153,18 +153,38 @@ this session, directly measured).**
 **T9 team-code crosswalk** (`src/team_codes.py`) — fixed the live JAC/LAR (FantasyPros) vs JAX/LA
 (nflverse) bye-week gap; `tests/test_floor_checks.py::test_t3_every_board_player_has_a_bye_week`
 went from measured-red (22 players, live symptom) to green by wiring the crosswalk into
-`export_contract.py`'s bye lookup and regenerating `board.json`, no other change. **T5 freshness
-tripwire** (`src/freshness.py`, `league_config.freshness_max_age_days=3` default) — live board
-build now refuses a stale/absent ECR snapshot and always prints its age. **T6 interim
-roster-status proxy** (`src/roster_status.py`) — `board.json` rows gained `roster_status`, derived
-from the pre-existing `contracts.is_active` column, verified against Tom Brady (retired, zero
-active-contract rows on file); explicitly labeled a proxy, not a real active/IR/PS feed (that
-needs new ingestion, out of this round's scope). **T4 interim suspension mechanism**
-(`src/suspensions.py`) — deterministic games-adjustment built and tested against a fixture, but
-the fixture is synthetic (no verified real 2026 suspension list was available to this session) and
-the mechanism is NOT wired into the live board; blocked on thread 057 for real data. Contract
-version bumped 1.9.0 → 1.10.0 for the `roster_status` field; handoff thread 066 opened to
-frontend.
+`export_contract.py`'s bye lookup and regenerating `board.json`, no other change.
+
+**T5 freshness tripwire — RE-VERIFIED end-to-end, 2026-07-27 (ADR-053), no gap found.**
+`export_contract.build_board_json` calls `fr.require_fresh(...)` unconditionally
+(`enforce_freshness=True` default) before every board build, via the single shared `write_all`
+path every league config uses — there is no per-league way around it. Previously only the pure
+`freshness.py` functions had test coverage; added `tests/test_freshness.py::
+TestBoardBuildActuallyRefuses` (2 tests, `@pytest.mark.requires_db`) proving the real entrypoint
+against the real `data/nfl.db` actually raises `StaleSnapshotError` when forced stale, and does
+NOT raise on the real (actually-fresh) snapshot. No code change needed — this was already solid.
+
+**T6 interim roster-status proxy** (`src/roster_status.py`) — spot-checked 2026-07-27, unchanged,
+still passing (6 tests incl. the Tom Brady case). `board.json` rows carry `roster_status`, derived
+from the pre-existing `contracts.is_active` column; explicitly labeled a proxy, not a real
+active/IR/PS feed (that needs new ingestion, out of scope this round).
+
+**T4 interim suspension mechanism — WIRED INTO THE LIVE BOARD, 2026-07-27 (ADR-053, thread 057
+reply).** `src/suspensions.py`'s deterministic games-adjustment (no probability model) is now
+called from `export_contract.build_board_json` for every league config via `write_all`, reading a
+new real, hand-curated list at `data/suspensions_2026.json` (`as_of_date: 2026-07-27`,
+WebSearch/WebFetch-sourced, `sources_checked` cited in the file). That list is **currently empty**
+— an exhaustive research pass found no confirmed, current, unserved, skill-position (QB/RB/WR/TE)
+2026 suspension (the one real 2026 suspension found, Charles Snowden/DE, has zero board
+consequence since this league has no individual defensive-player scoring at all, ADR-039); per
+project rule, nothing was fabricated to fill the gap. Every board row still emits the four
+suspension fields unconditionally (`suspension_flag: false` today, correctly, not silently
+absent). Synthetic fixture (`tests/fixtures/suspensions_2026.json`) is unchanged and still tests
+the mechanism itself. Contract version bumped 1.11.0 → 1.12.0 for the four new fields
+(`suspension_flag`/`suspension_games`/`projected_points_suspension_adjusted`/
+`suspension_adjustment_note`); handoff thread 073 opened to frontend. Thread 057 (data source
+research) remains open — this closed the narrower "not wired in" gap, not the fuller structured-
+source design its §4 reply proposed.
 
 Board + VBD with format-corrected replacement levels · identity hub (`mfl_id`) with quarantine ·
 live-availability hazard model · need-weighted `strategy_balanced` · mock-draft ingestion and
@@ -285,9 +305,10 @@ assistant" wiring · LLM prose renderer
    private/personal/founder-only. Reopens on any second user, alongside D-021.
 5. **`strategies.json` re-export** — stale at contract 1.7.0 while every other export artifact is
    now 1.10.0; app's version banner correctly flags this (thread 042, open to backend).
-6. **T4 real suspension data** — blocked on thread 057 (structured source still unresolved). The
-   deterministic games-adjustment mechanism exists (`src/suspensions.py`, ADR-050) but is not wired
-   into the live board; its only fixture is synthetic.
+6. **T4 real suspension data — interim CLOSED 2026-07-27 (ADR-053).** Real, dated, sourced list
+   wired into the live board (`data/suspensions_2026.json`, currently empty — verified, not an
+   oversight). Thread 057's fuller structured-source design (per-source schema, staleness test as
+   a blocking gate) remains open if a more permanent solution is wanted later.
 7. **T6 full roster-status ingest** — the live `roster_status` field on `board.json` is a proxy
    derived from `contracts.is_active` (ADR-050), not a real active/IR/practice-squad feed. Needs a
    new `roster_status_weekly`-shaped table from `nflreadpy.load_rosters()`, which is a DB-writing

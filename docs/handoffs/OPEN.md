@@ -45,7 +45,7 @@ not an omission. Start your session at your own heading.
 | [071](071-global-tier-field-for-all-tab-board-grouping.md) | Global tier field for all tab board grouping | `frontend` | OPEN | 0d | 058 section B1 (design fidelity) |
 | [072](072-sim-staleness-fields-for-league-identity-current.md) | Sim staleness fields for league identity current | `frontend` | OPEN | 0d | 058 section C3 (design fidelity) |
 
-### `frontend` — 17 waiting
+### `frontend` — 18 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
@@ -66,6 +66,7 @@ not an omission. Start your session at your own heading.
 | [059](059-on-deck-recommendations.md) | On deck recommendations | `pm` | OPEN | 0d | FR-006 (draft chatbot), calm-preparation use case |
 | [066](066-contract-1-10-0-board-json-rows-gained-roster-st.md) | Contract 1 10 0 board json rows gained roster st | `backend` | OPEN | 0d | none |
 | [069](069-board-json-contract-1-11-0-new-scoring-format-fi.md) | Board json contract 1 11 0 new scoring format fi | `backend` | OPEN | 0d | none |
+| [073](073-board-json-contract-1-12-0-suspension-fields.md) | Board json contract 1 12 0 suspension fields | `backend` | OPEN | 0d | none |
 
 ### `data-ops` — 6 waiting
 

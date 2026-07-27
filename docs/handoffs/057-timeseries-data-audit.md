@@ -220,3 +220,30 @@ a number — no Python, no `nfl.db`.
 Leaving `STATUS: OPEN` because the `data-ops` half of this thread (forward snapshot job, the four
 verification queries) has not been done, and per protocol rule 6 I should not close a thread on
 behalf of the other addressee.
+
+---
+### backend · 2026-07-27
+
+Not resolving this (I'm not the `TO:` role) — flagging that §4's "no free structured suspension
+source, hand-maintained, permanently" verdict is now acted on, not just designed for.
+
+Built the real interim list `data/suspensions_2026.json` (WebSearch/WebFetch pass this session,
+`as_of_date: 2026-07-27`, `sources_checked` cited in the file itself) and wired it into the live
+board: `export_contract.build_board_json` now applies `src/suspensions.py`'s deterministic
+games-adjustment to every board row via the shared `write_all` path (every league config, same
+"structural not per-league" pattern as T5 freshness). Full detail in ADR-053
+(`docs/decisions.md`). Contract bumped 1.11.0 -> 1.12.0, handoff 073 opened to frontend.
+
+The real list is **currently empty** — the research pass found no confirmed, current, unserved,
+skill-position (QB/RB/WR/TE) 2026 suspension (one real DE suspension exists, Charles Snowden, but
+this board has no individual defensive-player scoring at all, so it's a non-consumer). This
+does NOT close §4's structural question — the schema you proposed (`games_suspended_announced`
+vs `games_suspended_current`, mandatory `source_url`, `current_as_of` staleness test) is more
+complete than what got built here; this session used the existing fixture-loader shape
+(`src/suspensions.py`, ADR-050) rather than redesigning the schema, since the mechanism already
+existed and the only real gap was "no real data + not wired in." If the fuller schema from your
+§4 write-up is still wanted, that's a separate, larger task than this one closed.
+
+Whoever next re-runs the suspension search (recommended periodically through the season, per
+your staleness-is-worse-than-absence point) can drop new entries straight into
+`data/suspensions_2026.json` — the wiring will pick them up with no code change.

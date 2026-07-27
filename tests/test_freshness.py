@@ -12,9 +12,13 @@ Written before src/freshness.py exists.
 """
 
 import sqlite3
-from datetime import date
+import sys
+from datetime import date, timedelta
+from pathlib import Path
 
 import pytest
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
 import freshness as fr
 
@@ -127,3 +131,67 @@ class TestRequireFresh:
         msg = str(exc_info.value)
         assert "26" in msg  # age in days
         assert "3" in msg  # threshold
+
+
+@pytest.mark.requires_db
+class TestBoardBuildActuallyRefuses:
+    """Integration coverage for the real gap the unit tests above don't
+    close: freshness.py's pure functions are well tested in isolation, but
+    nothing previously proved that `export_contract.build_board_json` --
+    the actual live board-build entrypoint every league config funnels
+    through via `write_all` -- calls them and really refuses. This exercises
+    the real `data/nfl.db` `rankings` table (not an in-memory fixture) and a
+    real LeagueConfig, forcing staleness by pushing `freshness_today` far
+    enough forward that today's real as_of_date reads as stale, then
+    confirms the raise. This is the check the fable pre-mortem finding #2
+    asked for: not just "the function exists" but "the builder actually
+    stops."
+    """
+
+    def _real_conn(self):
+        import db as dbmod
+
+        return dbmod.connect()
+
+    def test_build_board_json_raises_on_stale_snapshot_primary_league(self):
+        import export_contract as ec
+        import league_config as lc
+
+        conn = self._real_conn()
+        try:
+            real_age = fr.snapshot_age_days(
+                conn, ec.SEASON, make_board_source(), today=date.today()
+            )
+            assert real_age is not None, (
+                "no rankings rows on file for the primary source/season -- "
+                "cannot exercise the stale path meaningfully"
+            )
+            far_future = date.today() + timedelta(
+                days=lc.CURRENT_LEAGUE.freshness_max_age_days + real_age + 30
+            )
+            with pytest.raises(fr.StaleSnapshotError):
+                ec.build_board_json(
+                    conn, lc.CURRENT_LEAGUE, freshness_today=far_future
+                )
+        finally:
+            conn.close()
+
+    def test_build_board_json_does_not_raise_when_fresh_today(self):
+        import export_contract as ec
+        import league_config as lc
+
+        conn = self._real_conn()
+        try:
+            # Sanity check the inverse: calling with the real "today" (the
+            # snapshot really is fresh per CURRENT-STATE.md's dateline) must
+            # NOT raise -- otherwise the test above would be trivially true
+            # for the wrong reason (e.g. a bug that always raises).
+            ec.build_board_json(conn, lc.CURRENT_LEAGUE, freshness_today=None)
+        finally:
+            conn.close()
+
+
+def make_board_source():
+    import make_board
+
+    return make_board.SOURCE
