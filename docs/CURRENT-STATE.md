@@ -87,6 +87,8 @@ framework.md` is the live proposal on this track (Status: Proposed, awaiting D-0
 
 ## Built and working
 
+Last verified 2026-07-26 — not re-verified.
+
 Board + VBD with format-corrected replacement levels · identity hub (`mfl_id`) with quarantine ·
 live-availability hazard model · need-weighted `strategy_balanced` · mock-draft ingestion and
 validation report · archetype assignment and display-only descriptions · multi-league config and
@@ -94,59 +96,65 @@ export routing · 24-config board matrix · deterministic narration Facts layer 
 preseason rankings 2021–2025 (`rankings` table, `is_preseason_final` flagged) · historical injury
 reports 2010–2024 with enforced `as_of_date` (`injuries` table, `src/ingest_reference.py`; 2009
 mostly undated at the source and dropped, 2025 has no `date_modified` column upstream yet) ·
-**depth chart snapshots current through 2026-07-26** (`depth_charts_snapshots`, 349 daily
-snapshots, verified via `min(dt)`/`max(dt)` on the live table) — correcting an earlier, now-stale
-claim in this file that depth-chart data "ends 2024"; the data gap is closed. **What is still
-missing is the code that consumes it**: `RB_HANDCUFF` archetype remains unimplemented
-(`src/archetypes.py` — `depth_rank` is always `None` by design, the taxonomy names it but does not
-compute it), which is a build gap, not a data gap · **Opponents tab** (rendering live,
-`rosters.json`/`opponents.json`-backed, honest "not supplied"/"partial"/empty-roster null states) ·
-league rosters export (`rosters.json`, mechanical starters/flex/bench/needs from real draft picks on
-file; currently all-empty because the real 2026 draft hasn't started) · **Mock Lab live-logging
-store** (`src/mock_lab_store.py`, ADR-046: `mocklab_drafts`/`mocklab_picks`, pick-at-a-time
-create/append/undo/close, event-sourced; predictions derived on demand and guarded by a
-`model_version` pin, not stored; no UI, no export artifact yet) · **ADR-C pre-registration
-convention** (`src/preregistration.py`/`src/holdout.py`: nine-field confirmatory / four-field
-exploratory registration format, data_seen-amendment-irreversibly-demotes-to-exploratory rule,
-content-hash integrity checking, family manifests fixing the BH denominator, and
-`holdout.load_season(year, prereg_id)`. **Not yet enforced at any entrypoint** — the `prereg`
-CLI/pre-commit gate and the PR-001..003 retrofit are deferred · **Weekly finishes / season stats
-exports** (`src/export_history.py`, contract 1.9.0): `weekly_finishes.json` + `season_stats.json`,
-real `player_weekly_stats` data, 1481-player universe, 2003-2008 target-derived fields explicitly
-`target_data_unavailable: true` rather than zeroed. `board.json`'s `player_id_gsis` join key is
-populated (ADR-048): 378/378 board players carry it, 371/378 (98.15%) resolve against
-`weekly_finishes.json` (remaining misses are honest nulls — no stats history at all, not a join
-failure). Wired into `PlayerDetail.tsx`'s §7/§8 heat-map / three-season table (thread 052,
-frontend-side, four honest states: loading/no-key/error/ready-empty) — **not screenshot-verified**,
-per the standing UI evidence rule; do not upgrade this to "verified" on the strength of passing
-tests · **DraftRoom pick-entry TypeAhead + availability presentation**: available-player rows carry
-the same 10-dot frequency array as the player detail sheet, rows group under `TIER N — M players
-left` headers, digit shortcuts 1-5 commit a shortlisted candidate, Backspace-on-empty undoes,
-default shortlist is top 5 by real board rank (deterministic, not randomised — reversed from an
-earlier session's choice per thread 051 item 3), every pick records `entryMode`
-(`'shortcut' | 'typed' | 'pasted'`) · RECOMMENDED panel with WHAT-YOU-GIVE-UP, roster slot chips, MY
-PICKS sequence, Auto-fill-to-my-pick, and a Board/Opponents/Predictions tab shell in DraftRoom
-(thread 049, partial — the tab shell exists but is **not wired** to the actual Opponents/Predictions
-components yet) · **multi-league Settings backend capability**: `src/league_builder.py` constructs a
-real `LeagueConfig` from parameters (name, teams, roster shape, scoring, slot) rather than only the
-24 pre-generated configs, with per-format replacement-level recomputation confirmed — **no UI yet**
-· **Predictions tab**: built from scratch as a standalone Prep-mode screen (thread 028) — not yet
-nested inside the Draft-mode tab hub the design shows; screenshot capture blocked by an environment
-constraint, not incomplete work (thread 028 `BLOCKED-EXTERNAL`) · Opponents tab is
-engineering-complete but carries the same environment screenshot blocker (thread 027
-`BLOCKED-EXTERNAL`, not `OPEN` — the work itself is not incomplete).
+**Opponents tab** (built this sprint, verified rendering live this session — thread 038/041;
+`rosters.json`/`opponents.json`-backed, honest "not supplied"/"partial"/empty-roster null states,
+5/5 tests passing) · league rosters export (`rosters.json`, mechanical starters/flex/bench/needs
+from real draft picks on file; currently all-empty because the real 2026 draft hasn't started,
+which is the correct state, not a bug) · **Mock Lab live-logging store** (`src/mock_lab_store.py`,
+thread 025, ADR-046: `mocklab_drafts`/`mocklab_picks`, pick-at-a-time create/append/undo/close,
+event-sourced per the thread 040 amendment — undo truncates and replays, no voided records, no
+undo count; predictions derived on demand and guarded by a `model_version` pin, not stored;
+Brier/calibration scoring built over an unfitted rank-decay baseline pending the real hazard model
+being wired for arbitrary slots — see ADR-046 gap note; no UI, no export artifact yet) ·
+**ADR-C pre-registration convention** (thread 020, `src/preregistration.py`/`src/holdout.py`,
+additive to the original PR-001..003 mechanism): nine-field confirmatory / four-field exploratory
+registration format, the data_seen-amendment-irreversibly-demotes-to-exploratory rule, content-hash
+integrity checking, family manifests fixing the BH denominator, and `holdout.load_season(year,
+prereg_id)` tying season reads to a registration's declared scope with a signed-unseal-log
+requirement on top of the front-matter flag. **Not yet enforced at any entrypoint** — the `prereg`
+CLI/pre-commit gate and the PR-001..003 retrofit are deferred, see thread 020 reply.
+
+**Weekly finishes / season stats exports** (thread 017/039, `src/export_history.py`, contract
+1.9.0): `data/export/weekly_finishes.json` + `data/export/season_stats.json`, real
+`player_weekly_stats` data, 1481-player universe (`season >= 2018` at QB/RB/WR/TE), 2003-2008
+target-derived fields explicitly `target_data_unavailable: true`/`targets: null` rather than
+zeroed. **Join key fixed 2026-07-27 (thread 052, ADR-048):** `board.json`'s `player_id_gsis` was
+hardcoded `null`; now populated from `rankings.player_id` (already a gsis id) threaded through
+`make_board.BoardRow.player_id`. **378/378 board players carry it; 371/378 (98.15%) resolve
+against `weekly_finishes.json`** (the ~7 misses are players with no `player_weekly_stats` history
+at all — an honest null, not a join failure). No `CONTRACT_VERSION` bump — the field already
+existed in the schema, only its value changed. Still not wired into `PlayerDetail.tsx`'s
+consistency heat-map / three-seasons section — that is frontend's remaining half of thread 052 —
+but the join key that blocked it now exists and is measured.
+
+**DraftRoom pick-entry TypeAhead + availability presentation** (thread 029 retargeted off
+`Board.tsx`, thread 037 item 1, RETROFIT-5/thread 036): `DraftRoom.tsx`'s available-player rows now
+carry the same 10-dot frequency array as the player detail sheet / Availability Explorer, and rows
+group under `TIER N — M players left` headers (restricted to a single position tab, since
+`tier_label` is per-position — mixing under `ALL` would merge unrelated tiers sharing a label); row
+height verified unchanged by live measurement. Pick entry backported from the Mock Lab
+design-reference mockup (there is no Mock Lab application code — its UI remains unbuilt, only the
+backend store above): digits 1-5 commit a shortlisted candidate directly, Backspace on an empty
+field undoes the last pick, autofocus re-asserted on every input-node attach (not a one-shot guard),
+default shortlist is the top 5 available by real board rank shuffled per pick (no fabricated
+"predicted next pick" probability — this codebase has no model for that target), and every pick now
+records `entryMode` (`'shortcut' | 'typed' | 'pasted'`), exported through `toDraftLog`. Deliberately
+a smaller vocabulary than ADR-D's `mock_picks.entry_mode` (Status: Proposed, Mock-Lab-scoped) — not
+yet reconciled with it; flagged in the thread 036 reply as needing deliberate resolution before
+DraftRoom's exported log is treated as calibration input. `lib/format.ts::percent()`'s `<1%` branch
+(thread 037 item 1) was already shipped in `09391e4`; this session only added the literal test case
+the thread asked for and closed the reply loop. None of this is screenshot-verified — verified via
+live DOM/state measurement in a real (non-screenshotting) browser session instead; see thread
+replies for detail.
 
 ## Not built / null-stated
 
-Season mode entirely · Settings editor UI (backend capability exists via `league_builder.py`, no
-screen) · Mock Lab UI (backend store exists) · Compare tray · live "Ask the assistant" wiring · LLM
-prose renderer (deliberately deferred — hallucination risk, reasoning stated in code; D-014 approved
-a narrower **query-interface** version instead, spec-first via thread 033, not yet built) ·
-recompute progress streaming · `NEED_ADJUSTMENT_SCALE` deletion (decided, not implemented — see
-Statistical constants above) · D-003's structural TE/QB/DEF rank-uncertainty flag in the frontend
-(the backend per-position correlation measurement it depends on, `_rank_correlation_by_position` in
-`src/backtest.py`, exists; no matching UI flag was found in `frontend/ui/src` this session — treat
-as not yet built until a frontend session confirms otherwise).
+Predictions tab (**absent from the shipped app**) · Season mode entirely · Settings editor ·
+Mock Lab UI (backend store now exists, thread 025 — see Built and working) · Compare tray ·
+league creation / real multi-league slot support (thread 040 item 1, open) · live "Ask the
+assistant" wiring · LLM prose renderer
+(deliberately deferred — hallucination risk, reasoning stated in code) · `RB_HANDCUFF` archetype
+(depth charts end 2024) · recompute progress streaming.
 
 ## Top open items
 
