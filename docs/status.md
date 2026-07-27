@@ -1645,3 +1645,75 @@ thread 028 reply rather than claiming a screenshot that doesn't exist. Left `STA
 `docs/CURRENT-STATE.md` intentionally not touched this round (reserved for thread 052 per dispatch
 instructions). Commit `d9492ae` (build) + `52851d6` (thread reply). No founder statements surfaced
 this session.
+
+---
+
+## Frontend A session, 2026-07-27: suggester fixes (thread 051) + RECOMMENDED/roster chips/MY PICKS/
+## auto-fill/tab shell (thread 049), all in `DraftRoom.tsx`
+
+Scoped exclusively to `frontend/ui/views/DraftRoom.tsx` and its own tests, part of the same 9-way
+concurrent dispatch round as the Frontend C session above.
+
+**Thread 051 (RESOLVED), all three fixes:** the pick-entry suggester dropdown now has its own explicit
+open/closed state (previously implicit from `candidates.length > 0`, with no independent concept of
+"open" at all) — dismisses on a real click outside the search box + dropdown (document-level `mousedown`
+listener, subscribed only while open) and on `Escape` (was advertised in the help row, never actually
+wired); no longer opens on mount even though the field still autofocuses (a suppress-flag distinguishes
+the ref-callback's own programmatic focus from a genuine one); default shortlist order restored to real
+board rank, the now-dead Fisher-Yates shuffle deleted, header text drops "— ORDER RANDOMISED". Mock Lab
+untouched (no Mock Lab application code exists in this repo to touch).
+
+**Thread 049 (OPEN — items 2-5 done, item 1 partial, items 6-7 untouched):** the center-pane RECOMMENDED
+card now carries a full `WHAT YOU GIVE UP` treatment — name/pos-rank/team/bye, projected points plus an
+**honest range derived from the real VBD confidence interval** (board.json's `ci_low`/`ci_high` are
+confirmed, checked directly against the export, to be on VBD only — `ci_applies_to: "vbd"` on all 378
+rows — converted to points space via the real per-row `projected_points − vbd` offset, verified constant
+per position to floating-point noise; documented at length as a deliberate derivation, not a fabricated
+field, and flagged for backend/PM to override with a real contract field if preferred), a plain-language
+reason, and a give-up section naming the actual next-best-*scored* alternative (not simply next-highest-
+VBD) with its real VBD/availability trade. Roster slot chips (`QB 0/1 · RB 0/2 · ...`), the full
+`MY PICKS` sequence from `league.json:pick_sequence` (previously only showed picks already made), and
+"Auto-fill to my pick" also shipped — the last one **deliberately not** the design prototype's `simToMe`
+(which assigns a random real board player to every skipped pick, corrupting availability/scarcity math
+and the exported log): this build advances the clock with a fixed, unmistakably-synthetic placeholder
+(`playerId: null`, `(auto-filled — unknown pick)`) instead, flagged as a considered reversal of this same
+file's own prior documented objection to building this feature at all. A `BOARD/OPPONENTS/PREDICTIONS`
+tab shell was added — Board is the existing content, Opponents/Predictions state plainly they aren't
+wired into Draft mode yet rather than importing sibling-owned files mid-edit in this shared tree (Frontend
+C's Predictions build, described just above, was landing concurrently this same round). `DRAFT LIVE`
+indicator, richer league selector, and Predictions' `not yet` rendering (items 6-7) not touched.
+
+Everything above verified live against a real running dev server (port 5174, `.claude/launch.json`'s
+`prep-verify` entry) — actual numbers pulled off the page via `get_page_text`/`javascript_tool`, e.g. the
+live WHAT YOU GIVE UP text for pick 3: *"Ja'Marr Chase (WR) is the next best. Ja'Marr Chase is 152 over
+replacement vs Bijan Robinson's 172 — you gain 20 points of value today. Bijan Robinson is 4% to still be
+there at 18 and Ja'Marr Chase is 0%."* Also re-confirmed thread 029 (dot arrays + tier headers) and
+RETROFIT-5/thread 036 (TypeAhead key handling) still work correctly after this session's changes, and
+appended re-verification notes to both threads. **No screenshot image** — the `computer` screenshot
+action timed out every attempt with "the Browser pane is not displayed, so the page is not compositing
+frames," the same environment limitation Frontend C hit this same round (see above) and threads 029/036
+hit in the original build session. Reported as built and live-verified, not screenshot-verified, per
+`docs/operating-model.md`.
+
+Tests: `ui/__tests__/draft-room-typeahead.test.tsx` rewritten for the new suggester behavior (16 tests,
+was 9 — added explicit not-open-on-mount/opens-on-focus/opens-on-typing/dismiss-on-Escape/dismiss-on-
+outside-click cases, replaced the old "order is randomised" statistical test with its mirror asserting
+determinism); new `ui/__tests__/draft-room-recommendation.test.tsx`, 8 tests, covering roster chips, the
+full pick sequence, auto-fill's synthetic-placeholder guarantee and disabled-on-clock state, the
+RECOMMENDED/WHAT YOU GIVE UP content, and the tab shell. 24/24 passing, `tsc -b --noEmit` clean for both
+files. Full-suite run this session: 154/154 passing (18 files) on a clean pass; one earlier run showed
+`offline.test.tsx` timing out under this round's concurrent load (2 of 5 tests) — reproduced as passing
+in isolation immediately after, same non-regression pattern Frontend C's session above independently hit
+on a different file, consistent with 9-way concurrent-dispatch system load rather than a real failure.
+Also independently hit (not caused, not fixed): a transient `tsc -b` error in `PlayerDetail.tsx`
+(`usePlayerHistory` unused) from a sibling session's in-progress edit to a file I don't own — noted here
+rather than touched.
+
+Commit `a424a0d` (both threads, same file, same session). `docs/CURRENT-STATE.md` intentionally not
+touched this round (reserved for backend/thread 052) — the line that should eventually change there is
+the "DraftRoom pick-entry TypeAhead + availability presentation" paragraph's "shuffled per pick" wording
+under Built and working, which is now stale (order is BPA, not shuffled, per thread 051). Did not run
+`tools/handoffs.py sync` per this round's explicit dispatch instruction (orchestrator runs one
+consolidated sync after all 9 agents finish) — set thread 051's `STATUS: RESOLVED` directly in its file;
+`docs/handoffs/OPEN.md` will pick that up on the next sync. No founder statements surfaced this session
+(orchestrator-issued task, not a direct founder chat).

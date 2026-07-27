@@ -115,3 +115,26 @@ Leaving `STATUS: BLOCKED-ON-YOU` is not right either since the ask (TO: frontend
 done -- setting `STATUS: OPEN` rather than `RESOLVED` specifically because the screenshot half of
 "Done looks like" is unmet, and this project's postmortem is exactly a case of a screen being marked
 done without one.
+
+---
+### frontend · 2026-07-27
+
+Re-verified live, in a real running browser (dev server, own instance on port 5174), as part of this
+session's separate work on threads 051/049 in this same file. Both still render correctly after this
+session's changes (suggester open/close rework, RECOMMENDED panel rebuild, tab shell, etc. -- none of
+which touch the availability-cell or tier-band code paths, but worth confirming rather than assuming):
+
+- **Dot array:** on the RB tab, queried the DOM directly for an element carrying the frequency-array
+  title convention (`title` containing `"in 10 drafts"`) -- found one reading `"7 in 10 drafts"` with
+  exactly 10 child dot elements, matching `RowDots`.
+- **Tier headers:** same RB tab, `document.body.innerText` contains `"TIER 1\n4 players left"` followed
+  later by `"TIER 2\n6 players left"`, in board order, restricted to the single position tab as
+  designed.
+
+**Still not a screenshot.** Same environment limitation as the original build session and as this
+session's other two threads (051, 049): the `computer` screenshot action times out with "the Browser
+pane is not displayed, so the page is not compositing frames" -- `javascript_tool`/`get_page_text`/
+`read_page` all work fine against the same live page, which is how the above was pulled. Leaving
+`STATUS: OPEN` -- this is stronger re-confirmation than before, not the screenshot the thread actually
+asked for. Whoever gets a working screenshot tool in this environment (or the founder, glancing at the
+running app) should be the one to close this out.

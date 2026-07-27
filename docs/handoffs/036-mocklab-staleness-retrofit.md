@@ -161,3 +161,22 @@ pane is not displayed, so the page is not compositing frames" (also hit and note
 reply this same session) -- appears to be an environment limitation, not an app problem, since
 `javascript_tool`/`get_page_text`/`read_page` all worked normally against the same live page. Reporting
 this as built and verified by DOM/state inspection in a real browser, **not** as screenshot-verified.
+
+---
+### frontend · 2026-07-27
+
+Re-verified live in a real running browser (own dev-server instance, port 5174) as part of this
+session's separate work on threads 051/049, which touch the same file (`DraftRoom.tsx`) and its
+pick-entry input directly. Confirmed still working after this session's changes: digit-key commit
+(pressed `1` via a real `key` action, a filler player got logged and the pick clock advanced), typed
+free-text entry (used in this session's own auto-fill/seed setup), and the default shortlist itself
+(now BPA-ordered rather than shuffled per thread 051 -- a *change* to this same shortlist, flagged in
+the 051 reply, not a regression of RETROFIT-5's core mechanics). Autofocus-on-attach and the field's
+"never needs the mouse" behaviour are unchanged; this session added an explicit `suggesterOpen` gate on
+top of RETROFIT-5's key handling (thread 051, no auto-open on arrival), which is additive, not a
+replacement of anything built here.
+
+Still no screenshot -- same environment limitation as before (`computer` screenshot action times out,
+"the Browser pane is not displayed"). Leaving `STATUS: OPEN` for the TypeAhead sub-item's evidence gap
+specifically; the rest of this thread (three-state staleness model, configuration-hash stamping,
+per-configuration aggregate, Brier suppression) remains untouched and is not this reply's concern.

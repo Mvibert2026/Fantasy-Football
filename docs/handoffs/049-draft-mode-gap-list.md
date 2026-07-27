@@ -91,3 +91,96 @@ about it yet. Tier grouping headers are also built, not just the dots (contra th
 only real gap" phrasing) -- restricted to a single position tab, not `ALL`, for the reason given in the
 029 reply (`tier_label` is per-position). Row-height was verified unchanged. See `029-frequency-array-
 on-board.md` for full detail, including that it is not yet screenshot-verified.
+
+---
+### frontend · 2026-07-27
+
+Worked items 2 (highest priority) and 3-4-5 (together, as instructed) in full. Made a start on item 1
+(the tab shell) and did not touch items 6-7. All in `frontend/ui/views/DraftRoom.tsx`; commit `a424a0d`
+(bundled with thread 051's suggester fixes, same file, same session).
+
+**Item 2 -- RECOMMENDED panel + WHAT YOU GIVE UP (done).** The center-pane on-clock card now shows:
+name / `positionalLabel` (e.g. `RB1`) / team / bye; projected points plus an **honest range** --
+derived, not fabricated: `board.json`'s `ci_low`/`ci_high` are confirmed (checked directly against the
+export, all 378 rows) to be an interval on **VBD**, not points (`ci_applies_to: "vbd"` always), and
+this codebase already has a comment saying so (`board.ts`). Rather than either mislabeling that
+interval as a points range or dropping the ask, this derives one: `projected_points − vbd` is a real,
+per-row-computable, per-position-constant offset (verified empirically across the whole board --
+RB 130.99-131.00 across 116 players, WR 124.45-124.46 across 148, etc., i.e. constant to floating-point
+noise), so adding it back to both ends of the real VBD interval is an exact unit conversion of two
+already-real fields on the same row, not a second data source. Documented at length in
+`pointsRangeFromVbdInterval`'s doc comment, and flagging it here too: **this is a considered judgment
+call, not an uncontested one** -- if backend/PM would rather this be a real contract field
+(`points_low`/`points_high`) than a frontend-side derivation, say so and I'll swap it. Below the range:
+a plain-language reason (VBD-based, or tier-scarcity-based when the top pick's tier is down to ≤2
+players at that position, or the sparse-projection case when there's no projection at all -- three real
+branches, no synthetic fourth), a `Draft {name}` button and a `Why this rank` button (opens the same
+player-detail sheet the board rows use), and a **`WHAT YOU GIVE UP`** section naming `recommended[1]`
+(the actual next-best-scored alternative, not simply next-highest-VBD -- see the live example below for
+why that distinction matters) with its VBD trade and both players' real live-availability percentage at
+the user's *next* pick after this one (a new `followingUserPick` value, distinct from the existing
+`nextUserPick` which equals the current pick while on the clock). Verified live against the real running
+app, pick 3 on the clock: *"Bijan Robinson RB1 ATL · BYE 11 / 303.2 projected pts / honest range
+266.3 – 353.4 / VBD 172.2 · fills an open starting slot / Best value by VBD — 172 points over
+replacement in your format, and only 4% likely to survive to your pick at 18." / WHAT YOU GIVE UP:
+"Ja'Marr Chase (WR) is the next best. Ja'Marr Chase is 152 over replacement vs Bijan Robinson's 172 —
+you gain 20 points of value today. Bijan Robinson is 4% to still be there at 18 and Ja'Marr Chase is
+0%. That difference, not the point gap, is the reason for the order."* -- this is the exact shape the
+thread's worked example asked for, with real numbers. `RECOMMENDED (unvalidated stopgap score, not a
+backtested model)` and `fills an open starting slot` kept verbatim, per thread 051's explicit note not
+to touch them.
+
+**Items 3-4-5 (done, together as instructed).**
+- **3, roster chips:** `QB 0/1 · RB 0/2 · WR 0/3 · TE 0/1 · FLEX 0/2 · DEF 0/1 · BN 0/6` (exact format
+  from the thread, verified live at that exact string on a fresh draft) -- aggregated from the same
+  `rosterSlots` the roster list already builds, not a second computation, fixed display order
+  (QB/RB/WR/TE/FLEX/DEF/BN) since the underlying `league.json:roster.starters` key order (QB/RB/WR/TE/
+  DEF/FLEX) doesn't match the thread's own example order.
+- **4, MY PICKS full sequence:** now renders every pick in `league.pickSequence`
+  (`league.json:pick_sequence`, a real field, already loaded and previously unused in this file), not
+  just picks already made -- done/current/upcoming styled distinctly, current pick (the next one
+  belonging to the user) highlighted in accent. Verified live: `3 18 23 38 43 58 63 78 83 98 103 118
+  123 138 143 158` -- all 16 of this league's real pick numbers, matching the thread's own worked
+  example for the first 10.
+- **5, Auto-fill to my pick:** built, but **deliberately not** the design prototype's `simToMe`.
+  Flagging this because it reverses something this exact file's own doc comment previously argued
+  against building at all, for a real reason: the prototype's version assigns a **random real board
+  player** to every skipped opponent pick, which is indistinguishable from a real logged pick in
+  "Export draft log" and silently wrong for every availability/scarcity number downstream (an invented
+  player would read as actually taken, when the app has no idea who was really picked). This build
+  instead advances the pick clock and writes each skipped pick with `playerId: null` and a fixed,
+  unmistakably-synthetic name (`(auto-filled — unknown pick)`), `entryMode: null` -- honestly "someone
+  picked, we don't know who," never a fabricated identity. The real tradeoff this leaves: availability/
+  scarcity math through the auto-filled range won't reflect the opponents' actual picks, since none are
+  invented to stand in for them. If the founder specifically wants the prototype's fabricated-identity
+  version instead (accepting that data-integrity cost for a punchier UI), that's a explicit call to
+  make, not one I made unilaterally here. Written as a single `persist()` over the whole batch
+  (Principle #3 -- no intermediate render with only some of the skipped picks present). Verified live:
+  disabled while genuinely on the clock (nothing to skip), enabled and functional otherwise.
+
+**Item 1 -- tab shell (started, not complete).** Added a real `BOARD / OPPONENTS / PREDICTIONS` tab bar
+at the top of Draft mode; Board is exactly the existing three-pane content (unchanged); Opponents and
+Predictions each render an honest, plainly-worded "not wired into Draft mode yet" state. Deliberately
+**not** importing or duplicating the real Opponents/Predictions screens from this file -- both are owned
+by sibling sessions working concurrently in this same checkout this round (Opponents is shipped in Prep
+mode; Predictions may or may not exist yet depending on this round's build order), and importing
+mid-edit files from another active session risks a broken build with no way to coordinate the fix.
+Verified live: switching tabs works, Board's content is intact, the other two states render and switch
+back cleanly. **What's still missing from item 1** and from the thread as a whole: a real `DRAFT LIVE`
+indicator and the richer league selector (item 6), and `not yet` rendering on Predictions specifically
+(item 7) -- neither touched this session. Leaving `STATUS: OPEN` for whoever picks up items 1 (full),
+6, and 7.
+
+**Tests:** `ui/__tests__/draft-room-recommendation.test.tsx`, new, 8 tests -- roster chip format/order,
+full pick-sequence rendering, auto-fill's synthetic-placeholder behavior and its disabled state on-clock,
+the RECOMMENDED card's content + WHAT YOU GIVE UP presence, and the tab shell's default/switch/honest-
+placeholder behavior. All real-data-backed (`loadDatasetFromDisk()`), same rationale as this repo's other
+DraftRoom/board tests: these are properties of the real board/league shape, not a fixture's. `tsc -b
+--noEmit` clean. 24 tests total across both `DraftRoom.tsx`-scoped test files (16 + 8), all passing.
+
+**Screenshot status:** same as thread 051 and as thread 029/036 before it -- the `computer` screenshot
+action times out in this session ("the Browser pane is not displayed, so the page is not compositing
+frames"), an environment limitation, not an app problem (`javascript_tool`/`get_page_text`/`read_page`
+all worked normally against the live app the whole session, which is how every number quoted above was
+actually pulled off the running page). Reporting this as **built and verified live in a real running
+browser, pending screenshot verification** -- not as done, per `docs/operating-model.md`'s evidence bar.
