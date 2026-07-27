@@ -49,11 +49,21 @@ class Situation:
     questions differ, per the registration.
     """
 
-    def __init__(self, store, target_season: int, usage_arm: bool):
+    def __init__(self, store, target_season: int, usage_arm: bool,
+                 exclude_self: bool = False):
+        """exclude_self (V5, registered in the FABLE-EXT2 amendment): remove
+        the player's own contribution from the vacated numerators of HIS OWN
+        features. Self-inclusion arises only in the no-early-appearance case
+        (a departed player's production vacates his OLD franchise while his
+        features read his NEW one), and it encodes 'not playing early in
+        season t' — an availability leak. V3 keeps it (upper-bound
+        reference); V5/V6 exclude it and are the only carry candidates."""
         prior = store.player_seasons(target_season - 1,
                                      for_target=target_season)
         early: Dict[str, str] = store.early_rosters(target_season)
         self._early = early
+        self._exclude_self = exclude_self
+        self._own_vols: Dict[str, Tuple[float, float, float]] = {}
         self._prior_team: Dict[str, str] = {}
         # franchise -> [rec_vol, carries, attempts]; rec_vol = targets (usage
         # arm) or receptions (long arm) — same availability rule as rec_vol.
@@ -77,6 +87,9 @@ class Situation:
                 v[0] += rec
                 v[1] += car
                 v[2] += att
+                if cur is None:
+                    # the only self-inclusion case; remembered for V5
+                    self._own_vols[pid] = (rec, car, att)
             if cur is not None and cur != f_prev:
                 arr[cur].append((pid, rec, car))
         self._tot, self._vac, self._arr = tot, vac, arr
@@ -93,7 +106,10 @@ class Situation:
             # current franchise had no t-1 production (expansion team):
             # shares are 0 by the registered zero-denominator rule.
             return SituationFeatures(changed, 0.0, 0.0, 0.0, 0.0, 0.0)
-        vac = self._vac.get(f_cur, [0.0, 0.0, 0.0])
+        vac = list(self._vac.get(f_cur, (0.0, 0.0, 0.0)))
+        if self._exclude_self and pid in self._own_vols:
+            own = self._own_vols[pid]
+            vac = [max(0.0, v - o) for v, o in zip(vac, own)]
 
         def share(num: float, den: float) -> float:
             return num / den if den > 0 else 0.0

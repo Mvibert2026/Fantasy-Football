@@ -127,6 +127,23 @@ def test_franchise_canonicalisation_across_code_seam():
     assert f7.vac_rec_share == 0.0
 
 
+def test_v5_excludes_own_production_from_own_vacated(scenario):
+    sit = Situation(scenario, 2020, usage_arm=True, exclude_self=True)
+    # P4 (no early appearance) no longer sees his own vacated attempts:
+    f4 = sit.features_for("P4")
+    assert f4.vac_att_share == 0.0  # (500-500)/500
+    assert f4.vac_carry_share == 0.0  # (20-20)/220
+    assert f4.vac_rec_share == pytest.approx(80 / 200)  # P3's targets remain
+    # everyone else's features are untouched by the exclusion
+    f1 = sit.features_for("P1")
+    assert f1.vac_att_share == pytest.approx(1.0)
+    assert f1.vac_rec_share == pytest.approx(80 / 200)
+    # and a DEPARTED player never self-included in the first place
+    f3 = sit.features_for("P3")
+    f3_v3 = Situation(scenario, 2020, usage_arm=True).features_for("P3")
+    assert f3 == f3_v3
+
+
 def test_unknown_player_gets_zero_features(scenario):
     sit = Situation(scenario, 2020, usage_arm=True)
     fz = sit.features_for("NOBODY")

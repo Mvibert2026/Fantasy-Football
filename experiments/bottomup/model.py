@@ -302,7 +302,8 @@ def _component_value(ps: PlayerSeason, comp: str, usage_arm: bool) -> float:
 
 def fit(store: SeasonStore, train_pair_seasons: List[int], usage_arm: bool,
         target_season: int, qb_td_cap: float = W_CAP_TD,
-        vacated: bool = False, qb_direct: bool = False) -> FittedModel:
+        vacated: bool = False, qb_direct: bool = False,
+        vac_exclude_self: bool = False) -> FittedModel:
     """train_pair_seasons: seasons s such that (features s-1 -> outcome s) is a
     training pair. All must be < target_season (asserted via data layer).
     vacated: V3 situation features. qb_direct: V4 QB season-points ridge."""
@@ -317,7 +318,8 @@ def fit(store: SeasonStore, train_pair_seasons: List[int], usage_arm: bool,
         universe = frozen_universe(store, s)
         outcome = store.player_seasons(s, for_target=target_season)
         positions = {pid: pos for pos, pids in universe.items() for pid in pids}
-        sit = Situation(store, s, usage_arm) if vacated else None
+        sit = (Situation(store, s, usage_arm, exclude_self=vac_exclude_self)
+               if vacated else None)
         rows = build_features(store, s - 1, list(positions), positions,
                               usage_arm, target_season=s, situation=sit)
         for r in rows:
