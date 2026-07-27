@@ -1468,6 +1468,96 @@ No founder statements surfaced this session; all instructions came from the disp
 
 ---
 
+## Strategist session, 2026-07-27 — threads 048 and 045 (ADR-E, ADR-F), 9-way concurrent dispatch
+
+Two specifications, no execution. No database access by design; every number this session needs
+measured is itemised inside each ADR under "Measurements needed from `backend`," specified to be
+runnable without a round trip.
+
+**`docs/adr-drafts/ADR-E-bottom-up-projection-framework.md`** (thread 048, marked RESOLVED). Two-stage
+structure — S1 volume (fitted) → S2 efficiency (**shrinkage only**, `w_player` capped at 0.60 for
+yards/opportunity and 0.20 for TD rate) → S3 the scoring engine. **No per-player TD-rate model exists
+anywhere in the spec**; TD enters through goal-line/red-zone opportunity *share*, a volume measure.
+Bonus expectation integrates a position × volume-tier per-game distribution rather than a per-player
+one — the direct operational form of PR-002's 26-season null.
+
+Three things in it that are corrections rather than restatements, and that a reviewer should check:
+
+1. **The 16–27% bar is not usable as stated.** R² 0.158–0.266 is an *in-sample* fit of a 2-parameter
+   curve over 5 seasons, one of which is sealed. Comparing an embargoed-LOSO R² to it is not a
+   comparison and would be biased in our own favour on window and estimation basis simultaneously. The
+   ADR requires the ADR-016 curve to be **refit under the identical protocol on the common 2021–2024
+   window**, and moves the decision-grade bar to prior-season-points and the positional-mean heuristic
+   (full window). The consensus-rank comparison is descriptive, n=4, **no p-value** — the same floor
+   ADR-B already pre-committed to.
+2. **LOSO needs a one-season embargo either side.** Features for season N are built from N−1 outcomes,
+   which are N−1's *targets*; leaving N−1 in training leaves that channel open. Pre-registered
+   diagnostic: an un-embargoed minus embargoed R² gap above 0.03 is itself a leakage signal.
+3. **"26 seasons" is true only of the box-score tier.** A model's eligible fold set is the intersection
+   of its features' availability windows — a snap-share model gets ~13 folds. No imputation across an
+   availability boundary; that boundary is a regime boundary, not missing-at-random.
+
+Suspicious-R² thresholds are **per quantity, not global** (§8): season points audit at >0.40 / presumed
+bug at >0.50; S2 TD-per-opportunity audit at >0.08; S1 volume audit only at >0.80, because high R² on
+usage is expected and one global threshold would discard our own signal. Seven-step audit order given.
+Holdout: 2025 stays sealed, **no additional retrospective holdout** (it would cost the scarcest thing
+available — modern seasons — to fix a problem better handled by a capped, logged 20-configuration
+budget on LOSO), plus one extra holdout that costs zero training data: **register the 2026 projections
+before Week 1 and score them after.** That has a September calendar dependency. Regime work **extends
+`src/regimes.py`** — the changepoint half is already built and the relevant metrics are already in
+`METRICS`; the additions are `rolling_coefficient_path(...)` and **fold-local** break detection, since
+breaks found over all 27 seasons leak into a test fold's training window. Recency is 9 arms, not fully
+crossed, m=36 declared before the first run, with contamination-excluded arms (drop Wk 17–18) in the
+grid specifically so a win can be attributed correctly.
+
+**`docs/adr-drafts/ADR-F-simulation-lookahead-vona.md`** (thread 045, left `OPEN` — `TO: strategist,
+backend`, and backend's feasibility/latency half is unwritten; not mine to resolve). Confirmatory metric
+is **H3, end of draft**, because roster value is only well-defined there; H1 (survival to next own pick)
+is computed as a separately-labelled cheap diagnostic and must never share a label with H3. Continuation
+policy `pi` is fixed and disclosed, no recursion. **Fixed N calibrated from a pilot variance estimate,
+not sequential stopping** — optional stopping inflates error exactly where the true difference is near
+zero, which is the case being detected. CRN pairing made explicit so a refactor cannot silently break it.
+
+**Widened the sensitivity ask deliberately, and this is the main independent finding.** Thread 045 asked
+for a `lambda` sweep. `lambda` is the **best**-characterised of the three opponent-model parameters —
+it at least has a point estimate and a clustered SE. `sigma` has none (`draft_sim.py`'s own assumption 1
+calls it "THE DOMINANT ASSUMPTION AND IS NOT CALIBRATED") and `delta` is an unvalidated prior. Sweeping
+only the measured parameter while holding the two unmeasured ones fixed would produce a stability result
+that is an artifact of what we chose to vary. The spec is a joint 30-cell grid over (`lambda`, `sigma`,
+`delta`) with CRN across cells, run **offline**; live inference uses the central cell only, which is
+exactly why the adopt threshold is gated on the offline sweep.
+
+Also specified where the relative-framing defence **stops**: cancellation is exact only for model error
+independent of the choice, so cross-positional comparisons are the weak case (full-sweep agreement
+required) and same-position the strong case (central + `sigma`). And `draft_sim` assumption 3 — opponents
+never adapt — is a **directional, non-cancelling** bias that flatters the *wait* branch, i.e. it points
+in the direction that makes lookahead look valuable. CRN, larger N and the parameter sweep all leave it
+untouched. Flagged that **shelve is a realistic and arguably modal outcome**, and pre-committed the words
+it gets reported in, so it cannot later be reframed as a failed sprint. Sequence the sprint so a shelve
+leaves a usable offline tool rather than nothing.
+
+Both ADRs carry pre-committed adopt/shelve rules with numeric thresholds written before any run, BH
+across a declared m, season-level (ADR-E) or draft-level (ADR-F) bootstrap intervals, seeds recorded and
+determinism proven by cross-process re-run, and an explicit refusals section. ADR-F's adopt criterion is
+draft-level on purpose — "which policy wins under our model" is simulable without limit, "which policy
+wins in the real world" is season-level at n=4 where `sign_test` already prints
+`min_achievable_p = 0.125`, and the real-world phrasing is forbidden in every artifact.
+
+Two founder decisions raised: **D-023** (per-position mixed-source board — rigorous default is adopt per
+position and name the source per row) and **D-024** (live latency budget and real pick-clock length —
+rigorous default 2.0 s p95 with a mode line on every card; silent degradation explicitly not on offer as
+a loosening). Numbered from D-023 because the concurrent backend session claimed D-022 the same day for
+the 2025-in-exports holdout question.
+
+`docs/CURRENT-STATE.md` **not touched** — reserved this round for the backend agent on thread 052. It is
+therefore stale with respect to ADR-E/ADR-F and the two new decisions; noted here rather than edited.
+`docs/handoffs/OPEN.md` hand-edited for thread 048's status change only (no Bash access, so
+`tools/handoffs.py sync` could not be run; the counts should be regenerated on the next sync). No tests
+run and no code changed — this session produced specifications only. No founder statements surfaced;
+all instructions came from the dispatching session.
+
+---
+
 ## Data-ops session, 2026-07-27 — thread 046 Tier 1 source inventory
 
 Scope this round: thread 046, Tier 1 only (snap counts, target/carry share/route participation,
@@ -1518,3 +1608,40 @@ Rows quarantined: 0 (no new ingestion run). Sources attempted: none newly pulled
 verification calls against already-cached/live nflreadpy loaders, no source blocked. Tests: none
 added (no new ingestion code); no existing test suite run (out of scope, no code changed under
 `src/`).
+
+---
+
+## Frontend C session, 2026-07-27: Predictions tab built (thread 028)
+
+New Prep-mode screen, `frontend/ui/views/Predictions.tsx`, plus `frontend/ui/App.tsx` and
+`frontend/ui/components/shell/Sidebar.tsx` wiring (new `predictions` nav entry after `opponents`).
+Reuses `computeLiveAvailability` (`ui/data/liveAvailability.ts`) unmodified — BASELINE/LIVE/Δ/dots/
+RANGE columns per `docs/design-handoff/screens/03-draft-predictions.md`. LIVE renders the literal
+text `not yet` (never `0%`) when the roster-need/run signal isn't computed; verified live in a real
+browser at 0 picks logged (every row `not yet`, zero bare `0%` anywhere) and, separately, via an
+automated test with 7/12 synthetic picks seeded to reach the `'thin'`/`'ok'` signal states with real
+numbers. Carries a calibration caveat quoted verbatim from this file's own "Validation status"
+section — the design spec had no such caveat, flagged rather than invented per the thread's
+instruction. `DraftRoom.tsx` deliberately not touched (reserved for a sibling session this round);
+built as a standalone Prep-mode screen instead, matching `DraftRoom.tsx`'s own module doc, which
+already names this as the intended fallback, and Opponents.tsx's precedent.
+
+Added `frontend/ui/__tests__/predictions.test.tsx`, 7 tests (nav reachability + real content, the
+zero-picks null state, thin/ok signal states, the dot array, the calibration caveat, the queue
+toggle). All 7 pass in isolation and `tsc -b --noEmit` is clean. Full-suite runs this session were
+noisy from the 9-way concurrent dispatch (`offline.test.tsx`/`draft-room-typeahead.test.tsx` — files
+untouched by this session — timed out under load in two of three runs, reproduced as passing in
+isolation both times; not a regression from this change).
+
+Screenshot: attempted from a real dev server (port 5176, `.claude/launch.json`'s
+`frontend-predictions-c` entry), confirmed the tab is reachable, renders all 378 real board rows, and
+shows the honest-null treatment via the accessibility tree and full page-text extraction — but actual
+pixel image capture (`computer{action:"screenshot"}`) failed across ~10 retries with "the Browser
+pane is not displayed, so the page is not compositing frames"; `preview_list` showed every dev-server
+tab this round sharing one `Browser` preview surface across the 9 concurrent sessions. Flagged in the
+thread 028 reply rather than claiming a screenshot that doesn't exist. Left `STATUS: OPEN` on thread
+028 — the Draft-mode hub-tab fold-in and a human-verified screenshot both remain.
+
+`docs/CURRENT-STATE.md` intentionally not touched this round (reserved for thread 052 per dispatch
+instructions). Commit `d9492ae` (build) + `52851d6` (thread reply). No founder statements surfaced
+this session.
