@@ -2361,3 +2361,45 @@ a thread reply.
   (including a binary zip of unverified provenance) into a commit without being asked is exactly
   the kind of scope creep this closeout should avoid. Tests pass with it present on disk regardless
   of git-tracking status. Flagging for the founder/backend to decide whether it should be committed.
+
+## Librarian session, 2026-07-27 (Workstream A of a 4-way parallel round) -- CLAUDE.md/agent-file fix
+
+Closed the gap the sprint-closeout self-audit (above) named directly: CLAUDE.md's "standing law,"
+read first by every agent, never mentioned the ID allocator at all. Fixed narrowly, per this
+session's scoped task (not the larger W7 rewrite -- Sections 1-12 untouched):
+
+- CLAUDE.md's "## Agent operating rules" -> "Inter-agent communication" section now has a 4-line
+  pointer: thread IDs/ADR numbers come only from tools/handoffs.py new/sync/adr next, never
+  hand-typed or computed by directory+1, citing the 043/049/053/ADR-048 collisions and pointing at
+  docs/handoffs/README.md for the full protocol. Impossible to miss on a first read -- it now sits
+  right where the (previously incomplete) inter-agent-communication instructions already were.
+- All six .claude/agents/*.md files (backend, frontend, data-ops, strategist, researcher,
+  librarian) extended, not duplicated, to cover: (1) worktree isolation -- a pull/merge conflict or
+  doc contradiction is escalated to PM/founder, never resolved unilaterally; (2) allocator use, with
+  the ADR-048/threads-043-049-053 regression case cited where not already present (backend already
+  had the ADR half of this from an earlier session; added the thread-ID half plus the other five
+  files from scratch); (3) escalate-don't-resolve generalized to ambiguous scope and any decision
+  touching CLAUDE.md; (4) acceptance evidence -- pointer to operating-model.md's evidence table,
+  screenshot-over-passing-tests for UI, and the thread 051/063 story (16 passing tests + live DOM
+  verification still missed the "after a pick is committed" scenario because it was never
+  enumerated) as the concrete lesson for founder-observable-behavior claims generally.
+- backend.md only, two additional non-negotiables per this session's task: the "a source swap is
+  not a substitution" rule (citing src/ingest_rankings.py's DynastyProcess/nflreadpy mirror vs. the
+  assumed-format-aware FantasyPros live API, thread 053/067) and the no-new-direct-sqlite3.connect()
+  rule with the actual allowlist read out of tests/test_holdout_audit.py
+  (db.py, ingest_fantasypros_csv.py, ingest_mfl_adp.py, ingest_mock_drafts.py,
+  ingest_play_callers.py, ingest_rankings.py, ingest_reference.py, ingest_weekly_stats.py).
+- strategist.md only: added the calibration-prior discipline (price situation narratives at half
+  their intuitive weight before registering a hypothesis) per docs/reviews/FABLE-EXT3-2026-07-27.md's
+  "four of five registered prediction sets across sessions 3-4 were materially wrong" finding.
+
+Not touched, out of scope for this task: the larger W7 rewrite of CLAUDE.md Sections 2/3/8 (still
+describes a phantom Builder/Verifier/Statistician/Red-team agent tier and a stale build order -- see
+docs/reviews/fable-workflow-2026-07-27.md work order W7, still open, still librarian-owned as a
+separate ~1-session task). Thread 062 (backlog reconciliation, mine) is a different scope -- Parts
+1/3 of that thread are a separate reconciliation pass, not resolved or touched by this session; no
+reply added there since this session's work doesn't bear on its disposition-per-thread ask.
+
+tools/handoffs.py sync: 71 threads, 45 open. tools/handoffs.py check: mailbox check OK, none
+stale, all addressed; pre-existing non-fatal contradiction warnings unchanged by this session (none
+concern CLAUDE.md or the agent files). Docs-only change; no test suite run (no code touched).

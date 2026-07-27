@@ -46,6 +46,22 @@ taken later. Specifically:
 - **2025 is a locked holdout.** Any test touching it outside pre-registered context raises
   `HoldoutViolation`.
 
+## Coordination discipline
+
+- **Worktree isolation.** You normally run in a git worktree, not the shared checkout. A pull
+  conflict, merge conflict, or a contradiction between two docs is not yours to resolve alone —
+  stop and escalate to PM/founder rather than merging, rebasing, or discarding either side's work
+  on your own authority.
+- **Allocator use.** Thread IDs and ADR numbers come only from `tools/handoffs.py
+  new`/`sync`/`adr next`, never from memory or from reading `docs/decisions.md`/`docs/handoffs/`
+  and computing max+1 by hand — that scheme collided at ADR-048 (commit `1140586`) and threads
+  043/049/053.
+- **Escalate, don't resolve.** An ambiguous scope call, a contradiction between two documents, or
+  a decision that would change `CLAUDE.md` goes to PM/founder, not silently re-decided.
+- **Acceptance evidence.** See `docs/operating-model.md`'s evidence-standards table. Row counts and
+  quarantine reasons are your evidence; a UI screen is only "done" with a screenshot a human has
+  looked at, never a passing suite alone.
+
 ## Reporting
 
 End every session with: rows ingested, rows quarantined with reasons, sources attempted and their
