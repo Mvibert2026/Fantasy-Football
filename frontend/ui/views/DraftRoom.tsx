@@ -5,6 +5,7 @@ import {
   isSlotOnClock,
   loadDraftState,
   nextPickForSlot,
+  pickNumbersForSlot,
   pruneQueue,
   roundOfPick,
   saveDraftState,
@@ -23,7 +24,7 @@ import { depletionWarning, positionScarcity } from '../data/scarcity';
 import { useWatchlist } from '../data/useWatchlist';
 import { PlayerDetail } from '../components/PlayerDetail';
 import { Value } from '../components/Value';
-import { decimal, integer, percent, signed } from '../lib/format';
+import { decimal, integer, interval as intervalText, percent, signed } from '../lib/format';
 
 /** §3.2's pane-width formula, using the spec's own defaults since this build has
  *  no host props editor (see the module doc). Returns a grid-template-columns
@@ -38,17 +39,48 @@ function paneColumns(boardPct = 35, centerPct = 40): string {
 
 const SCARCITY_POSITIONS = ['QB', 'RB', 'WR', 'TE'] as const;
 
-/** Fisher-Yates, used only for the pick-entry shortlist's display order
- *  (RETROFIT-5) -- never for anything that feeds a ranking or a score. */
-function shuffled<T>(arr: T[]): T[] {
-  const copy = arr.slice();
-  for (let i = copy.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    const tmp = copy[i]!;
-    copy[i] = copy[j]!;
-    copy[j] = tmp;
+/** Thread 049 item 5: a placeholder pick used by "Auto-fill to my pick" (see
+ *  autoFillToMyPick below) for opponent turns the user hasn't logged. Never a
+ *  real name -- unlike the design mockup's `simToMe`, this build does not
+ *  assign a real board player to a fabricated pick, because doing so would
+ *  falsely mark that player unavailable for every availability/scarcity
+ *  computation downstream and would be indistinguishable from a real logged
+ *  pick in "Export draft log". playerId stays null (so takenPlayerIds never
+ *  counts it) and this exact string is the only thing that marks it synthetic. */
+const AUTO_FILL_PLACEHOLDER = '(auto-filled — unknown pick)';
+
+/**
+ * Thread 049 item 2: the RECOMMENDED card's "honest range" on *points*, not
+ * VBD -- a deliberate, documented derivation, not a second data source.
+ *
+ * board.json's own `interval` field is explicitly an interval on VBD
+ * (`ci_applies_to: "vbd"` on every one of the 378 real rows -- confirmed
+ * directly against the export, not assumed), and this file's board.ts sibling
+ * carries a comment warning specifically against treating it as a points
+ * interval. That warning is respected here, not overridden: this function
+ * does not relabel the VBD interval as a points interval. It converts it.
+ *
+ * VBD is defined as projected points minus a fixed per-position replacement
+ * baseline (verified empirically across the full board: `projected_points -
+ * vbd` is constant per position to within floating-point noise, e.g. RB
+ * 130.99-131.00 across 116 players, WR 124.45-124.46 across 148). That
+ * baseline is therefore a real, row-derivable constant -- not fabricated --
+ * so adding it back to both ends of the real VBD interval is an exact,
+ * traceable unit conversion (an affine shift), the same kind of arithmetic
+ * `signed()`/`decimal()` already apply to real fields elsewhere in this app.
+ * Every input (interval.low, interval.high, projectedPoints, vbd) is a named
+ * board.json field on the same row.
+ *
+ * This is a considered call, not an uncontested one -- flagged explicitly in
+ * the thread 049 reply for backend/PM to override if a real points-scale
+ * interval should exist as its own contract field instead.
+ */
+function pointsRangeFromVbdInterval(row: BoardRow): { low: number; high: number } | null {
+  if (row.interval.kind !== 'present' || row.projectedPoints.kind !== 'present' || row.vbd.kind !== 'present') {
+    return null;
   }
-  return copy;
+  const offset = row.projectedPoints.value - row.vbd.value;
+  return { low: row.interval.value.low + offset, high: row.interval.value.high + offset };
 }
 
 /**
@@ -67,11 +99,17 @@ function shuffled<T>(arr: T[]): T[] {
  * Explicit departures, each because the prototype's or spec's version needs data
  * or a live simulator this build does not have:
  *
- *   - "Auto-fill to my pick" (prototype's simToMe, line 2083) is NOT built. It
- *     would inject random opponent picks into exactly the log this session's
- *     export feature exists to keep real (item 2's whole point is picks usable as
- *     real mock-draft data) -- fabricating picks to fill screen space would work
- *     directly against that.
+ *   - "Auto-fill to my pick" (thread 049 item 5) is built, but deliberately NOT
+ *     as the prototype's simToMe (line 2083). simToMe assigns a random real
+ *     board player to every skipped opponent pick -- indistinguishable from a
+ *     real logged pick in "Export draft log" and silently wrong for every
+ *     availability/scarcity number downstream (a fabricated player would read
+ *     as actually taken). This build advances the pick clock instead, writing
+ *     each skipped pick with playerId: null and the fixed AUTO_FILL_PLACEHOLDER
+ *     name -- honestly "someone picked, we don't know who," never a fabricated
+ *     identity. See autoFillToMyPick and the thread 049 reply for the tradeoff
+ *     this leaves (availability/scarcity through the skipped range won't reflect
+ *     the opponents' real picks, since none are invented to stand in for them).
  *   - Availability everywhere in this file (row badges, watchlist, per-pick
  *     strip in the player sheet) is the real two-number model, ui/data/
  *     liveAvailability.ts -- baseline and live shown together, never one
@@ -179,10 +217,37 @@ export function DraftRoom({
   const [detailRow, setDetailRow] = useState<BoardRow | null>(null);
   const [expandedRowId, setExpandedRowId] = useState<number | null>(null);
   const [railTab, setRailTab] = useState<'queue' | 'watch'>('watch');
+  // Thread 049 item 1: the Board/Opponents/Predictions tab shell. Board is
+  // this file's existing three-pane content, unchanged. Opponents and
+  // Predictions are real, working screens elsewhere in this app (Opponents is
+  // shipped in Prep mode; Predictions may or may not exist yet depending on
+  // build order this round) -- this shell does not import or duplicate them,
+  // since doing so from DraftRoom.tsx would take a dependency on files owned
+  // by other sessions working concurrently in this same tree. It states
+  // plainly that they are not wired into Draft mode yet, which is true today,
+  // rather than fabricating placeholder content or risking a broken import.
+  const [hubTab, setHubTab] = useState<'board' | 'opponents' | 'predictions'>('board');
+  // Thread 051 items 1-2: the pick-entry suggester (candidate dropdown) is
+  // shown/hidden independently of whether candidates exist. Defaults closed --
+  // "not on arrival" -- and opens only on a real focus, `/`, typing, or a
+  // click back into the field; never merely because the component mounted.
+  const [suggesterOpen, setSuggesterOpen] = useState(false);
   // Typed `| null` explicitly (rather than the bare `useRef<HTMLInputElement>(null)`
   // form) so this is a mutable ref -- the callback below writes `.current`
   // itself instead of handing that job to React's own `ref={searchRef}` wiring.
   const searchRef = useRef<HTMLInputElement | null>(null);
+  // The wrapper around both the search box and the dropdown -- click-outside
+  // detection (thread 051 item 1) treats anything inside this ref as "inside",
+  // so clicking a candidate row to commit it never mis-fires as a dismiss.
+  const suggesterWrapperRef = useRef<HTMLDivElement | null>(null);
+  // Set immediately before the ref-callback's own programmatic focus() call
+  // below, and consumed by the input's onFocus handler -- distinguishes "this
+  // node was just (re)attached and autofocus fired" from a genuine focus event
+  // (a click, or focus regained after a commit), so only the latter opens the
+  // suggester. Without this, remounting the input (switching leagues, tabbing
+  // away and back) would reopen the popover exactly the way arrival did before
+  // this fix, since both go through the same synchronous focus() call.
+  const suppressNextFocusOpen = useRef(false);
   // RETROFIT-5 / ML-02: autofocus re-asserted whenever the input node
   // (re)attaches, not a one-shot guard -- a guard that fires once silently
   // stops re-focusing after any remount (switching leagues, switching the top
@@ -198,6 +263,7 @@ export function DraftRoom({
     // automated browser tab (rAF callbacks are throttled or never fire while
     // a tab isn't the active one) -- direct focus() has no such dependency.
     if (el) {
+      suppressNextFocusOpen.current = true;
       try {
         el.focus();
       } catch {
@@ -211,6 +277,38 @@ export function DraftRoom({
     setDetailRow(row);
     onOpenPlayer?.(row.name.kind === 'present' ? row.name.value : null);
   }
+
+  // Thread 051 item 1: dismiss the suggester on a click anywhere outside the
+  // search box + dropdown. Subscribed only while open, so this costs nothing
+  // the rest of the time.
+  useEffect(() => {
+    if (!suggesterOpen) return;
+    function onDocMouseDown(e: MouseEvent) {
+      if (suggesterWrapperRef.current && !suggesterWrapperRef.current.contains(e.target as Node)) {
+        setSuggesterOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', onDocMouseDown);
+    return () => document.removeEventListener('mousedown', onDocMouseDown);
+  }, [suggesterOpen]);
+
+  // Thread 051 item 2: `/` focuses and opens the suggester from anywhere on
+  // the page, matching the field's own "/" affordance -- but not while the
+  // user is already typing into some other input/textarea/contenteditable,
+  // where `/` should just be a literal character.
+  useEffect(() => {
+    function onGlobalKeyDown(e: globalThis.KeyboardEvent) {
+      if (e.key !== '/') return;
+      const target = e.target as HTMLElement | null;
+      const tag = target?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || target?.isContentEditable) return;
+      e.preventDefault();
+      setSuggesterOpen(true);
+      searchRef.current?.focus();
+    }
+    document.addEventListener('keydown', onGlobalKeyDown);
+    return () => document.removeEventListener('keydown', onGlobalKeyDown);
+  }, []);
 
   // Reload from storage when the league changes underneath this component
   // (switching leagues in the top bar) rather than carrying stale picks over.
@@ -307,6 +405,39 @@ export function DraftRoom({
     persist({ leagueId, mockId: draft.mockId, picks: [], queue: draft.queue });
   }
 
+  /**
+   * Thread 049 item 5: advance past every pick between now and the user's next
+   * turn in one action. See AUTO_FILL_PLACEHOLDER's doc comment for why this
+   * deliberately does NOT assign real player identities to the skipped picks
+   * the way the design mockup's `simToMe` does -- each filler pick is written
+   * with playerId: null and a fixed placeholder name, so it never counts as a
+   * real taken player and is never mistakable for a real logged pick.
+   *
+   * Written as a single persist() call over the whole batch, per Principle #3
+   * -- there is no intermediate render where only some of the skipped picks
+   * exist, which would show a briefly-wrong pick clock and roster state.
+   */
+  function autoFillToMyPick() {
+    if (draftComplete || userOnClock || nextUserPick === null) return;
+    const start = currentOverallPick(draft.picks);
+    if (start >= nextUserPick) return;
+    const now = new Date().toISOString();
+    const fillers: DraftPickRecord[] = [];
+    for (let n = start; n < nextUserPick; n++) {
+      fillers.push({
+        overallPick: n,
+        round: roundOfPick(n, teams),
+        teamSlot: teamSlotAtPick(n, teams),
+        playerId: null,
+        playerName: AUTO_FILL_PLACEHOLDER,
+        timestamp: now,
+        entryMode: null,
+      });
+    }
+    if (fillers.length === 0) return;
+    persist({ ...draft, picks: [...draft.picks, ...fillers] });
+  }
+
   function toggleQueue(id: number) {
     const has = draft.queue.includes(id);
     persist({ ...draft, queue: has ? draft.queue.filter((q) => q !== id) : [...draft.queue, id] });
@@ -325,14 +456,16 @@ export function DraftRoom({
    * real board rank (`overallRank`, board.json's own field -- never a fabricated
    * "probability this player goes next," which this codebase has no model for;
    * see the entry_mode doc comment in ui/data/draft.ts for why that departure
-   * from the Mock Lab reference is deliberate). Shuffled so a digit no longer
-   * encodes our confidence -- "press 1 for our top pick" is exactly the reflex
-   * the design note asks to break.
+   * from the Mock Lab reference is deliberate).
    *
-   * Re-shuffles only when the underlying top-5 *set* changes (keyed on the ids,
-   * joined into a stable string) or the pick advances -- not on every render,
-   * or the candidates would reorder under the user's cursor while they're
-   * still deciding.
+   * Board-rank order, top of list first -- NOT shuffled (thread 051 item 3,
+   * reversing this build's own earlier choice). Randomising the shortlist is a
+   * real, deliberate mitigation for calibration contamination, but this screen
+   * does not collect calibration data; the Draft room is a user racing a pick
+   * clock to log a real draft, and forcing them to read all five names every
+   * pick to defeat a bias that isn't being measured here is pure friction. The
+   * rule going forward: randomise where calibration data is collected (Mock
+   * Lab, gated separately by ADR-D/thread 034), order by BPA everywhere else.
    */
   const defaultCandidateIds = useMemo(() => {
     return available
@@ -342,13 +475,10 @@ export function DraftRoom({
       .slice(0, 5)
       .map((x) => x.row.id);
   }, [available]);
-  const defaultCandidates = useMemo(() => {
-    const byId = defaultCandidateIds.map((id) => rowsById.get(id)).filter((r): r is BoardRow => !!r);
-    return shuffled(byId);
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- reshuffle key is
-    // the id SET (defaultCandidateIds.join) plus the pick clock, deliberately
-    // narrower than every dep ESLint would ask for.
-  }, [defaultCandidateIds.join(','), currentPick, rowsById]);
+  const defaultCandidates = useMemo(
+    () => defaultCandidateIds.map((id) => rowsById.get(id)).filter((r): r is BoardRow => !!r),
+    [defaultCandidateIds, rowsById],
+  );
 
   const candidates = query.trim() ? searchResults : defaultCandidates;
 
@@ -389,9 +519,13 @@ export function DraftRoom({
         recordPick(null, query.trim(), queryEntryMode);
       }
     } else if (e.key === 'Escape') {
+      // Thread 051 item 1: Escape both clears the field (pre-existing) and
+      // dismisses the suggester (was previously advertised in the help row but
+      // not actually wired to close anything -- confirmed missing this session).
       setQuery('');
       setSelected(0);
       setQueryEntryMode('typed');
+      setSuggesterOpen(false);
     } else if (e.key === 'Backspace' && !query) {
       // RETROFIT-5: Backspace on an empty field undoes the last pick -- the
       // field itself has nothing left to delete, so the key is free to mean
@@ -403,6 +537,11 @@ export function DraftRoom({
   }
 
   const userPicks = useMemo(() => draft.picks.filter((p) => p.teamSlot === userSlot), [draft.picks, userSlot]);
+  // Thread 049 item 4: MY PICKS shows the full planned sequence
+  // (league.json:pick_sequence, real, not derived), current pick highlighted --
+  // not just the picks already made, which is all the app showed before.
+  const fullPickSequence = league.pickSequence.kind === 'present' ? league.pickSequence.value : [];
+  const userPicksByOverall = useMemo(() => new Map(userPicks.map((p) => [p.overallPick, p])), [userPicks]);
   const rosterSlots = useMemo(
     () => buildRosterSlots(userPicks, league, data, rowsById),
     [userPicks, league, data, rowsById],
@@ -412,10 +551,124 @@ export function DraftRoom({
     [rosterSlots],
   );
 
+  // Thread 049 item 3: roster slot chips (`QB 0/1 · RB 0/2 · ...`) -- filled/
+  // total per slot type, aggregated from the same real rosterSlots this file
+  // already builds for the MY ROSTER list, not a second source of truth.
+  // Fixed display order (QB/RB/WR/TE/FLEX/DEF, then BN) rather than
+  // league.json:roster.starters' own key order, which is a presentation
+  // choice, not a data one -- the counts themselves are exactly rosterSlots'.
+  const ROSTER_CHIP_ORDER = ['QB', 'RB', 'WR', 'TE', 'FLEX', 'DEF'];
+  const rosterChips = useMemo(() => {
+    const counts = new Map<string, { filled: number; total: number }>();
+    for (const s of rosterSlots) {
+      const key = s.kind === 'bench' ? 'BN' : s.kind === 'flex' ? 'FLEX' : (s.position ?? 'BN');
+      const c = counts.get(key) ?? { filled: 0, total: 0 };
+      c.total += 1;
+      if (s.row) c.filled += 1;
+      counts.set(key, c);
+    }
+    const order = [...ROSTER_CHIP_ORDER, 'BN'];
+    return order.filter((k) => counts.has(k)).map((k) => ({ label: k, ...counts.get(k)! }));
+  }, [rosterSlots]);
+
+  // The overall pick number strictly after the current one where this user's
+  // slot is next on the clock -- distinct from `nextUserPick` above, which
+  // equals `currentPick` itself while the user is on the clock right now.
+  // Needed for "WHAT YOU GIVE UP" (thread 049 item 2): the survival
+  // probability that matters for a pick being made *right now* is at the
+  // user's *following* turn, not this one.
+  const followingUserPick = useMemo(
+    () => (teams > 0 ? (pickNumbersForSlot(teams, userSlot, rounds).find((p) => p > currentPick) ?? null) : null),
+    [teams, userSlot, rounds, currentPick],
+  );
+
   const recommended = useMemo(() => {
     if (!userOnClock) return [];
     return rankByRecommendation(available, currentRound, unfilledPositions).slice(0, 6);
   }, [userOnClock, available, currentRound, unfilledPositions]);
+
+  /**
+   * Thread 049 item 2: the RECOMMENDED card's reason and "WHAT YOU GIVE UP"
+   * text, plus the honest points range. All of it built from fields already on
+   * BoardRow -- nothing here is a second data source.
+   *
+   * Survival percentages use `followingUserPick` (the user's turn AFTER this
+   * one), not `nextUserPick` (which equals the current pick while on the
+   * clock) -- "will this player survive to my NEXT turn" is the actual
+   * question the give-up trade is answering. Null when no such pick remains
+   * (last user pick of the draft) or when live availability isn't computed
+   * yet for one/both players -- rendered as an honest gap, never a guess.
+   */
+  const recommendationDetail = useMemo(() => {
+    if (!userOnClock || recommended.length === 0) return null;
+    const top = recommended[0]!;
+    const alt = recommended[1] ?? null;
+
+    const availAt = (row: BoardRow) =>
+      followingUserPick !== null
+        ? computeLiveAvailability({ data, league, row, targetPick: followingUserPick, picks: draft.picks, rowsById })
+        : null;
+    const pctOf = (a: LiveAvailabilityResult | null) =>
+      a ? (a.live ?? (a.baseline.kind === 'present' ? a.baseline.value : null)) : null;
+
+    const topAvail = availAt(top.row);
+    const topPct = pctOf(topAvail);
+
+    const survivalFragment = (pct: number | null) =>
+      pct !== null && followingUserPick !== null ? `, and only ${percent(pct)} likely to survive to your pick at ${followingUserPick}.` : '.';
+
+    let reason: string;
+    if (top.row.projectedPoints.kind !== 'present') {
+      reason = `Best available on our board at rank ${top.row.overallRank.kind === 'present' ? integer(top.row.overallRank.value) : '—'}. ${top.row.projectedPoints.reason}`;
+    } else {
+      const topTier = top.row.tierLabel;
+      const tierLeft =
+        topTier.kind === 'present'
+          ? available.filter((r) => r.raw.position === top.row.raw.position && r.tierLabel.kind === 'present' && r.tierLabel.value === topTier.value)
+              .length
+          : null;
+      if (tierLeft !== null && tierLeft <= 2 && top.row.raw.tier <= 2) {
+        reason = `Only ${tierLeft} tier-${top.row.raw.tier} ${top.row.raw.position} left on the board${survivalFragment(topPct)}`;
+      } else {
+        reason = `Best value by VBD — ${integer(top.row.vbd.kind === 'present' ? top.row.vbd.value : 0)} points over replacement in your format${survivalFragment(topPct)}`;
+      }
+    }
+
+    const pointsRange = pointsRangeFromVbdInterval(top.row);
+
+    let giveUp: string | null = null;
+    if (alt) {
+      const altAvail = availAt(alt.row);
+      const altPct = pctOf(altAvail);
+      const altName = alt.row.name.kind === 'present' ? alt.row.name.value : 'The next option';
+      const topName = top.row.name.kind === 'present' ? top.row.name.value : 'This player';
+
+      let valueClause: string;
+      if (alt.row.vbd.kind === 'present' && top.row.vbd.kind === 'present') {
+        const dv = Math.round(alt.row.vbd.value - top.row.vbd.value);
+        valueClause = `${altName} is ${integer(alt.row.vbd.value)} over replacement vs ${topName}'s ${integer(top.row.vbd.value)} — you ${
+          dv > 0 ? `give up ${dv}` : `gain ${Math.abs(dv)}`
+        } points of value today.`;
+      } else if (alt.row.vbd.kind === 'present') {
+        valueClause = `${altName} has a VBD value and ${topName} does not, so the two are not directly comparable on points.`;
+      } else {
+        valueClause = `Neither has a VBD value yet, so the comparison is board rank only.`;
+      }
+
+      let survivalClause: string;
+      if (followingUserPick === null) {
+        survivalClause = ' No further pick of yours remains this draft to compare survival odds against.';
+      } else if (topPct !== null && altPct !== null) {
+        survivalClause = ` ${topName} is ${percent(topPct)} to still be there at ${followingUserPick} and ${altName} is ${percent(altPct)}. That difference, not the point gap, is the reason for the order.`;
+      } else {
+        survivalClause = ' Survival odds at your next pick are not yet computed for one or both players (see the availability cell on their rows for why).';
+      }
+
+      giveUp = `${altName} (${alt.row.raw.position}) is the next best. ${valueClause}${survivalClause}`;
+    }
+
+    return { top, alt, reason, pointsRange, giveUp };
+  }, [userOnClock, recommended, followingUserPick, data, league, draft.picks, rowsById, available]);
 
   const watchRows = useMemo(() => {
     if (userOnClock || nextUserPick === null) return [];
@@ -467,7 +720,61 @@ export function DraftRoom({
     );
   }
 
+  const HUB_TABS: Array<{ key: typeof hubTab; label: string }> = [
+    { key: 'board', label: 'BOARD' },
+    { key: 'opponents', label: 'OPPONENTS' },
+    { key: 'predictions', label: 'PREDICTIONS' },
+  ];
+
   return (
+    <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+      <div
+        style={{
+          flex: 'none',
+          display: 'flex',
+          gap: 4,
+          padding: '6px 14px 0',
+          background: 'var(--panel2)',
+          borderBottom: '1px solid var(--line)',
+        }}
+      >
+        {HUB_TABS.map((t) => (
+          <button
+            key={t.key}
+            aria-pressed={hubTab === t.key}
+            onClick={() => setHubTab(t.key)}
+            style={{
+              padding: '6px 14px',
+              background: 'transparent',
+              border: 0,
+              borderBottom: `2px solid ${hubTab === t.key ? 'var(--acc)' : 'transparent'}`,
+              color: hubTab === t.key ? 'var(--txt)' : 'var(--dim2)',
+              fontFamily: 'var(--font-num)',
+              fontSize: 11,
+              letterSpacing: '.08em',
+              fontWeight: 600,
+            }}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      {hubTab === 'opponents' ? (
+        <div style={{ padding: 20 }}>
+          <div className="empty">
+            <strong>Opponents is not wired into Draft mode yet.</strong> It ships as its own screen
+            in Prep mode today (rosters.json/opponents.json-backed) -- this tab is a placeholder
+            for folding that in, not a duplicate build of it.
+          </div>
+        </div>
+      ) : hubTab === 'predictions' ? (
+        <div style={{ padding: 20 }}>
+          <div className="empty">
+            <strong>Predictions is not wired into Draft mode yet.</strong>
+          </div>
+        </div>
+      ) : (
     <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
       <div
         style={{
@@ -480,7 +787,7 @@ export function DraftRoom({
           background: 'var(--panel2)',
         }}
       >
-        <div style={{ position: 'relative', flex: 1, maxWidth: 540 }}>
+        <div ref={suggesterWrapperRef} style={{ position: 'relative', flex: 1, maxWidth: 540 }}>
           <div
             style={{
               display: 'flex',
@@ -496,6 +803,19 @@ export function DraftRoom({
             <input
               ref={setSearchInputRef}
               value={query}
+              onFocus={() => {
+                // Thread 051 item 2: open on a real focus -- but not the
+                // programmatic autofocus the ref callback just fired on
+                // (re)attach, which setSearchInputRef flagged immediately
+                // before calling .focus(). That flag is consumed here, once,
+                // so every subsequent genuine focus (click, tab back in,
+                // refocus after a commit) opens the suggester normally.
+                if (suppressNextFocusOpen.current) {
+                  suppressNextFocusOpen.current = false;
+                  return;
+                }
+                setSuggesterOpen(true);
+              }}
               onChange={(e) => {
                 // RETROFIT-5 entry_mode: a native 'insertFromPaste' input event
                 // means this change's content arrived via paste, not keystrokes.
@@ -505,6 +825,9 @@ export function DraftRoom({
                 setQueryEntryMode(inputType === 'insertFromPaste' ? 'pasted' : 'typed');
                 setQuery(e.target.value);
                 setSelected(0);
+                // Thread 051 item 2: typing opens the suggester independently
+                // of focus (covers the case where onFocus was suppressed above).
+                setSuggesterOpen(true);
               }}
               onKeyDown={onSearchKeyDown}
               placeholder={
@@ -516,8 +839,9 @@ export function DraftRoom({
               style={{ flex: 1, height: 36, background: 'transparent', border: 0, outline: 'none', fontSize: 14 }}
             />
           </div>
-          {!draftComplete && candidates.length > 0 ? (
+          {!draftComplete && suggesterOpen && candidates.length > 0 ? (
             <div
+              data-testid="suggester-dropdown"
               style={{
                 position: 'absolute',
                 top: 40,
@@ -530,7 +854,7 @@ export function DraftRoom({
             >
               {!query.trim() ? (
                 <div style={{ padding: '5px 10px', fontFamily: 'var(--font-num)', fontSize: 9.5, letterSpacing: '.08em', color: 'var(--dim2)' }}>
-                  TOP 5 BY BOARD RANK, STILL AVAILABLE — ORDER RANDOMISED
+                  TOP 5 BY BOARD RANK, STILL AVAILABLE
                 </div>
               ) : null}
               {candidates.map((r, i) => (
@@ -601,6 +925,20 @@ export function DraftRoom({
 
         <div style={{ flex: 1 }} />
 
+        <button
+          onClick={autoFillToMyPick}
+          disabled={draftComplete || userOnClock || nextUserPick === null}
+          title="Fills opponent picks between now and your next turn with an honest placeholder (not a real player) so you can catch up quickly."
+          style={{
+            padding: '5px 10px',
+            background: 'transparent',
+            border: '1px solid var(--line2)',
+            color: draftComplete || userOnClock || nextUserPick === null ? 'var(--dim2)' : 'var(--dim)',
+            fontSize: 11,
+          }}
+        >
+          Auto-fill to my pick
+        </button>
         <button
           onClick={() => downloadJson(`draft-log-${draft.mockId}.json`, toDraftLog(draft))}
           disabled={draft.picks.length === 0}
@@ -845,51 +1183,130 @@ export function DraftRoom({
               <div style={{ marginTop: 12, fontFamily: 'var(--font-num)', fontSize: 10, letterSpacing: '.12em', color: 'var(--dim2)' }}>
                 RECOMMENDED (unvalidated stopgap score, not a backtested model)
               </div>
-              <div style={{ marginTop: 8, display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {recommended.map(({ row, score }, i) => (
-                  <div
-                    key={row.id}
-                    style={{
-                      padding: '10px 12px',
-                      border: i === 0 ? '1px solid var(--acc)' : '1px solid var(--line)',
-                      background: 'var(--panel2)',
-                    }}
-                  >
+              {recommendationDetail ? (
+                <div style={{ marginTop: 8, border: '1px solid var(--acc)', background: 'var(--panel2)' }}>
+                  <div style={{ padding: 14 }}>
                     <div style={{ display: 'flex', alignItems: 'baseline', gap: 9 }}>
-                      <span onClick={() => openDetail(row)} style={{ fontWeight: 600, fontSize: i === 0 ? 20 : 15, cursor: 'pointer' }}>
-                        {row.name.kind === 'present' ? row.name.value : ''}
+                      <span
+                        onClick={() => openDetail(recommendationDetail.top.row)}
+                        style={{ fontWeight: 700, fontSize: 22, cursor: 'pointer' }}
+                      >
+                        {recommendationDetail.top.row.name.kind === 'present' ? recommendationDetail.top.row.name.value : ''}
                       </span>
-                      <span style={{ fontSize: 12, letterSpacing: '.045em', color: POSITION_COLOR[row.raw.position] }}>
-                        {row.raw.position}
+                      <span style={{ fontFamily: 'var(--font-num)', fontSize: 13, fontWeight: 600, color: POSITION_COLOR[recommendationDetail.top.row.raw.position] }}>
+                        {recommendationDetail.top.row.positionalLabel.kind === 'present'
+                          ? recommendationDetail.top.row.positionalLabel.value
+                          : recommendationDetail.top.row.raw.position}
                       </span>
-                      <span style={{ fontSize: 11, letterSpacing: '.045em', color: 'var(--dim2)' }}>
-                        {row.raw.team} · BYE{' '}
+                      <span style={{ fontFamily: 'var(--font-num)', fontSize: 11, color: 'var(--dim2)' }}>
+                        {recommendationDetail.top.row.raw.team} · BYE{' '}
                         <span className="num">
-                          <Value cell={row.byeWeek} render={integer} />
+                          <Value cell={recommendationDetail.top.row.byeWeek} render={integer} />
                         </span>
                       </span>
-                      <span style={{ flex: 1 }} />
-                      <span style={{ fontFamily: 'var(--font-num)', fontSize: 11, color: 'var(--dim2)' }}>
-                        score {decimal(score)}
-                      </span>
+                    </div>
+                    {recommendationDetail.top.row.projectedPoints.kind === 'present' ? (
+                      <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginTop: 8 }}>
+                        <span className="num" style={{ fontSize: 20, fontWeight: 600 }}>
+                          {decimal(recommendationDetail.top.row.projectedPoints.value)}
+                        </span>
+                        <span style={{ fontSize: 11, color: 'var(--dim)' }}>projected pts</span>
+                        <span className="num" style={{ fontSize: 11, color: 'var(--dim2)' }}>
+                          {recommendationDetail.pointsRange
+                            ? `honest range ${intervalText(recommendationDetail.pointsRange.low, recommendationDetail.pointsRange.high)}`
+                            : 'range not available for this player'}
+                        </span>
+                      </div>
+                    ) : (
+                      <p className="notice" style={{ marginTop: 8, fontSize: 12 }}>
+                        {recommendationDetail.top.row.projectedPoints.reason}
+                      </p>
+                    )}
+                    <div style={{ marginTop: 4, fontFamily: 'var(--font-num)', fontSize: 11, color: 'var(--dim2)' }}>
+                      VBD <Value cell={recommendationDetail.top.row.vbd} render={decimal} />
+                      {unfilledPositions.has(recommendationDetail.top.row.raw.position) ? ' · fills an open starting slot' : ''}
+                    </div>
+                    <div style={{ marginTop: 10, fontSize: 13, lineHeight: 1.5, color: 'var(--txt)' }}>
+                      {recommendationDetail.reason}
+                    </div>
+                    <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
                       <button
-                        onClick={() => recordPick(row.id, row.name.kind === 'present' ? row.name.value : '', 'shortcut')}
-                        style={{ padding: '4px 10px', background: 'var(--acc)', border: 0, color: '#08120c', fontWeight: 700, fontSize: 12 }}
+                        onClick={() =>
+                          recordPick(
+                            recommendationDetail.top.row.id,
+                            recommendationDetail.top.row.name.kind === 'present' ? recommendationDetail.top.row.name.value : '',
+                            'shortcut',
+                          )
+                        }
+                        style={{ padding: '6px 14px', background: 'var(--acc)', border: 0, color: '#08120c', fontWeight: 700, fontSize: 12 }}
                       >
-                        Draft
+                        Draft {recommendationDetail.top.row.name.kind === 'present' ? recommendationDetail.top.row.name.value : ''}
+                      </button>
+                      <button
+                        onClick={() => openDetail(recommendationDetail.top.row)}
+                        style={{ padding: '6px 12px', background: 'transparent', border: '1px solid var(--line2)', color: 'var(--txt)', fontSize: 12 }}
+                      >
+                        Why this rank
                       </button>
                     </div>
-                    <div style={{ marginTop: 6, fontSize: 12, color: 'var(--dim)' }}>
-                      <Value cell={row.projectedPoints} render={decimal} /> proj pts · VBD{' '}
-                      <Value cell={row.vbd} render={decimal} />
-                      {unfilledPositions.has(row.raw.position) ? ' · fills an open starting slot' : ''}
-                    </div>
                   </div>
-                ))}
-                {recommended.length === 0 ? (
-                  <div style={{ fontSize: 12.5, color: 'var(--dim2)' }}>Nothing left with a projection to score.</div>
-                ) : null}
-              </div>
+                  {recommendationDetail.giveUp ? (
+                    <div style={{ borderTop: '1px solid var(--line)', padding: '11px 14px', background: 'var(--bg)' }}>
+                      <div style={{ fontFamily: 'var(--font-num)', fontSize: 10, letterSpacing: '.12em', color: 'var(--dim2)' }}>
+                        WHAT YOU GIVE UP
+                      </div>
+                      <div style={{ marginTop: 6, fontSize: 12.5, lineHeight: 1.5, color: 'var(--dim)' }}>
+                        {recommendationDetail.giveUp}
+                      </div>
+                    </div>
+                  ) : null}
+                </div>
+              ) : (
+                <div style={{ marginTop: 8, fontSize: 12.5, color: 'var(--dim2)' }}>Nothing left with a projection to score.</div>
+              )}
+
+              {recommended.length > 1 ? (
+                <>
+                  <div style={{ marginTop: 16, fontFamily: 'var(--font-num)', fontSize: 10, letterSpacing: '.12em', color: 'var(--dim2)' }}>
+                    ALTERNATIVES
+                  </div>
+                  <div style={{ marginTop: 8, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    {recommended.slice(1).map(({ row, score }) => (
+                      <div key={row.id} style={{ padding: '10px 12px', border: '1px solid var(--line)', background: 'var(--panel2)' }}>
+                        <div style={{ display: 'flex', alignItems: 'baseline', gap: 9 }}>
+                          <span onClick={() => openDetail(row)} style={{ fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>
+                            {row.name.kind === 'present' ? row.name.value : ''}
+                          </span>
+                          <span style={{ fontSize: 12, letterSpacing: '.045em', color: POSITION_COLOR[row.raw.position] }}>
+                            {row.raw.position}
+                          </span>
+                          <span style={{ fontSize: 11, letterSpacing: '.045em', color: 'var(--dim2)' }}>
+                            {row.raw.team} · BYE{' '}
+                            <span className="num">
+                              <Value cell={row.byeWeek} render={integer} />
+                            </span>
+                          </span>
+                          <span style={{ flex: 1 }} />
+                          <span style={{ fontFamily: 'var(--font-num)', fontSize: 11, color: 'var(--dim2)' }}>
+                            score {decimal(score)}
+                          </span>
+                          <button
+                            onClick={() => recordPick(row.id, row.name.kind === 'present' ? row.name.value : '', 'shortcut')}
+                            style={{ padding: '4px 10px', background: 'var(--acc)', border: 0, color: '#08120c', fontWeight: 700, fontSize: 12 }}
+                          >
+                            Draft
+                          </button>
+                        </div>
+                        <div style={{ marginTop: 6, fontSize: 12, color: 'var(--dim)' }}>
+                          <Value cell={row.projectedPoints} render={decimal} /> proj pts · VBD{' '}
+                          <Value cell={row.vbd} render={decimal} />
+                          {unfilledPositions.has(row.raw.position) ? ' · fills an open starting slot' : ''}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              ) : null}
             </div>
           ) : (
             <div style={{ padding: 14 }}>
@@ -1002,6 +1419,27 @@ export function DraftRoom({
                 {userPicks.length} / {rosterSlots.length}
               </span>
             </div>
+            {/* Thread 049 item 3: fill state at a glance -- QB 0/1 · RB 0/2 · ...
+                -- aggregated from the same rosterSlots the list below already
+                builds, not a second computation. */}
+            <div
+              style={{
+                marginTop: 6,
+                fontFamily: 'var(--font-num)',
+                fontSize: 10.5,
+                color: 'var(--dim)',
+                display: 'flex',
+                flexWrap: 'wrap',
+                gap: '2px 6px',
+              }}
+            >
+              {rosterChips.map((c, i) => (
+                <span key={c.label}>
+                  {c.label} {c.filled}/{c.total}
+                  {i < rosterChips.length - 1 ? <span style={{ color: 'var(--dim2)' }}> ·</span> : null}
+                </span>
+              ))}
+            </div>
             <div style={{ marginTop: 8, display: 'flex', flexDirection: 'column', gap: 2 }}>
               {rosterSlots.map((s, i) => (
                 <div
@@ -1038,21 +1476,36 @@ export function DraftRoom({
             </div>
           </div>
 
-          <div style={{ padding: '10px 12px', borderBottom: '1px solid var(--line)' }}>
+          <div data-testid="my-picks" style={{ padding: '10px 12px', borderBottom: '1px solid var(--line)' }}>
             <div style={{ fontFamily: 'var(--font-num)', fontSize: 10, letterSpacing: '.12em', color: 'var(--dim2)' }}>
               MY PICKS
             </div>
             <div style={{ marginTop: 8, display: 'flex', flexWrap: 'wrap', gap: 4 }}>
-              {userPicks.map((p) => (
-                <span
-                  key={p.overallPick}
-                  title={p.playerName}
-                  style={{ fontFamily: 'var(--font-num)', fontSize: 11, padding: '3px 7px', border: '1px solid var(--line2)', background: 'var(--panel2)' }}
-                >
-                  {p.overallPick}
-                </span>
-              ))}
-              {userPicks.length === 0 ? <span style={{ fontSize: 12, color: 'var(--dim2)' }}>None yet.</span> : null}
+              {fullPickSequence.map((n) => {
+                const made = userPicksByOverall.get(n);
+                const isDone = n < currentPick;
+                const isCurrent = n === nextUserPick;
+                return (
+                  <span
+                    key={n}
+                    title={made ? made.playerName : isCurrent ? 'Your next pick' : undefined}
+                    style={{
+                      fontFamily: 'var(--font-num)',
+                      fontSize: 11,
+                      padding: '3px 7px',
+                      border: `1px solid ${isCurrent ? 'var(--acc)' : 'var(--line2)'}`,
+                      background: isCurrent ? 'var(--panel2)' : 'transparent',
+                      color: isDone ? 'var(--dim2)' : isCurrent ? 'var(--acc)' : 'var(--txt)',
+                      fontWeight: isCurrent ? 700 : 400,
+                    }}
+                  >
+                    {n}
+                  </span>
+                );
+              })}
+              {fullPickSequence.length === 0 ? (
+                <span style={{ fontSize: 12, color: 'var(--dim2)' }}>No pick sequence in league.json.</span>
+              ) : null}
             </div>
           </div>
 
@@ -1104,6 +1557,8 @@ export function DraftRoom({
           </div>
         </div>
       </div>
+    </div>
+      )}
 
       {detailRow ? (
         <PlayerDetail

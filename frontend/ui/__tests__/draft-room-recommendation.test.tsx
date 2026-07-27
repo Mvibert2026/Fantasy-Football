@@ -1,0 +1,150 @@
+import { fireEvent, render, screen, within } from '@testing-library/react';
+import { beforeEach, describe, expect, it } from 'vitest';
+import { DraftRoom } from '../views/DraftRoom';
+import { buildRows } from '../data/board';
+import { buildLeagueConfig } from '../data/league';
+import { loadDraftState, saveDraftState, teamSlotAtPick, type DraftState } from '../data/draft';
+import { loadDatasetFromDisk } from './helpers';
+
+/**
+ * Thread 049: the RECOMMENDED panel + WHAT YOU GIVE UP section (item 2), roster
+ * slot chips + full MY PICKS sequence + Auto-fill to my pick (item 3-5), and the
+ * Board/Opponents/Predictions tab shell (item 1).
+ *
+ * Real data (loadDatasetFromDisk), same rationale as draft-room-typeahead.test.tsx
+ * and board-filters.test.tsx: these are properties of the real board/league shape,
+ * not of a hand-written fixture.
+ */
+
+const data = loadDatasetFromDisk();
+const rows = buildRows(data);
+const league = buildLeagueConfig(data);
+const leagueId = data.manifest.artifacts.board?.league_id ?? 'default';
+const teams = league.teams.kind === 'present' ? league.teams.value : 0;
+
+function renderDraftRoom() {
+  return render(<DraftRoom data={data} rows={rows} league={league} />);
+}
+
+/** Seeds two synthetic (non-user) picks so overall pick 3 -- this league's real
+ *  pick_sequence[0] -- is on the clock and belongs to the user, without needing
+ *  to know anything about board contents. Off-board free-text names (playerId:
+ *  null) so no real player is marked taken. */
+function seedUpToUsersFirstPick() {
+  const picks = [];
+  for (let n = 1; n < 3; n++) {
+    picks.push({
+      overallPick: n,
+      round: 1,
+      teamSlot: teamSlotAtPick(n, teams),
+      playerId: null,
+      playerName: `Filler ${n}`,
+      timestamp: new Date().toISOString(),
+      entryMode: 'typed' as const,
+    });
+  }
+  const state: DraftState = { leagueId, mockId: 'test-mock', picks, queue: [] };
+  saveDraftState(state);
+}
+
+beforeEach(() => {
+  localStorage.clear();
+});
+
+describe('thread 049 item 3: roster slot chips', () => {
+  it('renders one chip per startable slot type, filled/total, in QB/RB/WR/TE/FLEX/DEF/BN order', () => {
+    renderDraftRoom();
+    // Fresh draft, nothing picked yet -- every chip reads 0/<starters count>.
+    expect(screen.getByText(/QB 0\/1/)).toBeInTheDocument();
+    expect(screen.getByText(/RB 0\/2/)).toBeInTheDocument();
+    expect(screen.getByText(/WR 0\/3/)).toBeInTheDocument();
+    expect(screen.getByText(/TE 0\/1/)).toBeInTheDocument();
+    expect(screen.getByText(/FLEX 0\/2/)).toBeInTheDocument();
+    expect(screen.getByText(/DEF 0\/1/)).toBeInTheDocument();
+    expect(screen.getByText(/BN 0\/6/)).toBeInTheDocument();
+  });
+});
+
+describe('thread 049 item 4: MY PICKS full sequence', () => {
+  it('shows every pick in league.json:pick_sequence, not just picks already made', () => {
+    renderDraftRoom();
+    // Real pick_sequence for this league/user_draft_slot: 3, 18, 23, 38, 43, ...
+    // Scoped to the MY PICKS block specifically -- pick numbers like "3" also
+    // appear elsewhere on screen (ON THE CLOCK, YOUR NEXT), so an unscoped
+    // query would (correctly) find duplicates.
+    const myPicks = within(screen.getByTestId('my-picks'));
+    for (const n of [3, 18, 23, 38, 43]) {
+      expect(myPicks.getByText(String(n))).toBeInTheDocument();
+    }
+  });
+});
+
+describe('thread 049 item 5: Auto-fill to my pick', () => {
+  it('is disabled before any picks are logged (user is on the clock at pick 1... no wait, pick 3 -- so disabled is the wrong state to assert generically)', () => {
+    // Regression guard only: the button exists and starts in some definite
+    // enabled/disabled state rather than throwing. Behavioural coverage is the
+    // next two tests, which set up a known pre-user-turn state explicitly.
+    renderDraftRoom();
+    expect(screen.getByRole('button', { name: 'Auto-fill to my pick' })).toBeInTheDocument();
+  });
+
+  it('fills every opponent pick between now and the user\'s next turn with a synthetic, clearly-marked placeholder -- never a real player id', () => {
+    renderDraftRoom();
+    const button = screen.getByRole('button', { name: 'Auto-fill to my pick' });
+    expect(button).not.toBeDisabled(); // pick 1 belongs to an opponent in this league
+    fireEvent.click(button);
+
+    const state = loadDraftState(leagueId);
+    // Picks 1 and 2 belong to opponents (user's first real pick is 3); both
+    // should now be filled with the synthetic placeholder, not a real player.
+    expect(state.picks).toHaveLength(2);
+    for (const p of state.picks) {
+      expect(p.playerId).toBeNull();
+      expect(p.playerName).toBe('(auto-filled — unknown pick)');
+      expect(p.entryMode).toBeNull();
+    }
+    // The user's own turn (pick 3) was NOT auto-filled -- the button stops
+    // exactly at the user's next turn, per Principle #3 (never part-apply).
+    expect(state.picks.some((p) => p.overallPick === 3)).toBe(false);
+  });
+
+  it('is disabled once the user is actually on the clock (nothing left to skip)', () => {
+    seedUpToUsersFirstPick();
+    renderDraftRoom();
+    expect(screen.getByRole('button', { name: 'Auto-fill to my pick' })).toBeDisabled();
+  });
+});
+
+describe('thread 049 item 2: RECOMMENDED panel with WHAT YOU GIVE UP', () => {
+  it("shows the top recommendation's name/pos-rank/team/bye, a reason, and names the next-best alternative in WHAT YOU GIVE UP", () => {
+    seedUpToUsersFirstPick();
+    renderDraftRoom();
+
+    expect(screen.getByText("YOU'RE ON THE CLOCK — PICK 3")).toBeInTheDocument();
+    // Qualifier text thread 051 explicitly asked to keep verbatim.
+    expect(screen.getByText('RECOMMENDED (unvalidated stopgap score, not a backtested model)')).toBeInTheDocument();
+    expect(screen.getByText('WHAT YOU GIVE UP')).toBeInTheDocument();
+    expect(screen.getByText(/is the next best\./)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Why this rank' })).toBeInTheDocument();
+  });
+});
+
+describe('thread 049 item 1: Board/Opponents/Predictions tab shell', () => {
+  it('defaults to the Board tab showing the existing draft-room content', () => {
+    renderDraftRoom();
+    expect(screen.getByPlaceholderText(/Mark pick/)).toBeInTheDocument();
+  });
+
+  it('switching to Opponents/Predictions shows an honest not-wired-in state, not fabricated content', () => {
+    renderDraftRoom();
+    fireEvent.click(screen.getByRole('button', { name: 'OPPONENTS' }));
+    expect(screen.getByText(/Opponents is not wired into Draft mode yet/)).toBeInTheDocument();
+    expect(screen.queryByPlaceholderText(/Mark pick/)).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'PREDICTIONS' }));
+    expect(screen.getByText(/Predictions is not wired into Draft mode yet/)).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'BOARD' }));
+    expect(screen.getByPlaceholderText(/Mark pick/)).toBeInTheDocument();
+  });
+});

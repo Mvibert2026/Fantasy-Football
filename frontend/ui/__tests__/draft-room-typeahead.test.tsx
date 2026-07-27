@@ -48,30 +48,82 @@ beforeEach(() => {
 });
 
 describe('RETROFIT-5: DraftRoom pick-entry TypeAhead', () => {
-  it('shows the top 5 available-by-board-rank players as the default (no-query) shortlist', () => {
+  it('does not show the suggester automatically on mount, even though candidates exist and the field autofocuses (thread 051 item 2)', () => {
     renderDraftRoom();
-    // Scoped to the 5 candidate rows specifically -- the full board pane behind
-    // the dropdown also renders these same names, so an unscoped getByText
-    // would (correctly) find duplicates and is not the right tool here.
-    const shown = new Set(
-      [1, 2, 3, 4, 5].map((i) => screen.getByTestId(`candidate-row-${i}`).textContent),
-    );
-    for (const row of topFiveByRank()) {
+    expect(screen.queryByTestId('suggester-dropdown')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('candidate-row-1')).not.toBeInTheDocument();
+  });
+
+  it('opens the suggester on a real focus of the pick-entry field', () => {
+    renderDraftRoom();
+    const input = screen.getByPlaceholderText(/Mark pick 1/) as HTMLInputElement;
+    expect(screen.queryByTestId('suggester-dropdown')).not.toBeInTheDocument();
+    fireEvent.focus(input);
+    expect(screen.getByTestId('suggester-dropdown')).toBeInTheDocument();
+  });
+
+  it('opens the suggester when the user types, independent of focus', async () => {
+    renderDraftRoom();
+    const input = screen.getByPlaceholderText(/Mark pick 1/) as HTMLInputElement;
+    expect(screen.queryByTestId('suggester-dropdown')).not.toBeInTheDocument();
+    await userEvent.type(input, 'a');
+    expect(screen.getByTestId('suggester-dropdown')).toBeInTheDocument();
+  });
+
+  it('dismisses the suggester on Escape', () => {
+    renderDraftRoom();
+    const input = screen.getByPlaceholderText(/Mark pick 1/) as HTMLInputElement;
+    fireEvent.focus(input);
+    expect(screen.getByTestId('suggester-dropdown')).toBeInTheDocument();
+    fireEvent.keyDown(input, { key: 'Escape' });
+    expect(screen.queryByTestId('suggester-dropdown')).not.toBeInTheDocument();
+  });
+
+  it('dismisses the suggester on a click outside it', () => {
+    renderDraftRoom();
+    const input = screen.getByPlaceholderText(/Mark pick 1/) as HTMLInputElement;
+    fireEvent.focus(input);
+    expect(screen.getByTestId('suggester-dropdown')).toBeInTheDocument();
+    fireEvent.mouseDown(document.body);
+    expect(screen.queryByTestId('suggester-dropdown')).not.toBeInTheDocument();
+  });
+
+  it('does not dismiss on a click inside the dropdown (e.g. hovering a candidate row)', () => {
+    renderDraftRoom();
+    const input = screen.getByPlaceholderText(/Mark pick 1/) as HTMLInputElement;
+    fireEvent.focus(input);
+    fireEvent.mouseDown(screen.getByTestId('candidate-row-1'));
+    expect(screen.getByTestId('suggester-dropdown')).toBeInTheDocument();
+  });
+
+  it('shows the top 5 available-by-board-rank players as the default (no-query) shortlist, in real board-rank order -- not randomised (thread 051 item 3)', () => {
+    renderDraftRoom();
+    fireEvent.focus(screen.getByPlaceholderText(/Mark pick 1/));
+    const shownOrder = [1, 2, 3, 4, 5].map((i) => screen.getByTestId(`candidate-row-${i}`).textContent);
+    const expected = topFiveByRank();
+    expect(expected).toHaveLength(5);
+    shownOrder.forEach((text, i) => {
+      const row = expected[i]!;
       expect(row.name.kind).toBe('present');
-      if (row.name.kind === 'present') {
-        const hit = [...shown].some((text) => text?.includes(row.name.kind === 'present' ? row.name.value : ''));
-        expect(hit).toBe(true);
-      }
-    }
+      if (row.name.kind === 'present') expect(text).toContain(row.name.value);
+    });
     // Exactly 5 numbered rows, not some other count.
     expect(screen.getByTestId('candidate-row-1')).toBeInTheDocument();
     expect(screen.getByTestId('candidate-row-5')).toBeInTheDocument();
     expect(screen.queryByTestId('candidate-row-6')).not.toBeInTheDocument();
   });
 
+  it('the default shortlist header no longer claims the order is randomised (thread 051 item 3)', () => {
+    renderDraftRoom();
+    fireEvent.focus(screen.getByPlaceholderText(/Mark pick 1/));
+    expect(screen.getByText('TOP 5 BY BOARD RANK, STILL AVAILABLE')).toBeInTheDocument();
+    expect(screen.queryByText(/ORDER RANDOMISED/)).not.toBeInTheDocument();
+  });
+
   it('digit "1" commits whichever candidate is displayed in row 1, auto-advances, clears the field, and logs entry_mode "shortcut"', () => {
     renderDraftRoom();
     const input = screen.getByPlaceholderText(/Mark pick 1/) as HTMLInputElement;
+    fireEvent.focus(input);
     const row1Name = screen.getByTestId('candidate-row-1').querySelector('span[style*="font-weight: 600"]')?.textContent;
     expect(row1Name).toBeTruthy();
 
@@ -156,21 +208,19 @@ describe('RETROFIT-5: DraftRoom pick-entry TypeAhead', () => {
     expect(loadDraftState(leagueId).picks).toHaveLength(0);
   });
 
-  it('candidate order is actually randomised, not just capable of being -- rank order is not the only order seen across independent mounts', () => {
+  it('candidate order is deterministic real board-rank order across independent mounts -- NOT randomised (thread 051 item 3, reversing this build\'s own earlier choice)', () => {
     const orders = new Set<string>();
-    for (let attempt = 0; attempt < 20; attempt++) {
+    for (let attempt = 0; attempt < 8; attempt++) {
       localStorage.clear();
       const { unmount } = renderDraftRoom();
+      fireEvent.focus(screen.getByPlaceholderText(/Mark pick 1/));
       const order = [1, 2, 3, 4, 5].map((i) => screen.getByTestId(`candidate-row-${i}`).textContent).join('|');
       orders.add(order);
       unmount();
     }
-    // Rank order is one specific permutation out of 5! = 120; if the code
-    // shuffled, 20 independent mounts landing on the exact same permutation
-    // every time has probability on the order of (1/120)^19 -- not a
-    // meaningfully flaky assertion. If this ever fails, the shuffle is gone,
-    // not unlucky.
-    expect(orders.size).toBeGreaterThan(1);
+    // Every independent mount must land on the exact same order -- if this
+    // ever fails, a shuffle crept back in.
+    expect(orders.size).toBe(1);
   });
 
   it('a pick logged before RETROFIT-5 (no entryMode in storage) round-trips as an explicit null, never a guessed mode', () => {
