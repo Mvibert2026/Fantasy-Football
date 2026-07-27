@@ -54,51 +54,41 @@ def test_export_dir_for_other_league_is_prefixed():
     assert d == ec.EXPORT_DIR / "some_other_league"
 
 
+@pytest.fixture(scope="class")
+def _yahoo_mock_board():
+    import db as dbmod
+
+    conn = dbmod.connect()
+    try:
+        yield ec.build_board_json(conn, _yahoo_mock())
+    finally:
+        conn.close()
+
+
 @pytest.mark.requires_db
 class TestBoardJsonGeneralizes:
-    def test_board_json_league_id_field(self):
-        import db as dbmod
+    """Thread 022: these 4 tests all assert on the SAME build_board_json(...,
+    _yahoo_mock()) output (a ~2000-bootstrap board build, ~7-10s). Building it
+    once per class instead of once per test is a pure speedup -- same board,
+    same assertions, same coverage -- not a scope change."""
 
-        conn = dbmod.connect()
-        try:
-            board = ec.build_board_json(conn, _yahoo_mock())
-        finally:
-            conn.close()
-        assert board["league_id"] == "test_yahoo_mock"
+    def test_board_json_league_id_field(self, _yahoo_mock_board):
+        assert _yahoo_mock_board["league_id"] == "test_yahoo_mock"
 
-    def test_board_json_excludes_k_and_def_from_replacement_levels(self):
-        import db as dbmod
-
-        conn = dbmod.connect()
-        try:
-            board = ec.build_board_json(conn, _yahoo_mock())
-        finally:
-            conn.close()
+    def test_board_json_excludes_k_and_def_from_replacement_levels(self, _yahoo_mock_board):
+        board = _yahoo_mock_board
         assert "K" not in board["replacement_levels_used"]
         assert "DEF" not in board["replacement_levels_used"]
         assert set(board["unsupported_positions"]) == {"K", "DEF"}
         assert board["def_supported"] is False
 
-    def test_board_json_flex_split_flagged_unmeasured(self):
-        import db as dbmod
-
-        conn = dbmod.connect()
-        try:
-            board = ec.build_board_json(conn, _yahoo_mock())
-        finally:
-            conn.close()
+    def test_board_json_flex_split_flagged_unmeasured(self, _yahoo_mock_board):
+        board = _yahoo_mock_board
         assert board["replacement_levels_flex_split_measured"] is False
         assert board["replacement_levels_flex_split_note"] is not None
 
-    def test_board_json_is_strict_json(self):
-        import db as dbmod
-
-        conn = dbmod.connect()
-        try:
-            board = ec.build_board_json(conn, _yahoo_mock())
-        finally:
-            conn.close()
-        raw = json.dumps(board, default=str, allow_nan=False)
+    def test_board_json_is_strict_json(self, _yahoo_mock_board):
+        raw = json.dumps(_yahoo_mock_board, default=str, allow_nan=False)
 
         def strict(c):
             raise ValueError(c)

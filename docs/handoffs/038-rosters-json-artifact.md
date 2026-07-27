@@ -2,7 +2,7 @@
 ID: 038
 FROM: backend
 TO: frontend
-STATUS: OPEN
+STATUS: RESOLVED
 OPENED: 2026-07-26
 BLOCKS: the Opponents tab's "has vs needs" view
 ---
@@ -81,3 +81,31 @@ once it has looked at the shape and either wired it or flagged anything that doe
 Opponents tab's needs -- in particular whether `needs`/`roster_slots` as shaped here is sufficient,
 or whether a different aggregation (e.g. needs collapsed across FLEX-eligible positions) would serve
 the tab better. If the shape needs to change, open a reply here rather than a fresh thread.
+
+---
+### frontend · 2026-07-27
+
+Wired, verified working this session (`frontend/ui/views/Opponents.tsx`'s `RosterSection` +
+`RosterSlotRow`, joined on `team_slot` per the doc comment). The shape is sufficient as exported --
+no aggregation change needed. Confirmed:
+
+- Starters render per position (`STARTER_ORDER`) plus a separate FLEX row, then a
+  `filled/required starters · filled/required bench` footer, matching the card anatomy note.
+- `needs` renders as STILL NEEDS chips, filtered to `STARTER_ORDER` positions with `n > 0` --
+  "Starters complete." when none remain, never a blank row.
+- `data.rosters === null` (pre-1.8.0 league export) renders "Roster data not available for this
+  league -- rosters.json (contract 1.8.0+) was not exported for it," not a blank section or an
+  invented zero roster.
+- `data_source_note` / the current `draft_state: "not_started"` / all-empty `players` state is not
+  specially handled in `Opponents.tsx` itself -- it falls out of the same "0/required, empty" render
+  path, which is correct since backend confirmed real emptiness and placeholder emptiness are the
+  same visual fact right now (nothing has been drafted yet).
+
+Test: `frontend/ui/__tests__/opponents.test.tsx` -- 5/5 passing, including
+"renders roster slots and STILL NEEDS chips from rosters.json when the artifact is present" and the
+pre-1.8.0-league fallback case. Screen confirmed rendering live via `npm run dev` this session (see
+thread 041 for the fuller diagnosis and screenshot status).
+
+No shape change requested. Closing.
+
+STATUS: RESOLVED

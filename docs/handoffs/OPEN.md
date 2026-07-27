@@ -4,7 +4,7 @@
 Threads are the source of truth. Change a thread's `STATUS:`, then re-run sync.
 Protocol: [`README.md`](README.md).
 
-**29 open** · 11 resolved
+**30 open** · 12 resolved
 
 ---
 
@@ -19,7 +19,7 @@ not an omission. Start your session at your own heading.
 |---|---|---|---|---|---|
 | [005](005-fantasypros-tier.md) | Fantasypros tier | `pm` | BLOCKED-ON-YOU | 0d | bootstrap CIs, full-board projections |
 
-### `backend` — 15 waiting
+### `backend` — 18 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
@@ -38,8 +38,11 @@ not an omission. Start your session at your own heading.
 | [033](033-assistant-query-architecture.md) | Assistant query architecture | `pm` | OPEN | 0d | the assistant rebuild sprint |
 | [036](036-mocklab-staleness-retrofit.md) | Mocklab staleness retrofit | `pm` | OPEN | 0d | Mock Lab build |
 | [037](037-audit-followups.md) | Audit followups | `pm` | OPEN | 0d | none |
+| [039](039-weekly-finishes-and-season-stats-exports-contract.md) | Weekly finishes and season stats exports contract | `backend` | BLOCKED-ON-YOU | 0d | consistency heat-map, player detail history |
+| [040](040-multi-league-slot-and-undo.md) | Multi league slot and undo | `pm` | OPEN | -1d | Mock Lab build, Settings build |
+| [042](042-strategies-json-stale-at-contract-1-7-0.md) | Strategies json stale at contract 1 7 0 | `frontend` | OPEN | 0d | none |
 
-### `frontend` — 14 waiting
+### `frontend` — 13 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
@@ -54,9 +57,8 @@ not an omission. Start your session at your own heading.
 | [031](031-frontend-spec-audit-and-wiring.md) | Frontend spec audit and wiring | `pm` | OPEN | 0d | 027, 028, Settings build |
 | [035](035-frontend-catchup-runbook.md) | Frontend catchup runbook | `pm` | OPEN | 0d | 003, 027, 028, 029, 030, 031, and every future frontend thread |
 | [036](036-mocklab-staleness-retrofit.md) | Mocklab staleness retrofit | `pm` | OPEN | 0d | Mock Lab build |
-| [036](036-weekly-finishes-and-season-stats-exports-contrac.md) | Weekly finishes and season stats exports contrac | `backend` | OPEN | 0d | consistency heat-map, player detail history |
 | [037](037-audit-followups.md) | Audit followups | `pm` | OPEN | 0d | none |
-| [038](038-rosters-json-artifact.md) | Rosters json artifact | `backend` | OPEN | 0d | the Opponents tab's "has vs needs" view |
+| [040](040-multi-league-slot-and-undo.md) | Multi league slot and undo | `pm` | OPEN | -1d | Mock Lab build, Settings build |
 
 ### `data-ops` — 0 waiting
 
@@ -93,6 +95,14 @@ _Nothing waiting on you._
 
 ---
 
+## Blocked externally — nobody can act
+
+| ID | Subject | Opened |
+|---|---|---|
+| [041](041-frontend-wip-repair.md) | Frontend wip repair | 2026-07-27 |
+
+---
+
 ## Resolved
 
 | ID | Subject | From → To |
@@ -108,4 +118,5 @@ _Nothing waiting on you._
 | [018](018-fantasypros-season-backfill.md) | Fantasypros season backfill | `pm` → `data-ops` |
 | [024](024-injury-ingestion-as-of-date.md) | Injury ingestion as of date | `pm` → `data-ops` |
 | [034](034-shortcut-bias-in-mock-logging.md) | Shortcut bias in mock logging | `pm` → `strategist` |
+| [038](038-rosters-json-artifact.md) | Rosters json artifact | `backend` → `frontend` |
 

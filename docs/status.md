@@ -1032,3 +1032,81 @@ concurrent agent's session).
 
 Both threads set `STATUS: RESOLVED` (018, 024) and synced via `python tools/handoffs.py sync`.
 No founder statements surfaced this session -- `docs/founder-requests.md` untouched.
+
+## 2026-07-27 — frontend: display-repair diagnosis (thread 038/041), Opponents wiring verified, mailbox duplicate-ID fix
+
+**Task:** thread 038 (pm) said "the app does not currently display," cut mid-change at a usage
+stop after the WIP commit `09391e4`. Told explicitly not to assume the contract-version mismatch
+was the cause -- diagnose first.
+
+**Actual diagnosis: no display failure found.** Started `npm run dev` (via `.claude/launch.json`'s
+"prep" config), navigated the running app, read the DOM (`get_page_text`/`read_page`) and console.
+Board renders all 378 players with real data; Opponents renders 9 opponent cards with honest
+partial/not-supplied/empty-roster states; zero console errors; `npm run build` (tsc + vite) clean;
+`npm test` 116/116 green. The WIP commit already contained working code -- `EXPECTED_CONTRACT` was
+already bumped to `1.8.0` in `frontend/ui/data/contract.ts`, matching `board.json` and five other
+top-level export artifacts, and the Opponents/`rosters.json` wiring (thread 038's ask) was complete
+and tested, not half-wired. What was actually missing was verification: the WIP commit's own message
+said "no screenshot was captured this session," and the PM's "does not display" appears to have been
+a cautious inference from that gap, not an observed failure.
+
+**Could not capture a pixel screenshot this session** -- `computer{action:"screenshot"}` failed
+repeatedly with "the Browser pane is not displayed, so the page is not compositing frames" across a
+fresh tab, a resize, and a restarted preview. This reads as an environment/session limitation (no
+visible pane to composite into in this run), not an app failure -- `get_page_text`/`read_page`/
+`read_console_messages` all executed successfully against the live DOM and returned full, correct
+content. Reported honestly as unverified-by-screenshot rather than claimed done; flagged to the user.
+
+**One real, smaller issue found:** `data/export/strategies.json` is stale at `contract_version:
+1.7.0` while every other artifact is `1.8.0` -- `CONTRACT_VERSION` in `src/export_contract.py` is
+correctly `1.8.0` and `export_strategies.py` uses it correctly; the file on disk just hasn't been
+regenerated since before the bump (last regen at `030742d`, predates it). The app's refresh banner
+correctly and honestly flags this drift already -- that's the "no invented numbers" design working
+as intended, not a bug. Didn't run `export_strategies.py` myself (it guards on
+`DEFAULT_LOCK`/`DEV_SEASONS`, backend's statistical-guardrail territory, not frontend's to invoke).
+Opened thread 042 to backend instead.
+
+**Mailbox hygiene, found while re-running the full backend suite:** `test_mailbox_health` was still
+failing on a **second**, previously-undiscovered duplicate ID -- `038-frontend-wip-repair.md` (this
+thread, untracked) collided with the pre-existing, already-committed `038-rosters-json-artifact.md`
+(backend, thread 016's notification). Renumbered mine to `041` (same fix pattern as the earlier
+036->039 renumbering), replied to and resolved `038-rosters-json-artifact.md` since its ask (verify
+the Opponents wiring against the `rosters.json` shape) was exactly what I'd just confirmed working.
+Also found the *actual* root cause of the still-failing `036` duplicate the prior session had
+flagged but not fixed: the 036->039 rename in an earlier frontend session had copied content to
+`039-weekly-finishes-and-season-stats-exports-contract.md` but never deleted the original
+`036-weekly-finishes-and-season-stats-exports-contrac.md` (note the filename typo -- singular
+"contrac"). Removed the leftover. `tools/handoffs.py check` now passes clean (42 threads, none
+stale, all addressed) and **the backend suite's long-standing 1 pre-existing failure is gone**:
+423 passed, 0 failed (was 422 passed, 1 failed).
+
+**Uncommitted tree, resolved file by file** (all present at session start, cut mid-change by the
+prior session's usage stop):
+- `docs/CURRENT-STATE.md`, `docs/handoffs/022-test-suite-speedup.md`,
+  `docs/handoffs/031-frontend-spec-audit-and-wiring.md`, `tests/test_multi_league_export.py`,
+  staged deletion of `docs/handoffs/031-ADDENDUM-audit-additions.md` -- all legitimate backend-
+  session work. Confirmed the addendum's content was preserved verbatim in the 031 file before
+  letting the deletion ride (diffed the two directly, byte-for-byte match). Re-ran the modified test
+  file (14/14 pass) and the full suite before committing any of it.
+- Untracked `docs/handoffs/039-weekly-finishes-and-season-stats-exports-contract.md` -- already
+  carries a correct, complete frontend reply from a prior session (`BLOCKED-ON-YOU`, unfilled
+  template flagged back to backend). Committed as-is, no further action needed.
+- Untracked `docs/SNAPSHOT-2026-07-27.md` -- a dated, self-labeled "raw, verbatim outputs, no
+  analysis" diagnostic capture, evidently written just ahead of the prior session's usage stop.
+  Read in full; content corroborates (didn't contradict) everything I independently re-verified.
+  Kept and committed as a point-in-time snapshot, same category as `dashboard.html` -- not treated
+  as live/canonical, CURRENT-STATE.md remains the canonical source.
+- Also updated `CURRENT-STATE.md` further myself: test counts (423/0 backend, 116/15 frontend),
+  moved the Opponents tab and league-rosters-export from "not built" to "built and working" now
+  that both are verified live and tested, replaced the stale "full league rosters endpoint" top-open-
+  item with the real remaining gap (`strategies.json` re-export, thread 042).
+
+**Frontend tests:** 116 passed (15 files) -- unchanged from before this session, no regression.
+**Backend tests:** 423 passed, 0 failed (was 422/1) -- net improvement, mailbox duplicate-ID bug
+fixed as a side effect of hygiene cleanup, not the session's main task.
+
+**Screenshot:** attempted repeatedly, blocked by an environment limitation (browser pane not
+compositing in this session), not an app defect. DOM/console/build/test evidence all consistent with
+a correctly rendering app. Told the user this plainly rather than asserting a screenshot exists.
+
+No founder statements surfaced this session -- `docs/founder-requests.md` untouched.

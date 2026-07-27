@@ -10,7 +10,8 @@ session log and contains superseded figures presented in the same voice as curre
 hazard `docs/assistant-context.md` warns about for `decisions.md`. It is fine to read `status.md`
 to learn *what happened*; it is not fine to read it to learn *what is true*.
 
-**Last verified:** 2026-07-26, read directly from the working tree (sprint 1 closeout session).
+**Last verified:** 2026-07-27, read directly from the working tree (frontend session: display-repair
+diagnosis, Opponents wiring verification, mailbox duplicate-ID fix, thread 038/041).
 
 ---
 
@@ -18,15 +19,15 @@ to learn *what happened*; it is not fine to read it to learn *what is true*.
 
 | | Value | Notes |
 |---|---|---|
-| Backend branch / commit | `master` @ `2df3716` | Local only — **no git remote configured** |
-| Backend tests | **422 passing, 1 pre-existing failure** | Measured 2026-07-26 (data-ops session, `-m pytest -q`, ~3.7 min). +15 from this session (`test_ingest_rankings.py`, `test_ingest_reference.py`). The 1 failure (`test_handoffs.py::test_mailbox_health`) predates this session — mailbox threads 031/036 flagged by another concurrent agent's work, not ingestion-related; not fixed here. |
+| Backend branch / commit | `master`, on top of `09391e4` (frontend WIP checkpoint) | Local only — **no git remote configured** |
+| Backend tests | **423 passing, 0 failures** | Re-measured 2026-07-26 (this session, `-m pytest -q`): **107-119s**, down from ~5.7 min — session-scoped caching of the expensive real-data archetype/description computation (thread 022). The prior "1 pre-existing failure" (`test_handoffs.py::test_mailbox_health`, duplicate thread ID 036 across two files) is fixed — thread 041 (frontend session) found a leftover, never-deleted `036-weekly-finishes-and-season-stats-exports-contrac.md` left behind when that thread was renumbered to 039 in an earlier session, and removed it. |
 | Agent infrastructure | **Live** | Six subagents in `.claude/agents/` (backend, frontend, data-ops, strategist, researcher, librarian), `/inbox` command, mailbox tooling at `tools/handoffs.py` + `tools/sprint_status.py`, mailbox health enforced in the test suite (`tests/test_handoffs.py`) |
-| Data contract | **1.7.0** | `assistant-context.md` still says 1.6.0 — fix on next touch |
+| Data contract | **1.8.0** | Bumped from 1.7.0 (thread 016: new `rosters.json` artifact). Frontend's `EXPECTED_CONTRACT` and all top-level export artifacts except `strategies.json` already read 1.8.0 (verified thread 041); `strategies.json` is stale at 1.7.0 pending backend re-running its export (thread 042, open). `assistant-context.md` still says 1.6.0 — fix on next touch |
 | Frontend location | `frontend/` subdirectory of this repo | Merged from `frontend-prep` @ `7276a2d`..`d7cd321` via `git subtree add` (commit `2df3716`), full history preserved. No longer a separate working copy. |
-| Frontend tests | **110 passing** (14 files) | `npm run build` and `npm test` both verified green from `frontend/` after `npm install`; `node_modules` is gitignored and must be reinstalled per checkout |
+| Frontend tests | **116 passing** (15 files) | `npm run build` and `npm test` both verified green from `frontend/` after `npm install` (thread 041, this session); `node_modules` is gitignored and must be reinstalled per checkout |
 | Python modules | 33 in `src/` | |
-| Export artifacts | 7 + `player_descriptions.json` | `player_descriptions.json` versions independently, by design |
-| Config matrix | 24 dirs under `data/export/` | board + league + availability stub only; **hazard model not rerun per config** |
+| Export artifacts | 8 + `player_descriptions.json` | `rosters.json` added (thread 016), wired into the Opponents tab and verified rendering live (thread 038/041). `player_descriptions.json` versions independently, by design |
+| Config matrix | 24 dirs under `data/export/` | board + league + availability stub only; **hazard model not rerun per config**; each config's `write_all` now also emits `rosters.json` (empty-roster state, not yet regenerated for all 24 configs this session) |
 
 ## Statistical constants in force
 
@@ -65,15 +66,20 @@ validation report · archetype assignment and display-only descriptions · multi
 export routing · 24-config board matrix · deterministic narration Facts layer · FantasyPros ECR
 preseason rankings 2021–2025 (`rankings` table, `is_preseason_final` flagged) · historical injury
 reports 2010–2024 with enforced `as_of_date` (`injuries` table, `src/ingest_reference.py`; 2009
-mostly undated at the source and dropped, 2025 has no `date_modified` column upstream yet).
+mostly undated at the source and dropped, 2025 has no `date_modified` column upstream yet) ·
+**Opponents tab** (built this sprint, verified rendering live this session — thread 038/041;
+`rosters.json`/`opponents.json`-backed, honest "not supplied"/"partial"/empty-roster null states,
+5/5 tests passing) · league rosters export (`rosters.json`, mechanical starters/flex/bench/needs
+from real draft picks on file; currently all-empty because the real 2026 draft hasn't started,
+which is the correct state, not a bug).
 
 ## Not built / null-stated
 
-Opponents and Predictions tabs (**absent from the shipped app**, previously misreported as
-"folded into one pane") · Season mode entirely · Settings editor · Mock Lab UI and backend ·
-Compare tray · live "Ask the assistant" wiring · LLM prose renderer (deliberately deferred —
-hallucination risk, reasoning stated in code) · `RB_HANDCUFF` archetype (depth charts end 2024) ·
-full league rosters endpoint · weekly finishes / season stats tables · recompute progress streaming.
+Predictions tab (**absent from the shipped app**) · Season mode entirely · Settings editor ·
+Mock Lab UI and backend · Compare tray · live "Ask the assistant" wiring · LLM prose renderer
+(deliberately deferred — hallucination risk, reasoning stated in code) · `RB_HANDCUFF` archetype
+(depth charts end 2024) · weekly finishes / season stats tables (thread 039, blocked on backend —
+no real spec supplied yet) · recompute progress streaming.
 
 ## Top open items
 
@@ -87,7 +93,8 @@ full league rosters endpoint · weekly finishes / season stats tables · recompu
    Premium $8.99/mo = personal & non-commercial, **Commercial = redistribution rights, price not
    public**. D-000 (no purchase, use the logged-in CSV export) settled *retrieval* and still holds;
    *displaying* ECR to anyone but the founder is unlicensed on every tier below Commercial.
-5. **Full league rosters endpoint** — the Opponents tab cannot render anything real without it.
+5. **`strategies.json` re-export** — stale at contract 1.7.0 while every other export artifact is
+   1.8.0; app's version banner correctly flags this (thread 042, open to backend).
 
 ## Hard dates
 
