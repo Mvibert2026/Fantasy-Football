@@ -1,4 +1,5 @@
 import sqlite3
+import urllib.error
 
 import numpy as np
 import pytest
@@ -83,6 +84,25 @@ def test_repeated_ingest_same_day_replaces_not_duplicates():
     mfl.store_adp(conn, payload, 10, 1, 0, 0, 10, 2026)
     n = conn.execute("SELECT COUNT(*) FROM adp_snapshots").fetchone()[0]
     assert n == 1
+
+
+def test_network_failure_raises_loudly_and_writes_no_row(monkeypatch):
+    """A stubbed network failure must propagate, not be swallowed into a
+    silent empty/zero-row write -- an absent snapshot must stay absent and
+    visibly so, never look like 'no ADP movement today'."""
+    conn = sqlite3.connect(":memory:")
+    conn.execute(mfl._CREATE_SQL)
+
+    def _boom(req, timeout=20):
+        raise urllib.error.URLError("simulated network failure")
+
+    monkeypatch.setattr(mfl.urllib.request, "urlopen", _boom)
+
+    with pytest.raises(urllib.error.URLError):
+        mfl.fetch_adp(max_retries=1)
+
+    n = conn.execute("SELECT COUNT(*) FROM adp_snapshots").fetchone()[0]
+    assert n == 0
 
 
 # ------------------------------------------------ mixture-source loader
