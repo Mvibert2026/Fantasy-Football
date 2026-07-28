@@ -13,17 +13,25 @@ session log and contains superseded figures presented in the same voice as curre
 hazard `docs/assistant-context.md` warns about for `decisions.md`. It is fine to read `status.md`
 to learn *what happened*; it is not fine to read it to learn *what is true*.
 
-**Last verified:** 2026-07-27, sprint-closeout session (main @ `cf5935e`, post-merge with
-`origin/main`) — build-state table below is measured directly from `git rev-parse HEAD`, real
-backend/frontend full-suite runs, `CONTRACT_VERSION` in `src/export_contract.py`, and
-`tools/handoffs.py check`. `CONTRACT_VERSION` is **1.11.0** (ADR-051: `board.json` gained
-top-level `scoring_format`; `board_source`/`consensus_source` now name
-`fantasypros_csv_2026draft`; ADR-050: `board.json` gained `roster_status`, contract 1.10.0).
+**Last verified:** 2026-07-27, overnight PHASE 1/PHASE 2 closeout session (main @ `9d8e09b`, merge
+of `integration-2026-07-27` into `main`, pushed to `origin/main`) — build-state table below is
+measured directly from `git rev-parse HEAD`, real backend/frontend full-suite runs,
+`CONTRACT_VERSION` in `src/export_contract.py`, and `tools/handoffs.py check`. `CONTRACT_VERSION`
+is **1.12.0** (ADR-053: `board.json` gained four unconditional suspension fields —
+`suspension_flag`/`suspension_games`/`projected_points_suspension_adjusted`/
+`suspension_adjustment_note` — real, dated, sourced, currently empty; T4 wired into the live board
+via the shared `write_all` path; ADR-051: top-level `scoring_format`, `board_source`/
+`consensus_source` now name `fantasypros_csv_2026draft`; ADR-050: `roster_status`, contract 1.10.0).
 Primary board and `ethans_expert_league` both rebuilt at 511 players; 2026 rookies confirmed
 present with real ranks (Jeremiyah Love #33, Carnell Tate #70, Jordyn Tyson #84). Half-PPR yardage
 bonuses independently verified to stack against the live Yahoo platform (ADR-052) — see §7 of
-`CLAUDE.md`. Handoff thread 069 (scoring_format display) and the trace-field-registry gate (below)
-are both still open to `frontend`, not touched this session.
+`CLAUDE.md`. Handoff threads 069 (scoring_format display), 073 (suspension fields display), 074
+(T5 freshness result export to `board.json` — computed by `src/freshness.py` on every board build,
+still never attached to the `board.json` dict itself) and the trace-field-registry gate (below) are
+all still open to `frontend`, not touched this session. `main` and `integration-2026-07-27`
+diverged independently this round (2 commits vs. 7) and required a founder-authorized merge rather
+than the fast-forward the standing runbook expects — see `docs/handoffs/076-...md` and this
+session's `docs/status.md` entry for the allocator-race root cause.
 
 ---
 
@@ -31,13 +39,13 @@ are both still open to `frontend`, not touched this session.
 
 | | Value | Notes |
 |---|---|---|
-| Backend branch / commit | `main`, `cf5935ef4bd3d79e8b51b480a207fb4b622f0cf3` | Pushed, in sync with `origin/main` (remote: `github.com/Mvibert2026/Fantasy-Football`) |
-| Backend tests | **607 passing, 0 failures** | Full suite, `pytest tests/ -q`, single run, ~417s, real `data/nfl.db`. |
-| Agent infrastructure | **Live** | Six subagents in `.claude/agents/` (backend, frontend, data-ops, strategist, researcher, librarian), `/inbox` command, mailbox tooling at `tools/handoffs.py` + `tools/sprint_status.py`, mailbox health enforced in the test suite (`tests/test_handoffs.py`) — **72 threads, 46 open, 0 stale** (`tools/handoffs.py check`, 2026-07-27) |
-| Data contract | **1.11.0** | `CONTRACT_VERSION` in `src/export_contract.py`, read directly. `board.json` carries `scoring_format` (ADR-051) and `roster_status` (ADR-050). |
+| Backend branch / commit | `main`, `9d8e09b52ff1a96ce7e2d8dfc8f427f96507ed59` | Pushed, in sync with `origin/main` (remote: `github.com/Mvibert2026/Fantasy-Football`) |
+| Backend tests | **614 passing, 0 failures** | Full suite, `pytest -q`, single run, ~533s, real `data/nfl.db`, run this session post-merge at `9d8e09b`. |
+| Agent infrastructure | **Live** | Six subagents in `.claude/agents/` (backend, frontend, data-ops, strategist, researcher, librarian), `/inbox` command, mailbox tooling at `tools/handoffs.py` + `tools/sprint_status.py`, mailbox health enforced in the test suite (`tests/test_handoffs.py`) — **76 threads, 49 open, 0 stale** (`tools/handoffs.py check`, 2026-07-27, after this session registered threads 075/076 for the two overnight-round defects) |
+| Data contract | **1.12.0** | `CONTRACT_VERSION` in `src/export_contract.py`, read directly. `board.json` carries `scoring_format` (ADR-051), `roster_status` (ADR-050), and four suspension fields (ADR-053). |
 | Frontend location | `frontend/` subdirectory of this repo | Merged from `frontend-prep` via `git subtree add`, full history preserved. No longer a separate working copy. |
-| Frontend tests | **192 passing, 2 failing** (21 files) | Full suite, `npm test` (runs `pretest`'s export sync first — a bare `npx vitest run` fails all 16 data-backed files with `public/data/_manifest.json` ENOENT), single run, ~40-60s. The 2 failures are still `ui/__tests__/trace-fields.test.ts` — **red by design**: `TRACE_CONTRACT` is still pinned to `1.9.0` and the trace registry doesn't know `roster_status` yet. Not fixed here — still handoff 069 territory, not touched this session. The +13 tests vs the prior 179/181 count are workstream C's dismissible-surface audit (11 tests: RefreshData Escape/outside-click/inside-click ×4, PlayerDetail Escape/backdrop-click/other-key ×3, AssistantDock open/Escape/outside/inside ×4) plus the freshness-banner coverage (2 tests). |
-| Python modules | **36** in `src/` | `ls src/*.py \| wc -l` |
+| Frontend tests | **192 passing, 2 failing** (21 files) | Full suite, `npm test` (runs `pretest`'s export sync first — a bare `npx vitest run` fails all 16 data-backed files with `public/data/_manifest.json` ENOENT), single run, ~62s, re-run this session post-merge. The 2 failures are still `ui/__tests__/trace-fields.test.ts` — **red by design**: `TRACE_CONTRACT` is still pinned to `1.9.0` against the now-`1.12.0` export, and the trace registry doesn't know `roster_status` or the four suspension fields yet. Not fixed here — handoff 069/073 territory, not touched this session. |
+| Python modules | **41** in `src/` | `ls src/*.py \| wc -l` |
 | Export artifacts | **11** top-level files in `data/export/` | `ls data/export/*.json \| wc -l` |
 | Config matrix | 26 dirs under `data/export/` | board + league + availability stub only; **hazard model not rerun per config**; count is a raw directory count, not inspected for which are real league configs vs. scratch. The 26th is `ethans_expert_league` (real league 2, see below), not a scratch probe config. |
 

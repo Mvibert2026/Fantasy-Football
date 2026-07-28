@@ -2567,3 +2567,95 @@ redundant with the real history. Nothing this session measured or found was lost
 consensus-pull paragraph updated in place with the sharper cost estimate. No ingestion run this
 session — 0 rows ingested/quarantined.
 
+## 2026-07-27 — Overnight run: Phase 1 integration + Phase 2 compressed closeout (pm)
+
+Executed `docs/RUN-2026-07-27-overnight.md` PHASE 1 and PHASE 2 only, per explicit founder
+instruction in-session. PHASE 3 not started.
+
+**PHASE 1 — integration.** Committed `docs/ideas-inbox.md`'s PM review-item log on its own
+(`4db0286`) before touching anything else, per instruction. Pushed `integration-2026-07-27` to
+`origin` as a backup ref (step 1) before mutating `main`. Step 2 (fast-forward) then **halted**:
+`main` and `integration-2026-07-27` had diverged independently from merge-base `fa2c52a` — `main`
+carried 2 commits integration didn't have (`26b0f02`, `4db0286`), integration carried 7 commits
+main didn't have (`c41ef9e` .. `77ba1c3`, including 3 merge commits). Reported to the founder rather
+than resolving unilaterally, per the runbook's "escalate, don't reconcile" rule. **Founder resolved
+in-chat:** merge `integration-2026-07-27` into `main` (founder's read: main's two commits were
+docs/tools-only and additive, so conflict-free was expected). Merge completed clean, no conflicts
+(`9d8e09b`, 43 files, +3907/-565). Remaining Phase 1 steps then ran clean: `git stash list` empty;
+`git status --porcelain` empty (no untracked files); `tools/handoffs.py sync` then `check` —
+mailbox OK, 74 threads / 48 open / 0 stale at that point (pre-defect-registration count). Pushed
+`main` to `origin` (`fa2c52a..9d8e09b`).
+
+**PHASE 2 — compressed closeout, five items:**
+
+1. **Two defects registered** as handoff threads (the project's only durable write surface):
+   - **Thread 075** (`pm`→`pm`, RESOLVED same session) — the fabricated-reconstruction defect:
+     workstream D's worktree couldn't see the real, untracked `docs/handoffs/067-...md` (248 lines,
+     verified league-2 scoring) and generated a 113-line fabricated stand-in instead of halting.
+     **Prior-occurrence check: none found** — searched `status.md`, `decisions.md`, and
+     `git log --all --grep=fabricat|reconstruct -i`; the only earlier untracked-file/worktree
+     mention (sprint-closeout section) was a cleanup-item flag, not a fabrication incident. This is
+     the first documented occurrence. Fix already landed same-day in the runbook itself (never-
+     reconstruct rule + Phase 1 step 4 clean-tree precondition) — thread records the incident and
+     closes on that basis, no further code change needed.
+   - **Thread 076** (`pm`→`backend`, OPEN, deliberately not fixed tonight) — the thread-ID
+     allocator race: two worktrees both computed "next free = 73" from the same starting point and
+     collided (already documented in the workstream-C entry above and
+     `docs/reviews/fable-workflow-2026-07-27.md` §B as a known unsolved single-working-copy gap).
+     Asked backend to assess whether cross-worktree-safe allocation is worth building or whether
+     merge-time duplicate-ID detection is sufficient; explicitly deferred, not attempted tonight.
+
+2. **Interrupt count for the round** (permission prompts / judgment questions / genuine
+   escalations), reconstructed from this round's written record since chat transcripts from the
+   individual workstream sessions aren't retained:
+   - *Permission prompts:* 1 — the ADP snapshot scheduled job hit a WebFetch provenance/permission
+     prompt with nobody present and captured nothing (per the runbook, now Phase 3 chain 1's
+     highest-priority item). Per the runbook's own rule, this is a defect, not normal operation.
+   - *Judgment questions (decided-and-logged, no escalation needed):* 2 — both in
+     `docs/ideas-inbox.md`'s PM review-item log (screenshot-filename naming; whether to archive the
+     067 multi-league files as clutter). Both answered from written rules without going back to the
+     founder, which is the standing rule working as intended.
+   - *Genuine escalations:* 1 — this session's Phase 1 fast-forward failure, reported to the
+     founder rather than resolved unilaterally per "escalate, don't reconcile."
+   - *Classified separately, per the runbook's explicit callout:* **workstream B (backend, T5/T4)
+     required three nudges and returned two vague non-answers while real uncommitted work sat in
+     its tree.** This doesn't cleanly fit any of the three buckets above — it's neither a permission
+     prompt, a clean judgment question, nor a founder-level escalation; it's a session that didn't
+     terminate its own turns cleanly. What would prevent it: the same clean-tree/report-or-halt
+     discipline already landed for the fabrication defect (thread 075) applied to *response*
+     hygiene too — a workstream should not be able to end a turn on a vague answer while its own
+     `git status` shows uncommitted work; a "commit or explicitly say why not, every turn" check
+     would have caught this without needing a human to notice and re-ask three times.
+
+3. **Branch audit** (`git branch -a` plus `merge-base --is-ancestor <branch> main` per branch, not
+   the misleading `+`-prefixed `git branch --merged` output, which marks worktree-checkout state,
+   not merge status): of the branches on record, all but two are already ancestors of `main`
+   post-merge (`MERGED`). The two that are not:
+   - `worktree-agent-a254f18ab4bde998e` (unique commit `a246696`, FantasyPros 2021-2024 backfill) —
+     already flagged **superseded, not deleted** in this file's earlier sprint-closeout entry.
+   - `worktree-agent-a89e04c83404da921` (unique commit `a75edb0`, workstream D's original T1
+     re-scope commit) — superseded by `77ba1c3`'s reconciliation, which kept the real 248-line
+     thread 067 as base and appended workstream D's actual new content (the Option 1/2/3 cost
+     analysis) as a reply; the branch's own commit was never itself merged.
+   Both now have a named reason on record. **Not deleted this session** — branch deletion is a
+   destructive, harder-to-reverse action outside this closeout's explicit authorization, and both
+   backing worktrees are still present on disk under `.claude/worktrees/`; flagged for the founder
+   to confirm before pruning.
+
+4. **`docs/CURRENT-STATE.md` updated in place** — see the file itself for the current figures
+   (commit hash, contract version, test counts, mailbox count all re-measured this session, not
+   carried over from the pre-merge state).
+
+5. **Deliberately not done**, per the runbook: ideas inbox not drained, dashboard not regenerated,
+   agent definitions not rewritten. Batched to the weekly pass.
+
+Tree re-confirmed clean and pushed before stopping. **PHASE 3 not started**, per explicit
+instruction to stop after Phase 2.
+
+**Closing measurements (main @ `9d8e09b`):** backend `pytest -q` full suite, real `data/nfl.db` —
+**614 passed, 0 failures**, 533s. Frontend `npm test` full suite — **192 passed, 2 failed** (21
+files), 62s, the 2 failures unchanged red-by-design (`trace-fields.test.ts`, `TRACE_CONTRACT`
+still pinned to `1.9.0` against the now-1.12.0 export — handoff 069/073 territory). Mailbox: 76
+threads, 49 open, 0 stale, `check` OK. `docs/CURRENT-STATE.md` updated in place with all of the
+above.
+

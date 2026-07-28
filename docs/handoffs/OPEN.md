@@ -4,7 +4,7 @@
 Threads are the source of truth. Change a thread's `STATUS:`, then re-run sync.
 Protocol: [`README.md`](README.md).
 
-**48 open** · 26 resolved
+**49 open** · 27 resolved
 
 ---
 
@@ -20,7 +20,7 @@ not an omission. Start your session at your own heading.
 | [005](005-fantasypros-tier.md) | Fantasypros tier | `pm` | BLOCKED-ON-YOU | 1d | bootstrap CIs, full-board projections |
 | [068](068-acceptance-harness-design-captures.md) | Acceptance harness design captures | `design` | OPEN | 0d | design drift being caught by a diff rather than by the founder |
 
-### `backend` — 22 waiting
+### `backend` — 23 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
@@ -46,6 +46,7 @@ not an omission. Start your session at your own heading.
 | [071](071-global-tier-field-for-all-tab-board-grouping.md) | Global tier field for all tab board grouping | `frontend` | OPEN | 0d | 058 section B1 (design fidelity) |
 | [072](072-sim-staleness-fields-for-league-identity-current.md) | Sim staleness fields for league identity current | `frontend` | OPEN | 0d | 058 section C3 (design fidelity) |
 | [074](074-export-t5-freshness-result-onto-board-json.md) | Export t5 freshness result onto board json | `frontend` | OPEN | 0d | none |
+| [076](076-structural-gap-thread-id-allocator-race-across-c.md) | Structural gap thread id allocator race across c | `pm` | OPEN | 0d | none |
 
 ### `frontend` — 18 waiting
 
@@ -163,4 +164,5 @@ _Nothing waiting on you._
 | [061](061-competitor-recommendation-audit.md) | Competitor recommendation audit | `pm` → `researcher` |
 | [063](063-suggester-reopen-regression.md) | Suggester reopen regression | `pm` → `frontend` |
 | [065](065-mailbox-tooling-build-for-062.md) | Mailbox tooling build for 062 | `librarian` → `backend` |
+| [075](075-defect-fabricated-reconstruction-of-thread-067-u.md) | Defect fabricated reconstruction of thread 067 u | `pm` → `pm` |
 
