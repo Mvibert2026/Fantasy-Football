@@ -60,10 +60,27 @@ Print this. Times relative to the draft clock.
 - [ ] Top-100 eyeball against a news site: no name the board cannot know about (fresh injury,
       suspension ruling, retirement, holdout escalation).
 - [ ] Print the board CSV (dead-machine fallback).
+- [ ] **Confirm the draft-day plan runs the app via the dev server (`npm run dev`). Do NOT use
+      `vite preview` or a built dist bundle.** Auto-sync of `data/export/` ->
+      `frontend/public/data/` runs only as dev-server middleware
+      (`frontend/server/autoSync.ts`); a built bundle snapshots its data at build time and will
+      silently serve a stale board.
+- [ ] autoSync currently fails open with a console-only error — a failed sync looks identical to
+      a successful one unless devtools are open. Make that failure visible in-app before
+      30 August (FR entry in `docs/founder-requests.md`, 2026-07-28 mandate). If it hasn't
+      landed by this checkpoint, keep devtools open on the console during the draft as the
+      manual fallback.
 - [ ] **Freeze begins: no agent sessions, no rebuilds, no schema or config edits from now on.**
 
 ### Morning of (T-2h)
 - [ ] Cold start: `npm run dev` from scratch; app loads; sync manifest timestamp is current.
+      **The dev server is the only supported way to run the app on draft day — NOT
+      `vite preview`, NOT a built dist bundle.** Auto-sync of `data/export/` ->
+      `frontend/public/data/` is dev-server middleware only (`frontend/server/autoSync.ts`); a
+      built bundle froze its data at build time and will silently serve a stale board.
+- [ ] autoSync fails open with a console-only error. If the in-app failure surface (due before
+      30 August) is not yet built, keep the browser console visible and check it for autoSync
+      errors after the cold-start load.
 - [ ] League check: app header league name/id == the platform league being drafted, and the
       platform's scoring page still matches (leagues get edited in August).
 - [ ] Snapshot age visible and ≤ 1 day; board row count ≈ expected (~378); spot-check 3 known

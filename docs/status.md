@@ -2659,3 +2659,48 @@ still pinned to `1.9.0` against the now-1.12.0 export — handoff 069/073 territ
 threads, 49 open, 0 stale, `check` OK. `docs/CURRENT-STATE.md` updated in place with all of the
 above.
 
+
+---
+
+## 2026-07-28 — Overnight Phase 3, frontend chain (threads 069/073), isolated worktree
+
+Branch `frontend/069-073-trace-registry-1-12-0` (worktree `phase3-frontend-069-073`, cut from
+`main` @ `8bdf996`). Code at `0da321f`; docs in the follow-up commit.
+
+**Done, per the mandate:**
+- Trace registry reconciled to contract **1.12.0**: `TRACE_CONTRACT` 1.9.0 -> 1.12.0 with an
+  audited changelog entry; `roster_status` + the four suspension fields registered on player
+  rows; `scoring_format`/`scoring_format_note` registered in a new `BOARD_HEADER_TRACE_FIELDS`
+  list (a top-level path in `BOARD_TRACE_FIELDS` would trip that registry's dropped-field
+  check). `EXPECTED_CONTRACT` (contract.ts) 1.8.0 -> 1.12.0.
+- **The two red-by-design trace-contract tests went green with zero edits to the tests** —
+  the tripwire fired exactly as designed. Frontend suite **201 passed / 0 failed** (22 files;
+  was 192/2 measured at session start). Smoke harness 16/16. `tsc -b --noEmit` clean.
+- Rendering: Board header now shows the export-confirmed scoring format beside the consensus
+  source (`fantasypros_csv_2026draft · half ppr · ...`; null renders "scoring format
+  unconfirmed"); SUSP badge on any row with `suspension_flag: true`; PlayerDetail suspension
+  block distinguishing `games_adjusted` from `not_adjusted_pending_appeal`. Live rows are all
+  `false` today (ADR-053 verified-empty list) so the live app correctly shows neither; the
+  rendering states are unit-tested on synthetic rows. Screenshot proof committed:
+  `frontend/e2e/artifacts/board-069-scoring-format.png`,
+  `player-detail-073-no-suspension.png` (real Chromium via `e2e/verify-069-073.mjs`; the
+  sandbox Browser pane still cannot composite, same as thread 058).
+- Pre-mortem checklist (`docs/reviews/fable-draft-day-premortem-2026-07-27.md`) T-1d and T-2h
+  sections: dev-server-only rule (no `vite preview`/dist — autoSync is dev-middleware only)
+  and the autoSync fails-open console-only gap, with the before-30-August in-app-visibility
+  requirement captured as **FR-017** in `docs/founder-requests.md`.
+- Threads: 069 RESOLVED, 073 RESOLVED, 066 given a partial-action reply (registry entry only;
+  its UI-treatment ask deliberately untouched, stays OPEN). `tools/handoffs.py sync`: 76
+  threads, 47 open.
+
+**Not done, deliberately:** thread 074 (blocked on the backend chain, per mandate); thread
+066's roster_status UI treatment; the FR-017 in-app autoSync failure surface (needs its own
+pickup, hard date 2026-08-30).
+
+**Rules invented / judgment calls (logged in `docs/ideas-inbox.md`):** registering
+`roster_status` was treated as in-mandate because the tripwire test names it; a temporary
+worktree entry was added to the main checkout's tracked `.claude/launch.json` for live
+verification and reverted in-session (main tree verified back to pre-session state). Defect
+noted, not fixed: Board header hardcodes "of 378 players loaded" (reads "511 of 378" today).
+
+**Permission prompts hit: none.**
