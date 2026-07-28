@@ -33,7 +33,7 @@ export interface TraceField {
 }
 
 /** The contract version the registry below is pinned against. */
-export const TRACE_CONTRACT = '1.9.0';
+export const TRACE_CONTRACT = '1.12.0';
 
 /**
  * Changes to the user-visible trace surface, newest first.
@@ -47,6 +47,26 @@ export const TRACE_CHANGELOG: ReadonlyArray<{
   kind: 'rename' | 'value' | 'added' | 'removed';
   summary: string;
 }> = [
+  {
+    version: '1.12.0',
+    kind: 'added',
+    summary:
+      'Pin moves 1.9.0 -> 1.12.0 in one step, covering three backend bumps, audited against the ' +
+      'real data/export/board.json (contract_version 1.12.0, all five new player-row keys ' +
+      'confirmed present on row 0). 1.10.0 (ADR-050, thread 066): player rows gained ' +
+      '`roster_status` -- a proxy from contracts.is_active, labelled as such; ' +
+      '"no_active_contract_on_file" is not a retirement claim. 1.11.0 (ADR-051, thread 069): two ' +
+      'rendered header strings changed value -- `consensus_source` is now ' +
+      '"fantasypros_csv_2026draft" (was "fantasypros_ecr") and `board_source` moved with it -- and ' +
+      'the board gained top-level `scoring_format`/`scoring_format_note` ("half_ppr" on the live ' +
+      'export), registered in BOARD_HEADER_TRACE_FIELDS below because this player-row registry is ' +
+      'compared 1:1 against player keys by its test. 1.12.0 (ADR-053, thread 073): four ' +
+      'unconditional suspension keys on every row (`suspension_flag`, `suspension_games`, ' +
+      '`projected_points_suspension_adjusted`, `suspension_adjustment_note`) -- deterministic ' +
+      'games deduction from a hand-curated dated list that is currently empty, so every live row ' +
+      'reads suspension_flag: false today; the rendering and this registry entry are ahead of the ' +
+      'first real datum on purpose.',
+  },
   {
     version: '1.9.0',
     kind: 'added',
@@ -215,6 +235,50 @@ export const BOARD_TRACE_FIELDS: readonly TraceField[] = [
   { path: 'id', label: 'Internal player id', since: '1.0.0' },
   { path: 'player_id_gsis', label: 'GSIS player id', since: '1.0.0' },
   { path: 'availability', label: 'Availability probabilities (out of scope in this app)', since: '1.0.0' },
+  {
+    path: 'roster_status',
+    label: 'Contract-status proxy; "no active contract on file" is not a retirement or inactive claim',
+    since: '1.10.0',
+  },
+  {
+    path: 'suspension_flag',
+    label: 'Whether a confirmed suspension is on file for this player',
+    since: '1.12.0',
+  },
+  {
+    path: 'suspension_games',
+    label: 'Confirmed games suspended; null when not suspended',
+    since: '1.12.0',
+  },
+  {
+    path: 'projected_points_suspension_adjusted',
+    label: 'Projection after deducting suspended games; null unless a confirmed, non-appealed suspension exists',
+    since: '1.12.0',
+  },
+  {
+    path: 'suspension_adjustment_note',
+    label: 'Why the projection was or was not suspension-adjusted',
+    since: '1.12.0',
+  },
+];
+
+/**
+ * Top-level (non-player-row) board.json fields this app renders. Kept separate
+ * because `BOARD_TRACE_FIELDS` is compared 1:1 against the *player-row* key set
+ * by `ui/__tests__/trace-fields.test.ts` -- a top-level path in that list would
+ * trip its "registry names a field the export dropped" check.
+ */
+export const BOARD_HEADER_TRACE_FIELDS: readonly TraceField[] = [
+  {
+    path: 'scoring_format',
+    label: 'Scoring format the consensus source confirmed at export time; null when unconfirmed',
+    since: '1.11.0',
+  },
+  {
+    path: 'scoring_format_note',
+    label: 'What a null scoring format means',
+    since: '1.11.0',
+  },
 ];
 
 export const LEAGUE_TRACE_FIELDS: readonly TraceField[] = [

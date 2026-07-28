@@ -25,6 +25,14 @@ export interface RawBoardPlayer {
   positional_label: string;
   team: string;
   bye_week: number | null;
+  /**
+   * Contract 1.10.0 (ADR-050, thread 066). A PROXY derived from
+   * `contracts.is_active`, not a real active/IR/practice-squad feed.
+   * "no_active_contract_on_file" must never be worded as "retired" or
+   * "confirmed inactive" -- a free agent between deals reads the same way.
+   * Optional so a pre-1.10.0 export still parses.
+   */
+  roster_status?: 'active' | 'no_active_contract_on_file' | 'unknown_no_contract_data';
   projected_points: number;
   ci_low: number | null;
   ci_high: number | null;
@@ -50,6 +58,20 @@ export interface RawBoardPlayer {
   evaluative_adjustment_available: boolean;
   evaluative_adjustment_note: string;
   availability: Record<string, unknown>;
+  /**
+   * Contract 1.12.0 (ADR-053, thread 073). Unconditional on every row in a
+   * 1.12.0+ export (never conditionally present there); optional here only so a
+   * pre-1.12.0 export still parses. Deterministic games-played deduction from a
+   * hand-curated, dated list (`data/suspensions_2026.json`), NOT a probability
+   * model. That list is currently empty, so every live row reads
+   * `suspension_flag: false` -- expected, not a bug.
+   * `projected_points_suspension_adjusted` is null when the flag is false OR
+   * the appeal is still pending (`"not_adjusted_pending_appeal"`).
+   */
+  suspension_flag?: boolean;
+  suspension_games?: number | null;
+  projected_points_suspension_adjusted?: number | null;
+  suspension_adjustment_note?: 'not_suspended' | 'games_adjusted' | 'not_adjusted_pending_appeal';
 }
 
 export interface RawBoard {
@@ -63,6 +85,15 @@ export interface RawBoard {
   consensus_source: string;
   consensus_source_count: number;
   consensus_source_note: string;
+  /**
+   * Contract 1.11.0 (ADR-051, thread 069). The scoring format the consensus
+   * source rows confirmed at export time (read from `rankings.scoring_format`,
+   * not hardcoded) -- e.g. "half_ppr". Null when the source carries no
+   * confirmed format or more than one; optional so a pre-1.11.0 export still
+   * parses. Either empty state renders as "unconfirmed", never a guess.
+   */
+  scoring_format?: string | null;
+  scoring_format_note?: string;
   consensus_state: string;
   attribution_is_additive: boolean;
   attribution_identity: string;

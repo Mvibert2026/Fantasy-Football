@@ -1,11 +1,11 @@
 {
- "when": "2026-07-27T21:04:41.030Z",
+ "when": "2026-07-28T05:39:48.246Z",
  "failures": 0,
  "report": [
   {
    "name": "dev server reachable",
    "ok": true,
-   "detail": "http://localhost:5173"
+   "detail": "http://localhost:5190"
   },
   {
    "name": "app rendered content",
