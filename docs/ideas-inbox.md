@@ -48,3 +48,28 @@ for continuity — see `docs/handoffs/RECONCILIATION-2026-07.md` for their dispo
 - Every pick triggers recomputation — `→ 060`
 - FantasyPros recommendation percentages — `→ 061`
 - Table stakes must all be covered — `→ FR-007`, Fable mandate Priority 2A
+
+## PM review-item log
+
+Answered agent questions that did not change the plan. One line each,
+newest at the bottom.
+
+- 2026-07-27 · Screenshot filenames in untracked cleanup. Agent asked
+  whether to rename. Answer: no — existing names already describe
+  contents and are cited ~15 times in decisions.md / ADR-052. PM's
+  "name by contents" instruction withdrawn as already satisfied.
+- 2026-07-27 · 067 multi-league files flagged as live, not clutter.
+  Agent asked whether to archive. Answer: no — commit all five. PM had
+  conflated "untracked" with "unclaimed"; the correct filter is whether
+  anything references the file, which the agent applied and the PM had
+  not. Consequence for planning: the second league's scoring is already
+  under way in thread 067, so multi-league is partly started rather
+  than unstarted.
+- 2026-07-27 · Untracked cleanup landed as 7b45274 / cb3f8fe /
+  fa2c52a. Nothing archived; docs/archive/untracked-2026-07-27/
+  never created. Screenshots kept their names (~15 live citations).
+  CSV folder gitignored. Design-inbox zip deleted after diff — 3
+  files byte-identical to committed, 2 superseded snapshots.
+  League IDs confirmed from screenshots: Westwood 154693 (primary),
+  Ethan's Expert 834236 (10 teams, not the platform's 12).
+  tests/test_scoring.py 19 passed after landing.
