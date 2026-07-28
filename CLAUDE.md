@@ -36,7 +36,7 @@ what actually happened — and did it beat the market?"*
 
 ## 3. Build order
 
-Do not skip ahead. Each step is gated (see §8).
+Do not skip ahead. Each step is reviewed per the roster and process in §8.
 
 | # | Component | Output |
 |---|---|---|
@@ -217,28 +217,49 @@ implementing the scoring engine.
 
 ---
 
-## 8. Agents and gates
+## 8. Agents and review
 
 The goal is low human touch with real checkpoints — not zero oversight. Bad assumptions
-compound silently; the gates exist to catch them without requiring the user to review every step.
+compound silently; review exists to catch them without requiring the user to review every step.
 
-| Agent | Role | Model |
-|---|---|---|
-| **Builder** | Writes ingestion, scoring, harness, and model code | Sonnet |
-| **Verifier** | Reviews Builder output against this spec before anything is marked done; runs tests | Sonnet |
-| **Statistician** | Designs and reviews methodology, weighting, backtest validity | Opus |
-| **Red-team** | Actively attacks assumptions: look-ahead leakage, survivorship, overfitting, over-engineering, unearned confidence | Opus |
+This section previously described a "Builder / Verifier / Statistician / Red-team" tier with a
+standing per-task gate. **That tier was never built and does not exist.** The table below is the
+actual roster, sourced from `.claude/agents/*.md` frontmatter and `docs/operating-model.md`.
+Full detail, evidence standards, and effort discipline live in `docs/operating-model.md` — this
+is a summary, not the source of truth.
 
-**Gates run at checkpoints, not continuously.** Every build task ends with Verifier. Every
-methodology decision and every completed milestone ends with Statistician + Red-team.
+| Agent | Role | Model / effort | Runs in |
+|---|---|---|---|
+| **backend** | `src/` statistical and modelling code, exports, tests, ADRs | Sonnet, low (escalates for new formulas / statistical constants) | Claude Code, this repo |
+| **data-ops** | Ingestion, snapshots, mock-draft logging, scheduled pulls | Sonnet, low | Claude Code, this repo |
+| **frontend** | React app, client state, API wiring, design-system sync | Sonnet, high | Claude Code, separate working copy |
+| **librarian** | Current-state Q&A, contradiction-finding, small doc fixes | Sonnet, medium | Claude Code, this repo |
+| **strategist** | Independent statistical/methodology review, red-teaming named questions — deliberately no database access | Opus, high | Chat, no DB access |
+| **researcher** | External web research: competitive, platform, data-source, voice-of-customer | Opus, high | Chat, web enabled |
+| **pm** | Dispatch, verification gatekeeping, budget calibration, Fable briefings | Sonnet | Cowork chat, no `.claude/agents/` file (not Task-tool dispatched) |
+| **design** | Tokens, components, screen specs | n/a | Claude Design, no repo access — a thread to `design` needs `VIA: pm` |
+| **fable** | Framework-level questions: VONA, opponent model, proprietary ranking, data-source audit | Heaviest tier | Weekly, outside review |
+| **founder** | The human. Final call on anything that changes this file. | n/a | n/a |
 
-**Red-team has standing authority to block.** If it identifies a leakage or bias problem, the
-work does not advance until resolved. Red-team's mandate explicitly includes flagging
-over-engineering — building infrastructure with no current consumer is a finding, not a virtue.
+**There is no standing, automatic per-task block.** No agent runs after every build task the way
+"Verifier" was described as doing. What actually happens:
 
-**Escalate to the user when:** a gate fails twice on the same issue, a decision changes anything
-in this file, scope expands beyond Phase 1, or a result looks too good (that is usually leakage,
-not skill).
+- Each agent self-checks against `docs/operating-model.md`'s evidence-standards table (a UI screen
+  needs a human-reviewed screenshot, a statistical constant needs a measurement + SE + n, etc.) —
+  self-report, not a second agent's sign-off.
+- **PM does verification gatekeeping** across dispatched work, via the handoff-thread protocol in
+  `docs/handoffs/README.md` — not via a dedicated agent process.
+- **Strategist** is the closest analog to independent methodology review, but it is engaged for
+  *named statistical questions*, not as an always-on gate after every methodology decision, and it
+  has no mechanical authority to block — its leverage is that it is the only role deliberately
+  denied database access, so it cannot converge into confirming Backend's own analysis.
+- **Fable** reviews framework-level questions on a weekly cadence, not per-milestone.
+- Communication between all of these is handoff threads in `docs/handoffs/`, dispatched via the
+  Task/Agent tool — never a human relay. Protocol: `docs/handoffs/README.md`.
+
+**Escalate to the founder (via PM, or directly) when:** the same issue survives two review passes,
+a decision would change anything in this file, scope expands beyond Phase 1, or a result looks too
+good (that is usually leakage, not skill).
 
 ---
 
