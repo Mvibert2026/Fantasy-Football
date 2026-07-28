@@ -17,6 +17,19 @@ this pull, TINY sample: `totalDrafts` behind this snapshot was 50, and
 individual players' `draftsSelectedIn` ranged 5-58. Stored under
 `adp_source='mfl_proxy'`, never blended into or presented as 'league_adp'.
 
+PER-PLATFORM SOURCE STAMPING IS A STATED RULE, NOT AN IMPLICIT COLUMN.
+`adp_source` is not bookkeeping metadata -- drafters pick off their own
+platform's displayed ranks, so ADP is a per-platform behavioural variable,
+and different platforms MUST NEVER be averaged, merged, or blended into one
+"consensus ADP" number. Every row this module writes carries exactly one
+`adp_source` value. If a second ADP-bearing source is ever added (MFL
+draft-results, a different mock aggregator, this league's own real ADP once
+enough drafts exist), it gets its own distinct `adp_source` value and its
+own rows in this same table -- never rewritten into `mfl_proxy`'s rows and
+never combined with them into a single figure anywhere downstream. Any code
+that computes a single ADP-like number by aggregating across more than one
+`adp_source` value in this table is a bug, not a convenience feature.
+
 CACHING. At most one fetch per calendar day: `main()` checks whether a row for
 today's UTC date already exists before hitting the network, so re-running this
 script (e.g. from a scheduled task) does not hammer the endpoint. `--force`

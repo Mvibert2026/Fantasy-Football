@@ -196,3 +196,33 @@ def test_default_ranking_sources_does_not_include_mfl():
     sources = av.default_ranking_sources(data)
     assert len(sources) == 1
     assert sources[0].name == "fantasypros_ecr"
+
+
+def test_load_mfl_adp_source_never_blends_across_adp_source_values():
+    """Two distinct platforms picking the same player must never be averaged
+    into one figure -- drafters see their own platform's rank, so ADP is a
+    per-platform behavioural variable (per module docstring's stated rule).
+    A second, very different adp_source value ('other_platform_proxy') is
+    inserted for the same player/date; load_mfl_adp_source(adp_source=
+    'mfl_proxy') must return exactly the mfl_proxy figure, not a blend."""
+    conn = sqlite3.connect(":memory:")
+    conn.execute("CREATE TABLE player_ids (mfl_id TEXT, source TEXT, source_id TEXT)")
+    conn.execute("INSERT INTO player_ids VALUES ('2001', 'gsis', '00-0001')")
+    conn.execute(mfl._CREATE_SQL)
+    conn.execute(
+        "INSERT INTO adp_snapshots VALUES "
+        "('mfl_proxy','2001',NULL,NULL,NULL,1,5.0,1,6,10,20,10,1,0,0,10,2026,50,123,"
+        "'2026-07-25T00:00:00','2026-07-25T00:00:00')"
+    )
+    conn.execute(
+        "INSERT INTO adp_snapshots VALUES "
+        "('other_platform_proxy','2001',NULL,NULL,NULL,1,95.0,1,6,10,20,10,1,0,0,10,2026,50,123,"
+        "'2026-07-25T00:00:00','2026-07-25T00:00:00')"
+    )
+    positions = np.array([0])
+    data = ds.SeasonData(
+        season=2026, player_ids=["00-0001"], names=["A"], positions=positions,
+        consensus_rank=np.array([1.0]), weekly_points=np.zeros((1, 1)), n_weeks=1,
+    )
+    src = av.load_mfl_adp_source(conn, data, adp_source="mfl_proxy")
+    assert src.rank[0] == 5.0, "must be the raw mfl_proxy pick, not an average with other_platform_proxy's 95.0"
