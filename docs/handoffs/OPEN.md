@@ -4,7 +4,7 @@
 Threads are the source of truth. Change a thread's `STATUS:`, then re-run sync.
 Protocol: [`README.md`](README.md).
 
-**49 open** · 27 resolved
+**50 open** · 27 resolved
 
 ---
 
@@ -13,12 +13,13 @@ Protocol: [`README.md`](README.md).
 Every role gets a section, including empty ones — an empty inbox is a fact worth stating,
 not an omission. Start your session at your own heading.
 
-### `pm` — 2 waiting
+### `pm` — 3 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
 | [005](005-fantasypros-tier.md) | Fantasypros tier | `pm` | BLOCKED-ON-YOU | 1d | bootstrap CIs, full-board projections |
 | [068](068-acceptance-harness-design-captures.md) | Acceptance harness design captures | `design` | OPEN | 0d | design drift being caught by a diff rather than by the founder |
+| [077](077-claude-md-ss8-phantom-agent-tier-replaced-two-li.md) | Claude md ss8 phantom agent tier replaced two li | `librarian` | OPEN | 0d | none |
 
 ### `backend` — 23 waiting
 
