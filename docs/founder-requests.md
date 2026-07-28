@@ -502,3 +502,22 @@ gap class (two more real instances found and fixed: `PlayerDetail.tsx`'s side sh
 Escape despite its close button being labelled "esc"; `AssistantDock.tsx`'s expanded panel had
 neither). 11 new enumerated tests, one per surface. See `docs/status.md`'s 2026-07-27 workstream-C
 entry for full detail.
+
+## ADP snapshot rows must be backed up outside the gitignored DB (CSV archive)
+
+**Raised:** 2026-07-27 (founder, amendment relayed mid-session to chain1 step 1.1, data-ops).
+**Status:** SHIPPED — `src/ingest_mfl_adp.py` now writes `data/adp-snapshots/YYYY-MM-DD.csv`
+(UTC date) on every run, tracked in git; docstring states the CSV is canonical and the DB a cache
+of it. Scheduled task (`FantasyFootball_MFL_ADP_Daily`) re-pointed at
+`tools/run_adp_snapshot_task.bat` (main checkout) which runs the ingest then commits/pushes the
+CSV. See handoff thread 077 reply and `docs/status.md`'s 2026-07-27 "founder amendment" entry for
+full detail, including the caveat that the scheduled task currently shows `Logon Mode: Interactive
+only` (no stored run-as password) and has not yet been observed to fire unattended.
+
+The founder's reasoning: `data/nfl.db` is gitignored (too large for GitHub) and `adp_snapshots`
+rows are the one thing in it that cannot be re-fetched once a day has passed — a lost local file
+means a permanently missing historical snapshot with no recovery path. This same session
+discovered a live instance of exactly that risk: the machine's UTC clock had already rolled past
+midnight by the time the day's backfill ran, so UTC 2026-07-27 has zero rows and cannot be
+recovered from MFL now (2026-07-26 and 2026-07-28 both have data). Recorded as an honest gap, not
+backfilled with placeholder data.
