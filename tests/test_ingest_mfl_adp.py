@@ -1,3 +1,4 @@
+import csv
 import sqlite3
 import urllib.error
 
@@ -103,6 +104,38 @@ def test_network_failure_raises_loudly_and_writes_no_row(monkeypatch):
 
     n = conn.execute("SELECT COUNT(*) FROM adp_snapshots").fetchone()[0]
     assert n == 0
+
+
+def test_export_snapshot_csv_writes_one_row_per_player(tmp_path):
+    conn = _conn_with_ff_playerids()
+    payload = _payload([
+        {"id": "15281", "rank": "1", "averagePick": "3.00", "minPick": "1", "maxPick": "4",
+         "draftsSelectedIn": "5", "draftSelPct": "10"},
+        {"id": "16162", "rank": "2", "averagePick": "3.20", "minPick": "1", "maxPick": "6",
+         "draftsSelectedIn": "5", "draftSelPct": "10"},
+    ])
+    mfl.store_adp(conn, payload, 10, 1, 0, 0, 10, 2026)
+    date_str = conn.execute(
+        "SELECT substr(retrieved_at, 1, 10) FROM adp_snapshots LIMIT 1"
+    ).fetchone()[0]
+    db_path = tmp_path / "nfl.db"
+    out = mfl.export_snapshot_csv(conn, db_path, date_str)
+    assert out == tmp_path / "adp-snapshots" / f"{date_str}.csv"
+    assert out.exists()
+    with out.open(newline="", encoding="utf-8") as f:
+        rows = list(csv.DictReader(f))
+    assert len(rows) == 2
+    assert rows[0]["adp_source"] == "mfl_proxy"
+    assert set(mfl._CSV_COLUMNS) == set(rows[0].keys())
+
+
+def test_export_snapshot_csv_returns_none_and_writes_nothing_when_no_rows(tmp_path):
+    conn = sqlite3.connect(":memory:")
+    conn.execute(mfl._CREATE_SQL)
+    db_path = tmp_path / "nfl.db"
+    out = mfl.export_snapshot_csv(conn, db_path, "2026-07-27")
+    assert out is None
+    assert not (tmp_path / "adp-snapshots").exists()
 
 
 # ------------------------------------------------ mixture-source loader

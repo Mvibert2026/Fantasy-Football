@@ -38,11 +38,25 @@ CLAUDE.md's own core-tables sketch (SS4) already reserved for this. Per-row
 format metadata (fcount, is_ppr, is_keeper, is_mock, cutoff) is preserved so a
 future session can tell exactly what population and rules produced each
 number -- required by ADR-024's "never a pre-blended point estimate" rule.
+
+THE CSV IS THE CANONICAL ARCHIVE. THE DB IS A QUERYABLE CACHE OF IT. Every
+run also writes a dated CSV to data/adp-snapshots/YYYY-MM-DD.csv (UTC date,
+same date logic as the once-per-day cache check), one row per player,
+mirroring the adp_snapshots columns exactly. This is not a convenience
+export -- it exists because `data/nfl.db` is gitignored (too large for
+GitHub) and adp_snapshots rows are the one thing in that DB that cannot be
+re-fetched once a day has passed: a lost local file means a permanently
+missing historical snapshot with no recovery path. The CSV under
+data/adp-snapshots/ is deliberately NOT gitignored (see .gitignore) so it
+gets committed and pushed as an off-machine backup. If the DB and a day's
+CSV ever disagree, the CSV is authoritative and the DB should be considered
+stale/corrupt for that date, not the other way around.
 """
 
 from __future__ import annotations
 
 import argparse
+import csv
 import datetime as dt
 import json
 import sqlite3
@@ -53,6 +67,14 @@ from pathlib import Path
 from typing import Dict, Optional
 
 DEFAULT_DB_PATH = Path(__file__).resolve().parent.parent / "data" / "nfl.db"
+
+_CSV_COLUMNS = [
+    "adp_source", "mfl_id", "player_name", "position", "team", "rank",
+    "average_pick", "min_pick", "max_pick", "drafts_selected_in",
+    "draft_sel_pct", "fcount", "is_ppr", "is_keeper", "is_mock", "cutoff",
+    "period", "total_drafts_in_sample", "mfl_timestamp", "retrieved_at",
+    "ingested_at",
+]
 
 USER_AGENT = (
     "FantasyFootballBacktestProject/1.0 "
@@ -175,6 +197,41 @@ def store_adp(
     return len(rows)
 
 
+def snapshot_dir_for_db(db_path: Path) -> Path:
+    """CSV archive lives as a sibling of the DB's data/ dir, so it tracks
+    whichever checkout/worktree the DB belongs to."""
+    return db_path.resolve().parent / "adp-snapshots"
+
+
+def export_snapshot_csv(
+    conn: sqlite3.Connection,
+    db_path: Path,
+    date_str: str,
+    adp_source: str = ADP_SOURCE,
+) -> Optional[Path]:
+    """Write data/adp-snapshots/{date_str}.csv from the adp_snapshots rows
+    already in the DB for (adp_source, date_str). Returns the path written,
+    or None if there are no matching rows (never writes an empty file --
+    an absent snapshot must stay absent, not look like a zero-row 'capture').
+    """
+    rows = conn.execute(
+        "SELECT " + ", ".join(_CSV_COLUMNS) + " FROM adp_snapshots "
+        "WHERE adp_source=? AND substr(retrieved_at, 1, 10)=?",
+        (adp_source, date_str),
+    ).fetchall()
+    if not rows:
+        return None
+
+    out_dir = snapshot_dir_for_db(db_path)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    out_path = out_dir / f"{date_str}.csv"
+    with out_path.open("w", newline="", encoding="utf-8") as f:
+        writer = csv.writer(f)
+        writer.writerow(_CSV_COLUMNS)
+        writer.writerows(rows)
+    return out_path
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--db", type=Path, default=DEFAULT_DB_PATH)
@@ -190,8 +247,12 @@ def main() -> None:
     conn = sqlite3.connect(args.db)
     conn.execute(_CREATE_SQL)
     try:
+        today = dt.datetime.now(dt.timezone.utc).date().isoformat()
         if not args.force and already_fetched_today(conn):
             print("already fetched today (UTC); use --force to re-fetch")
+            csv_path = export_snapshot_csv(conn, args.db, today)
+            if csv_path is not None:
+                print(f"CSV archive already present: {csv_path}")
             return
         payload = fetch_adp(
             args.period, args.fcount, args.is_ppr, args.is_keeper, args.is_mock, args.cutoff
@@ -205,6 +266,11 @@ def main() -> None:
         if total_drafts and int(total_drafts) < 100:
             print(f"CAUTION: only {total_drafts} drafts behind this snapshot -- thin sample, "
                   f"do not weight heavily against fantasypros_ecr without measuring first")
+        csv_path = export_snapshot_csv(conn, args.db, today)
+        if csv_path is None:
+            print("WARNING: no adp_snapshots rows found for today's date -- CSV archive NOT written")
+        else:
+            print(f"wrote CSV archive: {csv_path} ({n} rows) -- CSV is the canonical archive")
     finally:
         conn.close()
 
