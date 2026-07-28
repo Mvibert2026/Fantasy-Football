@@ -363,13 +363,21 @@ assistant" wiring · LLM prose renderer
    and cannot be defended against shortcut bias at all.
 2. **ADP snapshot capture** — unrecoverable if delayed; a past date's snapshot cannot be backfilled.
    `adp_source='mfl_proxy'` (ADR-035, `src/ingest_mfl_adp.py`) is the only live source (FFC/Yahoo/
-   ESPN remain blocked/unattemptable per `docs/deferred.md`); 2026-07-27's snapshot landed (246
-   rows, `total_drafts_in_sample=47`, thread 077) after being found missing. A Windows Scheduled
-   Task (`FantasyFootball_MFL_ADP_Daily`, daily 09:00, current-user scope, targets the main
-   checkout's `src/ingest_mfl_adp.py` and `data/nfl.db`) now runs it going forward with no
-   agent/WebFetch involvement — verify periodically that it actually fired (`SELECT MAX(retrieved_at)
-   FROM adp_snapshots WHERE adp_source='mfl_proxy'`), since no task-run-history check has been done
-   yet.
+   ESPN remain blocked/unattemptable per `docs/deferred.md`). `adp_snapshots` currently has rows for
+   UTC 2026-07-26 and 2026-07-28 only — **UTC 2026-07-27 has a real, permanent gap** (discovered
+   2026-07-27 session, thread 077): the machine's UTC clock had already rolled to 07-28 by the time
+   the "today" backfill ran, so the row landed one calendar day later than assumed, and 07-27 UTC
+   can no longer be fetched from MFL. Each run now also writes
+   `data/adp-snapshots/YYYY-MM-DD.csv` (one per UTC date; **the CSV is canonical, the DB a cache of
+   it** — see `src/ingest_mfl_adp.py` docstring), tracked in git as the off-machine backup for the
+   one table in `data/nfl.db` that cannot be rebuilt. A Windows Scheduled Task
+   (`FantasyFootball_MFL_ADP_Daily`, daily 09:00, current-user scope) runs
+   `tools/run_adp_snapshot_task.bat` (main checkout only — ingest, then `git add`/commit/push scoped
+   to `data/adp-snapshots/*.csv`) with no agent/WebFetch involvement. Caveat: `schtasks` reports
+   `Logon Mode: Interactive only` (no stored run-as password) — it will not fire from a locked/
+   logged-out session; nobody has verified an actual unattended fire yet. Verify periodically:
+   `SELECT MAX(retrieved_at) FROM adp_snapshots WHERE adp_source='mfl_proxy'` and check
+   `data/adp-snapshots/` for a same-day CSV.
 3. **Mock drafts toward n=30** — gates the pre-registered availability decision rule.
 4. **FantasyPros licence decision — CLOSED (D-020).** No licence needed while the product stays
    private/personal/founder-only. Reopens on any second user, alongside D-021.

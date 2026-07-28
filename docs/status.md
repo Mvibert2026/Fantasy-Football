@@ -2688,3 +2688,35 @@ Ran `RUN-2026-07-27-overnight.md` PHASE 3 Chain 1 step 1.1 in
   Both pushed to origin. `git stash list` empty.
 - Did not touch `main`; did not run the full 800+ suite (data-ops-scoped work only, per dispatch
   instructions) — ran `tests/test_ingest_mfl_adp.py` only, 10 passed.
+
+## 2026-07-27 (continued) — founder amendment: CSV archive for ADP snapshots
+
+Founder amendment (relayed by coordinator) to chain1 step 1.1, same worktree/branch: `data/nfl.db`
+is gitignored/unbackable and `adp_snapshots` rows cannot be re-fetched once a day passes, so the
+DB alone is a single point of failure. Addressed:
+
+- `src/ingest_mfl_adp.py` now writes `data/adp-snapshots/YYYY-MM-DD.csv` (UTC date, matching the
+  existing once-per-day logic) on every run, mirroring the `adp_snapshots` columns exactly.
+  Docstring updated: the CSV is the canonical archive, the DB a queryable cache of it — if they
+  disagree, the CSV wins. `.gitignore` checked directly: no change was needed, `data/adp-snapshots/`
+  was never covered by `data/*.db` / `data/raw/` / `data/user pulled fantasy data/`.
+- **Important correction to the earlier report in this same log**: the "2026-07-27 backfill" logged
+  above actually landed under UTC date **2026-07-28** — the system's UTC clock had already rolled
+  past midnight by the time that command ran. `adp_snapshots` has zero rows for UTC 2026-07-27 (a
+  real gap between the 07-26 and 07-28 rows) and that day cannot be recovered from MFL now. Not
+  fabricated or backfilled with placeholder data — reported as an honest gap. CSVs were written for
+  both dates that do have rows: `data/adp-snapshots/2026-07-26.csv` (232 rows) and
+  `data/adp-snapshots/2026-07-28.csv` (246 rows).
+- Added a wrapper `tools/run_adp_snapshot_task.bat` **in the main checkout** (not the worktree —
+  necessary so the scheduled task survives worktree creation/merge/deletion; left untracked/
+  uncommitted there per worktree-isolation discipline, flagging for whoever next commits in main).
+  It runs the ingest script then `git add`/commit/push scoped only to `data/adp-snapshots/*.csv`.
+  Re-pointed the existing `FantasyFootball_MFL_ADP_Daily` scheduled task at this wrapper
+  (`schtasks /Change /TN ... /TR ...`) — succeeded, but `schtasks /Query /V` now reports
+  `Logon Mode: Interactive only` (no run-as password stored), meaning it will only fire while a
+  logged-in interactive session exists at 09:00, not truly unattended. Not yet verified to have
+  actually fired once.
+- Tests: `tests/test_ingest_mfl_adp.py` — 12/12 passed (2 new CSV-export tests added).
+- Commit `8eb6276` on `backend/phase3-chain1-adp-and-exports`, pushed. `git stash list` empty.
+- Replied on handoff thread 077 (not a new thread) with the corrected date finding and the CSV/
+  wrapper mechanism.
