@@ -4,7 +4,7 @@
 Threads are the source of truth. Change a thread's `STATUS:`, then re-run sync.
 Protocol: [`README.md`](README.md).
 
-**49 open** · 27 resolved
+**50 open** · 27 resolved
 
 ---
 
@@ -20,7 +20,7 @@ not an omission. Start your session at your own heading.
 | [005](005-fantasypros-tier.md) | Fantasypros tier | `pm` | BLOCKED-ON-YOU | 1d | bootstrap CIs, full-board projections |
 | [068](068-acceptance-harness-design-captures.md) | Acceptance harness design captures | `design` | OPEN | 0d | design drift being caught by a diff rather than by the founder |
 
-### `backend` — 23 waiting
+### `backend` — 24 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
@@ -47,6 +47,7 @@ not an omission. Start your session at your own heading.
 | [072](072-sim-staleness-fields-for-league-identity-current.md) | Sim staleness fields for league identity current | `frontend` | OPEN | 0d | 058 section C3 (design fidelity) |
 | [074](074-export-t5-freshness-result-onto-board-json.md) | Export t5 freshness result onto board json | `frontend` | OPEN | 0d | none |
 | [076](076-structural-gap-thread-id-allocator-race-across-c.md) | Structural gap thread id allocator race across c | `pm` | OPEN | 0d | none |
+| [077](077-adp-backfill-scheduled-task-landed-frontend-test.md) | Adp backfill scheduled task landed frontend test | `data-ops` | OPEN | 0d | none |
 
 ### `frontend` — 18 waiting
 
