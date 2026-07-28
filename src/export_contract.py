@@ -37,14 +37,22 @@ import freshness as fr
 import league_config as lc
 import make_board
 import roster_status as rst
+import suspensions as susp
 import team_codes as tc
 from config import DEFAULT_CONFIG
 from scoring import LEAGUE, ReplacementLevels
 
-CONTRACT_VERSION = "1.11.0"
+CONTRACT_VERSION = "1.12.0"
 SEASON = 2026
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 EXPORT_DIR = DATA_DIR / "export"
+
+# T4 (interim, thread 057): real, hand-curated, WebSearch-verified suspension
+# list -- see the file's own _comment for the research trail and why it is
+# currently empty. NOT the synthetic tests/fixtures/suspensions_2026.json
+# (that one stays synthetic and exists purely to unit-test the mechanism in
+# tests/test_suspensions.py). This is the one the live board actually reads.
+SUSPENSIONS_PATH = DATA_DIR / "suspensions_2026.json"
 
 # The 12-team convention public boards implicitly assume: 1QB/2RB/3WR/1TE, no
 # flex share -> QB12 / RB24 / WR36 / TE12. Differencing our board against this
@@ -129,6 +137,7 @@ def build_board_json(
     cfg: lc.LeagueConfig = lc.CURRENT_LEAGUE,
     enforce_freshness: bool = True,
     freshness_today=None,
+    suspensions_path: Path = SUSPENSIONS_PATH,
 ) -> dict:
     # T5 (fable-draft-day-premortem-2026-07-27.md finding #2): refuse to
     # build the live board from a snapshot older than
@@ -281,6 +290,17 @@ def build_board_json(
             ),
             "availability": avail.get(r.player, {}),
         })
+
+    # T4 (interim, thread 057): deterministic games-adjustment for known
+    # suspensions -- see src/suspensions.py's docstring. Deliberately applied
+    # to every league's board via this shared path (same reasoning as T5
+    # freshness: the mechanism is structural, not league-specific). Reads
+    # SUSPENSIONS_PATH by default, which is currently an empty, real,
+    # sourced list (see that file's _comment) -- an empty list is a no-op
+    # here (every row gets suspension_flag=False), which is the correct,
+    # honest behavior, not a bug.
+    known_suspensions = susp.load_suspensions(suspensions_path)
+    players = susp.apply_suspension_flags(players, known_suspensions)
 
     # Positions this league rosters as starters but that have no scoring
     # engine (K, DEF -- no kicker or DST stats are ingested, ADR-039/041).

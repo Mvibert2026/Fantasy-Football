@@ -36,7 +36,7 @@ are both still open to `frontend`, not touched this session.
 | Agent infrastructure | **Live** | Six subagents in `.claude/agents/` (backend, frontend, data-ops, strategist, researcher, librarian), `/inbox` command, mailbox tooling at `tools/handoffs.py` + `tools/sprint_status.py`, mailbox health enforced in the test suite (`tests/test_handoffs.py`) — **72 threads, 46 open, 0 stale** (`tools/handoffs.py check`, 2026-07-27) |
 | Data contract | **1.11.0** | `CONTRACT_VERSION` in `src/export_contract.py`, read directly. `board.json` carries `scoring_format` (ADR-051) and `roster_status` (ADR-050). |
 | Frontend location | `frontend/` subdirectory of this repo | Merged from `frontend-prep` via `git subtree add`, full history preserved. No longer a separate working copy. |
-| Frontend tests | **179 passing, 2 failing** (19 files) | Full suite, `npx vitest run`, single run, ~55s. The 2 failures are `ui/__tests__/trace-fields.test.ts` — **red by design**: `TRACE_CONTRACT` is still pinned to `1.9.0` and the trace registry doesn't know `roster_status` yet, correctly catching that nobody has acknowledged the 1.10.0/1.11.0 contract bumps in the frontend's own field registry. Not fixed here — frontend's to pick up (handoff 069 territory). |
+| Frontend tests | **192 passing, 2 failing** (21 files) | Full suite, `npm test` (runs `pretest`'s export sync first — a bare `npx vitest run` fails all 16 data-backed files with `public/data/_manifest.json` ENOENT), single run, ~40-60s. The 2 failures are still `ui/__tests__/trace-fields.test.ts` — **red by design**: `TRACE_CONTRACT` is still pinned to `1.9.0` and the trace registry doesn't know `roster_status` yet. Not fixed here — still handoff 069 territory, not touched this session. The +13 tests vs the prior 179/181 count are workstream C's dismissible-surface audit (11 tests: RefreshData Escape/outside-click/inside-click ×4, PlayerDetail Escape/backdrop-click/other-key ×3, AssistantDock open/Escape/outside/inside ×4) plus the freshness-banner coverage (2 tests). |
 | Python modules | **36** in `src/` | `ls src/*.py \| wc -l` |
 | Export artifacts | **11** top-level files in `data/export/` | `ls data/export/*.json \| wc -l` |
 | Config matrix | 26 dirs under `data/export/` | board + league + availability stub only; **hazard model not rerun per config**; count is a raw directory count, not inspected for which are real league configs vs. scratch. The 26th is `ethans_expert_league` (real league 2, see below), not a scratch probe config. |
@@ -111,8 +111,20 @@ this source** — that is a board-builder decision left open for backend/thread 
 Full detail: handoff 053's 2026-07-27 data-ops reply.
 
 Still true, unrelated to this fix: no per-league-2 format pull exists either, and the live API
-remains capped. Open decision for founder/backend unchanged: pay for a FantasyPros paid tier, or
-find another half-PPR-native *live* source, if a fresher-than-one-time CSV pull is ever needed.
+remains capped. **Re-scoped and costed 2026-07-27 (handoff 067, data-ops reply, workstream D).**
+Paid FantasyPros API tiers are real ($8.99/mo Premium, personal-use production keys; custom-priced
+Commercial) but whether either tier removes the specific 10-row cap on the rankings endpoint is
+**unverified** — the public pricing page describes call-frequency ("higher/highest rate limits"),
+not a per-response row ceiling, and the actual endpoint reference could not be pulled to check
+directly. No better free/live half-PPR-native alternative was found (Sleeper ADP and Underdog ADP
+are both the wrong shape — ADP not expert consensus; FFC is blocked by robots.txt regardless).
+Recommendation: continue with the DynastyProcess mirror as positional-order input plus the
+one-time manual CSV where it exists ($0, no new build), with each league's board tagged with which
+input it used — League 2 currently has **no** manual CSV pull at all and is running on the
+unscored mirror alone, which must be flagged rather than presented as equivalent to Westwood's. If
+the founder wants Option 1 tested, a one-month $8.99 trial plus one live call against the
+known-capped endpoint is cheap enough to greenlight without further data-ops research.
+Board-builder per-league tagging (backend's piece of thread 067) is not done yet.
 
 **T2 — CLOSED, 2026-07-27 (ADR-052).** CLAUDE.md §7's "verify against live league settings"
 caveat is resolved: the primary league ("Westwood", Yahoo, 10 teams) scoring table matches
@@ -147,24 +159,86 @@ settled until a session with the digging in scope confirms one.**
 
 ## Built and working
 
+**Workstream C, 2026-07-27: dismissible-surface audit + data-freshness-on-load.**
+Fixed the confirmed failing case first — the "Refresh data" popover
+(`frontend/ui/components/RefreshData.tsx`) previously closed ONLY via its own Dismiss button, no
+click-outside, no Escape; the founder could not clear it. Added a shared hook
+(`frontend/ui/lib/dismiss.ts`, `useDismissOnOutsideOrEscape`) and wired it into all three real
+dismissible overlays found in an audit of the whole app: the refresh popover, `PlayerDetail.tsx`
+(the click-outside backdrop already worked pre-audit; Escape did not, despite the close button
+being labelled "esc" with the key never actually wired), and `AssistantDock.tsx`'s expanded panel
+(neither existed before). The fourth candidate surface, DraftRoom's search suggester, was already
+correct (thread 051/063) and untouched. One enumerated test per surface (11 new tests total), not
+one generic test covering all three, per the project's own stated reasoning for why that
+granularity matters. All three verified live in a real running dev server (real Escape/mousedown
+DOM events dispatched, DOM state checked after a render-flush wait) — screenshot compositing was
+attempted and failed with the same "Browser pane is not displayed" error thread 058 hit; this is a
+sandbox limitation, not a skipped step.
+
+Separately, **data freshness on load**: found that `src/freshness.py`'s T5 check
+(`as_of_date`/`age_days`/`stale`) runs on every board build inside `export_contract.py`'s
+`build_board_json()` but is only ever printed to the build console — it is never attached to
+`board.json`'s returned dict, so no such field reaches the frontend (confirmed by dumping the real
+export's top-level keys; only `generated_utc`, the file-write timestamp, is present — a different
+claim). Rather than fabricate a client-side staleness computation, opened **thread 074** (to
+backend) asking for the real fields, and shipped an honest gap banner instead
+(`RefreshData.tsx`, `data-testid="freshness-note"`): shows the real `generated_utc`, states
+plainly that snapshot freshness isn't exported. Also closed a real structural gap: previously a
+plain page reload could silently serve an hours-old `public/data/` copy unless the dev server was
+restarted or "Refresh data" was clicked by hand. Fixed with `frontend/server/autoSync.ts`, a Vite
+dev-middleware that re-syncs `data/export/` -> `public/data/` on every request under `/data/`
+(coalesced, so a page load's ~10 parallel fetches cost one directory copy, not ten; fails open with
+a console error rather than taking the whole app down on a transient mid-write read). Verified
+live: `public/data/_manifest.json`'s `synced_utc` advances on a plain `fetch('/data/board.json')`
+with no button click and no server restart.
+
+Re-verified thread 058's four named board items (tier bands, positional rank, sort controls, DEF
+filter) before doing anything — all four confirmed already built this sprint, no rework done.
+Re-verified threads 071 (`global_tier`) and 072 (`sim_generated_at`/`sim_settings_hash`) against the
+live current exports — both fields confirmed still absent, both threads left `OPEN` (genuinely
+blocked on backend, not filled with an invented client-side substitute).
+
+192 passing / 2 pre-existing-red-by-design frontend tests (see Build state table), `tsc -b --noEmit`
+clean.
+
 **Last verified 2026-07-26 — not re-verified, EXCEPT the four bullets below (2026-07-27, ADR-050,
 this session, directly measured).**
 
 **T9 team-code crosswalk** (`src/team_codes.py`) — fixed the live JAC/LAR (FantasyPros) vs JAX/LA
 (nflverse) bye-week gap; `tests/test_floor_checks.py::test_t3_every_board_player_has_a_bye_week`
 went from measured-red (22 players, live symptom) to green by wiring the crosswalk into
-`export_contract.py`'s bye lookup and regenerating `board.json`, no other change. **T5 freshness
-tripwire** (`src/freshness.py`, `league_config.freshness_max_age_days=3` default) — live board
-build now refuses a stale/absent ECR snapshot and always prints its age. **T6 interim
-roster-status proxy** (`src/roster_status.py`) — `board.json` rows gained `roster_status`, derived
-from the pre-existing `contracts.is_active` column, verified against Tom Brady (retired, zero
-active-contract rows on file); explicitly labeled a proxy, not a real active/IR/PS feed (that
-needs new ingestion, out of this round's scope). **T4 interim suspension mechanism**
-(`src/suspensions.py`) — deterministic games-adjustment built and tested against a fixture, but
-the fixture is synthetic (no verified real 2026 suspension list was available to this session) and
-the mechanism is NOT wired into the live board; blocked on thread 057 for real data. Contract
-version bumped 1.9.0 → 1.10.0 for the `roster_status` field; handoff thread 066 opened to
-frontend.
+`export_contract.py`'s bye lookup and regenerating `board.json`, no other change.
+
+**T5 freshness tripwire — RE-VERIFIED end-to-end, 2026-07-27 (ADR-053), no gap found.**
+`export_contract.build_board_json` calls `fr.require_fresh(...)` unconditionally
+(`enforce_freshness=True` default) before every board build, via the single shared `write_all`
+path every league config uses — there is no per-league way around it. Previously only the pure
+`freshness.py` functions had test coverage; added `tests/test_freshness.py::
+TestBoardBuildActuallyRefuses` (2 tests, `@pytest.mark.requires_db`) proving the real entrypoint
+against the real `data/nfl.db` actually raises `StaleSnapshotError` when forced stale, and does
+NOT raise on the real (actually-fresh) snapshot. No code change needed — this was already solid.
+
+**T6 interim roster-status proxy** (`src/roster_status.py`) — spot-checked 2026-07-27, unchanged,
+still passing (6 tests incl. the Tom Brady case). `board.json` rows carry `roster_status`, derived
+from the pre-existing `contracts.is_active` column; explicitly labeled a proxy, not a real
+active/IR/PS feed (that needs new ingestion, out of scope this round).
+
+**T4 interim suspension mechanism — WIRED INTO THE LIVE BOARD, 2026-07-27 (ADR-053, thread 057
+reply).** `src/suspensions.py`'s deterministic games-adjustment (no probability model) is now
+called from `export_contract.build_board_json` for every league config via `write_all`, reading a
+new real, hand-curated list at `data/suspensions_2026.json` (`as_of_date: 2026-07-27`,
+WebSearch/WebFetch-sourced, `sources_checked` cited in the file). That list is **currently empty**
+— an exhaustive research pass found no confirmed, current, unserved, skill-position (QB/RB/WR/TE)
+2026 suspension (the one real 2026 suspension found, Charles Snowden/DE, has zero board
+consequence since this league has no individual defensive-player scoring at all, ADR-039); per
+project rule, nothing was fabricated to fill the gap. Every board row still emits the four
+suspension fields unconditionally (`suspension_flag: false` today, correctly, not silently
+absent). Synthetic fixture (`tests/fixtures/suspensions_2026.json`) is unchanged and still tests
+the mechanism itself. Contract version bumped 1.11.0 → 1.12.0 for the four new fields
+(`suspension_flag`/`suspension_games`/`projected_points_suspension_adjusted`/
+`suspension_adjustment_note`); handoff thread 073 opened to frontend. Thread 057 (data source
+research) remains open — this closed the narrower "not wired in" gap, not the fuller structured-
+source design its §4 reply proposed.
 
 Board + VBD with format-corrected replacement levels · identity hub (`mfl_id`) with quarantine ·
 live-availability hazard model · need-weighted `strategy_balanced` · mock-draft ingestion and
@@ -285,9 +359,10 @@ assistant" wiring · LLM prose renderer
    private/personal/founder-only. Reopens on any second user, alongside D-021.
 5. **`strategies.json` re-export** — stale at contract 1.7.0 while every other export artifact is
    now 1.10.0; app's version banner correctly flags this (thread 042, open to backend).
-6. **T4 real suspension data** — blocked on thread 057 (structured source still unresolved). The
-   deterministic games-adjustment mechanism exists (`src/suspensions.py`, ADR-050) but is not wired
-   into the live board; its only fixture is synthetic.
+6. **T4 real suspension data — interim CLOSED 2026-07-27 (ADR-053).** Real, dated, sourced list
+   wired into the live board (`data/suspensions_2026.json`, currently empty — verified, not an
+   oversight). Thread 057's fuller structured-source design (per-source schema, staleness test as
+   a blocking gate) remains open if a more permanent solution is wanted later.
 7. **T6 full roster-status ingest** — the live `roster_status` field on `board.json` is a proxy
    derived from `contracts.is_active` (ADR-050), not a real active/IR/practice-squad feed. Needs a
    new `roster_status_weekly`-shaped table from `nflreadpy.load_rosters()`, which is a DB-writing

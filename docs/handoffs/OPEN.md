@@ -4,7 +4,7 @@
 Threads are the source of truth. Change a thread's `STATUS:`, then re-run sync.
 Protocol: [`README.md`](README.md).
 
-**46 open** · 26 resolved
+**48 open** · 26 resolved
 
 ---
 
@@ -20,7 +20,7 @@ not an omission. Start your session at your own heading.
 | [005](005-fantasypros-tier.md) | Fantasypros tier | `pm` | BLOCKED-ON-YOU | 1d | bootstrap CIs, full-board projections |
 | [068](068-acceptance-harness-design-captures.md) | Acceptance harness design captures | `design` | OPEN | 0d | design drift being caught by a diff rather than by the founder |
 
-### `backend` — 21 waiting
+### `backend` — 22 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
@@ -45,8 +45,9 @@ not an omission. Start your session at your own heading.
 | [067](067-t1-multiformat-consensus-rescope.md) | T1 multiformat consensus rescope | `pm` | OPEN | 0d | T1 completion for leagues 2/3, board correctness for the non-primary leagues |
 | [071](071-global-tier-field-for-all-tab-board-grouping.md) | Global tier field for all tab board grouping | `frontend` | OPEN | 0d | 058 section B1 (design fidelity) |
 | [072](072-sim-staleness-fields-for-league-identity-current.md) | Sim staleness fields for league identity current | `frontend` | OPEN | 0d | 058 section C3 (design fidelity) |
+| [074](074-export-t5-freshness-result-onto-board-json.md) | Export t5 freshness result onto board json | `frontend` | OPEN | 0d | none |
 
-### `frontend` — 17 waiting
+### `frontend` — 18 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
@@ -67,6 +68,7 @@ not an omission. Start your session at your own heading.
 | [059](059-on-deck-recommendations.md) | On deck recommendations | `pm` | OPEN | 0d | FR-006 (draft chatbot), calm-preparation use case |
 | [066](066-contract-1-10-0-board-json-rows-gained-roster-st.md) | Contract 1 10 0 board json rows gained roster st | `backend` | OPEN | 0d | none |
 | [069](069-board-json-contract-1-11-0-new-scoring-format-fi.md) | Board json contract 1 11 0 new scoring format fi | `backend` | OPEN | 0d | none |
+| [073](073-board-json-contract-1-12-0-suspension-fields.md) | Board json contract 1 12 0 suspension fields | `backend` | OPEN | 0d | none |
 
 ### `data-ops` — 7 waiting
 

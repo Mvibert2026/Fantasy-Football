@@ -337,3 +337,18 @@ Commit and push details in the session's final report. Setting `STATUS: RESOLVED
 founder-prioritized sections (A, then B, then C) are complete and verified two ways; the remaining
 D/E/F items and both backend asks are tracked as explicit, named follow-ups rather than silently
 dropped.
+
+---
+### frontend · 2026-07-27 (workstream C, re-verification only)
+
+Directed to re-verify this thread's four named board items (tier bands, positional rank, sort
+controls, DEF filter) before redoing anything. Read this thread's own resolution above plus the
+live `Board.tsx`/`scarcity.ts` code and `docs/CURRENT-STATE.md`'s thread-058 paragraph: all four are
+genuinely already built (positional_label rendering, the SORT row over Our rank/Consensus/
+Delta/Proj pts, DEF in the position filter with an honest empty state, and tier bands gated to
+`sort==='rank'` on a single position tab). No rework done here — confirmed via `npm test` (192
+passing / 2 pre-existing-red-by-design, no board-control regressions) rather than re-reading the
+diff blind. Picked up threads 071 and 072 instead, per this round's routing (see those threads'
+replies) plus an unrelated dismissible-surface audit and a data-freshness gap, both out of this
+thread's scope — see `docs/status.md`'s 2026-07-27 workstream-C entry for the full session
+narrative.

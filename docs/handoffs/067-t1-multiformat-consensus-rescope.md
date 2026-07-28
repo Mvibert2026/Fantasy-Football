@@ -246,3 +246,36 @@ to this correction, not investigated further here). Commit hash: `f1b4ecf0b28881
 Scope respected: did not touch item 1/2 (consensus-pull source decision — appears another session
 progressed this in parallel per CURRENT-STATE.md, not reviewed here), did not touch Westwood/primary,
 did not touch ESPN/league 3. Leaving `STATUS: OPEN`.
+
+---
+### data-ops · 2026-07-27 (workstream D, T1 rescope + cost)
+
+Re-scoped item 1/2 (the consensus-pull source decision this thread left open above) and costed
+three concrete options, per this round's brief. Did not rebuild a pull against the known-capped
+endpoint.
+
+**Option 1 — paid FantasyPros tier.** Real, verified pricing (`fantasypros.com/api-data/`): Free
+$0, Premium $8.99/mo (personal-use production keys, "higher rate limits"), Commercial (custom,
+"highest rate limits"). Whether any tier actually removes the 10-row cap on the rankings/consensus
+endpoint is **unverified** — the pricing page describes call-frequency limits, not a per-response
+row ceiling, and `api.fantasypros.com/public/v2/docs` could not be fetched to check directly. This
+is the one number I was told not to invent, so it's stated as unknown rather than guessed.
+
+**Option 2 — alternate live half-PPR-native source.** Nothing found beats the current
+mirror/manual-CSV combination: Sleeper (ADP only, wrong shape), Underdog (ADP only, best-ball
+scoring), FFC (robots.txt-blocked regardless, and it's an ADP source, not consensus rankings).
+
+**Option 3 — continue DynastyProcess mirror (positional order) + one-time manual CSV where it
+exists, explicitly flagged per league. Recommended, cost $0.** `scoring.py` applies each league's
+real scoring downstream of the shared unscored input, so the *order* isn't simply wrong even
+though the *source* is shared (data-ops' own finding above still holds). The one real gap: League
+2 has **zero** manual-CSV coverage today (the existing pull is Westwood-only) and is running on
+the unscored mirror alone — this must be tagged (e.g. a `consensus_input_source` field per league
+in the board export) rather than silently presented as equivalent to Westwood's. If the founder
+wants Option 1 tested anyway, a $8.99 one-month trial plus one live call against the already-capped
+endpoint is a cheap way to get a real answer without further data-ops research.
+
+**Not done here:** backend's item 4 (board-builder per-league format assertion / a
+`consensus_input_source` export tag) — that's a code change on backend's side of this thread, not
+data-ops'. Leaving `STATUS: OPEN` for that reason; ESPN/league 3 remains out of scope, not
+supplied.

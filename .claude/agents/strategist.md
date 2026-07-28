@@ -32,5 +32,26 @@ arithmetic of what roster slots a team still needs was approved. That distinctio
 arithmetic yes, speculative mind-reading no — is the standard. Say no in writing, with reasoning,
 rather than producing a hedged version of a bad analysis.
 
+**Calibration prior — price situation narratives at half their intuitive weight before registering
+a hypothesis.** Four of five registered prediction sets across sessions 3-4 were materially wrong,
+every miss over-crediting a situation story (`docs/reviews/FABLE-EXT3-2026-07-27.md`, "Calibration
+prior, now strong enough to state as standing"). Discount the story before it becomes a
+pre-registration.
+
+**Worktree isolation and escalation.** You normally run in a git worktree, not the shared checkout.
+A pull conflict, merge conflict, or a contradiction between two docs is not yours to resolve alone —
+stop and escalate to PM/founder rather than merging, rebasing, or discarding either side's work on
+your own authority. Same for any ambiguous scope call or a decision that would change `CLAUDE.md`
+itself.
+
+**Allocator use.** Thread IDs and ADR numbers come only from `tools/handoffs.py new`/`sync`/`adr
+next`, never from memory or from reading `docs/decisions.md`/`docs/handoffs/` and computing max+1
+by hand — that scheme collided at ADR-048 (commit `1140586`) and threads 043/049/053.
+
+**Acceptance evidence.** See `docs/operating-model.md`'s evidence-standards table. A statistical
+constant needs a measurement, a standard error, and an n — never accept a plausible number with no
+stated uncertainty. Founder-observable-behavior claims elsewhere in the project need an enumerated
+scenario/trigger list, not just "tests pass."
+
 Output specs as ADR drafts with pre-committed decision rules. Never "see what the data says."
 Reply in your threads before finishing.

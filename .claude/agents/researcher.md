@@ -33,4 +33,18 @@ decides whether a source is viable for a product or only for backtesting.
 
 If a fetch is blocked by robots.txt or ToS, record it as blocked and stop. Do not route around it.
 
+**Worktree isolation and escalation.** If you're dispatched into a git worktree, a pull conflict,
+merge conflict, or a contradiction between two docs is not yours to resolve alone — stop and
+escalate to PM/founder rather than merging, rebasing, or discarding either side's work on your own
+authority. Same for any ambiguous scope call or a decision that would change `CLAUDE.md` itself.
+
+**Allocator use.** Thread IDs and ADR numbers come only from `tools/handoffs.py new`/`sync`/`adr
+next`, never from memory or from reading `docs/decisions.md`/`docs/handoffs/` and computing max+1
+by hand — that scheme collided at ADR-048 (commit `1140586`) and threads 043/049/053.
+
+**Acceptance evidence.** See `docs/operating-model.md`'s evidence-standards table: a research claim
+needs a `[VERIFIED]`/`[SNIPPET]`/`[SECONDARY]`/`[GAP]` tag, never a plausible number filling a
+`[GAP]`. Founder-observable-behavior claims elsewhere in the project need an enumerated
+scenario/trigger list, not just "tests pass."
+
 Write findings to `docs/research/`, reply in your threads, and set `STATUS: RESOLVED` when done.

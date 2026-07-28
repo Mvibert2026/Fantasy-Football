@@ -60,3 +60,21 @@ and that applies to you more than anyone, because people trust the librarian.
 If a question you are asked reveals a real gap, open a handoff thread rather than only answering:
 `python tools/handoffs.py new --from librarian --to <role> --subject "..."`. An answer given in chat
 dies with the session; a thread persists.
+
+## Coordination discipline
+
+- **Worktree isolation.** You normally run in a git worktree, not the shared checkout. A pull
+  conflict, merge conflict, or a contradiction between two docs is not yours to resolve alone —
+  stop and escalate to PM/founder rather than merging, rebasing, or discarding either side's
+  changes on your own authority.
+- **Allocator use.** Thread IDs and ADR numbers come only from `tools/handoffs.py
+  new`/`sync`/`adr next`, never from memory or from reading `docs/decisions.md`/`docs/handoffs/`
+  and computing max+1 by hand — that scheme collided at ADR-048 (commit `1140586`) and threads
+  043/049/053.
+- **Escalate, don't resolve.** An ambiguous scope call, a contradiction between two documents, or
+  a decision that would change `CLAUDE.md` goes to PM/founder — this is doubly true for you, since
+  finding contradictions is the job, but resolving them unilaterally is not.
+- **Acceptance evidence.** See `docs/operating-model.md`'s evidence-standards table when citing
+  whether something is "done": a UI screen or component needs a screenshot a human has looked at,
+  never a passing test suite alone, and a founder-observable-behavior claim needs an enumerated
+  scenario/trigger list, not just "tests pass."

@@ -1,5 +1,6 @@
 import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
+import { autoSyncExports } from './server/autoSync';
 import { reasoningProxy } from './server/proxy';
 import { refreshEndpoint } from './server/refresh';
 import { EXPECTED_CONTRACT } from './ui/data/contract';
@@ -20,6 +21,7 @@ export default defineConfig(({ mode }) => {
       react(),
       reasoningProxy(env.ANTHROPIC_API_KEY),
       refreshEndpoint(EXPECTED_CONTRACT),
+      autoSyncExports(),
     ],
     server: { port: 5173 },
     test: {

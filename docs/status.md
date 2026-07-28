@@ -2361,3 +2361,209 @@ a thread reply.
   (including a binary zip of unverified provenance) into a commit without being asked is exactly
   the kind of scope creep this closeout should avoid. Tests pass with it present on disk regardless
   of git-tracking status. Flagging for the founder/backend to decide whether it should be committed.
+
+## Librarian session, 2026-07-27 (Workstream A of a 4-way parallel round) -- CLAUDE.md/agent-file fix
+
+Closed the gap the sprint-closeout self-audit (above) named directly: CLAUDE.md's "standing law,"
+read first by every agent, never mentioned the ID allocator at all. Fixed narrowly, per this
+session's scoped task (not the larger W7 rewrite -- Sections 1-12 untouched):
+
+- CLAUDE.md's "## Agent operating rules" -> "Inter-agent communication" section now has a 4-line
+  pointer: thread IDs/ADR numbers come only from tools/handoffs.py new/sync/adr next, never
+  hand-typed or computed by directory+1, citing the 043/049/053/ADR-048 collisions and pointing at
+  docs/handoffs/README.md for the full protocol. Impossible to miss on a first read -- it now sits
+  right where the (previously incomplete) inter-agent-communication instructions already were.
+- All six .claude/agents/*.md files (backend, frontend, data-ops, strategist, researcher,
+  librarian) extended, not duplicated, to cover: (1) worktree isolation -- a pull/merge conflict or
+  doc contradiction is escalated to PM/founder, never resolved unilaterally; (2) allocator use, with
+  the ADR-048/threads-043-049-053 regression case cited where not already present (backend already
+  had the ADR half of this from an earlier session; added the thread-ID half plus the other five
+  files from scratch); (3) escalate-don't-resolve generalized to ambiguous scope and any decision
+  touching CLAUDE.md; (4) acceptance evidence -- pointer to operating-model.md's evidence table,
+  screenshot-over-passing-tests for UI, and the thread 051/063 story (16 passing tests + live DOM
+  verification still missed the "after a pick is committed" scenario because it was never
+  enumerated) as the concrete lesson for founder-observable-behavior claims generally.
+- backend.md only, two additional non-negotiables per this session's task: the "a source swap is
+  not a substitution" rule (citing src/ingest_rankings.py's DynastyProcess/nflreadpy mirror vs. the
+  assumed-format-aware FantasyPros live API, thread 053/067) and the no-new-direct-sqlite3.connect()
+  rule with the actual allowlist read out of tests/test_holdout_audit.py
+  (db.py, ingest_fantasypros_csv.py, ingest_mfl_adp.py, ingest_mock_drafts.py,
+  ingest_play_callers.py, ingest_rankings.py, ingest_reference.py, ingest_weekly_stats.py).
+- strategist.md only: added the calibration-prior discipline (price situation narratives at half
+  their intuitive weight before registering a hypothesis) per docs/reviews/FABLE-EXT3-2026-07-27.md's
+  "four of five registered prediction sets across sessions 3-4 were materially wrong" finding.
+
+Not touched, out of scope for this task: the larger W7 rewrite of CLAUDE.md Sections 2/3/8 (still
+describes a phantom Builder/Verifier/Statistician/Red-team agent tier and a stale build order -- see
+docs/reviews/fable-workflow-2026-07-27.md work order W7, still open, still librarian-owned as a
+separate ~1-session task). Thread 062 (backlog reconciliation, mine) is a different scope -- Parts
+1/3 of that thread are a separate reconciliation pass, not resolved or touched by this session; no
+reply added there since this session's work doesn't bear on its disposition-per-thread ask.
+
+tools/handoffs.py sync: 71 threads, 45 open. tools/handoffs.py check: mailbox check OK, none
+stale, all addressed; pre-existing non-fatal contradiction warnings unchanged by this session (none
+concern CLAUDE.md or the agent files). Docs-only change; no test suite run (no code touched).
+
+## 2026-07-27 — backend, T5 verification + T4 real suspension wiring (workstream B, worktree round)
+
+Ran the backend workstream B tasks from this round's brief: verify T5 (freshness tripwire) end to
+end rather than take CURRENT-STATE.md's claim on faith, and close T4's real "not wired into the
+live board" gap.
+
+**T5 — traced every call site.** `export_contract.build_board_json` calls `fr.require_fresh(...)`
+unconditionally before every board build via the single shared `write_all` path every league
+config funnels through (primary + `ethans_expert_league` both go through `create_league` ->
+`write_all` -> `build_board_json`) — there is no per-league special case that could skip it.
+Found a real gap in test coverage, not in the mechanism: `freshness.py`'s pure functions were
+well unit-tested, but nothing proved the real entrypoint (`build_board_json`) against the real
+`data/nfl.db` actually raises. Added `tests/test_freshness.py::TestBoardBuildActuallyRefuses` (2
+tests, `@pytest.mark.requires_db`): one forces staleness via the existing `freshness_today`
+injection point and confirms `StaleSnapshotError`, the other confirms the real (actually-fresh)
+snapshot does not raise, so the first isn't trivially true. No code change needed — T5 was
+already solid, now proven solid.
+
+**T4 — built the real interim data, closed the wiring gap.** Ran an exhaustive WebSearch/WebFetch
+research pass (PED/personal-conduct/gambling angles, publication dates checked to screen out
+stale 2023/2024 suspensions bleeding into 2026-dated search results — caught and discarded
+Jameson Williams, Alvin Kamara, DK Metcalf, and confirmed Rashee Rice was explicitly ruled NOT
+suspended for 2026). Found exactly one real, current, unserved 2026 suspension (Charles Snowden,
+Cowboys DE, 3 games) — not fantasy-relevant, this league has no individual defensive-player
+scoring. Built `data/suspensions_2026.json`, honestly empty of entries, dated and sourced, per the
+project's "never fabricate to fill a gap" rule. Wired `src/suspensions.py` into
+`export_contract.build_board_json` via the same shared `write_all` path as T5, so every league
+gets it. Contract bumped 1.11.0 -> 1.12.0 (ADR-053) for the four new unconditional board-row
+fields; handoff 073 opened to frontend; thread 057 got a reply noting the interim close without
+claiming resolution (not the `TO:` role).
+
+T6 (roster status) spot-checked, unchanged, still green.
+
+Full suite run with the real `data/nfl.db` copied into the worktree per the DB-writer-slot
+instructions. See commit message for final test count.
+
+## 2026-07-27 — Frontend session: thread 073 (dismissible-surface audit + data freshness on load), workstream C
+
+**Integration note (added at merge time):** this session's thread 073 collided with backend
+workstream B's own thread 073 (`073-board-json-contract-1-12-0-suspension-fields.md`) — both
+worktrees independently ran `tools/handoffs.py new`/`sync` against the same starting point (72
+threads) and each computed "next free = 73" without seeing the other's concurrent branch. Both
+followed the allocator convention correctly; the collision is the exact single-working-copy gap
+`docs/reviews/fable-workflow-2026-07-27.md` §B already flagged as unsolved. Resolved at merge:
+this session's thread renumbered 073 -> 074 (`074-export-t5-freshness-result-onto-board-json.md`),
+frontmatter `ID:` updated, `OPEN.md` regenerated after. No content changed beyond the ID/filename.
+
+Parallel round, workstream C of four (A/B/C/D), each in its own git worktree off `origin/main` @
+`44cdc99`. Confirmed current via `git fetch origin && git log origin/main..HEAD` before starting
+(clean, no divergence).
+
+**Task 2 (dismissible-surface audit) done first, per instruction, fixing the named failing case.**
+The "Refresh data" popover (`frontend/ui/components/RefreshData.tsx`) closed only via its own
+Dismiss button — no click-outside, no Escape — which is what the founder hit when they said they
+"can't clear" it. Audited the whole app for the same gap class rather than just patching this one
+spot: found two more real instances (`PlayerDetail.tsx`'s slide-over sheet had click-outside via its
+existing transparent backdrop but no Escape, despite its own close button being labelled "esc" with
+the key never wired; `AssistantDock.tsx`'s expanded panel had neither). The fourth candidate,
+DraftRoom's pick-entry search suggester, was already correct from thread 051/063 and left untouched.
+Built one shared hook, `frontend/ui/lib/dismiss.ts` (`useDismissOnOutsideOrEscape`), and wired it
+into all three. Wrote one enumerated test file/block per surface rather than one shared test, per
+this project's own stated reasoning (a single broken surface must not hide inside a passing
+aggregate): `ui/__tests__/refresh.test.tsx` (+4 tests: Escape, click-outside, no-close-on-inside-
+click, the previously-undismissable fetch-error state also gets Escape), `ui/__tests__/player-
+detail-dismiss.test.tsx` (new, 3 tests), `ui/__tests__/assistant-dock-dismiss.test.tsx` (new, 4
+tests). All three then verified live in a real running dev server (started manually on port 5199 —
+`.claude/launch.json` browser-tool config lives in the *shared* checkout, not this worktree, and the
+harness blocks editing that shared file directly from a worktree session; used `preview_start` with
+a raw `url` instead of a `name`), dispatching real `KeyboardEvent('keydown', {key:'Escape'})` and
+`MouseEvent('mousedown', ...)` against `document` and checking DOM state after a render-flush wait.
+One methodology trap worth recording: an early live check of `AssistantDock` searched for a stray
+`'—'` glyph to detect "panel open" and got a false positive from an unrelated bye-week `—` cell
+elsewhere on the board table (found first in DOM order) — switched to querying the dock's own
+`right:18px`/`bottom:18px` signature directly (`width:''` collapsed vs `width:'430px'` open), which
+resolved cleanly. Screenshot compositing itself was attempted (`computer{action:"screenshot"}`) and
+failed with the same "Browser pane is not displayed" error thread 058's session hit — a sandbox
+limitation, stated plainly rather than glossed over; live DOM/state verification stood in as the
+next-best evidence, per this project's own precedent for that exact failure mode.
+
+**Task 1 (data freshness on load).** Read `src/freshness.py` and `src/export_contract.py` in full
+before writing any frontend code, per the explicit instruction not to guess the field name. Found:
+`build_board_json()` calls `fr.require_fresh(...)` (T5) on every board build and gets back a real
+`FreshnessResult` (`as_of_date`/`age_days`/`stale`/`max_age_days`), but only ever `print()`s it —
+the result is never attached to the dict the function returns, so it never reaches `board.json`.
+Confirmed by dumping the real, current `data/export/board.json` and `data/export/league.json` top-
+level keys directly rather than trusting a stale doc: `board.json` has `generated_utc` (file-write
+timestamp) and nothing else freshness-shaped; `league.json` has neither `sim_generated_at` nor
+`sim_settings_hash` (relevant to thread 072, see below). Given the field genuinely doesn't exist,
+did not fabricate a client-side staleness computation. Instead: (1) opened handoff **073** to
+backend (numbered by `tools/handoffs.py new`, not hand-typed) asking for the real T5 fields to be
+attached to `board.json`'s output; (2) shipped an honest gap banner in `RefreshData.tsx`
+(`data-testid="freshness-note"`) showing the real `generated_utc` and stating plainly that snapshot
+freshness isn't exported yet — null-state discipline, not silence; (3) fixed a real structural gap
+independent of the missing field: a plain page reload could previously serve a `public/data/`
+copy that was stale relative to `data/export/` unless the dev server was restarted or "Refresh
+data" was clicked by hand (the only two things that ran `scripts/sync-exports.mjs`). Built
+`frontend/server/autoSync.ts`, a Vite dev-middleware mounted at `/data` that re-syncs before
+serving any export file, coalescing concurrent requests (the app fires ~10 parallel fetches per
+load) into one directory copy via a shared in-flight promise, and failing OPEN (log + continue
+serving the last-good copy) rather than throwing on a transient mid-write read — deliberately
+asymmetric with the Refresh button's own loud-failure behavior, which is the right place for that.
+Verified live, not just by reading the code: `public/data/_manifest.json`'s `synced_utc` advanced
+from a plain `fetch('/data/board.json')` inside the running page with no button click and no
+server restart.
+
+**Task 3 (thread 058's remaining board items).** Verified current state first, as instructed, before
+building anything. Read thread 058's own resolution and the live `Board.tsx`/`scarcity.ts` code:
+all four named items (tier bands, positional rank via `positional_label`, the four-way SORT row,
+DEF in the position filter) are genuinely already built this sprint. No rework done — confirmed via
+the passing test suite rather than re-deriving from scratch. Picked up threads 071 (`global_tier`
+for ALL-tab grouping) and 072 (`sim_generated_at`/`sim_settings_hash` for the league "CURRENT"
+badge) instead, per the routing this round specified. Re-verified both against the live, current
+exports (not the prior session's dump, in case a sibling backend workstream had landed the field
+mid-round): both fields confirmed still absent. Left both `OPEN`, replied with the re-confirmation,
+did not fabricate a client-side substitute for either (same discipline the threads themselves
+already established).
+
+**Numbers:** 192 passing / 2 pre-existing-red-by-design (`trace-fields.test.ts`, still pinned at
+`TRACE_CONTRACT 1.9.0` vs real `1.11.0` — handoff 069 territory, not touched), 21 test files, up
+from the prior 179/181-total baseline (+13: 11 dismiss tests, 2 freshness-banner tests). `tsc -b
+--noEmit` clean. `node_modules` had to be installed fresh in this worktree (`npm install`, 184
+packages) — worktrees do not share `node_modules` with the main checkout.
+
+Replied to threads 058, 071, 072, opened 074. `docs/handoffs/OPEN.md` refreshed via `tools/
+handoffs.py sync`. Commit hash and final test count in the session's closing report.
+
+## 2026-07-27 — data-ops: T1 multiformat consensus rescope (handoff 067, workstream D)
+
+Task: re-scope T1's consensus-pull format-awareness follow-on for the leagues actually in scope
+(Westwood, Ethan's Expert League; ESPN still out) and cost three options, per this round's brief.
+
+**Integration note (added at merge time):** this session's worktree was built from git history and
+never saw `docs/handoffs/067-t1-multiformat-consensus-rescope.md` — that file was real (248 lines,
+containing the actual verified league-2 scoring transcription and the founder's 12->10 team-count
+correction) but had sat **untracked** in the main checkout since an earlier session, so it wasn't
+part of any commit this worktree branched from. The agent noticed the mismatch, said so plainly,
+and reconstructed a shorter stand-in rather than silently fabricating continuity. Separately, the
+real file was committed to `main` directly (commit `fa2c52a`) while this round's four workstreams
+were running in the background. At merge time: the real 248-line file was kept as the base: this
+session's actual new content (the Option 1/2/3 cost analysis below) was appended as a new dated
+reply on top of it; the reconstructed pm-opening/data-ops stand-in sections were discarded as
+redundant with the real history. Nothing this session measured or found was lost.
+
+**Findings:**
+- FantasyPros API pricing (`fantasypros.com/api-data/`) is real: Free $0, Premium $8.99/mo
+  (personal-use production keys, "higher rate limits"), Commercial (custom, "highest rate limits").
+  Whether any tier removes the specific 10-row cap on the rankings/consensus endpoint is
+  **unverified** — the page describes call-frequency limits, not a per-response row ceiling, and
+  the endpoint reference (`api.fantasypros.com/public/v2/docs`) could not be fetched to check.
+- No better live half-PPR-native alternative found: Sleeper (ADP only, wrong shape), Underdog
+  (ADP only, best-ball scoring), FFC (robots.txt-blocked regardless, ADP not consensus).
+- Recommended Option 3: keep DynastyProcess mirror (positional order, `scoring.py` applies real
+  per-league rules downstream) + the existing one-time manual FantasyPros CSV where it exists
+  (Westwood only), with each league's exported board explicitly tagged with which input it used.
+  League 2 has zero manual-CSV coverage today and must not be presented as equivalent to Westwood.
+  Cost: $0, no new build. If founder wants Option 1 tested, a $8.99 one-month trial + one live call
+  against the already-capped endpoint is the cheap way to get a real answer.
+
+**Write-back:** reply appended to the real `docs/handoffs/067-t1-multiformat-consensus-rescope.md`,
+`STATUS: OPEN` unchanged (backend's board-builder tagging piece, item 4, not done). `CURRENT-STATE.md`'s
+consensus-pull paragraph updated in place with the sharper cost estimate. No ingestion run this
+session — 0 rows ingested/quarantined.
+
