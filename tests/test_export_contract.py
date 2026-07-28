@@ -237,6 +237,23 @@ def test_every_artifact_carries_the_provenance_pair(name):
     assert d.get("generated_utc"), f"{name} has no generated_utc"
 
 
+def test_board_json_carries_snapshot_freshness_fields():
+    """Thread 074: board.json's top level must carry the FreshnessResult
+    that build_board_json computes on every call, not just generated_utc
+    (file-write time). Checks the committed artifact, complementing
+    test_freshness.py's in-process assertion against a live conn."""
+    d = _load("board.json")
+    for key in (
+        "snapshot_as_of_date", "snapshot_age_days",
+        "snapshot_max_age_days", "snapshot_stale", "snapshot_freshness_note",
+    ):
+        assert key in d, f"board.json is missing {key!r}"
+    assert d["snapshot_max_age_days"] > 0
+    assert isinstance(d["snapshot_stale"], bool)
+    assert d["snapshot_as_of_date"] is None or isinstance(d["snapshot_as_of_date"], str)
+    assert d["snapshot_age_days"] is None or isinstance(d["snapshot_age_days"], int)
+
+
 def test_te_scenarios_is_gone_and_client_simulation_parameters_present():
     """ADR-033/034: te_scenarios encoded a named-manager repeat assumption found
     circular. It must not reappear, and the replacement mechanism (enough

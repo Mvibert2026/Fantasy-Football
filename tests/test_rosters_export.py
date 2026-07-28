@@ -180,12 +180,17 @@ def test_never_infers_a_team_need_beyond_slot_arithmetic():
 
 
 def test_contract_version_bumped():
+    # 1.13.0 (thread 074, T5 export): board.json top level gained
+    # snapshot_as_of_date/snapshot_age_days/snapshot_max_age_days/
+    # snapshot_stale/snapshot_freshness_note -- the FreshnessResult
+    # build_board_json already computed via fr.require_fresh on every call,
+    # previously printed to console only and never attached to the dict.
     # 1.12.0 (ADR-053, T4 suspensions wiring): board.json player rows gained
     # suspension_flag/suspension_games/projected_points_suspension_adjusted/
     # suspension_adjustment_note (src/suspensions.py wired into
     # build_board_json). 1.11.0 was thread 053/067's rewire onto
     # fantasypros_csv_2026draft plus the top-level scoring_format field.
-    assert ec.CONTRACT_VERSION == "1.12.0"
+    assert ec.CONTRACT_VERSION == "1.13.0"
 
 
 # -- real-DB test: today's actual state must be the empty case ---------------

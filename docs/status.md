@@ -2760,3 +2760,35 @@ place (`docs/CURRENT-STATE.md`); this entry appended.
 
 Commit `7869bf1` on `backend/phase3-chain1-adp-and-exports`, pushed. `git stash list` empty. Test
 count: `tests/test_ingest_mfl_adp.py` 13/13 passed.
+
+##  -- Phase 3 Chain 1 step 1.2 (backend): T5 freshness export, thread 074
+
+Added the FreshnessResult (src/freshness.py, already computed on every build_board_json call via
+fr.require_fresh but only printed to console) onto board.json top level:
+snapshot_as_of_date, snapshot_age_days, snapshot_max_age_days, snapshot_stale,
+snapshot_freshness_note. Bumped CONTRACT_VERSION 1.12.0 -> 1.13.0. Rebuilt board.json,
+glossary.json, nulls.json, opponents.json (export_static.py also reads CONTRACT_VERSION) and
+confirmed real values (as_of=2026-07-27, age=1d, max=3d, stale=False) with a direct dict dump, not
+just a passing test. No separate provenance/trace section exists in board.json beyond
+generated_utc/contract_version -- extended those, did not invent a parallel mechanism. Updated
+docs/data-contract.md (board.json field table + changelog; also backfilled the header version,
+which had silently drifted to 1.12.0 in code across sessions the doc changelog never recorded --
+not reconstructing that gap, just noting it). Added tests/test_freshness.py::
+TestBoardBuildActuallyRefuses::test_board_json_carries_the_freshness_result_it_computes (live-conn
+check against fr.check_freshness computed independently) and
+tests/test_export_contract.py::test_board_json_carries_snapshot_freshness_fields (committed-artifact
+check). Found and fixed a stale hardcoded version pin,
+tests/test_rosters_export.py::test_contract_version_bumped, asserting CONTRACT_VERSION == "1.12.0"
+-- would have gone red on the very next full-suite run had it not been caught here.
+
+Tests run (not full suite; export_contract/board-building scope per task): 52/52
+(tests/test_export_contract.py + tests/test_freshness.py), then 51/51 across
+test_multi_league_export.py + test_rosters_export.py + test_suspensions.py +
+test_generate_config_matrix.py + test_league2_ethans_expert.py + test_holdout_audit.py after the
+pin fix (was 50 passed/1 failed before the fix). All green, 0 red-by-design in this scope.
+
+Thread 074 replied and set STATUS: RESOLVED (I am backend, the TO: role, so authorized to close
+it). docs/handoffs/OPEN.md updated same session. docs/CURRENT-STATE.md updated in place
+(contract-version lines, thread-074 status). No permission prompts encountered. No rule invented
+beyond normal judgment calls (field names, doc backfill scope) already covered by the standing
+rules.

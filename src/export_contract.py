@@ -42,7 +42,7 @@ import team_codes as tc
 from config import DEFAULT_CONFIG
 from scoring import LEAGUE, ReplacementLevels
 
-CONTRACT_VERSION = "1.12.0"
+CONTRACT_VERSION = "1.13.0"
 SEASON = 2026
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 EXPORT_DIR = DATA_DIR / "export"
@@ -312,6 +312,27 @@ def build_board_json(
     return {
         "contract_version": CONTRACT_VERSION,
         "generated_utc": datetime.now(timezone.utc).isoformat(),
+        # T5 (thread 074): the FreshnessResult computed above via
+        # fr.require_fresh/check_freshness was being printed to the build
+        # console and then discarded -- board.json only carried generated_utc,
+        # which is the FILE WRITE time, not the underlying rankings snapshot's
+        # as_of_date. Those are different claims (a board built today from a
+        # 20-day-old snapshot has a fresh generated_utc and a stale snapshot).
+        # Attach the actual FreshnessResult fields so the UI can render real
+        # staleness instead of conflating the two.
+        "snapshot_as_of_date": freshness_check["as_of_date"],
+        "snapshot_age_days": freshness_check["age_days"],
+        "snapshot_max_age_days": freshness_check["max_age_days"],
+        "snapshot_stale": freshness_check["stale"],
+        "snapshot_freshness_note": (
+            "as_of_date/age_days/stale describe the rankings snapshot "
+            f"({make_board.SOURCE!r}, season {SEASON}) that this board was built from -- "
+            "NOT when this board.json file was written (see generated_utc for that). "
+            "stale=True means the snapshot exceeded snapshot_max_age_days as of build time; "
+            "enforce_freshness=True builds refuse to proceed past that point at all, so a "
+            "stale=True board only reaches this file when enforce_freshness was explicitly "
+            "disabled."
+        ),
         "league_id": cfg.league_id,
         "season": SEASON,
         "board_source": (

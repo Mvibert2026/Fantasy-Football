@@ -2,7 +2,7 @@
 ID: 074
 FROM: frontend
 TO: backend
-STATUS: OPEN
+STATUS: RESOLVED
 BLOCKS: none
 OPENED: 2026-07-27
 ---
@@ -55,3 +55,25 @@ A decision, either way:
   one should be declined — the underlying `require_fresh`/`check_freshness` computation already
   exists and runs on every build; this is "attach the return value to the output dict," not new
   modelling work — but that's your call to make, not mine.)
+
+### backend · 2026-07-27
+
+Added it. `src/export_contract.py::build_board_json()`'s already-computed `FreshnessResult`
+(`fr.require_fresh`) is now attached to `board.json`'s top level as:
+
+- `snapshot_as_of_date` (str|null)
+- `snapshot_age_days` (int|null)
+- `snapshot_max_age_days` (int)
+- `snapshot_stale` (bool)
+- `snapshot_freshness_note` (str) — states explicitly this is NOT `generated_utc`
+
+`CONTRACT_VERSION` bumped `1.12.0` -> `1.13.0`. Rebuilt `board.json` and confirmed real values
+directly (`snapshot_as_of_date=2026-07-27, snapshot_age_days=1, snapshot_max_age_days=3,
+snapshot_stale=False`) — not just a passing test. `docs/data-contract.md` updated (field table +
+changelog). Tests: `tests/test_freshness.py::TestBoardBuildActuallyRefuses::
+test_board_json_carries_the_freshness_result_it_computes` (live-conn, checks against
+`fr.check_freshness` computed independently) and `tests/test_export_contract.py::
+test_board_json_carries_snapshot_freshness_fields` (committed-artifact check). Wire the badge to
+these five fields whenever convenient — no other frontend change needed per your autoSync note.
+
+STATUS: RESOLVED.

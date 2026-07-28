@@ -4,7 +4,7 @@
 Threads are the source of truth. Change a thread's `STATUS:`, then re-run sync.
 Protocol: [`README.md`](README.md).
 
-**51 open** · 27 resolved
+**50 open** · 28 resolved
 
 ---
 
@@ -21,7 +21,7 @@ not an omission. Start your session at your own heading.
 | [068](068-acceptance-harness-design-captures.md) | Acceptance harness design captures | `design` | OPEN | 0d | design drift being caught by a diff rather than by the founder |
 | [078](078-pick-level-adp-velocity-capture-blocked-mfl-has.md) | Pick level adp velocity capture blocked mfl has | `data-ops` | OPEN | 0d | none |
 
-### `backend` — 24 waiting
+### `backend` — 23 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
@@ -46,7 +46,6 @@ not an omission. Start your session at your own heading.
 | [067](067-t1-multiformat-consensus-rescope.md) | T1 multiformat consensus rescope | `pm` | OPEN | 0d | T1 completion for leagues 2/3, board correctness for the non-primary leagues |
 | [071](071-global-tier-field-for-all-tab-board-grouping.md) | Global tier field for all tab board grouping | `frontend` | OPEN | 0d | 058 section B1 (design fidelity) |
 | [072](072-sim-staleness-fields-for-league-identity-current.md) | Sim staleness fields for league identity current | `frontend` | OPEN | 0d | 058 section C3 (design fidelity) |
-| [074](074-export-t5-freshness-result-onto-board-json.md) | Export t5 freshness result onto board json | `frontend` | OPEN | 0d | none |
 | [076](076-structural-gap-thread-id-allocator-race-across-c.md) | Structural gap thread id allocator race across c | `pm` | OPEN | 0d | none |
 | [077](077-adp-backfill-scheduled-task-landed-frontend-test.md) | Adp backfill scheduled task landed frontend test | `data-ops` | OPEN | 0d | none |
 
@@ -166,5 +165,6 @@ _Nothing waiting on you._
 | [061](061-competitor-recommendation-audit.md) | Competitor recommendation audit | `pm` → `researcher` |
 | [063](063-suggester-reopen-regression.md) | Suggester reopen regression | `pm` → `frontend` |
 | [065](065-mailbox-tooling-build-for-062.md) | Mailbox tooling build for 062 | `librarian` → `backend` |
+| [074](074-export-t5-freshness-result-onto-board-json.md) | Export t5 freshness result onto board json | `frontend` → `backend` |
 | [075](075-defect-fabricated-reconstruction-of-thread-067-u.md) | Defect fabricated reconstruction of thread 067 u | `pm` → `pm` |
 
