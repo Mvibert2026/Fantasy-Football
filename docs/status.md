@@ -2720,3 +2720,43 @@ DB alone is a single point of failure. Addressed:
 - Commit `8eb6276` on `backend/phase3-chain1-adp-and-exports`, pushed. `git stash list` empty.
 - Replied on handoff thread 077 (not a new thread) with the corrected date finding and the CSV/
   wrapper mechanism.
+
+## 2026-07-27 (continued 2) — Amendments A & B: source stamping + MFL pick-level investigation
+
+Two more founder amendments to chain1 step 1.1, same worktree/branch, resolved with the founder
+before I acted (per coordinator).
+
+**Amendment A — per-platform ADP source stamping, done.** `src/ingest_mfl_adp.py`'s module
+docstring now states explicitly: ADP is a per-platform behavioural variable (drafters see their
+own platform's displayed ranks), `adp_source` must never be blended/averaged across platforms, and
+any future second ADP source gets its own distinct `adp_source` value. Inspected the only consumer
+(`availability.py::load_mfl_adp_source`) — already filters by a single `adp_source` in every query,
+no existing bug found. Added a regression test,
+`test_load_mfl_adp_source_never_blends_across_adp_source_values`, inserting a second synthetic
+platform's row for the same player/date and asserting the return value is the raw `mfl_proxy`
+figure, not an average. `tests/test_ingest_mfl_adp.py`: 13/13 passed. Commit `7869bf1`.
+
+**Amendment B — investigated MFL for pick-level draft results; blocked, did not build FFC.**
+Founder's ordered instruction: check MFL first, only fall back to FFC if MFL cannot supply it, and
+if neither works, land without it and open a PM thread rather than silently dropping the need.
+Checked MFL's documented API directly (`api_info?STATE=details`) and live-probed the endpoint:
+`TYPE=draftResults` exists but requires a specific league ID (`L=`) — confirmed via
+`GET .../export?TYPE=draftResults&JSON=1` → `"Missing League ID"` and `&L=00001` → `"Invalid
+league ID 00001"`. The only platform-wide, no-league-ID MFL export is `TYPE=adp` (the one already
+in use) — final average-pick figures, not per-pick sequences. No population-level "all mock
+drafts, pick by pick" endpoint exists, and this project doesn't hold specific MFL league IDs to
+query `draftResults` against. Per the founder's explicit instruction, did **not** build an FFC
+scraper — `docs/research/source-audit-2026-07.md` still records FFC as blocked (ToS unretrievable,
+conservative-default policy). Searched `docs/decisions.md` for the "D-021"-style one-time-
+historical-pull authorization the coordinator mentioned — not found under that or any label.
+Opened handoff **078** (data-ops → pm) recording the blocker plainly and asking for a founder
+decision on FFC (get an actual ToS answer, or accept the block indefinitely) rather than letting
+the need silently disappear.
+
+Chain1 step 1.1 lands with: DB backfill + honest UTC-date-gap finding, CSV backup mechanism,
+scheduled task (wrapper now owned/committed by coordinator directly to main), per-platform source
+stamping rule + test, and thread 078 open for the pick-level-capture decision. Docs updated in
+place (`docs/CURRENT-STATE.md`); this entry appended.
+
+Commit `7869bf1` on `backend/phase3-chain1-adp-and-exports`, pushed. `git stash list` empty. Test
+count: `tests/test_ingest_mfl_adp.py` 13/13 passed.

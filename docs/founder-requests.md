@@ -521,3 +521,29 @@ discovered a live instance of exactly that risk: the machine's UTC clock had alr
 midnight by the time the day's backfill ran, so UTC 2026-07-27 has zero rows and cannot be
 recovered from MFL now (2026-07-26 and 2026-07-28 both have data). Recorded as an honest gap, not
 backfilled with placeholder data.
+
+## Per-platform ADP source stamping must be a stated rule, never blended (Amendment A)
+
+**Raised:** 2026-07-27 (founder, amendment relayed mid-session to chain1 step 1.1, data-ops).
+**Status:** SHIPPED — `src/ingest_mfl_adp.py` docstring now states the rule explicitly (ADP is a
+per-platform behavioural variable; `adp_source` values must never be averaged/blended into a
+single consensus figure; any new source gets its own distinct `adp_source`). Regression test added:
+`test_load_mfl_adp_source_never_blends_across_adp_source_values`. See handoff thread 077 reply.
+
+## Founder decision needed: FFC ToS, for pick-level ADP-velocity capture (Amendment B)
+
+**Raised:** 2026-07-27 (founder, via coordinator, chain1 step 1.1 Amendment B).
+**Status:** OPEN — blocked, not built. The founder wants to test whether ADP velocity predicts
+actual draft position (pick residuals = actual pick minus same-day displayed ADP), which needs
+pick-level individual draft results. Ordered instruction was: check MFL first (already-integrated,
+ToS-clear source), only consider FFC if MFL can't supply it, and if neither works, land without it
+and surface the gap rather than dropping it. **MFL cannot supply it** — its only platform-wide
+export (`TYPE=adp`) gives final figures, not per-pick sequences; the per-pick `TYPE=draftResults`
+call requires a specific league ID this project doesn't hold. Per the founder's own instruction,
+no FFC scraper was built — FFC remains recorded as blocked (`docs/research/source-audit-2026-07.md`:
+ToS unretrievable, conservative-default no-scrape policy) pending an actual answer from FFC. A
+"D-021"-style one-time historical-pull authorization was mentioned as possibly existing but was not
+found in `docs/decisions.md` under that or any other label, and per the founder would not have
+covered this (recurring) capture even if it existed. **Needs a founder decision**: either get an
+actual ToS reply from FFC, or consciously accept the block indefinitely. Tracked in handoff thread
+078 (data-ops → pm).

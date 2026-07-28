@@ -377,7 +377,15 @@ assistant" wiring · LLM prose renderer
    `Logon Mode: Interactive only` (no stored run-as password) — it will not fire from a locked/
    logged-out session; nobody has verified an actual unattended fire yet. Verify periodically:
    `SELECT MAX(retrieved_at) FROM adp_snapshots WHERE adp_source='mfl_proxy'` and check
-   `data/adp-snapshots/` for a same-day CSV.
+   `data/adp-snapshots/` for a same-day CSV. **Per-platform stamping is a stated rule** (2026-07-27,
+   thread 077 reply): `adp_source` distinguishes platforms and must never be blended/averaged into
+   one consensus figure — enforced by `test_load_mfl_adp_source_never_blends_across_adp_source_values`.
+   **Pick-level ADP-velocity capture (pick residuals vs. same-day ADP) is BLOCKED, not built**
+   (thread 078): MFL's `TYPE=draftResults` requires a specific league ID we don't hold — the only
+   platform-wide MFL export is `TYPE=adp` (final figures, no per-pick sequence) — and FFC remains
+   blocked (ToS unretrievable, conservative-default policy, `docs/research/source-audit-2026-07.md`).
+   No FFC scraper was built. Open founder decision needed: get an actual FFC ToS answer, or accept
+   the block indefinitely.
 3. **Mock drafts toward n=30** — gates the pre-registered availability decision rule.
 4. **FantasyPros licence decision — CLOSED (D-020).** No licence needed while the product stays
    private/personal/founder-only. Reopens on any second user, alongside D-021.
