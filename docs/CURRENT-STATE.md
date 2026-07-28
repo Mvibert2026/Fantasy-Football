@@ -362,6 +362,14 @@ assistant" wiring · LLM prose renderer
    collection begins, or the mocks collected cannot validate `delta` no matter how many there are,
    and cannot be defended against shortcut bias at all.
 2. **ADP snapshot capture** — unrecoverable if delayed; a past date's snapshot cannot be backfilled.
+   `adp_source='mfl_proxy'` (ADR-035, `src/ingest_mfl_adp.py`) is the only live source (FFC/Yahoo/
+   ESPN remain blocked/unattemptable per `docs/deferred.md`); 2026-07-27's snapshot landed (246
+   rows, `total_drafts_in_sample=47`, thread 077) after being found missing. A Windows Scheduled
+   Task (`FantasyFootball_MFL_ADP_Daily`, daily 09:00, current-user scope, targets the main
+   checkout's `src/ingest_mfl_adp.py` and `data/nfl.db`) now runs it going forward with no
+   agent/WebFetch involvement — verify periodically that it actually fired (`SELECT MAX(retrieved_at)
+   FROM adp_snapshots WHERE adp_source='mfl_proxy'`), since no task-run-history check has been done
+   yet.
 3. **Mock drafts toward n=30** — gates the pre-registered availability decision rule.
 4. **FantasyPros licence decision — CLOSED (D-020).** No licence needed while the product stays
    private/personal/founder-only. Reopens on any second user, alongside D-021.

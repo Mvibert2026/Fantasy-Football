@@ -2659,3 +2659,32 @@ still pinned to `1.9.0` against the now-1.12.0 export — handoff 069/073 territ
 threads, 49 open, 0 stale, `check` OK. `docs/CURRENT-STATE.md` updated in place with all of the
 above.
 
+
+## 2026-07-27 — Chain 1 step 1.1 (data-ops, worktree phase3-chain1)
+
+Ran `RUN-2026-07-27-overnight.md` PHASE 3 Chain 1 step 1.1 in
+`.claude/worktrees/phase3-chain1`, branch `backend/phase3-chain1-adp-and-exports`.
+
+- Read `src/ingest_mfl_adp.py` (ADR-035) in full: plain `urllib.request`, honest User-Agent,
+  429 backoff, once-per-UTC-day cache — already the right shape, no WebFetch/interactive-tool
+  involvement. Cross-checked `docs/deferred.md`: FFC/Yahoo/ESPN remain blocked/unattemptable;
+  no other live ADP source was ever wired. MFL is the only mechanism in scope.
+- Backfilled the missing 2026-07-27 snapshot: `--force` run landed 246 rows,
+  `adp_source='mfl_proxy'`, `total_drafts_in_sample=47` (thin-sample CAUTION printed as designed).
+- Registered a Windows Scheduled Task, current-user scope, no admin: `FantasyFootball_MFL_ADP_Daily`,
+  daily 09:00, targets the main checkout's `src/ingest_mfl_adp.py` / `data/nfl.db` (not the
+  worktree). Verified via `schtasks /Query ... /V /FO LIST`: Status Ready, Enabled, Run As matth.
+- Confirmed `src/availability.py` never surfaces `mfl_proxy` as `league_adp` and keeps it out of
+  `default_ranking_sources` (existing test already enforced this).
+- Added `test_network_failure_raises_loudly_and_writes_no_row` to
+  `tests/test_ingest_mfl_adp.py` — stubs `urlopen` to raise, asserts propagation and zero rows
+  written. File: 10/10 passed.
+- Flagged (not fixed, out of scope): `frontend/tests/test_ingest_mfl_adp.py` is a byte-identical
+  duplicate of the root test file, from the frontend-prep merge (`2df3716`). Both run
+  independently under separate `pytest.ini` `testpaths`. Noted in handoff 077 for backend/PM to
+  decide on.
+- Opened handoff **077** (data-ops → backend) with full findings, for step 1.2 of this chain.
+- Commits on `backend/phase3-chain1-adp-and-exports`: `a9291f1` (test), `90fc994` (handoff docs).
+  Both pushed to origin. `git stash list` empty.
+- Did not touch `main`; did not run the full 800+ suite (data-ops-scoped work only, per dispatch
+  instructions) — ran `tests/test_ingest_mfl_adp.py` only, 10 passed.
