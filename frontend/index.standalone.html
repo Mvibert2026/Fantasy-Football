@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PREP — static board snapshot</title>
+    <!--
+      No Google Fonts CDN link here (unlike index.html): a self-contained file
+      cannot depend on an external host at view time. ui/styles/tokens.css's
+      --font-ui / --font-num both already end in a system-font fallback stack
+      (IBM Plex Sans/Mono -> system-ui/ui-monospace etc.), so dropping the
+      webfont just falls through to those -- a real, if minor, visual
+      difference from the live app, not a broken one.
+    -->
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/ui/main.standalone.tsx"></script>
+  </body>
+</html>

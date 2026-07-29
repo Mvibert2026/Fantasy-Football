@@ -25,7 +25,7 @@ const WORDMARK_VERSION = 'v0.9';
 
 export type Mode = 'prep' | 'draft' | 'season';
 
-const MODES: Array<{ key: Mode; label: string }> = [
+const DEFAULT_MODES: Array<{ key: Mode; label: string }> = [
   { key: 'prep', label: 'Prep' },
   { key: 'draft', label: 'Draft' },
   { key: 'season', label: 'Season' },
@@ -41,6 +41,7 @@ export function TopBar({
   leagueId,
   onSelectLeague,
   refreshSlot,
+  modes = DEFAULT_MODES,
 }: {
   mode: Mode;
   onModeChange: (m: Mode) => void;
@@ -53,6 +54,13 @@ export function TopBar({
   leagueId: string;
   onSelectLeague: (id: string) => void;
   refreshSlot?: ReactNode;
+  /**
+   * Which mode buttons render, defaulting to all three. The standalone build
+   * (ui/StandaloneApp.tsx) passes just Prep -- Draft mode is the live-draft
+   * loop and Season mode has no content, and neither can work from a frozen
+   * static file, so they are absent there rather than present-but-inert.
+   */
+  modes?: Array<{ key: Mode; label: string }>;
 }) {
   // Thread 058 section C3: a fuller identity string -- platform and draft
   // type, both real league.json fields (confirmed against the export;
@@ -213,7 +221,7 @@ export function TopBar({
       </button>
 
       <div style={{ display: 'flex', border: '1px solid var(--line2)' }}>
-        {MODES.map((m) => {
+        {modes.map((m) => {
           const active = mode === m.key;
           const bg = active ? (m.key === 'draft' ? 'var(--live)' : 'var(--acc)') : 'transparent';
           const fg = active ? '#0a0d12' : 'var(--dim)';
