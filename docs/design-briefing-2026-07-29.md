@@ -237,48 +237,44 @@ product and it sits fourth of five under a heading that reads like an appendix. 
 this category publishes that at all. Its placement is a design judgement, which is why it is in your
 half and not the accuracy half.
 
-## 12. Revised order of what would help most
+## 12. The priority order — this list supersedes every earlier one in this file
 
-1. **The two supplied-value controls in §8** — typed opponent names and the chosen draft slot. They
-   are being built right now and the supplied-versus-derived distinction is being decided by default
-   in their absence.
-2. **The inert-control treatment** in §10. One decision, six sites, and the founder is finding them
-   by clicking.
-3. **The two-track expression** in §9.1 — how a screen says "this league is the generic track" without
-   reading as broken.
-4. **The League settings boundary** in §9.2, specifically the line between settings that apply
-   instantly and settings that cannot apply at all.
-5. **The phone layout**, still real and still yours, demoted only because the research in §7 weakened
-   the case for broad visual investment ahead of scoped work.
-6. **The large-null ADP column** (§4) and the acceptance capture list (§6 item 4), both unchanged.
+**Set by the founder, 2026-07-29: "put phone design at the 4th priority not the first."**
 
+§6 item 1 said the phone layout was the most useful thing you could do. **That is superseded.** So is
+the ordering that briefly sat here. This list is the current one; where it disagrees with anything
+above, it wins.
 
----
+**1 · The draft screen's middle pane, specified once.** Five separate founder requests land in the
+same rectangle and specifying them one control at a time would decide the layout by accident:
 
-# Addendum 2 — founder's own read of the competition, 2026-07-29
+- tabs, including seeing recommendations *before* his pick (FR-049)
+- the periodic-table grid — **colour by position**, category convention, sortable by draft order or
+  position-by-team (FR-044)
+- where research insights surface near the relevant picks (FR-048)
+- VBD's column space and column headers in the draft list (FR-050, FR-055)
+- how "value versus the player expected at my next pick" shows its uncertainty (FR-051)
 
-He drafted in a live Yahoo room and captured five screenshots (recorded in
-`docs/founder-requests/FR-053-*`). His verdict, verbatim and unprompted:
+**2 · The two supplied-value controls.** Typed opponent names and the chosen draft slot are the first
+places in this app where the user *supplies* data rather than reading it. The standing rule is that a
+supplied value and a derived value never render as the same kind of thing, and right now that
+distinction is being settled by whoever writes the component.
 
-> "yahoo seems to have gotten worse and looks like a childs toy"
+**3 · One treatment for controls that cannot work.** Six of them (FR-037). The founder is finding
+them by clicking. One decision covers all six and it is the cheapest high-value thing in this file.
 
-> "fantasy pros still looks pretty good"
+**4 · The phone layout.** Still real, still yours, still the only item he has personally been blocked
+on — now fourth at his instruction rather than first. The constraint is unchanged and is the whole
+difficulty: **do not solve narrow screens by hiding data.** Make it reachable — sticky first column,
+horizontal scroll inside the table rather than the page, disclosure. Absence is only correct when
+something genuinely cannot function.
 
-**Treat this as the strongest single piece of design direction in the file.** It is the founder's own
-taste, stated about products he uses under a real clock, and it aligns with the independent research
-finding in §7 — that the category's returns on visual investment go negative past a certain point,
-and that ESPN's 2025 redesign drew complaints about density specifically.
+**5 · The two-track expression** (§9.1). How a screen says "this league is the generic track" without
+reading as broken. 26 of 27 leagues have no strategy data at all and four screens thin out on a
+league switch.
 
-Two things follow, and they narrow the design space usefully:
+**6 · The League settings boundary** (§9.2) — the line between settings that apply instantly and
+settings that cannot apply at all on a hosted site.
 
-- **Do not take Yahoo's visual language as the reference**, even where its *structure* is worth
-  copying. FR-053 catalogues real structural ideas there — the tabbed centre pane, the position-
-  coloured board grid, the "your turn" divider in the ranked list. Those are conventions worth
-  following. The chrome around them is not.
-- **FantasyPros is the closer reference for look and feel.** The founder named it unprompted as the
-  one that still reads well. Worth studying specifically rather than treating all competitors as one
-  undifferentiated category.
-
-This also sharpens FR-044's palette question. "Colour by position, pretty standard draft room stuff"
-plus "Yahoo looks like a child's toy" is a coherent brief: **the convention, executed with restraint**
-— saturated enough to scan at a glance, not so saturated it reads as a game.
+**7 · The large-null ADP column** (§4) and **the acceptance capture list** (§6 item 4). Both
+unchanged, both still worth doing.
