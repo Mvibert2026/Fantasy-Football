@@ -2189,3 +2189,68 @@ documents -- both true positives, not test bugs; confirmed pre-existing via `git
 `test_next_free_id_widens_past_local_tree_via_refs`,
 `test_find_fr_collisions_flags_conflicting_slugs`,
 `test_find_fr_collisions_silent_when_no_conflict` (`tests/test_founder_requests.py`).
+
+---
+
+## ADR-059 — A claim checker for live documents, proved on planted faults (2026-07-29, backend)
+
+**Context.** On 2026-07-29 five false claims in this project's own documents were found *by
+accident* during unrelated work: FFC described as robots.txt-blocked on the morning it became
+the primary daily capture; the cloud ADP capture described as "observed to succeed" and the
+local Windows task as "now redundant" when no scheduled run had ever fired (acting on it would
+have deleted the only working capture of an un-backfillable artifact); the Predictions tab
+listed as absent while `frontend/ui/views/Predictions.tsx` shipped; `docs/handoffs/README.md`
+stating design could not read the repo two days after it could, with the founder hand-relaying
+files as a result; and rankings history called unrecoverable when it re-pulls row-for-row. The
+founder personally caught six more the same day. Detection ratio ~6:1 in his favour and not
+improving. `docs/pm/CHARTER.md` sets the threshold for him stepping back as "zero interruptions
+**plus a detector that has caught planted faults**."
+
+**Decision.** Build the detector as a **closed registry plus a closed document scope**, not as
+prose analysis.
+
+- `docs/state-claims.toml` registers each checkable fact with its verification: `[[artifact]]`
+  (path on disk), `[[constant]]` (value read out of the defining source file), `[[status]]`
+  (a named source/capability with a polarity vocabulary), `[[count]]` (measured from a file).
+- `[scope].live_docs` names the ten documents that assert what is true *now*. Append-only logs
+  — `docs/status.md`, `docs/status/`, `docs/decisions.md`, `docs/handoffs/NNN-*.md`,
+  `docs/founder-requests/`, `SNAPSHOT-*`, `RUN-*` — are **never** scanned. Flagging a document
+  for correctly recording history is the false-alarm pattern that gets a checker switched off,
+  and this is the single biggest reason it stays quiet enough to be worth reading.
+- A live document may still narrate a superseded belief, if it marks it: `~~struck through~~`,
+  an `<!-- state-claims: ignore-block -->` region, or a named per-document suppression that
+  carries a written reason.
+- A `[[status]]` claim with **no** registered `truth` flags disagreement *between* live
+  documents. That is the cross-document-contradiction class and it needs no ground truth — the
+  honest form for a fact nobody has settled.
+
+**Alternative rejected.** Natural-language detection of factual claims across all documentation.
+It cannot be made precise here, and a checker that flags fifty things nobody acts on is worse
+than none: this project already has documents nobody trusts. The registry deliberately puts the
+cost of a claim on whoever writes it.
+
+**Evidence — both directions, which is the acceptance condition.**
+`tests/test_state_claims.py`, 21 tests. Six planted faults in `tests/fixtures/state_claims/`,
+each reproducing a real 2026-07-29 false claim in roughly the words the real document used;
+every one is caught, and every corrected counterpart passes clean. Fixtures substitute
+`{{CONTRACT_VERSION}}`/`{{BOARD_PLAYERS}}` from the live repo so a correct fixture cannot rot
+into a false one. Run against the real ten live documents, the checker found **eight live false
+claims on its first run** — the Predictions-tab line, FFC described as blocked in two places,
+`CONTRACT_VERSION` quoted as 1.13.0 against 1.14.0, the board stated as 511 players against 510
+on disk (twice), design's read access, and one superseded rankings-history conclusion. All eight
+corrected in this session; the checker now reports OK across ~4,000 lines of live prose with
+**zero false positives** and one reasoned path allowance.
+
+**Stated gap, asserted rather than described.** Whether a GitHub Actions *schedule* has fired is
+not readable from a checkout, so failure #2 (the ADP capture) has no verifiable truth. It is
+registered truth-less, which catches the two polarities coexisting across documents but would
+**not** catch a single document asserting the false version alone.
+`test_each_document_alone_does_not_fire_on_the_contested_claim` pins that limitation as a
+measured property rather than a paragraph in a report nobody rereads.
+
+**Constant?** None introduced. No statistical parameter, no model change.
+
+**Anti-rot.** The registry is itself checked: a registered path whose existence flips, a missing
+authority document, a suppression matching nothing, or a path allowance that has become
+unnecessary all fail the test. A suppression that outlives its reason is how this class of tool
+quietly stops working.

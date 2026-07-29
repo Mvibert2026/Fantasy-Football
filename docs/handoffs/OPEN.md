@@ -4,7 +4,7 @@
 Threads are the source of truth. Change a thread's `STATUS:`, then re-run sync.
 Protocol: [`README.md`](README.md).
 
-**47 open** · 35 resolved
+**48 open** · 35 resolved
 
 ---
 
@@ -13,12 +13,13 @@ Protocol: [`README.md`](README.md).
 Every role gets a section, including empty ones — an empty inbox is a fact worth stating,
 not an omission. Start your session at your own heading.
 
-### `pm` — 2 waiting
+### `pm` — 3 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
 | [068](068-acceptance-harness-design-captures.md) | Acceptance harness design captures | `design` | OPEN | 2d | design drift being caught by a diff rather than by the founder |
 | [081](081-thread-079-id-collision-between-main-and-the-pha.md) | Thread 079 id collision between main and the pha | `data-ops` | OPEN | 0d | none |
+| [083](083-claim-checker-is-live-eight-false-document-claim.md) | Claim checker is live eight false document claim | `backend` | OPEN | 0d | none |
 
 ### `backend` — 23 waiting
 

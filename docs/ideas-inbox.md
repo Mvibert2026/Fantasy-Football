@@ -169,3 +169,26 @@ newest at the bottom.
   a widened regex or a stated convention plus a one-off sweep — not another rule.** Same class as
   the ID allocator: the tool and the documents disagree, and the humans followed the documents.
 
+
+- **2026-07-29, backend (ADR-059).** `docs/pm/CHARTER.md` and `docs/pm/MEMORY.md` are the two
+  richest sources of live factual claims in the repo and are deliberately **not** in
+  `docs/state-claims.toml`'s `live_docs` — they are the PM role's files and outside the backend
+  write boundary, and a checker that can flag a document the failing session may not edit
+  produces a red suite with no fix. Adding them is a one-line change to `live_docs` and should be
+  done by a PM session that can also fix what it finds. Decided and logged rather than escalated.
+- **2026-07-29, backend.** The claim checker's `[[status]]` polarity mechanism generalises past
+  documentation: the same shape would catch a thread asserting a source is blocked when the audit
+  says otherwise. `tools/handoffs.py check` already emits ~29 non-fatal "contradiction warnings"
+  that nobody dispositions — worth folding those into the registry so contradictions are either
+  a failure with a named claim or nothing at all, rather than a warning stream. Not done here:
+  threads are history, and history is deliberately out of scope for this checker.
+- **2026-07-29, backend.** `docs/CURRENT-STATE.md` line ~44 and its own machine-generated Build
+  state table disagreed on the contract version for at least one session, because the prose is
+  hand-maintained and the table is generated. Anything `tools/state.py --apply` already measures
+  should probably not be restated in prose at all — the claim checker now makes the drift loud,
+  but the cheaper fix is not to write the number twice.
+- **2026-07-29, backend.** `CLAUDE.md` §12's companion-docs table should probably list
+  `docs/state-claims.toml` + `tools/state_claims.py` (ADR-059) alongside the other standing
+  guardrails, so a new session learns the "register a factual claim or don't make it" rule from
+  the spec rather than from a test failure. Not done here — CLAUDE.md is the standing law and
+  editing it is an escalation, not a backend decision. Raised in thread 083.

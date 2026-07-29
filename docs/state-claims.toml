@@ -1,0 +1,231 @@
+# Registry of checkable state claims.
+#
+# Read `tools/state_claims.py`'s module docstring first — it explains why this is a closed
+# list and not a general prose analyser.
+#
+# Rule for whoever adds a factual claim to a live document: if it is an existence claim, a
+# version claim, a source-status claim or a count, it must be registered here with its
+# verification. That puts the cost on the writer of the claim, which is where it belongs.
+# A claim that cannot be verified without guessing does not go in — leave it out and say so
+# in the document.
+#
+# Enforced by `tests/test_state_claims.py`. Run by hand: `python tools/state_claims.py`.
+
+[scope]
+# Only "live" documents are scanned — ones that assert what is true *now*.
+#
+# Deliberately excluded, and this exclusion is the single biggest reason the checker stays
+# quiet enough to be trusted:
+#   docs/status.md, docs/status/**  — append-only session logs, frozen by CLAUDE.md
+#   docs/decisions.md              — ADR log; earlier ADRs are *supposed* to be superseded
+#   docs/handoffs/NNN-*.md         — thread history
+#   docs/SNAPSHOT-*.md, docs/RUN-* — frozen point-in-time captures, by their own header
+#   docs/founder-requests*         — what was asked, not what is true
+#   docs/pm/**                     — owned by the PM role; see the note at the bottom
+# Flagging any of those would be flagging a document for correctly recording history, which
+# is the false-alarm pattern that gets checkers switched off.
+live_docs = [
+  "CLAUDE.md",
+  "docs/CURRENT-STATE.md",
+  "docs/CODE-MAP.md",
+  "docs/assistant-context.md",
+  "docs/handoffs/README.md",
+  "docs/design-protocol.md",
+  "docs/research/source-audit-2026-07.md",
+  "docs/can-we-rebuild-the-database.md",
+  "docs/operating-model.md",
+  "docs/deferred.md",
+]
+
+# ---------------------------------------------------------------------------------------
+# Class 1 — existence claims
+#
+# Real failure, 2026-07-29: CURRENT-STATE.md listed the Predictions tab as "absent from the
+# shipped app" while frontend/ui/views/Predictions.tsx existed and had shipped.
+# ---------------------------------------------------------------------------------------
+
+[[artifact]]
+id = "predictions-view"
+path = "frontend/ui/views/Predictions.tsx"
+exists = true
+aliases = ["Predictions tab", "Predictions screen", "Predictions view"]
+
+[[artifact]]
+id = "opponents-view"
+path = "frontend/ui/views/Opponents.tsx"
+exists = true
+aliases = ["Opponents tab", "Opponents screen"]
+
+[[artifact]]
+id = "availability-view"
+path = "frontend/ui/views/Availability.tsx"
+exists = true
+aliases = ["Availability Explorer", "Availability tab"]
+
+[[artifact]]
+id = "adp-snapshot-workflow"
+path = ".github/workflows/adp-snapshot.yml"
+exists = true
+aliases = ["adp-snapshot.yml", "the cloud ADP capture", "scheduled ADP capture"]
+
+[[artifact]]
+id = "ffc-ingester"
+path = "src/ingest_ffc_adp.py"
+exists = true
+aliases = ["FFC ingester", "ingest_ffc_adp"]
+
+# Backticked references to code paths under these prefixes must resolve on disk. Prefixes are
+# limited to directories that exist and that these documents cite constantly; anything else is
+# not checked, because docs legitimately name planned and external paths.
+[paths]
+prefixes = ["src/", "tests/", "tools/", "frontend/ui/", "frontend/e2e/", "frontend/server/", "scripts/", ".github/workflows/"]
+
+# Every allowance needs a reason, and each is checked for staleness: if the path comes to
+# exist, or stops being mentioned anywhere, the allowance itself fails. A suppression that
+# outlives its reason is how a checker quietly stops checking.
+[[paths.allow]]
+path = "src/mock_prediction.py"
+reason = "CODE-MAP.md cites it explicitly as living on branch `backend/mock-calibration-kickers`, not on main. Delete this allowance when that branch lands."
+
+# ---------------------------------------------------------------------------------------
+# Class 2 — version claims
+#
+# Real failure: several documents quote the export contract version in prose and drift from
+# CONTRACT_VERSION. CURRENT-STATE.md said 1.13.0 while src/export_contract.py said 1.14.0.
+# Patterns are present-tense assertions only. Narration of a bump ("1.11.0 -> 1.12.0",
+# "previously 1.9.0") is deliberately not matched — recording a change is not a false claim.
+# ---------------------------------------------------------------------------------------
+
+[[constant]]
+id = "contract-version"
+source = "src/export_contract.py"
+extract = 'CONTRACT_VERSION\s*=\s*"([^"]+)"'
+prose = [
+  '`?CONTRACT_VERSION`?\s+is\s+\**([0-9]+\.[0-9]+\.[0-9]+)',
+  'contract[_ ]version\s+(?:is\s+)?\**([0-9]+\.[0-9]+\.[0-9]+)',
+  'contract\s+version\s+is\s+(?:now\s+|currently\s+)?\**([0-9]+\.[0-9]+\.[0-9]+)',
+]
+
+# ---------------------------------------------------------------------------------------
+# Class 3 — source-status and capability claims
+#
+# Real failures: CURRENT-STATE.md said FFC was "blocked by robots.txt" on the morning it
+# became the primary daily capture; handoffs/README.md said "design cannot read this repo"
+# after design had had read access for two days, and the founder relayed files by hand
+# because of it.
+# ---------------------------------------------------------------------------------------
+
+[[status]]
+id = "ffc-access"
+aliases = ["FFC", "Fantasy Football Calculator"]
+truth = "unblocked"
+authority = "docs/founder-requests/FR-023-ffc-is-unblocked-founder-confirmed-no-restrictio.md"
+[status.vocab]
+blocked = [
+  "is blocked", "remains blocked", "blocked by robots", "robots-blocked",
+  "do not scrape", "must not be scraped", "treat as blocked", "is off-limits",
+]
+unblocked = [
+  "is unblocked", "unblocked", "no blocks", "no restrictions", "is available",
+  "is permitted", "now captured", "is the primary",
+]
+
+[[status]]
+id = "design-repo-read-access"
+aliases = ["design", "the design role", "design agent"]
+truth = "can_read"
+authority = "docs/design-protocol.md"
+[status.vocab]
+cannot_read = ["cannot read this repo", "can not read this repo", "cannot read the repo", "has no read access"]
+can_read = ["has read access to this repo", "can read this repo", "reads this repo directly"]
+
+# Cross-document contradiction with no registered truth (class 5). The checker flags any
+# disagreement *between* live documents without needing to know which side is right — which
+# is exactly what was missing when "rankings history is unrecoverable" and "it re-pulls,
+# verified row-by-row" sat in two documents at once.
+[[status]]
+id = "rankings-history-recoverability"
+aliases = ["rankings history", "rankings-history", "rankings_2021_2025", "2021–2025 rankings", "2021-2025 rankings"]
+truth = "recoverable"
+authority = "docs/can-we-rebuild-the-database.md"
+[status.vocab]
+unrecoverable = [
+  "unrecoverable", "cannot be recovered", "does not come back", "do not come back",
+  "cannot be re-pulled", "is gone entirely", "all fail",
+]
+recoverable = [
+  "re-pullable", "does still serve", "re-pulls", "reproduces the committed",
+  "row-for-row", "is recoverable",
+]
+
+# The 2026-07-29 failure this checker CANNOT verify, registered in the only honest form.
+#
+# "The automated capture has been observed to succeed, so the local task is now redundant" was
+# false — no scheduled run had ever fired; only a manual `workflow_dispatch` had. Acting on it
+# would have deleted the only working capture of an artifact that cannot be backfilled.
+# Whether a GitHub Actions *schedule* has fired is not readable from a checkout, so no `truth`
+# can be registered and no file can settle it. What the checker can still do is refuse to let
+# the two polarities coexist across live documents: if one says it runs unattended and another
+# says it has never fired on schedule, that is flagged without needing to know which is right.
+# A single document asserting the false version alone would still pass. That gap is real; see
+# the session log.
+[[status]]
+id = "adp-cloud-capture-schedule"
+aliases = ["scheduled ADP capture", "adp-snapshot.yml", "cloud ADP capture", "scheduled run", "the cloud capture"]
+[status.vocab]
+proven = ["has been observed to succeed", "is now redundant", "can be disabled", "runs unattended", "has fired on schedule"]
+unproven = ["has never fired", "has never run on schedule", "has never run", "do not disable", "never fired"]
+
+# ---------------------------------------------------------------------------------------
+# Class 4 — count claims
+#
+# Real failure shape: prose figures for player counts, artifact counts and thread counts
+# drift from disk and are then quoted onward as current.
+# Counts are skipped, not failed, when the artifact is absent — data/ is largely gitignored
+# and a fresh clone must not go red for that.
+# ---------------------------------------------------------------------------------------
+
+[[count]]
+id = "board-players"
+measure = "json_array_len"
+path = "data/export/board.json"
+key = "players"
+prose = [
+  'board is \**([0-9]{2,4})\** players',
+  'rebuilt at \**([0-9]{2,4})\** players',
+  'board (?:currently )?(?:holds|carries) \**([0-9]{2,4})\** players',
+]
+
+[[count]]
+id = "python-modules"
+measure = "glob_count"
+path = "src"
+pattern = "*.py"
+prose = [
+  '([0-9]{1,3}) Python modules in `?src/?`?',
+  '`?src/?`? (?:currently )?holds ([0-9]{1,3}) modules',
+]
+
+# ---------------------------------------------------------------------------------------
+# Suppressions
+#
+# Each one masks a literal phrase in one document. They exist so a document can quote a false
+# claim in order to correct it. They are checked for staleness: a suppression that no longer
+# matches anything is itself a failure, so they cannot silently outlive their reason.
+# ---------------------------------------------------------------------------------------
+
+[[ignore]]
+id = "design-protocol-quotes-the-old-readme"
+doc = "docs/design-protocol.md"
+contains = "cannot read this repo"
+reason = "design-protocol.md quotes the (now corrected) handoffs/README.md line in order to say it is false."
+
+# ---------------------------------------------------------------------------------------
+# Note on docs/pm/**
+#
+# CHARTER.md and MEMORY.md are the PM role's files and are out of the backend role's write
+# boundary, so they are not scanned here — a checker that can flag a document nobody in the
+# failing session may edit produces a red suite with no fix, which is its own kind of noise.
+# Adding them is a one-line change to live_docs and should be done by a PM session that can
+# also fix what it finds.
+# ---------------------------------------------------------------------------------------
