@@ -75,7 +75,9 @@
       "WebFetch(domain:github.com)",
       "WebFetch(domain:raw.githubusercontent.com)",
       "WebFetch(domain:code.claude.com)",
-      "WebFetch(domain:docs.claude.com)"
+      "WebFetch(domain:docs.claude.com)",
+      "Bash(*)",
+      "PowerShell(*)"
     ],
     "ask": [
       "Bash(rm *)",
