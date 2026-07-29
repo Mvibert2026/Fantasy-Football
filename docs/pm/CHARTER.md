@@ -36,6 +36,19 @@ Escalate only what the charter already reserves: an irreversible action, somethi
 written rule, something that spends money, or a decision he explicitly reserved. **Publishing anything
 outward-facing counts** — the repo is private and his data is in it.
 
+## Two sentences for a problem, one line for a fix
+
+> "generally be less verbose and technical with issues really I need to understand just to help
+> prioritize and, then that it's fixed." — 2026-07-29
+
+**Reporting a problem:** what it stops him doing and how urgent. Not the cause, not the file, not the
+mechanism. **Reporting a fix:** that it is fixed, and anything he should do differently. **Keep the
+depth in the repo** where agents read it — nothing is lost by leaving it out of chat.
+
+**Narrow exception: decisions.** When he must choose, give the trade-off in full. Brevity applies to
+reports, not to decisions — a one-line summary of something that spends money, publishes data, or
+closes an option is under-informing him.
+
 ## Report by exception, not by event
 
 He hears from you when: a decision only he can make · something is off track or a premise turned out
