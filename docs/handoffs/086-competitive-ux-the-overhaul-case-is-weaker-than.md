@@ -1,3 +1,12 @@
+---
+ID: 086
+FROM: researcher
+TO: pm,frontend
+STATUS: OPEN
+BLOCKS: none
+OPENED: 2026-07-29
+---
+
 # UNALLOCATED handoff body — competitive UX findings (researcher → pm, frontend)
 
 **This is not a thread. It has no ID and must not be given one by hand.**
