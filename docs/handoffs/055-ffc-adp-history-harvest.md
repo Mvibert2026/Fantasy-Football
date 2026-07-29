@@ -2,7 +2,7 @@
 ID: 055
 FROM: pm
 TO: data-ops
-STATUS: OPEN
+STATUS: RESOLVED
 OPENED: 2026-07-27
 BLOCKS: 046, 048 (bottom-up ranking), any ADP-vs-value work, availability model calibration
 ---
@@ -199,3 +199,50 @@ stated falsifier of the whole pass.
 
 No action needed from you beyond what the thread already asks. I am not blocked — pass 2 shipped
 with the proxy labelled — but the confidence interval on its main conclusion is set by this.
+
+---
+
+### data-ops · 2026-07-29
+
+**Done — historical FFC ADP backfilled for both the priority format (half-PPR) and non-PPR.**
+Full writeup: `docs/research/ffc-adp-history-backfill-2026-07-29.md`.
+
+**Rows: 2,467 stored, 333 quarantined, 0 dropped for lacking a date, across 19 season-formats
+(all 19 fetched successfully).**
+
+| Format | Team size | Seasons | Rows stored |
+|---|---|---|---|
+| Half-PPR (ranker's priority) | 12 | 2018, 2019, 2020, 2021, 2022, 2023, 2024 | 127, 138, 162, 187, 114, 180, 164 |
+| Non-PPR | 12 | 2013–2024 minus exclusions below | 28, 27, 52, 58, 94, 126, 137, 175, 185, 174, 173, 166 |
+
+New `adp_source` values: `ffc_half_ppr_12team`, `ffc_non_ppr_12team` — never blended with the
+daily 10-team capture (`ffc_*_10team`) or `mfl_proxy`. `sample_window` (your explicit ask) is kept
+verbatim on every row. `as_of_date` is the parsed window-END date (real historical draft cutoff),
+not the day this script ran — checked in the tests
+(`test_backfill_one_stores_with_window_end_as_of_date`).
+
+**Team count is 12, not Westwood's 10** — confirmed again this session that FFC's archive
+silently serves the 12-team page for any other size. Per your note, half-PPR 12-team is what got
+priority; non-PPR 12-team came along at effectively the same cost so it's included too, in case
+the format-vs-team-count rescaling work wants a second arm.
+
+**Two findings beyond the researcher's plan (§2 of the writeup):**
+1. **2010 non-PPR passes the date gate but the page itself is garbled** (DEF/QB/PK-heavy, no
+   Adrian Peterson, no Chris Johnson) — excluded despite passing the look-ahead check. This closes
+   the researcher's `[GAP]` about whether the 2010 anomaly was a WebFetch artifact: it wasn't,
+   confirmed with a direct fetch.
+2. Pre-2018 non-PPR boards (2013–2017) are real but thin (28–94 rows vs. 126–185 for 2018+) —
+   kept and reported, not dropped, because every row still carries a verified pre-draft date.
+
+**Quarantine (333 rows, `data/qa/ffc-adp-history-quarantine-2026-07-29.csv`):** 299
+`no_name_match` (near-entirely team defenses — `ff_playerids` has no DEF entities, a structural
+ceiling documented in `tools/ci_ffc_adp_snapshot.py` already), 34 `ambiguous_name_match`. No
+fuzzy matching anywhere in this run.
+
+**Seasons never fetched** (date-gate fail or archive doesn't exist): non-PPR 2007–2009 (retro
+aggregate), 2011 (window ends after kickoff), 2012 (marginal, excluded conservatively); half-PPR
+2015–2017 (no archive, empty shell); both formats 2025 (no archive at all, consistent with your
+sealed-holdout note).
+
+Not blocking on anything. Available for a next round if the rescaling work surfaces a gap this
+doesn't cover.
