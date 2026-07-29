@@ -5,7 +5,7 @@ Per-request files in this directory are the source of truth. Edit a request's ow
 `STATUS:` line, then re-run sync. Protocol: [`README.md`](README.md).
 Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests.md).
 
-**10 requests since freeze.**
+**11 requests since freeze.**
 
 ---
 
@@ -21,9 +21,11 @@ Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests
 | [FR-023](FR-023-ffc-is-unblocked-founder-confirmed-no-restrictio.md) | Ffc is unblocked founder confirmed no restrictio | 2026-07-29 | claude code session 2026-07-29 (PM takeover) |
 | [FR-027](FR-027-two-tiers-this-season-deep-custom-westwood-gener.md) | Two tiers this season deep custom westwood gener | 2026-07-29 | chat session 2026-07-29 (PM takeover) |
 
-## SCOPING — 0
+## SCOPING — 1
 
-_None._
+| ID | Subject | Raised | Source |
+|---|---|---|---|
+| [FR-028](FR-028-research-what-yahoo-s-in-draft-assistant-shows-t.md) | Research what yahoo s in draft assistant shows t | 2026-07-29 | chat session 2026-07-29 (PM takeover) |
 
 ## SPECCED — 0
 
