@@ -79,13 +79,25 @@ dispatch, **instruct escalation in the prompt** ("run this at high effort" — a
 
 **The pins as they stand, and the problem in them:**
 
+**The scale is `low · medium · high · xhigh · max`, and `high` is the DEFAULT — not the top.**
+Corrected 2026-07-29 after the PM described a role as "high effort" as though that were elevated.
+Two settings sit above it and were going unused.
+
 | Agent | Model | Effort |
 |---|---|---|
-| backend | sonnet | **low** |
+| backend | sonnet | medium |
 | data-ops | sonnet | low |
 | frontend | sonnet | high |
 | librarian | sonnet | medium |
-| researcher · strategist · pm | opus | high |
+| researcher | opus | **xhigh** |
+| strategist | opus | **xhigh** |
+| fable | fable | **max** |
+| pm | opus | high |
+
+`strategist` and `fable` sit above default because their mistakes are the expensive kind — a bad
+registration or a missed leakage finding costs a round and can invalidate everything downstream.
+`fable` is at `max` because it is the adversarial check of last resort and is described in this
+project's own records as the best value per token in it.
 
 **`backend` owns every statistical constant, the hazard model and the export contract, and is pinned
 lowest.** Its definition tells it to stop and ask for escalation — a rule that *requires* an

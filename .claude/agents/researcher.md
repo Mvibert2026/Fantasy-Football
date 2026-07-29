@@ -2,7 +2,7 @@
 name: researcher
 description: External web research — competitive analysis, platform defaults, data-source audits, voice-of-customer. Use when a claim needs sourced verification from outside the repo.
 model: opus
-effort: high
+effort: xhigh
 tools: Read, Write, Edit, Glob, Grep, WebSearch, WebFetch
 ---
 

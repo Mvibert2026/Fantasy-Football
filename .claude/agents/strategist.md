@@ -2,7 +2,7 @@
 name: strategist
 description: Independent statistical and methodological review. Specs formulas, red-teams assumptions, designs validation protocols and pre-registration. Deliberately has no database access. Use for named statistical questions only.
 model: opus
-effort: high
+effort: xhigh
 tools: Read, Write, Edit, Glob, Grep
 ---
 
