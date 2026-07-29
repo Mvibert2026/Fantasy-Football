@@ -50,9 +50,24 @@ annoying and which didn't reliably arrive. This has no email in the path and not
 
 **To turn the gate off:** delete `SITE_PASSWORD`. The site goes public again immediately.
 
+## 2b · One thing that had to change in the code (already done)
+
+The founder asked whether setting the password alone was actually enough. **It was not, and the
+instinct was right.**
+
+By default Cloudflare serves a matching static file straight from the edge and never runs the Worker
+— faster, and it skips the password check entirely. `index.html`, the JavaScript bundle and every
+board JSON would have stayed publicly readable no matter what `SITE_PASSWORD` was set to. Only
+`/__reasoning`, which is not a file, would have been gated.
+
+Fixed by `run_worker_first: true` in `wrangler.jsonc`, which forces every request through the script
+before any file is served. Already committed and deployed; nothing for you to do.
+
 ## 3 · Checking it worked
 
-- **Password:** open the site in a private window. A login box means it's on.
+- **Password:** open the site in a private window. A login box means it's on. **Then check a file
+  directly** — `draft.maplerock.net/data/board.json`. It must also ask for the password. If the page
+  is gated but that file loads, the gate is cosmetic and the data is still public.
 - **Assistant:** ask it something the templates can't answer. "Not configured" means the key isn't
   set or was saved as Text rather than Secret.
 - **Neither should affect the board.** Every other screen is computed from static files and doesn't

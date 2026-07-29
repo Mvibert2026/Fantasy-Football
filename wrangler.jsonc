@@ -40,6 +40,15 @@
     // `binding` is what makes env.ASSETS.fetch(request) available to the script.
     // Without it the Worker cannot serve the static build at all.
     "binding": "ASSETS",
+    // THE PASSWORD GATE DOES NOT WORK WITHOUT THIS. By default Cloudflare serves
+    // a matching static asset directly from the edge and never invokes the Worker
+    // -- faster, and completely bypasses worker/index.js's auth check, so
+    // index.html, the JS bundle and every board JSON would stay publicly readable
+    // no matter what SITE_PASSWORD was set to. `run_worker_first` forces every
+    // request through the script first, which is what makes the gate real.
+    // Caught by the founder asking whether the password alone was enough. It was
+    // not. (2026-07-29)
+    "run_worker_first": true,
     "directory": "./frontend/dist",
     // The app is a single-page build: unknown paths must return index.html so
     // client-side routing works instead of 404ing.
