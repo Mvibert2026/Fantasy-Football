@@ -93,6 +93,37 @@ async function main() {
     check('no load-failure banner', !/failed to load|could not load/i.test(bodyText ?? ''));
     await page.screenshot({ path: join(artifacts, 'board.png'), fullPage: false });
 
+    // ---- S1b: top bar layout, once real (post-load) content is in it ------
+    // Regression cover: the Prep/Draft/Season switcher was present in the DOM the whole
+    // time but got pushed past the right edge of the viewport once loaded content (the
+    // league detail pill, the freshness note) replaced the shorter loading-state
+    // placeholders -- invisible to the founder despite passing any test that only checks
+    // "is the toggle in the document." A real browser layout, not jsdom, is required to
+    // catch this class of bug at all.
+    const seasonBtn = page.getByRole('button', { name: 'Season', exact: true });
+    await seasonBtn.waitFor({ state: 'visible', timeout: 10_000 });
+    const seasonBox = await seasonBtn.boundingBox();
+    const viewportWidth = page.viewportSize()?.width ?? 0;
+    check(
+      'mode switcher (Season, the rightmost control) is inside the viewport once loaded',
+      !!seasonBox && seasonBox.x + seasonBox.width <= viewportWidth,
+      `right edge ${seasonBox ? seasonBox.x + seasonBox.width : 'n/a'} vs viewport ${viewportWidth}`,
+    );
+
+    const refreshBtn = page.getByRole('button', { name: 'Refresh data' });
+    const refreshBox = await refreshBtn.boundingBox();
+    const topBarHeight = 46; // ui/components/shell/TopBar.tsx's fixed bar height
+    check(
+      'Refresh data button does not overhang the top bar',
+      !!refreshBox && refreshBox.height <= topBarHeight,
+      `button height ${refreshBox?.height} vs bar height ${topBarHeight}`,
+    );
+
+    check(
+      'Board provenance line has no hardcoded "of N players loaded" denominator',
+      !/of \d+ players loaded/.test(bodyText ?? ''),
+    );
+
     // ---- S2: enter Draft mode --------------------------------------------
     await page.getByText('Draft', { exact: true }).first().click();
     const input = page.locator('input[placeholder^="Mark pick"]');

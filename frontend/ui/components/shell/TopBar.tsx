@@ -129,7 +129,7 @@ export function TopBar({
         title="Switch which league's data is loaded"
         style={{
           display: 'flex',
-          flex: 'none',
+          minWidth: 0,
           whiteSpace: 'nowrap',
           alignItems: 'center',
           gap: 8,
@@ -140,12 +140,22 @@ export function TopBar({
           fontSize: 11,
         }}
       >
-        <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--acc)' }} />
+        <span style={{ flex: 'none', width: 6, height: 6, borderRadius: '50%', background: 'var(--acc)' }} />
+        {/* A native <select> sizes its closed box to its widest <option>, not the
+            selected value -- with league names like "ESPN-default, 14 teams,
+            standard scoring" in the list, that blew this pill out past 500px wide
+            regardless of which league was actually selected. Capping the width and
+            eliding the rest keeps the box tied to what's showing, not to the
+            longest thing that could show. */}
         <select
           aria-label="Select league"
           value={leagueId}
           onChange={(e) => onSelectLeague(e.target.value)}
           style={{
+            flex: 'none',
+            maxWidth: 130,
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
             background: 'transparent',
             border: 0,
             color: 'var(--dim)',
@@ -160,7 +170,16 @@ export function TopBar({
             </option>
           ))}
         </select>
-        <span style={{ color: 'var(--dim2)' }}>{leagueDetail}</span>
+        <span
+          style={{
+            color: 'var(--dim2)',
+            minWidth: 0,
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+          }}
+        >
+          {leagueDetail}
+        </span>
       </div>
 
       <button

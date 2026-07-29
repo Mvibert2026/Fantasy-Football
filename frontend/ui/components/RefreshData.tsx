@@ -113,16 +113,31 @@ export function RefreshData({
       'result. This is an honest gap, not a silent omission.';
 
   return (
-    <div ref={wrapperRef} style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 8 }}>
+    <div
+      ref={wrapperRef}
+      style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}
+    >
       <span
         className="num"
         data-testid="freshness-note"
         title={freshnessTitle}
-        style={{ fontSize: 11, color: 'var(--dim2)', whiteSpace: 'nowrap' }}
+        style={{
+          fontSize: 11,
+          color: 'var(--dim2)',
+          whiteSpace: 'nowrap',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          minWidth: 0,
+        }}
       >
         {`exported ${boardGeneratedUtc ?? '—'} · ${freshnessText}`}
       </span>
-      <button onClick={refresh} disabled={busy} title="Re-read data/export/ and report what changed">
+      <button
+        onClick={refresh}
+        disabled={busy}
+        title="Re-read data/export/ and report what changed"
+        style={{ flex: 'none', whiteSpace: 'nowrap' }}
+      >
         {busy ? 'Checking…' : 'Refresh data'}
       </button>
       {(report || error) && (
