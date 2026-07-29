@@ -518,3 +518,19 @@ assistant" wiring · LLM prose renderer
    `resolve_snapshot_date`: 2021–2025 all fail, only 2026 resolves.
    The failure mode is silent — a clean checkout rebuilds a DB missing all three and every script
    still runs green, because nothing asserts those rows exist. **Blocks moving to cloud sessions.**
+10. **nflverse unused-data audit — 2026-07-29 (data-ops, this session), no ingestion, audit
+   only.** `docs/research/nflverse-unused-data-audit-2026-07-29.md`. Of 23 nflreadpy loaders, this
+   repo calls 10 (via `src/ingest_reference.py` + `src/ingest_weekly_stats.py`); 13 were never
+   called. Three worth pulling: `load_schedules()`'s `home_coach`/`away_coach` columns (1999–2026,
+   7,548 rows, zero nulls checked — **partially** closes the coaching gap: verified head-coach
+   identity per game, but not coordinator/play-caller duty, so `src/ingest_play_callers.py` stays
+   correctly parked pending the ESPN roundup it already names); `load_participation()`'s `route` +
+   `offense_players` columns (2016–2025, ~46K plays/season — a real, documented proxy for
+   test-registry #16/17 route-participation metrics, closing a real chunk of the route gap
+   CLAUDE.md §5 flags); `load_ff_opportunity()` (2006–2025, pre-fitted xFP model, flagged for
+   Statistician sign-off before use as a ranking input, not a Data Ops call). Confirmed
+   `ngs_receiving`/`rushing`/`passing` (already ingested) carry no route field, so the existing
+   route-gap claim was accurate for those three tables specifically. `load_ff_rankings()` attempted
+   and blocked — `403` from the proxy fetching `github.com/dynastyprocess/data`, recorded as
+   blocked, not retried. Nothing ingested this session; this is a scoping input for whoever owns
+   the coaching/route backlog items next.
