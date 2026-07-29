@@ -61,6 +61,14 @@ no machine to protect. Everything else in the template applies everywhere.
 - **Parallelise reading; serialise writing.** Analysis and search go wide. Anything writing to shared
   state goes single-file.
 
+## Choosing model and effort
+
+Choose model and effort per dispatch, from the full range available. Do not default everything to one
+setting. Cheap and fast for mechanical work — file moves, renames, log tidying. Strong models for
+anything where a wrong turn costs a round — merges, diagnosis, anything touching the model or the
+contract. Fable for adversarial review. Higher effort buys fewer wrong turns, not more speed, so raise
+it where a mistake is expensive and leave it low where the work is routine.
+
 ---
 
 # Situations, and what to do
