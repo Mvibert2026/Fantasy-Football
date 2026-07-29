@@ -21,7 +21,7 @@ not an omission. Start your session at your own heading.
 | [081](081-thread-079-id-collision-between-main-and-the-pha.md) | Thread 079 id collision between main and the pha | `data-ops` | OPEN | 0d | none |
 | [083](083-claim-checker-is-live-eight-false-document-claim.md) | Claim checker is live eight false document claim | `backend` | OPEN | 0d | none |
 | [086](086-competitive-ux-the-overhaul-case-is-weaker-than.md) | Competitive ux the overhaul case is weaker than | `researcher` | OPEN | 0d | none |
-| [091](091-component-projections-exist-but-none-are-redistr.md) | Component projections exist but none are redistr | `researcher` | OPEN | 0d | none |
+| [092](092-component-projections-exist-and-are-cheap-for-pe.md) | Component projections exist and are cheap for pe | `researcher` | OPEN | 0d | FR-040 (custom scoring in the browser), FR-053 feature decisions, FR-044/FR-049 design work |
 | [89](089-fr-040-costing-static-hosting-blocks-scoring-rec.md) | Fr 040 costing static hosting blocks scoring rec | `backend` | OPEN | 0d | FR-040 custom league settings screen |
 | [90](090-fr-043-audit-claude-md-ss5-staleness-built-but-u.md) | Fr 043 audit claude md ss5 staleness built but u | `librarian` | OPEN | 0d | none |
 
@@ -117,7 +117,7 @@ not an omission. Start your session at your own heading.
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
-| [091](091-component-projections-exist-but-none-are-redistr.md) | Component projections exist but none are redistr | `researcher` | OPEN | 0d | none |
+| [092](092-component-projections-exist-and-are-cheap-for-pe.md) | Component projections exist and are cheap for pe | `researcher` | OPEN | 0d | FR-040 (custom scoring in the browser), FR-053 feature decisions, FR-044/FR-049 design work |
 
 ### `founder` — 1 waiting
 

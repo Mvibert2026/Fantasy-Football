@@ -175,6 +175,16 @@ pass or is marked as unverified.
     route columns (2016-2025, a documented proxy for the route gap — must be labelled a proxy), and
     `load_ff_opportunity()` (2006-2025 pre-fitted xFP, needs Statistician sign-off before it is a
     ranking input). Nothing ingested yet.
+16. **Per-player COMPONENT projections now exist, personal-use only** (2026-07-29, data-ops,
+    thread 092, FR-056 — founder ruled "personal use, proceed").
+    `src/ingest_sleeper_projections.py` pulls `api.sleeper.com/projections/nfl/2026`
+    (`company: rotowire`) for QB/RB/WR/TE into `sleeper_projections` (as_of_date-stamped) and
+    `data/projection-snapshots/`. 2007 rows stored (250/538/840/379 by position), 1098 quarantined
+    as `no_sleeper_crosswalk_match` (real, all deep bench/UDFA). **Not wired into `board.json` or
+    any export, not behind the public site** — Sleeper's ToS forbids redistribution and the app is
+    public (thread 092 item 2's public-hosting/FantasyPros/FFC licensing escalation is still open,
+    unresolved by this work). Whether these projections improve the ranking model is a separate,
+    unregistered question for `ranker`/`strategist`.
 
 **Model**
 

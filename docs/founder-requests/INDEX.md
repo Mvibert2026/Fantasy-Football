@@ -5,7 +5,7 @@ Per-request files in this directory are the source of truth. Edit a request's ow
 `STATUS:` line, then re-run sync. Protocol: [`README.md`](README.md).
 Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests.md).
 
-**40 requests since freeze.**
+**41 requests since freeze.**
 
 ---
 
@@ -86,4 +86,5 @@ _None._
 | ID | Subject | Status |
 |---|---|---|
 | [FR-039](FR-039-late-round-te-is-the-draft-strategy-expression-o.md) | Late round te is the draft strategy expression o | `ANSWERED` |
+| [FR-056](FR-056-sleeper-component-projections-personal-use-proce.md) | Sleeper component projections personal use proce | `DONE` |
 
