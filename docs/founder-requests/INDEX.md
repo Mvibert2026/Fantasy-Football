@@ -5,11 +5,11 @@ Per-request files in this directory are the source of truth. Edit a request's ow
 `STATUS:` line, then re-run sync. Protocol: [`README.md`](README.md).
 Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests.md).
 
-**44 requests since freeze.**
+**45 requests since freeze.**
 
 ---
 
-## NEW — 32
+## NEW — 33
 
 | ID | Subject | Raised | Source |
 |---|---|---|---|
@@ -45,6 +45,7 @@ Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests
 | [FR-057](FR-057-availability-must-recompute-for-any-draft-slot-b.md) | Availability must recompute for any draft slot b | 2026-07-29 | chat 2026-07-29, PM session |
 | [FR-058](FR-058-the-recommendation-must-explain-itself-whenever.md) | The recommendation must explain itself whenever | 2026-07-29 | chat 2026-07-29, PM session |
 | [FR-059](FR-059-test-the-recommendation-s-four-constants-against.md) | Test the recommendation s four constants against | 2026-07-29 | chat 2026-07-29, PM session |
+| [FR-060](FR-060-adp-versus-production-find-where-the-market-is-s.md) | Adp versus production find where the market is s | 2026-07-29 | chat 2026-07-29, PM session |
 
 ## SCOPING — 1
 
