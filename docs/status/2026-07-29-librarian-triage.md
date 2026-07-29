@@ -68,3 +68,33 @@ None. No new gap was found that warranted a fresh thread — the two real bugs (
 - `/home/user/Fantasy-Football/docs/backlog-triage-2026-07-29.md`
 - `/home/user/Fantasy-Football/docs/fable-still-live-2026-07-29.md`
 - `/home/user/Fantasy-Football/docs/status/2026-07-29-librarian-triage.md` (this file)
+
+## Same-day correction: BLOCKED bucket re-tested
+
+The founder flagged that this same document's original BLOCKED bucket had carried the
+screenshot-compositing limitation forward from earlier sessions without re-testing it against
+today's environment — a document asserting something nobody re-checked, this project's recorded
+failure mode, happening again in a document I wrote hours earlier the same day.
+
+Went back through every thread in the BLOCKED bucket and re-read each one's own reply chain rather
+than trusting the bucket label. Result: **027, 028, 029, 041** were each blocked solely on the same
+screenshot-compositing gap ("the Browser pane is not displayed, so the page is not compositing
+frames") — verified by reading each thread's own text, not inferred. That gap is fixed today per
+`docs/frontend-cloud-runbook.md` (real Chromium via `executablePath`,
+`frontend/e2e/cloud-board-screenshot.mjs`, dated captures in `frontend/e2e/artifacts/`). Moved all
+four to STILL LIVE with a note that the remaining work is running the capture and attaching it, not
+re-building anything.
+
+Checked the rest of the BLOCKED bucket too, not just the ones that looked suspicious: 003, 006, 007,
+012, 030, 031, 035, 050 are blocked on a deliberate, on-record design-fidelity pause (confirmed in
+`docs/handoffs/035-frontend-catchup-runbook.md:77-81`, not a stale artifact). 076 and 081 are blocked
+on a genuinely unresolved thread-ID/ADR-allocator design question, unrelated to screenshots, FFC, or
+the database — confirmed by reading 081's latest reply, which explicitly says the problem is broader
+than worktrees and still needs a design owner. Also checked for the other two classes the founder
+named (FFC-blocked and database-unavailable-in-cloud-blocked items in the open BLOCKED bucket): none
+found — FFC's unblocking was already reflected correctly in STILL LIVE (thread 054/055), and the one
+thread about DB rebuild-in-cloud (080) was already closed, not sitting in BLOCKED.
+
+Edited `docs/backlog-triage-2026-07-29.md` in place (correction note at top, BLOCKED section trimmed,
+four items added to STILL LIVE with unblock reasons). No thread STATUS changed — that belongs to
+`frontend`/`pm`, not this role.
