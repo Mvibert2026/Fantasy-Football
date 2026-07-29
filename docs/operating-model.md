@@ -94,6 +94,30 @@ Append a row whenever usage data is available.
 
 **What can and cannot be measured here.** Subagents report their own token usage on completion, so per-dispatch cost is knowable and should be logged every session. **The founder's account-level usage, remaining quota, and the separate Fable budget are not visible to any agent** — no tool in the session exposes them. He checks those himself via `/usage` or his account settings. Do not claim to be monitoring his usage; state plainly what is and is not visible.
 
+### Standing instruction: log every dispatch, every session
+
+The founder asked on 2026-07-29 for this to be tracked continuously, with a purpose:
+
+> "monitor all that, and we'll be able to figure out how many tokens in a sesison they give me,
+> let's start next session and we'll try to max it out so we know"
+
+**So: append a row per dispatch, every session, without being asked.** Role, tier, task, tokens,
+tool calls, wall clock, and whether it was verified complete. The numbers arrive in each agent's
+completion report — capture them then, because they are gone once the session ends.
+
+**A deliberate ceiling-finding run is planned for the session after 2026-07-29.** The goal is to
+establish the real per-session budget by spending it, so the PM can size rounds against a measured
+number instead of a guess. Two things make that run useful rather than merely expensive:
+
+1. **Log continuously during it, not at the end.** If the session stops on a limit, anything not
+   already written down is lost — which is precisely the number the run exists to produce.
+2. **Spend it on work that was going to happen anyway.** A ceiling found by burning tokens on
+   throwaway tasks costs the same and leaves nothing behind. The queue is long enough that it
+   should not need padding.
+
+Record the outcome here, and in `docs/pm/MEMORY.md` §7, as a measured figure with the date — the
+limit may change, so an undated number becomes a trap.
+
 ---
 
 ## Open threads — do not resolve unilaterally

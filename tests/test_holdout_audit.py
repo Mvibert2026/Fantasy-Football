@@ -101,6 +101,7 @@ def test_reviewed_set_matches_log():
 CONNECT_ALLOWLIST = {
     "db.py",
     "ingest_fantasypros_csv.py",
+    "ingest_ffc_adp.py",
     "ingest_mfl_adp.py",
     "ingest_mock_drafts.py",
     "ingest_play_callers.py",
