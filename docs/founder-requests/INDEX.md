@@ -5,11 +5,11 @@ Per-request files in this directory are the source of truth. Edit a request's ow
 `STATUS:` line, then re-run sync. Protocol: [`README.md`](README.md).
 Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests.md).
 
-**26 requests since freeze.**
+**28 requests since freeze.**
 
 ---
 
-## NEW — 20
+## NEW — 22
 
 | ID | Subject | Raised | Source |
 |---|---|---|---|
@@ -33,6 +33,8 @@ Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests
 | [FR-039](FR-039-late-round-te-is-the-draft-strategy-expression-o.md) | Late round te is the draft strategy expression o | 2026-07-29 | chat 2026-07-29, PM session |
 | [FR-040](FR-040-custom-league-option-in-league-settings-two-hard.md) | Custom league option in league settings two hard | 2026-07-29 | chat 2026-07-29, PM session |
 | [FR-041](FR-041-prose-design-and-relevance-review-of-strategy-gu.md) | Prose design and relevance review of strategy gu | 2026-07-29 | chat 2026-07-29, PM session |
+| [FR-042](FR-042-presets-must-use-standard-scoring-only-westwood.md) | Presets must use standard scoring only westwood | 2026-07-29 | chat 2026-07-29, PM session |
+| [FR-043](FR-043-audit-for-capability-already-built-and-sitting-u.md) | Audit for capability already built and sitting u | 2026-07-29 | chat 2026-07-29, PM session |
 
 ## SCOPING — 1
 
