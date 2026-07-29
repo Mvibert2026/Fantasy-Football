@@ -598,6 +598,44 @@ projection whose accuracy was never demonstrated, presented identically to the o
 
 ---
 
+## D-025 · Data-loading and caching — focus revalidation, manifest diffing, progressive rendering
+**Status:** CLOSED — 2026-07-28 · **Raised by:** founder discussion, tonight's integration session
+
+**Decision.** No work. The multi-second delay the founder was reacting to is cold start on first
+open, not navigation. In-app navigation was measured at zero network requests. Focus revalidation,
+manifest diffing, and progressive rendering are all dropped — there is no navigation-time latency
+problem for any of them to solve.
+
+**Why this is closed rather than deferred.** This was a measured finding, not a prioritization call.
+Building any of the three against a problem that does not exist would be pure cost with no
+corresponding benefit.
+
+---
+
+## D-026 · Promote stale-snapshot advisory text to a blocking state
+**Status:** OPEN · **Raised by:** founder discussion, tonight's integration session (survives from the
+D-025 discussion) · **Standing priority:** "the app does not lie about itself"
+
+**What exists today.** The board already knows when its underlying data is too old —
+`board.json:snapshot_stale` / `snapshot_age_days` / `snapshot_max_age_days`, computed by
+`src/freshness.py` (T5, contract 1.13.0, thread 074) — but the UI only surfaces it as small
+11px advisory text (`data-testid="freshness-note"` in
+[RefreshData.tsx](frontend/ui/components/RefreshData.tsx)), easy to miss under a draft clock.
+
+**Rigorous default:** promote a STALE snapshot to an unmissable, blocking state rather than
+advisory text — consistent with how this file has resolved every other "does the UI make a claim
+loudly enough to be trusted" question (see D-003, D-008).
+
+**Why.** The product's stated differentiator is that it does not show numbers it cannot stand
+behind. An accurate claim rendered in text a user can draft straight past is functionally the same
+failure as not making the claim at all.
+
+**Status of the work: not started.** This is a decision record only — explicitly not built this
+session. Needs a design pass (what "blocking" means here — full interstitial vs. dismissible banner
+vs. something else — is not decided) before Frontend picks it up.
+
+---
+
 ## D-024 · The live latency budget for simulation lookahead
 **Status:** OPEN · **Raised by:** strategist, ADR-F (thread 045) · **Needed before:** Backend sizes the simulation and decides which degraded rung is the live default
 
