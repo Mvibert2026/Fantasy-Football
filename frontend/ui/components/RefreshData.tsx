@@ -1,3 +1,4 @@
+/// <reference types="vite/client" />
 import { useRef, useState } from 'react';
 import { EXPECTED_CONTRACT } from '../data/contract';
 import { useDismissOnOutsideOrEscape } from '../lib/dismiss';
@@ -11,6 +12,24 @@ import { useDismissOnOutsideOrEscape } from '../lib/dismiss';
  *
  * A no-op is reported as a no-op. "No update available" and "nothing happened because
  * the button is broken" look identical otherwise.
+ *
+ * The button itself is dev-server-only, and this now matters for real: the founder's
+ * daily use has moved to the hosted static build (the Cloudflare Worker site), where
+ * `/__refresh` was never wired up at all -- `server/refresh.ts`'s `configureServer` hook
+ * only attaches under `vite dev` (see vite.config.ts), so a production `vite build` never
+ * ships that middleware. On that build the button could only ever fail, which is the same
+ * present-but-inert problem that got Draft/Season mode excluded from the standalone build
+ * (see docs/frontend-cloud-runbook.md) -- so it is not offered there at all, per the
+ * founder's own ask ("we can remove that refresh data button"). `refreshAvailable` defaults
+ * to `import.meta.env.DEV` (true under `npm run dev`, false in any `vite build` output,
+ * including the hosted site) and exists as an explicit prop rather than an inline check so
+ * tests can force either branch without fighting how the bundler inlines `import.meta.env`.
+ *
+ * The freshness line (`data-testid="freshness-note"`) is unconditional either way -- hiding
+ * the button must never also hide the fact it existed to report. `generated_utc` and the
+ * snapshot-freshness fields (contract 1.13.0) already answer the question the button's label
+ * implies ("is what I'm looking at current"); the button was always upstream of them, never
+ * the source of the fact itself, so removing it loses no information.
  */
 
 interface ArtifactChange {
@@ -42,6 +61,7 @@ export function RefreshData({
   snapshotAgeDays = null,
   snapshotMaxAgeDays = null,
   snapshotStale = null,
+  refreshAvailable = import.meta.env.DEV,
 }: {
   onApplied: () => void;
   /**
@@ -62,6 +82,10 @@ export function RefreshData({
   snapshotAgeDays?: number | null;
   snapshotMaxAgeDays?: number | null;
   snapshotStale?: boolean | null;
+  /** Whether `/__refresh` can possibly exist to be called. Defaults to
+   *  `import.meta.env.DEV` -- see the module doc. Exposed as a prop so tests
+   *  can force either branch. */
+  refreshAvailable?: boolean;
 }) {
   const [report, setReport] = useState<RefreshReport | null>(null);
   const [busy, setBusy] = useState(false);
@@ -132,14 +156,16 @@ export function RefreshData({
       >
         {`exported ${boardGeneratedUtc ?? '—'} · ${freshnessText}`}
       </span>
-      <button
-        onClick={refresh}
-        disabled={busy}
-        title="Re-read data/export/ and report what changed"
-        style={{ flex: 'none', whiteSpace: 'nowrap' }}
-      >
-        {busy ? 'Checking…' : 'Refresh data'}
-      </button>
+      {refreshAvailable ? (
+        <button
+          onClick={refresh}
+          disabled={busy}
+          title="Re-read data/export/ and report what changed"
+          style={{ flex: 'none', whiteSpace: 'nowrap' }}
+        >
+          {busy ? 'Checking…' : 'Refresh data'}
+        </button>
+      ) : null}
       {(report || error) && (
         <div className="refresh-report">
           {error ? (

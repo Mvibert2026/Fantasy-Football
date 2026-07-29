@@ -5,7 +5,7 @@ Per-request files in this directory are the source of truth. Edit a request's ow
 `STATUS:` line, then re-run sync. Protocol: [`README.md`](README.md).
 Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests.md).
 
-**11 requests since freeze.**
+**13 requests since freeze.**
 
 ---
 
@@ -31,12 +31,14 @@ Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests
 
 _None._
 
-## IN PROGRESS — 2
+## IN PROGRESS — 4
 
 | ID | Subject | Raised | Source |
 |---|---|---|---|
 | [FR-024](FR-024-show-adp-on-the-prep-board-the-draft-screen-and.md) | Show adp on the prep board the draft screen and | 2026-07-29 | chat session 2026-07-29 (PM takeover) |
 | [FR-026](FR-026-capture-non-ppr-adp-as-well-alongside-half-ppr.md) | Capture non ppr adp as well alongside half ppr | 2026-07-29 | chat session 2026-07-29 (PM takeover) |
+| [FR-029](FR-029-opponents-screen-must-be-functional-during-a-liv.md) | Opponents screen must be functional during a liv | 2026-07-29 | frontend session, dispatched as "FR-032" in the task brief |
+| [FR-030](FR-030-remove-the-refresh-data-button-since-it-cannot-w.md) | Remove the refresh data button since it cannot w | 2026-07-29 | coordinator relay, mid-session, 2026-07-29 |
 
 ## SHIPPED — 0
 

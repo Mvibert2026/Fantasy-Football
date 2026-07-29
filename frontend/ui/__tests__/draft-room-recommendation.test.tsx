@@ -141,18 +141,20 @@ describe('thread 049 item 2: RECOMMENDED panel with WHAT YOU GIVE UP', () => {
   });
 });
 
-describe('thread 049 item 1: Board/Opponents/Predictions tab shell', () => {
+describe('thread 049 item 1 / FR-032: Board/Opponents/Predictions tab shell', () => {
   it('defaults to the Board tab showing the existing draft-room content', () => {
     renderDraftRoom();
     expect(screen.getByPlaceholderText(/Mark pick/)).toBeInTheDocument();
   });
 
-  it('switching to Opponents/Predictions shows an honest not-wired-in state, not fabricated content', () => {
+  it('switching to Opponents shows the live, pick-log-derived view (FR-032) -- empty state before any pick is entered', () => {
     // Thread 058 section C1: hub tab labels are sentence case ("Opponents",
     // not "OPPONENTS"), matching the design's boxed-tab treatment.
     renderDraftRoom();
     fireEvent.click(screen.getByRole('button', { name: 'Opponents' }));
-    expect(screen.getByText(/Opponents is not wired into Draft mode yet/)).toBeInTheDocument();
+    // FR-032: no fabricated roster grid before any pick exists -- one honest
+    // "no picks yet" sentence, not ten empty team cards.
+    expect(screen.getByText(/No picks yet\. Mark picks on the Board tab/)).toBeInTheDocument();
     expect(screen.queryByPlaceholderText(/Mark pick/)).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: 'Predictions' }));

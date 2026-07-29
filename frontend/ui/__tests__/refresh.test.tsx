@@ -79,6 +79,37 @@ describe('Refresh data control', () => {
     expect(screen.getByTestId('freshness-note')).toHaveTextContent('exported —');
   });
 
+  // Founder ask, 2026-07-29: "we can remove that refresh data button" -- because
+  // /__refresh is dev-server-only middleware (server/refresh.ts's configureServer
+  // hook never attaches under `vite build`) and his daily use has moved to the
+  // hosted static site, where the button could only ever fail. `refreshAvailable`
+  // defaults to `import.meta.env.DEV` in real builds; here it's forced explicitly
+  // so the test doesn't depend on how the bundler happens to inline that flag.
+  it('hides the Refresh data button when the endpoint cannot exist (a production/static build), but keeps the freshness fact on screen', () => {
+    render(
+      <RefreshData
+        onApplied={vi.fn()}
+        boardGeneratedUtc="2026-07-27T20:10:55.274740+00:00"
+        snapshotAgeDays={1}
+        snapshotMaxAgeDays={14}
+        snapshotStale={false}
+        refreshAvailable={false}
+      />,
+    );
+
+    expect(screen.queryByRole('button', { name: /refresh data/i })).not.toBeInTheDocument();
+    // The header must not silently lose the freshness information just because
+    // the (always-broken-there) button is gone.
+    const note = screen.getByTestId('freshness-note');
+    expect(note).toHaveTextContent('exported 2026-07-27T20:10:55.274740+00:00');
+    expect(note).toHaveTextContent('snapshot fresh (1d old, max 14d)');
+  });
+
+  it('shows the Refresh data button when the endpoint can exist (dev server)', () => {
+    render(<RefreshData onApplied={vi.fn()} refreshAvailable={true} />);
+    expect(screen.getByRole('button', { name: /refresh data/i })).toBeInTheDocument();
+  });
+
   it('says "no update available" instead of doing nothing visible', async () => {
     stubRefresh(NO_CHANGE);
     const onApplied = vi.fn();
