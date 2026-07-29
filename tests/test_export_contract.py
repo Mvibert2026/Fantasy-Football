@@ -333,7 +333,12 @@ import export_contract as ec
 
 
 def _adp_conn(with_snapshot: bool = True) -> sqlite3.Connection:
+    # export_contract._load_adp_snapshot reads columns by name (matching
+    # every other reader in export_contract.py) -- real callers get a
+    # sqlite3.Row-factory connection via db.connect(), so this fixture must
+    # too, or the join silently breaks in a way real usage never hits.
     conn = sqlite3.connect(":memory:")
+    conn.row_factory = sqlite3.Row
     conn.execute("CREATE TABLE player_ids (mfl_id TEXT, source TEXT, source_id TEXT)")
     conn.execute(
         "CREATE TABLE adp_snapshots ("
