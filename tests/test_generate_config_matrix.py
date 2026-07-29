@@ -47,6 +47,21 @@ def test_scoring_variants_only_change_receptions():
     assert standard["defense"] == full["defense"]
 
 
+def test_scoring_variants_use_standard_ruleset_not_westwood():
+    """FR-042: presets must NOT carry Westwood's custom ruleset (scoring.LEAGUE)
+    -- no stacking yardage bonuses, and the offense values match the founder's
+    explicit 'standard' definition, not scoring.LEAGUE's."""
+    from scoring import LEAGUE as WESTWOOD
+
+    variant = gcm.scoring_variant(0.5)
+    assert variant["offense"]["passing_yards"]["bonuses"] == []
+    assert variant["offense"]["rushing_yards"]["bonuses"] == []
+    assert variant["offense"]["receiving_yards"]["bonuses"] == []
+    assert WESTWOOD["offense"]["passing_yards"]["bonuses"] != []  # sanity: Westwood still has them
+    assert variant["offense"] != WESTWOOD["offense"]
+    assert variant is not WESTWOOD  # not even the same object
+
+
 def test_espn_and_yahoo_roster_shapes_roster_a_kicker_and_no_replacement_level_exists_for_it():
     """K has no scoring engine (same as DEF) -- both platforms roster one, so
     both must show up in unsupported_positions once exported."""

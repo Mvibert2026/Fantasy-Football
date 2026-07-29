@@ -1,6 +1,6 @@
 ---
 ID: FR-042
-STATUS: NEW
+STATUS: IN-PROGRESS
 PRIORITY: HIGH
 SOURCE: chat 2026-07-29, PM session
 RAISED: 2026-07-29
@@ -79,3 +79,31 @@ different things and needs re-checking.
 sane starting point, and "custom" becomes the escape hatch for a league that is neither standard nor
 Westwood. Sequence FR-042 first — a custom builder that starts from Westwood's rules by default
 would propagate this same bug into every league the founder creates.
+
+## Implementation, backend, 2026-07-29
+
+New `src/standard_scoring.py` (`STANDARD_LEAGUE`, `standard_scoring_variant()`) -- a genuinely
+separate ruleset from `scoring.LEAGUE` (Westwood). Offense encodes the founder's own definition
+verbatim (25 yd/pt passing, 4 pt passing TD, -2 INT, 10 yd/pt rushing/receiving, 6 pt TD, -2
+fumble lost, no yardage bonuses). Return-TD/two-point/offensive-fumble-return-TD (not named in
+the ruling) kept at conventional flat values, flagged as a judgment call. Defense (also not named
+in the ruling) is a conventional, explicitly UNVERIFIED placeholder, deliberately distinct from
+Westwood's -- see the module docstring for the full confidence breakdown.
+
+`generate_config_matrix.py`'s `scoring_variant()` and `league_builder.py`'s `build_scoring()`
+(the more important of the two fixes -- every future founder-created league) both now build on
+`standard_scoring.STANDARD_LEAGUE`, not `scoring.LEAGUE`. Only the primary (Westwood) league still
+uses `scoring.LEAGUE`, unreachable through either path (`unique_league_id`/`create_league` both
+reject `league_id="primary"`).
+
+Docstring contradiction resolved: `generate_config_matrix.py` no longer claims any platform-match
+for its bonus structure (it has none now) -- the false "matches ESPN's confirmed platform
+defaults" claim is removed, and the true "ESPN fetch was blocked, never verified" state is kept
+and clarified.
+
+`league.json` gains `scoring_ruleset_note` (contract 1.15.0) stating on screen, per league,
+whether it's Westwood's verified ruleset or the standard one -- see `docs/handoffs/` thread to
+frontend for the bump.
+
+All 24 presets regenerated (not edited). See ADR-061 and `docs/data-contract.md` 1.15.0 entry for
+before/after evidence and test counts.

@@ -1,17 +1,28 @@
 """
-Multi-config board/VBD matrix (ADR-047) -- first stage of the global
-(multi-format) work. Generates board.json + league.json for every
-combination of:
+Multi-config board/VBD matrix (ADR-047, revised by FR-042 2026-07-29) --
+first stage of the global (multi-format) work. Generates board.json +
+league.json for every combination of:
 
   - team count: 8, 10, 12, 14
   - scoring: standard (0 PPR), half (0.5 PPR), full (1.0 PPR) -- reception
-    value ONLY. All other scoring (yardage bonuses, TD values, INT, defense)
-    is held at this project's existing LEAGUE ruleset (scoring.py), which
-    also happens to match ESPN's confirmed platform defaults exactly (same
-    +1/+1.5/+2 bonus tiers at the same 100/150/200/300/350/400 thresholds) --
-    see ADR-047. A genuinely platform-accurate bonus structure for Yahoo
-    (unconfirmed) or NFL.com/Sleeper (unconfirmed roster AND scoring) is
-    future work, not guessed here.
+    value ONLY. All other scoring now comes from `standard_scoring.
+    STANDARD_LEAGUE` (25 yd/pt passing, 4 pt passing TD, -2 INT, 10 yd/pt
+    rushing/receiving, 6 pt TD, -2 fumble lost, NO yardage bonuses) -- the
+    founder's own explicit "standard scoring" definition (FR-042), not
+    `scoring.LEAGUE`. `scoring.LEAGUE` is Westwood's verified custom
+    ruleset (ADR-052) and, per the founder's ruling, only Westwood (the
+    primary league) carries it: "All the other presets should be standard
+    scoring (with different PPR) not Westwood custom... Almost two separate
+    tracks." See `standard_scoring.py`'s module docstring for exactly which
+    parts of STANDARD_LEAGUE are founder-specified vs. an unverified,
+    labeled placeholder (defense).
+    PRIOR STATE, CORRECTED 2026-07-29: this docstring used to claim these
+    24 presets' bonus structure "happens to match ESPN's confirmed platform
+    defaults exactly" while, twelve lines later, admitting the ESPN fetch
+    was blocked by bot detection and never verified. Both could not be
+    true; they were also never applicable, since all 24 presets were
+    silently running Westwood's ruleset regardless of platform label. Fixed
+    at the root by FR-042, not by patching the claim in place.
   - roster shape: ESPN-default, Yahoo-default -- the two platforms whose
     roster structure the user's researcher confirmed on 2026-07-26.
     NFL.com (FLEX is W/R only, no TE -- a real, distinct shape) and Sleeper
@@ -36,14 +47,13 @@ as a gap.
 
 from __future__ import annotations
 
-import copy
 from typing import Dict, List
 
 import db as dbmod
 import export_contract as ec
 import export_static as es
 import league_config as lc
-from scoring import LEAGUE
+from standard_scoring import standard_scoring_variant
 
 TEAM_COUNTS = (8, 10, 12, 14)
 SCORING_VARIANTS: Dict[str, float] = {"standard": 0.0, "half": 0.5, "full": 1.0}
@@ -69,9 +79,10 @@ ROSTER_SHAPES: Dict[str, dict] = {
 
 
 def scoring_variant(ppr: float) -> dict:
-    cfg = copy.deepcopy(LEAGUE)
-    cfg["offense"]["receptions"] = ppr
-    return cfg
+    """Standard scoring (FR-042), not Westwood's -- see standard_scoring.py.
+    Kept as a thin wrapper (rather than inlining the call at every use site)
+    so existing callers/tests referencing `gcm.scoring_variant` keep working."""
+    return standard_scoring_variant(ppr)
 
 
 def build_configs() -> List[lc.LeagueConfig]:
