@@ -5,11 +5,11 @@ Per-request files in this directory are the source of truth. Edit a request's ow
 `STATUS:` line, then re-run sync. Protocol: [`README.md`](README.md).
 Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests.md).
 
-**12 requests since freeze.**
+**13 requests since freeze.**
 
 ---
 
-## NEW — 8
+## NEW — 9
 
 | ID | Subject | Raised | Source |
 |---|---|---|---|
@@ -21,6 +21,7 @@ Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests
 | [FR-023](FR-023-ffc-is-unblocked-founder-confirmed-no-restrictio.md) | Ffc is unblocked founder confirmed no restrictio | 2026-07-29 | claude code session 2026-07-29 (PM takeover) |
 | [FR-027](FR-027-two-tiers-this-season-deep-custom-westwood-gener.md) | Two tiers this season deep custom westwood gener | 2026-07-29 | chat session 2026-07-29 (PM takeover) |
 | [FR-029](FR-029-be-less-verbose-and-technical-enough-to-prioriti.md) | Be less verbose and technical enough to prioriti | 2026-07-29 | chat session 2026-07-29 |
+| [FR-030](FR-030-run-the-rankings-validation-at-maximum-effort-ac.md) | Run the rankings validation at maximum effort ac | 2026-07-29 | chat session 2026-07-29 |
 
 ## SCOPING — 1
 

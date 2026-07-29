@@ -190,6 +190,41 @@ newest at the bottom.
   **Did not authorise a 2025 unseal** — irreversible, closes the family permanently, needs a
   named human approver; escalation, not an agent call.
 
+- 2026-07-29 · (founder, via pm — RAW, needs capture as a formal request) **"Once bottom-up
+  exists, compare it against consensus and see which is better"**, and separately he **likes
+  consensus acting as an adjustment rather than a rival** — i.e. the product shape is
+  consensus-adjusted-by-bottom-up, not bottom-up-versus-consensus. Recorded as a **successor
+  question, PR-006, unwritten**; deliberately NOT folded into PR-004/PR-005, which it would
+  contaminate. n-limited until January 2027 at the earliest (needs more consensus seasons or
+  P-2026's prospective result). **Escalation attached: this conflicts with `CLAUDE.md` §4,
+  "Ranking sources stay separate, never blended."** Measuring a blend descriptively is fine and
+  is registered as PR-004 §11; *shipping* one needs a §4 amendment, which is a founder decision.
+  Middle path suggested: consensus adjusts display/confidence (labelled overlay, disagreement
+  flags) rather than being averaged into a score. Also raised by him and folded in: **"test our
+  bottom up r squared against consensus and consensus adjusted for what we do have for now."**
+  Should be captured properly via `python tools/founder_requests.py new --raised-by "pm relay,
+  2026-07-29" --subject "Consensus as an adjustment to bottom-up, not a rival"` — the strategist
+  session had no shell to run it.
+
+- 2026-07-29 · (strategist, PR-004 revision) **Founder challenged the premise and was right;
+  registration revised in place before freeze.** (a) Accepted "ADP is not consensus" — no
+  baseline swap to ADP for depth, because depth bought by measuring a different quantity is not
+  depth. (b) Accepted "we have 25 years of data independent of consensus" — the first draft let
+  the n=4 question cap the deep one. (c) **Found the constraint that actually binds:**
+  `experiments/bottomup/data.py:60`, targets missing 2003–2008 and air yards 2009+ only, so the
+  usage model cannot be built deep. **The deep sample buys power; the deep model is the weak
+  one.** Split into PR-004 (box-score, deep, m=4) and PR-005 (V5 usage, n=13, m=4) with separate
+  family manifests so the winning arm cannot be picked after the fact. (d) **Declined to
+  recompute the +0.04 materiality floor against the new n** — power and materiality are
+  different quantities; what changed is the *meaning* of the ≥75% fold rule, now tabulated
+  (sign p≈0.092 at n=13, ≈0.007 at n=25). (e) **Declined to report a positional-tier heuristic
+  as a third baseline** — it is a monotone transform within position and tau-b is invariant, so
+  it would be reporting B1 twice; substituted a three-season average as B2. (f) Predicted on the
+  record that the census will return n≈25 folds (~2000–2024), because `run.py:10`'s 2002 start
+  is a walk-forward warm-up artifact and embargoed LOSO has no warm-up cost. Pre-committed:
+  **n < 15 ⇒ STOP without running.** Still no unseal authorised. Still no shell, so thread 083's
+  revised reply is staged, not appended.
+
 =======
 
 - **2026-07-29, backend (ADR-057).** `make_board.fit_rank_curves()` pools all training seasons with

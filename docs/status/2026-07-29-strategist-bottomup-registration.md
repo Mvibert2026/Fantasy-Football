@@ -91,3 +91,113 @@ unseal (n=1, one shot) or P-2026 (prospective) could.
 - **2025 holdout not unsealed and not authorised.** Irreversible, permanently closes the family,
   requires a named human approver in `UNSEAL_LOG.md`. That is an escalation, not an agent call.
 - **No measurement of any kind run.** That is the role working as intended.
+
+---
+
+# REVISION, same day, before freeze — the founder challenged the premise and was right
+
+PR-004 landed as **thread 083**. The founder then made two corrections, both accepted, and a
+third request. The registration was **revised in place** — legitimate because `content_hash` was
+never frozen and no data was seen, so there is nothing to amend and no ADR-C demotion is
+triggered. Recording it as an `amendments:` entry would have misrepresented a never-frozen file
+as a peeked-at one.
+
+## What he said, and what it changed
+
+1. **"Market ADP is not consensus rankings — people use consensus rankings, not ADP."**
+   Accepted without qualification. No baseline swap to ADP, not even to buy FFC's deeper
+   history. **Depth bought by measuring a different quantity is not depth.**
+2. **"We have 25 years of data to build our bottom-up rankings from, independent of
+   consensus."** Structurally correct and it exposes a real error in my first draft: **I let the
+   weak question's n cap the strong one.** Bottom-up needs player stats to build and actual
+   finishes to score; both go back decades. Consensus history is needed for exactly one
+   question — did we beat the experts.
+3. **"Then we test our bottom up r squared against consensus and consensus adjusted for what we
+   do have for now."** Folded in as PR-004 §11, descriptive only.
+
+## The finding the revision surfaced, which neither of us had
+
+`experiments/bottomup/data.py:60`:
+
+```
+TARGET_RELIABLE = lambda s: (1999 <= s <= 2002) or (s >= 2009)   # air yards real 2009+ only
+```
+
+**Targets are missing 2003–2008.** The usage features that produce the model's entire measured
+edge cannot be built across the deep record. So:
+
+> **The deep sample buys power. The deep model is the weak one.** 25 years of stats does not
+> rescue the strong model; it gives a powerful test of the weak one.
+
+Hence two registrations rather than one, with separately fixed denominators so the winning arm
+cannot be chosen after the fact:
+
+| | PR-004 `F-BOTTOMUP-CORE` m=4 | PR-005 `F-BOTTOMUP-USAGE` m=4 |
+|---|---|---|
+| Model | box-score long arm | V5, the shipping candidate |
+| Folds | measured by census, expected ~2000–2024 | 2012–2024, n=13 |
+| Trade | power, weak model | strong model, short sample |
+
+BH within each family across its own m=4 (ADR-E §10). Across-family FWER is not controlled and
+the registration says so; the compensating discipline is that STOP requires **both** to fail.
+
+## Usable span: measured, not asserted
+
+I have no database access and refused to assert a number. PR-004 §3 specifies the census
+precisely (per-season coverage of every field `src/scoring.py`'s `LEAGUE` consumes, with
+two-point conversions and return TDs checked explicitly as the likely binding fields) and
+pre-commits the fold set as a formula, `FOLDS = { s : S_min + L ≤ s ≤ 2024, s ≠ 2025 }`.
+
+**Prediction on the record: n≈25, folds ~2000–2024.** `run.py:10`'s current 2002 start is a
+*walk-forward* warm-up artifact ("needs >=2 training pairs"); embargoed LOSO has no warm-up
+cost, so the switch should recover the folds walk-forward spent. If so the founder's "25 years"
+is close to exactly right and the current 23 was a fold-scheme artifact, not a data limit.
+Pre-committed: **if n < 15, STOP without running.** A coverage census reveals nothing about any
+effect, so it may legitimately precede the freeze.
+
+## Two instructions I declined, with reasons
+
+- **Recomputing the +0.04 materiality floor against the real n.** Power and materiality are
+  different quantities. n governs detectability; it says nothing about how large an effect must
+  be to matter. The floor is decision-relevance arithmetic (~23 pairwise inversions over a
+  48-player universe ≈ one improved pick per draft), identical at n=13 and n=25. Lowering it
+  because the sample deepened is lowering the bar for the same benefit. **What did change is the
+  meaning of the ≥75% fold rule**, now tabulated: sign p≈0.092 at n=13 (weaker than α=0.05),
+  ≈0.007 at n=25 (stricter). ADR-E's 75% kept unchanged; the stringency is now visible instead
+  of implicit.
+- **Reporting a positional-tier heuristic as CLAUDE.md §6.5's third baseline.** Subtracting
+  replacement level is a monotone transform *within position*, and tau-b is invariant under
+  monotone transforms — its tau equals B1's by construction. It would be reporting B1 twice.
+  B2 is instead a three-season equal-weight average, genuinely distinct, and is criterion (h).
+
+## The three-way comparison, handled rather than glossed
+
+- **R² is his language and it is answered in his language**, not silently swapped. Where it is
+  defensible: nested comparison, variance in actual points, single position. Where it is not:
+  season-points R² is already **negative** at QB (−0.13) and TE (−0.85), so an R²-only reading
+  calls the model useless at TE while tau says its ordering improves. Both are printed side by
+  side at every position.
+- **Non-independence handled by construction.** The blend *contains* consensus, so in-sample
+  `R²(consensus+bottom-up) ≥ R²(consensus)` is a mechanical identity — three numbers side by
+  side would guarantee the blend "wins" and mean nothing. Registered instead as **one nested
+  question per position**: out-of-sample **ΔR²_oos**, weights fit on the other three seasons and
+  rotated, which can be negative. Never a three-way leaderboard. Registered asymmetry: at n=4 a
+  strongly negative value is informative, a positive one says almost nothing.
+
+## Escalations, not resolved here
+
+- **`CLAUDE.md` §4 says "Ranking sources stay separate, never blended."** The founder's
+  preferred product shape is a blend. Measuring one descriptively is not shipping one, and §11
+  only measures — but **shipping it requires a §4 amendment, which is his decision.** Middle
+  path put on the record: consensus adjusts display and confidence (labelled overlay,
+  disagreement flags) rather than being averaged into a score.
+- **Successor question PR-006** (consensus as adjustment rather than rival) recorded as future
+  work with its own registration, explicitly not folded into PR-004/005, n-limited to January
+  2027 at the earliest.
+
+## Kept unchanged
+
+The decision rule committed in advance; the STOP condition with its three exits closed by name;
+the calibration prior applied against my own registered predictions (**modal outcome across
+both files is STOP**); the selection-contamination caveat that must survive into every
+downstream summary; and the refusal to authorise a 2025 unseal.
