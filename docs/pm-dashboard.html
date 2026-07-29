@@ -128,6 +128,35 @@
     .row .body{animation:fade .16s ease-out}
     @keyframes fade{from{opacity:0}to{opacity:1}}
   }
+
+  /* No-JS interaction: the radios are the state, CSS is the behaviour. The
+     previous version drove tabs from JS, which silently produced a page stuck
+     on one panel wherever scripts are blocked -- and left the cost table empty.
+     Radios sit before the nav and the panels so ~ can reach both. */
+  .tabsel{position:absolute;opacity:0;pointer-events:none;width:0;height:0}
+  .tab,.f{cursor:pointer;user-select:none}
+  #t-next:checked ~ .tabs label[for="t-next"]{color:var(--accent);border-bottom-color:var(--accent)}
+  #t-next:checked ~ .panel[data-panel="next"]{display:block}
+  #t-today:checked ~ .tabs label[for="t-today"]{color:var(--accent);border-bottom-color:var(--accent)}
+  #t-today:checked ~ .panel[data-panel="today"]{display:block}
+  #t-backlog:checked ~ .tabs label[for="t-backlog"]{color:var(--accent);border-bottom-color:var(--accent)}
+  #t-backlog:checked ~ .panel[data-panel="backlog"]{display:block}
+  #t-cost:checked ~ .tabs label[for="t-cost"]{color:var(--accent);border-bottom-color:var(--accent)}
+  #t-cost:checked ~ .panel[data-panel="cost"]{display:block}
+  #t-leagues:checked ~ .tabs label[for="t-leagues"]{color:var(--accent);border-bottom-color:var(--accent)}
+  #t-leagues:checked ~ .panel[data-panel="leagues"]{display:block}
+  #t-risks:checked ~ .tabs label[for="t-risks"]{color:var(--accent);border-bottom-color:var(--accent)}
+  #t-risks:checked ~ .panel[data-panel="risks"]{display:block}
+  #f-all:checked ~ .filters label[for="f-all"]{background:var(--accent-dim);color:var(--accent);border-color:var(--accent)}
+  #f-bug:checked ~ .filters label[for="f-bug"]{background:var(--accent-dim);color:var(--accent);border-color:var(--accent)}
+  #f-live:checked ~ .filters label[for="f-live"]{background:var(--accent-dim);color:var(--accent);border-color:var(--accent)}
+  #f-blocked:checked ~ .filters label[for="f-blocked"]{background:var(--accent-dim);color:var(--accent);border-color:var(--accent)}
+  #f-done:checked ~ .filters label[for="f-done"]{background:var(--accent-dim);color:var(--accent);border-color:var(--accent)}
+  #f-bug:checked ~ #items .row:not([data-c="bug"]){display:none}
+  #f-live:checked ~ #items .row:not([data-c="live"]){display:none}
+  #f-blocked:checked ~ #items .row:not([data-c="blocked"]){display:none}
+  #f-done:checked ~ #items .row:not([data-c="done"]){display:none}
+  .tab:focus-visible,.f:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 </style>
 
 <div class="wrap">
@@ -151,8 +180,8 @@
 </div>
 
 <div class="tiles">
-  <div class="tile"><div class="k">Days to draft</div><div class="v warn" id="days">40</div>
-    <div class="n">Monday 7 Sep 2026</div></div>
+  <div class="tile"><div class="k">Days to draft</div><div class="v warn">40</div>
+    <div class="n">Monday 7 Sep 2026<br>as of 29 July</div></div>
   <div class="tile"><div class="k">Calibration drafts</div><div class="v crit">0 / 30</div>
     <div class="n">Gates the core claim</div></div>
   <div class="tile"><div class="k">Tests</div><div class="v ok">951</div>
@@ -165,16 +194,22 @@
     <div class="n">22 raised today · 2 share an id</div></div>
 </div>
 
-<nav class="tabs" role="tablist">
-  <button class="tab" role="tab" aria-selected="true" data-p="next">NEXT</button>
-  <button class="tab" role="tab" aria-selected="false" data-p="today">TODAY</button>
-  <button class="tab" role="tab" aria-selected="false" data-p="backlog">BACKLOG</button>
-  <button class="tab" role="tab" aria-selected="false" data-p="cost">COST</button>
-  <button class="tab" role="tab" aria-selected="false" data-p="leagues">LEAGUES</button>
-  <button class="tab" role="tab" aria-selected="false" data-p="risks">HONEST GAPS</button>
+<input class="tabsel" type="radio" name="tabs" id="t-next" checked>
+<input class="tabsel" type="radio" name="tabs" id="t-today">
+<input class="tabsel" type="radio" name="tabs" id="t-backlog">
+<input class="tabsel" type="radio" name="tabs" id="t-cost">
+<input class="tabsel" type="radio" name="tabs" id="t-leagues">
+<input class="tabsel" type="radio" name="tabs" id="t-risks">
+<nav class="tabs">
+  <label class="tab" for="t-next" tabindex="0">NEXT</label>
+  <label class="tab" for="t-today" tabindex="0">TODAY</label>
+  <label class="tab" for="t-backlog" tabindex="0">BACKLOG</label>
+  <label class="tab" for="t-cost" tabindex="0">COST</label>
+  <label class="tab" for="t-leagues" tabindex="0">LEAGUES</label>
+  <label class="tab" for="t-risks" tabindex="0">HONEST GAPS</label>
 </nav>
 
-<section class="panel" data-panel="next" data-open>
+<section class="panel" data-panel="next">
   <h3>Recommended order</h3>
   <ol class="steps">
     <li><strong>Rebuild the 24 preset leagues on standard scoring.</strong>
@@ -332,24 +367,31 @@
 </section>
 
 <section class="panel" data-panel="backlog">
-  <h3>47 open items, sorted against reality</h3>
-  <div class="filters" id="filters">
-    <button class="f" aria-pressed="true" data-f="all">ALL</button>
-    <button class="f" aria-pressed="false" data-f="bug">BUGS · 2</button>
-    <button class="f" aria-pressed="false" data-f="live">STILL LIVE · 19</button>
-    <button class="f" aria-pressed="false" data-f="blocked">BLOCKED · 10</button>
-    <button class="f" aria-pressed="false" data-f="done">DONE, NEVER CLOSED · 5</button>
+  <h3>46 open threads, sorted against reality</h3>
+<input class="tabsel" type="radio" name="filt" id="f-all" checked>
+  <input class="tabsel" type="radio" name="filt" id="f-bug">
+  <input class="tabsel" type="radio" name="filt" id="f-live">
+  <input class="tabsel" type="radio" name="filt" id="f-blocked">
+  <input class="tabsel" type="radio" name="filt" id="f-done">
+  <div class="filters">
+    <label class="f" for="f-all" tabindex="0">ALL</label>
+    <label class="f" for="f-bug" tabindex="0">BUGS · 2</label>
+    <label class="f" for="f-live" tabindex="0">STILL LIVE · 19</label>
+    <label class="f" for="f-blocked" tabindex="0">BLOCKED · 10</label>
+    <label class="f" for="f-done" tabindex="0">DONE, NEVER CLOSED · 5</label>
   </div>
   <div id="items">
     <details class="row" data-c="bug"><summary><span class="stripe s-crit"></span>
-      <span class="ttl"><strong>ADP is in the data but no screen shows it</strong></span><span class="chip crit">bug</span></summary>
-      <div class="body"><p>A session log claimed this was finished. Searching the code proves it
-      wasn't. Half of what you asked for today is done and half is invisible.</p></div></details>
+      <span class="ttl"><strong>Every preset league carries Westwood's scoring</strong></span><span class="chip crit">bug</span></summary>
+      <div class="body"><p>All 24 presets are built by copying your rulebook and changing only the
+      receptions value, then labelling the result an ESPN or Yahoo default. Your ruling today settles
+      it. The rebuild is queued behind a job that is rewriting the same league files.</p></div></details>
 
     <details class="row" data-c="bug"><summary><span class="stripe s-crit"></span>
-      <span class="ttl"><strong>One export file still carries an old version stamp</strong></span><span class="chip crit">bug</span></summary>
-      <div class="body"><p>Everything else moved on. The app's own version banner correctly flags it,
-      which is the system working — but it has been flagging it for a while.</p></div></details>
+      <span class="ttl"><strong>Four data files are missing from every league but Westwood</strong></span><span class="chip crit">bug</span></summary>
+      <div class="body"><p>Westwood has eleven, the other 26 have seven. The strategy guide is empty in
+      all of them and three more screens thin out on a league switch, with nothing on screen saying
+      why.</p></div></details>
 
     <details class="row" data-c="live"><summary><span class="stripe s-warn"></span>
       <span class="ttl"><strong>Mock draft collection has not started</strong></span><span class="chip warn">the long pole</span></summary>
@@ -391,7 +433,26 @@
     <table>
       <thead><tr><th>Chain</th><th>Role</th><th style="text-align:right">Tokens</th>
         <th style="text-align:right">Calls</th><th style="text-align:right">Time</th><th>Share</th></tr></thead>
-      <tbody id="costrows"></tbody>
+      <tbody>
+        <tr><td>Standalone build, phone, draft mode</td><td><span class="chip">frontend</span></td><td class="num">373,848</td><td class="num">219</td><td class="num">40m 28s</td><td><span class="bar" style="width:100%"></span></td></tr>
+        <tr><td>Backlog + review triage</td><td><span class="chip">librarian</span></td><td class="num">292,046</td><td class="num">83</td><td class="num">5m 30s</td><td><span class="bar" style="width:78%"></span></td></tr>
+        <tr><td>Draft hub, ADP display, captures</td><td><span class="chip">frontend</span></td><td class="num">253,839</td><td class="num">151</td><td class="num">24m 19s</td><td><span class="bar" style="width:68%"></span></td></tr>
+        <tr><td>ADP display (first pass)</td><td><span class="chip">frontend</span></td><td class="num">205,966</td><td class="num">139</td><td class="num">18m 29s</td><td><span class="bar" style="width:55%"></span></td></tr>
+        <tr><td>One-command database rebuild</td><td><span class="chip">data-ops</span></td><td class="num">195,843</td><td class="num">131</td><td class="num">26m 36s</td><td><span class="bar" style="width:52%"></span></td></tr>
+        <tr><td>Bottom-up registration (revision)</td><td><span class="chip">strategist</span></td><td class="num">165,645</td><td class="num">9</td><td class="num">9m 08s</td><td><span class="bar" style="width:44%"></span></td></tr>
+        <tr><td>Per-league exports (part 2)</td><td><span class="chip">backend</span></td><td class="num">165,810</td><td class="num">133</td><td class="num">29m 17s</td><td><span class="bar" style="width:44%"></span></td></tr>
+        <tr><td>Historical ADP hunt</td><td><span class="chip">researcher</span></td><td class="num">157,270</td><td class="num">76</td><td class="num">13m 24s</td><td><span class="bar" style="width:42%"></span></td></tr>
+        <tr><td>Half-PPR capture (part 2)</td><td><span class="chip">data-ops</span></td><td class="num">151,061</td><td class="num">113</td><td class="num">20m 09s</td><td><span class="bar" style="width:40%"></span></td></tr>
+        <tr><td>Yahoo draft assistant</td><td><span class="chip">researcher</span></td><td class="num">132,706</td><td class="num">50</td><td class="num">11m 28s</td><td><span class="bar" style="width:35%"></span></td></tr>
+        <tr><td>Half-PPR capture (part 1)</td><td><span class="chip">data-ops</span></td><td class="num">130,182</td><td class="num">88</td><td class="num">16m 05s</td><td><span class="bar" style="width:35%"></span></td></tr>
+        <tr><td>Per-league exports (part 1)</td><td><span class="chip">backend</span></td><td class="num">123,529</td><td class="num">86</td><td class="num">12m 03s</td><td><span class="bar" style="width:33%"></span></td></tr>
+        <tr><td>Bottom-up registration (first)</td><td><span class="chip">strategist</span></td><td class="num">119,630</td><td class="num">25</td><td class="num">6m 50s</td><td><span class="bar" style="width:32%"></span></td></tr>
+        <tr><td>League settings fix</td><td><span class="chip">backend</span></td><td class="num">116,802</td><td class="num">50</td><td class="num">11m 36s</td><td><span class="bar" style="width:31%"></span></td></tr>
+        <tr><td>Quarterback delta investigation</td><td><span class="chip">backend</span></td><td class="num">110,608</td><td class="num">69</td><td class="num">14m 36s</td><td><span class="bar" style="width:30%"></span></td></tr>
+        <tr><td>Cloud readiness check</td><td><span class="chip">frontend</span></td><td class="num">105,080</td><td class="num">46</td><td class="num">7m 58s</td><td><span class="bar" style="width:28%"></span></td></tr>
+        <tr><td>ID collision fix</td><td><span class="chip">backend</span></td><td class="num">89,680</td><td class="num">41</td><td class="num">4m 53s</td><td><span class="bar" style="width:24%"></span></td></tr>
+        <tr><td>Blocked-item re-test</td><td><span class="chip">librarian</span></td><td class="num">53,789</td><td class="num">24</td><td class="num">2m 09s</td><td><span class="bar" style="width:14%"></span></td></tr>
+        </tbody>
       <tr class="total"><td>Total reported</td><td>18 runs</td>
         <td class="num">2,943,334</td><td class="num">1,533</td><td class="num">4h 55m</td><td></td></tr>
     </table>
@@ -521,62 +582,3 @@
 </footer>
 </div>
 
-<script>
-(function(){
-  var DRAFT = new Date(2026,8,7);
-  var d = Math.max(0, Math.ceil((DRAFT - new Date())/864e5));
-  var el = document.getElementById('days'); if(el && isFinite(d)) el.textContent = d;
-
-  var cost = [
-    ['Standalone build, phone, draft mode','frontend',373848,219,'40m 28s'],
-    ['Backlog + review triage','librarian',292046,83,'5m 30s'],
-    ['Draft hub, ADP display, captures','frontend',253839,151,'24m 19s'],
-    ['ADP display (first pass)','frontend',205966,139,'18m 29s'],
-    ['One-command database rebuild','data-ops',195843,131,'26m 36s'],
-    ['Bottom-up registration (revision)','strategist',165645,9,'9m 08s'],
-    ['Per-league exports (part 2)','backend',165810,133,'29m 17s'],
-    ['Historical ADP hunt','researcher',157270,76,'13m 24s'],
-    ['Half-PPR capture (part 2)','data-ops',151061,113,'20m 09s'],
-    ['Yahoo draft assistant','researcher',132706,50,'11m 28s'],
-    ['Half-PPR capture (part 1)','data-ops',130182,88,'16m 05s'],
-    ['Per-league exports (part 1)','backend',123529,86,'12m 03s'],
-    ['Bottom-up registration (first)','strategist',119630,25,'6m 50s'],
-    ['League settings fix','backend',116802,50,'11m 36s'],
-    ['Quarterback delta investigation','backend',110608,69,'14m 36s'],
-    ['Cloud readiness check','frontend',105080,46,'7m 58s'],
-    ['ID collision fix','backend',89680,41,'4m 53s'],
-    ['Blocked-item re-test','librarian',53789,24,'2m 09s']
-  ];
-  var max = 373848, tb = document.getElementById('costrows');
-  cost.forEach(function(r){
-    var tr = document.createElement('tr');
-    tr.innerHTML = '<td>'+r[0]+'</td><td><span class="chip">'+r[1]+'</span></td>'+
-      '<td class="num">'+r[2].toLocaleString('en-GB')+'</td>'+
-      '<td class="num">'+r[3]+'</td><td class="num">'+r[4]+'</td>'+
-      '<td><span class="bar" style="width:'+Math.round(r[2]/max*100)+'%"></span></td>';
-    tb.appendChild(tr);
-  });
-
-  var tabs = [].slice.call(document.querySelectorAll('.tab'));
-  var panels = [].slice.call(document.querySelectorAll('.panel'));
-  tabs.forEach(function(t){
-    t.addEventListener('click', function(){
-      tabs.forEach(function(x){ x.setAttribute('aria-selected', x===t ? 'true':'false'); });
-      panels.forEach(function(p){
-        if(p.dataset.panel === t.dataset.p) p.setAttribute('data-open',''); else p.removeAttribute('data-open');
-      });
-    });
-  });
-
-  var fs = [].slice.call(document.querySelectorAll('.f'));
-  fs.forEach(function(b){
-    b.addEventListener('click', function(){
-      fs.forEach(function(x){ x.setAttribute('aria-pressed', x===b ? 'true':'false'); });
-      var f = b.dataset.f;
-      [].slice.call(document.querySelectorAll('#items .row')).forEach(function(r){
-        r.style.display = (f==='all' || r.dataset.c===f) ? '' : 'none';
-      });
-    });
-  });
-})();
-</script>
