@@ -5,16 +5,17 @@ Per-request files in this directory are the source of truth. Edit a request's ow
 `STATUS:` line, then re-run sync. Protocol: [`README.md`](README.md).
 Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests.md).
 
-**2 requests since freeze.**
+**3 requests since freeze.**
 
 ---
 
-## NEW — 2
+## NEW — 3
 
 | ID | Subject | Raised | Source |
 |---|---|---|---|
 | [FR-018](FR-018-eliminate-remaining-permission-prompts-so-unatte.md) | Eliminate remaining permission prompts so unatte | 2026-07-29 | chat session 2026-07-29 |
 | [FR-019](FR-019-record-the-founder-s-working-preferences-where-a.md) | Record the founder s working preferences where a | 2026-07-29 | claude code session 2026-07-29 |
+| [FR-020](FR-020-run-the-pm-agent-at-opus-xhigh-effort-temporary.md) | Run the pm agent at opus xhigh effort temporary | 2026-07-29 | cowork chat 2026-07-29 |
 
 ## SCOPING — 0
 
