@@ -25,10 +25,6 @@ Challenge the premise of this instruction before acting. If it
 contradicts something recorded in the repo, halt and say so rather
 than complying.
 
-Command style: one command per tool call. Never chain with &&, ;, ||
-or line breaks. Never start a command with &. Use `git -C .` rather
-than changing directory.
-
 Decide and log; do not ask. Make the call, append a line to
 docs/ideas-inbox.md, continue. Escalate only if the action is
 irreversible, contradicts a written rule, or spends money.
@@ -48,9 +44,13 @@ test counts reported with any deliberate failures named.
 **The first paragraph is the highest-value line you write.** It has caught five bad PM instructions.
 Never drop it to save space.
 
-**The command-style paragraph is LOCAL ONLY.** It exists because chained commands stop and wait for a
-human on the founder's machine. **Drop it from cloud dispatches** — there is nothing to interrupt and
-no machine to protect. Everything else in the template applies everywhere.
+**The second is the highest-value line for keeping the founder out of the loop.** Agents choosing to
+stop and ask was 42% of all interruptions across 57 sessions — more than permissions and the hook
+combined. Removing the hook fixed a quarter of the problem; this paragraph is aimed at the rest.
+
+**Tell every dispatch where it is running.** A cloud container has `python3` on PATH, no hook, no
+worktrees, no `data/nfl.db` until something rebuilds it, and a disposable disk. Agents that assume the
+founder's Windows machine waste calls rediscovering this — see `docs/environment.md`.
 
 ## Scoping a dispatch
 

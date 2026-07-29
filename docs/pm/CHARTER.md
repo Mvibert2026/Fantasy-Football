@@ -21,6 +21,20 @@ listed at the bottom was one file read away from being avoided.
 >
 > "Stop worrying about time honestly." — he works faster than the PM assumes. **Do not pace
 > recommendations to a deadline he has not set.**
+>
+> "You still keep asking if Claude can save things in the repo, yes always, **stop asking me
+> permission for things**." — 2026-07-29.
+
+## Standing authorisations — never ask again
+
+- **Writing, committing and pushing to this repo. Always.** Do not ask, do not preface a save with a
+  request, do not announce it as a question. Just do it and report it once at the end.
+- **Fable timing is the exception that proves the rule** — that one is a real constraint (end of week,
+  before the budget reset), not an approval gate. Respect it without asking about it.
+
+Escalate only what the charter already reserves: an irreversible action, something contradicting a
+written rule, something that spends money, or a decision he explicitly reserved. **Publishing anything
+outward-facing counts** — the repo is private and his data is in it.
 
 ## Report by exception, not by event
 
@@ -145,9 +159,11 @@ file was *invisible to its worktree*.
 
 **1 · Verify, do not infer.** You can read this repo. Read it. Label any claim you could not verify.
 
-**2 · Every concurrent local session gets its own worktree**, and **worktrees do not inherit
-`data/nfl.db`** — copy it in or about twenty tests fail for unrelated reasons. **LOCAL ONLY — obsolete
-in cloud sessions.**
+**2 · Sessions run in disposable cloud containers.** Each one clones, works and pushes; there is no
+shared working directory and no worktree discipline to maintain. A container's writable disk is a
+fixed allowance and everything in it is lost when the session ends, so **anything worth keeping is
+committed and pushed before you finish.** `data/nfl.db` is gitignored and absent from a fresh clone —
+rebuild it with `scripts/rebuild_database.py` when a task needs real numbers.
 
 **3 · Nobody hand-types a ticket number.** Name by description; the tool assigns at sync.
 
@@ -177,28 +193,38 @@ override you did not know you were making is the most dangerous kind.
 
 **15 · Do not merge a branch whose contract another running chain may bump.**
 
-**16 · Command style.** One command per call; never chain with `&&`, `;`, `||` or line breaks; never
-start with `&`; use `git -C .`. **LOCAL ONLY.** These stop and wait for a human on the founder's
-machine. They are not principles — they are compensation for a gate that does not apply when a session
-runs unattended in a disposable environment. **Do not carry them into cloud sessions.**
+**16 · Decide and log; do not ask.** Make the call, record it, continue. Escalate only when the action
+is irreversible, contradicts a written rule, or spends money. **Agents choosing to stop and ask was
+measured as the single largest cause of interrupted runs — 42% of all stops across 57 sessions, more
+than permissions and the hook combined.** An unattended run that stops costs the whole run, not the
+one command.
 
 ---
 
-## Local-only rules, and when they expire
+## The local-machine protections — removed 2026-07-29
 
-The following exist to protect the founder's own computer, nothing more:
+The project has finished moving to disposable cloud containers, so the following were **deleted**, not
+disabled:
 
-- the hook that blocks destructive commands
-- the rules that force an approval prompt for deletions, force-pushes and credentials
+- the `PreToolUse` hook that blocked destructive commands and shell chaining
+  (`.claude/hooks/block_dangerous.py`)
+- the `permissions.ask` rules that forced a prompt on deletions, force-pushes and credential paths
+- the accumulated `permissions.allow` entries, which sat behind a `Bash(*)` wildcard and removed no
+  prompts at all
+- the command-style restrictions — one command per call, no `&&`/`;`/`||`, no leading `&`
+- the Windows permission-management scripts under `tools/` that installed all of the above
 - worktree isolation and copying the database into worktrees
-- the command-style restrictions above
-- never running a dev server from a worktree
 
-**When the project moves to cloud sessions, the machine at risk becomes a disposable container and
-every one of these becomes pure friction. Remove them then — not before.** A session still running on
-the founder's machine needs all of them.
+Every one of them existed to protect **the founder's own computer**. The machine at risk is now a
+container that is rebuilt from git on every session, so each had become pure friction. They are in git
+history if a local session ever needs them back.
 
-**Do not treat their removal as a loosening of standards.** The standards that survive are the ones
+**One residual risk is not covered by "the container is disposable": a force-push to `main` damages
+the remote, which no re-clone repairs.** The right control for that is branch protection on GitHub, not
+an approval prompt in a session — a structural impossibility beats a rule, per the meta-lesson above.
+**Not yet configured.**
+
+**Do not treat any of this as a loosening of standards.** The standards that survive are the ones
 about truth: verify before instructing, evidence closes work, nothing asserts a fact it did not
 derive. Those apply everywhere and always.
 

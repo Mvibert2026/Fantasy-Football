@@ -4,29 +4,53 @@
 repo forgets between runs; this file is what makes that not matter. It is the difference between a PM
 that accumulates judgement and one that restarts every morning.
 
-Last updated: **2026-07-29** (PM check-in session, running in the cloud).
+Last updated: **2026-07-29** (second PM session that day — the in-repo PM taking over from the
+outside-the-repo one, running in the cloud).
 
 ---
 
 # 0 · Corrections made this session — things believed here that were false
 
-- **The mailbox was recorded as FAILING. It passes.** `tools/handoffs.py check` is OK: 81 threads,
-  none stale, all addressed, **47 open / 34 resolved**. The 069/073 no-reply failure was fixed when
-  the frontend replies landed and `047ff90` corrected thread 080's heading. Section 7's "~45 open"
-  is superseded by 47.
-- **`main` had moved and this session's remote-tracking ref was stale.** A `git fetch` was required
-  before any comparison was meaningful — `origin/main` went `b6a9304` → `4a299df`. **Fetch before
-  trusting `origin/*` in a cloud session; the clone can be minutes or hours old.**
-- **The daily ADP capture now runs off the founder's machine and has been observed to succeed** —
-  `4a299df`, authored by `github-actions[bot]`, 2026-07-29 15:38 UTC, 225 rows. It overwrote the
-  hand-captured file. The local Windows Scheduled Task is redundant.
-- **Cloud sessions cannot see the founder's local worktrees.** `.claude/worktrees/` does not exist
-  here and `git worktree list` shows only the checkout. Thread 081's untracked duplicate 079 lives
-  in a `phase3-chain1` worktree on his machine and **cannot be fixed from a cloud session** — only
-  the tracked copy is visible. Do not dispatch that fix to a cloud agent.
-- **The Fable "M" mandate has never been run.** `docs/fable-mandate-M-2026-07-29.md` exists and is
-  well-formed; no `docs/reviews/fable-M1/M2/M3-*` output exists. This is the founder's three
-  conditions for using the tool at all, and it is sitting unstarted. **Highest-value open item.**
+**New founder constraints, learned the expensive way:**
+
+- **Fable work happens at the END OF THE WEEK, before the budget reset. Never mid-week.** Fable runs
+  on a separate weekly budget the founder spends deliberately. This PM dispatched all three M
+  mandates on a Wednesday and he stopped them. **Write mandates as the questions arise; queue them;
+  run the queue at the end of the week.** Now recorded in `ROLE.md` under Managing Fable.
+- **FFC is UNBLOCKED.** The founder asked them directly: *"we have no blocks from FFC, we can use as
+  needed."* This supersedes the conservative-default block in §4 below, in
+  `docs/research/source-audit-2026-07.md`, and in every thread that cites it (055, 057, 062, 064,
+  078). It is broader than the earlier one-time-historical-pull authorisation — recurring use is
+  covered. Standing caveat unchanged: scoped to private use by one person, void if a second human
+  ever uses the product. Still rate-limit and cache; permission is not licence to hammer a hobby
+  endpoint.
+
+**Things this memory and `CURRENT-STATE.md` asserted that turned out false:**
+
+- **The ADP capture has NEVER run on schedule.** The previous entry said the cloud capture "has been
+  observed to succeed" and that the Windows Scheduled Task was redundant. Measured via the Actions
+  API: **exactly one run exists, `event: workflow_dispatch`, triggered by the founder by hand at
+  15:38 UTC.** The 09:15 UTC cron has never fired. **Do not tell him to disable the Windows task
+  until a `schedule`-triggered run succeeds.** Re-check with a `list_workflow_runs` call filtered on
+  `event: schedule` — the run's *author* being `github-actions[bot]` does not distinguish a manual
+  dispatch from a scheduled one, which is exactly how the previous session got this wrong.
+- **The `PreToolUse` hook was already inert in cloud sessions** — it was registered with a Windows
+  conda interpreter path that does not exist in a Linux container, so it silently never ran. "Zero
+  approvals" was true here **by accident, not by design**, which is worse than either extreme
+  because nothing announced it.
+- **`docs/pm/HANDOFF.md` was not in the repo.** The founder had to upload it. Now committed at
+  `docs/pm/HANDOFF.md` so the next PM does not repeat the search.
+
+**Still true from the earlier session, re-verified:**
+
+- The mailbox passes: 81 threads, none stale, **47 open / 34 resolved**. Section 7's "~45 open" is
+  superseded by 47.
+- **Fetch before trusting `origin/*` in a cloud session** — the clone can be hours old. `origin/main`
+  moved `4a299df` → `a617611` mid-session.
+- **Cloud sessions cannot see the founder's local worktrees.** Thread 081's untracked duplicate 079
+  lives in a worktree on his machine and **cannot be fixed from the cloud.** Do not dispatch it.
+- **The Fable "M" mandate is still unrun** — and per the timing constraint above, that is now
+  correct rather than a gap. Run it at the end of the week.
 
 ---
 
@@ -122,11 +146,26 @@ state. Pin artifacts, not commands, for anything that must reproduce exactly.
 a past season and treating it as a preseason board is look-ahead bias. The committed daily snapshots
 are the only point-in-time capture that exists. **Keep taking them; a missed day is permanent.**
 
+**What the daily capture actually asks for** (checked 2026-07-29, `src/ingest_mfl_adp.py` defaults,
+mirrored in `tools/ci_adp_snapshot.py`): `FCOUNT=10` (ten-team leagues — matches Westwood exactly),
+`IS_PPR=1`, `IS_MOCK=0` (real drafts, not mocks), `IS_KEEPER=0`, `CUTOFF=10`, `PERIOD=2026`.
+
+**The one imperfection, and it is not fixable at the source:** Westwood is **half**-PPR, and MFL's
+flag is binary — there is no half-PPR option on that endpoint. Full PPR is the nearer of the two
+available settings, so the current default is the right call. **But it is an approximation nobody
+wrote down**, and receivers come off the board earlier in full PPR than in half, so the captured
+market is slightly receiver-forward relative to his league. Anything learning drafter behaviour from
+these snapshots inherits that tilt. Do not silently treat the capture as format-matched.
+
 ## Source constraints — do not override without re-taking the decision
 
-- **FFC**: terms unretrievable, so the conservative default applies — **do not scrape.** A one-time
-  historical ADP pull was authorised; **a recurring daily scrape is a different activity and is not
-  covered.** The PM instructed one anyway without reading the audit; an agent stopped it.
+- **FFC**: **UNBLOCKED 2026-07-29.** The founder asked them directly and reported no restrictions —
+  *"we have no blocks from FFC, we can use as needed."* Recurring use is covered, not just the
+  earlier one-time historical pull. Rate-limit and cache anyway. **The old entry read "terms
+  unretrievable, conservative default, do not scrape" and every FFC-blocked thread cites it —
+  those threads are now actionable.** Historical note kept because it explains an agent's past
+  refusal: the PM once instructed an FFC scrape without reading the audit, and an agent correctly
+  stopped it. That refusal was right *at the time*.
 - **FantasyPros**: manual, human-paced use only. No automated harvesting, no bulk collection.
 - **ESPN / Yahoo / CBS**: explicit written prohibitions on automated collection.
 - Everything above is scoped to **private use by one person**. If the product ever reaches a second
@@ -139,7 +178,7 @@ are the only point-in-time capture that exists. **Keep taking them; a missed day
 |---|---|
 | Wire the measured need parameter into the recommendation, or drop the claim | **Open.** PM must not frame it — it authored the claim |
 | The founder's three model questions | **Open, and the mandate is written but UNRUN** (`docs/fable-mandate-M-2026-07-29.md`; no M1/M2/M3 review output exists). His condition for using the tool at all |
-| Pick-level draft capture | **Blocked.** FFC declined; a lighter source is likely underpowered. "We cannot test this yet" is an acceptable answer |
+| Pick-level draft capture | **Unblocked 2026-07-29** — FFC is available (see §4). MFL genuinely cannot supply per-pick data (needs a league ID we do not hold), so FFC is the route. Not yet scoped or built |
 | In-draft chatbot | **Paused by the founder.** A decisions-log entry approving it was superseded |
 | Hosting off the founder's machine | Direction agreed, not scheduled |
 

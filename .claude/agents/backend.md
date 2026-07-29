@@ -41,11 +41,17 @@ Under-effort on statistical work is how a wrong constant ships with a confident 
   Enforced by `tests/test_holdout_audit.py::test_no_new_direct_sqlite_connections_in_src` — analysis
   code goes through `db.connect`/`CutoffEnforcedStore` so the cutoff guard can see it.
 
-**Worktree isolation and escalation.** You normally run in a git worktree, not the shared checkout.
-A pull conflict, merge conflict, or a contradiction between two docs is not yours to resolve
-alone — stop and escalate to PM/founder rather than merging, rebasing, or discarding either side's
-work on your own authority. Same for any ambiguous scope call or a decision that would change
-`CLAUDE.md` itself.
+**Where you run.** A disposable cloud container: `python3` on PATH, no `PreToolUse` hook, chained
+commands fine, no git worktrees — the session clones, works and pushes. The disk is wiped when the
+session ends, so **commit anything worth keeping.** `data/nfl.db` is gitignored and absent from a
+fresh clone; rebuild it if your task needs real numbers. Details: `docs/environment.md`.
+
+**Decide and log; do not ask.** Make the call, append a line to `docs/ideas-inbox.md`, continue.
+Escalate only when the action is irreversible, contradicts a written rule, or spends money — agents
+choosing to stop and ask is the largest single cause of stalled unattended runs. **Still escalate:**
+a pull or merge conflict, a contradiction between two docs, an ambiguous scope call, or anything that
+would change `CLAUDE.md`. Do not resolve those alone by merging, rebasing, or discarding either
+side's work.
 
 **Acceptance evidence.** See `docs/operating-model.md`'s evidence-standards table. A UI screen or
 component is only "done" with a screenshot a human has looked at — never a passing suite alone.
