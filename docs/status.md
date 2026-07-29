@@ -2660,6 +2660,78 @@ threads, 49 open, 0 stale, `check` OK. `docs/CURRENT-STATE.md` updated in place 
 above.
 
 
+## 2026-07-28 — Fable short-window mandate, F-A only (analysis, no code)
+
+Executed F-A of `docs/fable-mandate-2026-07-28-short.md` per founder instruction (F-B/F-C/F-D not
+started). Deliverable: `docs/reviews/fable-bottomup-next-tests-2026-07-28.md`, conclusion-first.
+Headlines: (1) project-level falsification condition named — one H3-gated confirmatory
+F-BOTTOMUP-CORE run on frozen V5; if neither RB nor WR clears ADR-E §9, consensus ships with no
+overlay; calendar stop 2026-08-22, budget stop at the 20-config cap (8 spent). (2) Next registered
+set = N-1 direct-projection collapse control, N-2 rookie-inclusion universe sensitivity (resolves
+C3, anti-inflation prediction registered), A0 confirmatory run, plus P-2026 prospective
+registration before Week 1 (0 compute). No new feature families — calibration prior applied as a
+rule. (3) TE: no dedicated run; rides along in A0 with a pre-registered adoption rule, predicted
+to fail on the ppg-sign condition (season R² −0.85). (4) Weights: fit-inside-fold where possible
+(S1 ridge, S2 shrinkage), labelled defaults where not (A0/B0 recency, interim 1:2 leverage); the
+consensus blend weight is refused entirely. (5) Smallest honest consensus claim is arithmetic, not
+prediction: exact league-scoring pricing vs format-generic ADP. No backtest run; no code changed;
+registration content only — ADR-C machinery still required before any run.
+
+## 2026-07-28 — Fable mandate G-A: λ sensitivity (analysis, no code)
+
+Executed G-A of `docs/fable-mandate-G-2026-07-28.md` per founder instruction (G-B..G-E not
+started). Deliverable: `docs/reviews/fable-lambda-sensitivity-2026-07-28.md`, conclusion-first.
+Method: replayed all 160 real 2025-draft decision states through the production
+`strategy_balanced` (replication verified 160/160 against the real function at λ̂), sweeping λ
+across the 95% CI [0.21, 0.49]; ran `live_survival` λ-sensitivity on real roster/gap states; ran
+a pairs-cluster bootstrap (B=2000) and leave-one-cluster-out jackknife on the
+`lambda_estimation` fit. Headlines: (1) top-1 recommendation flips inside the CI in 4/160 states
+(2.5%), top-3 reorders in 16/160 — every top-1 flip is the same configuration: a team holding
+exactly one QB deciding between a falling luxury second QB and the field, rounds 5–8, flip
+boundary λ≈0.395–0.458; founder's slot-3 states never flip top-1. (2) Channel audit: λ never
+reaches the shipped draft-day recommendation — the RECOMMENDED card (`recommendation.ts`) and the
+shipped survival number (`liveAvailability.ts`) are both λ-free with five unfitted constants of
+their own; λ's only consumers are `strategy_balanced` (sim strategies) and `live_survival` (Mock
+Lab path, unwired). The disconnect is the FR-007-shaped finding. (3) CI is honest: bootstrap
+[0.229, 0.500] and jackknife SE 0.0737 reproduce the Wald interval; the real uncertainty is
+population (one draft, one league), not sampling. (4) λ/TARGET/EPS/POSITIONS are hard-coded
+primary-league constants in `live_availability.py`; League 2's K slot is unrepresentable — same
+construction-error class as `playoff_weeks`, handed to G-B's sweep. (5) `live_survival` moves
+≤2.3 pts across the whole CI — display recommendation is margin-aware coin-flip labelling under
+~3 adjusted rank points, not narrower decimals. Incidental defect recorded: D-001 (delete
+`NEED_ADJUSTMENT_SCALE`) is decided but unimplemented — still load-bearing at
+`src/draft_sim.py:284`. Read-only session: no code changed, no builds, no git operations, no
+threads opened (mandate restricts writes to the review doc + this entry).
+
+## 2026-07-28 — Fable mandate K-B: schedule feasibility (analysis, no code)
+
+Executed K-B of `docs/fable-mandate-K-2026-07-28.md` per founder instruction (K-A/K-C/K-D not
+started). Deliverable: `docs/reviews/fable-schedule-feasibility-2026-07-28.md`, conclusion-first.
+Caveat flagged in the deliverable: the session record the mandate says to read first
+(`claude/session-record-2026-07-27-28.md`) does not exist anywhere in the repo — findings rest on
+`CURRENT-STATE.md` @ `9d8e09b` and the dated review docs. Headlines: (1) split verdict — the
+agent-side remainder (~14–16 sonnet sessions + 2–3 opus gates) fits the 25 days to the 22 Aug
+stop with ~2 weeks of slack, but only if the confirmatory chain (H3 → N-1∥N-2 → freeze →
+red-team → A0, 4 serialized stages, zero started) is promoted above the undated 49-thread pile
+this week; the founder-side plan does not fit — 30 conforming mocks in a ~22–26-day
+post-instrumentation window is ~1.4/day at 45–60 min each (~22–30 hrs), stacked on dry runs,
+acceptance passes, and decisions (~27–37 founder hours total). Recommended cut: mock target
+30 → 10–12 pre-draft (blind arm 4), δ rule explicitly deferred to the season. (2) Gates: 8 Aug —
+H3 merged, N-1/N-2 registered, mock instrumentation built, pilot mock logged; 15 Aug — N-1/N-2
+interpreted, freeze drafted, red-team scheduled, ≥5 mocks, league 3 declared in/out; a miss at
+8 Aug invokes F-A's calendar rule early rather than compressing. (3) Most likely failure is not
+the model chain (fails closed — consensus ships by pre-commitment) but the mock chain (fails
+open — late instrumentation + founder mocking anyway through the non-ADR-D-conforming DraftRoom
+path = mocks permanently discarded, founder hours burned); structural guard proposed: refuse to
+log a conforming mock until the instrumentation flags exist. (4) Two unlisted risks larger than
+any slip: W8 backup never ran (`nfl.db`, `data/raw/`, `data/real_drafts/`, untracked review docs
+all single-copy) and the ADP scheduled task is unverified-capturing after its permission-prompt
+failure — both sub-hour fixes. (5) Cut list with revival conditions in the deliverable §5
+(Mock Lab UI, Settings/Predictions, FR-006/008, W2–W7/W10, N2, R4, league 3 at 15 Aug absent
+data); Chain-C floor items, ADP capture, G-B, and P-2026 explicitly not cut. Read-only session:
+no code changed, no builds, no git operations, no threads opened (mandate restricts writes to
+the review doc + this entry).
+
 ## 2026-07-27 — Chain 1 step 1.1 (data-ops, worktree phase3-chain1)
 
 Ran `RUN-2026-07-27-overnight.md` PHASE 3 Chain 1 step 1.1 in
