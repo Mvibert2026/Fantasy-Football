@@ -224,6 +224,19 @@ The realistic precision at 30 mocks is **±8 to ±10 points**, not the ±6 curre
 screen — Wilson ignores intra-mock correlation. Absolute calibration will rest on the 10 blind mocks
 (≈±14) because the sighted arm's absolute number is not contamination-free.
 
+**Bottom-up ranking research (FR-033, FR-039): two exploratory passes done, nothing registered,
+nothing shipped, nothing on the board.** `docs/ranking/bottom-up-research-pass-1.md` (the variance
+ledger and the four edge channels) and `docs/ranking/bottom-up-research-pass-2.md` (where the TE
+mispricing sits in the draft). Both are hypothesis-generating only — no multiplicity correction, no
+holdout touched, and neither may be quoted as an edge. Pass 2's live claim is that the **TE7-10
+consensus window (overall ECR 75–113, rounds 8–11) is VBD-free against its alternative** (TE mean
+realised VBD −12.2 vs WR −12.2 at the same pick) and buys a 25.0% [10.2, 49.5] shot at a top-6 TE;
+it awaits registration in thread **087**. Pass 2's clean negatives: late-round TE hits are not
+forecastable from anything but the market itself, and 5 of the 7 top-6 TE seasons from pre-draft
+TE11+ were outside a 10-team draft's 150 picks. **Binding constraint on all of it: there is no ADP
+history in `nfl.db` — `adp_snapshots` and `ffc_adp_snapshots` are 2026-only, so every historical
+draft-cost claim currently substitutes FantasyPros ECR rank (4 usable seasons). Thread 055.**
+
 **Alpha detection: CONTESTED between ~2028 and ~2029 in the docs.** `docs/CURRENT-STATE.md`
 (previously) and `docs/dashboard.html` say ~2028 (ADR-026). `docs/decisions-needed.md` (D-001) and
 `docs/adr-drafts/ADR-A-need-adjustment-scale.md` say ~2029. Both cite a sign-test-floor /
