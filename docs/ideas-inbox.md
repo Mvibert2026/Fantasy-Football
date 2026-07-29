@@ -352,3 +352,54 @@ newest at the bottom.
   role data, zero acquisition cost, no licensing question.
   **Third session to report it:** this file still carries unresolved merge-conflict markers further
   up, around the PR-004 / ADR-057 entries. Appended below them without touching either side.
+
+- 2026-07-29 · (researcher, competitive UX) **Decided, not escalated — four calls.**
+  (a) **Did not halt on the premise, but recorded three challenges rather than absorbing them**
+  (`docs/research/competitive-ux-2026-07-29.md` §0.5): the thread-061 audit is at
+  `docs/research/competitor-recommendation-audit-2026-07.md`, not `docs/reviews/` where the dispatch
+  said; a frontend overhaul sits outside written Phase 1 scope (`CLAUDE.md` §2 says "Not the draft
+  tool", §8 requires escalation) so committing to one needs a spec amendment, not a sprint; and
+  multi-league is **not** a contradiction with §1 — one founder with three leagues is still one user
+  and §4 already mandates `league_id` everywhere. Halting on any of these would have cost the session
+  over a framing dispute.
+  (b) **Answered the commissioned question against its implied direction.** The dispatch was framed
+  around "what to include" in an overhaul; the evidence says **do not do a visual overhaul.** The
+  prior competitive UX pass already concluded the fix was token-level and that work shipped; ESPN's
+  2025 redesign is evidence the marginal return goes negative past where we are; and
+  `docs/operating-model.md` records the 38K-char spec port that hard-stopped at ~97% and
+  self-reported inaccurately. Recommended three scoped, independently shippable changes instead
+  (uncertainty on the board row, slot selectable + randomisable in prep setup, league-vs-account
+  state labelled on screen).
+  (c) **Narrowed a prior conclusion rather than repeating it.** Thread 061 said "no competitor found
+  publishes calibration evidence." That holds for availability modelling only — Draft Sharks
+  publishes out-of-sample ROC-AUC 0.809, R² 0.401, MAE 1.610 and a binned reliability check for its
+  injury model, and ships 80%/95% confidence prediction limits per player. The defensible claim is
+  *pre-registered calibration of the availability model specifically*, still unmet at 1 of ~30 mocks.
+  (d) **Left three `[GAP]`s empty rather than plausible**: the visual form of Boris Chen's tier charts
+  (output is a PNG the tools cannot read), what a BeerSheet contains (page carries only download
+  links), and whether any user anywhere has asked for uncertainty display — every search returned
+  vendor marketing. That last one is flagged in the artifact as the gap that would most change the
+  confidence of the headline recommendation, since the case for it currently rests on one vendor's
+  commercial survival plus this project's own principles, not on demand evidence.
+  **Recorded and stopped, not routed around:** `www.reddit.com` was **refused outright by the fetch
+  tool** — it is the category's main voice-of-customer channel and its absence is the largest hole in
+  the report. ESPN/Yahoo/CBS not attempted per standing blocks.
+  `forums.footballguys.com` and `www.fantasylife.com` both surfaced relevant material in search and
+  were deliberately left unfetched for consistency with thread 009's recorded blocks, even though
+  `fantasylife.com/articles/` is **not** robots-disallowed — flagging that path-level loophole rather
+  than exploiting it alone.
+  **Escalating, and it is why this dispatch was partly rework:** the **prior competitive UX research
+  artifact does not exist in this repository.** `docs/operating-model.md`'s budget table logs the pass
+  as completed and verified, and at least six live documents cite its conclusions
+  (`design-handoff/HANDOFF-NOTES.md`, `design-handoff/README.md` Addendum 3, `handoffs/030`,
+  `handoffs/047`, `adr-drafts/ADR-A`, `screenshot-checklist.html`) — including the 5/10 visual-polish
+  and 4/10 light-mode scores, which are quoted with no evidence behind them anywhere in the repo. I
+  searched the whole tree including every agent worktree. **This project has now bought the same
+  research twice.** Candidate `docs/state-claims.toml` entry of the "cited artifact must exist" class.
+  **Also escalating, fourth session to report it:** this file still carries unresolved merge-conflict
+  markers around the PR-004 / ADR-057 / ADR-059 entries. Appended below them without touching either
+  side.
+  **No shell in this session**, so no allocator access: the handoff body is staged unallocated at
+  `docs/research/HANDOFF-BODY-unallocated-competitive-ux-2026-07-29.md` and the founder request at
+  `docs/founder-requests/NEW-look-at-other-apps-ux-before-committing-to-an-overhaul.md`, each with the
+  exact command. Hand-typing an ID was refused (043/049/053, ADR-048).

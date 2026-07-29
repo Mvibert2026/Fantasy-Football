@@ -5,11 +5,11 @@ Per-request files in this directory are the source of truth. Edit a request's ow
 `STATUS:` line, then re-run sync. Protocol: [`README.md`](README.md).
 Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests.md).
 
-**22 requests since freeze.**
+**23 requests since freeze.**
 
 ---
 
-## NEW — 16
+## NEW — 17
 
 | ID | Subject | Raised | Source |
 |---|---|---|---|
@@ -29,6 +29,7 @@ Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests
 | [FR-035](FR-035-predictions-in-prep-must-be-scoped-to-the-select.md) | Predictions in prep must be scoped to the select | 2026-07-29 | chat 2026-07-29, PM session |
 | [FR-036](FR-036-manual-team-name-entry-for-opponents-in-the-draf.md) | Manual team name entry for opponents in the draf | 2026-07-29 | chat 2026-07-29, PM session |
 | [FR-037](FR-037-export-csv-and-export-pdf-do-not-work-low-priori.md) | Export csv and export pdf do not work low priori | 2026-07-29 | chat 2026-07-29, PM session |
+| [FR-038](FR-038-look-at-other-apps-ux-before-committing-to-an-ov.md) | Look at other apps ux before committing to an ov | 2026-07-29 | chat session 2026-07-29, relayed via researcher dispatch |
 
 ## SCOPING — 1
 
