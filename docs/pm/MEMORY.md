@@ -130,14 +130,49 @@ detector.
 **The database rebuilds** — 99.3% by size, ~4 minutes, public sources, no credentials. Measured, not
 assumed.
 
-**Three things exist only on the founder's machine and cannot be regenerated:**
+**A full clean-clone rehearsal was run in a cold cloud container on 2026-07-29** (branch
+`claude/cloud-path-rehearsal-kafx7m`, commit `6c23c13`). Clone → rebuild → both suites green in
+**~8m50s with zero credentials and zero environment variables**: backend **641 passed / 8 skipped /
+0 failed**, frontend **202 passed / 0 failed**, database 22 tables / 2,856,629 rows / 854.4 MB. The
+three rescued artifacts did their job — nothing that exists only on his machine was needed.
 
-1. **The 160 picks from the real 2025 draft** — hand-transcribed from screenshots. The sole empirical
-   basis for the need parameter. Exists in no public source.
-2. **2021–2025 rankings history** — the upstream mirror now serves only the current scrape. Five
-   seasons of expert consensus that no source will sell back at any price.
-3. **The 2026 half-PPR board export** — a manual export from a logged-in session; re-exporting gives
-   today's file, not that one.
+**Corrected by that rehearsal — the previous entry here was wrong:**
+
+- **The 2021–2025 rankings history re-pulls.** This memory said five seasons "no source will sell back
+  at any price," and `can-we-rebuild-the-database.md` cited it as blocking cloud migration. Measured:
+  `ingest_rankings.py` unmodified against an empty database returned all six seasons in 4.3s, and a
+  row-level diff of **2,540 rows across all 14 data columns against the committed rescue CSV found
+  zero differing fields and zero missing keys either way.** An earlier session tested this with the
+  ingester's `resolve_snapshot_date` and concluded the opposite. **Two honest measurements disagree**
+  — either the mirror changed between them or the earlier method was wrong; it was not worth settling.
+  Either way the mirror is live and can change again, so **keep the rescue CSV as a pin** — but note
+  nothing currently loads it back into the database, so the pin cannot actually be used yet.
+- **The remaining genuinely unrestorable artifact is the ADP snapshots, and it is a code gap, not a
+  source gap.** `ingest_mfl_adp.py` writes the canonical CSV but **cannot read one back** — there is
+  no CSV→DB loader. The committed point-in-time rows are therefore unrestorable and a rebuild gets
+  only the current day. Its own docstring calls the CSV canonical and the DB a cache of it, and no
+  code can rebuild that cache. **This gap widens by one snapshot every day.** Highest-value fix on
+  the data side; dispatched 2026-07-29.
+
+**Still exists only on his machine and cannot be regenerated:**
+
+1. **The 160 picks from the real 2025 draft** — hand-transcribed from screenshots, the sole empirical
+   basis for the need parameter. Committed as a fixture (thread 080); a restore path exists.
+2. **The 2026 half-PPR board export** — a manual export from a logged-in session; re-exporting gives
+   today's file, not that one. Committed; a restore path exists.
+
+**Two things block a fresh machine at the first command, both one-line fixes** (dispatched): `pandas`
+is missing from `requirements.txt` despite 15 `src/` modules importing it — pytest collection aborts
+and *zero* tests run; and no Python version is declared anywhere, while `scipy==1.18.0` needs ≥3.12.
+
+**`tools/state.py --tests` hard-crashes off Windows** — it hardcodes the founder's conda interpreter.
+That is the *mandated* `CURRENT-STATE.md` write-back, broken in every cloud session. Fix dispatched.
+`handoffs.py`, `status_log.py` and `founder_requests.py` all work fine.
+
+**`github.com/dynastyprocess/*` returns 403 in any Claude session** — session repo-scoping, and
+`add_repo` cannot cross owners. `raw.githubusercontent.com` serves the identical file. This affects
+Claude sessions only; a normal machine and GitHub Actions never see it. **Never commit a base-URL
+change to work around it** — that would break the environments that actually run the capture.
 
 **Two feeds drift** — depth charts and contracts are live, not archival. A rebuild gives today's
 state. Pin artifacts, not commands, for anything that must reproduce exactly.
