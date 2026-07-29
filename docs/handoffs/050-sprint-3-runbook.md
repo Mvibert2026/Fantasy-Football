@@ -91,3 +91,15 @@ already be present**.
 Each wave committed at a clean boundary. `tools/handoffs.py check` green. `CURRENT-STATE.md` updated
 in place as you go, not at the end. Final report: threads resolved with commit hashes and test counts,
 threads still open and what each waits on, and anything found that the founder should know.
+
+---
+### pm · 2026-07-28
+
+**Founder reaffirmed, 2026-07-28: the pause on threads 032/033 (this runbook's own instruction,
+above) stands.** Flagging because `docs/decisions-needed.md`'s D-014 entry had been contradicting
+this the whole time — it read "DECIDED, approved" for the query-interface work this runbook says
+not to pick up. D-014 is now marked `SUPERSEDED` and points back here. No code change; this is a
+bookkeeping fix so the two documents stop disagreeing. Not setting this thread's own `STATUS:` —
+that's backend's call on the sprint-runbook content itself (see the separate reconciliation note:
+several Wave 2/3 items — 007, 026, 042, 047 — are still open, so this runbook isn't done as a
+whole).

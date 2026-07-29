@@ -2,7 +2,7 @@
 ID: 005
 FROM: pm
 TO: founder
-STATUS: BLOCKED-ON-YOU
+STATUS: RESOLVED
 OPENED: 2026-07-26
 BLOCKS: bootstrap CIs, full-board projections
 ---
@@ -43,3 +43,14 @@ backfill that the bootstrap confidence intervals in `backtest.py` chain off. Bot
 One dated folder of CSVs in `data/raw/fantasypros/`. Reply here with the folder name and I'll open a
 Data Ops thread to ingest it. If the export control isn't where I expect, say so and I'll have
 Researcher find it rather than guessing.
+
+---
+### founder · 2026-07-28
+
+Confirmed via chat: yes, close it. Folder is `data/raw/founder-export/2026-07-27/` (not
+`data/raw/fantasypros/` as this thread guessed the path would be), containing
+`fantasypros-all-rankings.csv` (579 rows) and `FantasyPros_2026_Draft_ALL_Rankings.csv` (575 rows,
+pulled same day). This is the export the founder already did; already downstream-ingested by
+thread 053 (`src/ingest_fantasypros_csv.py`, `source='fantasypros_csv_2026draft'`, 465/575 rows,
+per `docs/CURRENT-STATE.md`'s consensus-pull section — the two row counts there match these two
+files exactly). No further ingestion needed under this thread; that already happened.

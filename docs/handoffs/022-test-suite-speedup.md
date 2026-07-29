@@ -2,7 +2,7 @@
 ID: 022
 FROM: pm
 TO: backend
-STATUS: OPEN
+STATUS: RESOLVED
 OPENED: 2026-07-26
 BLOCKS: none
 ---

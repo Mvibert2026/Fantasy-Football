@@ -4,7 +4,7 @@
 Threads are the source of truth. Change a thread's `STATUS:`, then re-run sync.
 Protocol: [`README.md`](README.md).
 
-**48 open** · 30 resolved
+**45 open** · 33 resolved
 
 ---
 
@@ -13,15 +13,14 @@ Protocol: [`README.md`](README.md).
 Every role gets a section, including empty ones — an empty inbox is a fact worth stating,
 not an omission. Start your session at your own heading.
 
-### `pm` — 3 waiting
+### `pm` — 2 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
-| [005](005-fantasypros-tier.md) | Fantasypros tier | `pm` | BLOCKED-ON-YOU | 2d | bootstrap CIs, full-board projections |
 | [068](068-acceptance-harness-design-captures.md) | Acceptance harness design captures | `design` | OPEN | 1d | design drift being caught by a diff rather than by the founder |
 | [078](078-pick-level-adp-velocity-capture-blocked-mfl-has.md) | Pick level adp velocity capture blocked mfl has | `data-ops` | OPEN | 1d | none |
 
-### `backend` — 23 waiting
+### `backend` — 22 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
@@ -29,7 +28,6 @@ not an omission. Start your session at your own heading.
 | [002](002-per-pick-draft-state.md) | Per pick draft state | `pm` | OPEN | 2d | 007 (mock collection, not yet opened) |
 | [012](012-sprint-1-runbook.md) | Sprint 1 runbook | `pm` | OPEN | 2d | none |
 | [021](021-per-position-rank-correlation.md) | Per position rank correlation | `pm` | OPEN | 2d | D-002, D-003 |
-| [022](022-test-suite-speedup.md) | Test suite speedup | `pm` | OPEN | 2d | none |
 | [026](026-recompute-progress-streaming.md) | Recompute progress streaming | `pm` | OPEN | 2d | Settings editor build |
 | [032](032-assistant-dev-mode.md) | Assistant dev mode | `pm` | OPEN | 2d | none |
 | [033](033-assistant-query-architecture.md) | Assistant query architecture | `pm` | OPEN | 2d | the assistant rebuild sprint |
@@ -49,14 +47,13 @@ not an omission. Start your session at your own heading.
 | [076](076-structural-gap-thread-id-allocator-race-across-c.md) | Structural gap thread id allocator race across c | `pm` | OPEN | 1d | none |
 | [077](077-adp-backfill-scheduled-task-landed-frontend-test.md) | Adp backfill scheduled task landed frontend test | `data-ops` | OPEN | 1d | none |
 
-### `frontend` — 16 waiting
+### `frontend` — 15 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
 | [003](003-frontend-reconnect.md) | Frontend reconnect | `pm` | OPEN | 2d | none |
 | [006](006-design-sync-pilot.md) | Design sync pilot | `pm` | OPEN | 2d | none |
 | [007](007-design-fidelity-harness.md) | Design fidelity harness | `pm` | OPEN | 2d | none |
-| [011](011-locate-frontend-spec.md) | Locate frontend spec | `pm` | OPEN | 2d | 007 |
 | [029](029-frequency-array-on-board.md) | Frequency array on board | `pm` | OPEN | 2d | none |
 | [030](030-inline-why-rank-differs.md) | Inline why rank differs | `pm` | OPEN | 2d | none |
 | [031](031-frontend-spec-audit-and-wiring.md) | Frontend spec audit and wiring | `pm` | OPEN | 2d | 027, 028, Settings build |
@@ -110,11 +107,10 @@ not an omission. Start your session at your own heading.
 
 _Nothing waiting on you._
 
-### `founder` — 2 waiting
+### `founder` — 1 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
-| [011](011-locate-frontend-spec.md) | Locate frontend spec | `pm` | OPEN | 2d | 007 |
 | [035](035-frontend-catchup-runbook.md) | Frontend catchup runbook | `pm` | OPEN | 2d | 003, 027, 028, 029, 030, 031, and every future frontend thread |
 
 ### `fable` — 0 waiting
@@ -138,9 +134,11 @@ _Nothing waiting on you._
 | ID | Subject | From → To |
 |---|---|---|
 | [004](004-strategist-open-questions.md) | Strategist open questions | `pm` → `strategist` |
+| [005](005-fantasypros-tier.md) | Fantasypros tier | `pm` → `founder` |
 | [008](008-bootstrap-operating-model.md) | Bootstrap operating model | `pm` → `backend` |
 | [009](009-research-aggregation-audit.md) | Research aggregation audit | `pm` → `researcher` |
 | [010](010-install-agent-definitions.md) | Install agent definitions | `pm` → `backend` |
+| [011](011-locate-frontend-spec.md) | Locate frontend spec | `pm` → `founder, frontend` |
 | [013](013-nfl-db-tracked-in-git.md) | Nfl db tracked in git | `pm` → `backend` |
 | [014](014-bootstrap-cleanup.md) | Bootstrap cleanup | `pm` → `backend` |
 | [015](015-settings-engineering-questions.md) | Settings engineering questions | `pm` → `backend` |
@@ -149,6 +147,7 @@ _Nothing waiting on you._
 | [018](018-fantasypros-season-backfill.md) | Fantasypros season backfill | `pm` → `data-ops` |
 | [019](019-bootstrap-confidence-intervals.md) | Bootstrap confidence intervals | `pm` → `backend` |
 | [020](020-preregistration-convention.md) | Preregistration convention | `pm` → `backend` |
+| [022](022-test-suite-speedup.md) | Test suite speedup | `pm` → `backend` |
 | [023](023-consensus-rank-and-ingest-fixes.md) | Consensus rank and ingest fixes | `pm` → `backend` |
 | [024](024-injury-ingestion-as-of-date.md) | Injury ingestion as of date | `pm` → `data-ops` |
 | [025](025-mock-lab-backend.md) | Mock lab backend | `pm` → `backend` |

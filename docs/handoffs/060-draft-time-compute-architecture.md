@@ -176,3 +176,11 @@ optimisation to the primary path.
    of consecutive autopicks. Confirm: no queue growth, no thrash, no stale display, and correct
    coalescing. Report the achieved sample counts across the draft — the distribution of those counts
    is the honest measure of whether this design works.
+
+---
+### pm · 2026-07-28
+
+Reconciliation pass (`docs/handoffs/RECONCILIATION-2026-07.md`) flagged whether 045 should merge
+into this thread as a judgment call. **Decision — keep both, no merge**; see the mirrored note on
+045. This thread stays the compute/latency architecture; 045 stays the methodology spec it will
+eventually host.

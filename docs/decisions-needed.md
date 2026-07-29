@@ -291,7 +291,17 @@ it is structural rather than behavioural.
 ---
 
 ## D-014 · Reverse the LLM-renderer deferral?
-**Status:** DECIDED — 2026-07-26 · **Founder reversed the deferral, with a narrowing**
+**Status:** SUPERSEDED — 2026-07-28 · **The 2026-07-26 approval below is withdrawn. Both threads
+it authorized — 032 (dev-mode Haiku assistant) and 033 (query-interface spec) — are PAUSED per the
+founder's 2026-07-27 instruction on thread 050 ("Threads 032 and 033 are explicitly paused by the
+founder — do not pick them up"), reaffirmed 2026-07-28. Thread 050's instruction stands; this
+entry's "DECIDED" status below no longer authorizes anyone to act on either thread.** This entry
+and thread 050 previously contradicted each other (this said "approved, spec via 033"; 050 said
+"paused, do not pick up") — the founder resolved the contradiction 2026-07-28 in favor of the
+pause. See the thread 050 reply for the mirror of this note.
+
+**Original 2026-07-26 entry, preserved for the record, no longer authoritative — see status line
+above:**
 
 **What the founder asked for:** "a very futuristic chatbot there, especially if it can see the back
 end to answer the questions."

@@ -209,3 +209,13 @@ length; rigorous default 2.0 s p95 with a mode line on the card, and silent degr
 on offer as a loosening).
 
 Status left `OPEN` — awaiting `backend`.
+
+---
+### pm · 2026-07-28
+
+Reconciliation pass (`docs/handoffs/RECONCILIATION-2026-07.md`) flagged whether this should merge
+into 060 as a judgment call rather than resolving it unilaterally. Read both threads in full:
+**decision — keep both, no merge.** 045 is the VONA methodology spec (metric, simulation count,
+parameter sweep, adopt/shelve threshold) awaiting backend's feasibility review; 060 is the
+compute/latency architecture that would host 045's output once adopted, and its own text already
+defers content questions to 045/059. Different layers, not competing scopes.
