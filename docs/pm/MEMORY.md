@@ -4,7 +4,29 @@
 repo forgets between runs; this file is what makes that not matter. It is the difference between a PM
 that accumulates judgement and one that restarts every morning.
 
-Last updated: **2026-07-29**.
+Last updated: **2026-07-29** (PM check-in session, running in the cloud).
+
+---
+
+# 0 · Corrections made this session — things believed here that were false
+
+- **The mailbox was recorded as FAILING. It passes.** `tools/handoffs.py check` is OK: 81 threads,
+  none stale, all addressed, **47 open / 34 resolved**. The 069/073 no-reply failure was fixed when
+  the frontend replies landed and `047ff90` corrected thread 080's heading. Section 7's "~45 open"
+  is superseded by 47.
+- **`main` had moved and this session's remote-tracking ref was stale.** A `git fetch` was required
+  before any comparison was meaningful — `origin/main` went `b6a9304` → `4a299df`. **Fetch before
+  trusting `origin/*` in a cloud session; the clone can be minutes or hours old.**
+- **The daily ADP capture now runs off the founder's machine and has been observed to succeed** —
+  `4a299df`, authored by `github-actions[bot]`, 2026-07-29 15:38 UTC, 225 rows. It overwrote the
+  hand-captured file. The local Windows Scheduled Task is redundant.
+- **Cloud sessions cannot see the founder's local worktrees.** `.claude/worktrees/` does not exist
+  here and `git worktree list` shows only the checkout. Thread 081's untracked duplicate 079 lives
+  in a `phase3-chain1` worktree on his machine and **cannot be fixed from a cloud session** — only
+  the tracked copy is visible. Do not dispatch that fix to a cloud agent.
+- **The Fable "M" mandate has never been run.** `docs/fable-mandate-M-2026-07-29.md` exists and is
+  well-formed; no `docs/reviews/fable-M1/M2/M3-*` output exists. This is the founder's three
+  conditions for using the tool at all, and it is sitting unstarted. **Highest-value open item.**
 
 ---
 
@@ -116,7 +138,7 @@ are the only point-in-time capture that exists. **Keep taking them; a missed day
 | Decision | Status |
 |---|---|
 | Wire the measured need parameter into the recommendation, or drop the claim | **Open.** PM must not frame it — it authored the claim |
-| The founder's three model questions | **Open**, and they are his condition for using the tool at all |
+| The founder's three model questions | **Open, and the mandate is written but UNRUN** (`docs/fable-mandate-M-2026-07-29.md`; no M1/M2/M3 review output exists). His condition for using the tool at all |
 | Pick-level draft capture | **Blocked.** FFC declined; a lighter source is likely underpowered. "We cannot test this yet" is an acceptable answer |
 | In-draft chatbot | **Paused by the founder.** A decisions-log entry approving it was superseded |
 | Hosting off the founder's machine | Direction agreed, not scheduled |
@@ -136,7 +158,8 @@ was PM-generated.** Say so when defending it.
 |---|---|
 | Calibration drafts | **0 of ~30** (a logged one was placeholder data — founder-confirmed) |
 | Detection split | roughly **5:1 founder to project** |
-| Open tickets | ~45 after triage; only 3 of a claimed 13 closes survived evidence |
+| Open tickets | **47 open / 34 resolved** (measured 2026-07-29); only 3 of a claimed 13 closes survived evidence |
+| PM inbox | 3 waiting: 068 (acceptance-harness design captures), 078 (ADP velocity blocked, needs a founder call on FFC), 081 (thread-079 ID collision, local-worktree-only) |
 | Permission prompts | Non-zero; the allow-list is a wildcard, so **remaining friction is the hook, not permissions** |
 
 # 8 · Recent history worth remembering
