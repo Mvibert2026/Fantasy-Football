@@ -102,3 +102,29 @@ callers, found unused in the FR-043 audit. **That is the layer this should be bu
 Owner: `backend` for the artifact and the contract bump, `frontend` for the surface, `strategist` for
 the promotion rule from exploratory to confirmed. Not before the draft-critical work.
 
+---
+
+## The real bottleneck, measured 2026-07-29 after the founder tested it live
+
+> "chatbot isn't great yet, it still doesn't really understand any context."
+
+**Correct, and the cause is retrieval, not the model.** `frontend/ui/assistant/templates.ts` holds
+**seven templates, each matched by a regular expression** (`match: (q) => q.match(/best\s+available.../i)`
+and six others). A question that matches none of the seven retrieves nothing, so the LLM is handed an
+empty context array and — correctly, per rule 3 — says it cannot answer.
+
+So the assistant is not reasoning badly. **It is reasoning over nothing, most of the time.** Swapping
+the model, lengthening the prompt or adding a findings file all leave this untouched: a regex matcher
+decides what the model ever sees.
+
+**This reorders the work in this ticket.** Shipping `findings.json` without fixing retrieval means the
+findings sit in the build and the seven regexes never surface them.
+
+1. **Retrieval first.** Something that can find relevant context for an arbitrary question — at
+   minimum keyword/semantic search over the shipped artifacts, rather than seven hand-written
+   patterns. This is the change that makes the assistant feel like it understands anything.
+2. **Then the corpus** — the findings artifact described above, so there is research to retrieve.
+3. **The rules stay exactly as they are.** Rule 3's refusal is what stops it inventing football
+   knowledge, and it must survive a better retriever. Wider retrieval must not become licence to
+   answer from the model's own priors.
+
