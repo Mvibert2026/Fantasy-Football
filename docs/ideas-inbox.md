@@ -268,7 +268,6 @@ newest at the bottom.
   **Also, stale line:** `CURRENT-STATE.md` still says "FFC is blocked by robots.txt regardless" and
   "FFC remains blocked" while MEMORY §4 and FR-023 record it unblocked and say they supersede.
 
-<<<<<<< HEAD
 - **2026-07-29, backend (ADR-059).** `docs/pm/CHARTER.md` and `docs/pm/MEMORY.md` are the two
   richest sources of live factual claims in the repo and are deliberately **not** in
   `docs/state-claims.toml`'s `live_docs` — they are the PM role's files and outside the backend
@@ -324,7 +323,6 @@ newest at the bottom.
   neither applies and no `[MODAL-SAMPLED]` evidence was obtainable — no `nflreadpy` call, no
   `data/nfl.db` query. Several gaps in the report (e.g. which season nflverse's betting columns first
   become non-null) are one query away for anyone with a shell.
-=======
 - **2026-07-29, ranker (research pass 1, `docs/ranking/bottom-up-research-pass-1.md`).** Four calls
   made without escalating, logged here.
   (a) **Did not fund the coaching-data sourcing decision.** Two independent bounds — a
@@ -354,4 +352,3 @@ newest at the bottom.
   role data, zero acquisition cost, no licensing question.
   **Third session to report it:** this file still carries unresolved merge-conflict markers further
   up, around the PR-004 / ADR-057 entries. Appended below them without touching either side.
->>>>>>> origin/worktree-agent-ac1685c1cf9cd2954
