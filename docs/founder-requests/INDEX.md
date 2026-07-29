@@ -5,11 +5,11 @@ Per-request files in this directory are the source of truth. Edit a request's ow
 `STATUS:` line, then re-run sync. Protocol: [`README.md`](README.md).
 Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests.md).
 
-**14 requests since freeze.**
+**15 requests since freeze.**
 
 ---
 
-## NEW — 10
+## NEW — 11
 
 | ID | Subject | Raised | Source |
 |---|---|---|---|
@@ -23,6 +23,7 @@ Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests
 | [FR-029](FR-029-be-less-verbose-and-technical-enough-to-prioriti.md) | Be less verbose and technical enough to prioriti | 2026-07-29 | chat session 2026-07-29 |
 | [FR-030](FR-030-run-the-rankings-validation-at-maximum-effort-ac.md) | Run the rankings validation at maximum effort ac | 2026-07-29 | chat session 2026-07-29 |
 | [FR-031](FR-031-consensus-as-an-adjustment-to-bottom-up-not-a-ri.md) | Consensus as an adjustment to bottom up not a ri | 2026-07-29 | pm relay, 2026-07-29 |
+| [FR-032](FR-032-make-the-opponents-screen-functional-during-a-li.md) | Make the opponents screen functional during a li | 2026-07-29 | chat session 2026-07-29 |
 
 ## SCOPING — 1
 
