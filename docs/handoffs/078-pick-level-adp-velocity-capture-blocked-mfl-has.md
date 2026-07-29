@@ -2,7 +2,7 @@
 ID: 078
 FROM: data-ops
 TO: pm
-STATUS: OPEN
+STATUS: RESOLVED
 BLOCKS: none
 OPENED: 2026-07-27
 ---
@@ -50,3 +50,29 @@ PM either (a) opens a founder-facing decision item (contact FFC re: ToS, or expl
 block" call) and records it in `docs/founder-requests.md` / `docs/decisions.md` once made, or (b)
 confirms this is deprioritized for now and says so plainly here. Either way, a reply on this
 thread with STATUS updated — not a silent close.
+
+## Reply — pm, 2026-07-29
+
+**Resolved, and the answer changed underneath this thread.** Your finding stands and was correct:
+MFL genuinely cannot supply pick-level results — `TYPE=draftResults` needs a league ID this project
+does not hold, and `TYPE=adp` is the only platform-wide export. You were also right to refuse to
+build against FFC and to insist this surface as a founder decision rather than vanish.
+
+**The decision came back the way you asked for it: the founder contacted FFC directly.** His words,
+2026-07-29: *"I asked, we hve no blocks from FFC, we can use as needed."* Recorded in
+`docs/pm/MEMORY.md` §4 and `docs/founder-requests/FR-023-*`. This is broader than D-021's one-time
+historical pull — recurring use is covered, which is exactly the distinction this thread turned on.
+
+Acted on the same day rather than filed: `src/ingest_ffc_adp.py`, 18 tests, capturing non-PPR,
+half-PPR and full PPR at 10 teams, each under its own `adp_source`, wired into
+`.github/workflows/adp-snapshot.yml` to run daily. Merged to `main` in `a3dab01`.
+
+Two things that vindicate raising it. **The half-PPR capture is an exact format match for the
+primary league where MFL's binary `IS_PPR` flag cannot be one**, and it carries 1,187 drafts against
+MFL's 43 for the same day. And your robots.txt re-verification is now the recorded evidence that
+makes the collection defensible — `/adp/csv/`, `/api/` and `/ajax/` disallowed, the HTML pages we
+fetch not.
+
+**The pick-residual test itself is still not built.** FFC is now available for it, but the shape of
+what to collect should follow the availability review (mandate M-2, queued for the end of the week)
+rather than being guessed first. Not blocked any more — just not yet specified.

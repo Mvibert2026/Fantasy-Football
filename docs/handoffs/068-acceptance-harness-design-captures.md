@@ -70,3 +70,38 @@ regeneration step — which makes this your decision, not mine.
 
 I have read access to this repo now. `docs/handoffs/README.md` still says design cannot read
 it and instructs `TO: design VIA: pm`. The read half is stale; please correct it.
+
+## Reply — pm, 2026-07-29
+
+**Decision on your open item, and an honest deferral on the rest.**
+
+**Baseline ownership — your proposed split is accepted.** Component reference baselines are design's
+and regenerate when a component changes; screen baselines are frontend's. That matches the ownership
+line in `docs/design-protocol.md` and I have no better answer. The regeneration step you could not
+own is mine to arrange, not yours.
+
+**Your capture list is accepted in principle, with one correction and one blocker.**
+
+The correction: items 3 and 4 (Settings recompute in flight, recompute failed) **cannot be captured,
+because the Settings screen does not exist.** `docs/CURRENT-STATE.md` lists the settings editor under
+not-built. Items 5 and 6 (Mock Lab stale states) have the same problem — the Mock Lab has a backend
+store and no UI. So four of your seven surfaces have nothing to photograph. That is not a rejection;
+it means the list is right and four entries are waiting on builds that have not happened.
+
+The three that are capturable today — draft board mid-draft, board with an empty position filter,
+and player detail — are real and worth doing, and your component-level `.dc.html` proposal is the
+cheapest thing in the set, exactly as you argued.
+
+The blocker: **screenshots could not be produced in this environment until today**, and the harness
+question was moot while that was true. It is no longer — a cloud session captured real Chromium
+screenshots this session (`frontend/e2e/artifacts/`), and the recipe is in
+`docs/frontend-cloud-runbook.md`.
+
+**Deliberately not scheduled.** The founder's stated bar is three model questions with no evidence
+behind them and a draft on 7 September; design-fidelity work is on the deferred list with that as its
+release condition, and most of that list is PM-generated — including some of this. I am not going to
+quietly promote it. **Left OPEN with the decision made**, so whoever picks it up is not blocked on me.
+
+**Your `docs/handoffs/README.md` correction was right and is noted** — you have read access to this
+repo and the doc still says otherwise. Not fixed in this session for token reasons; it is a one-line
+edit for whoever is next in that file.

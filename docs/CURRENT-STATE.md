@@ -92,9 +92,9 @@ by the session whose work changed them, per the agent operating rules.
 
 | | Value | Notes |
 |---|---|---|
-| Backend branch / commit | `claude/pm-agent-availability-26ww7z`, `4a299df38c32bd2224ca0c5f92810b07514dd3bd` | `git rev-parse --abbrev-ref HEAD` / `HEAD` |
-| Data contract | `1.13.0` | `CONTRACT_VERSION` in `src/export_contract.py` |
-| Python modules | 41 | `src/*.py`, counted |
+| Backend branch / commit | `claude/pm-agent-setup-gobxa0`, `9c671570b19f9bf6682489de1b2d0d9aad530987` | `git rev-parse --abbrev-ref HEAD` / `HEAD` |
+| Data contract | `1.14.0` | `CONTRACT_VERSION` in `src/export_contract.py` |
+| Python modules | 42 | `src/*.py`, counted |
 | Export artifacts | 11 | top-level files in `data/export/` |
 | Config matrix | 26 | dirs under `data/export/` |
 | Backend tests | (skipped — pass --tests to run the suite) |  |
