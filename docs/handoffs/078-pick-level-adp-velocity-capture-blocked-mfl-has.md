@@ -51,7 +51,7 @@ block" call) and records it in `docs/founder-requests.md` / `docs/decisions.md` 
 confirms this is deprioritized for now and says so plainly here. Either way, a reply on this
 thread with STATUS updated — not a silent close.
 
-## Reply — pm, 2026-07-29
+### pm · 2026-07-29
 
 **Resolved, and the answer changed underneath this thread.** Your finding stands and was correct:
 MFL genuinely cannot supply pick-level results — `TYPE=draftResults` needs a league ID this project

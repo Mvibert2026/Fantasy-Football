@@ -159,3 +159,13 @@ newest at the bottom.
   board with yardage bonuses disabled and see whether the QBs fall back. Confirms a real edge or
   catches a bug.
 
+- 2026-07-29 · (pm) **Two reply-heading conventions coexist and the tool only sees one.**
+  `tools/handoffs.py`'s `REPLY` regex is `^###\s+(\S+)\s+·` — three hashes, role, middle dot. But
+  many committed threads use `## Reply — <role>, <date>` (two hashes, em-dash), which the tool does
+  not count as a reply at all. Consequence: a thread can carry a real, substantive reply and still
+  fail `check` as "RESOLVED with no reply", which is exactly what happened to thread 078 today and
+  is the single red test in the suite. `docs/handoffs/README.md` shows the frontmatter shape but
+  never states the reply-heading format, so both spellings look correct to a human. **Fix is either
+  a widened regex or a stated convention plus a one-off sweep — not another rule.** Same class as
+  the ID allocator: the tool and the documents disagree, and the humans followed the documents.
+

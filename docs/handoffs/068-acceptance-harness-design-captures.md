@@ -71,7 +71,7 @@ regeneration step — which makes this your decision, not mine.
 I have read access to this repo now. `docs/handoffs/README.md` still says design cannot read
 it and instructs `TO: design VIA: pm`. The read half is stale; please correct it.
 
-## Reply — pm, 2026-07-29
+### pm · 2026-07-29
 
 **Decision on your open item, and an honest deferral on the rest.**
 

@@ -7,7 +7,7 @@ import { computeLiveAvailability, dotsFilled, freqText, type LiveAvailabilityRes
 import type { Dataset } from '../data/load';
 import type { LeagueConfig } from '../data/league';
 import { recentSeasonKeys, usePlayerHistory, type PlayerHistoryState } from '../data/playerHistory';
-import type { RawSeasonStatsPlayer, RawWeeklyFinishesPlayer, RawWeeklyFinishWeek } from '../data/types';
+import type { RawBoard, RawSeasonStatsPlayer, RawWeeklyFinishesPlayer, RawWeeklyFinishWeek } from '../data/types';
 import { initialsOf, teamColorOf } from '../data/teamColors';
 import { verdictLine } from '../data/verdict';
 import { Value } from './Value';
@@ -411,6 +411,17 @@ export function PlayerDetail({
               {row.evaluativeNote}
             </p>
 
+            {/* Contract 1.14.0 (thread 082, FR-024): market ADP, a different
+                claim from CONSENSUS above -- that box is FantasyPros expert
+                opinion, this is where MyFantasyLeague drafters actually took
+                the player. Kept in this section (near the other "how does
+                the market see this player" numbers) rather than as its own
+                numbered section, and deliberately not a delta against our
+                rank -- WHY OUR RANK DIFFERS above already covers that
+                relationship for consensus; a second, differently-defined
+                delta here would read as the same signal. */}
+            <AdpBlock row={row} board={data.board} />
+
             {/* 6. Archetype -- permanently absent, no field in any export, ever.
                 Previously collapsed with section 9 into one shared line under
                 §8's multi-empty-section rule; that only works when the empty
@@ -642,6 +653,77 @@ function Dots({ value }: { value: number }) {
       ))}
     </div>
   );
+}
+
+/**
+ * Contract 1.14.0 (thread 082). The one place this app shows the full ADP
+ * caveat verbatim -- board.json:adp_source_note, written for display and
+ * not summarised here, because the board/draft-room columns only have room
+ * for a hover tooltip and this sheet is where a reader would go to check.
+ * `adp_selected_pct` is 0-100 already (not a 0-1 fraction like the
+ * availability percentages elsewhere in this file), so it gets its own
+ * formatter rather than reusing `percent()` -- and the same real-zero /
+ * genuinely-small / genuinely-absent three-way distinction Principle #2
+ * requires applies here too.
+ */
+function AdpBlock({ row, board }: { row: BoardRow; board: RawBoard }) {
+  const sourceLabel =
+    row.adpSource === 'mfl_proxy'
+      ? 'MyFantasyLeague proxy, full PPR -- not this league\'s own ADP'
+      : row.adpSource
+        ? row.adpSource
+        : null;
+  return (
+    <div style={{ marginTop: 10, border: '1px solid var(--line)' }}>
+      <div style={{ padding: '9px 12px' }}>
+        <div style={{ fontSize: 9.5, letterSpacing: '.08em', color: 'var(--dim2)' }}>
+          MARKET ADP{sourceLabel ? ` — ${sourceLabel}` : ''}
+        </div>
+        {row.adp.kind === 'present' ? (
+          <>
+            <div style={{ marginTop: 5, display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap' }}>
+              <span className="num" style={{ fontSize: 20, fontWeight: 600 }}>
+                {decimal(row.adp.value)}
+              </span>
+              <span style={{ fontSize: 11, color: 'var(--dim2)' }}>avg. pick</span>
+              {row.adpMinPick.kind === 'present' && row.adpMaxPick.kind === 'present' ? (
+                <span className="num" style={{ fontSize: 12, color: 'var(--dim)' }}>
+                  range {integer(row.adpMinPick.value)}–{integer(row.adpMaxPick.value)}
+                </span>
+              ) : null}
+              {row.adpSelectedPct.kind === 'present' ? (
+                <span className="num" style={{ fontSize: 12, color: 'var(--dim)' }}>
+                  taken in {adpPctText(row.adpSelectedPct.value)} of sampled drafts
+                </span>
+              ) : null}
+            </div>
+          </>
+        ) : (
+          <p className="notice" style={{ marginTop: 6, fontSize: 12 }}>
+            {row.adp.reason}
+          </p>
+        )}
+        {board.adp_source_note ? (
+          <p className="notice" style={{ marginTop: 8, fontSize: 11 }}>
+            {board.adp_source_note}
+          </p>
+        ) : null}
+        <div className="num" style={{ marginTop: 6, fontSize: 9, color: 'var(--dim2)' }}>
+          board.json:players[].adp{board.adp_as_of_date ? ` · snapshot as of ${board.adp_as_of_date}` : ''}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/** `adp_selected_pct` is already a 0-100 percentage (16.0 means 16%), not a
+ *  0-1 fraction -- `lib/format.ts#percent` expects the latter, so this is a
+ *  small local formatter rather than a misuse of that one. Same honest-zero
+ *  vs. genuinely-small distinction: a real, computed sub-1% share reads
+ *  "<1%", never a rounded-down "0%". */
+function adpPctText(n: number): string {
+  if (n > 0 && n < 1) return '<1%';
+  return `${Math.round(n)}%`;
 }
 
 function CorrPart({ label, value, note, field }: { label: string; value: string; note: string; field: string }) {

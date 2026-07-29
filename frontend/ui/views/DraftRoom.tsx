@@ -1323,6 +1323,7 @@ export function DraftRoom({
                       <Value cell={r.positionalLabel} render={(v) => v} />
                     </span>
                     <span style={{ fontSize: 10, letterSpacing: '.045em', color: 'var(--dim2)', width: 26 }}>{r.raw.team}</span>
+                    <DraftRoomAdpCell row={r} />
                     <span
                       onClick={(e) => {
                         e.stopPropagation();
@@ -1886,6 +1887,41 @@ export function DraftRoom({
         />
       ) : null}
     </div>
+  );
+}
+
+/**
+ * Compact ADP figure for the draft-room board list (contract 1.14.0, thread
+ * 082). Deliberately not a delta -- this row already has one (vs. consensus)
+ * and a second, differently-defined delta beside it would read as the same
+ * signal at a glance. "MFL" superscript is the glance-level source label
+ * (the fuller caveat -- full-PPR capture vs. this half-PPR league, thin
+ * sample -- lives in the tooltip, reachable but not inline on every row per
+ * thread 082's own "done looks like"). Absent renders the same em-dash
+ * convention as the delta cell beside it, honest-null via the reason on
+ * `row.adp`.
+ */
+function DraftRoomAdpCell({ row }: { row: BoardRow }) {
+  if (row.adp.kind === 'absent') {
+    return (
+      <span
+        className="num"
+        title={row.adp.reason}
+        style={{ fontSize: 10, color: 'var(--dim2)', width: 34, textAlign: 'right' }}
+      >
+        —
+      </span>
+    );
+  }
+  const title =
+    (row.adpSource === 'mfl_proxy'
+      ? 'MyFantasyLeague proxy ADP, full PPR (not this league\'s own ADP)'
+      : (row.adpSource ?? 'unlabelled ADP source')) + ' · board.json:players[].adp';
+  return (
+    <span className="num" title={title} style={{ fontSize: 10, color: 'var(--dim2)', width: 34, textAlign: 'right' }}>
+      {decimal(row.adp.value)}
+      <sup style={{ fontSize: 7, marginLeft: 1 }}>MFL</sup>
+    </span>
   );
 }
 

@@ -465,6 +465,7 @@ function BoardTable({
             <span
               key={col.key}
               onClick={() => onClickColumn(col.key, col.defaultDir)}
+              title={col.key === 'adp' ? adpHeaderTitle : undefined}
               style={{
                 display: 'flex',
                 alignItems: 'center',
