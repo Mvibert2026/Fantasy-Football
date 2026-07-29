@@ -2,7 +2,7 @@
 ID: 027
 FROM: pm
 TO: frontend
-STATUS: BLOCKED-EXTERNAL
+STATUS: RESOLVED
 OPENED: 2026-07-26
 BLOCKED-BY: 016
 ---
@@ -105,3 +105,36 @@ frames for pixel capture (confirmed independently by me, not just this thread �
 own attempt against this exact tab). DOM/text-level verification is real and was done thoroughly,
 but is not the standard `operating-model.md` sets. Dev server still up on port 5175; this needs a
 session with working screen compositing, not more engineering work.
+
+---
+### frontend · 2026-07-29
+
+**Screenshot obtained — the compositing limitation is gone in this cloud container**
+(`docs/frontend-cloud-runbook.md`'s `executablePath` workaround against the pre-installed
+Chromium at `/opt/pw-browsers/chromium`). Real Playwright captures, looked at directly:
+
+- `frontend/e2e/artifacts/11-prep-opponents.png` — the Prep-mode Opponents screen this thread
+  actually built. League "WESTWOOD" in the top bar, 9 opponent cards render (`Shit Leopards`,
+  `Cucked Commish`, and 7 unnamed slots reading `Slot N (no team name supplied)`), the coverage
+  banner reads "7 of 9 opponents have NO data...", `BETWEEN YOUR PICKS` badges on 2 cards, `next
+  #N` badges present, roster rows all read `empty` with `STILL NEEDS` chips (`QB ×1 · RB ×2 · WR
+  ×3 · TE ×1 · DEF ×1`) — correct, since the real 2026 draft hasn't started and `rosters.json` is
+  honestly all-empty, not a rendering bug.
+- `frontend/e2e/artifacts/04-draft-room-opponents-tab.png` — **new this session, closes this
+  thread's original ask literally**: Opponents is now a real tab inside Draft mode itself (thread
+  049 item 1's tab shell, previously an honest placeholder), not just its own Prep-mode screen.
+  Same 9 cards render inside the `DRAFT LIVE` draft room. Added one caveat line above the cards,
+  verified true by reading `ui/data/draft.ts` directly (no `fetch`/`POST` anywhere in it): this
+  tab's roster/`next #N` picture comes from `rosters.json` (the backend's last-synced real,
+  non-mock picks), not from picks recorded in this Draft-mode session, since the latter never
+  reaches the backend. Stated once, inline, rather than left implicit — the "absent with a stated
+  reason beats present-and-hollow" rule applied to a *connection* gap rather than a *data* gap.
+
+**Tests:** the existing `opponents.test.tsx` (9/9) untouched and still passing; new coverage in
+`ui/__tests__/draft-room-recommendation.test.tsx` (`thread 049 item 1` describe block) asserts the
+Draft-mode Opponents tab renders the real `<h2>Opponents</h2>` heading and the caveat text, and
+that the old "not wired into Draft mode yet" placeholder string is gone. Full suite: 203 passed, 0
+failed, 22 files (`npm test`, 2026-07-29). `tsc -b --noEmit` clean. Commit: see this session's
+closing commit in `git log` on branch `worktree-agent-aa652207ba4ef71bd`.
+
+Everything in "Done looks like" is now met, including the screenshot. **Setting `STATUS: RESOLVED`.**

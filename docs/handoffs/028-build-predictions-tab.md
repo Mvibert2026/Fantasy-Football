@@ -2,7 +2,7 @@
 ID: 028
 FROM: pm
 TO: frontend
-STATUS: BLOCKED-EXTERNAL
+STATUS: RESOLVED
 OPENED: 2026-07-26
 BLOCKS: none
 ---
@@ -110,3 +110,41 @@ Draft-mode hub-tab fold-in is a separate, genuine scope gap, not a blocker on th
 "Done looks like" — that's follow-up work for whoever next owns `DraftRoom.tsx`'s tab shell
 (partially built this round by a sibling session, not wired to this component yet). Noting it here
 so it isn't lost, not folding it into this thread's own closure criteria.
+
+---
+### frontend · 2026-07-29
+
+**Screenshot obtained** (cloud container, `executablePath` workaround, no compositing limitation
+here — see `docs/frontend-cloud-runbook.md`). Real captures, looked at directly:
+
+- `frontend/e2e/artifacts/12-prep-predictions.png` — this thread's original build: `Predictions`
+  heading, the quoted calibration caveat banner ("The signature claim on this screen is calibrated
+  availability. It is currently not calibrated: 1 of ~30 required mock drafts is logged..."),
+  header line "Live availability at pick 3", full 378+ row table, every visible `LIVE` cell reads
+  the literal `not yet` in italics (0 picks logged) — hard requirement 2 confirmed visually, not
+  just by the earlier DOM-text check.
+- `frontend/e2e/artifacts/05-draft-room-predictions-tab.png` — **the Draft-mode fold-in this
+  thread's own reply flagged as real, undone follow-up work — done this session** (thread 049 item
+  1's tab shell previously showed an honest "not wired into Draft mode yet" placeholder here;
+  now the real screen renders). Same calibration caveat, same `not yet` rendering, inside the
+  `DRAFT LIVE` draft room.
+- `frontend/e2e/artifacts/09-draft-room-after-5-picks.png` +
+  `frontend/e2e/artifacts/10-predictions-after-5-picks.png` — **the scenario that actually matters
+  for a folded-in tab and wasn't testable before the fold-in existed**: 5 picks recorded via the
+  Board tab's digit shortcuts, then switching to Predictions in the same session. Header now reads
+  "Live availability at pick 18" / "Only 5 picks logged, under one full round...", every row's
+  `LIVE` column shows a real computed percentage (e.g. Josh Allen 79%→85%), not `not yet` —
+  confirming Predictions reads the same `localStorage` draft-state key DraftRoom writes to
+  (`ui/data/draft.ts`'s `prep.draft.<leagueId>`), so a pick made in Draft mode's own pane is
+  reflected here without a page reload. New test:
+  `ui/__tests__/draft-room-recommendation.test.tsx`'s "Predictions reflects a pick recorded in
+  this same Draft-mode session" case exercises this via `saveDraftState` + render, not just DOM
+  inspection.
+
+**Tests:** existing `predictions.test.tsx` (7/7) untouched and still passing. Full suite: 203
+passed, 0 failed, 22 files (`npm test`, 2026-07-29). `tsc -b --noEmit` clean. Commit: see this
+session's closing commit on branch `worktree-agent-aa652207ba4ef71bd`.
+
+Everything in "Done looks like" is now met, including the screenshot, and the Draft-mode fold-in
+this thread's earlier reply flagged as outstanding is also done (thread 049 item 1). **Setting
+`STATUS: RESOLVED`.**

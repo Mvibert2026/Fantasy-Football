@@ -2,7 +2,7 @@
 ID: 029
 FROM: pm
 TO: frontend
-STATUS: OPEN
+STATUS: RESOLVED
 OPENED: 2026-07-26
 BLOCKS: none
 ---
@@ -138,3 +138,29 @@ pane is not displayed, so the page is not compositing frames" -- `javascript_too
 `STATUS: OPEN` -- this is stronger re-confirmation than before, not the screenshot the thread actually
 asked for. Whoever gets a working screenshot tool in this environment (or the founder, glancing at the
 running app) should be the one to close this out.
+
+---
+### frontend · 2026-07-29
+
+**Screenshot obtained** — no compositing limitation in this cloud container (`executablePath`
+workaround, `docs/frontend-cloud-runbook.md`). `frontend/e2e/artifacts/13-draft-room-rb-tab-tiers-
+dots.png`, real Playwright capture, looked at directly against the RB position tab of a fresh
+draft: `TIER 1` (4 players left) through `TIER 5` visible, each row carries a 10-dot frequency
+array beside its baseline→live percentage (visually distinct filled/unfilled dots, matching the
+`round(p*10)` fill logic), row height is unchanged from the constraint this thread set (confirmed
+again by direct visual comparison against `frontend/e2e/artifacts/01-prep-board.png`'s row density
+— no taller rows, no fewer rows on screen). This is the same code this thread's two prior replies
+already verified live via DOM measurement (`getBoundingClientRect` at 32.15px with/without the dot
+wrapper) — this session adds the actual image, not new engineering.
+
+Also visible in the same capture and worth recording since it wasn't screenshotted before: the ADP
+(MFL) figures from thread 082 sit inline in this same list (e.g. `3.3ᴹFL`), and the null case reads
+`—` for a player with no MFL data (Jeremiyah Love, RB13) — confirming the two threads' displays
+coexist in the same row without conflicting.
+
+**Tests:** unchanged, no new code this session (this thread's build was already complete). Full
+suite: 203 passed, 0 failed, 22 files (`npm test`, 2026-07-29). Commit: see this session's closing
+commit on branch `worktree-agent-aa652207ba4ef71bd`.
+
+Everything in "Done looks like" is now met, including the screenshot. **Setting `STATUS:
+RESOLVED`.**

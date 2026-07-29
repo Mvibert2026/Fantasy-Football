@@ -4,7 +4,7 @@
 Threads are the source of truth. Change a thread's `STATUS:`, then re-run sync.
 Protocol: [`README.md`](README.md).
 
-**47 open** · 35 resolved
+**42 open** · 40 resolved
 
 ---
 
@@ -48,14 +48,13 @@ not an omission. Start your session at your own heading.
 | [077](077-adp-backfill-scheduled-task-landed-frontend-test.md) | Adp backfill scheduled task landed frontend test | `data-ops` | OPEN | 2d | none |
 | [079](079-mock-draft-capture-work-is-uncommitted-in-a-work.md) | Mock draft capture work is uncommitted in a work | `pm` | OPEN | 0d | none |
 
-### `frontend` — 16 waiting
+### `frontend` — 14 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
 | [003](003-frontend-reconnect.md) | Frontend reconnect | `pm` | OPEN | 3d | none |
 | [006](006-design-sync-pilot.md) | Design sync pilot | `pm` | OPEN | 3d | none |
 | [007](007-design-fidelity-harness.md) | Design fidelity harness | `pm` | OPEN | 3d | none |
-| [029](029-frequency-array-on-board.md) | Frequency array on board | `pm` | OPEN | 3d | none |
 | [030](030-inline-why-rank-differs.md) | Inline why rank differs | `pm` | OPEN | 3d | none |
 | [031](031-frontend-spec-audit-and-wiring.md) | Frontend spec audit and wiring | `pm` | OPEN | 3d | 027, 028, Settings build |
 | [035](035-frontend-catchup-runbook.md) | Frontend catchup runbook | `pm` | OPEN | 3d | 003, 027, 028, 029, 030, 031, and every future frontend thread |
@@ -67,7 +66,6 @@ not an omission. Start your session at your own heading.
 | [049](049-draft-mode-gap-list.md) | Draft mode gap list | `pm` | OPEN | 2d | none |
 | [059](059-on-deck-recommendations.md) | On deck recommendations | `pm` | OPEN | 2d | FR-006 (draft chatbot), calm-preparation use case |
 | [066](066-contract-1-10-0-board-json-rows-gained-roster-st.md) | Contract 1 10 0 board json rows gained roster st | `backend` | OPEN | 2d | none |
-| [082](082-adp-fields-on-board-json-contract-1-14-0.md) | Adp fields on board json contract 1 14 0 | `backend` | OPEN | 0d | none |
 
 ### `data-ops` — 7 waiting
 
@@ -121,16 +119,6 @@ _Nothing waiting on you._
 
 ---
 
-## Blocked externally — nobody can act
-
-| ID | Subject | Opened |
-|---|---|---|
-| [027](027-build-opponents-tab.md) | Build opponents tab | 2026-07-26 |
-| [028](028-build-predictions-tab.md) | Build predictions tab | 2026-07-26 |
-| [041](041-frontend-wip-repair.md) | Frontend wip repair | 2026-07-27 |
-
----
-
 ## Resolved
 
 | ID | Subject | From → To |
@@ -153,9 +141,13 @@ _Nothing waiting on you._
 | [023](023-consensus-rank-and-ingest-fixes.md) | Consensus rank and ingest fixes | `pm` → `backend` |
 | [024](024-injury-ingestion-as-of-date.md) | Injury ingestion as of date | `pm` → `data-ops` |
 | [025](025-mock-lab-backend.md) | Mock lab backend | `pm` → `backend` |
+| [027](027-build-opponents-tab.md) | Build opponents tab | `pm` → `frontend` |
+| [028](028-build-predictions-tab.md) | Build predictions tab | `pm` → `frontend` |
+| [029](029-frequency-array-on-board.md) | Frequency array on board | `pm` → `frontend` |
 | [034](034-shortcut-bias-in-mock-logging.md) | Shortcut bias in mock logging | `pm` → `strategist` |
 | [038](038-rosters-json-artifact.md) | Rosters json artifact | `backend` → `frontend` |
 | [039](039-weekly-finishes-and-season-stats-exports-contract.md) | Weekly finishes and season stats exports contract | `frontend` → `backend` |
+| [041](041-frontend-wip-repair.md) | Frontend wip repair | `pm` → `frontend` |
 | [044](044-roster-aware-recommendations.md) | Roster aware recommendations | `pm` → `backend, frontend` |
 | [048](048-bottom-up-ranking-framework.md) | Bottom up ranking framework | `pm` → `strategist` |
 | [051](051-suggester-fixes.md) | Suggester fixes | `pm` → `frontend` |
@@ -170,4 +162,5 @@ _Nothing waiting on you._
 | [075](075-defect-fabricated-reconstruction-of-thread-067-u.md) | Defect fabricated reconstruction of thread 067 u | `pm` → `pm` |
 | [078](078-pick-level-adp-velocity-capture-blocked-mfl-has.md) | Pick level adp velocity capture blocked mfl has | `data-ops` → `pm` |
 | [080](080-commit-the-three-unreproducible-artifacts-before.md) | Commit the three unreproducible artifacts before | `data-ops` → `backend` |
+| [082](082-adp-fields-on-board-json-contract-1-14-0.md) | Adp fields on board json contract 1 14 0 | `backend` → `frontend` |
 
