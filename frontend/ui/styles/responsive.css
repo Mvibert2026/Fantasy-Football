@@ -1,0 +1,159 @@
+/*
+ * Phone/tablet responsiveness -- additive to the existing desktop layout, not a
+ * redesign of it. Every rule in this file lives inside a max-width query and
+ * changes nothing above 640px (Sidebar/TopBar/Board/PlayerDetail's desktop
+ * inline styles are untouched); a second query at 641-1024px makes a couple of
+ * touch-target concessions for tablet without collapsing the sidebar there.
+ *
+ * The four targets this was built and screenshotted against: 375x667 (SE, the
+ * worst case), 390x844 (iPhone 15/16), 430x932 (Pro Max), 768 landscape.
+ *
+ * Density principle: nothing here removes a column or a control. The board
+ * table gets a horizontal scroll container with RANK/PLAYER pinned via
+ * `position: sticky` instead of losing the other eight columns; the sidebar
+ * becomes a reachable drawer instead of disappearing; PlayerDetail becomes a
+ * full-width sheet instead of a 440px panel wider than the viewport it was
+ * forced into (that 420px `min-width` was overflowing the page horizontally on
+ * every phone target below 420px -- the concrete bug this file fixes).
+ *
+ * `!important` is used deliberately throughout: every component this touches
+ * is styled with React inline styles (`style={{...}}`), which always beat an
+ * external stylesheet rule of any specificity except `!important`. This is a
+ * targeted override layer on top of that, not a stylistic default.
+ */
+
+/* ---------------------------------------------------------------------- */
+/* Touch targets -- floor, not a resize. Anything carrying this class only  */
+/* grows if it was already smaller than 44px; padding/position are untouched. */
+/* ---------------------------------------------------------------------- */
+@media (max-width: 1024px) {
+  .app-touch-target {
+    min-height: 44px !important;
+    min-width: 44px !important;
+  }
+}
+
+/* ---------------------------------------------------------------------- */
+/* Hamburger: hidden entirely above 640px (Sidebar renders in-flow there). */
+/* ---------------------------------------------------------------------- */
+.app-hamburger {
+  display: none;
+}
+@media (max-width: 640px) {
+  .app-hamburger {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    flex: none;
+    background: transparent;
+    border: 1px solid var(--line2);
+    color: var(--txt);
+    font-size: 18px;
+    cursor: pointer;
+  }
+}
+
+/* ---------------------------------------------------------------------- */
+/* Sidebar -> off-canvas drawer below 640px. Nav items and SOON items are   */
+/* unchanged content-wise -- reachable behind the hamburger, not hidden.   */
+/* ---------------------------------------------------------------------- */
+.app-sidebar-backdrop {
+  display: none;
+}
+@media (max-width: 640px) {
+  .app-sidebar {
+    position: fixed !important;
+    top: 46px !important;
+    left: 0 !important;
+    bottom: 0 !important;
+    right: auto !important;
+    width: 80vw !important;
+    max-width: 300px !important;
+    z-index: 95 !important;
+    transform: translateX(-100%);
+    transition: transform 0.18s ease;
+    box-shadow: var(--sh);
+  }
+  .app-sidebar--open {
+    transform: translateX(0);
+  }
+  .app-sidebar-backdrop--visible {
+    display: block;
+    position: fixed;
+    inset: 46px 0 0 0;
+    background: rgba(0, 0, 0, 0.45);
+    z-index: 94;
+  }
+  /* Nav rows and SOON rows both use navItemStyle()'s 9px vertical padding
+     (~34px tall) -- bump toward the 44px touch floor without changing the
+     desktop drawer-free layout at all. */
+  .app-sidebar [role='button'] {
+    min-height: 44px !important;
+    box-sizing: border-box;
+  }
+}
+
+/* ---------------------------------------------------------------------- */
+/* Board table: horizontal scroll container, RANK + PLAYER pinned via      */
+/* sticky positioning so identity survives scrolling through PROJ/CONS/    */
+/* Delta/VBD/TIER rather than requiring any column to be dropped.          */
+/* ---------------------------------------------------------------------- */
+@media (max-width: 640px) {
+  .app-board-scroll {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+  .app-board-row,
+  .app-board-headrow {
+    min-width: 720px; /* the grid's natural content width; never shrunk */
+  }
+  .app-sticky-col0,
+  .app-sticky-col1 {
+    position: sticky !important;
+    z-index: 1;
+  }
+  .app-sticky-col0 {
+    left: 0;
+  }
+  .app-sticky-col1 {
+    left: 64px; /* RANK column's own width (see Board.tsx's GRID_TEMPLATE) */
+  }
+  .app-board-headrow .app-sticky-col0,
+  .app-board-headrow .app-sticky-col1 {
+    z-index: 3; /* above the header row's own sticky-top z-index of 2 */
+  }
+  .app-board-row {
+    min-height: 44px !important;
+  }
+  .app-board-headcell {
+    min-height: 40px !important;
+    display: flex !important;
+    align-items: center !important;
+  }
+}
+
+/* ---------------------------------------------------------------------- */
+/* PlayerDetail: 440px fixed-width side panel (with a 420px min-width that  */
+/* actively overflowed every phone target) -> full-width bottom sheet.     */
+/* ---------------------------------------------------------------------- */
+@media (max-width: 640px) {
+  .app-player-detail {
+    left: 0 !important;
+    width: 100vw !important;
+    min-width: 0 !important;
+    max-width: 100vw !important;
+  }
+}
+
+/* ---------------------------------------------------------------------- */
+/* Tablet (641-1024px): sidebar stays visible in-flow (not collapsed) but  */
+/* narrower, since 216px is a larger fraction of a tablet's width than a   */
+/* desktop's -- still additive, no content removed.                       */
+/* ---------------------------------------------------------------------- */
+@media (min-width: 641px) and (max-width: 1024px) {
+  .app-sidebar {
+    width: 180px !important;
+  }
+}
