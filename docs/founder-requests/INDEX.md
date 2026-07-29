@@ -5,11 +5,11 @@ Per-request files in this directory are the source of truth. Edit a request's ow
 `STATUS:` line, then re-run sync. Protocol: [`README.md`](README.md).
 Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests.md).
 
-**38 requests since freeze.**
+**39 requests since freeze.**
 
 ---
 
-## NEW — 28
+## NEW — 29
 
 | ID | Subject | Raised | Source |
 |---|---|---|---|
@@ -41,6 +41,7 @@ Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests
 | [FR-051](FR-051-show-value-over-the-player-expected-at-my-next-p.md) | Show value over the player expected at my next p | 2026-07-29 | chat 2026-07-29, PM session |
 | [FR-052](FR-052-third-league-identified-as-yahoo-roster-and-stat.md) | Third league identified as yahoo roster and stat | 2026-07-29 | chat 2026-07-29, PM session, Yahoo screenshots |
 | [FR-053](FR-053-yahoo-draft-room-reference-capture-features-to-c.md) | Yahoo draft room reference capture features to c | 2026-07-29 | chat 2026-07-29, PM session, Yahoo draft room screenshots |
+| [FR-054](FR-054-the-bottom-up-model-should-output-component-proj.md) | The bottom up model should output component proj | 2026-07-29 | chat 2026-07-29, PM session |
 
 ## SCOPING — 1
 
