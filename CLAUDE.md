@@ -282,6 +282,7 @@ tier is ambiguous, say which tier you think it is and why before starting.
 
 | File | Contents |
 |---|---|
+| `docs/environment.md` | **Read before running any command.** The Windows/conda interpreter path, the PreToolUse hook's block list and its known semicolon false positive, why permission allowlists are not the thing stopping you, commit-message quoting, and the worktree DB and screenshot gotchas. Every fact in it was rediscovered the hard way by an earlier agent |
 | `docs/test-registry.md` | The tiered factor list (Tier 0 table stakes / Tier 1 analytics / Tier 2 league-specific), with effort, expected edge, data source, and status per item |
 | `docs/deferred.md` | Deliberately postponed decisions and why |
 | `docs/decisions.md` | Architecture decision log — what changed, when, and the reasoning |
@@ -296,13 +297,15 @@ link it here. An overloaded spec file gets ignored, which defeats its purpose.
 
 ### Read at session start, in this order
 1. `docs/CURRENT-STATE.md` — canonical project state. Trust this.
-2. `docs/operating-model.md` — your role, effort tier, and evidence standards.
-3. `docs/founder-requests.md` (archive, frozen 2026-07-28) plus
+2. `docs/environment.md` — how to run commands here without stalling. Read this before your
+   first shell call, not after it fails.
+3. `docs/operating-model.md` — your role, effort tier, and evidence standards.
+4. `docs/founder-requests.md` (archive, frozen 2026-07-28) plus
    `docs/founder-requests/INDEX.md` (everything raised since) — the standing backlog of what the
    founder has asked for.
-4. `docs/handoffs/OPEN.md` — your inbox. Open every thread where `TO:` includes your role and
+5. `docs/handoffs/OPEN.md` — your inbox. Open every thread where `TO:` includes your role and
    `STATUS:` is `OPEN` or `BLOCKED-ON-YOU`.
-5. Only the specific ADR or doc your task names.
+6. Only the specific ADR or doc your task names.
 
 **Do not read `docs/status.md` or `docs/status/` for current state.** `docs/status.md` is a frozen
 append-only historical log containing superseded figures stated in the same voice as current
