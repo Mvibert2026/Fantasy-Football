@@ -1,0 +1,32 @@
+{
+  // Cloudflare Workers static-assets config for the draft assistant UI.
+  //
+  // WHY THIS FILE EXISTS. Cloudflare has merged Pages into Workers, so the
+  // dashboard's "connect a repo" flow now creates a Worker and deploys it with
+  // `npx wrangler deploy`. That command reads this file to learn what to serve.
+  // Without it the deploy fails with no useful message.
+  //
+  // WHAT DEPLOYS. The app is a static Vite build -- no server, no API, no
+  // secrets. `cd frontend && npm ci && npm run build` writes ./frontend/dist,
+  // which includes the JSON exports copied in by the prebuild step
+  // (frontend/scripts/sync-exports.mjs reads data/export/ at the repo root, so
+  // the build must run from the repo root, not from frontend/).
+  //
+  // NO CREDENTIALS HERE, EVER. Cloudflare mints and holds its own deploy token;
+  // nothing in this file is secret and nothing in this repo authenticates to
+  // anything. See CLAUDE.md section 10.
+  //
+  // ACCESS. This publishes the founder's board -- his rankings, his
+  // disagreements with consensus, his league. It is currently PUBLIC by his
+  // explicit choice (2026-07-29), with the trade stated: the nine other humans
+  // in Westwood could read it. Cloudflare Access can put a free password in
+  // front of it without touching this file or the build.
+  "name": "fantasy-football",
+  "compatibility_date": "2026-07-29",
+  "assets": {
+    "directory": "./frontend/dist",
+    // The app is a single-page build: unknown paths must return index.html so
+    // client-side routing works instead of 404ing.
+    "not_found_handling": "single-page-application"
+  }
+}
