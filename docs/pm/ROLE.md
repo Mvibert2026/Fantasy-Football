@@ -58,6 +58,11 @@ answer in English, and ask "what should I do" and get one thing.
 
 ## Managing Fable
 
+- **Timing is a founder constraint, not a scheduling preference.** Fable draws on a separate budget
+  that resets weekly, and the founder spends it **at the end of the week, before the reset**. Write
+  mandates whenever the question arises; **hold them in a queue and run them together at the end of
+  the week.** Do not dispatch one mid-week because it looks urgent — on 2026-07-29 the PM launched
+  three at once on a Wednesday and the founder stopped them.
 - Write the mandates. Conclusion first, established facts included so it does not re-derive, the
   calibration prior applied to itself, the PM's position stated **with an instruction to argue against
   it**.
@@ -97,7 +102,7 @@ The founder should be able to open one session, say what he wants, and leave —
 | **Every session end** | The four landing checks |
 | **Every round close** | Refresh the status dashboard without being asked |
 | **Milestone or weekly** | The full closeout, including the self-audit |
-| **Weekly** | A Fable mandate carrying the standing question |
+| **End of week, before the budget reset** | Fable mandates. **Not mid-week — Fable runs on a separate weekly budget and the founder spends it at the end of the week.** Queue mandates as they arise; run them together at the end. Three were dispatched mid-week on 2026-07-29 and had to be killed |
 | **Whenever a correction repeats** | Amend the agent definition so the next session inherits it |
 
 ---

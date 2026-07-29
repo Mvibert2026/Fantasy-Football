@@ -138,6 +138,102 @@ def test_export_snapshot_csv_returns_none_and_writes_nothing_when_no_rows(tmp_pa
     assert not (tmp_path / "adp-snapshots").exists()
 
 
+# ------------------------------------------------ CSV -> DB restore (the
+# counterpart to export_snapshot_csv; without this, a rebuilt DB only ever
+# has today's live MFL pull and every committed prior-day CSV is dead weight)
+
+
+def test_import_snapshot_csv_round_trips_export(tmp_path):
+    """export then import must reproduce the same rows -- the whole point of
+    calling the CSV canonical is that it can be read back, not just written."""
+    conn = _conn_with_ff_playerids()
+    payload = _payload([
+        {"id": "15281", "rank": "1", "averagePick": "3.00", "minPick": "1", "maxPick": "4",
+         "draftsSelectedIn": "5", "draftSelPct": "10"},
+        {"id": "16162", "rank": "2", "averagePick": "3.20", "minPick": "1", "maxPick": "6",
+         "draftsSelectedIn": "5", "draftSelPct": "10"},
+    ])
+    mfl.store_adp(conn, payload, 10, 1, 0, 0, 10, 2026)
+    date_str = conn.execute(
+        "SELECT substr(retrieved_at, 1, 10) FROM adp_snapshots LIMIT 1"
+    ).fetchone()[0]
+    db_path = tmp_path / "nfl.db"
+    csv_path = mfl.export_snapshot_csv(conn, db_path, date_str)
+
+    fresh = sqlite3.connect(":memory:")
+    n = mfl.import_snapshot_csv(fresh, csv_path)
+    assert n == 2
+    row = fresh.execute(
+        "SELECT adp_source, mfl_id, player_name, average_pick, fcount, is_ppr, "
+        "total_drafts_in_sample FROM adp_snapshots WHERE mfl_id='15281'"
+    ).fetchone()
+    assert row == ("mfl_proxy", "15281", "Ja'Marr Chase", 3.00, 10, 1, 50)
+
+
+def test_import_snapshot_csv_is_idempotent(tmp_path):
+    conn = _conn_with_ff_playerids()
+    payload = _payload([{"id": "15281", "rank": "1", "averagePick": "3.00", "minPick": "1",
+                          "maxPick": "4", "draftsSelectedIn": "5", "draftSelPct": "10"}])
+    mfl.store_adp(conn, payload, 10, 1, 0, 0, 10, 2026)
+    date_str = conn.execute(
+        "SELECT substr(retrieved_at, 1, 10) FROM adp_snapshots LIMIT 1"
+    ).fetchone()[0]
+    csv_path = mfl.export_snapshot_csv(conn, tmp_path / "nfl.db", date_str)
+
+    fresh = sqlite3.connect(":memory:")
+    mfl.import_snapshot_csv(fresh, csv_path)
+    mfl.import_snapshot_csv(fresh, csv_path)
+    n = fresh.execute("SELECT COUNT(*) FROM adp_snapshots").fetchone()[0]
+    assert n == 1
+
+
+def test_import_all_snapshot_csvs_restores_a_whole_directory(tmp_path):
+    """The real committed shape: multiple dated CSVs, one directory --
+    this is what a rebuild actually points at (data/adp-snapshots/)."""
+    snapshot_dir = tmp_path / "adp-snapshots"
+    snapshot_dir.mkdir()
+    header = mfl._CSV_COLUMNS
+    rows = {
+        "2026-07-26.csv": ["mfl_proxy", "15281", "Ja'Marr Chase", "WR", "CIN", "1", "3.0",
+                            "1", "6", "5", "10.0", "10", "1", "0", "0", "10", "2026", "50",
+                            "1785024663", "2026-07-26T00:00:00", "2026-07-26T00:00:00"],
+        "2026-07-28.csv": ["mfl_proxy", "16162", "Jahmyr Gibbs", "RB", "DET", "1", "4.0",
+                            "1", "6", "5", "10.0", "10", "1", "0", "0", "10", "2026", "50",
+                            "1785024663", "2026-07-28T00:00:00", "2026-07-28T00:00:00"],
+    }
+    for fname, row in rows.items():
+        with (snapshot_dir / fname).open("w", newline="", encoding="utf-8") as f:
+            w = csv.writer(f)
+            w.writerow(header)
+            w.writerow(row)
+
+    fresh = sqlite3.connect(":memory:")
+    results = mfl.import_all_snapshot_csvs(fresh, snapshot_dir)
+    assert set(results.keys()) == {"2026-07-26.csv", "2026-07-28.csv"}
+    assert sum(results.values()) == 2
+    n = fresh.execute("SELECT COUNT(*) FROM adp_snapshots").fetchone()[0]
+    assert n == 2
+
+
+def test_import_snapshot_csv_matches_committed_fixture_shape():
+    """Guards against the CSV column order/name drifting out of sync with
+    what store_adp/export_snapshot_csv actually produce -- imports a real
+    committed data/adp-snapshots/*.csv (whichever is present in this repo)
+    end to end, if any exist. Skips cleanly if none are committed (e.g. a
+    fresh clone before the first scheduled capture has run)."""
+    import pathlib
+    repo_root = pathlib.Path(__file__).resolve().parent.parent
+    snapshot_dir = repo_root / "data" / "adp-snapshots"
+    csvs = sorted(snapshot_dir.glob("*.csv")) if snapshot_dir.exists() else []
+    if not csvs:
+        pytest.skip("no committed data/adp-snapshots/*.csv in this checkout")
+    conn = sqlite3.connect(":memory:")
+    n = mfl.import_snapshot_csv(conn, csvs[0])
+    assert n > 0
+    got_cols = {r[1] for r in conn.execute("PRAGMA table_info(adp_snapshots)")}
+    assert got_cols == set(mfl._CSV_COLUMNS)
+
+
 # ------------------------------------------------ mixture-source loader
 
 

@@ -88,3 +88,33 @@ newest at the bottom.
   loaded" while the live board now carries 511 rows — the header
   currently reads "511 of 378 players loaded". One-line fix for whoever
   next touches the Board header.
+- 2026-07-29 · (data-ops, db-rebuild session) Decided, not escalated: built
+  `scripts/rebuild_database.py` as a single entry point rather than adding
+  a ninth ad hoc restore script; corrected the rehearsal-branch's documented
+  step order (identity.py must run BEFORE the mock-draft restore, not after
+  -- it is the only thing that creates `players_canonical`, which
+  ingest_mock_drafts.py needs; measured directly, `no such table:
+  players_canonical` otherwise). Closed the `adp_snapshots` CSV->DB loader
+  gap (`ingest_mfl_adp.py --import-csv-dir`, 17 tests). Full rebuild
+  measured end to end this session: 64.0s, all restored-artifact assertions
+  pass. Did not commit the dynastyprocess-mirror monkeypatch used to verify
+  network steps in this session's gated proxy -- session-local only, per
+  explicit coordinator instruction; see docs/can-we-rebuild-the-database.md's
+  "environment-specific finding" section.
+- 2026-07-29 · (data-ops, FFC ADP session) Decided, not escalated: gave FFC's three
+  scoring formats (non-PPR/half-PPR/PPR, all 10-team) three distinct `adp_source`
+  values rather than defaulting to half-PPR only, once the founder's mid-session
+  follow-up asked for non-PPR too (public Yahoo mock rooms run standard scoring,
+  Westwood runs half-PPR) -- lets the format correction be measured directly from
+  same-day, same-site, same-drafter-pool data instead of assumed. Also decided a
+  standalone `data/adp-snapshots-ffc/` directory rather than reusing MFL's
+  `data/adp-snapshots/`, since three formats sharing one date would make
+  `YYYY-MM-DD.csv` ambiguous; filenames instead carry the format tag. Chose an
+  80% (not MFL's 90%) name-resolution floor for FFC's CI check, because
+  `ff_playerids` carries zero team-defense rows at all -- a structural ceiling on
+  match rate, not a join defect, verified by direct count rather than assumed.
+  Historical FFC backfill (data going back to 2007, per the source's own claim)
+  was left unbuilt this session -- FFC exposes no as-of date for past seasons, so
+  a pull would need explicit `is_retrospective_aggregate` labelling and a decision
+  about whether a retrospective aggregate is worth capturing at all before
+  building it; flagging rather than building speculatively.

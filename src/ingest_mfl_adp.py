@@ -245,6 +245,65 @@ def export_snapshot_csv(
     return out_path
 
 
+_CSV_INT_COLS = {
+    "rank", "min_pick", "max_pick", "drafts_selected_in", "fcount", "is_ppr",
+    "is_keeper", "is_mock", "cutoff", "period", "total_drafts_in_sample", "mfl_timestamp",
+}
+_CSV_FLOAT_COLS = {"average_pick", "draft_sel_pct"}
+
+
+def _coerce_csv_row(row: dict) -> tuple:
+    out = []
+    for col in _CSV_COLUMNS:
+        v = row.get(col, "")
+        if v == "":
+            out.append(None)
+        elif col in _CSV_INT_COLS:
+            out.append(int(float(v)))
+        elif col in _CSV_FLOAT_COLS:
+            out.append(float(v))
+        else:
+            out.append(v)
+    return tuple(out)
+
+
+def import_snapshot_csv(conn: sqlite3.Connection, csv_path: Path) -> int:
+    """The counterpart to `export_snapshot_csv` -- loads a committed
+    data/adp-snapshots/YYYY-MM-DD.csv back into `adp_snapshots`, row for row,
+    no re-derivation. This is the only way the point-in-time CSVs (each one a
+    daily capture MFL's rolling aggregate makes impossible to reconstruct
+    later, per this module's own docstring: "THE CSV IS THE CANONICAL
+    ARCHIVE") can be restored into a rebuilt database; without it, a rebuild
+    only ever has today's MFL pull, and every prior day's snapshot -- once
+    the CSV can't be read back -- is effectively gone even though the file
+    sits right there in the repo.
+
+    Idempotent (INSERT OR REPLACE, same primary key
+    `(adp_source, mfl_id, retrieved_at)` the live fetch path uses) and safe
+    to call once per file on every rebuild.
+    """
+    conn.execute(_CREATE_SQL)
+    with csv_path.open(newline="", encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        rows = [_coerce_csv_row(r) for r in reader]
+    if not rows:
+        return 0
+    conn.executemany(
+        "INSERT OR REPLACE INTO adp_snapshots VALUES (" + ",".join("?" * 21) + ")", rows
+    )
+    conn.commit()
+    return len(rows)
+
+
+def import_all_snapshot_csvs(conn: sqlite3.Connection, snapshot_dir: Path) -> dict:
+    """Import every data/adp-snapshots/*.csv found in `snapshot_dir`, in
+    filename (date) order. Returns {filename: rows_imported}."""
+    results: dict[str, int] = {}
+    for csv_path in sorted(snapshot_dir.glob("*.csv")):
+        results[csv_path.name] = import_snapshot_csv(conn, csv_path)
+    return results
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--db", type=Path, default=DEFAULT_DB_PATH)
@@ -255,7 +314,24 @@ def main() -> None:
     ap.add_argument("--is-mock", type=int, default=0)
     ap.add_argument("--cutoff", type=int, default=10)
     ap.add_argument("--force", action="store_true", help="bypass the once-per-day cache check")
+    ap.add_argument(
+        "--import-csv-dir", type=Path, default=None,
+        help="Instead of fetching from MFL, restore adp_snapshots from every "
+             "*.csv in this directory (e.g. data/adp-snapshots/) -- no network.",
+    )
     args = ap.parse_args()
+
+    if args.import_csv_dir is not None:
+        conn = sqlite3.connect(args.db)
+        try:
+            results = import_all_snapshot_csvs(conn, args.import_csv_dir)
+            total = sum(results.values())
+            for name, n in results.items():
+                print(f"  {name}: {n} rows")
+            print(f"imported {total} rows from {len(results)} CSV(s) in {args.import_csv_dir}")
+        finally:
+            conn.close()
+        return
 
     conn = sqlite3.connect(args.db)
     conn.execute(_CREATE_SQL)

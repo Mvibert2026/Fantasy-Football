@@ -67,3 +67,22 @@ taken later. Specifically:
 End every session with: rows ingested, rows quarantined with reasons, sources attempted and their
 status, commit hash, test count. Not a prose narrative. Then update `docs/CURRENT-STATE.md` in place
 and append the narrative to `docs/status.md`.
+
+## If your work appears in a commit you did not make
+
+**That is the coordinator, not a competing agent.** Several agents run inside one session and share
+one working directory. A repo hook requires a clean tree before the session can end a turn, so the
+coordinator may commit your in-flight files -- sometimes under its own commit message -- rather than
+let an ephemeral container reclaim them.
+
+**Verify before concluding anything:** `git diff HEAD -- <your files>`. An empty diff means what
+landed **is** your work, byte for byte. There is nothing to reconcile, nothing to fold in, and no
+rival implementation to diff against.
+
+**Do not halt, do not reset, do not `git checkout --`, do not revert.** On 2026-07-29 a chain saw its
+own files land under another commit message, correctly refused to resolve the apparent collision
+alone -- and lost a full decision cycle to a collision that never existed. Its caution was right; the
+evidence was manufactured upstream.
+
+Genuine collisions still exist and still get escalated, never resolved unilaterally: two chains
+editing the same file, a real merge conflict, or a contradiction between two documents.

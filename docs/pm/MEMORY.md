@@ -4,7 +4,81 @@
 repo forgets between runs; this file is what makes that not matter. It is the difference between a PM
 that accumulates judgement and one that restarts every morning.
 
-Last updated: **2026-07-29**.
+Last updated: **2026-07-29** (second PM session that day — the in-repo PM taking over from the
+outside-the-repo one, running in the cloud).
+
+---
+
+# 0 · Corrections made this session — things believed here that were false
+
+**New founder constraints, learned the expensive way:**
+
+- **Fable work happens at the END OF THE WEEK, before the budget reset. Never mid-week.** Fable runs
+  on a separate weekly budget the founder spends deliberately. This PM dispatched all three M
+  mandates on a Wednesday and he stopped them. **Write mandates as the questions arise; queue them;
+  run the queue at the end of the week.** Now recorded in `ROLE.md` under Managing Fable.
+- **FFC is UNBLOCKED.** The founder asked them directly: *"we have no blocks from FFC, we can use as
+  needed."* This supersedes the conservative-default block in §4 below, in
+  `docs/research/source-audit-2026-07.md`, and in every thread that cites it (055, 057, 062, 064,
+  078). It is broader than the earlier one-time-historical-pull authorisation — recurring use is
+  covered. Standing caveat unchanged: scoped to private use by one person, void if a second human
+  ever uses the product. Still rate-limit and cache; permission is not licence to hammer a hobby
+  endpoint.
+
+**PM defects committed this session — read these before running parallel chains:**
+
+- **The PM manufactured a phantom collision, twice.** A repo stop-hook requires a clean tree at the
+  end of every turn; background agents share the PM's working directory; satisfying the hook with
+  `git add -A` swept two running chains' in-flight files into PM commits. The first passed unnoticed
+  (a frontend revert landed under a docs commit message). The second cost a full decision cycle: the
+  data-ops chain saw its own files under another agent's commit message, concluded a parallel chain
+  was duplicating its work, and halted to escalate. Verified afterwards with `git diff HEAD` —
+  **byte-identical, 609 lines, nothing to reconcile.** Rules now in `PLAYBOOK.md` ("Committing while
+  agents are running"), and every agent definition carries a section telling it what this looks like
+  and not to halt. **Never stage a path you did not write.**
+- **The worktree rewrite was an overcorrection.** This session's charter edit declared worktree
+  discipline obsolete in the cloud. Half right — worktrees isolated the *database* and the *dev
+  server* locally, and those reasons are gone. The *concurrent-write* reason was not; it moved from
+  session level to agent level, and removing the discipline without noticing caused the defect above
+  within hours. Corrected in `CHARTER.md` rule 2.
+- **A dispatch that misreads scope is the most expensive error available to the PM** — more than
+  choosing the wrong model tier. "Optimize all for phone viewing right now" was read as *build
+  responsive layouts* and dispatched as engineering; roughly a third of the single largest agent run
+  on record (~374k tokens) went on work the founder cancelled once he saw the scope implied.
+  **"Right now" is about urgency, not scope.**
+
+**Latent numbering collision, not yet a problem:** `docs/decisions.md` has exactly one ADR-054 (the
+FFC ingester, this session) and the allocator says next is 55. But `CURRENT-STATE.md` records
+ADR-054 as belonging to the unmerged, unreviewed `backend/mock-calibration-kickers` branch. **When
+that branch merges, two ADR-054s meet.** Same structural cause as thread 081 and the 043/049/053
+collisions: the allocator only sees its own working tree.
+
+**Things this memory and `CURRENT-STATE.md` asserted that turned out false:**
+
+- **The ADP capture has NEVER run on schedule.** The previous entry said the cloud capture "has been
+  observed to succeed" and that the Windows Scheduled Task was redundant. Measured via the Actions
+  API: **exactly one run exists, `event: workflow_dispatch`, triggered by the founder by hand at
+  15:38 UTC.** The 09:15 UTC cron has never fired. **Do not tell him to disable the Windows task
+  until a `schedule`-triggered run succeeds.** Re-check with a `list_workflow_runs` call filtered on
+  `event: schedule` — the run's *author* being `github-actions[bot]` does not distinguish a manual
+  dispatch from a scheduled one, which is exactly how the previous session got this wrong.
+- **The `PreToolUse` hook was already inert in cloud sessions** — it was registered with a Windows
+  conda interpreter path that does not exist in a Linux container, so it silently never ran. "Zero
+  approvals" was true here **by accident, not by design**, which is worse than either extreme
+  because nothing announced it.
+- **`docs/pm/HANDOFF.md` was not in the repo.** The founder had to upload it. Now committed at
+  `docs/pm/HANDOFF.md` so the next PM does not repeat the search.
+
+**Still true from the earlier session, re-verified:**
+
+- The mailbox passes: 81 threads, none stale, **47 open / 34 resolved**. Section 7's "~45 open" is
+  superseded by 47.
+- **Fetch before trusting `origin/*` in a cloud session** — the clone can be hours old. `origin/main`
+  moved `4a299df` → `a617611` mid-session.
+- **Cloud sessions cannot see the founder's local worktrees.** Thread 081's untracked duplicate 079
+  lives in a worktree on his machine and **cannot be fixed from the cloud.** Do not dispatch it.
+- **The Fable "M" mandate is still unrun** — and per the timing constraint above, that is now
+  correct rather than a gap. Run it at the end of the week.
 
 ---
 
@@ -84,14 +158,49 @@ detector.
 **The database rebuilds** — 99.3% by size, ~4 minutes, public sources, no credentials. Measured, not
 assumed.
 
-**Three things exist only on the founder's machine and cannot be regenerated:**
+**A full clean-clone rehearsal was run in a cold cloud container on 2026-07-29** (branch
+`claude/cloud-path-rehearsal-kafx7m`, commit `6c23c13`). Clone → rebuild → both suites green in
+**~8m50s with zero credentials and zero environment variables**: backend **641 passed / 8 skipped /
+0 failed**, frontend **202 passed / 0 failed**, database 22 tables / 2,856,629 rows / 854.4 MB. The
+three rescued artifacts did their job — nothing that exists only on his machine was needed.
 
-1. **The 160 picks from the real 2025 draft** — hand-transcribed from screenshots. The sole empirical
-   basis for the need parameter. Exists in no public source.
-2. **2021–2025 rankings history** — the upstream mirror now serves only the current scrape. Five
-   seasons of expert consensus that no source will sell back at any price.
-3. **The 2026 half-PPR board export** — a manual export from a logged-in session; re-exporting gives
-   today's file, not that one.
+**Corrected by that rehearsal — the previous entry here was wrong:**
+
+- **The 2021–2025 rankings history re-pulls.** This memory said five seasons "no source will sell back
+  at any price," and `can-we-rebuild-the-database.md` cited it as blocking cloud migration. Measured:
+  `ingest_rankings.py` unmodified against an empty database returned all six seasons in 4.3s, and a
+  row-level diff of **2,540 rows across all 14 data columns against the committed rescue CSV found
+  zero differing fields and zero missing keys either way.** An earlier session tested this with the
+  ingester's `resolve_snapshot_date` and concluded the opposite. **Two honest measurements disagree**
+  — either the mirror changed between them or the earlier method was wrong; it was not worth settling.
+  Either way the mirror is live and can change again, so **keep the rescue CSV as a pin** — but note
+  nothing currently loads it back into the database, so the pin cannot actually be used yet.
+- **The remaining genuinely unrestorable artifact is the ADP snapshots, and it is a code gap, not a
+  source gap.** `ingest_mfl_adp.py` writes the canonical CSV but **cannot read one back** — there is
+  no CSV→DB loader. The committed point-in-time rows are therefore unrestorable and a rebuild gets
+  only the current day. Its own docstring calls the CSV canonical and the DB a cache of it, and no
+  code can rebuild that cache. **This gap widens by one snapshot every day.** Highest-value fix on
+  the data side; dispatched 2026-07-29.
+
+**Still exists only on his machine and cannot be regenerated:**
+
+1. **The 160 picks from the real 2025 draft** — hand-transcribed from screenshots, the sole empirical
+   basis for the need parameter. Committed as a fixture (thread 080); a restore path exists.
+2. **The 2026 half-PPR board export** — a manual export from a logged-in session; re-exporting gives
+   today's file, not that one. Committed; a restore path exists.
+
+**Two things block a fresh machine at the first command, both one-line fixes** (dispatched): `pandas`
+is missing from `requirements.txt` despite 15 `src/` modules importing it — pytest collection aborts
+and *zero* tests run; and no Python version is declared anywhere, while `scipy==1.18.0` needs ≥3.12.
+
+**`tools/state.py --tests` hard-crashes off Windows** — it hardcodes the founder's conda interpreter.
+That is the *mandated* `CURRENT-STATE.md` write-back, broken in every cloud session. Fix dispatched.
+`handoffs.py`, `status_log.py` and `founder_requests.py` all work fine.
+
+**`github.com/dynastyprocess/*` returns 403 in any Claude session** — session repo-scoping, and
+`add_repo` cannot cross owners. `raw.githubusercontent.com` serves the identical file. This affects
+Claude sessions only; a normal machine and GitHub Actions never see it. **Never commit a base-URL
+change to work around it** — that would break the environments that actually run the capture.
 
 **Two feeds drift** — depth charts and contracts are live, not archival. A rebuild gives today's
 state. Pin artifacts, not commands, for anything that must reproduce exactly.
@@ -100,11 +209,26 @@ state. Pin artifacts, not commands, for anything that must reproduce exactly.
 a past season and treating it as a preseason board is look-ahead bias. The committed daily snapshots
 are the only point-in-time capture that exists. **Keep taking them; a missed day is permanent.**
 
+**What the daily capture actually asks for** (checked 2026-07-29, `src/ingest_mfl_adp.py` defaults,
+mirrored in `tools/ci_adp_snapshot.py`): `FCOUNT=10` (ten-team leagues — matches Westwood exactly),
+`IS_PPR=1`, `IS_MOCK=0` (real drafts, not mocks), `IS_KEEPER=0`, `CUTOFF=10`, `PERIOD=2026`.
+
+**The one imperfection, and it is not fixable at the source:** Westwood is **half**-PPR, and MFL's
+flag is binary — there is no half-PPR option on that endpoint. Full PPR is the nearer of the two
+available settings, so the current default is the right call. **But it is an approximation nobody
+wrote down**, and receivers come off the board earlier in full PPR than in half, so the captured
+market is slightly receiver-forward relative to his league. Anything learning drafter behaviour from
+these snapshots inherits that tilt. Do not silently treat the capture as format-matched.
+
 ## Source constraints — do not override without re-taking the decision
 
-- **FFC**: terms unretrievable, so the conservative default applies — **do not scrape.** A one-time
-  historical ADP pull was authorised; **a recurring daily scrape is a different activity and is not
-  covered.** The PM instructed one anyway without reading the audit; an agent stopped it.
+- **FFC**: **UNBLOCKED 2026-07-29.** The founder asked them directly and reported no restrictions —
+  *"we have no blocks from FFC, we can use as needed."* Recurring use is covered, not just the
+  earlier one-time historical pull. Rate-limit and cache anyway. **The old entry read "terms
+  unretrievable, conservative default, do not scrape" and every FFC-blocked thread cites it —
+  those threads are now actionable.** Historical note kept because it explains an agent's past
+  refusal: the PM once instructed an FFC scrape without reading the audit, and an agent correctly
+  stopped it. That refusal was right *at the time*.
 - **FantasyPros**: manual, human-paced use only. No automated harvesting, no bulk collection.
 - **ESPN / Yahoo / CBS**: explicit written prohibitions on automated collection.
 - Everything above is scoped to **private use by one person**. If the product ever reaches a second
@@ -116,8 +240,8 @@ are the only point-in-time capture that exists. **Keep taking them; a missed day
 | Decision | Status |
 |---|---|
 | Wire the measured need parameter into the recommendation, or drop the claim | **Open.** PM must not frame it — it authored the claim |
-| The founder's three model questions | **Open**, and they are his condition for using the tool at all |
-| Pick-level draft capture | **Blocked.** FFC declined; a lighter source is likely underpowered. "We cannot test this yet" is an acceptable answer |
+| The founder's three model questions | **Open, and the mandate is written but UNRUN** (`docs/fable-mandate-M-2026-07-29.md`; no M1/M2/M3 review output exists). His condition for using the tool at all |
+| Pick-level draft capture | **Unblocked 2026-07-29** — FFC is available (see §4). MFL genuinely cannot supply per-pick data (needs a league ID we do not hold), so FFC is the route. Not yet scoped or built |
 | In-draft chatbot | **Paused by the founder.** A decisions-log entry approving it was superseded |
 | Hosting off the founder's machine | Direction agreed, not scheduled |
 
@@ -136,7 +260,8 @@ was PM-generated.** Say so when defending it.
 |---|---|
 | Calibration drafts | **0 of ~30** (a logged one was placeholder data — founder-confirmed) |
 | Detection split | roughly **5:1 founder to project** |
-| Open tickets | ~45 after triage; only 3 of a claimed 13 closes survived evidence |
+| Open tickets | **47 open / 34 resolved** (measured 2026-07-29); only 3 of a claimed 13 closes survived evidence |
+| PM inbox | 3 waiting: 068 (acceptance-harness design captures), 078 (ADP velocity blocked, needs a founder call on FFC), 081 (thread-079 ID collision, local-worktree-only) |
 | Permission prompts | Non-zero; the allow-list is a wildcard, so **remaining friction is the hook, not permissions** |
 
 # 8 · Recent history worth remembering

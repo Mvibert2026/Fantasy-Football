@@ -13,12 +13,21 @@ name: Daily ADP snapshot
 # at 813 MB. Only the CSV -- the irreplaceable part -- is produced here; the DB
 # can be backfilled from the committed CSVs locally whenever convenient.
 #
-# SOURCE CONSTRAINTS. Exactly one request to one documented, unrestricted
+# SOURCE CONSTRAINTS -- MFL. Exactly one request to one documented, unrestricted
 # endpoint (api.myfantasyleague.com .../export?TYPE=adp), sending the project's
 # descriptive User-Agent from src/ingest_mfl_adp.py and backing off on HTTP 429.
 # One request per run satisfies the one-request-per-second rule by construction.
-# No scraping, no restricted endpoints -- FFC and the FantasyPros ADP pages stay
-# untouched, per docs/research/source-audit-2026-07.md.
+#
+# SOURCE CONSTRAINTS -- FFC. FFC was recorded BLOCKED (ToS unretrievable ->
+# conservative default) until the founder contacted them directly on 2026-07-29
+# and reported no restrictions on use, recorded in docs/pm/MEMORY.md SS4 and
+# docs/founder-requests/FR-023-*. Re-verified independently the same day:
+# robots.txt disallows /api/, /ajax/, /adp/csv/, /draft/ and a few others, but
+# the HTML pages this workflow fetches -- /adp/<format>/<teams>-team/all/<year>
+# -- are NOT on that list, and /adp/csv/ is never touched. Three requests per
+# run (non-PPR, half-PPR, full PPR), each with the project's descriptive
+# User-Agent and backoff on HTTP 429 (src/ingest_ffc_adp.py), captured once per
+# calendar day per format via the same UTC-date cache check MFL uses.
 
 on:
   schedule:
@@ -92,16 +101,47 @@ jobs:
           echo "SNAPSHOT_FILE=${FILE}" >> "$GITHUB_ENV"
           echo "SNAPSHOT_ROWS=${ROWS}" >> "$GITHUB_ENV"
 
-      - name: Commit and push the snapshot
+      - name: Capture FFC ADP snapshot (non-PPR, half-PPR, PPR; 10-team)
+        # Same throwaway DB, same ff_playerids join, same fail-loud posture as
+        # the MFL step above -- tools/ci_ffc_adp_snapshot.py exits non-zero on:
+        # no database, short ff_playerids, a fetch/parse failure for ANY of the
+        # three formats, zero parsed rows, no CSV written, a CSV under 100 rows,
+        # or a match_rate below 80% for that format. The 80% floor (not MFL's
+        # 90%) is intentional: FFC resolves by name against ff_playerids, and
+        # team defenses ("Seattle Defense", etc.) have no entry there at all
+        # (verified zero DEF rows in players_canonical) -- a structural ceiling
+        # below 100%, not a degraded join, so tuning the floor to 90% would fail
+        # every good run rather than catching a bad one.
+        run: python tools/ci_ffc_adp_snapshot.py --db data/ci-adp.db
+
+      - name: Verify FFC CSVs for today actually exist
+        run: |
+          DATE=$(date -u +%F)
+          for TAG in non_ppr half_ppr ppr; do
+            FILE="data/adp-snapshots-ffc/${DATE}_${TAG}.csv"
+            if [ ! -s "$FILE" ]; then
+              echo "::error::${FILE} is missing or empty after a reportedly successful capture"
+              exit 1
+            fi
+            ROWS=$(( $(wc -l < "$FILE") - 1 ))
+            if [ "$ROWS" -lt 100 ]; then
+              echo "::error::${FILE} has only ${ROWS} data rows"
+              exit 1
+            fi
+            echo "verified ${FILE} with ${ROWS} data rows"
+          done
+          echo "FFC_SNAPSHOT_DIR=data/adp-snapshots-ffc" >> "$GITHUB_ENV"
+
+      - name: Commit and push the snapshots
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add "${SNAPSHOT_FILE}"
+          git add "${SNAPSHOT_FILE}" "${FFC_SNAPSHOT_DIR}"
           if git diff --cached --quiet; then
-            echo "no change for ${SNAPSHOT_FILE} -- already captured today, nothing to commit"
+            echo "no change -- already captured today, nothing to commit"
             exit 0
           fi
-          git commit -m "data: ADP snapshot ${SNAPSHOT_FILE##*/} (${SNAPSHOT_ROWS} rows, automated)"
+          git commit -m "data: ADP snapshot ${SNAPSHOT_FILE##*/} (${SNAPSHOT_ROWS} rows) + FFC non-PPR/half-PPR/PPR 10-team, automated"
           # Rebase before pushing: a local session may have pushed while this ran.
           git pull --rebase --autostash origin "${GITHUB_REF_NAME}"
           git push origin "HEAD:${GITHUB_REF_NAME}"
@@ -113,7 +153,8 @@ jobs:
             echo "### Daily ADP snapshot"
             echo ""
             echo "- Date (UTC): $(date -u +%F)"
-            echo "- File: ${SNAPSHOT_FILE:-none written}"
-            echo "- Rows: ${SNAPSHOT_ROWS:-0}"
+            echo "- MFL file: ${SNAPSHOT_FILE:-none written}"
+            echo "- MFL rows: ${SNAPSHOT_ROWS:-0}"
+            echo "- FFC dir: ${FFC_SNAPSHOT_DIR:-none written}"
             echo "- Result: ${{ job.status }}"
           } >> "$GITHUB_STEP_SUMMARY"

@@ -100,12 +100,38 @@ export type PlayerHistoryState =
       seasonStats: RawSeasonStatsPlayer | undefined;
     };
 
+/**
+ * Set only by vite.standalone.config.ts's `define`, to `true` in that one
+ * build and left `undefined` everywhere else (npm run dev, npm test, npm run
+ * build all see it as falsy) -- so STANDALONE below is provably `false` for
+ * the live app, unconditionally, not just falsy-by-default.
+ */
+declare const __STANDALONE__: boolean | undefined;
+const STANDALONE = typeof __STANDALONE__ !== 'undefined' && __STANDALONE__ === true;
+
+/** frontend/dist-standalone/board.html never embeds weekly_finishes.json /
+ *  season_stats.json (8.9MB + 2.3MB -- see scripts/build-standalone-data.mjs's
+ *  doc comment), so there is nothing `loadPlayerHistory()` could fetch even if
+ *  it tried. Short-circuiting here means it never tries: no request is issued
+ *  and none fails, which is a different, stronger claim than "the fetch
+ *  failed gracefully" -- the standalone build has zero fetch() calls at
+ *  runtime, full stop. Reuses the real `error` state PlayerDetail.tsx already
+ *  renders (sections 7/8), so this is an existing UI branch, not a new one. */
+const STANDALONE_REASON =
+  'not included in this static snapshot (kept out to keep the file small -- ' +
+  'the live app at npm run dev has full season history)';
+
 export function usePlayerHistory(gsisId: string | null): PlayerHistoryState {
   const [state, setState] = useState<PlayerHistoryState>(
-    gsisId === null ? { status: 'no-key' } : { status: 'loading' },
+    STANDALONE
+      ? { status: 'error', message: STANDALONE_REASON }
+      : gsisId === null
+        ? { status: 'no-key' }
+        : { status: 'loading' },
   );
 
   useEffect(() => {
+    if (STANDALONE) return;
     if (gsisId === null) {
       setState({ status: 'no-key' });
       return;

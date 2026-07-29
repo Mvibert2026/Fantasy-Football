@@ -77,7 +77,16 @@ async function main() {
     if (!up) return finish(server);
 
     const { chromium } = await import('playwright');
-    const browser = await chromium.launch();
+    // Cloud containers pre-install a Chromium revision that may not match the
+    // pinned playwright package's expected revision, with browser downloads
+    // disabled. PLAYWRIGHT_CHROMIUM_PATH lets the caller point at the
+    // pre-installed binary explicitly instead of `playwright install`
+    // (see docs/frontend-cloud-runbook.md). Unset elsewhere: default launch
+    // behavior is unchanged.
+    const launchOpts = process.env.PLAYWRIGHT_CHROMIUM_PATH
+      ? { executablePath: process.env.PLAYWRIGHT_CHROMIUM_PATH }
+      : {};
+    const browser = await chromium.launch(launchOpts);
     const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
     const page = await context.newPage();
     const consoleErrors = [];

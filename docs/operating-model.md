@@ -84,6 +84,39 @@ Append a row whenever usage data is available.
 | pre-2026-07-26 | Backend | Sonnet, low–moderate | 31 tests, ADRs, measured constant, 24-config matrix | Comfortable | Yes |
 | pre-2026-07-26 | Frontend | Sonnet, effort→5 | Full 38K-char spec port | Hard stop ~97% | **No — false completion claim** |
 | pre-2026-07-26 | Researcher | Opus, 4–5 | Competitive UX + platform + Reddit research | Within session | Yes |
+| 2026-07-29 | Data Ops | Sonnet | One-command DB rebuild, ADP CSV loader, dependency fixes | **~196k tokens**, 131 tool calls, 27 min | Yes — 17 tests, rebuild measured at 64s |
+| 2026-07-29 | Frontend | Sonnet | Cloud-readiness check + screenshot recipe | **~105k tokens**, 46 tool calls, 8 min | Yes — 202 tests, real screenshots |
+| 2026-07-29 | Frontend | Sonnet | Standalone single-file build, phone WIP + revert, Draft mode restore | **~374k tokens**, 219 tool calls, 40 min | Yes — but ~a third was the phone work the founder then pulled |
+
+**Read the third row before planning a round.** It is the single most expensive agent run on record here, and a substantial slice of it was spent building responsive layouts the founder cancelled once he saw what the request implied. The cost was not the agent's — the dispatch was wrong. **A dispatch that misreads scope is the most expensive error available to the PM**, more so than choosing the wrong tier.
+
+**Rough session total, 2026-07-29 (in-repo PM takeover): ~700k tokens across completed chains**, plus three Fable mandates killed part-way and three chains still running at the time of writing. That is a heavy day by this project's standards and worth weighing against a weekly budget.
+
+**What can and cannot be measured here.** Subagents report their own token usage on completion, so per-dispatch cost is knowable and should be logged every session. **The founder's account-level usage, remaining quota, and the separate Fable budget are not visible to any agent** — no tool in the session exposes them. He checks those himself via `/usage` or his account settings. Do not claim to be monitoring his usage; state plainly what is and is not visible.
+
+### Standing instruction: log every dispatch, every session
+
+The founder asked on 2026-07-29 for this to be tracked continuously, with a purpose:
+
+> "monitor all that, and we'll be able to figure out how many tokens in a sesison they give me,
+> let's start next session and we'll try to max it out so we know"
+
+**So: append a row per dispatch, every session, without being asked.** Role, tier, task, tokens,
+tool calls, wall clock, and whether it was verified complete. The numbers arrive in each agent's
+completion report — capture them then, because they are gone once the session ends.
+
+**A deliberate ceiling-finding run is planned for the session after 2026-07-29.** The goal is to
+establish the real per-session budget by spending it, so the PM can size rounds against a measured
+number instead of a guess. Two things make that run useful rather than merely expensive:
+
+1. **Log continuously during it, not at the end.** If the session stops on a limit, anything not
+   already written down is lost — which is precisely the number the run exists to produce.
+2. **Spend it on work that was going to happen anyway.** A ceiling found by burning tokens on
+   throwaway tasks costs the same and leaves nothing behind. The queue is long enough that it
+   should not need padding.
+
+Record the outcome here, and in `docs/pm/MEMORY.md` §7, as a measured figure with the date — the
+limit may change, so an undated number becomes a trap.
 
 ---
 

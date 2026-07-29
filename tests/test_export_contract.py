@@ -316,3 +316,138 @@ def test_open_ended_points_allowed_tier_is_null_not_infinity():
     assert tiers[-1][0] is None, "open-ended tier must carry a null ceiling"
     assert all(t[0] is not None for t in tiers[:-1]), "only the last tier is open-ended"
     assert "NO UPPER BOUND" in league["scoring"]["defense"]["points_allowed_note"]
+
+
+# --- ADP export (founder request: "ADP should be shown on both the prep and
+# draft screens as well as player profile") --------------------------------
+#
+# `src/export_contract._load_adp_snapshot` is a display-only read of the real
+# MFL-proxy `adp_snapshots` table (ADR-035). It is deliberately separate from
+# `availability.load_mfl_adp_source`, which stays unwired from the model by
+# design -- these tests only cover the export contract's new fields, not any
+# change to ranking/VBD/availability output.
+
+import sqlite3
+
+import export_contract as ec
+
+
+def _adp_conn(with_snapshot: bool = True) -> sqlite3.Connection:
+    # export_contract._load_adp_snapshot reads columns by name (matching
+    # every other reader in export_contract.py) -- real callers get a
+    # sqlite3.Row-factory connection via db.connect(), so this fixture must
+    # too, or the join silently breaks in a way real usage never hits.
+    conn = sqlite3.connect(":memory:")
+    conn.row_factory = sqlite3.Row
+    conn.execute("CREATE TABLE player_ids (mfl_id TEXT, source TEXT, source_id TEXT)")
+    conn.execute(
+        "CREATE TABLE adp_snapshots ("
+        "adp_source TEXT, mfl_id TEXT, player_name TEXT, position TEXT, team TEXT, "
+        "rank INTEGER, average_pick REAL, min_pick INTEGER, max_pick INTEGER, "
+        "drafts_selected_in INTEGER, draft_sel_pct REAL, fcount INTEGER, is_ppr INTEGER, "
+        "is_keeper INTEGER, is_mock INTEGER, cutoff INTEGER, period INTEGER, "
+        "total_drafts_in_sample INTEGER, mfl_timestamp INTEGER, retrieved_at TEXT, "
+        "ingested_at TEXT)"
+    )
+    # 00-0001 resolves via player_ids -> mfl_id 2001, which HAS a
+    # same-day adp_snapshots row.
+    # 00-0002 resolves via player_ids -> mfl_id 2002, which has NO
+    # adp_snapshots row at all (MFL never covered this player) -- must
+    # come back honestly null, not zero, not a fabricated rank.
+    conn.execute("INSERT INTO player_ids VALUES ('2001', 'gsis', '00-0001')")
+    conn.execute("INSERT INTO player_ids VALUES ('2002', 'gsis', '00-0002')")
+    if with_snapshot:
+        conn.execute(
+            "INSERT INTO adp_snapshots VALUES "
+            "('mfl_proxy','2001','Player One','WR','CIN',5,5.2,1,12,20,40.0,10,1,0,0,10,"
+            "2026,50,123,'2026-07-29T00:00:00+00:00','2026-07-29T00:00:00+00:00')"
+        )
+        # An older snapshot for the same player -- must be ignored in favor
+        # of the latest retrieved_at, never averaged with it.
+        conn.execute(
+            "INSERT INTO adp_snapshots VALUES "
+            "('mfl_proxy','2001','Player One','WR','CIN',9,9.9,1,20,20,40.0,10,1,0,0,10,"
+            "2026,50,123,'2026-07-26T00:00:00+00:00','2026-07-26T00:00:00+00:00')"
+        )
+        # A different platform's row for the SAME player/date -- must never
+        # be blended into the mfl_proxy figure (per-platform stamping rule).
+        conn.execute(
+            "INSERT INTO adp_snapshots VALUES "
+            "('other_platform_proxy','2001','Player One','WR','CIN',1,1.0,1,3,20,90.0,10,1,0,0,10,"
+            "2026,50,123,'2026-07-29T00:00:00+00:00','2026-07-29T00:00:00+00:00')"
+        )
+    return conn
+
+
+def test_load_adp_snapshot_returns_honest_empty_state_when_not_ingested():
+    conn = _adp_conn(with_snapshot=False)
+    result = ec._load_adp_snapshot(conn)
+    assert result["by_gsis"] == {}
+    assert result["as_of_date"] is None
+    assert result["adp_source"] == "mfl_proxy"
+    assert "No adp_snapshots rows" in result["match_rate_note"]
+
+
+def test_load_adp_snapshot_resolves_matched_player_to_latest_snapshot():
+    conn = _adp_conn()
+    result = ec._load_adp_snapshot(conn)
+    assert result["as_of_date"] == "2026-07-29"
+    row = result["by_gsis"]["00-0001"]
+    # Must be the LATEST (2026-07-29) row's average_pick, not the older
+    # 2026-07-26 row and not an average of the two.
+    assert row["adp"] == 5.2
+    assert row["adp_min_pick"] == 1
+    assert row["adp_max_pick"] == 12
+    assert row["adp_selected_pct"] == 40.0
+
+
+def test_load_adp_snapshot_never_blends_across_adp_source_values():
+    conn = _adp_conn()
+    result = ec._load_adp_snapshot(conn)
+    # other_platform_proxy's average_pick (1.0) must not leak into the
+    # mfl_proxy figure (5.2), by dilution or override.
+    assert result["by_gsis"]["00-0001"]["adp"] == 5.2
+
+
+def test_load_adp_snapshot_honestly_omits_unmatched_players():
+    """00-0002 has a player_ids row but no adp_snapshots row for its mfl_id
+    -- MFL never covered it. It must be absent from by_gsis (an honest
+    null downstream), never present with a zero or fabricated value."""
+    conn = _adp_conn()
+    result = ec._load_adp_snapshot(conn)
+    assert "00-0002" not in result["by_gsis"]
+
+
+@pytest.mark.requires_db
+def test_board_json_adp_fields_present_and_source_travels_with_value():
+    """Every player row carries adp/adp_source/adp_min_pick/adp_max_pick/
+    adp_selected_pct. adp_source must be non-null exactly when adp is
+    non-null (it travels WITH the value, never independently), and every
+    non-null adp_source is the single expected platform -- no blending
+    across adp_source values reaches the export."""
+    board = _load("board.json")
+    assert "adp_source" in board
+    assert "adp_as_of_date" in board
+    assert "adp_source_note" in board
+    assert "adp_match_rate_note" in board
+    seen_sources = set()
+    resolved = 0
+    for p in board["players"]:
+        for key in ("adp", "adp_min_pick", "adp_max_pick", "adp_selected_pct", "adp_source"):
+            assert key in p, f"{key} missing from board row for {p['player']}"
+        has_adp = p["adp"] is not None
+        has_source = p["adp_source"] is not None
+        assert has_adp == has_source, (
+            f"{p['player']}: adp/adp_source must both be null or both be populated, "
+            f"got adp={p['adp']!r} adp_source={p['adp_source']!r}"
+        )
+        if has_source:
+            seen_sources.add(p["adp_source"])
+            resolved += 1
+    assert seen_sources <= {"mfl_proxy"}, (
+        f"unexpected adp_source values reached the export: {seen_sources}"
+    )
+    # Not a strict requirement that any resolve (an empty adp_snapshots
+    # table is a valid, if unwanted, state) -- but if the ingested fixture
+    # DB has real adp_snapshots rows, at least one board row should resolve.
+    print(f"adp coverage: {resolved}/{len(board['players'])} board rows carry a real ADP value")
