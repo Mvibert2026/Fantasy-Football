@@ -148,6 +148,30 @@ Two related gotchas:
   `public/data` from the worktree's own tracked `data/export/`. No `nfl.db` needed, unlike the
   backend suite (§4).
 
+### Playwright cannot reach the public internet from here — only localhost
+
+Measured 2026-07-29 while trying to reproduce a founder-reported mobile failure on
+`https://draft.maplerock.net`. Every navigation to an external host fails with
+`net::ERR_CONNECTION_RESET`, **including with `proxy: { server: 'http://127.0.0.1:41905' }`
+passed to `chromium.launch()`**. It fails identically on a simulated desktop viewport, so it is
+the container's egress and not the site or the device emulation.
+
+Two consequences, and the second one is the trap:
+
+- **Use Playwright against a local dev server only.** To check the live site, use `curl`, which
+  does route through the agent proxy and returns real responses.
+- **`curl` and `openssl s_client` cannot tell you anything about the site's real TLS
+  certificate.** Both are intercepted: `openssl s_client -connect draft.maplerock.net:443`
+  returns a certificate issued by `O = Anthropic, CN = Egress Gateway SDS Issuing CA
+  (production)`, re-signed at request time. A genuinely expired or misissued certificate would
+  look perfectly healthy here and still fail on a real phone. **A TLS problem reported by the
+  founder cannot be confirmed or ruled out from this container** — say so rather than reporting
+  the proxy's certificate as the site's.
+
+Do not commit the screenshots such a probe produces. They render Chromium's "This site can't be
+reached" page, and a file named `live-desktop.png` showing a connection error reads, later, as
+evidence the site was down.
+
 ---
 
 ## 6. Command style that avoids stopping
