@@ -147,27 +147,14 @@ describe('thread 049 item 1 / FR-032: Board/Opponents/Predictions tab shell', ()
     expect(screen.getByPlaceholderText(/Mark pick/)).toBeInTheDocument();
   });
 
-<<<<<<< HEAD
-  it('switching to Opponents/Predictions renders the real screens, folded in per the founder\'s ask', () => {
-=======
   it('switching to Opponents shows the live, pick-log-derived view (FR-032) -- empty state before any pick is entered', () => {
->>>>>>> origin/worktree-agent-a88e0712d14a46ee0
     // Thread 058 section C1: hub tab labels are sentence case ("Opponents",
     // not "OPPONENTS"), matching the design's boxed-tab treatment.
     renderDraftRoom();
     fireEvent.click(screen.getByRole('button', { name: 'Opponents' }));
-<<<<<<< HEAD
-    // The real Opponents.tsx screen (real opponents.json cards), not the old
-    // "not wired into Draft mode yet" placeholder -- plus this fold-in's own
-    // live-vs-static caveat (rosters.json doesn't move with local picks).
-    expect(screen.getByRole('heading', { name: 'Opponents' })).toBeInTheDocument();
-    expect(screen.getByText(/does not move the cards below/)).toBeInTheDocument();
-    expect(screen.queryByText(/Opponents is not wired into Draft mode yet/)).not.toBeInTheDocument();
-=======
     // FR-032: no fabricated roster grid before any pick exists -- one honest
     // "no picks yet" sentence, not ten empty team cards.
     expect(screen.getByText(/No picks yet\. Mark picks on the Board tab/)).toBeInTheDocument();
->>>>>>> origin/worktree-agent-a88e0712d14a46ee0
     expect(screen.queryByPlaceholderText(/Mark pick/)).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: 'Predictions' }));

@@ -34,7 +34,6 @@ import { PlayerDetail } from '../components/PlayerDetail';
 import { LiveOpponents } from './LiveOpponents';
 import { Value } from '../components/Value';
 import { decimal, integer, interval as intervalText, percent, signed } from '../lib/format';
-import { Opponents } from './Opponents';
 import { Predictions } from './Predictions';
 
 /** §3.2's pane-width formula, using the spec's own defaults since this build has
@@ -226,39 +225,6 @@ function downloadJson(filename: string, data: unknown) {
   URL.revokeObjectURL(url);
 }
 
-/**
- * Thread 049 item 1 / the founder's direct ask -- Opponents folded into Draft
- * mode as a real tab, not a placeholder. `Opponents.tsx` itself is unmodified
- * (imported read-only, matching this file's precedent for reused screens).
- *
- * One real caveat this fold-in surfaces that Opponents.tsx did not need to
- * state on its own, verified against the code rather than assumed: this
- * screen's roster/`next #N` picture is computed entirely from
- * `data.rosters` (`rosters.json`), a backend export built from real,
- * `is_mock=0`, backend-ingested picks. DraftRoom's own picks (`ui/data/
- * draft.ts`'s `DraftState`) live only in this browser's `localStorage` --
- * there is no `fetch`/`POST` anywhere in `draft.ts`, confirmed by reading it,
- * so nothing recorded in a live Draft-mode session (real tracking or a
- * practice mock) ever reaches `rosters.json`. So this tab is real, current
- * data, honestly null where unknown, exactly as it is in Prep mode -- but it
- * does not move when you record a pick in the pane next to it. Rather than
- * mount that silently (which would look like a bug the first time someone
- * drafts a player and switches tabs expecting the opponent picture to
- * follow), this says so once, inline, above the real cards -- not a second
- * fabricated data source, not an invented "live" label on a static export.
- */
-function AdaptedOpponentsPane({ data }: { data: Dataset }) {
-  return (
-    <div className="stack">
-      <p className="notice" style={{ fontSize: 11.5 }}>
-        This tab reflects `rosters.json` -- the backend's last-synced real (non-mock) pick record --
-        not the picks you make in this Draft-mode session. Recording a pick here does not move the
-        cards below; they update on the next backend export of real draft picks.
-      </p>
-      <Opponents data={data} />
-    </div>
-  );
-}
 
 export function DraftRoom({
   data,
@@ -303,9 +269,11 @@ export function DraftRoom({
   // ui/views/Predictions.tsx) -- both already shipped elsewhere in this app
   // (Opponents in Prep mode; Predictions as its own Prep-mode screen) and
   // both take exactly the props this component already holds (`data`,
-  // `rows`, `league`), so this is wiring, not a rebuild. See the
-  // AdaptedOpponentsPane wrapper below for the one live-vs-static caveat this
-  // fold-in surfaces that neither screen needed to state on its own.
+  // `rows`, `league`), so this is wiring, not a rebuild. Opponents has since
+  // been replaced here by ui/views/LiveOpponents.tsx, which derives every
+  // team's roster and needs from this session's local pick log rather than
+  // from the backend export -- FR-032, because the export is empty during an
+  // in-progress draft, which was the whole complaint.
   const [hubTab, setHubTab] = useState<'board' | 'opponents' | 'predictions'>('board');
   // Thread 051 items 1-2: the pick-entry suggester (candidate dropdown) is
   // shown/hidden independently of whether candidates exist. Defaults closed --
@@ -942,13 +910,7 @@ export function DraftRoom({
       </div>
 
       {hubTab === 'opponents' ? (
-<<<<<<< HEAD
-        <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: 20 }}>
-          <AdaptedOpponentsPane data={data} />
-        </div>
-=======
         <LiveOpponents data={data} league={league} draft={draft} rowsById={rowsById} />
->>>>>>> origin/worktree-agent-a88e0712d14a46ee0
       ) : hubTab === 'predictions' ? (
         <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: 20 }}>
           <Predictions data={data} rows={rows} league={league} />

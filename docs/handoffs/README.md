@@ -96,20 +96,17 @@ BLOCKS: 007
 `design`, `founder`, `fable` — this list must match `ROLES` in `tools/handoffs.py`; the tool
 is the source of truth if the two ever drift again.
 
-<<<<<<< HEAD
 **`design` CAN read this repo but CANNOT write to it** (corrected 2026-07-29 — this line said design
 could not read at all, which stopped being true on 2026-07-27 and cost real relaying before anyone
 noticed). So a thread addressed to `design` needs no hop to be *read*: design opens it directly.
 What still needs a hop is the return leg — every design output arrives as a file for the PM or
 `frontend` to commit, because design cannot land anything itself. Keep `VIA: pm` only where the
 thread expects something committed back.
-=======
 `design` has read access to this repo and no write access (`docs/design-protocol.md` §1 — corrected
 here 2026-07-29; this file previously said design could not read the repo at all, which had been
 false for two days and cost the founder repeated hand-relaying of files). Mark a thread to design
 `TO: design VIA: pm` only for the **landing** hop — design produces files but cannot commit them.
 Do not paste file contents into a thread for design to read; name the path and the ref.
->>>>>>> origin/worktree-agent-afa13ac8a8bd0c533
 
 ---
 

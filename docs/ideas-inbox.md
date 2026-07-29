@@ -169,7 +169,6 @@ newest at the bottom.
   a widened regex or a stated convention plus a one-off sweep — not another rule.** Same class as
   the ID allocator: the tool and the documents disagree, and the humans followed the documents.
 
-<<<<<<< HEAD
 - 2026-07-29 · (strategist, PR-004) **Decided, not escalated — four calls, all reasoned in the
   registration.** (a) Refused to make consensus the confirmatory baseline as the brief asked:
   n=4 seasons, exact sign-test floor p=0.125, unreachable at alpha=0.05 before any correction.
@@ -268,7 +267,6 @@ newest at the bottom.
   redistribution is a `[GAP]` — FFC's ToS was unretrievable for the third time today.
   **Also, stale line:** `CURRENT-STATE.md` still says "FFC is blocked by robots.txt regardless" and
   "FFC remains blocked" while MEMORY §4 and FR-023 record it unblocked and say they supersede.
-=======
 
 - **2026-07-29, backend (ADR-059).** `docs/pm/CHARTER.md` and `docs/pm/MEMORY.md` are the two
   richest sources of live factual claims in the repo and are deliberately **not** in
@@ -292,7 +290,6 @@ newest at the bottom.
   guardrails, so a new session learns the "register a factual claim or don't make it" rule from
   the spec rather than from a test failure. Not done here — CLAUDE.md is the standing law and
   editing it is an escalation, not a backend decision. Raised in thread 083.
->>>>>>> origin/worktree-agent-afa13ac8a8bd0c533
 
 - 2026-07-29 · (researcher, missing inputs: odds / coaching / routes) **Decided, not escalated —
   four calls.** (a) **Did not halt on the premise contradiction, but did not adopt it either.** The
