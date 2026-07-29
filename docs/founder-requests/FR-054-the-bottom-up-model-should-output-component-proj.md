@@ -1,6 +1,6 @@
 ---
 ID: FR-054
-STATUS: NEW
+STATUS: IN-PROGRESS
 PRIORITY: HIGH
 ROUTED-TO: ranker
 SOURCE: chat 2026-07-29, PM session
@@ -103,3 +103,31 @@ mechanism by which "my league pays for ceiling" becomes a number.
 input.** Blending a vendor's projections into our own is precisely what `CLAUDE.md` §4's separate
 `ranking_source` rule exists to prevent.
 
+
+---
+
+## Pass 1 delivered, 2026-07-29 — ranker
+
+**Wide receiver only.** `docs/ranking/component-model-wr-pass-1.md`, code
+`experiments/bottomup/components/`, 14 tests, commits `61012d0` / `43ad7b1` / `be1c571`.
+
+**What now exists.** A per-player projection of games, targets, receptions, receiving yards,
+receiving touchdowns, carries, rushing yards, rushing touchdowns and fumbles lost, plus
+`p_100yd_game` / `p_150yd_game` / `p_200yd_game` — a real per-game distribution, so the stacking
+bonuses are computed rather than asserted. `wr_model.score_components()` re-scores the same
+projection under any ruleset without refitting, which is the thing FR-040 and FR-042 need.
+
+**What it does not do yet.** It does not beat consensus ADP (+0.048 ρ, 95% CI [−0.013, +0.124], and
+the design is underpowered — consensus itself cannot be shown to beat a three-line heuristic on the
+seven available seasons). It covers one position. It has not been run for 2026, because that needs
+2025 features and 2025 is the sealed holdout.
+
+**The founder's ceiling belief, now measured rather than assumed.** He is right that the rules pay
+for ceiling and wrong about the exploitable consequence, at WR. Perfect foresight of realised
+stacking-bonus points is worth **+0.026 ρ**; the modelled version is worth +0.0002 and moves five
+receivers out of 2,271. Conditional on mean yards per game, receivers do not differ in how often
+they spike — the dispersion is *below* binomial noise. This does not transfer automatically to RB
+or TE and both remain open.
+
+**Not read, deliberately:** the 2,007 Sleeper/Rotowire component rows. Baseline to beat, never an
+input, per `CLAUDE.md` §4.

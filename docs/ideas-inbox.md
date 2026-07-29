@@ -512,3 +512,50 @@ a live crash:
 Full detail, plus the resolved ESPN-scoring docstring self-contradiction and the static-hosting vs.
 job-queue-API contradiction between `SETTINGS-EDITOR-SPEC.md` and the current Cloudflare Worker
 deploy: `docs/specs/FR-040-custom-league-settings-costing.md`.
+
+## 2026-07-29 — ranker, FR-054 WR component model: the ceiling channel is closed at WR
+
+Built the per-player component projection (games, targets, receptions, receiving yards, receiving
+TDs, turnovers, plus a per-game exceedance distribution for the stacking bonuses). Walk-forward
+2014-2024, 2025 sealed and never opened, look-ahead enforced structurally and audited per fit.
+Full writeup `docs/ranking/component-model-wr-pass-1.md`; code
+`experiments/bottomup/components/`.
+
+Decisions made and logged rather than escalated:
+
+1. **Position chosen: WR, not TE**, despite pass 1 pointing at TE. Pass 1's TE finding is about
+   *consensus mispricing* — a claim about the market. This model needs sample to form its own
+   player-level opinion, and WR has ~200 draft-relevant players a season against TE's ~75. TE is
+   the right second position, not the first.
+2. **The deep 1999-2008 sample was deliberately not used.** Targets are empty 2003-2008 and air
+   yards do not exist before 2009, so the only features those seasons support (points, games) are
+   the baselines this model must beat. Training on them teaches the model to be its own baseline.
+   Usable target seasons: 13, not 26. Any future claim of "26 seasons" is false for anything
+   usage-based.
+3. **Route participation was NOT proxied** via `snap_counts`, though it could have been.
+   Introducing a proxy in the same pass that establishes a baseline makes the baseline
+   uninterpretable. First candidate for pass 2, and it will be labelled as a proxy.
+
+**The finding that should change planned work:** the ceiling/variance channel is bounded and the
+bound is small. An oracle with perfect foresight of every player's realised stacking-bonus points
+buys **+0.026 ρ [+0.018, +0.033]** on the ADP board. The modelled version buys **+0.0002** and moves
+**five receivers out of 2,271** by three or more rank positions. And there is nothing left to
+model: conditional on mean yards per game, the between-player dispersion in 100-yard-game rate is
+**below** binomial noise (excess −0.00176 on 1,360 player-seasons), and the residual does not
+persist year to year (r = −0.006 [−0.073, +0.060]). At WR the stacking bonus is a monotone function
+of projected yards per game and cannot reorder anyone. This contradicts the standing assumption
+that ceiling pricing is the cheapest real edge available; referred to `strategist` in thread 094
+rather than asserted here, and it is a WR result that does not automatically transfer to RB or TE.
+
+**The lead worth following instead:** the model's ten worst calls versus market are all the same
+failure — a receiver coming off a season lost to injury or suspension (A.J. Green 2020 projected at
+6.6 targets). The availability sub-model cannot tell *did not play* from *played badly*, and
+`nfl.db.injuries` (79,816 rows) is unused by every model in this project. Registered as the
+proposed confirmatory factor in thread 094.
+
+**Trap recorded because I nearly reported it as a finding:** the partial correlation of
+bonus-points-per-game on its own lag, controlling for *prior-season* yards per game, is +0.156
+[+0.091, +0.221] and looks exactly like persistent spike ability. Controlling for prior ypg is not
+controlling for *current* ypg — prior bonus rate is just a second noisy measure of yardage level.
+Against the model's own projected ypg it drops to +0.089, and what survives is information about
+the yardage *mean* the volume model missed, not about ceiling.
