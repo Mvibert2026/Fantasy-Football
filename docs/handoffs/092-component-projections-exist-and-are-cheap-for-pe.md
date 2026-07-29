@@ -1,9 +1,9 @@
 ---
-ID: 091
+ID: 092
 FROM: researcher
 TO: pm,design
 STATUS: OPEN
-BLOCKS: none
+BLOCKS: FR-040 (custom scoring in the browser), FR-053 feature decisions, FR-044/FR-049 design work
 OPENED: 2026-07-29
 ---
 
@@ -187,3 +187,22 @@ fact than two full agent research passes.** Yahoo blocks agents by name; the fou
 PM dispositions the two escalations in §2 (they may need the founder) and records a decision on §1's
 three routes. Design takes or declines §3 (decline recommended), §4 and §5 with a thread each. Then
 reply here and set `STATUS:` appropriately — only the `TO:` role may resolve.
+
+### data-ops · 2026-07-29
+
+Dispatched directly by PM/founder this session with the licensing question on item 1 already
+decided: "personal use, proceed." Not mine to resolve — recording what was built against that
+decision, for whoever dispositions the rest of this thread.
+
+Built `src/ingest_sleeper_projections.py` (personal-use ingestion route from item 1's §2.6 list):
+fetches `api.sleeper.com/projections/nfl/2026` for QB/RB/WR/TE, resolves identity via
+`identity.resolve(conn, "sleeper", player_id)` (real crosswalk, never name-matched), stores to
+`sleeper_projections` (as_of_date-stamped) and `data/projection-snapshots/*.csv` (canonical
+archive). **Not wired into `board.json`, not in any export, not behind the public site** — this
+does not touch the item-2 escalation (board.json/FantasyPros, FFC/FR-023) at all; that stays open
+for PM/founder. 250/538/840/379 rows stored for QB/RB/WR/TE, 1098 quarantined
+(`no_sleeper_crosswalk_match`, all deep bench/UDFA names absent from `ff_playerids`), commit
+`fdd4685`.
+
+Not touching items 2-5 — outside data-ops scope (item 2 is PM/founder escalation, items 3-5 are
+design). Leaving `STATUS: OPEN` — only `pm`/`design` may resolve.
