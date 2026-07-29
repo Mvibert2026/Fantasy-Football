@@ -18,7 +18,7 @@ rather than quietly rotting.
 """
 
 from __future__ import annotations
-import argparse, datetime, itertools, pathlib, re, sys
+import argparse, datetime, itertools, pathlib, re, subprocess, sys
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 HANDOFFS = ROOT / "docs" / "handoffs"
@@ -118,13 +118,76 @@ def next_id(threads: list[Thread]) -> str:
     return f"{max(nums) + 1 if nums else 1:03d}"
 
 
+def _git_ref_names() -> list[str]:
+    """Local branches + remote-tracking branches, so allocation sees IDs claimed on
+    parallel branches this working tree hasn't checked out. Degrades loudly: if git
+    is unavailable or errors, fall back to working-tree-only scanning rather than
+    silently allocating a number that may collide (five prior collisions -- see
+    CLAUDE.md and docs/handoffs/README.md -- all came from scanning one tree only)."""
+    try:
+        out = subprocess.run(
+            ["git", "for-each-ref", "--format=%(refname:short)", "refs/heads", "refs/remotes"],
+            cwd=ROOT, capture_output=True, text=True, timeout=10,
+        )
+        if out.returncode != 0:
+            print(f"handoffs: git ref scan failed ({out.stderr.strip()}); "
+                  f"falling back to working-tree-only allocation", file=sys.stderr)
+            return []
+        return [r for r in out.stdout.splitlines() if r.strip() and not r.endswith("/HEAD")]
+    except Exception as e:
+        print(f"handoffs: git unavailable ({e}); falling back to working-tree-only allocation",
+              file=sys.stderr)
+        return []
+
+
+def _git_tree_filenames(ref: str, subdir: str) -> list[str]:
+    """Filenames (basenames) under subdir as committed on ref. Empty + a stderr note
+    on any failure (ref deleted since listing, subdir absent on that ref, etc.) --
+    never raises, since one bad ref shouldn't abort allocation for everyone else."""
+    try:
+        out = subprocess.run(
+            ["git", "ls-tree", "--name-only", ref, "--", subdir],
+            cwd=ROOT, capture_output=True, text=True, timeout=10,
+        )
+        if out.returncode != 0:
+            return []
+        return [ln.rsplit("/", 1)[-1] for ln in out.stdout.splitlines() if ln.strip()]
+    except Exception as e:
+        print(f"handoffs: git ls-tree failed for {ref}:{subdir} ({e}); skipping this ref",
+              file=sys.stderr)
+        return []
+
+
+def _git_show(ref: str, path: str) -> str | None:
+    """Contents of path as committed on ref, or None on any failure (path absent on
+    that ref, ref gone, etc.)."""
+    try:
+        out = subprocess.run(
+            ["git", "show", f"{ref}:{path}"],
+            cwd=ROOT, capture_output=True, text=True, timeout=10,
+        )
+        return out.stdout if out.returncode == 0 else None
+    except Exception as e:
+        print(f"handoffs: git show failed for {ref}:{path} ({e}); skipping", file=sys.stderr)
+        return None
+
+
 def next_free_id() -> int:
     """W1(c): allocate from filenames on disk, never from parsed frontmatter --
     a thread's own ID: field can be wrong, missing, or (pre-sync) not exist at all.
-    Scanning the directory listing is the one thing that can't lie."""
-    if not HANDOFFS.exists():
-        return 1
-    nums = [int(m.group(1)) for p in HANDOFFS.glob("*.md") if (m := re.match(r"^(\d{3})-", p.name))]
+    Scanning the directory listing is the one thing that can't lie.
+
+    Widened (thread 079/081, FR-020 double-allocation, ADR-054 collision, 2026-07-29):
+    also scans docs/handoffs/ as committed on every local + remote-tracking branch, so
+    a number claimed on a parallel branch isn't reused here. Falls back to working-tree
+    scan alone if git is unavailable (see _git_ref_names)."""
+    nums: list[int] = []
+    if HANDOFFS.exists():
+        nums += [int(m.group(1)) for p in HANDOFFS.glob("*.md") if (m := re.match(r"^(\d{3})-", p.name))]
+    for ref in _git_ref_names():
+        for name in _git_tree_filenames(ref, "docs/handoffs"):
+            if m := re.match(r"^(\d{3})-", name):
+                nums.append(int(m.group(1)))
     return (max(nums) + 1) if nums else 1
 
 
@@ -338,7 +401,14 @@ def adr_next() -> int:
     free number. Same failure as thread IDs (max+1 read from one place while another
     place is being written), same fix: one function, called instead of remembered.
     Regression case: ADR-048 collided (commit 1140586) because two agents each computed
-    max+1 from a stale read of docs/decisions.md alone."""
+    max+1 from a stale read of docs/decisions.md alone.
+
+    Widened (2026-07-29): also scans docs/decisions.md and docs/adr-drafts/ as committed
+    on every local + remote-tracking branch, so an ADR number taken on an unmerged branch
+    (e.g. ADR-054 on backend/mock-calibration-kickers) isn't handed out again here. This
+    narrows the collision window; it does not close it -- see find_adr_collisions() for
+    the hard backstop that catches what a two-sessions-allocate-before-either-pushes race
+    still lets through."""
     nums: list[int] = []
     if DECISIONS_LOG.exists():
         nums += [int(n) for n in re.findall(r"ADR-(\d+)\b", DECISIONS_LOG.read_text(encoding="utf-8"))]
@@ -346,6 +416,15 @@ def adr_next() -> int:
         for p in ADR_DRAFTS.glob("*.md"):
             nums += [int(n) for n in re.findall(r"ADR-(\d+)\b", p.read_text(encoding="utf-8"))]
             nums += [int(n) for n in re.findall(r"ADR-(\d+)\b", p.name)]
+    for ref in _git_ref_names():
+        text = _git_show(ref, "docs/decisions.md")
+        if text:
+            nums += [int(n) for n in re.findall(r"ADR-(\d+)\b", text)]
+        for name in _git_tree_filenames(ref, "docs/adr-drafts"):
+            content = _git_show(ref, f"docs/adr-drafts/{name}")
+            if content:
+                nums += [int(n) for n in re.findall(r"ADR-(\d+)\b", content)]
+            nums += [int(n) for n in re.findall(r"ADR-(\d+)\b", name)]
     return (max(nums) + 1) if nums else 1
 
 
@@ -439,6 +518,58 @@ def flag_stale_decision_refs(threads: list[Thread], decided_ids: set[str]) -> li
     return flags
 
 
+ADR_HEADER = re.compile(r"^## (ADR-\d+)\s*—.*$", re.M)
+
+
+def find_adr_collisions() -> list[str]:
+    """Backstop for the widened adr_next(): even scanning every ref narrows the race,
+    it can't close it (two sessions can each allocate before either pushes). This
+    catches what got through -- the same ADR-NNN with a *different* header text on
+    two branches -- so it fails loudly at `check` time instead of surviving to a merge
+    unnoticed. Deliberately does not renumber anything; detection only."""
+    by_num: dict[str, set[str]] = {}
+    sources: list[tuple[str, str]] = []
+    if DECISIONS_LOG.exists():
+        sources.append(("HEAD", DECISIONS_LOG.read_text(encoding="utf-8")))
+    for ref in _git_ref_names():
+        text = _git_show(ref, "docs/decisions.md")
+        if text:
+            sources.append((ref, text))
+    for label, text in sources:
+        for m in ADR_HEADER.finditer(text):
+            by_num.setdefault(m.group(1), set()).add(m.group(0).strip())
+    problems = []
+    for num in sorted(by_num, key=lambda n: int(n.split("-")[1])):
+        headers = by_num[num]
+        if len(headers) > 1:
+            problems.append(
+                f"{num} has {len(headers)} conflicting headers across branches: "
+                + " | ".join(sorted(headers))
+            )
+    return problems
+
+
+def find_thread_id_collisions() -> list[str]:
+    """Same backstop shape as find_adr_collisions(), for thread IDs: a docs/handoffs/
+    NNN-*.md filename claimed for different subjects on different branches."""
+    by_id: dict[str, set[str]] = {}
+    if HANDOFFS.exists():
+        for p in HANDOFFS.glob("*.md"):
+            if m := re.match(r"^(\d{3})-(.+)\.md$", p.name):
+                by_id.setdefault(m.group(1), set()).add(m.group(2))
+    for ref in _git_ref_names():
+        for name in _git_tree_filenames(ref, "docs/handoffs"):
+            if m := re.match(r"^(\d{3})-(.+)\.md$", name):
+                by_id.setdefault(m.group(1), set()).add(m.group(2))
+    problems = []
+    for tid in sorted(by_id):
+        slugs = by_id[tid]
+        if len(slugs) > 1:
+            problems.append(f"thread {tid} claimed for conflicting subjects across branches: "
+                             + ", ".join(sorted(slugs)))
+    return problems
+
+
 def cmd_check(_args) -> int:
     threads = load()
     problems: list[str] = []
@@ -470,6 +601,9 @@ def cmd_check(_args) -> int:
         age = (now_ts - p.stat().st_mtime) / 86400
         if age >= NEW_STALE_DAYS:
             problems.append(f"{_rel(p)}: unfiled {age:.1f}d — run `handoffs.py sync`")
+
+    problems += find_adr_collisions()
+    problems += find_thread_id_collisions()
 
     if problems:
         print("mailbox check FAILED:\n")

@@ -68,6 +68,42 @@ def test_subject_strips_full_fr_nnn_prefix_not_just_first_hyphen(fr):
     assert req.subject == "Test allocator seeds past archive max"
 
 
+def test_next_free_id_widens_past_local_tree_via_refs(fr, monkeypatch):
+    """FR-020 double-allocated on two branches, 2026-07-29 -- a number claimed only on
+    a branch this tree hasn't checked out must not be reused."""
+    monkeypatch.setattr(fr, "_git_ref_names", lambda: ["origin/other-branch"])
+    monkeypatch.setattr(
+        fr, "_git_tree_filenames",
+        lambda ref, subdir: ["FR-025-claimed-elsewhere.md"] if ref == "origin/other-branch" else [],
+    )
+    assert fr.next_free_id() == 26  # not 18 -- FR-025 on the other branch must be respected
+
+
+def test_find_fr_collisions_flags_conflicting_slugs(fr, monkeypatch):
+    (fr.FR_DIR / "FR-020-stop-asking-permission.md").write_text(
+        "---\nID: FR-020\nSTATUS: NEW\n---\n\nbody\n", encoding="utf-8"
+    )
+    monkeypatch.setattr(fr, "_git_ref_names", lambda: ["origin/other-branch"])
+    monkeypatch.setattr(
+        fr, "_git_tree_filenames",
+        lambda ref, subdir: ["FR-020-completely-different-ask.md"] if ref == "origin/other-branch" else [],
+    )
+    problems = fr.find_fr_collisions()
+    assert any("FR-020" in p for p in problems)
+
+
+def test_find_fr_collisions_silent_when_no_conflict(fr, monkeypatch):
+    (fr.FR_DIR / "FR-020-same-ask.md").write_text(
+        "---\nID: FR-020\nSTATUS: NEW\n---\n\nbody\n", encoding="utf-8"
+    )
+    monkeypatch.setattr(fr, "_git_ref_names", lambda: ["origin/other-branch"])
+    monkeypatch.setattr(
+        fr, "_git_tree_filenames",
+        lambda ref, subdir: ["FR-020-same-ask.md"] if ref == "origin/other-branch" else [],
+    )
+    assert fr.find_fr_collisions() == []
+
+
 def test_sync_groups_by_status(fr):
     (fr.FR_DIR / "FR-018-a.md").write_text("---\nID: FR-018\nSTATUS: NEW\n---\n\nbody\n", encoding="utf-8")
     (fr.FR_DIR / "FR-019-b.md").write_text("---\nID: FR-019\nSTATUS: SHIPPED\n---\n\nbody\n", encoding="utf-8")

@@ -138,6 +138,7 @@ def test_adr_next_scans_decisions_and_drafts(hf, tmp_path, monkeypatch):
     (drafts / "ADR-D-something.md").write_text("no numeric refs here", encoding="utf-8")
     monkeypatch.setattr(hf, "DECISIONS_LOG", decisions)
     monkeypatch.setattr(hf, "ADR_DRAFTS", drafts)
+    monkeypatch.setattr(hf, "_git_ref_names", lambda: [])  # isolate from this repo's real branches
     assert hf.adr_next() == 49
 
 
@@ -152,6 +153,7 @@ def test_adr_048_collision_regression_fixture(tmp_path, monkeypatch):
     decisions.write_text("...ADR-046...ADR-047...", encoding="utf-8")
     monkeypatch.setattr(mod, "DECISIONS_LOG", decisions)
     monkeypatch.setattr(mod, "ADR_DRAFTS", tmp_path / "no-such-dir")
+    monkeypatch.setattr(mod, "_git_ref_names", lambda: [])  # isolate from this repo's real branches
     naive_a = 47 + 1  # what "read the file, add one" gives agent A
     # Agent B reads the *same* stale file before A's ADR-048 commit lands -- old scheme collides:
     naive_b = 47 + 1
@@ -187,6 +189,83 @@ def test_known_negative_027_028_do_not_flag():
     t_028 = mod.Thread(REPO_ROOT / "docs" / "handoffs" / "028-build-predictions-tab.md")
     flags = mod.flag_antonym_collisions([t_027, t_028])
     assert flags == []
+
+
+# --- Cross-branch ID allocation widening + duplicate backstop (2026-07-29) -------------
+
+def test_next_free_id_widens_past_local_tree_via_refs(hf, monkeypatch):
+    """A number claimed only on a branch this working tree hasn't checked out must not
+    be reused. Simulate that by stubbing the git-scan helpers instead of depending on
+    real repo state."""
+    _write(hf.HANDOFFS / "003-alpha.md")
+    monkeypatch.setattr(hf, "_git_ref_names", lambda: ["origin/other-branch"])
+    monkeypatch.setattr(
+        hf, "_git_tree_filenames",
+        lambda ref, subdir: ["009-claimed-elsewhere.md"] if ref == "origin/other-branch" else [],
+    )
+    assert hf.next_free_id() == 10  # not 4 -- 009 on the other branch must be respected
+
+
+def test_next_free_id_falls_back_when_git_unavailable(hf, monkeypatch, capsys):
+    """If the ref scan can't run, allocation must still work from the local tree alone,
+    and must say so on stderr rather than pretend nothing happened."""
+    _write(hf.HANDOFFS / "003-alpha.md")
+    monkeypatch.setattr(hf, "_git_ref_names", lambda: [])
+    assert hf.next_free_id() == 4
+
+
+def test_adr_next_widens_past_local_tree_via_refs(hf, tmp_path, monkeypatch):
+    decisions = tmp_path / "decisions.md"
+    decisions.write_text("ADR-010\n", encoding="utf-8")
+    monkeypatch.setattr(hf, "DECISIONS_LOG", decisions)
+    monkeypatch.setattr(hf, "ADR_DRAFTS", tmp_path / "no-such-dir")
+    monkeypatch.setattr(hf, "_git_ref_names", lambda: ["origin/other-branch"])
+    monkeypatch.setattr(hf, "_git_tree_filenames", lambda ref, subdir: [])
+    monkeypatch.setattr(
+        hf, "_git_show",
+        lambda ref, path: "ADR-030 -- taken on the other branch\n" if ref == "origin/other-branch" else None,
+    )
+    assert hf.adr_next() == 31  # not 11 -- ADR-030 on the other branch must be respected
+
+
+def test_find_adr_collisions_flags_same_number_different_header(hf, tmp_path, monkeypatch):
+    """The real 2026-07-29 case: ADR-054 recorded with two different headers on main
+    and on the unmerged backend/mock-calibration-kickers branch. Must flag, not resolve."""
+    decisions = tmp_path / "decisions.md"
+    decisions.write_text("## ADR-054 — FFC ingester wired into CI\n", encoding="utf-8")
+    monkeypatch.setattr(hf, "DECISIONS_LOG", decisions)
+    monkeypatch.setattr(hf, "_git_ref_names", lambda: ["origin/backend/mock-calibration-kickers"])
+    monkeypatch.setattr(
+        hf, "_git_show",
+        lambda ref, path: "## ADR-054 — Batch mock-draft ingestion gains a frozen snapshot\n"
+        if ref == "origin/backend/mock-calibration-kickers" and path == "docs/decisions.md" else None,
+    )
+    problems = hf.find_adr_collisions()
+    assert any("ADR-054" in p for p in problems)
+
+
+def test_find_adr_collisions_silent_on_identical_header(hf, tmp_path, monkeypatch):
+    """Same ADR number, same text on both refs (e.g. after a merge) -- not a collision."""
+    decisions = tmp_path / "decisions.md"
+    decisions.write_text("## ADR-054 — Same decision everywhere\n", encoding="utf-8")
+    monkeypatch.setattr(hf, "DECISIONS_LOG", decisions)
+    monkeypatch.setattr(hf, "_git_ref_names", lambda: ["origin/other-branch"])
+    monkeypatch.setattr(
+        hf, "_git_show",
+        lambda ref, path: "## ADR-054 — Same decision everywhere\n" if ref == "origin/other-branch" else None,
+    )
+    assert hf.find_adr_collisions() == []
+
+
+def test_find_thread_id_collisions_flags_conflicting_slugs(hf, monkeypatch):
+    _write(hf.HANDOFFS / "042-fix-the-thing.md")
+    monkeypatch.setattr(hf, "_git_ref_names", lambda: ["origin/other-branch"])
+    monkeypatch.setattr(
+        hf, "_git_tree_filenames",
+        lambda ref, subdir: ["042-completely-different-ask.md"] if ref == "origin/other-branch" else [],
+    )
+    problems = hf.find_thread_id_collisions()
+    assert any("042" in p for p in problems)
 
 
 def test_flag_stale_decision_refs_detects_reference_to_decided_d_number(hf, tmp_path, monkeypatch):

@@ -2122,3 +2122,70 @@ of this module exists yet to wire).
 078's resolution missing its artifact -- not touched by or related to this change).
 `tests/test_live_availability.py` and `tests/test_availability.py` (the two pre-existing suites
 touching this module) pass unchanged, 22/22.
+
+## ADR-056 — ID allocators widened to scan git refs, plus a hard duplicate-collision check (2026-07-29, backend)
+
+**Problem.** Five collisions on the same root cause: `tools/handoffs.py` (thread IDs, ADR
+numbers) and `tools/founder_requests.py` (FR numbers) all compute "next free ID" by scanning
+files on disk in the *current working tree only*. A parallel branch, an unmerged worktree, or
+another session is invisible to that scan, so two allocators independently return the same
+number. Prior fixes (threads 043/049/053, ADR-048) were rules telling agents to use the
+allocator -- which they did, and it still collided, because the allocator itself only sees one
+branch. Confirmed live on this tree today: `docs/decisions.md` on `main` records ADR-054 as the
+FFC ingester and ADR-055 as the kicker export artifact; the unmerged
+`origin/backend/mock-calibration-kickers` branch records ADR-054 as the mock-draft snapshot
+work and ADR-055 as the `live_availability.py` LeagueConfig change -- four distinct decisions
+sharing two numbers, which will collide the moment that branch merges.
+
+**Fix, two layers, per the founder's ask ("prefer a structural impossibility to a check, and a
+check to a rule; three rules already failed here").**
+
+1. **Widen allocation past the working tree.** `next_free_id()` (threads),
+   `adr_next()` (ADRs), and `founder_requests.next_free_id()` (FRs) now also scan
+   `docs/handoffs/`, `docs/decisions.md`, `docs/adr-drafts/`, and `docs/founder-requests/` as
+   committed on every local + remote-tracking git ref (`git for-each-ref`, `git ls-tree`,
+   `git show`), not just the working tree. This narrows the collision window (a branch this
+   session has fetched is now visible) but cannot close it -- two sessions can still each
+   allocate before either pushes. Degrades loudly: any git failure logs to stderr and falls back
+   to the working-tree-only scan rather than allocating silently.
+
+2. **A hard duplicate check, the actual backstop.** New `find_adr_collisions()` and
+   `find_thread_id_collisions()` in `tools/handoffs.py`, and `find_fr_collisions()` in
+   `tools/founder_requests.py`: compare the ID -> content (ADR header text; thread/FR slug)
+   mapping across the working tree and every reachable ref. A number appearing with more than
+   one distinct value anywhere fails the check. Wired into `tools/handoffs.py check` (now a hard
+   failure, not a warning) and a new `tools/founder_requests.py check` subcommand. Both are
+   detection-only by design -- **nothing is renumbered**; a real collision is a merge-time
+   decision for a human/coordinator to make, not something an allocator should silently resolve
+   by picking a winner.
+
+**What the new check finds on this tree, today (2026-07-29):** two real collisions, exactly the
+ones described above -- `ADR-054` and `ADR-055` each carry two different decisions across `main`
+and `origin/backend/mock-calibration-kickers`. Left unresolved per explicit instruction (do not
+renumber); this is now visible to `tools/handoffs.py check` instead of surviving silently to the
+branch's eventual merge. Whoever merges that branch must renumber one side's ADRs before merge.
+
+**Not done.** `next_id()` in `tools/handoffs.py` (the older back-compat helper, not
+`next_free_id()`) was left unwidened -- it is unused by any current caller (grep confirms only
+`next_free_id()` is called by `cmd_new`/`ingest_pending`), so widening it would be scope with no
+consumer. FR-020's reported double-allocation (two sessions, two branches, same morning) was not
+reproducible from the branches fetched in this session -- `origin/backend/mock-calibration-kickers`
+does not contain a second `FR-020-*.md`; whatever branch carried the second allocation was not
+available here. `find_fr_collisions()` is validated by fixture tests instead and will genuinely
+detect the case if that branch is ever fetched.
+
+**Constant?** None introduced. This is a data-integrity fix, not a modeling decision.
+
+**Evidence.** `python3 -m pytest tests/test_handoffs.py tests/test_founder_requests.py -q`: 27
+passed, 1 pre-existing failure (`test_mailbox_health`, thread 078 + the two collisions this ADR
+documents -- both true positives, not test bugs; confirmed pre-existing via `git stash` that
+078 alone already failed `check` before this session's changes). 9 new tests added:
+`test_next_free_id_widens_past_local_tree_via_refs`,
+`test_next_free_id_falls_back_when_git_unavailable`,
+`test_adr_next_widens_past_local_tree_via_refs`,
+`test_find_adr_collisions_flags_same_number_different_header`,
+`test_find_adr_collisions_silent_on_identical_header`,
+`test_find_thread_id_collisions_flags_conflicting_slugs` (`tests/test_handoffs.py`);
+`test_next_free_id_widens_past_local_tree_via_refs`,
+`test_find_fr_collisions_flags_conflicting_slugs`,
+`test_find_fr_collisions_silent_when_no_conflict` (`tests/test_founder_requests.py`).

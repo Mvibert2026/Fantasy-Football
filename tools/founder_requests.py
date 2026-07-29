@@ -21,7 +21,7 @@ Usage
 """
 
 from __future__ import annotations
-import argparse, datetime, pathlib, re, sys
+import argparse, datetime, pathlib, re, subprocess, sys
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 FR_DIR = ROOT / "docs" / "founder-requests"
@@ -98,14 +98,79 @@ def _archive_max() -> int:
     return max(nums) if nums else 0
 
 
+def _git_ref_names() -> list[str]:
+    """Local branches + remote-tracking branches. Same widening as tools/handoffs.py --
+    see its docstring for the collision history (FR-020 allocated independently on two
+    branches, 2026-07-29). Degrades loudly on any git failure rather than allocating
+    silently from a working-tree-only view."""
+    try:
+        out = subprocess.run(
+            ["git", "for-each-ref", "--format=%(refname:short)", "refs/heads", "refs/remotes"],
+            cwd=ROOT, capture_output=True, text=True, timeout=10,
+        )
+        if out.returncode != 0:
+            print(f"founder_requests: git ref scan failed ({out.stderr.strip()}); "
+                  f"falling back to working-tree-only allocation", file=sys.stderr)
+            return []
+        return [r for r in out.stdout.splitlines() if r.strip() and not r.endswith("/HEAD")]
+    except Exception as e:
+        print(f"founder_requests: git unavailable ({e}); falling back to working-tree-only allocation",
+              file=sys.stderr)
+        return []
+
+
+def _git_tree_filenames(ref: str, subdir: str) -> list[str]:
+    try:
+        out = subprocess.run(
+            ["git", "ls-tree", "--name-only", ref, "--", subdir],
+            cwd=ROOT, capture_output=True, text=True, timeout=10,
+        )
+        if out.returncode != 0:
+            return []
+        return [ln.rsplit("/", 1)[-1] for ln in out.stdout.splitlines() if ln.strip()]
+    except Exception as e:
+        print(f"founder_requests: git ls-tree failed for {ref}:{subdir} ({e}); skipping this ref",
+              file=sys.stderr)
+        return []
+
+
 def next_free_id() -> int:
     """W1-style allocation (see tools/handoffs.py): scan filenames on disk, never frontmatter --
     a file's own ID: field can be wrong or missing. Floor is the archive's highest number so new
-    FRs never collide with the frozen file."""
+    FRs never collide with the frozen file.
+
+    Widened (2026-07-29): also scans docs/founder-requests/ as committed on every local +
+    remote-tracking branch, so an FR number claimed on a parallel branch isn't handed out
+    again here. Narrows the race, doesn't close it -- find_fr_collisions() is the backstop."""
     nums = [_archive_max()]
     if FR_DIR.exists():
         nums += [int(m.group(1)) for p in FR_DIR.glob("FR-*.md") if (m := re.match(r"^FR-(\d{3})-", p.name))]
+    for ref in _git_ref_names():
+        for name in _git_tree_filenames(ref, "docs/founder-requests"):
+            if m := re.match(r"^FR-(\d{3})-", name):
+                nums.append(int(m.group(1)))
     return max(nums) + 1
+
+
+def find_fr_collisions() -> list[str]:
+    """Backstop: same FR-NNN claimed for a different subject/slug on different branches.
+    Detection only -- does not renumber anything."""
+    by_id: dict[str, set[str]] = {}
+    if FR_DIR.exists():
+        for p in FR_DIR.glob("FR-*.md"):
+            if m := re.match(r"^(FR-\d{3})-(.+)\.md$", p.name):
+                by_id.setdefault(m.group(1), set()).add(m.group(2))
+    for ref in _git_ref_names():
+        for name in _git_tree_filenames(ref, "docs/founder-requests"):
+            if m := re.match(r"^(FR-\d{3})-(.+)\.md$", name):
+                by_id.setdefault(m.group(1), set()).add(m.group(2))
+    problems = []
+    for fid in sorted(by_id):
+        slugs = by_id[fid]
+        if len(slugs) > 1:
+            problems.append(f"{fid} claimed for conflicting subjects across branches: "
+                             + ", ".join(sorted(slugs)))
+    return problems
 
 
 def _pending_new_files() -> list[pathlib.Path]:
@@ -240,6 +305,18 @@ def cmd_sync(_args) -> int:
     return 0
 
 
+def cmd_check(_args) -> int:
+    problems = find_fr_collisions()
+    if problems:
+        print("founder-requests check FAILED:\n")
+        for p in problems:
+            print(f"  - {p}")
+        print("\nDetection only -- do not renumber. Escalate; this is a merge-time collision.")
+        return 1
+    print(f"founder-requests check OK — {len(load())} requests, no cross-branch ID collisions.")
+    return 0
+
+
 def main() -> int:
     try:
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -251,8 +328,9 @@ def main() -> int:
     p_new.add_argument("--raised-by", required=True, help="e.g. 'cowork chat', 'claude code session'")
     p_new.add_argument("--subject", required=True)
     sub.add_parser("sync", help="regenerate docs/founder-requests/INDEX.md from request files")
+    sub.add_parser("check", help="fail if any FR-NNN collides across branches")
     args = ap.parse_args()
-    return {"new": cmd_new, "sync": cmd_sync}[args.cmd](args)
+    return {"new": cmd_new, "sync": cmd_sync, "check": cmd_check}[args.cmd](args)
 
 
 if __name__ == "__main__":

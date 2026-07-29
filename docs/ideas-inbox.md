@@ -126,3 +126,11 @@ newest at the bottom.
   only draft_sim.DraftEngine's Prep-mode path (already config-aware, ADR-041). Wiring an actual
   live-draft consumer to pass a real league's cfg through is unbuilt; flagging rather than building
   speculatively since no caller needs it yet.
+
+- 2026-07-29 (backend, ADR-056): `tools/handoffs.py check` now hard-fails on a real, live
+  collision -- ADR-054 and ADR-055 each carry two different decisions across `main` and the
+  unmerged `origin/backend/mock-calibration-kickers` branch. Not renumbered per explicit
+  instruction. Whoever merges that branch needs to renumber one side's ADRs first, or `check`
+  will keep failing after merge too. Also unresolved: `078-pick-level-adp-velocity-capture-
+  blocked-mfl-has.md` is RESOLVED with no reply (pre-existing, not from this session) -- still
+  the other thing keeping `test_mailbox_health` red.
