@@ -1,8 +1,7 @@
 """Rebuild `data/nfl.db` from a clean checkout, in one command, no credentials.
 
-Two kinds of steps, run in this exact order (measured end-to-end in a clean
-clone by the 2026-07-29 cloud-path rehearsal, `docs/status/2026-07-29-cloud-path-rehearsal.md`
-/ commit `6c23c13`; 641 backend tests passed against the result):
+Run in this exact order, measured end-to-end against this database path in this session
+(2026-07-29):
 
   1. ingest_weekly_stats.py
   2. ingest_reference.py
@@ -10,19 +9,29 @@ clone by the 2026-07-29 cloud-path rehearsal, `docs/status/2026-07-29-cloud-path
   4. ingest_rankings.py            -- 2021-2026, re-pulls identically to the committed
                                        rescue CSV (see docs/can-we-rebuild-the-database.md)
   5. ingest_fantasypros_csv.py     -- reads the committed founder export directly
-  6. ingest_mock_drafts.py data/real_drafts/2025_league_draft.json
-  7. ingest_mfl_adp.py --import-csv-dir data/adp-snapshots   -- restores the committed
+  6. identity.py                   -- builds `players_canonical`. Must run AFTER rankings
+                                       exists (its own main()/coverage report queries
+                                       `rankings` and exits non-zero on a fresh DB otherwise)
+                                       and BEFORE the mock-draft restore (step 7 needs
+                                       `players_canonical` to resolve picks -- see below).
+  7. ingest_mock_drafts.py data/real_drafts/2025_league_draft.json  -- needs step 6's
+                                       players_canonical table to exist; running this before
+                                       identity fails with "no such table: players_canonical"
+                                       (measured directly this session -- a different, earlier
+                                       account of this rebuild's order put identity LAST,
+                                       which cannot work for this reason: identity is the only
+                                       thing that creates players_canonical at all).
+  8. ingest_mfl_adp.py --import-csv-dir data/adp-snapshots   -- restores the committed
                                        point-in-time CSVs; a live --force pull only ever
-                                       gets *today's* rolling aggregate, never a past date
-  8. identity.py                   -- LAST. It has no argparse (always writes db.DB_PATH,
-                                       see below) and its trailing coverage report queries
-                                       `rankings`, so running it before step 4 exits non-zero
-                                       on a fresh DB even though its own table writes commit
-                                       fine either way.
+                                       gets *today's* rolling aggregate, never a past date.
+                                       Order-independent relative to the rest.
 
 `identity.py` HAS NO --db FLAG. Any doc that shows one for it is wrong; this script accounts
 for that by calling its `build_identity_tables(conn)` function directly against a connection
-opened on the given --db, rather than shelling out to a flag that doesn't exist.
+opened on the given --db, rather than shelling out to a flag that doesn't exist. That also
+means this script never calls identity.py's own main() (the part with the `rankings`-dependent
+coverage-report print), so it is safe to run at any point after step 4/5 despite that print's
+own ordering constraint.
 
 FAILS LOUDLY: after the run, every artifact this rebuild depends on that a *silent* partial
 rebuild has actually produced (thread 080's three unreproducible artifacts, plus adp_snapshots'
@@ -46,7 +55,7 @@ say so and stop rather than silently "fixing" it here.
 Usage:
     python scripts/rebuild_database.py [--db PATH] [--skip-network]
 
-`--skip-network` runs only the restore-from-committed-fixture steps (6, 7) plus assertions,
+`--skip-network` runs only steps 6-8 (identity + the two fixture restores) plus assertions,
 against an already-populated --db -- useful for iterating on restore logic alone.
 """
 
@@ -145,12 +154,39 @@ def run_public_ingestion(db_path: Path, python_exe: str) -> None:
     )
 
 
+def run_identity(db_path: Path) -> None:
+    """identity.py's main() has no argparse and always writes db.DB_PATH -- a
+    documented --db flag for it does not exist. This calls its
+    `build_identity_tables(conn)` function directly against a connection
+    opened on the given --db instead, which sidesteps that hardcoding
+    entirely (and also skips the trailing coverage-report print in main(),
+    the part that requires `rankings` to already exist -- moot here since
+    this runs after steps 4/5 anyway).
+
+    MUST run before the mock-draft restore: it is the only thing that
+    creates `players_canonical`, which ingest_mock_drafts.py needs to
+    resolve picks. Measured directly this session -- running mock-draft
+    restore first fails with `sqlite3.OperationalError: no such table:
+    players_canonical`."""
+    print("\n=== 6/8 identity.build_identity_tables ===")
+    t0 = time.monotonic()
+    import identity as idn  # noqa: E402
+
+    conn = sqlite3.connect(db_path)
+    try:
+        report = idn.build_identity_tables(conn)
+        print(f"  {report}")
+    finally:
+        conn.close()
+    print(f"  done in {time.monotonic() - t0:.1f}s")
+
+
 def restore_real_draft(db_path: Path, python_exe: str) -> None:
     if not REAL_DRAFT_JSON.exists():
         raise RebuildFailure(f"missing fixture: {REAL_DRAFT_JSON}")
     _run(
         [python_exe, str(SRC_DIR / "ingest_mock_drafts.py"), str(REAL_DRAFT_JSON), "--db", str(db_path)],
-        "6/8 ingest_mock_drafts.py (2025 real draft)",
+        "7/8 ingest_mock_drafts.py (2025 real draft)",
     )
 
 
@@ -162,29 +198,8 @@ def restore_adp_history(db_path: Path, python_exe: str) -> None:
             python_exe, str(SRC_DIR / "ingest_mfl_adp.py"),
             "--db", str(db_path), "--import-csv-dir", str(ADP_SNAPSHOT_DIR),
         ],
-        "7/8 ingest_mfl_adp.py --import-csv-dir (restore committed point-in-time ADP)",
+        "8/8 ingest_mfl_adp.py --import-csv-dir (restore committed point-in-time ADP)",
     )
-
-
-def run_identity_last(db_path: Path) -> None:
-    """identity.py's main() has no argparse and always writes db.DB_PATH --
-    the documented --db flag for it does not exist (rehearsal finding). This
-    calls its `build_identity_tables(conn)` function directly against a
-    connection opened on the given --db instead, which sidesteps that
-    hardcoding entirely (and also skips the trailing coverage-report print
-    in main(), which is the part that requires `rankings` to already exist --
-    not needed here since this runs after step 4)."""
-    print("\n=== 8/8 identity.build_identity_tables (must run last) ===")
-    t0 = time.monotonic()
-    import identity as idn  # noqa: E402
-
-    conn = sqlite3.connect(db_path)
-    try:
-        report = idn.build_identity_tables(conn)
-        print(f"  {report}")
-    finally:
-        conn.close()
-    print(f"  done in {time.monotonic() - t0:.1f}s")
 
 
 # ---------------------------------------------------------------------------
@@ -282,9 +297,9 @@ def main() -> None:
         else:
             print("\n=== skipping steps 1-5 (--skip-network) ===")
 
+        run_identity(db_path)
         restore_real_draft(db_path, args.python)
         restore_adp_history(db_path, args.python)
-        run_identity_last(db_path)
 
         print("\n=== post-rebuild assertions ===")
         assert_restored(db_path)
