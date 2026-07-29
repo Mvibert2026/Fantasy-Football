@@ -1,0 +1,2 @@
+mock_id,league_config_id,platform,drafted_at,source,is_mock,format_conforms,format_conforms_note,bot_seat_status,ingested_at,bot_seat_count
+2025_league_draft_real,primary,manual,2025-08-30,user_provided_screenshots,0,1,conforms to the 10-team/3WR-2FLEX/no-kicker/half-PPR gate,unknown,2026-07-26T17:19:58.437195+00:00,

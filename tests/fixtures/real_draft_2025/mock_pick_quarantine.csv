@@ -1,0 +1,16 @@
+mock_id,overall_pick,player_name_raw,mfl_id_supplied,reason,quarantined_at
+2025_league_draft_real,5,Justin Jefferson,,ambiguous: 2 players_canonical matches for 'Justin Jefferson',2026-07-26T17:19:58.437195+00:00
+2025_league_draft_real,24,Lamar Jackson,,ambiguous: 2 players_canonical matches for 'Lamar Jackson',2026-07-26T17:19:58.437195+00:00
+2025_league_draft_real,31,Marvin Harrison Jr.,,ambiguous: 3 players_canonical matches for 'Marvin Harrison Jr.',2026-07-26T17:19:58.437195+00:00
+2025_league_draft_real,66,DJ Moore,,ambiguous: 2 players_canonical matches for 'DJ Moore',2026-07-26T17:19:58.437195+00:00
+2025_league_draft_real,102,Michael Pittman Jr.,,ambiguous: 2 players_canonical matches for 'Michael Pittman Jr.',2026-07-26T17:19:58.437195+00:00
+2025_league_draft_real,136,Hollywood Brown,,no players_canonical match for 'Hollywood Brown',2026-07-26T17:19:58.437195+00:00
+2025_league_draft_real,138,Broncos,,no players_canonical match for 'Broncos',2026-07-26T17:19:58.437195+00:00
+2025_league_draft_real,141,Eagles,,no players_canonical match for 'Eagles',2026-07-26T17:19:58.437195+00:00
+2025_league_draft_real,145,Ravens,,no players_canonical match for 'Ravens',2026-07-26T17:19:58.437195+00:00
+2025_league_draft_real,150,Vikings,,no players_canonical match for 'Vikings',2026-07-26T17:19:58.437195+00:00
+2025_league_draft_real,152,Steelers,,no players_canonical match for 'Steelers',2026-07-26T17:19:58.437195+00:00
+2025_league_draft_real,153,Bills,,no players_canonical match for 'Bills',2026-07-26T17:19:58.437195+00:00
+2025_league_draft_real,155,49ers,,no players_canonical match for '49ers',2026-07-26T17:19:58.437195+00:00
+2025_league_draft_real,157,Patriots,,no players_canonical match for 'Patriots',2026-07-26T17:19:58.437195+00:00
+2025_league_draft_real,159,Texans,,no players_canonical match for 'Texans',2026-07-26T17:19:58.437195+00:00

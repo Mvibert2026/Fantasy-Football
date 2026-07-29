@@ -1,5 +1,11 @@
 data/*.db
-data/raw/
+# data/raw/ is excluded EXCEPT founder-export/, which holds manual exports that
+# exist nowhere else and that a from-scratch rebuild cannot reproduce (thread
+# 080). Private repo, personal use -- consistent with D-020. Note the pattern
+# must be `data/raw/*`, not `data/raw/`: git does not descend into an excluded
+# directory, so a negation under `data/raw/` alone would never match.
+data/raw/*
+!data/raw/founder-export/
 data/user pulled fantasy data/
 .env
 __pycache__/
