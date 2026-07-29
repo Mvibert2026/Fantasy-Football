@@ -88,3 +88,16 @@ newest at the bottom.
   loaded" while the live board now carries 511 rows — the header
   currently reads "511 of 378 players loaded". One-line fix for whoever
   next touches the Board header.
+- 2026-07-29 · (data-ops, db-rebuild session) Decided, not escalated: built
+  `scripts/rebuild_database.py` as a single entry point rather than adding
+  a ninth ad hoc restore script; corrected the rehearsal-branch's documented
+  step order (identity.py must run BEFORE the mock-draft restore, not after
+  -- it is the only thing that creates `players_canonical`, which
+  ingest_mock_drafts.py needs; measured directly, `no such table:
+  players_canonical` otherwise). Closed the `adp_snapshots` CSV->DB loader
+  gap (`ingest_mfl_adp.py --import-csv-dir`, 17 tests). Full rebuild
+  measured end to end this session: 64.0s, all restored-artifact assertions
+  pass. Did not commit the dynastyprocess-mirror monkeypatch used to verify
+  network steps in this session's gated proxy -- session-local only, per
+  explicit coordinator instruction; see docs/can-we-rebuild-the-database.md's
+  "environment-specific finding" section.

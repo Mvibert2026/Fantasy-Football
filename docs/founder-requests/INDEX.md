@@ -5,7 +5,7 @@ Per-request files in this directory are the source of truth. Edit a request's ow
 `STATUS:` line, then re-run sync. Protocol: [`README.md`](README.md).
 Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests.md).
 
-**6 requests since freeze.**
+**8 requests since freeze.**
 
 ---
 
@@ -28,9 +28,12 @@ _None._
 
 _None._
 
-## IN PROGRESS — 0
+## IN PROGRESS — 2
 
-_None._
+| ID | Subject | Raised | Source |
+|---|---|---|---|
+| [FR-024](FR-024-show-adp-on-the-prep-board-the-draft-screen-and.md) | Show adp on the prep board the draft screen and | 2026-07-29 | chat session 2026-07-29 (PM takeover) |
+| [FR-025](FR-025-make-the-app-usable-on-a-phone.md) | Make the app usable on a phone | 2026-07-29 | chat session 2026-07-29 (PM takeover) |
 
 ## SHIPPED — 0
 
