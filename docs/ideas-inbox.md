@@ -248,3 +248,25 @@ newest at the bottom.
   `experiments/restore_rankings_from_committed_csv.py`. Worth deciding whether that restore belongs
   in `scripts/` as an explicit `--from-committed` flag rather than living in experiments/.
 >>>>>>> c191f4555d0e1bd425e0a5d4a91388e409214973
+
+- 2026-07-29 · (researcher, historical ADP) **Decided, not escalated — three calls.** (a) Wrote the
+  findings to `docs/research/historical-adp-availability-2026-07-29.md` and replied on **thread 055**
+  rather than opening a new thread: this session had no Bash, so no allocator access, and hand-typing
+  an ID is refused (043/049/053, ADR-048). 055 is exactly on-topic and was left OPEN — only data-ops
+  may resolve it. (b) Reported three defects in `src/ingest_ffc_adp.py` rather than fixing them —
+  research-only mandate; the load-bearing one is that a `--teams 10 --period 2021` pull would tag
+  12-team data as `ffc_half_ppr_10team`, because FFC serves the 12-team page for archive requests at
+  any other team size with HTTP 200 and no signal outside the `<h1>`. (c) Left row-depth per archived
+  season as an explicit `[GAP]` instead of quoting a number — WebFetch's markdown conversion
+  demonstrably drops rows (a 2010 full dump returned 25 rows containing no running backs), and a
+  plausible count is exactly the contamination this project has been burned by.
+  **NOT touched, escalating instead:** this file currently contains unresolved merge-conflict markers
+  (`<<<<<<< HEAD` / `=======` / `>>>>>>> c191f45...`) around the strategist PR-004 entry and the
+  backend ADR-057 entries. Both sides look like real work. Appended below them without altering
+  either side.
+  **Also escalating:** every FFC/FantasyPros authorisation (FR-023, D-020, D-021) is scoped "private
+  use by one person, void if the product reaches a second human", and `CURRENT-STATE.md` now records
+  the app as publicly reachable on the open internet by founder choice. Fetching is authorised;
+  redistribution is a `[GAP]` — FFC's ToS was unretrievable for the third time today.
+  **Also, stale line:** `CURRENT-STATE.md` still says "FFC is blocked by robots.txt regardless" and
+  "FFC remains blocked" while MEMORY §4 and FR-023 record it unblocked and say they supersede.
