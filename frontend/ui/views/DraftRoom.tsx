@@ -20,6 +20,7 @@ import { computeLiveAvailability, dotsFilled, freqText, type LiveAvailabilityRes
 import type { Dataset } from '../data/load';
 import type { LeagueConfig } from '../data/league';
 import { rankByRecommendation } from '../data/recommendation';
+import { buildRosterSlots } from '../data/rosterSlots';
 import {
   depletionWarning,
   orderByUrgency,
@@ -30,6 +31,7 @@ import {
 } from '../data/scarcity';
 import { useWatchlist } from '../data/useWatchlist';
 import { PlayerDetail } from '../components/PlayerDetail';
+import { LiveOpponents } from './LiveOpponents';
 import { Value } from '../components/Value';
 import { decimal, integer, interval as intervalText, percent, signed } from '../lib/format';
 import { Opponents } from './Opponents';
@@ -132,10 +134,20 @@ function pointsRangeFromVbdInterval(row: BoardRow): { low: number; high: number 
  *     (see docs/test-registry.md upstream); fabricating rule text would violate
  *     the same "no rendered value without a named field" principle everything
  *     else here follows.
- *   - Hub tabs (Board / Opponents / Predictions, §7.1) are not yet folded into
- *     this pane -- Opponents and a standalone Predictions table exist as their
- *     own Prep-mode screens; duplicating them inside the draft hub is a follow-up,
- *     not core to a working draft room.
+ *   - Hub tabs (Board / Opponents / Predictions, §7.1): Predictions is not yet
+ *     folded into this pane -- it exists as its own Prep-mode screen;
+ *     duplicating it inside the draft hub is a follow-up, not core to a working
+ *     draft room. Opponents (FR-032) IS wired in now, but deliberately NOT by
+ *     reusing the Prep-mode `Opponents.tsx` screen -- that screen reads only
+ *     backend `rosters.json`, which for an in-progress draft reflects nothing
+ *     (no real 2026 draft has been logged there). `LiveOpponents.tsx` is a
+ *     separate component built for this pane specifically: every team's roster
+ *     and needs are derived from `draft.picks` (this session's local pick log,
+ *     the same state this file's own MY ROSTER panel reads) via the same
+ *     `buildRosterSlots` arithmetic MY ROSTER already used, run once per team
+ *     slot instead of only the user's. It never reads `rosters.json`, so the
+ *     two data sources -- real completed-draft data vs. this session's
+ *     in-progress picks -- can never silently blend into one number.
  *   - The recommendation score (ui/data/recommendation.ts) is a simple,
  *     unvalidated stopgap formula, not a backtested model -- said so on screen.
  */
@@ -202,62 +214,6 @@ function compareBySort(a: BoardRow, b: BoardRow, sort: SortKey): number {
     return rankA - rankB;
   }
   return rankA - rankB;
-}
-
-interface RosterSlot {
-  slot: string;
-  kind: 'starter' | 'flex' | 'bench' | 'ir';
-  position: string | null; // null for FLEX/BN/IR, which accept multiple positions
-  row: BoardRow | null;
-}
-
-/** Greedy slot assignment: each of the user's picks, in draft order, fills the
- *  first open slot that matches its position, then the first open FLEX it's
- *  eligible for, then the first open bench slot. Good enough for a dry run --
- *  not a claim about how the real platform will assign slots. */
-function buildRosterSlots(
-  userPicks: DraftPickRecord[],
-  league: LeagueConfig,
-  data: Dataset,
-  rowsById: Map<number, BoardRow>,
-): RosterSlot[] {
-  const slots: RosterSlot[] = [];
-  for (const t of league.thresholds) {
-    if (t.position === 'FLEX') continue; // placed after named positions, below
-    const count = t.starters.kind === 'present' ? t.starters.value : 0;
-    for (let i = 0; i < count; i++) slots.push({ slot: t.position, kind: 'starter', position: t.position, row: null });
-  }
-  const flex = league.thresholds.find((t) => t.position === 'FLEX');
-  const flexCount = flex && flex.starters.kind === 'present' ? flex.starters.value : 0;
-  for (let i = 0; i < flexCount; i++) slots.push({ slot: 'FLEX', kind: 'flex', position: null, row: null });
-  const bench = data.league.roster.bench ?? 0;
-  for (let i = 0; i < bench; i++) slots.push({ slot: 'BN', kind: 'bench', position: null, row: null });
-  // Thread 058 section D2: an IR slot, one per league.json:roster.ir (a real
-  // field, already typed -- not the design mockup's hardcoded single IR row).
-  // Deliberately excluded from the fill-target search below, same as the
-  // design reference (docs/design-reference/prototype.dc.html line 2563,
-  // `slots.push({slot:"IR",p:null})` -- never filled from the generic pick
-  // pool): this build has no injury-designation data to decide which pick
-  // belongs on IR, and guessing would be exactly the kind of fabricated
-  // assignment Principle #1 forbids. It renders as a permanently-open slot
-  // until a real injury signal exists to drive it.
-  const ir = data.league.roster.ir ?? 0;
-  for (let i = 0; i < ir; i++) slots.push({ slot: 'IR', kind: 'ir', position: null, row: null });
-  const flexEligible = new Set(data.league.roster.flex_eligible ?? []);
-
-  for (const pick of userPicks) {
-    if (pick.playerId === null) continue;
-    const row = rowsById.get(pick.playerId);
-    const pos = row?.raw.position ?? null;
-    let target =
-      slots.find((s) => s.kind === 'starter' && s.position === pos && s.row === null) ??
-      (pos && flexEligible.has(pos) ? slots.find((s) => s.kind === 'flex' && s.row === null) : undefined) ??
-      slots.find((s) => s.kind === 'bench' && s.row === null);
-    if (!target) continue;
-    target.row = row ?? null;
-    if (!row) target.slot = `${target.slot} (${pick.playerName})`;
-  }
-  return slots;
 }
 
 function downloadJson(filename: string, data: unknown) {
@@ -986,9 +942,13 @@ export function DraftRoom({
       </div>
 
       {hubTab === 'opponents' ? (
+<<<<<<< HEAD
         <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: 20 }}>
           <AdaptedOpponentsPane data={data} />
         </div>
+=======
+        <LiveOpponents data={data} league={league} draft={draft} rowsById={rowsById} />
+>>>>>>> origin/worktree-agent-a88e0712d14a46ee0
       ) : hubTab === 'predictions' ? (
         <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: 20 }}>
           <Predictions data={data} rows={rows} league={league} />

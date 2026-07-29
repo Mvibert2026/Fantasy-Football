@@ -293,3 +293,36 @@ newest at the bottom.
   the spec rather than from a test failure. Not done here — CLAUDE.md is the standing law and
   editing it is an escalation, not a backend decision. Raised in thread 083.
 >>>>>>> origin/worktree-agent-afa13ac8a8bd0c533
+
+- 2026-07-29 · (researcher, missing inputs: odds / coaching / routes) **Decided, not escalated —
+  four calls.** (a) **Did not halt on the premise contradiction, but did not adopt it either.** The
+  dispatch calls Vegas odds "probably the highest-value missing input"; `docs/test-registry.md` rates
+  it Tier 0 / edge **Low** and defines Tier 0 as "having them is not an edge", while rating route
+  participation (#17) and coordinator continuity (#29) **High**. Halting would have cost the whole
+  session over a framing dispute, so I researched all three as asked and decided the recommendation
+  on evidence instead of on the dispatch's ordering. Flagged prominently in
+  `docs/research/missing-inputs-sourcing-2026-07-29.md` §0(b) for PM/founder to settle — the two
+  claims are reconcilable (cheapest is not the same claim as highest-edge) but somebody should say
+  which one drives the roadmap. (b) **Recommended coaching staff first, against the dispatch's
+  ordering**, because it is the only one of the three that ungates a High-rated registry item and the
+  only one whose licence permits display to a second human. (c) **Left the Fantasy Points Data Suite
+  price as an explicit `[GAP]`** rather than quoting a figure — `/plans` renders prices client-side
+  and returned only "Loading Subscription Plans", `/nfl/data-suite` 404'd. Their ToS permits manual
+  browser reading, so the founder can read it off the page in a minute; a plausible number here is
+  exactly the contamination this project has been burned by. (d) **Did not duplicate thread 054.**
+  The founder already holds an unaudited FTN subscription, and FTN is the upstream supplier of
+  nflverse's 2023+ participation data — whether it already grants per-player routes is 054's
+  question, not this one's.
+  **Recorded and stopped, not routed around:** Pro Football Reference `robots.txt` and
+  `sports-reference.com/data_use.html` both returned HTTP 403 again today, so the crawl policy is
+  still unreadable and the conservative default still applies. No scraper considered, no alternate
+  user-agent tried.
+  **Escalating, unchanged from the previous researcher session:** this file still carries unresolved
+  merge-conflict markers (`<<<<<<< HEAD`, `=======`, `>>>>>>> origin/worktree-agent-afa13ac8a8bd0c533`)
+  around the strategist PR-004 and backend ADR-057/ADR-059 entries. Both sides look like real work.
+  Appended below them without altering either side. This is now the second session to report it.
+  **Also escalating, new:** `docs/environment.md` documents a Windows conda interpreter and a
+  `PreToolUse` hook. This session ran in a Linux cloud container with **no shell tool at all**, so
+  neither applies and no `[MODAL-SAMPLED]` evidence was obtainable — no `nflreadpy` call, no
+  `data/nfl.db` query. Several gaps in the report (e.g. which season nflverse's betting columns first
+  become non-null) are one query away for anyone with a shell.
