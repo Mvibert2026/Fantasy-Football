@@ -403,3 +403,23 @@ newest at the bottom.
   `docs/research/HANDOFF-BODY-unallocated-competitive-ux-2026-07-29.md` and the founder request at
   `docs/founder-requests/NEW-look-at-other-apps-ux-before-committing-to-an-overhaul.md`, each with the
   exact command. Hand-typing an ID was refused (043/049/053, ADR-048).
+
+- 2026-07-29 `ranker` (pass 2, FR-039) — **TE consensus error scale is flat across the draft range
+  and this is unexplained.** Residual RMSE against the fitted consensus curve runs 45.9 / 51.0 /
+  45.7 / 43.5 / 41.0 / 43.4 from TE1-3 to TE25-40, while RB falls 104.7 → 61.2 and WR 80.6 → 57.8
+  over comparable bands. Consensus is equally wrong in absolute points about a TE at pick 20 and a
+  TE at pick 200. No mechanism proposed. Worth a pass of its own; it is the one genuinely new
+  structural fact pass 2 turned up. Source: `docs/ranking/bottom-up-research-pass-2.md` §1.1.
+- 2026-07-29 `ranker` (pass 2, FR-039) — **Late TE has a higher floor and no better ceiling than
+  late RB/WR.** At overall ECR 140-210: mean VBD TE −42.8 vs WR −55.6, RB −63.8, but P(VBD>+30) TE
+  4.5% vs WR 4.7%, RB 5.9%. In a league whose stacking bonuses reward ceiling, that is the wrong
+  shape for a late-round upside strategy — and it is the reverse of how late TE is usually argued.
+- 2026-07-29 `ranker` (pass 2, FR-039) — **`spread_sd` (cross-expert disagreement) is dead as a
+  mispricing tell at late TE**: AUC 0.487 / 0.500 / 0.432 across three band-threshold
+  configurations. Cheap, already in `rankings`, and it does not work. Recorded so it is not
+  re-proposed.
+- 2026-07-29 `ranker` (pass 2, FR-039) — **No ADP history exists in `nfl.db`** — `adp_snapshots`
+  and `ffc_adp_snapshots` are 2026-only. Every historical draft-cost claim in the project is
+  currently an ECR-rank proxy. Measured proxy error on the one overlapping season: TEs go **+12
+  picks later** than their ECR rank (median, IQR [+4,+16], n=18). Thread 055 is the fix and is now
+  the binding constraint on FR-039, not a nice-to-have.

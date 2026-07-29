@@ -9,7 +9,7 @@ Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests
 
 ---
 
-## NEW — 18
+## NEW — 17
 
 | ID | Subject | Raised | Source |
 |---|---|---|---|
@@ -30,7 +30,6 @@ Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests
 | [FR-036](FR-036-manual-team-name-entry-for-opponents-in-the-draf.md) | Manual team name entry for opponents in the draf | 2026-07-29 | chat 2026-07-29, PM session |
 | [FR-037](FR-037-export-csv-and-export-pdf-do-not-work-low-priori.md) | Export csv and export pdf do not work low priori | 2026-07-29 | chat 2026-07-29, PM session |
 | [FR-038](FR-038-look-at-other-apps-ux-before-committing-to-an-ov.md) | Look at other apps ux before committing to an ov | 2026-07-29 | chat session 2026-07-29, relayed via researcher dispatch |
-| [FR-039](FR-039-late-round-te-is-the-draft-strategy-expression-o.md) | Late round te is the draft strategy expression o | 2026-07-29 | chat 2026-07-29, PM session |
 
 ## SCOPING — 1
 
@@ -64,4 +63,10 @@ _None._
 | ID | Subject | Raised | Source |
 |---|---|---|---|
 | [FR-025](FR-025-make-the-app-usable-on-a-phone.md) | Make the app usable on a phone | 2026-07-29 | chat session 2026-07-29 (PM takeover) |
+
+## Unknown status — check these
+
+| ID | Subject | Status |
+|---|---|---|
+| [FR-039](FR-039-late-round-te-is-the-draft-strategy-expression-o.md) | Late round te is the draft strategy expression o | `ANSWERED` |
 
