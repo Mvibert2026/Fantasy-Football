@@ -5,11 +5,11 @@ Per-request files in this directory are the source of truth. Edit a request's ow
 `STATUS:` line, then re-run sync. Protocol: [`README.md`](README.md).
 Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests.md).
 
-**19 requests since freeze.**
+**21 requests since freeze.**
 
 ---
 
-## NEW — 13
+## NEW — 15
 
 | ID | Subject | Raised | Source |
 |---|---|---|---|
@@ -26,6 +26,8 @@ Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests
 | [FR-032](FR-032-make-the-opponents-screen-functional-during-a-li.md) | Make the opponents screen functional during a li | 2026-07-29 | chat session 2026-07-29 |
 | [FR-033](FR-033-build-a-bottom-up-ranking-from-zero-a-directive.md) | Build a bottom up ranking from zero a directive | 2026-07-29 | chat session 2026-07-29 |
 | [FR-034](FR-034-draft-position-must-be-selectable-in-prep-this-i.md) | Draft position must be selectable in prep this i | 2026-07-29 | chat session 2026-07-29 |
+| [FR-035](FR-035-predictions-in-prep-must-be-scoped-to-the-select.md) | Predictions in prep must be scoped to the select | 2026-07-29 | chat 2026-07-29, PM session |
+| [FR-036](FR-036-manual-team-name-entry-for-opponents-in-the-draf.md) | Manual team name entry for opponents in the draf | 2026-07-29 | chat 2026-07-29, PM session |
 
 ## SCOPING — 1
 
