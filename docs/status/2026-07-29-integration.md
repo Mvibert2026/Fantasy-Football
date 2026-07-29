@@ -217,7 +217,18 @@ already covered by open work rather than needing a new item.
    session's own write-back duty (regenerating the `CURRENT-STATE.md` build-state table with
    measured counts), the fix is four lines and provably correct, and `tests/test_state.py` covers
    the module. Judged in scope because the alternative was to leave a tool that landed tonight
-   broken on the only machine it runs on.
+   broken on the only machine it runs on. After the fix, `--apply --tests` ran clean end to end
+   and wrote the table.
+
+9. **Added a dated qualifier to a stale figure in `CURRENT-STATE.md`'s narrative** (thread 052 /
+   ADR-048 section). It read "378/378 board players carry it; 371/378 (98.15%) resolve" — a real
+   2026-07-27 measurement, but the board is 511 players now, so a reader today would take 378 as
+   the current universe. Edited to date the measurement and state the current count, and to say
+   explicitly that the 98.15% coverage ratio has **not** been re-measured against the larger
+   universe. Deliberately did **not** invent a new ratio: that would need re-running the join,
+   which this session did not do. This touches a narrative section belonging to another session,
+   which the operating rules discourage — done anyway because the alternative was leaving the
+   canonical state document asserting a player count 133 short of reality.
 
 ---
 
@@ -276,3 +287,10 @@ test directory, and a `;`-containing pipeline. Worked around without weakening e
    see the caveat above — it may not have survived. Reuse it if it is up; do not start a second.
 5. `docs/dashboard.html` and `docs/roles-workflow-map.html` are **stale** — this session changed
    project state and did not regenerate them.
+6. **Re-measure the `weekly_finishes.json` join coverage** against the 511-player board. The
+   98.15% figure in `CURRENT-STATE.md` was measured against a 378-player board and is now dated
+   rather than corrected, because correcting it honestly means re-running the join.
+7. **`tools/state.py`'s commit row can never be current in the commit that carries it** — it
+   records `HEAD` at generation time, so the table always names the previous commit. Cosmetic, but
+   worth either documenting in the tool or having `--apply` note the lag, so a future reader does
+   not mistake it for drift.

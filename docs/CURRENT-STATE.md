@@ -68,13 +68,13 @@ by the session whose work changed them, per the agent operating rules.
 
 | | Value | Notes |
 |---|---|---|
-| Backend branch / commit | `main`, `9d8e09b52ff1a96ce7e2d8dfc8f427f96507ed59` | `git rev-parse --abbrev-ref HEAD` / `HEAD` |
+| Backend branch / commit | `main`, `1cf61a74377393f542e0be10829ff68ac916f12c` | `git rev-parse --abbrev-ref HEAD` / `HEAD` |
 | Data contract | `1.13.0` | `CONTRACT_VERSION` in `src/export_contract.py` |
 | Python modules | 41 | `src/*.py`, counted |
 | Export artifacts | 11 | top-level files in `data/export/` |
 | Config matrix | 26 | dirs under `data/export/` |
-| Backend tests | **614 passing, 0 failures** | `pytest -q`, single run, ~533s, real `data/nfl.db`, last run 2026-07-28 (this merge session, post-merge at `9d8e09b`) |
-| Frontend tests | **201 passing, 0 failing** (22 files) | `npx vitest run` (needs `node scripts/sync-exports.mjs` first, or `npm test` which runs it via `pretest`), single run, ~59s in isolation, last run 2026-07-28 (this merge session, post-fix) |
+| Backend tests | 636 passed, 1 warning in 630.00s (0:10:29) | `pytest -q`, single run |
+| Frontend tests | 202 passed (202) (22 passed (22)) | `npx vitest run`, single run |
 
 <!-- BUILD-STATE:END -->
 
@@ -319,9 +319,12 @@ CLI/pre-commit gate and the PR-001..003 retrofit are deferred, see thread 020 re
 target-derived fields explicitly `target_data_unavailable: true`/`targets: null` rather than
 zeroed. **Join key fixed 2026-07-27 (thread 052, ADR-048):** `board.json`'s `player_id_gsis` was
 hardcoded `null`; now populated from `rankings.player_id` (already a gsis id) threaded through
-`make_board.BoardRow.player_id`. **378/378 board players carry it; 371/378 (98.15%) resolve
-against `weekly_finishes.json`** (the ~7 misses are players with no `player_weekly_stats` history
-at all — an honest null, not a join failure). No `CONTRACT_VERSION` bump — the field already
+`make_board.BoardRow.player_id`. **As measured 2026-07-27, when the board carried 378 players:
+378/378 carried it; 371/378 (98.15%) resolved against `weekly_finishes.json`** (the ~7 misses are
+players with no `player_weekly_stats` history at all — an honest null, not a join failure).
+**The board is 511 players as of 2026-07-29** (`data/export/board.json`, verified at runtime that
+session). The coverage ratio has *not* been re-measured against the larger universe — do not read
+the 98.15% as current. No `CONTRACT_VERSION` bump — the field already
 existed in the schema, only its value changed. Still not wired into `PlayerDetail.tsx`'s
 consistency heat-map / three-seasons section — that is frontend's remaining half of thread 052 —
 but the join key that blocked it now exists and is measured.
