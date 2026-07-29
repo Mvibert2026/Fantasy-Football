@@ -17,13 +17,29 @@
   // anything. See CLAUDE.md section 10.
   //
   // ACCESS. This publishes the founder's board -- his rankings, his
-  // disagreements with consensus, his league. It is currently PUBLIC by his
-  // explicit choice (2026-07-29), with the trade stated: the nine other humans
-  // in Westwood could read it. Cloudflare Access can put a free password in
-  // front of it without touching this file or the build.
+  // disagreements with consensus, his league. `worker/index.js` gates every
+  // request behind HTTP Basic auth **when the SITE_PASSWORD secret is set**, and
+  // leaves the site open when it is not, so deploying can never lock the founder
+  // out before he has chosen a password. Basic auth rather than Cloudflare
+  // Access: Access emails a code per login, which was both annoying and
+  // unreliable in practice (2026-07-29) -- the mail did not arrive.
+  //
+  // WHY THERE IS NOW A WORKER SCRIPT. The assistant's reasoning lane
+  // (`/__reasoning`) existed only as a Vite dev-server plugin, so on the hosted
+  // site it was permanently dead. The Worker implements the same contract at the
+  // edge, reading ANTHROPIC_API_KEY from Cloudflare's secret store. The key never
+  // enters the browser bundle -- see frontend/vite.config.ts, which keeps it out
+  // on purpose.
+  //
+  // SECRETS ARE NEVER IN THIS FILE. Set them with `npx wrangler secret put NAME`
+  // or in the dashboard. CLAUDE.md section 10.
   "name": "fantasy-football",
   "compatibility_date": "2026-07-29",
+  "main": "worker/index.js",
   "assets": {
+    // `binding` is what makes env.ASSETS.fetch(request) available to the script.
+    // Without it the Worker cannot serve the static build at all.
+    "binding": "ASSETS",
     "directory": "./frontend/dist",
     // The app is a single-page build: unknown paths must return index.html so
     // client-side routing works instead of 404ing.
