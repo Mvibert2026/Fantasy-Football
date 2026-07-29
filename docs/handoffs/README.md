@@ -96,8 +96,12 @@ BLOCKS: 007
 `design`, `founder`, `fable` — this list must match `ROLES` in `tools/handoffs.py`; the tool
 is the source of truth if the two ever drift again.
 
-`design` cannot read this repo. A thread addressed to `design` is a queue for the PM to carry over
-manually — mark it `TO: design VIA: pm` so it is obvious it needs a human hop.
+**`design` CAN read this repo but CANNOT write to it** (corrected 2026-07-29 — this line said design
+could not read at all, which stopped being true on 2026-07-27 and cost real relaying before anyone
+noticed). So a thread addressed to `design` needs no hop to be *read*: design opens it directly.
+What still needs a hop is the return leg — every design output arrives as a file for the PM or
+`frontend` to commit, because design cannot land anything itself. Keep `VIA: pm` only where the
+thread expects something committed back.
 
 ---
 

@@ -1,6 +1,15 @@
 # Design protocol
 
-**Owner:** `design` · **Written:** 2026-07-27 · **Status:** true as of today, not aspirational
+**Owner:** `pm` (transferred from `design` 2026-07-29 at the founder's instruction) · **Written:**
+2026-07-27 by `design`, whose account of its own access is accurate and retained · **Status:** true
+as of 2026-07-29
+
+> **Design cannot write to this repo. It reads only.** Every design output arrives as a file for
+> someone here to commit. If a design output is not in the repo, the likeliest reason is that nobody
+> landed it — not that it was never produced. The PM now owns landing them.
+
+> **Briefing for design's next run:** `docs/design-briefing-2026-07-29.md`. A great deal changed on
+> 29 July and design's last run predates all of it.
 
 This describes how the design role actually works in this repo, including the parts that
 do not work yet. Where a capability is missing it says so rather than describing the

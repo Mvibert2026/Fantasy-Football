@@ -71,6 +71,29 @@ founder's Windows machine waste calls rediscovering this — see `docs/environme
 
 ## Choosing model and effort
 
+**Set `effort` explicitly on every dispatch. Do not let it inherit.** Through 2026-07-29 the PM set
+`model` correctly and never set `effort` at all, so every agent ran at whatever the session happened
+to be on — which meant statistical work ran cheap and mechanical work ran expensive. The founder
+caught it.
+
+The standing mapping, deviate only with a reason:
+
+| Work | Model | Effort |
+|---|---|---|
+| Ingestion, file ops, log tidying, renames | sonnet | low |
+| Routine implementation, tests, exports, doc sweeps | sonnet | medium |
+| Anything touching the hazard model, a statistical constant, a formula, or a suspected defect in a headline number | opus | high |
+| Methodology, pre-registration, independent statistical review | opus | high |
+| External research where a wrong claim propagates | opus | high |
+| Adversarial review (Fable) | fable | max |
+| Merges, branch surgery, diagnosis where a wrong turn costs a round | opus | high |
+
+**Higher effort buys fewer wrong turns, not more speed.** Raise it where a mistake is expensive and
+leave it low where the work is routine — and remember an agent definition's pinned tier is a default
+the dispatch may override, not a ceiling. `backend` pins itself low precisely because it is told to
+ask for escalation; give it the escalation up front when the task warrants it rather than making it
+ask.
+
 Choose model and effort per dispatch, from the full range available. Do not default everything to one
 setting. Cheap and fast for mechanical work — file moves, renames, log tidying. Strong models for
 anything where a wrong turn costs a round — merges, diagnosis, anything touching the model or the
