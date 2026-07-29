@@ -1,5 +1,4 @@
 @import './tokens.css';
-@import './responsive.css';
 
 /*
  * Radius on chrome only (FRONTEND-SPEC.md §2.3). Nothing gets a universal reset

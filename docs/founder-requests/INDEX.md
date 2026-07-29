@@ -28,12 +28,11 @@ _None._
 
 _None._
 
-## IN PROGRESS — 2
+## IN PROGRESS — 1
 
 | ID | Subject | Raised | Source |
 |---|---|---|---|
 | [FR-024](FR-024-show-adp-on-the-prep-board-the-draft-screen-and.md) | Show adp on the prep board the draft screen and | 2026-07-29 | chat session 2026-07-29 (PM takeover) |
-| [FR-025](FR-025-make-the-app-usable-on-a-phone.md) | Make the app usable on a phone | 2026-07-29 | chat session 2026-07-29 (PM takeover) |
 
 ## SHIPPED — 0
 
@@ -43,7 +42,9 @@ _None._
 
 _None._
 
-## DEFERRED — 0
+## DEFERRED — 1
 
-_None._
+| ID | Subject | Raised | Source |
+|---|---|---|---|
+| [FR-025](FR-025-make-the-app-usable-on-a-phone.md) | Make the app usable on a phone | 2026-07-29 | chat session 2026-07-29 (PM takeover) |
 

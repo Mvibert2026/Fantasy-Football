@@ -109,124 +109,92 @@ function navItemStyle(active: boolean): React.CSSProperties {
   };
 }
 
-export function Sidebar({
-  screen,
-  onScreen,
-  open = false,
-  onClose = () => {},
-}: {
-  screen: ScreenId;
-  onScreen: (s: ScreenId) => void;
-  /**
-   * Below 640px (ui/styles/responsive.css) the sidebar becomes an off-canvas
-   * drawer instead of the always-visible 216px column: `open` controls
-   * whether it's slid into view, closed (off-screen) by default. Above 640px
-   * the CSS in that file never touches `.app-sidebar`'s position at all, so
-   * this prop has zero visible effect on desktop regardless of its value --
-   * both parents (App.tsx, StandaloneApp.tsx) own the real state and pass it
-   * down; the defaults here only cover a caller that doesn't.
-   */
-  open?: boolean;
-  onClose?: () => void;
-}) {
-  function selectAndClose(id: ScreenId) {
-    onScreen(id);
-    onClose(); // no-op effect above 640px; closes the drawer below it
-  }
-
+export function Sidebar({ screen, onScreen }: { screen: ScreenId; onScreen: (s: ScreenId) => void }) {
   return (
-    <>
+    <div
+      style={{
+        width: 216,
+        flex: 'none',
+        borderRight: '1px solid var(--line)',
+        background: 'var(--panel)',
+        overflowY: 'auto',
+        padding: '14px 0',
+      }}
+    >
       <div
-        className={`app-sidebar-backdrop${open ? ' app-sidebar-backdrop--visible' : ''}`}
-        onClick={onClose}
-        aria-hidden="true"
-      />
-      <div
-        className={`app-sidebar${open ? ' app-sidebar--open' : ''}`}
         style={{
-          width: 216,
-          flex: 'none',
-          borderRight: '1px solid var(--line)',
-          background: 'var(--panel)',
-          overflowY: 'auto',
-          padding: '14px 0',
+          padding: '6px 16px',
+          fontFamily: 'var(--font-num)',
+          fontSize: 12,
+          letterSpacing: '.12em',
+          color: 'var(--dim2)',
         }}
       >
+        PREP
+      </div>
+      {NAV_MAIN.map((n) => (
         <div
-          style={{
-            padding: '6px 16px',
-            fontFamily: 'var(--font-num)',
-            fontSize: 12,
-            letterSpacing: '.12em',
-            color: 'var(--dim2)',
-          }}
+          key={n.key}
+          role="button"
+          tabIndex={0}
+          aria-pressed={screen === n.key}
+          onClick={() => onScreen(n.key)}
+          onKeyDown={onActivate(() => onScreen(n.key))}
+          style={navItemStyle(screen === n.key)}
         >
-          PREP
+          {n.label}
         </div>
-        {NAV_MAIN.map((n) => (
+      ))}
+
+      <div
+        style={{
+          padding: '20px 16px 6px',
+          fontFamily: 'var(--font-num)',
+          fontSize: 12,
+          letterSpacing: '.12em',
+          color: 'var(--dim2)',
+        }}
+      >
+        COMING SOON
+      </div>
+      {SOON_ITEMS.map((n) => {
+        const active = screen === n.key;
+        return (
           <div
             key={n.key}
             role="button"
             tabIndex={0}
-            aria-pressed={screen === n.key}
-            onClick={() => selectAndClose(n.key)}
-            onKeyDown={onActivate(() => selectAndClose(n.key))}
-            style={navItemStyle(screen === n.key)}
+            aria-pressed={active}
+            onClick={() => onScreen(n.key)}
+            onKeyDown={onActivate(() => onScreen(n.key))}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: 8,
+              padding: '9px 16px',
+              fontSize: 13.5,
+              cursor: 'pointer',
+              color: active ? 'var(--txt)' : 'var(--dim)',
+              background: active ? 'var(--panel2)' : 'transparent',
+              borderLeft: `2px solid ${active ? 'var(--acc)' : 'transparent'}`,
+            }}
           >
-            {n.label}
-          </div>
-        ))}
-
-        <div
-          style={{
-            padding: '20px 16px 6px',
-            fontFamily: 'var(--font-num)',
-            fontSize: 12,
-            letterSpacing: '.12em',
-            color: 'var(--dim2)',
-          }}
-        >
-          COMING SOON
-        </div>
-        {SOON_ITEMS.map((n) => {
-          const active = screen === n.key;
-          return (
-            <div
-              key={n.key}
-              role="button"
-              tabIndex={0}
-              aria-pressed={active}
-              onClick={() => selectAndClose(n.key)}
-              onKeyDown={onActivate(() => selectAndClose(n.key))}
+            <span>{n.label}</span>
+            <span
               style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                gap: 8,
-                padding: '9px 16px',
-                fontSize: 13.5,
-                cursor: 'pointer',
-                color: active ? 'var(--txt)' : 'var(--dim)',
-                background: active ? 'var(--panel2)' : 'transparent',
-                borderLeft: `2px solid ${active ? 'var(--acc)' : 'transparent'}`,
+                fontFamily: 'var(--font-num)',
+                fontSize: 12,
+                color: 'var(--soon)',
+                border: '1px solid var(--soon)',
+                padding: '0 4px',
               }}
             >
-              <span>{n.label}</span>
-              <span
-                style={{
-                  fontFamily: 'var(--font-num)',
-                  fontSize: 12,
-                  color: 'var(--soon)',
-                  border: '1px solid var(--soon)',
-                  padding: '0 4px',
-                }}
-              >
-                SOON
-              </span>
-            </div>
-          );
-        })}
-      </div>
-    </>
+              SOON
+            </span>
+          </div>
+        );
+      })}
+    </div>
   );
 }

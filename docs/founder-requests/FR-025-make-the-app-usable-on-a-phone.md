@@ -1,9 +1,36 @@
 ---
 ID: FR-025
-STATUS: IN PROGRESS
+STATUS: DEFERRED
 SOURCE: chat session 2026-07-29 (PM takeover)
 RAISED: 2026-07-29
 ---
+
+## DEFERRED SAME DAY — routed to Design, at the founder's direction
+
+> "What do you mean by phone work. Are you making a mobile site? Not needed now and we probably
+> want to use design for that work"
+
+Founder, 2026-07-29, on being told what the work actually involved.
+
+**The PM over-read the original request.** "Optimize all for phone viewing right now" was read as
+*build responsive layouts across the app* and dispatched as engineering. What he wanted was to be
+able to read the thing he had just been sent. Once he saw the scope implied, he pulled it — a mobile
+site is not needed now, and when it is, it belongs to Design.
+
+**He is right, and the reason is written into this file below:** density is a stated architectural
+principle, so how a deliberately dense board degrades on a narrow screen is a *design* decision
+about what matters most at a glance. Engineering it ad hoc in CSS would have settled that question
+by accident, in the app, without anyone deciding it.
+
+The in-flight work was reverted rather than left half-applied — a partially-collapsing sidebar and
+an unfinished breakpoint set are worse than the desktop layout they replace. WIP is preserved in
+commit `d0be35c` on `claude/pm-agent-setup-gobxa0` if Design later wants to see what was started.
+
+**Release condition:** a Design pass on the phone layout. Worth raising before 7 September rather
+than after — see the draft-day note below, which still stands.
+
+**PM lesson, logged:** a founder instruction containing "right now" is about urgency, not scope.
+Ask what the smallest thing that satisfies it is before dispatching a build.
 
 ## Request
 Make the app usable on a phone
