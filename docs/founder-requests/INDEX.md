@@ -9,7 +9,7 @@ Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests
 
 ---
 
-## NEW — 30
+## NEW — 29
 
 | ID | Subject | Raised | Source |
 |---|---|---|---|
@@ -42,7 +42,6 @@ Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests
 | [FR-053](FR-053-yahoo-draft-room-reference-capture-features-to-c.md) | Yahoo draft room reference capture features to c | 2026-07-29 | chat 2026-07-29, PM session, Yahoo draft room screenshots |
 | [FR-054](FR-054-the-bottom-up-model-should-output-component-proj.md) | The bottom up model should output component proj | 2026-07-29 | chat 2026-07-29, PM session |
 | [FR-055](FR-055-draft-mode-board-needs-column-headers.md) | Draft mode board needs column headers | 2026-07-29 | chat 2026-07-29, PM session |
-| [FR-056](FR-056-personal-use-confirmed-get-the-component-project.md) | Personal use confirmed get the component project | 2026-07-29 | chat 2026-07-29, PM session |
 
 ## SCOPING — 1
 
@@ -63,7 +62,7 @@ _None._
 | [FR-029](FR-029-opponents-screen-must-be-functional-during-a-liv.md) | Opponents screen must be functional during a liv | 2026-07-29 | frontend session, dispatched as "FR-032" in the task brief |
 | [FR-043](FR-043-audit-for-capability-already-built-and-sitting-u.md) | Audit for capability already built and sitting u | 2026-07-29 | chat 2026-07-29, PM session |
 
-## SHIPPED — 4
+## SHIPPED — 5
 
 | ID | Subject | Raised | Source |
 |---|---|---|---|
@@ -71,6 +70,7 @@ _None._
 | [FR-034](FR-034-draft-position-must-be-selectable-in-prep-this-i.md) | Draft position must be selectable in prep this i | 2026-07-29 | chat session 2026-07-29 |
 | [FR-035](FR-035-predictions-in-prep-must-be-scoped-to-the-select.md) | Predictions in prep must be scoped to the select | 2026-07-29 | chat 2026-07-29, PM session |
 | [FR-036](FR-036-manual-team-name-entry-for-opponents-in-the-draf.md) | Manual team name entry for opponents in the draf | 2026-07-29 | chat 2026-07-29, PM session |
+| [FR-056](FR-056-personal-use-confirmed-get-the-component-project.md) | Personal use confirmed get the component project | 2026-07-29 | chat 2026-07-29, PM session |
 
 ## DECLINED — 0
 
@@ -87,5 +87,4 @@ _None._
 | ID | Subject | Status |
 |---|---|---|
 | [FR-039](FR-039-late-round-te-is-the-draft-strategy-expression-o.md) | Late round te is the draft strategy expression o | `ANSWERED` |
-| [FR-056](FR-056-sleeper-component-projections-personal-use-proce.md) | Sleeper component projections personal use proce | `DONE` |
 
