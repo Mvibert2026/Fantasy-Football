@@ -42,7 +42,7 @@ import team_codes as tc
 from config import DEFAULT_CONFIG
 from scoring import LEAGUE, ReplacementLevels
 
-CONTRACT_VERSION = "1.13.0"
+CONTRACT_VERSION = "1.14.0"
 SEASON = 2026
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 EXPORT_DIR = DATA_DIR / "export"
@@ -132,6 +132,85 @@ def _load_availability_csv(csv_path: Path) -> Dict[str, dict]:
     }
 
 
+def _load_adp_snapshot(conn: sqlite3.Connection, adp_source: str = "mfl_proxy") -> dict:
+    """Real MFL-proxy ADP (ADR-035, `src/ingest_mfl_adp.py`), joined
+    gsis -> `player_ids` -> `mfl_id`, for DISPLAY only.
+
+    This is deliberately a separate, additive read from
+    `availability.load_mfl_adp_source` -- that function feeds the hazard
+    model and stays unwired by design (see its docstring). This one only
+    supplies board.json fields for the UI to render; it changes no ranking,
+    no VBD, no availability output.
+
+    Per-platform stamping (CLAUDE.md SS4, the module docstring's stated
+    rule): every value returned here comes from exactly one `adp_source`.
+    Nothing here averages or blends across `adp_source` values, and the
+    caller must carry `adp_source` alongside every `adp` value it displays
+    -- a bare "ADP" number with no source attached would assert something
+    this pull did not derive.
+
+    Returns {"by_gsis": {...}, "as_of_date": str|None, "fcount": int|None,
+    "is_ppr": int|None, "total_drafts_in_sample": int|None,
+    "match_rate_note": str}. Empty/None values throughout if no
+    adp_snapshots rows exist for `adp_source` -- never raises, mirroring
+    `load_mfl_adp_source`'s "an ingestion that hasn't run is a normal state"
+    stance.
+    """
+    row = conn.execute(
+        "SELECT MAX(retrieved_at) FROM adp_snapshots WHERE adp_source=?", (adp_source,)
+    ).fetchone()
+    if row is None or row[0] is None:
+        return {
+            "adp_source": adp_source,
+            "by_gsis": {},
+            "as_of_date": None,
+            "fcount": None,
+            "is_ppr": None,
+            "total_drafts_in_sample": None,
+            "match_rate_note": f"No adp_snapshots rows for adp_source={adp_source!r}.",
+        }
+    latest = row[0]
+
+    snap_rows = conn.execute(
+        "SELECT mfl_id, average_pick, min_pick, max_pick, draft_sel_pct, fcount, is_ppr, "
+        "total_drafts_in_sample FROM adp_snapshots WHERE adp_source=? AND retrieved_at=?",
+        (adp_source, latest),
+    ).fetchall()
+    mfl_by_id = {r["mfl_id"]: r for r in snap_rows}
+    gsis_to_mfl: Dict[str, str] = {
+        r[0]: r[1] for r in conn.execute(
+            "SELECT source_id, mfl_id FROM player_ids WHERE source='gsis'"
+        ).fetchall()
+    }
+
+    fcounts = {r["fcount"] for r in snap_rows}
+    is_ppr_vals = {r["is_ppr"] for r in snap_rows}
+    drafts = {r["total_drafts_in_sample"] for r in snap_rows}
+
+    by_gsis: Dict[str, dict] = {}
+    for gsis_id, mfl_id in gsis_to_mfl.items():
+        r = mfl_by_id.get(mfl_id)
+        if r is None:
+            continue
+        by_gsis[gsis_id] = {
+            "adp": r["average_pick"],
+            "adp_min_pick": r["min_pick"],
+            "adp_max_pick": r["max_pick"],
+            "adp_selected_pct": r["draft_sel_pct"],
+        }
+
+    return {
+        "adp_source": adp_source,
+        "by_gsis": by_gsis,
+        "as_of_date": latest[:10] if latest else None,
+        "fcount": next(iter(fcounts)) if len(fcounts) == 1 else None,
+        "is_ppr": next(iter(is_ppr_vals)) if len(is_ppr_vals) == 1 else None,
+        "total_drafts_in_sample": next(iter(drafts)) if len(drafts) == 1 else None,
+        "match_rate_note": f"{len(by_gsis)} of {len(mfl_by_id)} {adp_source} rows resolved "
+                            f"a gsis id via player_ids.",
+    }
+
+
 def build_board_json(
     conn: sqlite3.Connection,
     cfg: lc.LeagueConfig = lc.CURRENT_LEAGUE,
@@ -196,6 +275,8 @@ def build_board_json(
     pos_rank = {n: i + 1 for pos, names in by_pos.items() for i, n in enumerate(names)}
 
     avail = _load_availability_csv(avail_csv_for(cfg.league_id))["by_player"]
+    adp_snapshot = _load_adp_snapshot(conn)
+    adp_by_gsis = adp_snapshot["by_gsis"]
 
     players = []
     for r in ours:
@@ -213,6 +294,7 @@ def build_board_json(
         # it, since that's a display value, not a join key.
         bye_lookup_team = _canonical_team(team) if team else None
         structural = (pub_rank.get(r.player, r.overall_rank) - r.overall_rank)
+        adp_row = adp_by_gsis.get(r.player_id) if r.player_id else None
         players.append({
             # Stable integer id: the design contract keys availability and the
             # player-profile endpoint on an int, and gsis_id strings are not
@@ -289,6 +371,21 @@ def build_board_json(
                 "evaluative_adjustment_available is false."
             ),
             "availability": avail.get(r.player, {}),
+            # Real MFL-proxy market ADP (ADR-035), for DISPLAY only -- does
+            # NOT feed the model (availability.load_mfl_adp_source stays
+            # unwired by design, see that function's docstring). Honestly
+            # null when this player has no gsis->mfl_id match or MFL itself
+            # never covered them (MFL's snapshot only reaches ~230 players
+            # in a 10-team pull) -- never a fabricated rank, never zero.
+            # `adp_source` MUST travel with `adp` any time the UI displays
+            # it: this is one platform's behavioural sample, not this
+            # league's ADP, and must never be presented as a blended
+            # consensus figure alongside other ADP sources.
+            "adp": adp_row["adp"] if adp_row else None,
+            "adp_min_pick": adp_row["adp_min_pick"] if adp_row else None,
+            "adp_max_pick": adp_row["adp_max_pick"] if adp_row else None,
+            "adp_selected_pct": adp_row["adp_selected_pct"] if adp_row else None,
+            "adp_source": adp_snapshot["adp_source"] if adp_row else None,
         })
 
     # T4 (interim, thread 057): deterministic games-adjustment for known
@@ -416,6 +513,32 @@ def build_board_json(
             f"starting slot(s) with no scoring data ingested, so no replacement level, "
             f"projection, VBD or board row exists for {'it' if len(unsupported) == 1 else 'them'}. "
             f"See league.json:positions_without_replacement_levels."
+        ),
+        # Real market ADP (ADR-035, MyFantasyLeague proxy), for DISPLAY only
+        # -- per-player fields above. This snapshot-level block is the
+        # honest-labeling context the founder's request explicitly asked
+        # for: which platform, what population, what format assumption, how
+        # old, and how many board rows actually resolved to it.
+        "adp_source": adp_snapshot["adp_source"],
+        "adp_as_of_date": adp_snapshot["as_of_date"],
+        "adp_match_rate_note": adp_snapshot["match_rate_note"],
+        "adp_source_note": (
+            "adp/adp_min_pick/adp_max_pick/adp_selected_pct on each player row come from "
+            f"MyFantasyLeague's public aggregate ADP endpoint (adp_source={adp_snapshot['adp_source']!r}, "
+            "ADR-035), NOT this league's own draft history and NOT a blend of platforms -- "
+            "adp_source travels with every value and must never be merged with a differently-"
+            "sourced ADP number. The population is whoever drafts on MFL (largely dynasty/"
+            "redraft hobbyists), not this league's roster. Captured at FCOUNT="
+            f"{adp_snapshot['fcount']} (10-team, matching this league) and IS_PPR="
+            f"{adp_snapshot['is_ppr']}, but MFL's IS_PPR flag is binary and this league scores "
+            "half-PPR -- treat the full-PPR capture as an approximation, not an exact match: "
+            "full-PPR drafters take pass-catchers earlier than half-PPR drafters do, so "
+            "receiver ADP here likely runs a few picks ahead of where this league would "
+            "actually take them. Sample size is thin "
+            f"(total_drafts_in_sample={adp_snapshot['total_drafts_in_sample']}) and MFL only "
+            "covers roughly the top ~230 players in a 10-team pull -- most of the board has no "
+            "MFL opinion at all, and that is a real null (adp=None), never a fabricated rank. "
+            "See adp_match_rate_note for how many of this board's rows actually resolved."
         ),
         "players": players,
     }
