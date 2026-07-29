@@ -72,6 +72,31 @@ newest at the bottom.
   files byte-identical to committed, 2 superseded snapshots.
   League IDs confirmed from screenshots: Westwood 154693 (primary),
   Ethan's Expert 834236 (10 teams, not the platform's 12).
+- 2026-07-29 · strategist · FR-059 registered as **PR-007**, not PR-006.
+  PR-006 is already reserved by name in PR-004 §11.4 ("a separate
+  registration (PR-006, unwritten)") for the bottom-up-vs-consensus
+  successor question. Taking it would have collided with a reservation
+  the same role made a day earlier. Decision logged, not escalated —
+  PR ids are filenames in docs/preregistration/ and are not allocated by
+  tools/handoffs.py, so the allocator rule does not cover them. **Worth
+  a PM call:** either extend `tools/handoffs.py` with a `prereg next`
+  allocator, or accept that PR ids stay hand-picked and reservations
+  stay in prose. The second is what just worked, but only because one
+  agent happened to remember its own reservation.
+- 2026-07-29 · strategist · `docs/handoffs/README.md`'s **Roles** list is
+  stale — it omits `ranker`, which IS in `tools/handoffs.py:31` ROLES and
+  has an active section in OPEN.md plus threads 084/085/087. The README
+  itself names the tool as source of truth on drift, so nothing is broken;
+  it is a one-word doc fix and not a contradiction needing escalation.
+- 2026-07-29 · strategist · **`src/holdout.py` gates season reads, not
+  feature-versus-outcome reads.** Ruled on thread 087 that reading a
+  sealed season's *pre-draft* consensus rank is legitimate (it is a
+  feature available at decision time) while reading any 2025 outcome is
+  not. That distinction currently lives entirely in an agent's judgement.
+  `PARKED — needs a design: either a per-column classification of the
+  holdout season's tables, or an explicit logged "feature read" path in
+  HoldoutLock. Not urgent while one agent is doing the reading; a real
+  hole the moment two are.`
   tests/test_scoring.py 19 passed after landing.
 - 2026-07-28 · (069/073 frontend chain) Registered `roster_status` in the
   trace registry alongside the mandated 069/073 fields, because the
