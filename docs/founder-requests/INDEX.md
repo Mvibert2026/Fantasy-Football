@@ -5,11 +5,11 @@ Per-request files in this directory are the source of truth. Edit a request's ow
 `STATUS:` line, then re-run sync. Protocol: [`README.md`](README.md).
 Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests.md).
 
-**31 requests since freeze.**
+**32 requests since freeze.**
 
 ---
 
-## NEW — 21
+## NEW — 22
 
 | ID | Subject | Raised | Source |
 |---|---|---|---|
@@ -34,6 +34,7 @@ Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests
 | [FR-044](FR-044-periodic-table-grid-view-in-draft-colour-coded-p.md) | Periodic table grid view in draft colour coded p | 2026-07-29 | chat 2026-07-29, PM session |
 | [FR-045](FR-045-position-scarcity-reads-every-position-as-behind.md) | Position scarcity reads every position as behind | 2026-07-29 | chat 2026-07-29, PM session |
 | [FR-046](FR-046-make-auto-fill-actually-draft-players-wire-up-th.md) | Make auto fill actually draft players wire up th | 2026-07-29 | chat 2026-07-29, PM session |
+| [FR-047](FR-047-per-opponent-deviation-and-deviation-should-wide.md) | Per opponent deviation and deviation should wide | 2026-07-29 | chat 2026-07-29, PM session |
 
 ## SCOPING — 1
 
