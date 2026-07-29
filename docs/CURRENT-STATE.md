@@ -189,7 +189,10 @@ Commercial) but whether either tier removes the specific 10-row cap on the ranki
 **unverified** — the public pricing page describes call-frequency ("higher/highest rate limits"),
 not a per-response row ceiling, and the actual endpoint reference could not be pulled to check
 directly. No better free/live half-PPR-native alternative was found (Sleeper ADP and Underdog ADP
-are both the wrong shape — ADP not expert consensus; FFC is blocked by robots.txt regardless).
+are both the wrong shape — ADP not expert consensus. **FFC was UNBLOCKED by the founder 2026-07-29**
+(he contacted them directly; FR-023, MEMORY §4) and is now the primary daily ADP capture in three
+formats — the "blocked by robots.txt" clause here was stale and is corrected. Its robots.txt was
+re-verified the same day: `/adp/csv/`, `/api/`, `/ajax/` disallowed, the HTML pages we fetch not.)
 Recommendation: continue with the DynastyProcess mirror as positional-order input plus the
 one-time manual CSV where it exists ($0, no new build), with each league's board tagged with which
 input it used — League 2 currently has **no** manual CSV pull at all and is running on the
@@ -429,7 +432,9 @@ assistant" wiring · LLM prose renderer
    collection begins, or the mocks collected cannot validate `delta` no matter how many there are,
    and cannot be defended against shortcut bias at all.
 2. **ADP snapshot capture** — unrecoverable if delayed; a past date's snapshot cannot be backfilled.
-   `adp_source='mfl_proxy'` (ADR-035, `src/ingest_mfl_adp.py`) is the only live source (FFC/Yahoo/
+   `adp_source='mfl_proxy'` (ADR-035) is **no longer the only live source — FFC now captures non-PPR,
+   half-PPR and full PPR at 10 teams daily (2026-07-29, ADR-054), and half-PPR is an exact format
+   match where MFL's binary flag cannot be one.** Historic text follows (Yahoo/
    ESPN remain blocked/unattemptable per `docs/deferred.md`). `adp_snapshots` currently has rows for
    UTC 2026-07-26 and 2026-07-28 only — **UTC 2026-07-27 has a real, permanent gap** (discovered
    2026-07-27 session, thread 077): the machine's UTC clock had already rolled to 07-28 by the time

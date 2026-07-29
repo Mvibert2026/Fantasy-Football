@@ -169,7 +169,6 @@ newest at the bottom.
   a widened regex or a stated convention plus a one-off sweep — not another rule.** Same class as
   the ID allocator: the tool and the documents disagree, and the humans followed the documents.
 
-<<<<<<< HEAD
 - 2026-07-29 · (strategist, PR-004) **Decided, not escalated — four calls, all reasoned in the
   registration.** (a) Refused to make consensus the confirmatory baseline as the brief asked:
   n=4 seasons, exact sign-test floor p=0.125, unreachable at alpha=0.05 before any correction.
@@ -225,7 +224,6 @@ newest at the bottom.
   **n < 15 ⇒ STOP without running.** Still no unseal authorised. Still no shell, so thread 083's
   revised reply is staged, not appended.
 
-=======
 
 - **2026-07-29, backend (ADR-057).** `make_board.fit_rank_curves()` pools all training seasons with
   EQUAL weight. Measured: the QB rank->points slope ran -67, -73, -59, -45, -4 across 2021-2025 —
@@ -247,7 +245,6 @@ newest at the bottom.
   IS a byte-exact dump of what it writes, so a session can restore it — see
   `experiments/restore_rankings_from_committed_csv.py`. Worth deciding whether that restore belongs
   in `scripts/` as an explicit `--from-committed` flag rather than living in experiments/.
->>>>>>> c191f4555d0e1bd425e0a5d4a91388e409214973
 
 - 2026-07-29 · (researcher, historical ADP) **Decided, not escalated — three calls.** (a) Wrote the
   findings to `docs/research/historical-adp-availability-2026-07-29.md` and replied on **thread 055**
