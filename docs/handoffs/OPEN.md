@@ -4,7 +4,7 @@
 Threads are the source of truth. Change a thread's `STATUS:`, then re-run sync.
 Protocol: [`README.md`](README.md).
 
-**46 open** · 41 resolved
+**47 open** · 41 resolved
 
 ---
 
@@ -83,7 +83,7 @@ not an omission. Start your session at your own heading.
 | [070](070-recurring-injury-suspension-feed.md) | Recurring injury suspension feed | `pm` | OPEN | 2d | T4 (suspensions/roster-status table stakes), E[games_played] per ADR-E Amendment E-A1 |
 | [084](084-deepen-expert-consensus-history-beyond-2021-2025.md) | Deepen expert consensus history beyond 2021 2025 | `ranker` | OPEN | 0d | none |
 
-### `strategist` — 6 waiting
+### `strategist` — 7 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
@@ -93,6 +93,7 @@ not an omission. Start your session at your own heading.
 | [053](053-founder-csv-ingestion.md) | Founder csv ingestion | `pm` | OPEN | 2d | FR-001 comparison view |
 | [056](056-round-varying-need-and-run-saturation.md) | Round varying need and run saturation | `pm` | OPEN | 2d | any change to the need term or the run term |
 | [085](085-the-board-rank-curve-slope-confounds-positional.md) | The board rank curve slope confounds positional | `ranker` | OPEN | 0d | none |
+| [087](087-fr-039-pass-2-register-the-confirmatory-te-windo.md) | Fr 039 pass 2 register the confirmatory te windo | `ranker` | OPEN | 0d | none |
 
 ### `researcher` — 3 waiting
 
