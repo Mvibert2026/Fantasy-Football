@@ -31,7 +31,12 @@
  * import from the Vite server build.
  */
 
-const MODEL = 'claude-opus-5';
+// Founder's call, 2026-07-29: "The assistant can start as a sonnet high, if I want to
+// change it I will." Sonnet is the right default for a retrieval-grounded lane whose
+// system prompt forbids reasoning beyond the supplied context -- the hard part is
+// obedience, not capability. Change it here AND in frontend/server/proxy.ts together,
+// or local and hosted answer differently.
+const MODEL = 'claude-sonnet-5';
 const MAX_TOKENS = 2048;
 
 /** Restated verbatim from frontend/server/proxy.ts. Second line of defence: the

@@ -17,7 +17,9 @@ import type { IncomingMessage, ServerResponse } from 'node:http';
 export const REASONING_ENDPOINT = '/__reasoning';
 
 /** The single model. No tier routing: not worth the failure mode at this volume. */
-const MODEL = 'claude-opus-5';
+// Founder's call, 2026-07-29: start the assistant on Sonnet. Kept in step with
+// worker/index.js, which serves the same lane on the hosted site.
+const MODEL = 'claude-sonnet-5';
 const MAX_TOKENS = 2048;
 
 /**
