@@ -1,0 +1,59 @@
+{
+  "contract_version": "1.14.0",
+  "generated_utc": "2026-07-29T18:25:52.210201+00:00",
+  "league_id": "yahoo_10_standard",
+  "terms": {
+    "VBD": {
+      "short_definition": "How many more points a player is expected to score than a freely-available replacement at the same position.",
+      "long_explanation": "Value Based Drafting. Raw projected points are misleading across positions: a quarterback scoring 300 is not automatically better than a running back scoring 220, because every team starts a quarterback and good ones are easy to find. VBD fixes this by subtracting the 'replacement level' \u2014 what you could get for free off waivers at that position. What is left is the part that actually wins you matchups. It is the number this board sorts by."
+    },
+    "replacement level": {
+      "short_definition": "The last player at a position who is realistically startable in this league.",
+      "long_explanation": "With 10 teams each starting 1 quarterback, roughly the QB10 is the worst one anyone is forced to use \u2014 so that is 'replacement level'. This league's levels are QB10, RB25, WR35, TE10. Public rankings almost always assume a 12-team league with RB24 and WR36, which may be a different league from this one."
+    },
+    "consensus rank": {
+      "short_definition": "Where a large group of fantasy analysts collectively ranks a player.",
+      "long_explanation": "FantasyPros Expert Consensus Rank: many analysts submit rankings and these are averaged. It is expert opinion, NOT a record of where players actually get drafted (that would be ADP, which we could not obtain legally). It is a strong starting point and genuinely hard to beat, but it assumes a generic league, not ours."
+    },
+    "confidence interval": {
+      "short_definition": "A range the true value probably sits in \u2014 wide means we are guessing.",
+      "long_explanation": "Every number measured from data is uncertain. A 95% confidence interval is the range we would expect the real answer to fall in most of the time. The important habit: if an interval includes zero, we have NOT shown any effect exists. Many of ours are wide, because we only have a few seasons of comparable data, and we report that rather than hiding it."
+    },
+    "tier": {
+      "short_definition": "A group of players close enough in value that which one you get barely matters.",
+      "long_explanation": "Rankings imply precision that does not exist \u2014 the gap between WR4 and WR5 is usually noise. Tiers group players who are effectively interchangeable. The useful question during a draft is not 'is this the best player left' but 'is this the last player left in his tier', because that is when waiting actually costs you something."
+    },
+    "structural adjustment": {
+      "short_definition": "Rank movement caused by this league's rules and size, not by any opinion about the player.",
+      "long_explanation": "This league is 10 teams, starts 1 QB, 2 RB, 3 WR, 1 TE and 1 flex. Those facts alone move players up and down relative to a generic public board. This is the part of the board we are most confident about: it is arithmetic about the rules, not a prediction about football."
+    },
+    "evaluative adjustment": {
+      "short_definition": "Rank movement caused by disagreeing with the experts about a player. Currently zero.",
+      "long_explanation": "This would be the part where our model says 'the experts are wrong about this specific player'. Our board contains none of it, and the field is deliberately empty rather than filled with a made-up number. Every player at the same positional rank gets the same projection, because no source of player-by-player component projections (passing yards, carries, targets) is available to us. All of our disagreement with consensus is structural."
+    },
+    "availability probability": {
+      "short_definition": "The chance a player is still undrafted when your pick arrives.",
+      "long_explanation": "Computed by simulating thousands of drafts where the other nine teams follow consensus with some randomness. If a player shows 60% at pick 23, he was still on the board in 60 of every 100 simulated drafts. These are the most reliable numbers we produce, because they depend only on how people draft \u2014 not on predicting how many points anyone will score, which we do poorly."
+    },
+    "sigma": {
+      "short_definition": "How far the other teams stray from consensus, measured in draft picks.",
+      "long_explanation": "Sigma 5 is a disciplined room where everyone drafts close to the rankings. Sigma 10, our default, means about a round of slippage in either direction. Sigma 20 is chaos \u2014 big reaches and big slides. We do not know which describes your league, because we have no record of past draft results, so every availability number is shown at all three. If a number barely changes across them, trust it. If it swings, the answer depends on your league's temperament."
+    },
+    "sign test": {
+      "short_definition": "A simple check of whether a result points the same way every season.",
+      "long_explanation": "With very few seasons, fancy statistics are misleading. The sign test just counts: did this strategy beat the baseline in 4 seasons out of 4, or 2 out of 4? Its virtue is honesty about limits \u2014 with 4 seasons, even a perfect 4-for-4 only reaches p=0.125, which is above the usual 0.05 bar. So we can see direction but cannot prove significance, and we say so instead of pretending otherwise."
+    },
+    "power floor": {
+      "short_definition": "The best p-value our data could possibly produce. Ours is above the usual threshold.",
+      "long_explanation": "A hard ceiling on what any test can show, set by how much data exists. With 4 seasons the floor is 0.125; the conventional significance bar is 0.05. So no strategy comparison in this project can be 'statistically significant', however large the real effect. This is why we report direction and size honestly rather than chasing significance we cannot reach."
+    },
+    "holdout": {
+      "short_definition": "A season deliberately locked away so we cannot fool ourselves.",
+      "long_explanation": "2025 is sealed off. If you build and tweak a model against the same data you judge it on, you will always look brilliant and always be wrong. So 2025 is untouchable during development, and the code physically refuses to read it outside one logged, explicit path. It is the difference between testing an idea and confirming a hope."
+    },
+    "projected points": {
+      "short_definition": "Our estimate of a player's season total under this league's exact scoring \u2014 and it is a weak estimate.",
+      "long_explanation": "Built from what players at that consensus rank have historically scored under our rules. Be sceptical: consensus rank explains only about 16-27% of what actually happens, so these are rough guides, not forecasts. Availability probabilities on this board are far more trustworthy than projections."
+    }
+  }
+}

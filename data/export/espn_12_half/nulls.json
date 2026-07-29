@@ -1,0 +1,43 @@
+{
+  "contract_version": "1.14.0",
+  "generated_utc": "2026-07-29T18:22:38.055205+00:00",
+  "league_id": "espn_12_half",
+  "preamble": "These findings were tested for the PRIMARY league and are shown here for reference only -- see each finding's result field. Per ADR-041, league-specific results are not assumed to generalize.",
+  "findings": [
+    {
+      "id": "PR-002",
+      "claim_tested": "Spike-week ability is a persistent player trait (test-registry #38)",
+      "method": "For every player-season 1999-2024, measured how often a player cleared the 100 / 150 / 200 yard bonus thresholds, subtracted how often his yardage alone implies he should have, and correlated that leftover across consecutive seasons. 36 correlations, confidence intervals bootstrapped by resampling players.",
+      "result": "NOT_YET_RUN_FOR_THIS_LEAGUE",
+      "plain_language_summary": "This was tested for the primary league under its own scoring rules and roster shape, not for 'ESPN-default, 12 teams, half scoring'. Per ADR-041, results like this one are league-specific and are not assumed to generalize -- re-running the underlying analysis for this league has not been done."
+    },
+    {
+      "id": "PR-003-hero-rb",
+      "claim_tested": "Hero RB drafting beats taking the best player available (#44)",
+      "method": "43,200 simulated drafts across 4 seasons and 3 opponent-behaviour settings, scoring the resulting rosters against what players actually did.",
+      "result": "NOT_YET_RUN_FOR_THIS_LEAGUE",
+      "plain_language_summary": "This was tested for the primary league under its own scoring rules and roster shape, not for 'ESPN-default, 12 teams, half scoring'. Per ADR-041, results like this one are league-specific and are not assumed to generalize -- re-running the underlying analysis for this league has not been done."
+    },
+    {
+      "id": "PR-003-elite-te",
+      "claim_tested": "Taking an elite tight end early is worth the pick (#45)",
+      "method": "Same simulation, elite-TE-early arm versus best-available.",
+      "result": "NOT_YET_RUN_FOR_THIS_LEAGUE",
+      "plain_language_summary": "This was tested for the primary league under its own scoring rules and roster shape, not for 'ESPN-default, 12 teams, half scoring'. Per ADR-041, results like this one are league-specific and are not assumed to generalize -- re-running the underlying analysis for this league has not been done."
+    },
+    {
+      "id": "PR-003-qb-early",
+      "claim_tested": "Securing an elite quarterback early is worth the pick",
+      "method": "Same simulation, QB-early arm versus best-available.",
+      "result": "NOT_YET_RUN_FOR_THIS_LEAGUE",
+      "plain_language_summary": "This was tested for the primary league under its own scoring rules and roster shape, not for 'ESPN-default, 12 teams, half scoring'. Per ADR-041, results like this one are league-specific and are not assumed to generalize -- re-running the underlying analysis for this league has not been done."
+    },
+    {
+      "id": "ADR-025",
+      "claim_tested": "Our re-scored board beats raw consensus",
+      "method": "Compared roster value produced by our board against unmodified consensus across 2022-2025, per season.",
+      "result": "NOT_YET_RUN_FOR_THIS_LEAGUE",
+      "plain_language_summary": "This was tested for the primary league under its own scoring rules and roster shape, not for 'ESPN-default, 12 teams, half scoring'. Per ADR-041, results like this one are league-specific and are not assumed to generalize -- re-running the underlying analysis for this league has not been done."
+    }
+  ]
+}

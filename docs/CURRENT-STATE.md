@@ -92,7 +92,7 @@ by the session whose work changed them, per the agent operating rules.
 
 | | Value | Notes |
 |---|---|---|
-| Backend branch / commit | `claude/pm-agent-setup-gobxa0`, `9c671570b19f9bf6682489de1b2d0d9aad530987` | `git rev-parse --abbrev-ref HEAD` / `HEAD` |
+| Backend branch / commit | `worktree-agent-aff79d3df50a140ce`, `a88f041e98f8f2948adaaa3271c94d31a072d45d` | `git rev-parse --abbrev-ref HEAD` / `HEAD` |
 | Data contract | `1.14.0` | `CONTRACT_VERSION` in `src/export_contract.py` |
 | Python modules | 42 | `src/*.py`, counted |
 | Export artifacts | 11 | top-level files in `data/export/` |
@@ -483,8 +483,10 @@ assistant" wiring · LLM prose renderer
 3. **Mock drafts toward n=30** — gates the pre-registered availability decision rule.
 4. **FantasyPros licence decision — CLOSED (D-020).** No licence needed while the product stays
    private/personal/founder-only. Reopens on any second user, alongside D-021.
-5. **`strategies.json` re-export** — stale at contract 1.7.0 while every other export artifact is
-   now 1.10.0; app's version banner correctly flags this (thread 042, open to backend).
+5. **`strategies.json` re-export — RESOLVED 2026-07-29 (`a88f041`), thread 042.** Was stale at
+   contract 1.7.0 while everything else read 1.14.0; re-ran `src/export_strategies.py`, now
+   1.14.0. Guarded against silently going stale again by
+   `tests/test_export_directory_contract.py::test_strategies_json_contract_version_matches_export_contract`.
 6. **T4 real suspension data — interim CLOSED 2026-07-27 (ADR-053).** Real, dated, sourced list
    wired into the live board (`data/suspensions_2026.json`, currently empty — verified, not an
    oversight). Thread 057's fuller structured-source design (per-source schema, staleness test as

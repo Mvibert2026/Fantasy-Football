@@ -205,7 +205,16 @@ def test_create_and_export_league_board_uses_its_own_replacement_levels(tmp_path
         conn.close()
 
     names = {p.name for p in written}
-    assert {"board.json", "league.json", "availability.json", "rosters.json"} <= names
+    # The full six-artifact set ADR-041 requires for every non-primary league
+    # (board/availability/league/glossary/nulls/opponents), plus rosters.json
+    # (1.8.0+). Before 2026-07-29 export_league() only wrote the first four --
+    # exactly the bug the founder hit switching to Ethan's Expert League, whose
+    # export directory silently carried a strict subset. strategies.json is
+    # correctly NOT expected here (Monte Carlo, out of scope for this path).
+    assert {
+        "board.json", "league.json", "availability.json", "rosters.json",
+        "glossary.json", "nulls.json", "opponents.json",
+    } <= names
 
     import json
 

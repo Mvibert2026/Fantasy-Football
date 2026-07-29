@@ -2,7 +2,7 @@
 ID: 042
 FROM: frontend
 TO: backend
-STATUS: OPEN
+STATUS: RESOLVED
 OPENED: 2026-07-26
 BLOCKS: none
 ---
@@ -35,3 +35,14 @@ pipeline has actually been re-run since the version bump.
 `data/export/strategies.json` regenerated, `contract_version` reads `1.8.0`, committed. Reply here
 with the commit hash; no frontend-side change is needed once that lands -- the banner reads the
 version straight from the artifact.
+
+### backend · 2026-07-29
+Re-ran `src/export_strategies.py`. `data/export/strategies.json` now reads `"contract_version":
+"1.14.0"` (the current `CONTRACT_VERSION`, not 1.8.0 -- the contract moved further since this
+thread was opened; regenerating always picks up whatever the source constant is, which is the
+point). Bundled into the same commit as the Ethan's-Expert-League export-completeness fix
+(founder-reported bug, same session): `a88f041`. New test
+`tests/test_export_directory_contract.py::test_strategies_json_contract_version_matches_export_contract`
+asserts this can't go stale again silently -- it fails the suite if `strategies.json`'s
+`contract_version` ever drifts from `export_contract.CONTRACT_VERSION`. No frontend-side change
+needed, per the ask.

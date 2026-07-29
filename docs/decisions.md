@@ -2190,6 +2190,7 @@ documents -- both true positives, not test bugs; confirmed pre-existing via `git
 `test_find_fr_collisions_flags_conflicting_slugs`,
 `test_find_fr_collisions_silent_when_no_conflict` (`tests/test_founder_requests.py`).
 
+<<<<<<< HEAD
 ---
 
 ## ADR-057 — The board's QB premium is a rushing-QB regime effect, not a bonus artifact; and that regime collapsed in 2025 (2026-07-29, backend, thread backend-qb-delta)
@@ -2313,3 +2314,59 @@ changes that require the Statistician + Red-team gate (CLAUDE.md §8), not a bac
 
 **Evidence.** `tests/test_qb_board_delta.py`, 9 tests, all passing. Diagnostics are reproducible:
 `experiments/qb_board_delta_diagnostic.py` and `experiments/qb_board_delta_uncertainty.py`.
+=======
+## ADR-058 — Non-primary leagues get their full six-artifact export set (2026-07-29, backend)
+
+**Bug (founder-reported, live site).** Switching to "Ethan's Expert League" in the app failed:
+*"Could not read leagues/ethans_expert_league/nulls.json (HTTP 200, non-JSON response)."*
+`data/export/ethans_expert_league/` carried only 4 artifacts (board/availability/league/rosters)
+against the primary league's 11. The HTTP-200-with-HTML-body framing is the deployed site's SPA
+fallback for a missing file (a `wrangler.jsonc` concern, explicitly out of scope here, someone
+else's fix in flight) — but the underlying file really was missing, which is this bug.
+
+**Root cause.** ADR-041 requires six artifacts in every non-primary league's export directory
+(board/availability/league/glossary/nulls/opponents), and `frontend/ui/data/load.ts` fetches and
+`league_id`-checks all six unconditionally (only `rosters.json`/`strategies.json` are genuinely
+optional — the loader has explicit fallback-to-null paths for exactly those two, confirmed by
+reading `load.ts` directly rather than trusting a prior session's framing). But
+`league_builder.export_league()` and `generate_config_matrix.py` both called only
+`export_contract.write_all` (board/availability/league/rosters) and never
+`export_static.py`'s glossary/nulls/opponents builders. Every one of the 24 pre-generated
+config-matrix leagues had the identical gap — confirmed a real oversight, not documented scope:
+`generate_config_matrix.py`'s own docstring only carves out `strategies.json`/Monte Carlo as
+deliberately deferred, says nothing about the three prose artifacts.
+
+**Fix.** Factored `export_static.py`'s inline `main()` payload construction into
+`build_static_artifacts(cfg)` / `write_static_artifacts(out_dir, cfg)`, and call the latter from
+both `league_builder.export_league()` and `generate_config_matrix.generate_all()`. Rebuilt all
+affected exports: `ethans_expert_league` now carries 7 artifacts (was 4), all 24 config-matrix
+directories now carry 7 (was 3), primary league unchanged at 11.
+
+**Bug 2, same session (thread 042, `docs/backlog-triage-2026-07-29.md`).** `strategies.json` was
+stamped `contract_version 1.7.0` against everything else at `1.14.0` — stale since a prior
+contract bump, not a code bug (`src/export_strategies.py` already reads `CONTRACT_VERSION`
+correctly). Re-ran `src/export_strategies.py`; now `1.14.0`.
+
+**No `CONTRACT_VERSION` bump.** No artifact's shape changed, only which artifacts get generated
+for non-primary leagues. No frontend handoff needed for a schema reason; thread 042 gets a reply
+closing it out.
+
+**Regression guard.** New `tests/test_export_directory_contract.py`: parametrized over every
+`data/export/<league_id>/` directory found on disk, asserting the six required artifacts are all
+present (plus a vacuous-pass guard so removing every league directory can't make this silently
+pass), a primary-league full-set check, and a `strategies.json` contract-version-matches-source
+check. Extended `test_create_and_export_league_board_uses_its_own_replacement_levels` in
+`tests/test_league_builder.py` to assert the same six-plus-rosters set directly at the
+`league_builder.export_league()` call site.
+
+**Scope not taken.** Every subdirectory of `data/export/` becomes a switchable "league" in the
+frontend (`sync-exports.mjs` treats any directory as a league, no allowlist) — this includes the
+24 config-matrix combos, which is why their gap mattered too. `yahoo_standard_mock` is a real,
+on-disk, working example of a league with only 6 artifacts (no `rosters.json`/`strategies.json`)
+loading correctly, confirming those two really are optional rather than another hidden gap.
+
+**Evidence.** `.venv/bin/python -m pytest -q`: 719 passed, 1 pre-existing failure
+(`test_mailbox_health` — the ADR-054/055 collision ADR-056 already documents and left
+unresolved by explicit design; unrelated to this change, reconfirmed via `git stash` equivalent
+by checking the failure predates this commit). Commit `a88f041`.
+>>>>>>> 03566fc753e1ec3c11213fae9ef83e9773a5a2b2

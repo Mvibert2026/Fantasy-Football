@@ -1,6 +1,6 @@
 {
-  "contract_version": "1.7.0",
-  "generated_utc": "2026-07-26T17:38:19.809252+00:00",
+  "contract_version": "1.14.0",
+  "generated_utc": "2026-07-29T18:20:15.134946+00:00",
   "league_id": "espn_8_full",
   "league_name": "ESPN-default, 8 teams, full scoring",
   "platform": "espn",

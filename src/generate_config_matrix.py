@@ -19,13 +19,19 @@ combination of:
 
 24 configs total (4 team counts x 3 scoring x 2 roster shapes).
 
-BOARD-ONLY AT THIS STAGE. `export_contract.write_all` also writes
-availability.json and does not crash without a availability CSV (it writes
-empty by_player/by_tier -- the same "not yet run for this league" state
-every fresh non-primary league starts in, not special-cased here). No
-Monte Carlo simulation runs for these 24 configs, and strategies.json is not
-generated at all. Both are materially more expensive and explicitly out of
-scope for this pass -- see ADR-047 and status.md.
+`export_contract.write_all` also writes availability.json and does not crash
+without a availability CSV (it writes empty by_player/by_tier -- the same
+"not yet run for this league" state every fresh non-primary league starts
+in, not special-cased here). No Monte Carlo simulation runs for these 24
+configs, and strategies.json is not generated at all -- materially more
+expensive and explicitly out of scope for this pass, see ADR-047 and
+status.md. glossary.json/nulls.json/opponents.json ARE generated (via
+`export_static.write_static_artifacts`) -- these are cheap, hand-authored
+prose artifacts, not computation, and ADR-041 requires them in every
+non-primary league's export directory; omitting them here was an oversight
+(the same bug class as Ethan's Expert League missing them, found 2026-07-29)
+rather than a deliberate scope line, so it is fixed rather than documented
+as a gap.
 """
 
 from __future__ import annotations
@@ -35,6 +41,7 @@ from typing import Dict, List
 
 import db as dbmod
 import export_contract as ec
+import export_static as es
 import league_config as lc
 from scoring import LEAGUE
 
@@ -104,6 +111,7 @@ def generate_all(conn=None) -> List[str]:
             cfg.save()
             out_dir = ec.export_dir_for(cfg.league_id)
             ec.write_all(out_dir, conn, cfg=cfg)
+            es.write_static_artifacts(out_dir, cfg)
             written_ids.append(cfg.league_id)
     finally:
         if own_conn:

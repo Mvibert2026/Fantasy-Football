@@ -1,6 +1,6 @@
 {
-  "contract_version": "1.7.0",
-  "generated_utc": "2026-07-26T17:40:16.836894+00:00",
+  "contract_version": "1.14.0",
+  "generated_utc": "2026-07-29T18:27:03.125784+00:00",
   "league_id": "yahoo_12_standard",
   "league_name": "YAHOO-default, 12 teams, standard scoring",
   "platform": "yahoo",
