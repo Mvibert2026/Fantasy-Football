@@ -2659,3 +2659,136 @@ still pinned to `1.9.0` against the now-1.12.0 export — handoff 069/073 territ
 threads, 49 open, 0 stale, `check` OK. `docs/CURRENT-STATE.md` updated in place with all of the
 above.
 
+
+## 2026-07-27 — Chain 1 step 1.1 (data-ops, worktree phase3-chain1)
+
+Ran `RUN-2026-07-27-overnight.md` PHASE 3 Chain 1 step 1.1 in
+`.claude/worktrees/phase3-chain1`, branch `backend/phase3-chain1-adp-and-exports`.
+
+- Read `src/ingest_mfl_adp.py` (ADR-035) in full: plain `urllib.request`, honest User-Agent,
+  429 backoff, once-per-UTC-day cache — already the right shape, no WebFetch/interactive-tool
+  involvement. Cross-checked `docs/deferred.md`: FFC/Yahoo/ESPN remain blocked/unattemptable;
+  no other live ADP source was ever wired. MFL is the only mechanism in scope.
+- Backfilled the missing 2026-07-27 snapshot: `--force` run landed 246 rows,
+  `adp_source='mfl_proxy'`, `total_drafts_in_sample=47` (thin-sample CAUTION printed as designed).
+- Registered a Windows Scheduled Task, current-user scope, no admin: `FantasyFootball_MFL_ADP_Daily`,
+  daily 09:00, targets the main checkout's `src/ingest_mfl_adp.py` / `data/nfl.db` (not the
+  worktree). Verified via `schtasks /Query ... /V /FO LIST`: Status Ready, Enabled, Run As matth.
+- Confirmed `src/availability.py` never surfaces `mfl_proxy` as `league_adp` and keeps it out of
+  `default_ranking_sources` (existing test already enforced this).
+- Added `test_network_failure_raises_loudly_and_writes_no_row` to
+  `tests/test_ingest_mfl_adp.py` — stubs `urlopen` to raise, asserts propagation and zero rows
+  written. File: 10/10 passed.
+- Flagged (not fixed, out of scope): `frontend/tests/test_ingest_mfl_adp.py` is a byte-identical
+  duplicate of the root test file, from the frontend-prep merge (`2df3716`). Both run
+  independently under separate `pytest.ini` `testpaths`. Noted in handoff 077 for backend/PM to
+  decide on.
+- Opened handoff **077** (data-ops → backend) with full findings, for step 1.2 of this chain.
+- Commits on `backend/phase3-chain1-adp-and-exports`: `a9291f1` (test), `90fc994` (handoff docs).
+  Both pushed to origin. `git stash list` empty.
+- Did not touch `main`; did not run the full 800+ suite (data-ops-scoped work only, per dispatch
+  instructions) — ran `tests/test_ingest_mfl_adp.py` only, 10 passed.
+
+## 2026-07-27 (continued) — founder amendment: CSV archive for ADP snapshots
+
+Founder amendment (relayed by coordinator) to chain1 step 1.1, same worktree/branch: `data/nfl.db`
+is gitignored/unbackable and `adp_snapshots` rows cannot be re-fetched once a day passes, so the
+DB alone is a single point of failure. Addressed:
+
+- `src/ingest_mfl_adp.py` now writes `data/adp-snapshots/YYYY-MM-DD.csv` (UTC date, matching the
+  existing once-per-day logic) on every run, mirroring the `adp_snapshots` columns exactly.
+  Docstring updated: the CSV is the canonical archive, the DB a queryable cache of it — if they
+  disagree, the CSV wins. `.gitignore` checked directly: no change was needed, `data/adp-snapshots/`
+  was never covered by `data/*.db` / `data/raw/` / `data/user pulled fantasy data/`.
+- **Important correction to the earlier report in this same log**: the "2026-07-27 backfill" logged
+  above actually landed under UTC date **2026-07-28** — the system's UTC clock had already rolled
+  past midnight by the time that command ran. `adp_snapshots` has zero rows for UTC 2026-07-27 (a
+  real gap between the 07-26 and 07-28 rows) and that day cannot be recovered from MFL now. Not
+  fabricated or backfilled with placeholder data — reported as an honest gap. CSVs were written for
+  both dates that do have rows: `data/adp-snapshots/2026-07-26.csv` (232 rows) and
+  `data/adp-snapshots/2026-07-28.csv` (246 rows).
+- Added a wrapper `tools/run_adp_snapshot_task.bat` **in the main checkout** (not the worktree —
+  necessary so the scheduled task survives worktree creation/merge/deletion; left untracked/
+  uncommitted there per worktree-isolation discipline, flagging for whoever next commits in main).
+  It runs the ingest script then `git add`/commit/push scoped only to `data/adp-snapshots/*.csv`.
+  Re-pointed the existing `FantasyFootball_MFL_ADP_Daily` scheduled task at this wrapper
+  (`schtasks /Change /TN ... /TR ...`) — succeeded, but `schtasks /Query /V` now reports
+  `Logon Mode: Interactive only` (no run-as password stored), meaning it will only fire while a
+  logged-in interactive session exists at 09:00, not truly unattended. Not yet verified to have
+  actually fired once.
+- Tests: `tests/test_ingest_mfl_adp.py` — 12/12 passed (2 new CSV-export tests added).
+- Commit `8eb6276` on `backend/phase3-chain1-adp-and-exports`, pushed. `git stash list` empty.
+- Replied on handoff thread 077 (not a new thread) with the corrected date finding and the CSV/
+  wrapper mechanism.
+
+## 2026-07-27 (continued 2) — Amendments A & B: source stamping + MFL pick-level investigation
+
+Two more founder amendments to chain1 step 1.1, same worktree/branch, resolved with the founder
+before I acted (per coordinator).
+
+**Amendment A — per-platform ADP source stamping, done.** `src/ingest_mfl_adp.py`'s module
+docstring now states explicitly: ADP is a per-platform behavioural variable (drafters see their
+own platform's displayed ranks), `adp_source` must never be blended/averaged across platforms, and
+any future second ADP source gets its own distinct `adp_source` value. Inspected the only consumer
+(`availability.py::load_mfl_adp_source`) — already filters by a single `adp_source` in every query,
+no existing bug found. Added a regression test,
+`test_load_mfl_adp_source_never_blends_across_adp_source_values`, inserting a second synthetic
+platform's row for the same player/date and asserting the return value is the raw `mfl_proxy`
+figure, not an average. `tests/test_ingest_mfl_adp.py`: 13/13 passed. Commit `7869bf1`.
+
+**Amendment B — investigated MFL for pick-level draft results; blocked, did not build FFC.**
+Founder's ordered instruction: check MFL first, only fall back to FFC if MFL cannot supply it, and
+if neither works, land without it and open a PM thread rather than silently dropping the need.
+Checked MFL's documented API directly (`api_info?STATE=details`) and live-probed the endpoint:
+`TYPE=draftResults` exists but requires a specific league ID (`L=`) — confirmed via
+`GET .../export?TYPE=draftResults&JSON=1` → `"Missing League ID"` and `&L=00001` → `"Invalid
+league ID 00001"`. The only platform-wide, no-league-ID MFL export is `TYPE=adp` (the one already
+in use) — final average-pick figures, not per-pick sequences. No population-level "all mock
+drafts, pick by pick" endpoint exists, and this project doesn't hold specific MFL league IDs to
+query `draftResults` against. Per the founder's explicit instruction, did **not** build an FFC
+scraper — `docs/research/source-audit-2026-07.md` still records FFC as blocked (ToS unretrievable,
+conservative-default policy). Searched `docs/decisions.md` for the "D-021"-style one-time-
+historical-pull authorization the coordinator mentioned — not found under that or any label.
+Opened handoff **078** (data-ops → pm) recording the blocker plainly and asking for a founder
+decision on FFC (get an actual ToS answer, or accept the block indefinitely) rather than letting
+the need silently disappear.
+
+Chain1 step 1.1 lands with: DB backfill + honest UTC-date-gap finding, CSV backup mechanism,
+scheduled task (wrapper now owned/committed by coordinator directly to main), per-platform source
+stamping rule + test, and thread 078 open for the pick-level-capture decision. Docs updated in
+place (`docs/CURRENT-STATE.md`); this entry appended.
+
+Commit `7869bf1` on `backend/phase3-chain1-adp-and-exports`, pushed. `git stash list` empty. Test
+count: `tests/test_ingest_mfl_adp.py` 13/13 passed.
+
+##  -- Phase 3 Chain 1 step 1.2 (backend): T5 freshness export, thread 074
+
+Added the FreshnessResult (src/freshness.py, already computed on every build_board_json call via
+fr.require_fresh but only printed to console) onto board.json top level:
+snapshot_as_of_date, snapshot_age_days, snapshot_max_age_days, snapshot_stale,
+snapshot_freshness_note. Bumped CONTRACT_VERSION 1.12.0 -> 1.13.0. Rebuilt board.json,
+glossary.json, nulls.json, opponents.json (export_static.py also reads CONTRACT_VERSION) and
+confirmed real values (as_of=2026-07-27, age=1d, max=3d, stale=False) with a direct dict dump, not
+just a passing test. No separate provenance/trace section exists in board.json beyond
+generated_utc/contract_version -- extended those, did not invent a parallel mechanism. Updated
+docs/data-contract.md (board.json field table + changelog; also backfilled the header version,
+which had silently drifted to 1.12.0 in code across sessions the doc changelog never recorded --
+not reconstructing that gap, just noting it). Added tests/test_freshness.py::
+TestBoardBuildActuallyRefuses::test_board_json_carries_the_freshness_result_it_computes (live-conn
+check against fr.check_freshness computed independently) and
+tests/test_export_contract.py::test_board_json_carries_snapshot_freshness_fields (committed-artifact
+check). Found and fixed a stale hardcoded version pin,
+tests/test_rosters_export.py::test_contract_version_bumped, asserting CONTRACT_VERSION == "1.12.0"
+-- would have gone red on the very next full-suite run had it not been caught here.
+
+Tests run (not full suite; export_contract/board-building scope per task): 52/52
+(tests/test_export_contract.py + tests/test_freshness.py), then 51/51 across
+test_multi_league_export.py + test_rosters_export.py + test_suspensions.py +
+test_generate_config_matrix.py + test_league2_ethans_expert.py + test_holdout_audit.py after the
+pin fix (was 50 passed/1 failed before the fix). All green, 0 red-by-design in this scope.
+
+Thread 074 replied and set STATUS: RESOLVED (I am backend, the TO: role, so authorized to close
+it). docs/handoffs/OPEN.md updated same session. docs/CURRENT-STATE.md updated in place
+(contract-version lines, thread-074 status). No permission prompts encountered. No rule invented
+beyond normal judgment calls (field names, doc backfill scope) already covered by the standing
+rules.

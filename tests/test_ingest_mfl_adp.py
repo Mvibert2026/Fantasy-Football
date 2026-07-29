@@ -1,4 +1,6 @@
+import csv
 import sqlite3
+import urllib.error
 
 import numpy as np
 import pytest
@@ -85,6 +87,57 @@ def test_repeated_ingest_same_day_replaces_not_duplicates():
     assert n == 1
 
 
+def test_network_failure_raises_loudly_and_writes_no_row(monkeypatch):
+    """A stubbed network failure must propagate, not be swallowed into a
+    silent empty/zero-row write -- an absent snapshot must stay absent and
+    visibly so, never look like 'no ADP movement today'."""
+    conn = sqlite3.connect(":memory:")
+    conn.execute(mfl._CREATE_SQL)
+
+    def _boom(req, timeout=20):
+        raise urllib.error.URLError("simulated network failure")
+
+    monkeypatch.setattr(mfl.urllib.request, "urlopen", _boom)
+
+    with pytest.raises(urllib.error.URLError):
+        mfl.fetch_adp(max_retries=1)
+
+    n = conn.execute("SELECT COUNT(*) FROM adp_snapshots").fetchone()[0]
+    assert n == 0
+
+
+def test_export_snapshot_csv_writes_one_row_per_player(tmp_path):
+    conn = _conn_with_ff_playerids()
+    payload = _payload([
+        {"id": "15281", "rank": "1", "averagePick": "3.00", "minPick": "1", "maxPick": "4",
+         "draftsSelectedIn": "5", "draftSelPct": "10"},
+        {"id": "16162", "rank": "2", "averagePick": "3.20", "minPick": "1", "maxPick": "6",
+         "draftsSelectedIn": "5", "draftSelPct": "10"},
+    ])
+    mfl.store_adp(conn, payload, 10, 1, 0, 0, 10, 2026)
+    date_str = conn.execute(
+        "SELECT substr(retrieved_at, 1, 10) FROM adp_snapshots LIMIT 1"
+    ).fetchone()[0]
+    db_path = tmp_path / "nfl.db"
+    out = mfl.export_snapshot_csv(conn, db_path, date_str)
+    assert out == tmp_path / "adp-snapshots" / f"{date_str}.csv"
+    assert out.exists()
+    with out.open(newline="", encoding="utf-8") as f:
+        rows = list(csv.DictReader(f))
+    assert len(rows) == 2
+    assert rows[0]["adp_source"] == "mfl_proxy"
+    assert set(mfl._CSV_COLUMNS) == set(rows[0].keys())
+
+
+def test_export_snapshot_csv_returns_none_and_writes_nothing_when_no_rows(tmp_path):
+    conn = sqlite3.connect(":memory:")
+    conn.execute(mfl._CREATE_SQL)
+    db_path = tmp_path / "nfl.db"
+    out = mfl.export_snapshot_csv(conn, db_path, "2026-07-27")
+    assert out is None
+    assert not (tmp_path / "adp-snapshots").exists()
+
+
 # ------------------------------------------------ mixture-source loader
 
 
@@ -143,3 +196,33 @@ def test_default_ranking_sources_does_not_include_mfl():
     sources = av.default_ranking_sources(data)
     assert len(sources) == 1
     assert sources[0].name == "fantasypros_ecr"
+
+
+def test_load_mfl_adp_source_never_blends_across_adp_source_values():
+    """Two distinct platforms picking the same player must never be averaged
+    into one figure -- drafters see their own platform's rank, so ADP is a
+    per-platform behavioural variable (per module docstring's stated rule).
+    A second, very different adp_source value ('other_platform_proxy') is
+    inserted for the same player/date; load_mfl_adp_source(adp_source=
+    'mfl_proxy') must return exactly the mfl_proxy figure, not a blend."""
+    conn = sqlite3.connect(":memory:")
+    conn.execute("CREATE TABLE player_ids (mfl_id TEXT, source TEXT, source_id TEXT)")
+    conn.execute("INSERT INTO player_ids VALUES ('2001', 'gsis', '00-0001')")
+    conn.execute(mfl._CREATE_SQL)
+    conn.execute(
+        "INSERT INTO adp_snapshots VALUES "
+        "('mfl_proxy','2001',NULL,NULL,NULL,1,5.0,1,6,10,20,10,1,0,0,10,2026,50,123,"
+        "'2026-07-25T00:00:00','2026-07-25T00:00:00')"
+    )
+    conn.execute(
+        "INSERT INTO adp_snapshots VALUES "
+        "('other_platform_proxy','2001',NULL,NULL,NULL,1,95.0,1,6,10,20,10,1,0,0,10,2026,50,123,"
+        "'2026-07-25T00:00:00','2026-07-25T00:00:00')"
+    )
+    positions = np.array([0])
+    data = ds.SeasonData(
+        season=2026, player_ids=["00-0001"], names=["A"], positions=positions,
+        consensus_rank=np.array([1.0]), weekly_points=np.zeros((1, 1)), n_weeks=1,
+    )
+    src = av.load_mfl_adp_source(conn, data, adp_source="mfl_proxy")
+    assert src.rank[0] == 5.0, "must be the raw mfl_proxy pick, not an average with other_platform_proxy's 95.0"

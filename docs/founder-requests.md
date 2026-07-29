@@ -502,3 +502,48 @@ gap class (two more real instances found and fixed: `PlayerDetail.tsx`'s side sh
 Escape despite its close button being labelled "esc"; `AssistantDock.tsx`'s expanded panel had
 neither). 11 new enumerated tests, one per surface. See `docs/status.md`'s 2026-07-27 workstream-C
 entry for full detail.
+
+## ADP snapshot rows must be backed up outside the gitignored DB (CSV archive)
+
+**Raised:** 2026-07-27 (founder, amendment relayed mid-session to chain1 step 1.1, data-ops).
+**Status:** SHIPPED — `src/ingest_mfl_adp.py` now writes `data/adp-snapshots/YYYY-MM-DD.csv`
+(UTC date) on every run, tracked in git; docstring states the CSV is canonical and the DB a cache
+of it. Scheduled task (`FantasyFootball_MFL_ADP_Daily`) re-pointed at
+`tools/run_adp_snapshot_task.bat` (main checkout) which runs the ingest then commits/pushes the
+CSV. See handoff thread 077 reply and `docs/status.md`'s 2026-07-27 "founder amendment" entry for
+full detail, including the caveat that the scheduled task currently shows `Logon Mode: Interactive
+only` (no stored run-as password) and has not yet been observed to fire unattended.
+
+The founder's reasoning: `data/nfl.db` is gitignored (too large for GitHub) and `adp_snapshots`
+rows are the one thing in it that cannot be re-fetched once a day has passed — a lost local file
+means a permanently missing historical snapshot with no recovery path. This same session
+discovered a live instance of exactly that risk: the machine's UTC clock had already rolled past
+midnight by the time the day's backfill ran, so UTC 2026-07-27 has zero rows and cannot be
+recovered from MFL now (2026-07-26 and 2026-07-28 both have data). Recorded as an honest gap, not
+backfilled with placeholder data.
+
+## Per-platform ADP source stamping must be a stated rule, never blended (Amendment A)
+
+**Raised:** 2026-07-27 (founder, amendment relayed mid-session to chain1 step 1.1, data-ops).
+**Status:** SHIPPED — `src/ingest_mfl_adp.py` docstring now states the rule explicitly (ADP is a
+per-platform behavioural variable; `adp_source` values must never be averaged/blended into a
+single consensus figure; any new source gets its own distinct `adp_source`). Regression test added:
+`test_load_mfl_adp_source_never_blends_across_adp_source_values`. See handoff thread 077 reply.
+
+## Founder decision needed: FFC ToS, for pick-level ADP-velocity capture (Amendment B)
+
+**Raised:** 2026-07-27 (founder, via coordinator, chain1 step 1.1 Amendment B).
+**Status:** OPEN — blocked, not built. The founder wants to test whether ADP velocity predicts
+actual draft position (pick residuals = actual pick minus same-day displayed ADP), which needs
+pick-level individual draft results. Ordered instruction was: check MFL first (already-integrated,
+ToS-clear source), only consider FFC if MFL can't supply it, and if neither works, land without it
+and surface the gap rather than dropping it. **MFL cannot supply it** — its only platform-wide
+export (`TYPE=adp`) gives final figures, not per-pick sequences; the per-pick `TYPE=draftResults`
+call requires a specific league ID this project doesn't hold. Per the founder's own instruction,
+no FFC scraper was built — FFC remains recorded as blocked (`docs/research/source-audit-2026-07.md`:
+ToS unretrievable, conservative-default no-scrape policy) pending an actual answer from FFC. A
+"D-021"-style one-time historical-pull authorization was mentioned as possibly existing but was not
+found in `docs/decisions.md` under that or any other label, and per the founder would not have
+covered this (recurring) capture even if it existed. **Needs a founder decision**: either get an
+actual ToS reply from FFC, or consciously accept the block indefinitely. Tracked in handoff thread
+078 (data-ops → pm).

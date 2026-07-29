@@ -190,6 +190,41 @@ class TestBoardBuildActuallyRefuses:
         finally:
             conn.close()
 
+    def test_board_json_carries_the_freshness_result_it_computes(self):
+        """Thread 074: build_board_json computed a FreshnessResult on every
+        call (via fr.require_fresh) and printed it to the console, but never
+        attached it to the dict it returns -- so board.json shipped with
+        generated_utc (file-write time) only, and no way to see the actual
+        rankings snapshot's age. Pins the fields onto the returned dict and
+        checks they agree with the FreshnessResult computed independently
+        via fr.check_freshness for the same inputs."""
+        import export_contract as ec
+        import league_config as lc
+
+        conn = self._real_conn()
+        try:
+            board = ec.build_board_json(conn, lc.CURRENT_LEAGUE, freshness_today=None)
+            expected = fr.check_freshness(
+                conn, ec.SEASON, make_board_source(),
+                lc.CURRENT_LEAGUE.freshness_max_age_days, today=None,
+            )
+            assert board["snapshot_as_of_date"] == expected["as_of_date"]
+            assert board["snapshot_age_days"] == expected["age_days"]
+            assert board["snapshot_max_age_days"] == expected["max_age_days"]
+            assert board["snapshot_stale"] == expected["stale"]
+            assert board["snapshot_stale"] is False, (
+                "snapshot is expected to be fresh at build time per "
+                "CURRENT-STATE.md's dateline -- if this flips to True the "
+                "snapshot needs re-pulling, not this test relaxed"
+            )
+            assert isinstance(board["snapshot_freshness_note"], str)
+            assert "generated_utc" in board["snapshot_freshness_note"], (
+                "the note must call out the distinction from generated_utc, "
+                "not just restate the field names"
+            )
+        finally:
+            conn.close()
+
 
 def make_board_source():
     import make_board

@@ -1,6 +1,11 @@
 {
-  "contract_version": "1.12.0",
-  "generated_utc": "2026-07-27T22:47:39.538808+00:00",
+  "contract_version": "1.13.0",
+  "generated_utc": "2026-07-28T04:41:54.338807+00:00",
+  "snapshot_as_of_date": "2026-07-27",
+  "snapshot_age_days": 1,
+  "snapshot_max_age_days": 3,
+  "snapshot_stale": false,
+  "snapshot_freshness_note": "as_of_date/age_days/stale describe the rankings snapshot ('fantasypros_csv_2026draft', season 2026) that this board was built from -- NOT when this board.json file was written (see generated_utc for that). stale=True means the snapshot exceeded snapshot_max_age_days as of build time; enforce_freshness=True builds refuse to proceed past that point at all, so a stale=True board only reaches this file when enforce_freshness was explicitly disabled.",
   "league_id": "primary",
   "season": 2026,
   "board_source": "fantasypros_csv_2026draft re-scored into league positional value structure",

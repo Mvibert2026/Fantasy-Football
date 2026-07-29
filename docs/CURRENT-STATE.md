@@ -17,21 +17,26 @@ to learn *what happened*; it is not fine to read it to learn *what is true*.
 of `integration-2026-07-27` into `main`, pushed to `origin/main`) — build-state table below is
 measured directly from `git rev-parse HEAD`, real backend/frontend full-suite runs,
 `CONTRACT_VERSION` in `src/export_contract.py`, and `tools/handoffs.py check`. `CONTRACT_VERSION`
-is **1.12.0** (ADR-053: `board.json` gained four unconditional suspension fields —
+is **1.13.0** as of the Phase 3 Chain 1 backend session (worktree
+`phase3-chain1-adp-and-exports`, thread 074 closed): `board.json` top level gained
+`snapshot_as_of_date`/`snapshot_age_days`/`snapshot_max_age_days`/`snapshot_stale`/
+`snapshot_freshness_note`, the `FreshnessResult` `build_board_json` already computed via
+`fr.require_fresh` on every call and previously only printed to the build console. Prior bump,
+1.12.0 (ADR-053): `board.json` gained four unconditional suspension fields —
 `suspension_flag`/`suspension_games`/`projected_points_suspension_adjusted`/
 `suspension_adjustment_note` — real, dated, sourced, currently empty; T4 wired into the live board
 via the shared `write_all` path; ADR-051: top-level `scoring_format`, `board_source`/
-`consensus_source` now name `fantasypros_csv_2026draft`; ADR-050: `roster_status`, contract 1.10.0).
+`consensus_source` now name `fantasypros_csv_2026draft`; ADR-050: `roster_status`, contract 1.10.0.
 Primary board and `ethans_expert_league` both rebuilt at 511 players; 2026 rookies confirmed
 present with real ranks (Jeremiyah Love #33, Carnell Tate #70, Jordyn Tyson #84). Half-PPR yardage
 bonuses independently verified to stack against the live Yahoo platform (ADR-052) — see §7 of
-`CLAUDE.md`. Handoff threads 069 (scoring_format display), 073 (suspension fields display), 074
-(T5 freshness result export to `board.json` — computed by `src/freshness.py` on every board build,
-still never attached to the `board.json` dict itself) and the trace-field-registry gate (below) are
-all still open to `frontend`, not touched this session. `main` and `integration-2026-07-27`
-diverged independently this round (2 commits vs. 7) and required a founder-authorized merge rather
-than the fast-forward the standing runbook expects — see `docs/handoffs/076-...md` and this
-session's `docs/status.md` entry for the allocator-race root cause.
+`CLAUDE.md`. Handoff threads 069 (scoring_format display) and 073 (suspension fields display) and
+the trace-field-registry gate (below) remain open to `frontend`, not touched this session. Thread
+074 (T5 freshness export) is now `RESOLVED` — see this doc's contract-version line above. `main`
+and `integration-2026-07-27` diverged independently this round (2 commits vs. 7) and required a
+founder-authorized merge rather than the fast-forward the standing runbook expects — see
+`docs/handoffs/076-...md` and this session's `docs/status.md` entry for the allocator-race root
+cause.
 
 ---
 
@@ -42,7 +47,7 @@ session's `docs/status.md` entry for the allocator-race root cause.
 | Backend branch / commit | `main`, `9d8e09b52ff1a96ce7e2d8dfc8f427f96507ed59` | Pushed, in sync with `origin/main` (remote: `github.com/Mvibert2026/Fantasy-Football`) |
 | Backend tests | **614 passing, 0 failures** | Full suite, `pytest -q`, single run, ~533s, real `data/nfl.db`, run this session post-merge at `9d8e09b`. |
 | Agent infrastructure | **Live** | Six subagents in `.claude/agents/` (backend, frontend, data-ops, strategist, researcher, librarian), `/inbox` command, mailbox tooling at `tools/handoffs.py` + `tools/sprint_status.py`, mailbox health enforced in the test suite (`tests/test_handoffs.py`) — **76 threads, 49 open, 0 stale** (`tools/handoffs.py check`, 2026-07-27, after this session registered threads 075/076 for the two overnight-round defects) |
-| Data contract | **1.12.0** | `CONTRACT_VERSION` in `src/export_contract.py`, read directly. `board.json` carries `scoring_format` (ADR-051), `roster_status` (ADR-050), and four suspension fields (ADR-053). |
+| Data contract | **1.13.0** | `CONTRACT_VERSION` in `src/export_contract.py`, read directly. `board.json` carries `scoring_format` (ADR-051), `roster_status` (ADR-050), four suspension fields (ADR-053), and five snapshot-freshness fields (thread 074). |
 | Frontend location | `frontend/` subdirectory of this repo | Merged from `frontend-prep` via `git subtree add`, full history preserved. No longer a separate working copy. |
 | Frontend tests | **192 passing, 2 failing** (21 files) | Full suite, `npm test` (runs `pretest`'s export sync first — a bare `npx vitest run` fails all 16 data-backed files with `public/data/_manifest.json` ENOENT), single run, ~62s, re-run this session post-merge. The 2 failures are still `ui/__tests__/trace-fields.test.ts` — **red by design**: `TRACE_CONTRACT` is still pinned to `1.9.0` against the now-`1.12.0` export, and the trace registry doesn't know `roster_status` or the four suspension fields yet. Not fixed here — handoff 069/073 territory, not touched this session. |
 | Python modules | **41** in `src/` | `ls src/*.py \| wc -l` |
@@ -362,6 +367,30 @@ assistant" wiring · LLM prose renderer
    collection begins, or the mocks collected cannot validate `delta` no matter how many there are,
    and cannot be defended against shortcut bias at all.
 2. **ADP snapshot capture** — unrecoverable if delayed; a past date's snapshot cannot be backfilled.
+   `adp_source='mfl_proxy'` (ADR-035, `src/ingest_mfl_adp.py`) is the only live source (FFC/Yahoo/
+   ESPN remain blocked/unattemptable per `docs/deferred.md`). `adp_snapshots` currently has rows for
+   UTC 2026-07-26 and 2026-07-28 only — **UTC 2026-07-27 has a real, permanent gap** (discovered
+   2026-07-27 session, thread 077): the machine's UTC clock had already rolled to 07-28 by the time
+   the "today" backfill ran, so the row landed one calendar day later than assumed, and 07-27 UTC
+   can no longer be fetched from MFL. Each run now also writes
+   `data/adp-snapshots/YYYY-MM-DD.csv` (one per UTC date; **the CSV is canonical, the DB a cache of
+   it** — see `src/ingest_mfl_adp.py` docstring), tracked in git as the off-machine backup for the
+   one table in `data/nfl.db` that cannot be rebuilt. A Windows Scheduled Task
+   (`FantasyFootball_MFL_ADP_Daily`, daily 09:00, current-user scope) runs
+   `tools/run_adp_snapshot_task.bat` (main checkout only — ingest, then `git add`/commit/push scoped
+   to `data/adp-snapshots/*.csv`) with no agent/WebFetch involvement. Caveat: `schtasks` reports
+   `Logon Mode: Interactive only` (no stored run-as password) — it will not fire from a locked/
+   logged-out session; nobody has verified an actual unattended fire yet. Verify periodically:
+   `SELECT MAX(retrieved_at) FROM adp_snapshots WHERE adp_source='mfl_proxy'` and check
+   `data/adp-snapshots/` for a same-day CSV. **Per-platform stamping is a stated rule** (2026-07-27,
+   thread 077 reply): `adp_source` distinguishes platforms and must never be blended/averaged into
+   one consensus figure — enforced by `test_load_mfl_adp_source_never_blends_across_adp_source_values`.
+   **Pick-level ADP-velocity capture (pick residuals vs. same-day ADP) is BLOCKED, not built**
+   (thread 078): MFL's `TYPE=draftResults` requires a specific league ID we don't hold — the only
+   platform-wide MFL export is `TYPE=adp` (final figures, no per-pick sequence) — and FFC remains
+   blocked (ToS unretrievable, conservative-default policy, `docs/research/source-audit-2026-07.md`).
+   No FFC scraper was built. Open founder decision needed: get an actual FFC ToS answer, or accept
+   the block indefinitely.
 3. **Mock drafts toward n=30** — gates the pre-registered availability decision rule.
 4. **FantasyPros licence decision — CLOSED (D-020).** No licence needed while the product stays
    private/personal/founder-only. Reopens on any second user, alongside D-021.
