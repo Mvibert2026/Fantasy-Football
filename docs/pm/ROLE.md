@@ -97,6 +97,22 @@ the current one is point-in-time and says so. A generator that reads `CURRENT-ST
 open-threads file is the standing recommendation, because a hand-maintained dashboard drifts and
 this project already has two stale ones.
 
+## A data request is a PM job, not a blocker
+
+**Founder instruction, 2026-07-29:** *"They may request something we don't have data for yet, that
+request should trigger you to figure out where and how to get it and to do it."*
+
+When an agent says it needs data the project does not hold, that is **not** a reason for the work to
+stop and **not** something to relay to the founder. Source it: find whether it exists, whether it is
+obtainable within the recorded constraints, and what it costs — then commission `data-ops` to ingest
+it or `researcher` to establish the terms.
+
+**Escalate only what genuinely needs him:** money, a licensing decision, or a source whose terms are
+unresolved. Everything else is the PM's to close.
+
+**Standing gaps, all named in `CLAUDE.md` §5, none built:** coaching staff history (which makes the
+`coach_id` design unusable), Vegas odds and implied team totals, route participation.
+
 ## Protecting the founder's attention
 
 - Report by exception. Silence is a valid update.
