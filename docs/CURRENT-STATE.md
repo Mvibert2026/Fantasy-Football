@@ -14,8 +14,14 @@ in the same voice as current ones. Same hazard `docs/assistant-context.md` warns
 `decisions.md`. It is fine to read either to learn *what happened*; it is not fine to read them to
 learn *what is true*.
 
-**Last verified:** 2026-07-29, rescue + rebuildability session (main @ `c96739c`, pushed to
-`origin/main`). That session preserved the orphaned mock-calibration work as
+**Last verified:** 2026-07-29, cloud-path rehearsal (branch `claude/cloud-path-rehearsal-kafx7m`,
+from `main` @ `4a299df`). That session did a full clean-clone cold rebuild + both suites in a
+Linux container — **passed, 641 backend / 202 frontend, ~9 min, no credentials** — and corrected
+two claims in `docs/can-we-rebuild-the-database.md` (rankings history *is* re-pullable; the
+4-step rebuild order is incomplete). See open item 13 and
+`docs/status/2026-07-29-cloud-path-rehearsal.md`. Prior verification: 2026-07-29, rescue +
+rebuildability session (main @ `c96739c`, pushed to `origin/main`), which preserved the orphaned
+mock-calibration work as
 `backend/mock-calibration-kickers` @ `11c794a` (ADR-054, 11 files, **committed as-found and not
 reviewed** — completeness not assessed), added `docs/environment.md`, and measured whether
 `data/nfl.db` is rebuildable (`docs/can-we-rebuild-the-database.md` — yes for 99.3% in ~4 minutes,
@@ -477,8 +483,36 @@ assistant" wiring · LLM prose renderer
    and λ reverts from measured to guessed.
    (b) **The founder FantasyPros export** under `data/raw/founder-export/2026-07-27/` — excluded by
    `.gitignore:2`, and the only half-PPR-native ranking input in the project.
-   (c) **Rankings history 2021–2025** (3,487 + 36 rows) — the DynastyProcess mirror serves only the
-   current scrape (today: one date, 2026-07-24). Verified per season with the ingester's own
-   `resolve_snapshot_date`: 2021–2025 all fail, only 2026 resolves.
+   (c) **Rankings history 2021–2025** — ~~not re-pullable~~ **CORRECTED 2026-07-29: it re-pulls
+   identically.** The clean-clone rehearsal ran `src/ingest_rankings.py` unmodified against an
+   empty DB and got all six seasons in 4.3s at plausible late-August dates; the 2,540 re-pulled
+   2021–2025 rows diff **zero-for-zero** against the committed rescue CSV across all 14 data
+   columns. The earlier "no source will sell it back at any price" finding was wrong. Keep the
+   rescue CSV committed as a pin against future mirror change — but note **no loader reads it
+   back into the DB**, so the pin cannot currently be used.
    The failure mode is silent — a clean checkout rebuilds a DB missing all three and every script
-   still runs green, because nothing asserts those rows exist. **Blocks moving to cloud sessions.**
+   still runs green, because nothing asserts those rows exist. ~~**Blocks moving to cloud
+   sessions.**~~ **No longer blocking — see open item 13.**
+
+13. **Cloud migration gate — MEASURED 2026-07-29, PASSES with four hand-fixes.**
+    Full clean-clone rehearsal in a cold Linux container (fresh `git clone`, no `data/`, nothing
+    copied across): **641 backend passed / 8 skipped / 0 failed, 202 frontend passed / 0 failed,
+    ~9 minutes wall clock, zero credentials, zero `.env`.** Narrative and timings:
+    `docs/status/2026-07-29-cloud-path-rehearsal.md`. Four things a fresh machine does not get:
+    (a) **`pandas` is absent from `requirements.txt`** though 15 `src/` modules and 9 tests import
+    it — pytest collection aborts outright, zero tests run. `numpy` is unpinned too, present only
+    as a scipy transitive.
+    (b) **No Python version is declared anywhere in the repo** except `.github/workflows/adp-snapshot.yml`.
+    `scipy==1.18.0` needs >=3.12; a stock 3.11 default fails the install hard.
+    (c) **`identity.py` exits non-zero on a fresh DB** (`no such table: rankings`) — its writes
+    commit first so it is cosmetic, but it breaks any chained rebuild. It must run **last**. It
+    also has no argparse, so the `--db` flag documented for it is silently ignored and it always
+    writes the real `DB_PATH`.
+    (d) **The documented 4-step rebuild order is incomplete** — following it leaves the suite at
+    18 failed / 9 errors. The complete 8-step order is in `docs/can-we-rebuild-the-database.md`.
+    Remaining genuine gap: **`adp_snapshots` history has no CSV→DB loader** — `ingest_mfl_adp.py`
+    exports but cannot import, so ~478 committed point-in-time rows are unrestorable and the gap
+    grows daily. Cloud-only caveats: `tools/state.py --tests` hardcodes the Windows conda path and
+    crashes off-Windows (breaking the mandated write-back), the PreToolUse safety hook cannot spawn
+    in a Linux container, and `github.com/dynastyprocess/*` is 403 in any Claude session (session
+    repo-scoping, not upstream — unaffected on a normal VM or GitHub Actions).

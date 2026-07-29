@@ -7,19 +7,27 @@ opened read-only (`mode=ro`) and never written to.
 
 ## Answer
 
-**Structurally yes, historically no.**
+**Yes — verified end-to-end 2026-07-29 from a clean clone, both suites green, no credentials.**
+
+> **Read this first.** Two claims below were measured against a scratch *database path* on the
+> Windows box and are now superseded by a full clean-*clone* rehearsal on Linux. Corrections are
+> marked inline and summarised in "Measured again 2026-07-29" at the end.
+>
+> 1. The 2021–2025 rankings history **does** re-pull, identically. It was reported here as
+>    permanently unrecoverable. It is not.
+> 2. The four-command rebuild sequence is **incomplete** — following it leaves the suite at
+>    18 failed / 9 errors. The complete order is at the end of this document.
+>
+> What survives unchanged: the 99.3%/four-minute figure for the bulk tables, the drift warning
+> on `depth_charts_snapshots` and `contracts`, and the look-ahead-bias warning on re-pulled ADP.
 
 99.3% of the database by size — every play-derived, stat-derived and reference table — rebuilds
-from a clean checkout with no credentials in **under four minutes**. What does *not* rebuild is
-small, and it is precisely the part the modelling work rests on: the **2021–2025 rankings
-history**, the **2026 half-PPR board input**, and the **single real draft the availability model
-was calibrated against**.
+from a clean checkout with no credentials in **under four minutes**. The three artifacts this
+document was written to flag are now all committed (thread 080, `bdda50e`), so they rebuild too.
 
-**For the cloud-session decision:** the daily development loop is safe to move. Nothing in the
-build, test, or export path needs the local machine. But three artifacts exist *only* on this
-Windows box and are gitignored. **They must be committed or re-exported before a cloud session
-becomes the primary environment**, or they are one disk failure from gone — and two of them
-cannot be regenerated from any source, at any price.
+**For the cloud-session decision:** the daily development loop is safe to move, and the full
+build + test path has now actually been run in a cloud container rather than argued about. The
+remaining gaps are packaging-level, not architectural — see the table at the end.
 
 ---
 
@@ -86,27 +94,51 @@ artifact pinned, not the rebuild command.
 
 ## NOT reproducible
 
-### 1. Rankings history, 2021–2025 — `rankings` (3,487 rows) + `rankings_quarantine` (36)
+### 1. Rankings history, 2021–2025 — ~~NOT reproducible~~ **CORRECTED 2026-07-29: it re-pulls exactly**
 
-The hard blocker. `ingest_rankings.py` pulls FantasyPros ECR via
-`nflreadpy.load_ff_rankings()` → DynastyProcess's public mirror. **That mirror serves only the
-current scrape.** Today it carries exactly one snapshot date: `2026-07-24`.
+**This section's original claim was wrong and is retained below only so the correction is
+legible.** Measured 2026-07-29 in the clean-clone cloud rehearsal
+(`docs/status/2026-07-29-cloud-path-rehearsal.md`): running the ingester itself, unmodified,
+in a fresh clone with an empty database:
 
-Tested using the ingester's own `resolve_snapshot_date`, not a reimplementation:
+```
+python src/ingest_rankings.py     # 4.3s
+  2021: 519 rows, as_of=2021-08-27
+  2022: 504 rows, as_of=2022-08-26
+  2023: 485 rows, as_of=2023-08-25
+  2024: 558 rows, as_of=2024-08-30
+  2025: 474 rows, as_of=2025-08-29
+  2026: 408 rows, as_of=2026-07-24
+```
 
-| Season | Result |
+The 2,540 re-pulled 2021–2025 rows were then diffed row-for-row against the committed rescue
+export `data/rankings-history/rankings_2021_2025.csv`, keyed on
+`(season, player_id, position)` across all 14 data columns (`ingested_at` excluded — it is a
+write-time stamp):
+
+| | |
 |---|---|
-| 2021 | **NOT re-pullable** — no `redraft-overall` snapshot in 2021-03-01 … 2021-08-31 |
-| 2022 | **NOT re-pullable** |
-| 2023 | **NOT re-pullable** |
-| 2024 | **NOT re-pullable** |
-| 2025 | **NOT re-pullable** |
-| 2026 | re-pullable — `as_of=2026-07-24`, `preseason_final=False` |
+| Re-pulled rows | 2,540 |
+| Rescue CSV rows | 2,540 |
+| Only in re-pull | 0 |
+| Only in rescue CSV | 0 |
+| Shared keys with any differing field | **0** |
 
-Those five seasons were captured when the mirror still served them. **Delete the DB and the
-entire pre-2026 expert-consensus baseline is gone permanently.** Since CLAUDE.md §6.5 makes
-consensus the yardstick every ranking version is scored against, losing it does not degrade the
-backtest — it removes the ability to run one on those seasons at all.
+**Identical.** The DynastyProcess mirror does serve dated historical ECR snapshots, and each
+season resolves to a plausible late-August pre-draft date. The original finding — reproduced
+verbatim below — is superseded:
+
+> The hard blocker. `ingest_rankings.py` pulls FantasyPros ECR via
+> `nflreadpy.load_ff_rankings()` → DynastyProcess's public mirror. **That mirror serves only the
+> current scrape.** Today it carries exactly one snapshot date: `2026-07-24`. Tested using the
+> ingester's own `resolve_snapshot_date`: 2021–2025 all **NOT re-pullable**, only 2026 resolves.
+> Delete the DB and the entire pre-2026 expert-consensus baseline is gone permanently.
+
+Why the original measurement disagreed has not been diagnosed. Do not assume the mirror is
+guaranteed stable — **keep `rankings_2021_2025.csv` committed.** Its value is now as a *pin*
+against future upstream change, not as the only surviving copy. Note there is currently **no
+loader that reads it back into the DB**; none is needed while the re-pull matches, but that
+means the pin cannot actually be used if the mirror does change. See the rehearsal narrative.
 
 ### 2. The 2026 half-PPR board input — not in the repo at all
 
@@ -182,21 +214,62 @@ rolling current aggregate, they are the only point-in-time capture of that windo
 
 ## What to do before moving to cloud sessions
 
-Ordered by consequence. The first three are the whole risk.
+Items 1–3 were **done** in thread 080 (`bdda50e`) and the artifacts are committed. Items 4–5
+stand. The rehearsal on 2026-07-29 then found a further set — see below.
 
-1. **Commit the 160-pick real draft** as a fixture. Unreproducible, irreplaceable, tiny, and the
-   sole empirical basis for λ.
-2. **Commit the four `data/raw/founder-export/` files**, or carve an exception into
-   `.gitignore:2` for that directory. Check FantasyPros redistribution terms first (CLAUDE.md
-   §5/§10) — if committing is not permissible, back them up outside git and say where.
-3. **Export the `rankings` table for 2021–2025 to CSV and commit it.** Five seasons of expert
-   consensus that no source will sell back at any price.
+1. ~~Commit the 160-pick real draft as a fixture.~~ Done — `tests/fixtures/real_draft_2025/`.
+   Note the ingestible copy is `data/real_drafts/2025_league_draft.json`; the `tests/fixtures/`
+   export is a table dump the ingester rejects.
+2. ~~Commit the four `data/raw/founder-export/` files.~~ Done — `.gitignore` now exempts them.
+3. ~~Export `rankings` 2021–2025 to CSV and commit it.~~ Done — and per the correction above,
+   it turns out to re-pull identically anyway. Keep it as a pin.
 4. Keep the scheduled MFL ADP snapshots running and committed — they are the only defence
    against a rolling window.
 5. Treat `depth_charts_snapshots` and `contracts` as drifting. Pin artifacts, not commands, for
    any result that must reproduce exactly.
 
-With 1–3 committed, a cloud session can rebuild a complete, correct database in ~4 minutes from
-a clean checkout with no credentials. Without them, a cloud session silently rebuilds a database
-that is missing the history — and every script still runs green, because nothing currently
-asserts those rows exist.
+## Measured again 2026-07-29 — full clean-clone rehearsal
+
+The rebuild above was measured against a scratch *database path*. It has now been measured
+against a scratch **clone**: fresh `git clone`, no `data/*.db`, nothing copied across, on Linux
+with no preinstalled dependencies. Narrative and full timings in
+`docs/status/2026-07-29-cloud-path-rehearsal.md`.
+
+**Result: both suites green — 641 backend passed / 8 skipped, 202 frontend passed — in ~9
+minutes wall clock, with zero credentials and zero `.env`.** No source needed a login. That is
+the cloud gate, and it passes.
+
+Four things had to be supplied by hand that a clean clone does not provide:
+
+| # | What | Fix |
+|---|---|---|
+| 1 | `pandas` is imported by 15 `src/` modules and 9 tests but is **absent from `requirements.txt`**. Collection aborts outright. | Add `pandas` (and pin `numpy`, currently present only as a scipy transitive). |
+| 2 | **No Python version is declared anywhere** except `.github/workflows/adp-snapshot.yml`. `scipy==1.18.0` requires >=3.12; the default `python3` on a stock image is often 3.11, and the install fails hard. | Add a `.python-version` / `requires-python`. |
+| 3 | The documented 4-step order runs `identity.py` before any rankings ingest, so it **exits non-zero** on `no such table: rankings`. Its table writes commit first, so it is cosmetic — but it breaks any chained or CI-driven rebuild. | Reorder, or guard the coverage report. |
+| 4 | The rebuild order in this doc is **incomplete**. After the 4 documented steps the suite is 18 failed / 9 errors, all tracing to missing `rankings` / `adp_snapshots`. | The full order is below. |
+
+**The actual complete rebuild order**, all with default paths, from a clean clone:
+
+```
+python src/ingest_weekly_stats.py                                  # 37.9s
+python src/ingest_reference.py                                     # 37.8s
+python src/ingest_league_metrics.py                                # 37.5s
+python src/ingest_rankings.py                                      #  4.3s
+python src/ingest_fantasypros_csv.py                               #  ~5s
+python src/ingest_mock_drafts.py data/real_drafts/2025_league_draft.json
+python src/ingest_mfl_adp.py
+python src/identity.py                                             # last -- needs rankings
+```
+
+Yielding 22 tables / 2,856,629 rows / 854.4 MB, and a fully green suite.
+
+**Note `identity.py` takes no `--db` argument** — it has no argparse at all and always writes
+`DB_PATH`. The `--db <scratch>` shown for it earlier in this document is silently ignored, and
+following it writes to the real database.
+
+**Still unrestorable: `adp_snapshots` history.** `src/ingest_mfl_adp.py` has
+`export_snapshot_csv` but no import counterpart, so the ~478 rows of point-in-time ADP sitting
+in the committed `2026-07-26` and `2026-07-28` CSVs cannot be loaded back. A rebuild gets only
+today's pull (225 rows against the live DB's 451). The module docstring calls the CSV canonical
+and the DB a cache of it — there is currently no code that can rebuild that cache. **This is
+the one genuine remaining rebuild gap, and it grows by one snapshot a day.**
