@@ -13,3 +13,6 @@ __pycache__/
 .pytest_cache/
 .claude/settings.local.json
 *.bak-*
+data/*.db-journal
+data/*.db-wal
+data/*.db-shm
