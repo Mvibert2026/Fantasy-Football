@@ -37,6 +37,9 @@ from scoring import score_offensive_game  # noqa: E402
 
 SEAL = 2025                       # never read, features or outcomes
 TARGETS = (2021, 2022, 2023, 2024)  # seasons with a pre-draft consensus snapshot
+POSITIONS = ("QB", "RB", "WR", "TE")
+S = None                          # Store, injected by build_all()
+BASE = None                       # replacement levels, injected by main()
 SEED = 20260729
 BOOT = 4000
 
@@ -257,3 +260,153 @@ def wilson(k: int, n: int, z: float = 1.96) -> Tuple[float, float, float]:
     c = (p + z * z / (2 * n)) / d
     h = z * math.sqrt(p * (1 - p) / n + z * z / (4 * n * n)) / d
     return p, max(0.0, c - h), min(1.0, c + h)
+# ---------------------------------------------------------------- build rows
+def first_season(pid, upto):
+    """Earliest REG season observed at or before `upto`. None => no NFL snaps yet."""
+    for s in range(2009, upto + 1):
+        if pid in S.season(s):
+            return s
+    return None
+
+
+def build(season, position):
+    """One pre-draft consensus list, joined to what actually happened. Universe frozen."""
+    cons = S.consensus(season, position)
+    cur = S.season(season)
+    p1, p2 = S.season(season - 1), S.season(season - 2)
+    snap1 = S.snap_share(season - 1)
+    draft = S.draft()
+    birth = S.birthdates()
+
+    # realised positional universe = every player whose modal position that season
+    # matches, from pws -- NOT restricted to the consensus list.
+    realised = sorted(
+        [(pid, v.points) for pid, v in cur.items() if v.pos == position],
+        key=lambda kv: -kv[1])
+    finish = {pid: i + 1 for i, (pid, _) in enumerate(realised)}
+    repl_idx = min(BASE[position] - 1, len(realised) - 1)
+    repl_pts = realised[repl_idx][1] if realised else 0.0
+
+    rows = []
+    for i, c in enumerate(cons):
+        pid = c['player_id']
+        cs = cur.get(pid)
+        pts = cs.points if cs else 0.0            # never played -> 0, RETAINED
+        gms = cs.games if cs else 0
+        a = p1.get(pid); b = p2.get(pid)
+        # games-weighted 2-season prior ppg; 0 if no prior NFL snaps
+        gsum = (a.games if a else 0) + (b.games if b else 0)
+        prior_ppg = ((a.points if a else 0) + (b.points if b else 0)) / gsum if gsum else 0.0
+        fs = first_season(pid, season - 1)
+        exp = (season - fs) if fs else 0          # 0 == no prior NFL regular-season game
+        dr = draft.get(pid)
+        bd = birth.get(pid)
+        age = None
+        if bd:
+            try:
+                y, m, d = (int(x) for x in bd.split('-')[:3])
+                age = season - y + (9 - m) / 12.0
+            except Exception:
+                age = None
+        rows.append(dict(
+            season=season, pid=pid, name=c['player_name'], pos=position,
+            pos_rank=i + 1, ovr=c['adp_rank'], ecr_val=c['adp_value'],
+            spread=c['spread_sd'], rbest=c['rank_best'], rworst=c['rank_worst'],
+            pts=pts, games=gms, ppg=(pts / gms if gms else 0.0),
+            finish=finish.get(pid, 999), vbd=pts - repl_pts,
+            prior_ppg=prior_ppg, prior_g=(a.games if a else 0),
+            prior_tgt=(a.targets if a else 0),
+            prior_snap=snap1.get(pid), exp=exp, rookie=1 if exp == 0 else 0,
+            age=age, dr_round=(dr[1] if dr and dr[0] == season - exp else None),
+            dr_ovr=(dr[2] if dr else None), dr_season=(dr[0] if dr else None),
+            repl_pts=repl_pts,
+        ))
+    return rows
+
+
+def build_all(store, positions=POSITIONS):
+    global S, BASE
+    S = store
+    return {(pos, s): build(s, pos) for pos in positions for s in TARGETS}
+
+
+TE_BANDS = [('TE1-3', 1, 3), ('TE4-6', 4, 6), ('TE7-10', 7, 10),
+            ('TE11-16', 11, 16), ('TE17-24', 17, 24), ('TE25-40', 25, 40)]
+DRAFT_PICKS = 150   # 10 teams x 15 drafted rounds
+
+
+def within_season(by_s, stat, n=BOOT, seed=SEED):
+    """stat computed per season, then averaged. Bootstrap resamples SEASONS, not players.
+
+    Pooling a rank-based statistic across seasons compares a 2021 player to a 2024
+    player and inflates it through between-season composition. Do not do that.
+    """
+    per = {s: stat(rows) for s, rows in by_s.items()}
+    ok = {s: v for s, v in per.items() if v is not None}
+    if not ok:
+        return None, None, None, per
+    rgen = random.Random(seed)
+    seasons = sorted(ok)
+    draws = sorted(sum(ok[rgen.choice(seasons)] for _ in seasons) / len(seasons)
+                   for _ in range(n))
+    return (sum(ok.values()) / len(ok), draws[int(.025 * n)], draws[int(.975 * n)], per)
+
+
+def main(db=Path(__file__).resolve().parents[2] / "data" / "nfl.db"):
+    """Reproduce the headline tables of docs/ranking/bottom-up-research-pass-2.md."""
+    global BASE
+    from scoring import ReplacementLevels
+    BASE = ReplacementLevels().baselines()
+    ALL = build_all(Store(db))
+
+    print("== hit rate by pre-draft TE band (Wilson 95%) ==")
+    for lab, lo_, hi_ in TE_BANDS:
+        g = [r for s in TARGETS for r in ALL[('TE', s)] if lo_ <= r['pos_rank'] <= hi_]
+        p6, l6, u6 = wilson(sum(1 for r in g if r['finish'] <= 6), len(g))
+        p10, l10, u10 = wilson(sum(1 for r in g if r['finish'] <= 10), len(g))
+        print(f"  {lab:<9} n={len(g):3d}  top-6 {p6*100:5.1f}% [{l6*100:4.1f},{u6*100:5.1f}]"
+              f"   top-10 {p10*100:5.1f}% [{l10*100:4.1f},{u10*100:5.1f}]")
+
+    print("\n== were the late top-6 TEs draftable? (10 teams x 15 rounds = 150 picks) ==")
+    hits = [r for s in TARGETS for r in ALL[('TE', s)] if r['finish'] <= 6]
+    late = [r for r in hits if r['pos_rank'] >= 11]
+    print(f"  top-6 TE seasons from pre-draft TE11+: {len(late)}/{len(hits)}")
+    print(f"  ...inside 150 picks: {sum(1 for r in late if r['ovr'] <= DRAFT_PICKS)}/{len(late)}")
+    for r in sorted(late, key=lambda r: r['season']):
+        print(f"    {r['season']}  TE{r['pos_rank']:<3} ovr {r['ovr']:<4} "
+              f"{'IN ' if r['ovr'] <= DRAFT_PICKS else 'OUT'}  {r['name']}")
+
+    print("\n== cost of the TE7-10 window: mean realised VBD at overall ECR 75-113 ==")
+    for pos in POSITIONS:
+        g = [r for s in TARGETS for r in ALL[(pos, s)] if 75 <= r['ovr'] <= 113]
+        v = [r['vbd'] for r in g]
+        print(f"  {pos}  n={len(g):3d}  mean VBD {sum(v)/len(v):+7.1f}  "
+              f"P(VBD>+30) {sum(1 for x in v if x > 30)/len(v)*100:5.1f}%")
+
+    # Band is TE11-40, matching the report. NOT TE11-open: including TE41+ (overall ECR
+    # 300+, near-zero hit probability) makes every signal look far stronger than it is,
+    # because separating a top-6 TE from TE80 is trivial and is not the decision.
+    print("\n== forecastability of late TE hits, band TE11-40: AUC within season, then averaged ==")
+    sigs = [('consensus ECR rank', lambda r: -r['ovr'], None),
+            ('expert rank_best', lambda r: -r['rbest'], lambda r: r['rbest'] is not None),
+            ('expert disagreement sd', lambda r: r['spread'], lambda r: r['spread'] is not None),
+            ('prior-2yr ppg', lambda r: r['prior_ppg'], None),
+            ('prior-yr snap share', lambda r: r['prior_snap'], lambda r: r['prior_snap'] is not None)]
+    base = {s: [r for r in ALL[('TE', s)] if 11 <= r['pos_rank'] <= 40] for s in TARGETS}
+    for name, fn, filt in sigs:
+        by_s = {s: [r for r in base[s] if filt is None or filt(r)] for s in TARGETS}
+
+        def f(rs, fn=fn):
+            k = [(fn(r), 1 if r['finish'] <= 6 else 0) for r in rs if fn(r) is not None]
+            return auc([a for a, _ in k], [b for _, b in k]) if k else None
+
+        v, l, u, _ = within_season(by_s, f)
+        print(f"  {name:<24} AUC {v:.3f} [{l:.2f}, {u:.2f}]" if v is not None else f"  {name}: --")
+
+
+if __name__ == "__main__":
+    ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument("--db", type=Path,
+                    default=Path(__file__).resolve().parents[2] / "data" / "nfl.db")
+    main(ap.parse_args().db)
+

@@ -276,6 +276,17 @@ season and eighteen tight ends is a weak calibration and it is stated as one.
 - **Known impurity:** 3 of 344 consensus-listed TEs had a non-TE realised modal position (Jacob
   Harris ×2, Connor Heyward) and are scored as non-hits. Their combined realised total is 14.1
   points; the effect is nil.
+- **Band sensitivity, found while verifying the committed script and worth recording as a trap.**
+  The forecastability band is **TE11-40**, not TE11-open. Letting the band run to the end of the
+  consensus list (TE41-95, overall ECR 300+) moves the same AUCs to 0.826 / 0.860 / 0.629 / 0.555 /
+  0.803 — every signal appears to work, including the ones killed above. Nothing changed but the
+  denominator: separating a top-6 tight end from TE80 is trivial and is not the decision anyone
+  faces. **Any late-round AUC quoted without its band is uninterpretable**, and the flattering
+  version is the one an unconstrained analysis produces by default.
+
+**Reproduction:** `.venv/bin/python experiments/bottomup/pass2_te_adp.py --db data/nfl.db` prints
+the hit-rate table, the draftability table, the TE7-10 cost table and the AUC table. Verified
+2026-07-29 to reproduce every headline figure in §1 exactly.
 
 **What would falsify the main conclusion:** real ADP history (thread 055). If tight ends' true draft
 positions diverge from ECR rank far more than the 2026 calibration suggests, the draftability
