@@ -265,32 +265,36 @@ function OpponentNameField({
     setEditing(false);
   }
 
+  // Deliberately no wrapping <span> around these fragments: the header row div above
+  // (in Opponents()) is the direct flex parent, exactly as it was before this field
+  // existed. ui/__tests__/opponents.test.tsx's cardFor() walks up two parents from the
+  // name text node to find the card container -- an extra wrapper here would silently
+  // break that without changing anything a person looking at the screen would notice,
+  // which is exactly the kind of drift a DOM-shape assumption in a test should catch.
   if (editing) {
     return (
-      <span style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 4 }}>
-        <input
-          ref={inputRef}
-          value={draft}
-          onChange={(e) => setDraft(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') commit();
-            if (e.key === 'Escape') cancel();
-          }}
-          onBlur={commit}
-          placeholder={`Slot ${slot} team name`}
-          aria-label={`Team name for slot ${slot}`}
-          style={{
-            flex: 1,
-            minWidth: 0,
-            fontSize: 14,
-            fontWeight: 600,
-            background: 'var(--panel2)',
-            border: '1px solid var(--acc)',
-            color: 'var(--txt)',
-            padding: '2px 6px',
-          }}
-        />
-      </span>
+      <input
+        ref={inputRef}
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') commit();
+          if (e.key === 'Escape') cancel();
+        }}
+        onBlur={commit}
+        placeholder={`Slot ${slot} team name`}
+        aria-label={`Team name for slot ${slot}`}
+        style={{
+          flex: 1,
+          minWidth: 0,
+          fontSize: 14,
+          fontWeight: 600,
+          background: 'var(--panel2)',
+          border: '1px solid var(--acc)',
+          color: 'var(--txt)',
+          padding: '2px 6px',
+        }}
+      />
     );
   }
 
@@ -298,9 +302,10 @@ function OpponentNameField({
   const isTyped = typedName !== undefined;
 
   return (
-    <span style={{ flex: 1, display: 'flex', alignItems: 'baseline', gap: 5, minWidth: 0 }}>
+    <>
       <span
         style={{
+          flex: 1,
           fontSize: 15,
           fontWeight: 600,
           overflow: 'hidden',
@@ -354,7 +359,7 @@ function OpponentNameField({
           ×
         </button>
       ) : null}
-    </span>
+    </>
   );
 }
 
