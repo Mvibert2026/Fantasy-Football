@@ -146,7 +146,7 @@ export function buildLeagueConfig(data: Dataset): LeagueConfig {
       ? null
       : `league.json declares contract ${version}; this app is written against ${EXPECTED_CONTRACT}. ` +
         `The thresholds shown are whatever league.json currently publishes — nothing here is ` +
-        `adjusted to compensate. Use Refresh data to re-check, or regenerate the export.`;
+        `adjusted to compensate. Regenerate the export to resolve it.`;
 
   const sourcedUserSlot = present(L.user_draft_slot, 'league.json:user_draft_slot', runId);
 
