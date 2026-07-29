@@ -1,6 +1,6 @@
 ---
 ID: FR-056
-STATUS: NEW
+STATUS: SHIPPED
 PRIORITY: HIGH
 SOURCE: chat 2026-07-29, PM session
 RAISED: 2026-07-29
@@ -68,3 +68,31 @@ files to a dumb reader," which was the PM's assumption and the founder corrected
    assistant becomes the one place in this product that overstates.
 3. **`src/narrate.py`** — the deterministic facts layer, zero callers, found in the FR-043 audit — is
    what an LLM layer should sit on rather than replace.
+
+---
+
+## Shipped, same session (data-ops)
+
+`src/ingest_sleeper_projections.py` + tests. **2,007 rows ingested** — QB 250, RB 538, WR 840,
+TE 379 — from `api.sleeper.com/projections/nfl/2026`, `company: rotowire`, all four fetches HTTP 200.
+CSV snapshots in `data/projection-snapshots/` are canonical; the database is a cache of them, the
+same pattern the ADP capture uses and for the same reason.
+
+**1,098 rows quarantined**, every one `no_sleeper_crosswalk_match` — deep-bench and UDFA players
+absent from `ff_playerids`, spot-checked rather than assumed. Resolved rows include Mahomes, Prescott
+and Goff with plausible component values.
+
+**A real bug found by running it rather than testing it:** Sleeper's `player.position` disagrees with
+its own `position[]=` query filter — an RB request can return rows tagged WR, TE or FB — which broke
+the once-daily skip check and the re-run scoping. Fixed with a `query_position` column. Unit fixtures
+did not catch it; only the real crosswalk did.
+
+**Scope held:** ingestion only. Not wired into `board.json`, not in any export, not behind the public
+site. `data/nfl.db` is gitignored; only the CSVs are committed. Whether these projections improve
+anything is a separate question for `ranker` and `strategist`, and must be registered before it is
+answered.
+
+**Numbering note.** The building agent filed this ruling as its own FR-056 while the PM was writing
+one for the same decision. Duplicate dropped at merge, evidence folded in here — fifth id collision
+today from agents working off different bases.
+
