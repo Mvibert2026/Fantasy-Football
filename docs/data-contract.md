@@ -190,12 +190,31 @@ differ by up to ~0.02 absolute probability at late picks — not yet root-caused
 `docs/ideas-inbox.md`. The founder's own slot is unaffected (still `engine=None`, byte-identical to
 pre-1.15.0 output).
 
-**Payload size measured 2026-07-29** (primary league, `data/export/availability.json`):
+**Payload size and runtime measured 2026-07-29** (primary league, 3000 sims × 3 sigmas):
 
 | | Before (1 slot) | After (all 10 slots) |
 |---|---|---|
-| File size | ~161 KB | **[FILL IN AFTER MEASUREMENT]** |
-| Sweep runtime (3000 sims × 3 sigmas) | ~45-60s (1 slot) | **[FILL IN AFTER MEASUREMENT]** total, all 10 slots |
+| `availability.json` | 161,100 bytes | 1,554,817 bytes (**9.65x**) |
+| Sweep runtime | ~45-60s (1 slot, docs estimate) | **628.8s (~10.5 min) measured, 10 slots, ~63s/slot average** |
+
+**`board.json` deliberately did NOT grow.** It embeds `by_player[player]` per row too, and an
+early version of this change let that inherit the full multi-slot growth by accident — measured
+1,020,368 → 2,276,988 bytes (2.2x) before it was caught and fixed. `board.json` is loaded on every
+page view, not just an availability-specific screen, and FR-057 never asked it to carry multi-slot
+data — `build_board_json` now filters its `by_player` read down to `cfg`'s own pick numbers only,
+exactly the slice it carried before 1.15.0. `board.json`'s size is otherwise unaffected by this
+contract bump (regression-tested in
+`tests/test_run_availability_multi_slot.py::test_board_json_availability_embed_stays_own_slot_only`).
+
+**Recommendation given the numbers above:** ~10.5 minutes and a ~9.65x `availability.json` (to
+1.55 MB) is workable as a floor for the primary league specifically — not free, but not the "hours"
+threshold that would force a different call. It does NOT extend cheaply to every league: a 14-team
+league's sweep would take roughly 14/10 as long per the measured ~63s/slot rate, and running it for
+all 27 league exports (most currently un-swept at all, by design, ADR-047) would be on the order of
+hours, not minutes. This is exactly the shape of problem the founder's stated preference (part 2,
+browser-side recomputation conditioned on live draft state) sidesteps entirely — it does not scale
+with team count or slot count because it computes ONE slot's answer on demand instead of
+precomputing all of them.
 
 **Not in this pass (FR-057 part 2, founder's stated preference):** true browser-side
 recomputation conditioned on picks actually made mid-draft. This pass is the floor — real numbers

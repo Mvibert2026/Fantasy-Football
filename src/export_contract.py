@@ -275,7 +275,25 @@ def build_board_json(
         by_pos[r["position"]].append(r["player_name"])
     pos_rank = {n: i + 1 for pos, names in by_pos.items() for i, n in enumerate(names)}
 
-    avail = _load_availability_csv(avail_csv_for(cfg.league_id))["by_player"]
+    # FR-057 part 1 (contract 1.15.0): the CSV/availability.json now cover
+    # EVERY slot's pick numbers, not just cfg.user_draft_slot's -- but
+    # board.json is a different, much more frequently loaded artifact and
+    # embeds this per player. Un-filtered, that meant board.json inherited
+    # the full ~10x growth too (measured: 1,020,368 -> 2,276,988 bytes for
+    # the primary league, more than doubling an artifact loaded on every
+    # page view for a feature FR-057 never asked board.json to carry).
+    # Restrict this embed back to cfg's OWN pick numbers, exactly the slice
+    # board.json has always carried -- availability.json is where the
+    # multi-slot data belongs; board.json's per-player availability is
+    # unchanged in shape and size by this contract bump.
+    _own_picks = set(str(p) for p in (
+        ds.user_pick_numbers() if cfg.is_primary else ds.DraftEngine(cfg).user_pick_numbers()
+    ))
+    avail_all_slots = _load_availability_csv(avail_csv_for(cfg.league_id))["by_player"]
+    avail = {
+        player: {pk: sig for pk, sig in picks.items() if pk in _own_picks}
+        for player, picks in avail_all_slots.items()
+    }
     adp_snapshot = _load_adp_snapshot(conn)
     adp_by_gsis = adp_snapshot["by_gsis"]
 

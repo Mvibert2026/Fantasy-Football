@@ -118,6 +118,56 @@ def _merge_best(
         dst.setdefault(pos, {}).update(picks)
 
 
+def sweep_slots(
+    cfg: lc.LeagueConfig, data: "ds.SeasonData", sources, sims: int, seed: int,
+    slots: List[int], sigma_values=ds.SIGMA_SWEEP, on_slot_done=None,
+):
+    """Core of the multi-slot sweep, factored out of main() so it is testable
+    without argparse or file I/O. Returns (player_avail, tier_avail,
+    best_dist, picks_by_slot, per_slot_seconds) -- see `main()` for how each
+    is used downstream (CSV rows, the text summary).
+
+    See `_engine_for_slot`'s docstring for what changes between slots, and
+    the seed-offset comment below for why the founder's own slot must NOT
+    get one -- regression-tested in
+    `tests/test_run_availability_multi_slot.py::test_own_slot_numbers_unaffected_by_sweeping_other_slots`.
+    """
+    per_slot_seconds: Dict[int, float] = {}
+    player_avail: Dict[float, Dict[int, Dict[int, float]]] = {s: {} for s in sigma_values}
+    tier_avail: Dict[float, Dict[str, Dict[str, Dict[int, float]]]] = {s: {} for s in sigma_values}
+    best_dist: Dict[float, Dict[str, Dict[int, List[int]]]] = {s: {} for s in sigma_values}
+    picks_by_slot: Dict[int, List[int]] = {}
+
+    for slot in slots:
+        t_slot = time.monotonic()
+        engine = _engine_for_slot(cfg, slot)
+        picks_by_slot[slot] = ds.user_pick_numbers() if engine is None else engine.user_pick_numbers()
+        # Founder's own slot keeps the ORIGINAL seed formula exactly (no slot
+        # offset) -- adding one here, even though the algorithm path
+        # (engine=None) is unchanged, changes the RNG stream and therefore
+        # the sampled numbers. Caught by comparing this session's output
+        # against the pre-session committed availability.json before this
+        # fix: 671 of 1280 cells at the founder's own pick numbers differed
+        # by 0.1-2.5pp, entirely explained by the seed, not the algorithm.
+        # Every OTHER slot is new data with no prior numbers to preserve, so
+        # a slot-dependent offset there only has to avoid reusing the same
+        # RNG stream across slots, which this does.
+        slot_seed_offset = 0 if slot == cfg.user_draft_slot else slot * 100_000
+        for sigma in sigma_values:
+            r = av.simulate_availability(
+                data, sigma, sims, seed + int(sigma * 100) + slot_seed_offset,
+                sources=sources, engine=engine,
+            )
+            _merge_player(player_avail[sigma], r.player_avail)
+            _merge_tier(tier_avail[sigma], r.tier_avail)
+            _merge_best(best_dist[sigma], r.best_avail_dist)
+        per_slot_seconds[slot] = time.monotonic() - t_slot
+        if on_slot_done is not None:
+            on_slot_done(slot, per_slot_seconds[slot], picks_by_slot[slot])
+
+    return player_avail, tier_avail, best_dist, picks_by_slot, per_slot_seconds
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--sims", type=int, default=3000)
@@ -155,31 +205,13 @@ def main() -> None:
     pos_rank = av.positional_ranks(data)
     sources = av.default_ranking_sources(data)
 
+    def _report(slot: int, seconds: float, picks: List[int]) -> None:
+        print(f"  slot {slot}: {seconds:.1f}s (picks {picks})")
+
     t0 = time.monotonic()
-    per_slot_seconds: Dict[int, float] = {}
-    # sigma -> merged, ALL-SLOTS structures (union of disjoint pick numbers --
-    # see module docstring for why this merge never collides).
-    player_avail: Dict[float, Dict[int, Dict[int, float]]] = {s: {} for s in ds.SIGMA_SWEEP}
-    tier_avail: Dict[float, Dict[str, Dict[str, Dict[int, float]]]] = {s: {} for s in ds.SIGMA_SWEEP}
-    best_dist: Dict[float, Dict[str, Dict[int, List[int]]]] = {s: {} for s in ds.SIGMA_SWEEP}
-    picks_by_slot: Dict[int, List[int]] = {}
-
-    for slot in slots:
-        t_slot = time.monotonic()
-        engine = _engine_for_slot(cfg, slot)
-        picks_by_slot[slot] = ds.user_pick_numbers() if engine is None else engine.user_pick_numbers()
-        for sigma in ds.SIGMA_SWEEP:
-            r = av.simulate_availability(
-                data, sigma, args.sims, args.seed + int(sigma * 100) + slot * 100_000,
-                sources=sources, engine=engine,
-            )
-            _merge_player(player_avail[sigma], r.player_avail)
-            _merge_tier(tier_avail[sigma], r.tier_avail)
-            _merge_best(best_dist[sigma], r.best_avail_dist)
-        per_slot_seconds[slot] = time.monotonic() - t_slot
-        print(f"  slot {slot}: {per_slot_seconds[slot]:.1f}s "
-              f"(picks {picks_by_slot[slot]})")
-
+    player_avail, tier_avail, best_dist, picks_by_slot, per_slot_seconds = sweep_slots(
+        cfg, data, sources, args.sims, args.seed, slots, on_slot_done=_report,
+    )
     total_seconds = time.monotonic() - t0
     own_picks = picks_by_slot[cfg.user_draft_slot]
 

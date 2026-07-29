@@ -25,6 +25,7 @@ import pytest
 import availability as av
 import db as dbmod
 import draft_sim as ds
+import export_contract as ec
 import league_config as lc
 import run_availability as ra
 
@@ -149,3 +150,68 @@ def test_picks_by_slot_sums_to_rounds_per_slot():
     by_slot = ec._all_slot_pick_numbers(cfg)
     for slot_str, picks in by_slot.items():
         assert len(picks) == cfg.rounds, f"slot {slot_str} should own exactly cfg.rounds picks"
+
+
+# --------------------------------------------------------------- #4 (regression)
+def test_own_slot_numbers_unaffected_by_sweeping_other_slots(season_data):
+    """REGRESSION TEST for a real bug caught before this shipped: the first
+    version of sweep_slots added a slot-dependent seed offset to EVERY slot,
+    including the founder's own -- so even though the founder's own slot
+    still took the byte-identical engine=None code path, the RNG stream
+    (and therefore the sampled probabilities) moved anyway, by 0.1-2.5
+    percentage points across 671 of 1280 checked cells. The founder's own
+    slot must produce IDENTICAL numbers whether it is swept alone or as part
+    of the full 10-slot sweep."""
+    cfg = lc.CURRENT_LEAGUE
+    sources = av.default_ranking_sources(season_data)
+
+    alone = ra.sweep_slots(cfg, season_data, sources, 30, 12345, [cfg.user_draft_slot])
+    full = ra.sweep_slots(cfg, season_data, sources, 30, 12345, list(range(1, cfg.teams + 1)))
+
+    alone_player_avail = alone[0]
+    full_player_avail = full[0]
+    own_picks = set(alone[3][cfg.user_draft_slot])
+
+    checked = 0
+    for sigma in ds.SIGMA_SWEEP:
+        for i, picks in alone_player_avail[sigma].items():
+            for pk, prob in picks.items():
+                assert pk in own_picks
+                assert full_player_avail[sigma][i][pk] == prob, (
+                    f"sigma={sigma} player_idx={i} pick={pk}: sweeping other slots changed "
+                    f"the founder's own slot's number ({full_player_avail[sigma][i][pk]} != {prob})"
+                )
+                checked += 1
+    assert checked > 0
+
+
+# --------------------------------------------------------------- #5 (regression)
+def test_board_json_availability_embed_stays_own_slot_only(tmp_path):
+    """REGRESSION TEST for a real bug caught before this shipped: multi-slot
+    coverage in availability.json's by_player is exactly what FR-057 asked
+    for, but board.json ALSO embeds `by_player[player]` per row
+    (`export_contract.build_board_json`), and un-filtered that meant
+    board.json inherited the full ~10x growth too -- measured 1,020,368 ->
+    2,276,988 bytes for the primary league, more than doubling an artifact
+    loaded on every page view. board.json's per-player `availability` field
+    must stay restricted to cfg's OWN pick numbers, same as before 1.15.0 --
+    only availability.json carries every slot's data.
+
+    Uses a real DB connection (requires_db, like the rest of this file's
+    board-building tests) so this exercises the actual `_own_picks` filter
+    in `build_board_json`, not a mock of it.
+    """
+    conn = dbmod.connect()
+    try:
+        board = ec.build_board_json(conn, lc.CURRENT_LEAGUE)
+    finally:
+        conn.close()
+    own_picks = set(str(p) for p in ds.user_pick_numbers())
+    rows_with_data = [p for p in board["players"] if p["availability"]]
+    assert rows_with_data, "expected at least one tracked player with availability data"
+    for row in rows_with_data:
+        extra = set(row["availability"]) - own_picks
+        assert not extra, (
+            f"{row['player']}'s board.json availability carries pick(s) {extra} outside "
+            f"the founder's own slot -- multi-slot data leaked into board.json"
+        )
