@@ -1,6 +1,8 @@
 import { render, screen, within } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import userEvent from '@testing-library/user-event';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { pickNumbersForSlot } from '../data/draft';
+import { loadOpponentNames } from '../data/opponentNames';
 import { Opponents } from '../views/Opponents';
 import { loadDatasetFromDisk } from './helpers';
 
@@ -158,5 +160,97 @@ describe('Opponents', () => {
       .getAllByText(/^(QB|RB|WR|TE|FLEX|DEF)$/)
       .map((el) => el.textContent);
     expect(labels).toEqual(['QB', 'RB', 'WR', 'TE', 'FLEX', 'DEF']);
+  });
+
+  describe('FR-036: manually-typed opponent team names', () => {
+    const leagueId = data.league.league_id ?? 'default';
+
+    beforeEach(() => {
+      localStorage.clear();
+    });
+
+    it('typing a name for a slot with no sourced team_name replaces the "no team name supplied" placeholder', async () => {
+      render(<Opponents data={data} />);
+      const unnamed = data.opponents.opponents.find((o) => o.team_name === null);
+      if (!unnamed) throw new Error('fixture guard: expected at least one unnamed opponent');
+      const card = cardFor(unnamed);
+
+      await userEvent.click(within(card).getByRole('button', { name: /edit team name/i }));
+      const input = within(card).getByRole('textbox', { name: /team name for slot/i });
+      await userEvent.type(input, 'The Testers{Enter}');
+
+      expect(within(card).getByText('The Testers')).toBeInTheDocument();
+      expect(within(card).queryByText(/no team name supplied/i)).not.toBeInTheDocument();
+      expect(within(card).getByText('TYPED')).toBeInTheDocument();
+    });
+
+    it('a typed name overrides a real sourced name, and marks itself TYPED -- never presented as the same kind of value', async () => {
+      const named = data.opponents.opponents.find((o) => o.team_name !== null);
+      if (!named) throw new Error('fixture guard: expected at least one named opponent');
+      render(<Opponents data={data} />);
+      const card = cardFor(named);
+
+      await userEvent.click(within(card).getByRole('button', { name: /edit team name/i }));
+      const input = within(card).getByRole('textbox', { name: /team name for slot/i });
+      await userEvent.clear(input);
+      await userEvent.type(input, 'Renamed Locally{Enter}');
+
+      expect(within(card).getByText('Renamed Locally')).toBeInTheDocument();
+      expect(within(card).queryByText(named.team_name!)).not.toBeInTheDocument();
+      expect(within(card).getByText('TYPED')).toBeInTheDocument();
+    });
+
+    it('persists the typed name to per-league storage, matching the shape of the draft-state store', async () => {
+      const unnamed = data.opponents.opponents.find((o) => o.team_name === null);
+      if (!unnamed) throw new Error('fixture guard: expected at least one unnamed opponent');
+      render(<Opponents data={data} />);
+      const card = cardFor(unnamed);
+
+      await userEvent.click(within(card).getByRole('button', { name: /edit team name/i }));
+      const input = within(card).getByRole('textbox', { name: /team name for slot/i });
+      await userEvent.type(input, 'Stored Name{Enter}');
+
+      expect(loadOpponentNames(leagueId)[unnamed.draft_slot_2026]).toBe('Stored Name');
+    });
+
+    it('clearing a typed override falls back to the real sourced name, not blank', async () => {
+      const named = data.opponents.opponents.find((o) => o.team_name !== null);
+      if (!named) throw new Error('fixture guard: expected at least one named opponent');
+      render(<Opponents data={data} />);
+      const card = cardFor(named);
+
+      await userEvent.click(within(card).getByRole('button', { name: /edit team name/i }));
+      const input1 = within(card).getByRole('textbox', { name: /team name for slot/i });
+      await userEvent.clear(input1); // starts prefilled with the sourced name -- must replace, not append
+      await userEvent.type(input1, 'Temp Override{Enter}');
+      expect(within(card).getByText('Temp Override')).toBeInTheDocument();
+
+      await userEvent.click(within(card).getByRole('button', { name: /clear typed team name/i }));
+
+      expect(within(card).getByText(named.team_name!)).toBeInTheDocument();
+      expect(within(card).queryByText('Temp Override')).not.toBeInTheDocument();
+      expect(within(card).queryByText('TYPED')).not.toBeInTheDocument();
+    });
+
+    it('clearing a typed override for a slot with no sourced name falls back to the honest "no team name supplied" placeholder, not blank', async () => {
+      const unnamed = data.opponents.opponents.find((o) => o.team_name === null);
+      if (!unnamed) throw new Error('fixture guard: expected at least one unnamed opponent');
+      render(<Opponents data={data} />);
+      const card = cardFor(unnamed);
+
+      await userEvent.click(within(card).getByRole('button', { name: /edit team name/i }));
+      await userEvent.type(within(card).getByRole('textbox', { name: /team name for slot/i }), 'Temp Override{Enter}');
+      await userEvent.click(within(card).getByRole('button', { name: /clear typed team name/i }));
+
+      expect(within(card).getByText(/no team name supplied/i)).toBeInTheDocument();
+    });
+
+    it('does not carry a typed name over from a different league\'s storage', () => {
+      // A name typed under a different league key must never surface here --
+      // exactly the leak FR-036 explicitly rules out.
+      localStorage.setItem(`prep.opponentNames.some-other-league`, JSON.stringify({ 1: 'Wrong League Name' }));
+      render(<Opponents data={data} />);
+      expect(screen.queryByText('Wrong League Name')).not.toBeInTheDocument();
+    });
   });
 });
