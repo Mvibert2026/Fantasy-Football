@@ -369,3 +369,18 @@ rankings computed for his scoring, roster and draft slot, which consensus can ne
   instability, and it is correct then.
 - **Screens can be data-driven and still stale.** Methodology and Glossary auto-update their numbers
   and were still missing ADP entirely. "It reads from the export" is not the same as "it is current."
+
+# 10 · The site password
+
+**The live site is gated (2026-07-29).** Username blank, password held by the founder.
+
+**Give it to agents that need to test the live site — in the dispatch prompt, never in a file.**
+The founder instructed that agents get it; the repo is public on GitHub, so writing it into an agent
+definition, a doc, a fixture or an env file publishes it. Passing it per-dispatch satisfies both.
+
+Testing forms: `curl -u ":<password>" ...`, or Playwright
+`newContext({ httpCredentials: { username: '', password: '<password>' } })`.
+
+**If a session does not have it, ask the founder.** Do not reconstruct it from history and do not
+store it "just this once".
+

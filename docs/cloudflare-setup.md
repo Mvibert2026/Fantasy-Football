@@ -63,6 +63,22 @@ board JSON would have stayed publicly readable no matter what `SITE_PASSWORD` wa
 Fixed by `run_worker_first: true` in `wrangler.jsonc`, which forces every request through the script
 before any file is served. Already committed and deployed; nothing for you to do.
 
+## 2c · How agents get in
+
+The live site is gated. Agents that need to test it — screenshots, endpoint checks, verifying a
+deploy — need the password, and the founder has instructed that they get it.
+
+**It is passed in the dispatch prompt, never written to a file.** Not here, not in
+`.claude/agents/*.md`, not in a test fixture, not in an env file that might be committed. This repo
+is on GitHub; anything written down is published.
+
+- **Username: blank.** `SITE_USERNAME` is unset, so only the password is checked.
+- `curl -u ":<password>" https://draft.maplerock.net/...`
+- In Playwright: `browser.newContext({ httpCredentials: { username: '', password: '<password>' } })`
+
+**If you are an agent and you were not given it, ask — do not guess and do not go looking for it in
+the repo.** It is not there by design.
+
 ## 3 · Checking it worked
 
 - **Password:** open the site in a private window. A login box means it's on. **Then check a file
