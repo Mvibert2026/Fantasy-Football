@@ -28,25 +28,37 @@ makes it the most defensible thing this product could put on screen.
 
 Not the founder's own words — PM's read.
 
-**The founder is right that the ingredients exist, and it is worth being precise about what is and
-is not already there.**
+**Corrected 2026-07-29, same day, by the founder.** The PM first specced this as a subtraction —
+this player's VBD minus the expected value of the best player still available next turn — and shipped
+a long argument about how to compute the difference. That was over-built. His correction, verbatim:
 
-- **Availability at the next pick: built and real.** `frontend/ui/data/liveAvailability.ts` computes
-  survival probability to a given pick from the shipped sigma readings, and the scarcity panel
-  already uses it to count players under 50% to reach the next pick.
-- **VBD per player: built** (`board.json:players[].vbd`).
-- **The subtraction itself: not built.** Nothing currently computes *value of this player minus
-  expected value of the best player still available at my next pick.*
+> "Not subtracting one from the other, just another data point I can use while drafting and maybe we
+> put into our suggestion algorithm"
 
-So it is one derived quantity away, and the derivation is where the care goes. "The player expected
-to be there" is a distribution, not a single name. Options: expected value over the availability
-distribution (most honest, hardest to read), the best player above a survival threshold (simple,
-threshold is arbitrary and must be stated), or a range across the three sigma settings (matches what
-the Predictions tab already does and the founder already likes).
+**So: show the reference point, do not do the arithmetic for him.** What is wanted on screen is *who,
+and how good, is likely to still be there at my next pick.* He does the comparison himself, in his
+head, against whoever he is considering. A single derived "advantage" number hides the inputs; two
+plain numbers side by side do not, and he has said repeatedly that he wants to see what a figure is
+made of.
 
-**The uncertainty is the point, not a caveat.** The founder specifically praised the deviation
-control in Predictions. This number inherits the same uncertainty, and it should be shown the same
-way — as a range across sigma, never as a single confident figure.
+**What exists, measured:**
 
-**Design input requested by the founder** — carry that through. Whatever is chosen, the screen must
-state which assumption produced the number.
+- **Survival probability to a named pick: built and real.** `frontend/ui/data/liveAvailability.ts`
+  computes it from the shipped sigma readings, and the scarcity panel already counts players under
+  50% to reach the next user pick. So "who is likely to be there" is already computable today.
+- **VBD per player: built** (`board.json:players[].vbd`), and already a sortable column in Prep
+  (`Board.tsx:99`) though not yet in the draft room (FR-050).
+
+So the display is close to free. The open questions are presentational: best available at next pick
+overall, or one per position? A name, a value, or both?
+
+**The uncertainty travels with it.** The founder specifically praised the deviation control in
+Predictions. This figure depends on the same assumption about how closely opponents follow
+consensus, and should be shown the same way — as a range across the sigma settings, never a single
+confident number. FR-047 (deviation widening later in the draft) changes this figure directly.
+
+**"Maybe we put into our suggestion algorithm" — noted, and it is the more consequential half.**
+The current recommendation runs on four hand-picked constants that have never been backtested
+(`frontend/ui/data/recommendation.ts`). Adding a genuinely measured input to it is an improvement in
+principle and a model change in practice: **it must be registered with `strategist` before it ships**,
+not tuned until the output looks sensible. Display first, model second.

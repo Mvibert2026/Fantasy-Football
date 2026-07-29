@@ -7,7 +7,7 @@ RAISED: 2026-07-29
 ---
 
 ## Request
-Third league identified as Yahoo; roster and stat categories captured, point values still missing
+Yahoo roster and stat categories captured for a non-Westwood league; point values still missing
 
 Founder supplied two screenshots from the Yahoo platform, 2026-07-29, while preparing a mock draft.
 
@@ -17,7 +17,7 @@ Founder supplied two screenshots from the Yahoo platform, 2026-07-29, while prep
 |---|---|
 | Two balls no Kupp | **Westwood** |
 | Matthew Vibert's Cool Team | **Ethan's Expert League** |
-| Return of the Champ | **Shawn PEARSON's Superb League** |
+| ~~Return of the Champ~~ | ~~Shawn PEARSON's Superb League~~ — **not one of his leagues, disregard** |
 
 **Screenshot 2 — roster and stat categories** for one of the non-Westwood leagues (which one is not
 identified in the screenshot):
@@ -31,9 +31,12 @@ identified in the screenshot):
 
 ## Why it matters
 
-**All three leagues are Yahoo.** Every project record to date has described the third as "ESPN
-league, settings not captured" — including `docs/pm-dashboard.html`'s Leagues tab and FR-027's
-two-tier framing. That is now wrong and should be corrected rather than left to be rediscovered.
+**Correction, same day, from the founder: the third entry in that dropdown is not one of his three
+leagues — ignore it. Not all three leagues are Yahoo.** The PM read the dropdown as a roster of his
+leagues and changed the project records on that basis; that was wrong and is reverted. A Yahoo
+account can list teams the founder does not treat as live, and a platform screenshot is not an
+inventory. **His third league remains uncaptured**, and the two that matter here are Westwood and
+Ethan's Expert League.
 
 **The roster shape confirms the two-track split is real, and by a wider margin than assumed.**
 
