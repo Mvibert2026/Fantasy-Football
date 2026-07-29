@@ -267,3 +267,20 @@ newest at the bottom.
   redistribution is a `[GAP]` — FFC's ToS was unretrievable for the third time today.
   **Also, stale line:** `CURRENT-STATE.md` still says "FFC is blocked by robots.txt regardless" and
   "FFC remains blocked" while MEMORY §4 and FR-023 record it unblocked and say they supersede.
+
+- 2026-07-29, frontend session (worktree `agent-ad3fc0f6ee64497b5`, dispatched to fix FR-035/036 as
+  named in the dispatch): **real FR-number collision found and self-corrected, not escalated, because
+  nothing had been committed yet.** The dispatch described FR-035 (predictions league-scoping) and
+  FR-036 (opponent team names) as "recorded in the repo" — they were not, in this worktree. Ran
+  `tools/founder_requests.py new` twice per protocol, which allocated FR-034 and FR-035 (not 035/036)
+  since the local branch's highest was FR-033. Mid-session a coordinator message revealed the real
+  files already exist, allocated correctly (FR-034 draft-slot selector, FR-035 predictions scoping,
+  FR-036 opponent names, matching the original dispatch), committed on an **unmerged sibling branch**
+  `claude/pm-agent-setup-gobxa0` (commits `f987195`, `35854e2`) that this worktree's branch never saw.
+  `python tools/founder_requests.py check` reported "no cross-branch ID collisions" even though one
+  existed — worth someone checking why `_git_ref_names()`/`find_fr_collisions()` missed a branch that
+  `git branch -a` shows as a real local ref. Resolved by discarding my own two uncommitted, wrongly-
+  numbered files and copying the authoritative content from the sibling branch via `git show
+  <commit>:<path>` (not a merge — did not pull in that branch's other, unrelated changes). No commit
+  of mine ever carried the wrong numbers. Flagging rather than silently proceeding, per the standing
+  rule that ID collisions are always logged, never resolved by picking a number and moving on.

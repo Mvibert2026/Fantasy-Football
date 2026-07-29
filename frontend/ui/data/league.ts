@@ -1,4 +1,5 @@
 import { absent, present, type Cell } from './cell';
+import { pickNumbersForSlot } from './draft';
 import type { Dataset } from './load';
 import { runIdOf } from './load';
 
@@ -33,7 +34,19 @@ export interface Threshold {
 export interface LeagueConfig {
   teams: Cell<number>;
   rounds: Cell<number>;
+  /** The value every computation in the app reads: the FR-034 override when one is set
+   *  for this league, else the same as `userSlotSourced`. Never render this through
+   *  `<Value>` when `userSlotOverridden` is true -- it does not trace to a backend field
+   *  in that case, and Principle #1/#2 require that to stay visible, not folded into the
+   *  same rendering path as a real export value. See `applyUserSlotOverride` below. */
   userSlot: Cell<number>;
+  /** league.json:user_draft_slot, always -- untouched by any override. What "clear
+   *  override" falls back to, and what a screen shows as "sourced: N" alongside the
+   *  effective slot when the two differ. */
+  userSlotSourced: Cell<number>;
+  /** True exactly when `userSlot` is a local FR-034 override rather than
+   *  `userSlotSourced`'s own value. */
+  userSlotOverridden: boolean;
   pickSequence: Cell<number[]>;
   /** league.json:platform (thread 058 section C3) -- e.g. "sleeper". Absent on
    *  an export that predates the field, never fabricated. */
@@ -135,10 +148,14 @@ export function buildLeagueConfig(data: Dataset): LeagueConfig {
         `The thresholds shown are whatever league.json currently publishes — nothing here is ` +
         `adjusted to compensate. Use Refresh data to re-check, or regenerate the export.`;
 
+  const sourcedUserSlot = present(L.user_draft_slot, 'league.json:user_draft_slot', runId);
+
   return {
     teams: present(L.teams, 'league.json:teams', runId),
     rounds: present(L.rounds, 'league.json:rounds', runId),
-    userSlot: present(L.user_draft_slot, 'league.json:user_draft_slot', runId),
+    userSlot: sourcedUserSlot,
+    userSlotSourced: sourcedUserSlot,
+    userSlotOverridden: false,
     pickSequence: present(L.pick_sequence, 'league.json:pick_sequence', runId),
     platform:
       L.platform === undefined
@@ -154,6 +171,56 @@ export function buildLeagueConfig(data: Dataset): LeagueConfig {
     playoffTeams: present(L.playoff.teams, 'league.json:playoff.teams', runId),
     playoffReseeding: L.playoff.reseeding,
     thresholdDrift,
+  };
+}
+
+/**
+ * FR-034: applies a local draft-slot override on top of an already-built LeagueConfig.
+ * The single seam every downstream consumer goes through -- DraftRoom, PlayerDetail,
+ * Predictions, RoundGrid all read `league.userSlot`/`league.pickSequence` directly and
+ * none of them need to change, because they get the overridden values for free.
+ *
+ * `pickSequence` MUST be recomputed here, not left as `league.json:pick_sequence` --
+ * that field is the real backend value for the *sourced* slot only. Leaving it alone
+ * under an override would be exactly the "changes a label but not the math" failure
+ * the request explicitly warns about: DraftRoom's "MY PICKS" panel and RoundGrid's
+ * "mine" highlighting both read `pickSequence` straight, so a stale sequence there
+ * would silently point at someone else's picks. The recomputation uses the identical
+ * snake-order formula (`pickNumbersForSlot`, ui/data/draft.ts) the backend itself
+ * would apply for that slot -- same arithmetic, just evaluated for a slot the backend
+ * export was not built for -- so the values are exactly what league.json would say if
+ * it had been regenerated for this slot, not a client-side approximation.
+ *
+ * A no-op (returns `config` unchanged) when `override` is `null` or `teams` isn't a
+ * present Cell -- there is no valid slot range without a real team count, so an
+ * override can never be applied against a guessed range (FR-034's explicit rule).
+ */
+export function applyUserSlotOverride(config: LeagueConfig, override: number | null): LeagueConfig {
+  if (override === null) return config;
+  if (config.teams.kind !== 'present') return config;
+  const teams = config.teams.value;
+  if (!Number.isInteger(override) || override < 1 || override > teams) return config;
+  if (config.userSlotSourced.kind === 'present' && config.userSlotSourced.value === override) {
+    // Overriding to the same value as the sourced one isn't really an override --
+    // keep userSlotOverridden false so the UI doesn't claim a divergence that isn't real.
+    return config;
+  }
+
+  const runId = config.userSlot.kind === 'present' ? config.userSlot.runId : config.userSlotSourced.runId;
+  const rounds = config.rounds.kind === 'present' ? config.rounds.value : 0;
+
+  return {
+    ...config,
+    userSlot: present(override, 'local draft-slot override (FR-034, not from league.json)', runId),
+    userSlotOverridden: true,
+    pickSequence:
+      rounds > 0
+        ? present(
+            pickNumbersForSlot(teams, override, rounds),
+            'derived: snake-order arithmetic for the overridden slot (FR-034; league.json:pick_sequence is for the sourced slot only)',
+            runId,
+          )
+        : config.pickSequence,
   };
 }
 

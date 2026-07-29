@@ -1,4 +1,6 @@
+import { useEffect, useRef, useState } from 'react';
 import { pickNumbersForSlot } from '../data/draft';
+import { clearOpponentName, loadOpponentNames, saveOpponentName, type OpponentNameMap } from '../data/opponentNames';
 import type { RawRoster, RawRosters } from '../data/types';
 import type { Dataset } from '../data/load';
 
@@ -24,6 +26,17 @@ import type { Dataset } from '../data/load';
  * a blank card or an invented name; `data_status` and (for 7 of 9) `team_name`
  * itself are identical strings repeated across several cards, which is a fact
  * about how little is known, not a rendering bug.
+ *
+ * FR-036 (docs/founder-requests/FR-036-manual-team-name-entry-for-opponents-in-the-
+ * draf.md): a typed name (ui/data/opponentNames.ts, `OpponentNameField` below) can now
+ * cover that null, or override a real `opponents.json` name, for a live draft where
+ * the founder is matching a real platform's team names to slots by eye. Local, per-
+ * league storage, click-to-edit inline (no modal), names only -- nothing here reaches
+ * the availability model, the recommendation, or `positional_tendencies`/etc.'s "NOT A
+ * MODEL INPUT" context fields above. A typed name never renders through the same
+ * styling as a sourced one (accent colour + a "typed" tag + a clear control that
+ * reverts to the sourced name, never to blank) -- Principle #1/#2's supplied-vs-
+ * derived rule, same as FR-034's slot override.
  *
  * Roster slot rows + STILL NEEDS chips (02-draft-opponents.md's card anatomy)
  * are wired from `rosters.json` (contract 1.8.0, docs/handoffs/016), added
@@ -90,6 +103,23 @@ export function Opponents({ data }: { data: Dataset }) {
   const teams = data.league.teams;
   const rounds = data.league.rounds;
 
+  // FR-036: typed opponent names, local and per-league. `data.league.league_id` is the
+  // same field ui/data/load.ts already validates every artifact against, so this key
+  // matches whichever league is actually loaded, not whichever league was loaded when
+  // the component first mounted.
+  const leagueId = data.league.league_id ?? 'default';
+  const [names, setNames] = useState<OpponentNameMap>(() => loadOpponentNames(leagueId));
+  useEffect(() => {
+    setNames(loadOpponentNames(leagueId));
+  }, [leagueId]);
+
+  function setName(slot: number, name: string) {
+    setNames(saveOpponentName(leagueId, slot, name));
+  }
+  function clearName(slot: number) {
+    setNames(clearOpponentName(leagueId, slot));
+  }
+
   return (
     <div className="stack">
       <section>
@@ -115,17 +145,13 @@ export function Opponents({ data }: { data: Dataset }) {
               }}
             >
               <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
-                <span
-                  style={{
-                    fontSize: 15,
-                    fontWeight: 600,
-                    flex: 1,
-                    color: opp.team_name === null ? 'var(--dim2)' : 'var(--txt)',
-                    fontStyle: opp.team_name === null ? 'italic' : 'normal',
-                  }}
-                >
-                  {opp.team_name ?? `Slot ${opp.draft_slot_2026} (no team name supplied)`}
-                </span>
+                <OpponentNameField
+                  slot={opp.draft_slot_2026}
+                  sourcedName={opp.team_name}
+                  typedName={names[opp.draft_slot_2026]}
+                  onSave={(name) => setName(opp.draft_slot_2026, name)}
+                  onClear={() => clearName(opp.draft_slot_2026)}
+                />
                 {nextPick === undefined ? null : (
                   <span
                     className="num"
@@ -190,6 +216,145 @@ export function Opponents({ data }: { data: Dataset }) {
         })}
       </div>
     </div>
+  );
+}
+
+/**
+ * FR-036: click-to-edit inline, never a modal -- the card stays fully visible the whole
+ * time, so this works mid-draft without hiding the board. Three visually distinct
+ * states, matching the project's supplied-vs-derived rule:
+ *
+ *   - Typed name present: accent-coloured, "typed" tag, an edit (pencil) control and a
+ *     clear ("x") control that reverts to `sourcedName` -- never to blank, per FR-036.
+ *   - No typed name, `sourcedName` present: unchanged from before this feature --
+ *     normal weight/colour, a real `opponents.json` value.
+ *   - Neither: the pre-existing italic "Slot N (no team name supplied)" placeholder,
+ *     now also carrying an edit control so an unnamed slot in a league with no
+ *     opponents.json at all (ESPN/Yahoo configs) is exactly as fast to name.
+ */
+function OpponentNameField({
+  slot,
+  sourcedName,
+  typedName,
+  onSave,
+  onClear,
+}: {
+  slot: number;
+  sourcedName: string | null;
+  typedName: string | undefined;
+  onSave: (name: string) => void;
+  onClear: () => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState('');
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (editing) inputRef.current?.focus();
+  }, [editing]);
+
+  function startEdit() {
+    setDraft(typedName ?? sourcedName ?? '');
+    setEditing(true);
+  }
+  function commit() {
+    onSave(draft);
+    setEditing(false);
+  }
+  function cancel() {
+    setEditing(false);
+  }
+
+  if (editing) {
+    return (
+      <span style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 4 }}>
+        <input
+          ref={inputRef}
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') commit();
+            if (e.key === 'Escape') cancel();
+          }}
+          onBlur={commit}
+          placeholder={`Slot ${slot} team name`}
+          aria-label={`Team name for slot ${slot}`}
+          style={{
+            flex: 1,
+            minWidth: 0,
+            fontSize: 14,
+            fontWeight: 600,
+            background: 'var(--panel2)',
+            border: '1px solid var(--acc)',
+            color: 'var(--txt)',
+            padding: '2px 6px',
+          }}
+        />
+      </span>
+    );
+  }
+
+  const displayName = typedName ?? sourcedName;
+  const isTyped = typedName !== undefined;
+
+  return (
+    <span style={{ flex: 1, display: 'flex', alignItems: 'baseline', gap: 5, minWidth: 0 }}>
+      <span
+        style={{
+          fontSize: 15,
+          fontWeight: 600,
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap',
+          color: isTyped ? 'var(--acc)' : displayName === null ? 'var(--dim2)' : 'var(--txt)',
+          fontStyle: displayName === null ? 'italic' : 'normal',
+        }}
+      >
+        {displayName ?? `Slot ${slot} (no team name supplied)`}
+      </span>
+      {isTyped ? (
+        <span
+          title="Typed locally -- not from opponents.json"
+          style={{ fontSize: 9, letterSpacing: '.06em', color: 'var(--acc)', flex: 'none' }}
+        >
+          TYPED
+        </span>
+      ) : null}
+      <button
+        onClick={startEdit}
+        title={isTyped ? 'Edit typed name' : 'Type a team name for this slot'}
+        aria-label={`Edit team name for slot ${slot}`}
+        style={{
+          flex: 'none',
+          padding: '0 4px',
+          background: 'transparent',
+          border: 0,
+          color: 'var(--dim2)',
+          fontSize: 11,
+          cursor: 'pointer',
+        }}
+      >
+        ✎
+      </button>
+      {isTyped ? (
+        <button
+          onClick={onClear}
+          title={sourcedName !== null ? `Clear typed name, back to "${sourcedName}"` : 'Clear typed name'}
+          aria-label={`Clear typed team name for slot ${slot}`}
+          style={{
+            flex: 'none',
+            padding: '0 4px',
+            background: 'transparent',
+            border: 0,
+            color: 'var(--dim2)',
+            fontSize: 11,
+            cursor: 'pointer',
+          }}
+        >
+          ×
+        </button>
+      ) : null}
+    </span>
   );
 }
 

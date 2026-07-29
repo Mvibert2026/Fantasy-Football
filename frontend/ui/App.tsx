@@ -15,7 +15,8 @@ import { Opponents } from './views/Opponents';
 import { Predictions } from './views/Predictions';
 import { StrategyGuide } from './views/StrategyGuide';
 import { buildRows } from './data/board';
-import { buildLeagueConfig } from './data/league';
+import { applyUserSlotOverride, buildLeagueConfig } from './data/league';
+import { clearSlotOverride, loadSlotOverride, saveSlotOverride } from './data/draftSlot';
 import { DEFAULT_LEAGUE_ID, fetchSelectableLeagues, type SelectableLeague } from './data/league-registry';
 import { loadDataset, type Dataset } from './data/load';
 
@@ -71,6 +72,24 @@ export function App() {
   const [leagues, setLeagues] = useState<SelectableLeague[]>([{ id: DEFAULT_LEAGUE_ID, label: 'Default league' }]);
   const [leagueId, setLeagueId] = useState<string>(DEFAULT_LEAGUE_ID);
 
+  // FR-034: draft-slot override, local and per-league (ui/data/draftSlot.ts), same
+  // storage shape/lifecycle as draft state. Re-read whenever the league changes so a
+  // switch never carries one league's override into another's -- the exact leak FR-034
+  // explicitly rules out.
+  const [slotOverride, setSlotOverride] = useState<number | null>(() => loadSlotOverride(leagueId));
+  useEffect(() => {
+    setSlotOverride(loadSlotOverride(leagueId));
+  }, [leagueId]);
+
+  function setDraftSlotOverride(slot: number) {
+    saveSlotOverride(leagueId, slot);
+    setSlotOverride(slot);
+  }
+  function clearDraftSlotOverride() {
+    clearSlotOverride(leagueId);
+    setSlotOverride(null);
+  }
+
   useEffect(() => {
     fetchSelectableLeagues().then(setLeagues);
   }, [reloadKey]);
@@ -85,7 +104,15 @@ export function App() {
   }, [reloadKey, leagueId]);
 
   const rows = useMemo(() => (data ? buildRows(data) : []), [data]);
-  const league = useMemo(() => (data ? buildLeagueConfig(data) : null), [data]);
+  // FR-034: the override is applied once, here, so every consumer below (Board,
+  // DraftRoom, PlayerDetail, Predictions, RoundGrid, the assistant) reads the
+  // overridden userSlot/pickSequence automatically -- no per-screen change needed,
+  // and no screen can accidentally read the un-overridden `league.json` value instead.
+  const baseLeague = useMemo(() => (data ? buildLeagueConfig(data) : null), [data]);
+  const league = useMemo(
+    () => (baseLeague ? applyUserSlotOverride(baseLeague, slotOverride) : null),
+    [baseLeague, slotOverride],
+  );
 
   // league.json:league_name (contract 1.7.0+) is a better label than "Default
   // league" once it's actually loaded -- overlaid here rather than baked into the
@@ -199,6 +226,8 @@ export function App() {
         leagues={displayLeagues}
         leagueId={leagueId}
         onSelectLeague={setLeagueId}
+        onSelectSlot={setDraftSlotOverride}
+        onClearSlot={clearDraftSlotOverride}
         refreshSlot={
           <RefreshData
             onApplied={() => setReloadKey((k) => k + 1)}
