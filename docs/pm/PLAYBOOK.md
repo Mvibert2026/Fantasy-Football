@@ -71,10 +71,27 @@ founder's Windows machine waste calls rediscovering this — see `docs/environme
 
 ## Choosing model and effort
 
-**Set `effort` explicitly on every dispatch. Do not let it inherit.** Through 2026-07-29 the PM set
-`model` correctly and never set `effort` at all, so every agent ran at whatever the session happened
-to be on — which meant statistical work ran cheap and mechanical work ran expensive. The founder
-caught it.
+**Know which lever you actually have.** Checked 2026-07-29, after the PM claimed it could set effort
+per dispatch and could not: **the dispatch tool exposes `model`, not `effort`.** Effort comes from the
+agent definition's frontmatter. The three levers that do work are: **override the model** on the
+dispatch, **instruct escalation in the prompt** ("run this at high effort" — agents honour it), and
+**fix a definition's pin** when its default is wrong for the work it actually gets.
+
+**The pins as they stand, and the problem in them:**
+
+| Agent | Model | Effort |
+|---|---|---|
+| backend | sonnet | **low** |
+| data-ops | sonnet | low |
+| frontend | sonnet | high |
+| librarian | sonnet | medium |
+| researcher · strategist · pm | opus | high |
+
+**`backend` owns every statistical constant, the hazard model and the export contract, and is pinned
+lowest.** Its definition tells it to stop and ask for escalation — a rule that *requires* an
+interruption, which is the single largest cause of stalled runs. Until that pin is revisited,
+**dispatch hard backend work to `opus` and say "run this at high effort" in the prompt**; do not make
+it ask.
 
 The standing mapping, deviate only with a reason:
 

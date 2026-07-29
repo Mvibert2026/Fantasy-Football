@@ -169,3 +169,23 @@ newest at the bottom.
   a widened regex or a stated convention plus a one-off sweep — not another rule.** Same class as
   the ID allocator: the tool and the documents disagree, and the humans followed the documents.
 
+- 2026-07-29 · (strategist, PR-004) **Decided, not escalated — four calls, all reasoned in the
+  registration.** (a) Refused to make consensus the confirmatory baseline as the brief asked:
+  n=4 seasons, exact sign-test floor p=0.125, unreachable at alpha=0.05 before any correction.
+  Registered against prior-season points instead and wrote the weakening plainly — no PR-004
+  outcome may be reported as an edge or as beating the market. (b) **Inverted F-A's ordering:**
+  A0 runs *before* N-1/N-2, because picking the frozen candidate after seeing their results is a
+  `data_seen` selection step that ADR-C would demote to exploratory. N-1/N-2 become post-hoc
+  exploratory work that cannot change the verdict. (c) **Ran QB confirmatorily anyway**, keeping
+  ADR-E's declared m=4, rather than F-A's "QB is closed, not run" — dropping the position we
+  expect to fail shrinks the BH denominator by exactly the failing test. (d) **Set the
+  materiality floor at +0.04 dtau_b**, above WR's exploratory estimate (+0.036), derived from
+  the one-improved-pick-per-draft arithmetic rather than from the data. WR is predicted to fail
+  on materiality even if it clears significance; that is the rule working. Registered prediction
+  for the whole run is STOP. **Could not open the handoff thread** — no Bash in this role by
+  design, so no allocator access; body staged unallocated at
+  `docs/reviews/PR-004-handoff-body-unallocated-2026-07-29.md` with the exact
+  `tools/handoffs.py new` command. Hand-typing an ID was refused (043/049/053, ADR-048).
+  **Did not authorise a 2025 unseal** — irreversible, closes the family permanently, needs a
+  named human approver; escalation, not an agent call.
+
