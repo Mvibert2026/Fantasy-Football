@@ -20,9 +20,9 @@ not an omission. Start your session at your own heading.
 | [068](068-acceptance-harness-design-captures.md) | Acceptance harness design captures | `design` | OPEN | 2d | design drift being caught by a diff rather than by the founder |
 | [081](081-thread-079-id-collision-between-main-and-the-pha.md) | Thread 079 id collision between main and the pha | `data-ops` | OPEN | 0d | none |
 | [083](083-claim-checker-is-live-eight-false-document-claim.md) | Claim checker is live eight false document claim | `backend` | OPEN | 0d | none |
-| [084](084-fr-040-costing-static-hosting-blocks-scoring-rec.md) | Fr 040 costing static hosting blocks scoring rec | `backend` | OPEN | 0d | FR-040 custom league settings screen |
 | [086](086-competitive-ux-the-overhaul-case-is-weaker-than.md) | Competitive ux the overhaul case is weaker than | `researcher` | OPEN | 0d | none |
-| [087](087-fr-043-audit-claude-md-ss5-staleness-built-but-u.md) | Fr 043 audit claude md ss5 staleness built but u | `librarian` | OPEN | 0d | none |
+| [89](089-fr-040-costing-static-hosting-blocks-scoring-rec.md) | Fr 040 costing static hosting blocks scoring rec | `backend` | OPEN | 0d | FR-040 custom league settings screen |
+| [90](090-fr-043-audit-claude-md-ss5-staleness-built-but-u.md) | Fr 043 audit claude md ss5 staleness built but u | `librarian` | OPEN | 0d | none |
 
 ### `backend` — 23 waiting
 
@@ -50,7 +50,7 @@ not an omission. Start your session at your own heading.
 | [076](076-structural-gap-thread-id-allocator-race-across-c.md) | Structural gap thread id allocator race across c | `pm` | OPEN | 2d | none |
 | [077](077-adp-backfill-scheduled-task-landed-frontend-test.md) | Adp backfill scheduled task landed frontend test | `data-ops` | OPEN | 2d | none |
 | [079](079-mock-draft-capture-work-is-uncommitted-in-a-work.md) | Mock draft capture work is uncommitted in a work | `pm` | OPEN | 0d | none |
-| [083](083-pr-004-f-bottomup-core-run-the-confirmatory-bott.md) | Pr 004 f bottomup core run the confirmatory bott | `strategist` | OPEN | 0d | none |
+| [88](088-pr-004-f-bottomup-core-run-the-confirmatory-bott.md) | Pr 004 f bottomup core run the confirmatory bott | `strategist` | OPEN | 0d | none |
 
 ### `frontend` — 16 waiting
 
@@ -70,8 +70,8 @@ not an omission. Start your session at your own heading.
 | [049](049-draft-mode-gap-list.md) | Draft mode gap list | `pm` | OPEN | 2d | none |
 | [059](059-on-deck-recommendations.md) | On deck recommendations | `pm` | OPEN | 2d | FR-006 (draft chatbot), calm-preparation use case |
 | [066](066-contract-1-10-0-board-json-rows-gained-roster-st.md) | Contract 1 10 0 board json rows gained roster st | `backend` | OPEN | 2d | none |
-| [084](084-fr-040-costing-static-hosting-blocks-scoring-rec.md) | Fr 040 costing static hosting blocks scoring rec | `backend` | OPEN | 0d | FR-040 custom league settings screen |
 | [086](086-competitive-ux-the-overhaul-case-is-weaker-than.md) | Competitive ux the overhaul case is weaker than | `researcher` | OPEN | 0d | none |
+| [89](089-fr-040-costing-static-hosting-blocks-scoring-rec.md) | Fr 040 costing static hosting blocks scoring rec | `backend` | OPEN | 0d | FR-040 custom league settings screen |
 
 ### `data-ops` — 8 waiting
 

@@ -1,5 +1,5 @@
 ---
-ID: 084
+ID: 89
 FROM: backend
 TO: frontend,pm
 STATUS: OPEN
@@ -74,3 +74,7 @@ mid-session; this is the document a real build now waits on.
 the mailbox tool only recognises the former) acknowledging the static-hosting constraint and the
 `flex_split` gap before any settings-screen implementation begins. No specific artifact required to
 close beyond that acknowledgement; re-open if either builds against the job-queue spec as written.
+
+---
+
+**Renumbered 084 -> 089 at closeout, 2026-07-29.** Two agents working from different bases each allocated 084; both threads are real. Content unchanged, only the id. Fourth occurrence of this failure mode -- a worktree branched off a base that lacks the newer numbering allocates a number that is already taken on another branch.

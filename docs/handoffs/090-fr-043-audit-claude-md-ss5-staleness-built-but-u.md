@@ -1,5 +1,5 @@
 ---
-ID: 087
+ID: 90
 FROM: librarian
 TO: pm
 STATUS: OPEN
@@ -44,3 +44,7 @@ instead of `src/`.
 A PM/founder decision on whether to amend `CLAUDE.md` §5 (and if so, the amended text), recorded as
 an ADR per the project's own rule that a CLAUDE.md change needs one. No action required on item 2 —
 informational, close whenever read.
+
+---
+
+**Renumbered 087 -> 090 at closeout, 2026-07-29.** Two agents working from different bases each allocated 087; both threads are real. Content unchanged, only the id. Fourth occurrence of this failure mode -- a worktree branched off a base that lacks the newer numbering allocates a number that is already taken on another branch.
