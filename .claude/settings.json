@@ -8,16 +8,12 @@
       "Write(**)",
       "Glob(**)",
       "Grep(**)",
-
       "Bash(git *)",
       "PowerShell(git *)",
-
       "Bash(npm *)",
       "PowerShell(npm *)",
-
       "Bash(pytest *)",
       "PowerShell(pytest *)",
-
       "Bash(\"C:/Users/matth/miniconda3/envs/fantasyfootball/python.exe\" *)",
       "Bash(C:/Users/matth/miniconda3/envs/fantasyfootball/python.exe *)",
       "Bash(\"/c/Users/matth/miniconda3/envs/fantasyfootball/python.exe\" *)",
@@ -30,22 +26,67 @@
       "Bash(PYTHONIOENCODING=utf-8 /c/Users/matth/miniconda3/envs/fantasyfootball/python.exe *)",
       "PowerShell(& \"C:\\Users\\matth\\miniconda3\\envs\\fantasyfootball\\python.exe\" *)",
       "PowerShell(C:\\Users\\matth\\miniconda3\\envs\\fantasyfootball\\python.exe *)",
-
       "WebFetch",
-      "WebSearch"
+      "WebSearch",
+      "Bash(python *)",
+      "Bash(python3 *)",
+      "Bash(py *)",
+      "Bash(pip *)",
+      "Bash(conda *)",
+      "Bash(node *)",
+      "Bash(npx *)",
+      "Bash(ls *)",
+      "Bash(cat *)",
+      "Bash(head *)",
+      "Bash(tail *)",
+      "Bash(grep *)",
+      "Bash(rg *)",
+      "Bash(find *)",
+      "Bash(wc *)",
+      "Bash(echo *)",
+      "Bash(printf *)",
+      "Bash(sed *)",
+      "Bash(awk *)",
+      "Bash(jq *)",
+      "Bash(sort *)",
+      "Bash(uniq *)",
+      "Bash(diff *)",
+      "Bash(mkdir *)",
+      "Bash(touch *)",
+      "Bash(cp *)",
+      "Bash(mv *)",
+      "Bash(test *)",
+      "Bash(which *)",
+      "Bash(pwd)",
+      "Bash(date *)",
+      "Bash(vitest *)",
+      "Bash(tsc *)",
+      "Bash(eslint *)",
+      "Bash(tools/handoffs.py *)",
+      "PowerShell(python *)",
+      "PowerShell(pip *)",
+      "PowerShell(conda *)",
+      "PowerShell(Get-* *)",
+      "PowerShell(Test-Path *)",
+      "PowerShell(Select-* *)",
+      "WebFetch(domain:api.myfantasyleague.com)",
+      "WebFetch(domain:fantasyfootballcalculator.com)",
+      "WebFetch(domain:www.fantasyfootballcalculator.com)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:code.claude.com)",
+      "WebFetch(domain:docs.claude.com)"
     ],
     "ask": [
       "Bash(rm *)",
       "PowerShell(rm *)",
       "PowerShell(Remove-Item *)",
-
       "Bash(git push --force *)",
       "Bash(git push -f *)",
       "Bash(git push --force-with-lease *)",
       "PowerShell(git push --force *)",
       "PowerShell(git push -f *)",
       "PowerShell(git push --force-with-lease *)",
-
       "Read(.env)",
       "Read(.env.*)",
       "Read(**/.env)",
@@ -61,6 +102,19 @@
       "Read(**/credentials*)",
       "Edit(**/credentials*)",
       "Write(**/credentials*)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash|PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"C:/Users/matth/miniconda3/envs/fantasyfootball/python.exe\" \"$CLAUDE_PROJECT_DIR/.claude/hooks/block_dangerous.py\""
+          }
+        ]
+      }
     ]
   }
 }
