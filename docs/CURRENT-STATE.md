@@ -436,110 +436,73 @@ assistant" wiring · LLM prose renderer
 
 ## Top open items
 
-1. **Per-pick draft-state logging + ADR-D contamination instrumentation** — must land *before* mock
-   collection begins, or the mocks collected cannot validate `delta` no matter how many there are,
-   and cannot be defended against shortcut bias at all.
-2. **ADP snapshot capture** — unrecoverable if delayed; a past date's snapshot cannot be backfilled.
-   `adp_source='mfl_proxy'` (ADR-035, `src/ingest_mfl_adp.py`) is the only live source (FFC/Yahoo/
-   ESPN remain blocked/unattemptable per `docs/deferred.md`). `adp_snapshots` currently has rows for
-   UTC 2026-07-26 and 2026-07-28 only — **UTC 2026-07-27 has a real, permanent gap** (discovered
-   2026-07-27 session, thread 077): the machine's UTC clock had already rolled to 07-28 by the time
-   the "today" backfill ran, so the row landed one calendar day later than assumed, and 07-27 UTC
-   can no longer be fetched from MFL. Each run now also writes
-   `data/adp-snapshots/YYYY-MM-DD.csv` (one per UTC date; **the CSV is canonical, the DB a cache of
-   it** — see `src/ingest_mfl_adp.py` docstring), tracked in git as the off-machine backup.
-   **Correction (2026-07-29, measured):** `adp_snapshots` is *not* the only unrebuildable table —
-   see open item 12. MFL does serve historical periods, but every response is stamped with today's
-   date and returns the accumulated aggregate (2021 → 2,322 drafts), so re-pulling one and treating
-   it as a preseason board is look-ahead bias. The window is also rolling and can shrink: 2026
-   `totalDrafts` read **43 on 2026-07-29 versus 50 in the committed 2026-07-26 CSV**. The CSVs
-   remain the only point-in-time capture, which is why they matter. A Windows Scheduled Task
-   (`FantasyFootball_MFL_ADP_Daily`, daily 09:00, current-user scope) runs
-   `tools/run_adp_snapshot_task.bat` (main checkout only — ingest, then `git add`/commit/push scoped
-   to `data/adp-snapshots/*.csv`) with no agent/WebFetch involvement. Caveat: `schtasks` reports
-   `Logon Mode: Interactive only` (no stored run-as password) — it will not fire from a locked/
-   logged-out session. **That caveat is now confirmed as a real miss, not a theoretical one
-   (2026-07-29): no `2026-07-29.csv` existed until one was captured by hand, so the task did not
-   fire.** **Superseded by `.github/workflows/adp-snapshot.yml`** (daily 09:15 UTC +
-   `workflow_dispatch`), which runs the capture off this machine and fails the run rather than
-   committing an empty file. **CORRECTION, 2026-07-29 (PM session, measured through the Actions
-   API): a *scheduled* run has never fired.** Exactly one run exists in the repository's entire
-   history — `event: workflow_dispatch`, triggered by the founder by hand at 15:38 UTC, producing
-   `4a299df` (225 rows, rewriting the hand-captured `2026-07-29.csv`). The text previously here said
-   the cloud run "has been observed to succeed" and that "the local Windows Scheduled Task is now
-   redundant and can be disabled." The first is true only of a manual run; **the second is wrong.**
-   The commit being authored by `github-actions[bot]` does **not** distinguish a manual dispatch
-   from a cron fire, and that is exactly how this was got wrong — check `event`, never the author.
-   **Do NOT disable the Windows Scheduled Task until a run with `event: schedule` succeeds.** First
-   opportunity is 2026-07-30 09:15 UTC. Until then the local task is the only capture with any
-   track record at all, and a missed day can never be re-fetched. One success is not a track record
-   either — keep
-   checking for a same-day CSV daily for a week before treating the capture as unattended. Verify
-   periodically:
-   `SELECT MAX(retrieved_at) FROM adp_snapshots WHERE adp_source='mfl_proxy'` and check
-   `data/adp-snapshots/` for a same-day CSV. **Per-platform stamping is a stated rule** (2026-07-27,
-   thread 077 reply): `adp_source` distinguishes platforms and must never be blended/averaged into
-   one consensus figure — enforced by `test_load_mfl_adp_source_never_blends_across_adp_source_values`.
-   **Pick-level ADP-velocity capture (pick residuals vs. same-day ADP) is NOT BUILT, and no
-   longer blocked** (thread 078): MFL's `TYPE=draftResults` requires a specific league ID we
-   don't hold — the only platform-wide MFL export is `TYPE=adp` (final figures, no per-pick
-   sequence) — so FFC is the route. **FFC is unblocked** (founder asked them directly,
-   2026-07-29: "we have no blocks from FFC, we can use as needed" —
-   `docs/founder-requests/FR-023-ffc-is-unblocked-founder-confirmed-no-restrictio.md`,
-   `docs/research/source-audit-2026-07.md`, `docs/pm/MEMORY.md` §0/§4). The founder decision
-   thread 078 was waiting on is therefore answered; what remains is scoping and building, not a
-   permission question. Standing conditions: private single-user use, rate-limit and cache
-   (one fetch per day per format), never blend `adp_source` values.
-3. **Mock drafts toward n=30** — gates the pre-registered availability decision rule.
-4. **FantasyPros licence decision — CLOSED (D-020).** No licence needed while the product stays
-   private/personal/founder-only. Reopens on any second user, alongside D-021.
-5. **`strategies.json` re-export** — stale at contract 1.7.0 while every other export artifact is
-   now 1.10.0; app's version banner correctly flags this (thread 042, open to backend).
-6. **T4 real suspension data — interim CLOSED 2026-07-27 (ADR-053).** Real, dated, sourced list
-   wired into the live board (`data/suspensions_2026.json`, currently empty — verified, not an
-   oversight). Thread 057's fuller structured-source design (per-source schema, staleness test as
-   a blocking gate) remains open if a more permanent solution is wanted later.
-7. **T6 full roster-status ingest** — the live `roster_status` field on `board.json` is a proxy
-   derived from `contracts.is_active` (ADR-050), not a real active/IR/practice-squad feed. Needs a
-   new `roster_status_weekly`-shaped table from `nflreadpy.load_rosters()`, which is a DB-writing
-   task, deliberately not done this round.
-8. **T7 depth-chart contradiction** — still unresolved (`SELECT MAX(dt) FROM depth_charts` not run
-   this pass; out of this round's scope).
-9. **Three unreproducible artifacts — RESOLVED 2026-07-29 (`bdda50e`), thread 080.** All three
-   are now committed, pushed, and guarded by 13 tests in
-   `tests/test_unreproducible_artifacts.py` that read the fixtures rather than the DB (so they
-   pass, and fail meaningfully, in a fresh clone with no database). `tests/fixtures/real_draft_2025/`
-   (160 picks), `data/rankings-history/rankings_2021_2025.csv` (2,540 rows, dispersion intact),
-   `data/raw/founder-export/2026-07-27/` (4 files, now exempted in `.gitignore`).
-   **Cloud sessions are no longer blocked on this.** Original finding, kept because it explains
-   why these files are tracked and must not be "cleaned up":
-   Measured 2026-07-29 by rebuilding `data/nfl.db` from scratch in a scratch directory
-   (`docs/can-we-rebuild-the-database.md`): 99.3% of it comes back from public sources in ~4
-   minutes with no credentials. Three things do not come back at all.
-   (a) **The 2025 real draft** — `mock_drafts`/`mock_picks`/`mock_pick_quarantine`, 160 picks,
-   `source=user_provided_screenshots`. This is the `n=160` behind `DEFAULT_LAMBDA = 0.352`. Lose it
-   and λ reverts from measured to guessed.
-   (b) **The founder FantasyPros export** under `data/raw/founder-export/2026-07-27/` — excluded by
-   `.gitignore:2`, and the only half-PPR-native ranking input in the project.
-   (c) **Rankings history 2021–2025** (3,487 + 36 rows) — the DynastyProcess mirror serves only the
-   current scrape (today: one date, 2026-07-24). Verified per season with the ingester's own
-   `resolve_snapshot_date`: 2021–2025 all fail, only 2026 resolves.
-   The failure mode is silent — a clean checkout rebuilds a DB missing all three and every script
-   still runs green, because nothing asserts those rows exist. **Blocks moving to cloud sessions.**
+Current state only. An item leaves this list when it is done — history lives in ADRs and
+`docs/status/`, not here. Verified 2026-07-29 (PM session); every claim below was measured this
+pass or is marked as unverified.
 
-10. **nflverse unused-data audit — 2026-07-29 (data-ops, this session), no ingestion, audit
-   only.** `docs/research/nflverse-unused-data-audit-2026-07-29.md`. Of 23 nflreadpy loaders, this
-   repo calls 10 (via `src/ingest_reference.py` + `src/ingest_weekly_stats.py`); 13 were never
-   called. Three worth pulling: `load_schedules()`'s `home_coach`/`away_coach` columns (1999–2026,
-   7,548 rows, zero nulls checked — **partially** closes the coaching gap: verified head-coach
-   identity per game, but not coordinator/play-caller duty, so `src/ingest_play_callers.py` stays
-   correctly parked pending the ESPN roundup it already names); `load_participation()`'s `route` +
-   `offense_players` columns (2016–2025, ~46K plays/season — a real, documented proxy for
-   test-registry #16/17 route-participation metrics, closing a real chunk of the route gap
-   CLAUDE.md §5 flags); `load_ff_opportunity()` (2006–2025, pre-fitted xFP model, flagged for
-   Statistician sign-off before use as a ranking input, not a Data Ops call). Confirmed
-   `ngs_receiving`/`rushing`/`passing` (already ingested) carry no route field, so the existing
-   route-gap claim was accurate for those three tables specifically. `load_ff_rankings()` attempted
-   and blocked — `403` from the proxy fetching `github.com/dynastyprocess/data`, recorded as
-   blocked, not retried. Nothing ingested this session; this is a scoping input for whoever owns
-   the coaching/route backlog items next.
+**Data capture — time-sensitive, cannot be backfilled**
+
+1. **A *scheduled* ADP capture has still never fired.** `.github/workflows/adp-snapshot.yml`
+   (09:15 UTC daily) has exactly one run in repository history, `event: workflow_dispatch`,
+   triggered by hand. First scheduled opportunity is **2026-07-30 09:15 UTC**. Check `event:`, never
+   the commit author — `github-actions[bot]` authors manual dispatches too, and that is precisely
+   how this was got wrong once already. Do not retire the local Windows task until an
+   `event: schedule` run succeeds, and do not treat one success as a track record.
+   Captured so far: MFL proxy `data/adp-snapshots/` (2026-07-26, -28, -29 — **07-27 UTC is a
+   permanent gap**), FFC three-format `data/adp-snapshots-ffc/` (2026-07-29 half/non/full only).
+2. **Pick-level ADP velocity is not built.** No longer blocked — FFC is unblocked by the founder
+   (FR-023). MFL cannot serve it (`TYPE=adp` is final figures with no pick sequence). Standing
+   conditions: private single-user use, one fetch per day per format, and `adp_source` values are
+   never blended into one consensus figure.
+3. **Mock drafts toward n=30.** Gates the pre-registered availability decision rule. Still 0 of ~30
+   usable; the one logged draft was placeholder data.
+
+**Correctness — the app states something that is not so**
+
+4. **All 24 preset leagues carry Westwood's scoring ruleset while being labelled platform
+   defaults** (FR-042, founder ruling). `src/generate_config_matrix.py:71-74` deep-copies `LEAGUE`
+   and swaps only the reception value. Regenerate, do not edit — this invalidates projections in
+   every preset export. **Sequence before the custom-league builder**, or the builder inherits it.
+   That file's docstring also contradicts itself on whether ESPN scoring was ever verified
+   (lines 6-11 versus 52-53).
+5. **Non-primary leagues are missing four export artifacts.** Primary carries 11, the 26
+   sub-leagues carry 7. Absent everywhere: `strategies.json`, `player_descriptions.json`,
+   `season_stats.json`, `weekly_finishes.json`. Consequence: **the Strategy guide is empty in 26 of
+   27 leagues**, and three other screens thin out on league switch.
+6. **Six present-but-inert controls** (FR-037): Export CSV, Export PDF, League settings, Compare,
+   Ask, and Ask-the-assistant per glossary term. All carry `aria-disabled`. The founder is finding
+   them by clicking. One design treatment covers all six.
+7. **Duplicate founder-request ids.** FR-029 and FR-030 each name two different requests, so a
+   status update to one is invisible in the other. `tools/dashboard.py` now flags this on every run.
+
+**Data the model wants and does not have**
+
+8. **T6 full roster-status ingest.** `board.json:roster_status` is a proxy derived from
+   `contracts.is_active` (ADR-050), not a real active/IR/practice-squad feed. Needs a
+   `roster_status_weekly`-shaped table from `nflreadpy.load_rosters()`.
+9. **T7 depth-chart contradiction.** Unresolved and unmeasured — `SELECT MAX(dt) FROM depth_charts`
+   has not been run.
+10. **Three nflverse pulls worth making**, from the 13 of 23 loaders this repo never calls
+    (`docs/research/nflverse-unused-data-audit-2026-07-29.md`): `load_schedules()` head-coach
+    columns (1999-2026, closes coach *identity* but not coordinator duty), `load_participation()`
+    route columns (2016-2025, a documented proxy for the route gap — must be labelled a proxy), and
+    `load_ff_opportunity()` (2006-2025 pre-fitted xFP, needs Statistician sign-off before it is a
+    ranking input). Nothing ingested yet.
+
+**Model**
+
+11. **Where the TE mispricing sits in the draft is unanswered.** 33.6% of a tight end's stable
+    quality is unpriced by consensus versus 15.1% RB/WR and 6.3% QB, but that is pooled across all
+    tight ends. If it concentrates in the top few, the founder's late-round strategy is wrong and
+    the finding argues the opposite way. Survivorship is the specific way this analysis fails.
+12. **The shipped rank curve pools all seasons flat.** The QB slope collapsed monotonically
+    2021→2025 (−67, −73, −59, −45, **−4**), so the board recommends from a regime that has
+    disappeared. Whether other positions are doing the same has never been checked.
+
+**Suspended, not forgotten**
+
+13. **T4 suspension data** — interim closed (ADR-053); `data/suspensions_2026.json` is real, dated
+    and currently empty, which is verified rather than an oversight. Thread 057's fuller
+    structured-source design stays open if a permanent solution is wanted.
+14. **FantasyPros licence** — closed (D-020) while the product stays private and single-user.
+    Reopens on any second user, alongside D-021.
