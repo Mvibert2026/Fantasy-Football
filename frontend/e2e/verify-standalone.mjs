@@ -43,7 +43,6 @@ await page.waitForSelector('text=/generated 20/', { timeout: 15_000 });
 
 const provenance = await page.locator('text=/generated 20/').first().innerText();
 const bodyText = await page.textContent('body');
-const rowCount = await page.locator('[style*="grid-template-columns"] >> text=/^\\d+$/').count();
 
 console.log(`provenance line: ${provenance}`);
 console.log(`body text length: ${(bodyText ?? '').length}`);
@@ -66,12 +65,34 @@ check('provenance line carries a real player count', /\d+ players loaded/.test(p
 await page.screenshot({ path: join(artifacts, 'standalone-board.png'), fullPage: true });
 console.log(`screenshot: ${join(artifacts, 'standalone-board.png')}`);
 
-// Click a player row open to prove PlayerDetail (and its honest "not included"
-// history-section state) actually renders, not just the table.
+// Click a player row open to prove PlayerDetail (and its honest "could not
+// load" history-section state) actually renders, not just the table. This is
+// also the check that caught the real bug in an earlier version of this
+// build: a resolve.alias that silently failed to apply issued a real fetch()
+// for weekly_finishes.json/season_stats.json on this exact interaction,
+// invisible to the board-only checks above.
 await page.locator('text=Bijan Robinson').first().click();
 await page.waitForSelector('text=PROJECTION', { timeout: 10_000 });
+await page.locator('text=WEEKLY FINISHES').scrollIntoViewIfNeeded();
+const detailBodyText = await page.textContent('body');
 await page.screenshot({ path: join(artifacts, 'standalone-player-detail.png'), fullPage: true });
 console.log(`screenshot: ${join(artifacts, 'standalone-player-detail.png')}`);
+
+const nonFileRequestsAfterDetail = requests.filter(
+  (u) => !u.startsWith('file://') && !u.startsWith('about:'),
+);
+check(
+  'no network requests after opening PlayerDetail either',
+  nonFileRequestsAfterDetail.length === 0,
+);
+check(
+  'weekly finishes section reports the real embedded-only reason, not a failed fetch',
+  detailBodyText.includes('Could not load weekly_finishes.json: not included in this static snapshot'),
+);
+check(
+  'three seasons section reports the real embedded-only reason, not a failed fetch',
+  detailBodyText.includes('Could not load season_stats.json: not included in this static snapshot'),
+);
 
 await browser.close();
 console.log(`\n${failures === 0 ? 'ALL CHECKS PASSED' : `${failures} CHECK(S) FAILED`}`);

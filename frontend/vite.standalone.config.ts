@@ -17,10 +17,16 @@ import { viteSingleFile } from 'vite-plugin-singlefile';
  * build's own entry point (index.standalone.html / ui/main.standalone.tsx)
  * needs a different `build.rollupOptions.input` than the default `index.html`.
  *
- * `resolve.alias` swaps in the standalone player-history stub (no fetch) for
- * PlayerDetail.tsx's history import, WITHOUT touching that shared component or
- * ui/data/playerHistory.ts -- the live app (npm run dev / npm test) is not
- * affected by anything in this file.
+ * `define.__STANDALONE__` flips a compile-time flag `ui/data/playerHistory.ts`
+ * checks (`declare const __STANDALONE__`) to skip its fetch entirely and go
+ * straight to the same `error` state PlayerDetail.tsx's sections 7/8 already
+ * render on a real failure -- undefined everywhere else (npm run dev, npm
+ * test, npm run build all see it as falsy), so the live app's behavior is
+ * unchanged. An earlier version of this file tried a `resolve.alias` swap
+ * instead; that silently failed to match (Vite aliases match the raw import
+ * specifier text, not the post-resolution absolute path, and the specifier
+ * here is a relative `../data/playerHistory`) and shipped a real `fetch()`
+ * that failed at runtime -- caught by verify-standalone.mjs, not assumed away.
  */
 export default defineConfig({
   plugins: [react(), viteSingleFile()],
@@ -32,13 +38,8 @@ export default defineConfig({
   // build exists to NOT depend on. Nothing in the standalone entry
   // references anything under public/, so there is nothing to copy.
   publicDir: false,
-  resolve: {
-    alias: {
-      [resolve(__dirname, 'ui/data/playerHistory.ts')]: resolve(
-        __dirname,
-        'ui/data/playerHistory.standalone.ts',
-      ),
-    },
+  define: {
+    __STANDALONE__: true,
   },
   build: {
     outDir: 'dist-standalone',
