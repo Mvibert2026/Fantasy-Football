@@ -27,6 +27,11 @@ export default defineConfig({
   // Relative asset paths: this file is opened via `file://`, which has no
   // concept of a site root that a leading `/` could resolve against.
   base: './',
+  // Vite copies the whole publicDir into outDir by default -- that's
+  // frontend/public/data/*.json, the very fetched-at-runtime copies this
+  // build exists to NOT depend on. Nothing in the standalone entry
+  // references anything under public/, so there is nothing to copy.
+  publicDir: false,
   resolve: {
     alias: {
       [resolve(__dirname, 'ui/data/playerHistory.ts')]: resolve(

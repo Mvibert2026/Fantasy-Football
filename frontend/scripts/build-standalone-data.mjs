@@ -85,24 +85,43 @@ function main() {
     `// regenerate with \`npm run build:standalone\` (or the script directly), which\n` +
     `// re-reads ../data/export/*.json fresh every time. See that script's own doc\n` +
     `// comment for which artifacts are embedded and which are deliberately not.\n` +
+    `//\n` +
+    `// Each artifact is a JSON STRING, JSON.parse'd back at module-load time --\n` +
+    `// not a typed TS object literal -- and the whole dataset is cast once at the\n` +
+    `// bottom, the same "trust the export, cast, don't structurally re-verify"\n` +
+    `// contract ui/data/load.ts's fetchJson<T>() already uses for the live app's\n` +
+    `// fetch responses. An inline typed literal hit real drift between the hand-\n` +
+    `// maintained Raw*.ts interfaces and the live export's actual shape (a few\n` +
+    `// nullable fields typed non-null, a couple of newer export fields the\n` +
+    `// interfaces don't declare yet) -- pre-existing drift, not something this\n` +
+    `// generator should silently paper over by loosening those interfaces.\n` +
     `// Embedded at: ${manifest.synced_utc}\n`;
+
+  /** A JS string literal that JSON.parse()s back to `value` -- double-encoding
+   *  handles every escaping edge case (backticks, ${}, quotes, control chars)
+   *  for free, since JSON.stringify(string) always produces a valid, safely
+   *  escaped JS double-quoted string literal. */
+  function embed(value) {
+    return JSON.stringify(JSON.stringify(value));
+  }
 
   const body =
     `import type { Dataset } from './load';\n\n` +
-    `export const STANDALONE_DATASET: Dataset = {\n` +
-    `  manifest: ${JSON.stringify(manifest)},\n` +
-    `  board: ${JSON.stringify(data.board)},\n` +
-    `  league: ${JSON.stringify(data.league)},\n` +
-    `  glossary: ${JSON.stringify(data.glossary)},\n` +
-    `  nulls: ${JSON.stringify(data.nulls)},\n` +
-    `  strategies: ${JSON.stringify(data.strategies ?? null)},\n` +
-    `  availability: ${JSON.stringify(data.availability)},\n` +
-    `  opponents: ${JSON.stringify(data.opponents)},\n` +
-    `  rosters: ${JSON.stringify(data.rosters ?? null)},\n` +
+    `const RAW = {\n` +
+    `  manifest: JSON.parse(${embed(manifest)}),\n` +
+    `  board: JSON.parse(${embed(data.board)}),\n` +
+    `  league: JSON.parse(${embed(data.league)}),\n` +
+    `  glossary: JSON.parse(${embed(data.glossary)}),\n` +
+    `  nulls: JSON.parse(${embed(data.nulls)}),\n` +
+    `  strategies: JSON.parse(${embed(data.strategies ?? null)}),\n` +
+    `  availability: JSON.parse(${embed(data.availability)}),\n` +
+    `  opponents: JSON.parse(${embed(data.opponents)}),\n` +
+    `  rosters: JSON.parse(${embed(data.rosters ?? null)}),\n` +
     // No news corpus exists (see ui/data/load.ts's fetchFeedOrEmpty) -- the same
     // honest-empty shape it already falls back to on a 404, not a new claim.
     `  feed: { contract_version: 'absent', generated_utc: 'never', items: [] },\n` +
-    `};\n`;
+    `};\n\n` +
+    `export const STANDALONE_DATASET = RAW as unknown as Dataset;\n`;
 
   writeFileSync(outFile, banner + '\n' + body);
 
