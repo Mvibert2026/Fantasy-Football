@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { App } from '../App';
 import { Predictions } from '../views/Predictions';
 import { buildRows, type BoardRow } from '../data/board';
-import { buildLeagueConfig } from '../data/league';
+import { applyUserSlotOverride, buildLeagueConfig } from '../data/league';
 import {
   currentOverallPick,
   roundOfPick,
@@ -201,5 +201,49 @@ describe('Predictions', () => {
 
     const stored = JSON.parse(localStorage.getItem(`prep.draft.${leagueId}`)!) as DraftState;
     expect(stored.queue).toContain(first.id);
+  });
+
+  describe('FR-035: predicting-under context line', () => {
+    // Diagnosed live (see docs/founder-requests/FR-035-...): the re-derivation was
+    // already correct on a league switch -- teams/rounds/slot and every row's live
+    // number all changed. The actual defect was that nothing on the screen *said*
+    // which league it was predicting under. These tests cover the fix, not the
+    // re-derivation (league-switch.test.ts / the Dataset layer already covers that
+    // loadDataset itself refuses to mix leagues).
+    it('states the league name, team count, round count and draft slot together', () => {
+      renderPredictions();
+      const leagueName = data.league.league_name ?? data.league.league_id ?? 'this league';
+      const line = screen.getByTestId('predicting-under').textContent ?? '';
+      expect(line).toContain('Predicting for');
+      expect(line).toContain(leagueName);
+      expect(line).toContain(`${teams} teams`);
+      expect(line).toContain(`${league.rounds.kind === 'present' ? league.rounds.value : ''} rounds`);
+      expect(line).toMatch(new RegExp(`your slot\\s*${league.userSlot.kind === 'present' ? league.userSlot.value : ''}`));
+    });
+
+    it('never claims an override when none is set', () => {
+      renderPredictions();
+      expect(screen.getByTestId('predicting-under').textContent).not.toMatch(/overridden/i);
+    });
+
+    it('marks the slot as overridden, distinctly, when league carries an FR-034 override', () => {
+      const target = league.userSlot.kind === 'present' && league.userSlot.value === 1 ? 2 : 1;
+      const overridden = applyUserSlotOverride(league, target);
+      render(<Predictions data={data} rows={rows} league={overridden} />);
+      const line = screen.getByTestId('predicting-under').textContent ?? '';
+      expect(line).toMatch(new RegExp(`your slot\\s*${target}`));
+      expect(line).toMatch(
+        new RegExp(`overridden, sourced ${league.userSlot.kind === 'present' ? league.userSlot.value : ''}`),
+      );
+    });
+
+    it('falls back to the raw league_id when league.json:league_name is absent, never a blank or invented name', () => {
+      const noName = { ...data, league: { ...data.league, league_name: undefined } };
+      render(<Predictions data={noName} rows={rows} league={league} />);
+      const expectedName = data.league.league_id ?? 'this league';
+      const line = screen.getByTestId('predicting-under').textContent ?? '';
+      expect(line).toContain('Predicting for');
+      expect(line).toContain(expectedName);
+    });
   });
 });

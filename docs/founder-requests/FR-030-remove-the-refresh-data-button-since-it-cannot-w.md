@@ -46,3 +46,16 @@ freshness text intact; `frontend/e2e/artifacts/topbar-dev-2026-07-29.png` shows 
 present under `npm run dev`, confirming the flag distinguishes the two correctly. 2 new tests in
 `ui/__tests__/refresh.test.tsx`. Left `IN PROGRESS`, not `SHIPPED`, pending founder review of the
 screenshots, same standard as FR-029.
+
+
+## Shipped 2026-07-29 (frontend)
+
+The button is removed and the freshness line kept, per the request. Verified by screenshot in both
+Prep and Draft: `frontend/e2e/artifacts/topbar-no-refresh-button.png`,
+`topbar-no-refresh-button-draft-mode.png`. `frontend/ui/components/RefreshData.tsx` and its test file
+are deleted; `frontend/ui/__tests__/refresh-button-removed.test.tsx` is a regression guard.
+
+**Numbering note.** The building agent branched from `main`, did not have this file, and filed the
+same request again as FR-037 — colliding with this branch's real FR-037 (Export CSV/PDF inert). The
+duplicate was dropped at merge and its evidence folded in here. Third instance of an id collision
+caused by a worktree branching off a base that lacks the newer numbering.

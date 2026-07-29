@@ -1,10 +1,21 @@
 ---
 ID: FR-043
-STATUS: NEW
+STATUS: IN PROGRESS
 PRIORITY: MEDIUM
 SOURCE: chat 2026-07-29, PM session
 RAISED: 2026-07-29
 ---
+
+## Update — 2026-07-29, librarian
+
+Audit delivered: `docs/audit-2026-07-29-built-and-unused.md`. Covers all five requested areas
+(orphan modules, backend-with-no-UI, unused ingested data, phantom-cited documents, unread export
+fields), plus the item-1-crossed-with-backlog check the coordinator prioritised. Two live documents
+corrected in place this session (`docs/operating-model.md`, `docs/design-handoff/HANDOFF-NOTES.md`
+— both cited the missing "Competitive UX + platform + Reddit research" artifact thread 086 also
+found). One contradiction escalated rather than resolved unilaterally: `docs/handoffs/
+087-fr-043-audit-claude-md-ss5-staleness-built-but-u.md`, to `pm`, on `CLAUDE.md` §5's stale
+coaching/route-data claims. Remains `IN PROGRESS` (not `SHIPPED`) until thread 087 closes.
 
 ## Request
 Audit for capability already built and sitting unused
