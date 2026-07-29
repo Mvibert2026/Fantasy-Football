@@ -24,7 +24,32 @@ repo — Cloudflare holds its own deploy token. This closes the last dependency 
 machine: development, tests, the database rebuild, the daily capture and now viewing the app all run
 without it.
 
-**Last verified:** 2026-07-29, PM check-in session running **in the cloud, not on the founder's
+**Last verified:** 2026-07-29, backend session (PM-dispatched, worktree
+`agent-a2a7e52225b3a7db0`, ADR-060) closing a real gap: contract 1.14.0 (thread 082) put real ADP
+fields on the board but defined the term nowhere reachable — 13-term glossary, zero mentions in
+Methodology. Added an `ADP` glossary term (`src/export_static.py`, folding
+`adp_min_pick`/`adp_max_pick`/`adp_selected_pct` into it rather than four separate terms) and a
+Methodology section confirming, with evidence, **ADP is display-only** — it does not feed
+`projected_points`, VBD, tiers, availability, or any recommendation (`_load_adp_snapshot()`'s own
+docstring, ADR-035's "NOT wired into the shipped default" status note, and thread 082's frontend
+reply all agree). Regenerated all 27 `glossary.json` files (primary + 26 saved league configs) —
+no `.db` needed for that path. Also corrected two now-false "no ADP source is legally obtainable
+(ADR-018)" claims sitting next to the new text (the `consensus rank` glossary entry,
+`board.json`'s `consensus_source_note`) — stale since ADR-035. **No contract bump** — every field
+used already existed at 1.14.0. Found and mechanically fixed (marker lines only, no content
+change) two files carrying literal leftover git-conflict markers: `docs/decisions.md` around
+ADR-057/058, and `docs/handoffs/082-...md` around its two frontend replies — did NOT touch the
+actual ADR-054/055 duplicate-header collision underneath, which is ADR-056's already-made,
+deliberately-left decision. **Known gap left open:** the live `board.json` artifact's
+`consensus_source_note` field still carries the old ADR-018 text — the Python source is fixed but
+regenerating the artifact needs a working `nfl.db`, which this session's `scripts/
+rebuild_database.py` run could not get past step 4 (`github.com/dynastyprocess/*` 403s in this
+kind of session — documented, pre-existing, see `docs/can-we-rebuild-the-database.md`). Tests:
+backend 688 passed / 29 failed / 9 errors / 3 skipped (every failure/error is the missing-`nfl.db`
+condition or the pre-existing ADR-054/055 mailbox failure, none touch glossary/methodology code);
+frontend 203/203 passed, `tsc -b --noEmit` clean. Screenshots looked at directly (not just
+captured), 4 images in `frontend/e2e/artifacts/adp-*-2026-07-29.png`. Prior verification:
+2026-07-29, PM check-in session running **in the cloud, not on the founder's
 machine** (`origin/main` @ `4a299df`; no local worktrees exist here, so anything sitting untracked in
 a worktree on the founder's machine — see thread 081 — is invisible to a cloud session and cannot be
 fixed from one). Three facts measured this session: the mailbox check now **passes**; the daily ADP
@@ -95,4 +120,3 @@ by the session whose work changed them, per the agent operating rules.
 
 | | Value | Notes |
 |---|---|---|
-| Backend branch / commit | `claude/pm-agent-setup-gobxa0`, `47e589cee90f0c49fb435be3f3ee7da58f9ab6b3` | `git rev-parse --abbrev-ref HEAD` / `HEAD` |

@@ -1,6 +1,6 @@
 {
   "contract_version": "1.14.0",
-  "generated_utc": "2026-07-29T18:23:04.226114+00:00",
+  "generated_utc": "2026-07-29T19:42:51.042491+00:00",
   "league_id": "espn_12_full",
   "preamble": "These findings were tested for the PRIMARY league and are shown here for reference only -- see each finding's result field. Per ADR-041, league-specific results are not assumed to generalize.",
   "findings": [
