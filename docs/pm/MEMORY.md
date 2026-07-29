@@ -26,6 +26,19 @@ Access can gate it for free in about ten minutes without touching the build.
 **This closes the last dependency on his machine.** Development, tests, the database rebuild, the
 daily capture, and now *viewing the app* all run without it.
 
+**OPEN, founder-decided, needs following up:** the live site is **public without a password**, and
+every source authorisation this project holds — FFC (FR-023), FantasyPros (D-020), the FFC history
+pull (D-021) — is scoped *"private use by one person, void if the product ever reaches a second
+human."* The founder was told, judged the risk low while it is only his own board on an obscure URL,
+and **chose to leave it open for a day or two because it makes his own testing easier** (2026-07-29).
+That is his call and it is a reasonable one.
+
+**Do not let it drift.** He said he will add the password himself in the next day or two. If it is
+still open after that, raise it once — not as a lecture, as a reminder he asked for. The gate is
+free, takes about ten minutes, and the application already exists in Cloudflare Access with no policy
+attached. **Related defect he hit while trying: an Access application with no policy denies everyone**,
+which is why the email code appeared to fail.
+
 **New founder constraints, learned the expensive way:**
 
 - **Fable work happens at the END OF THE WEEK, before the budget reset. Never mid-week.** Fable runs
