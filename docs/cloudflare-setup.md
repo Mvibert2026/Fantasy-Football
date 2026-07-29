@@ -1,0 +1,78 @@
+# Cloudflare setup — the assistant's API key, and the password gate
+
+Written for the founder, 2026-07-29. Both changes are settings in the Cloudflare dashboard. **No code
+to write and no deploy to trigger** — `worker/index.js` and `wrangler.jsonc` are already on `main`.
+
+Two secrets. The site behaves differently depending on which are set, and it never breaks if you set
+neither:
+
+| Secret | What it does | If you leave it unset |
+|---|---|---|
+| `ANTHROPIC_API_KEY` | The assistant can call an LLM | Assistant says the reasoning lane isn't configured. Everything else works |
+| `SITE_PASSWORD` | Browser asks for a password before the site loads | Site stays public, exactly as now |
+| `SITE_USERNAME` | Optional. Sets which username is accepted | Any username works; only the password is checked |
+
+---
+
+## 1 · The assistant's API key
+
+You need an Anthropic API key first — **console.anthropic.com** → API keys → Create key. It starts
+`sk-ant-`. Copy it when it's shown; it isn't shown again.
+
+Then:
+
+1. **dash.cloudflare.com** → **Workers & Pages** → **fantasy-football**
+2. **Settings** tab
+3. **Variables and Secrets** → **Add**
+4. Type: **Secret** (not Text — Secret hides the value and keeps it out of logs)
+5. Name: `ANTHROPIC_API_KEY`
+6. Value: paste the key
+7. **Save**, then **Deploy** if it offers
+
+**Type must be Secret, not Text.** Text variables are visible in the dashboard afterwards.
+
+The key never reaches the browser. It's read inside the Worker, which runs on Cloudflare's servers.
+
+## 2 · The password gate
+
+1. Same place: **Settings** → **Variables and Secrets** → **Add**
+2. Type: **Secret**
+3. Name: `SITE_PASSWORD`
+4. Value: whatever you want the password to be
+5. **Save** and deploy
+
+Now visiting the site pops the browser's own login box. **Leave the username blank** unless you also
+set `SITE_USERNAME` — only the password is checked. Your browser will offer to remember it, so it's
+one prompt per device rather than per visit.
+
+This is deliberately not Cloudflare Access. Access emails a code every login, which you found
+annoying and which didn't reliably arrive. This has no email in the path and nothing to deliver.
+
+**To turn the gate off:** delete `SITE_PASSWORD`. The site goes public again immediately.
+
+## 3 · Checking it worked
+
+- **Password:** open the site in a private window. A login box means it's on.
+- **Assistant:** ask it something the templates can't answer. "Not configured" means the key isn't
+  set or was saved as Text rather than Secret.
+- **Neither should affect the board.** Every other screen is computed from static files and doesn't
+  touch the network. If the board breaks, that isn't these settings.
+
+## 4 · What it costs
+
+The assistant calls Sonnet, capped at 2,048 tokens per answer. A question is fractions of a cent.
+Only the reasoning lane spends anything — every template answer and every number on the board is
+computed locally and costs nothing.
+
+Anthropic's console has spend limits under **Billing** if you want a ceiling.
+
+---
+
+## Why the password matters beyond privacy
+
+Every data source this project uses — FantasyPros, FFC, Sleeper — permits **personal use only**. FFC's
+permission says in its own text that it is void if the product reaches a second human.
+
+A public URL with no gate is the single fact that turns "personal use" into "distribution", for all
+three at once. The founder's decision to proceed on personal-use terms (FR-056) rests on this being
+set.
