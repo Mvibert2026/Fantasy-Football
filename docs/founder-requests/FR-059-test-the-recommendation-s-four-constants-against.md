@@ -79,3 +79,35 @@ on screen and to the assistant.
 
 **Dependency: this is worth doing only after this ticket resolves.** An assistant fluently explaining
 four untested constants would be the most persuasive way yet to launder a guess.
+
+## Disposition — registered 2026-07-29 by `strategist`
+
+**Registered as `PR-007`**, family `F-RECOMMENDATION-CONSTANTS` (m=4):
+`docs/preregistration/PR-007-recommendation-constants-ablation.md`. Numbered PR-007 rather than
+PR-006 because PR-004 §11.4 already reserves PR-006 by name.
+
+Twelve arms (plain VBD · all-four · three leave-one-out · three add-one-in · two descriptive
+alternatives · PR-003's two consensus-board baselines); **four confirmatory comparisons**; outcome
+metric is **paired mean roster points** under full draft simulation against real historical weekly
+outcomes, which is the only instrument that can answer a roster question (`CLAUDE.md` §6.6).
+Materiality floor **+20 roster points, inherited verbatim from PR-003**, not re-chosen. Verdict
+requires unanimity across all nine season×sigma cells; the sigma sweep {5,10,20} is combined as a
+**conjunction, not an average**, so a margin that exists at one sigma is reported
+ASSUMPTION-DEPENDENT and deleted.
+
+**Pre-committed dispositions:** any constant that fails is **deleted from
+`frontend/ui/data/recommendation.ts`**. The **DEF term is deleted unconditionally with no arm run**
+— it cannot fire on any board this project has (ADR-039) or in the simulator, so no measurement can
+license keeping it. The expected outcome, registered in PR-007 §9 before any run, is that **all
+three reachable constants are deleted and `recommendationScore()` collapses to `row.vbd.value`** —
+which PR-007 treats as a pass, not a failure.
+
+**Two refusals, in writing** (PR-007 §8, §13): no grid search over the constants' magnitudes (it
+would convert an unfitted guess into a fitted one carrying false authority), and no time-varying QB
+penalty inside this test (a different model needing its own registration). The founder's two
+sceptical points are both answered directly — the TE window contradiction gets a descriptive-only
+arm at TE7-10, and the collapsing QB premium gets a one-way regime gate that can delete but never
+retain.
+
+**Execution:** `ranker`, via the handoff thread opened from this registration. `strategist` has no
+database access by design and does not run it.

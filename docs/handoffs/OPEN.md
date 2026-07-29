@@ -4,7 +4,7 @@
 Threads are the source of truth. Change a thread's `STATUS:`, then re-run sync.
 Protocol: [`README.md`](README.md).
 
-**50 open** · 41 resolved
+**50 open** · 42 resolved
 
 ---
 
@@ -87,7 +87,7 @@ not an omission. Start your session at your own heading.
 | [070](070-recurring-injury-suspension-feed.md) | Recurring injury suspension feed | `pm` | OPEN | 2d | T4 (suspensions/roster-status table stakes), E[games_played] per ADR-E Amendment E-A1 |
 | [084](084-deepen-expert-consensus-history-beyond-2021-2025.md) | Deepen expert consensus history beyond 2021 2025 | `ranker` | OPEN | 0d | none |
 
-### `strategist` — 7 waiting
+### `strategist` — 6 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
@@ -97,7 +97,6 @@ not an omission. Start your session at your own heading.
 | [053](053-founder-csv-ingestion.md) | Founder csv ingestion | `pm` | OPEN | 2d | FR-001 comparison view |
 | [056](056-round-varying-need-and-run-saturation.md) | Round varying need and run saturation | `pm` | OPEN | 2d | any change to the need term or the run term |
 | [085](085-the-board-rank-curve-slope-confounds-positional.md) | The board rank curve slope confounds positional | `ranker` | OPEN | 0d | none |
-| [087](087-fr-039-pass-2-register-the-confirmatory-te-windo.md) | Fr 039 pass 2 register the confirmatory te windo | `ranker` | OPEN | 0d | FR-039 reaching the board |
 
 ### `researcher` — 3 waiting
 
@@ -129,9 +128,11 @@ not an omission. Start your session at your own heading.
 
 _Nothing waiting on you._
 
-### `ranker` — 0 waiting
+### `ranker` — 1 waiting
 
-_Nothing waiting on you._
+| ID | Subject | From | Status | Age | Blocks |
+|---|---|---|---|---|---|
+| [093](093-run-pr-007-recommendation-constants-vs-plain-vbd.md) | Run pr 007 recommendation constants vs plain vbd | `strategist` | OPEN | 0d | FR-059; FR-058's panel copy; the chatbot half of FR-059 |
 
 ---
 
@@ -180,4 +181,5 @@ _Nothing waiting on you._
 | [078](078-pick-level-adp-velocity-capture-blocked-mfl-has.md) | Pick level adp velocity capture blocked mfl has | `data-ops` → `pm` |
 | [080](080-commit-the-three-unreproducible-artifacts-before.md) | Commit the three unreproducible artifacts before | `data-ops` → `backend` |
 | [082](082-adp-fields-on-board-json-contract-1-14-0.md) | Adp fields on board json contract 1 14 0 | `backend` → `frontend` |
+| [087](087-fr-039-pass-2-register-the-confirmatory-te-windo.md) | Fr 039 pass 2 register the confirmatory te windo | `ranker` → `strategist` |
 
