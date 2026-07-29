@@ -1,94 +1,10 @@
-# Status log — combined view
-
-**Generated 2026-07-29 by `tools/status_log.py sync` — do not hand-edit.**
-Session files in this directory are the source of truth. Add a new dated file, then
-re-run sync. Protocol: [`README.md`](README.md).
-
-**2 sessions recorded.**
-
----
-
-<!-- 2026-07-28-backend-shard-session-logs.md -->
-
-# 2026-07-28 — backend — shard the shared append-only doc logs
-
-## What changed
-
-`docs/status.md`, `docs/founder-requests.md`, and `docs/CURRENT-STATE.md`'s "Build state" table
-were the three most contended shared files in the repo — every parallel session wrote to one or
-more of them, which is exactly the pattern `docs/reviews/fable-workflow-2026-07-27.md` (work
-orders W3/W4) already diagnosed as the project's main source of merge conflicts, after two
-sessions nearly collided on `CURRENT-STATE.md`. This session implements W3 and W4, plus extends
-the same idea to `founder-requests.md`, which W3/W4 didn't cover.
-
-Three different fixes for three different conflict shapes, not one fix applied uniformly:
-
-1. **`docs/status.md`** (pure append log) → frozen; `docs/status/YYYY-MM-DD-role-slug.md` per
-   session; `tools/status_log.py sync` generates `docs/status/INDEX.md`. This is the literal
-   "shard into dated files" pattern.
-2. **`docs/founder-requests.md`** (thread-shaped: FR-NNN numbers referenced 146 times across 40
-   other files, and a request's `Status:` gets mutated by later sessions — concurrent-edit-to-
-   one-blob, not append) → frozen; one file per request at `docs/founder-requests/FR-NNN-slug.md`,
-   same pattern as `docs/handoffs/NNN-slug.md`, with the same staged-`NEW-*.md` + `sync`-time ID
-   allocation `tools/handoffs.py` uses (W1), seeded past the archive's highest number (`FR-017`).
-   `tools/founder_requests.py sync` generates `docs/founder-requests/INDEX.md`, grouped by status.
-3. **`docs/CURRENT-STATE.md`** — deliberately *not* sharded into dated files. It's synthesized
-   "current truth," edited in place by design (`CLAUDE.md`: "never append a new section").
-   Regenerating it from per-session deltas would just move the merge problem into the generator.
-   Only the actually-measurable "Build state" table is now generated, via a new `--apply` flag on
-   `tools/state.py` that rewrites the content between `<!-- BUILD-STATE:START -->` /
-   `<!-- BUILD-STATE:END -->` markers in place, leaving the rest of the doc (including the two
-   rows that aren't measurable by a single command — Agent infrastructure, Frontend location) hand
-   -maintained. Also fixed a latent bug while wiring this in: `tools/state.py` hardcoded the
-   literal string `` `master` `` for the branch name regardless of the real branch (this repo's is
-   `main`) — never previously exercised because the tool only printed to stdout for manual paste.
-
-None of the three old files were rewritten or migrated — they stay in place as the archive,
-unmodified except for a freeze-notice header pointing at the new location, per the explicit
-instruction not to lose history.
-
-## What still requires a shared-file append
-
-- **`docs/decisions.md`** — the ADR log. Same append-only shape as the old `status.md`, and
-  already has its own collision history (ADR-048, per `RECONCILIATION-2026-07.md`) and its own
-  allocator (`tools/handoffs.py adr next`, which scans `docs/decisions.md` + `docs/adr-drafts/`).
-  Out of scope for this session (not one of the three files named), but it's the same failure mode
-  and hasn't been fixed. Flagging, not fixing.
-- **`docs/handoffs/NNN-slug.md` thread files themselves** — replies within a single already-open
-  thread are still a shared append target if two sessions touch the *same* thread in the same
-  round. Narrow blast radius (one thread, not the whole mailbox) and already a known, accepted
-  limitation — `docs/handoffs/README.md` rule 8 ("a pull conflict is not yours to resolve alone")
-  exists for exactly this case.
-- **Cross-worktree ID allocation races** — both the handoffs allocator and this session's new
-  founder-request allocator use the same "hard-fail if the destination already exists" defense,
-  not true cross-worktree coordination. Thread 076 already flagged this as open and unresolved for
-  handoffs; the same caveat now applies identically to `tools/founder_requests.py`. Rare in
-  practice (per 076's own assessment), but real.
-- **`docs/status/` and `docs/founder-requests/` `INDEX.md` files** — not append targets (they're
-  fully regenerated, never hand-edited), but two sessions running `sync` around the same time and
-  both pushing will still produce a trivial merge conflict on the generated file itself, resolved
-  by just re-running `sync` after the merge. Lower-stakes than the old failure mode: nothing is
-  lost, the fix is mechanical, and it doesn't depend on either session's judgment about which
-  content wins.
-
-## Verification
-
-- New tooling tests: `tests/test_status_log.py`, `tests/test_founder_requests.py`,
-  `tests/test_state.py` — 16 tests, all passing.
-- Full backend suite (`pytest -q`, real `data/nfl.db`) run post-change to confirm nothing else
-  regressed — see this session's commit message / PR for the pass count.
-
----
-
-<!-- 2026-07-29-integration.md -->
-
 # 2026-07-29 — integration — overnight run against docs/RUN-2026-07-29-integration.md
 
 Founder asleep, no questions asked. Every judgement call is recorded below under
 "Decisions made without asking."
 
 **Outcome: clean. One merge landed, all suites green, harness 9/9, app verified at runtime and
-left running on 5173. One instruction in the run doc was wrong and was not complied with —
+restarted on 5173 at the end. One instruction in the run doc was wrong and was not complied with —
 see "The premise that did not hold."**
 
 ---
@@ -155,7 +71,19 @@ tonight's branches, out of scope for this run).
 | Acceptance harness | **9/9** | — |
 | Runtime verification on 5173 | **9/9** | — |
 
-No failures anywhere. Nothing deliberate to explain.
+No test failures anywhere. Nothing deliberate to explain.
+
+**One tool did fail, and it was a real bug**, not a test: `tools/state.py --tests` crashed with
+`FileNotFoundError: [WinError 2]` on the project's own machine. It called
+`subprocess.run(["npx", "vitest", "run"])` with a list argv and no shell; on Windows `npx` is
+`npx.CMD`, so `CreateProcess` cannot find a bare `npx`. The backend half worked because it invokes
+the conda interpreter by absolute path.
+
+This landed tonight as part of the sharding merge, and it means the generated build-state table
+could never have been produced with real counts on the only machine this project runs on. Fixed by
+resolving `argv[0]` through `shutil.which` in `run()`, which applies `PATHEXT` and so finds
+`.CMD`/`.exe`/`.bat` without hardcoding an extension or resorting to `shell=True` with a list argv.
+`shutil.which('npx')` → `C:\Program Files\nodejs\npx.CMD`.
 
 Backend was 620 before this run; the sharding branch added `tests/test_founder_requests.py`,
 `tests/test_state.py` and `tests/test_status_log.py` for +16. 620 + 16 = 636, which reconciles.
@@ -170,7 +98,8 @@ All nine green: `app-loads`, `mode-switcher-present`, `league-name-matches-confi
 `draft-room-renders`, `opponents-renders`, `player-detail-opens`.
 Evidence: `tools/acceptance/artifacts/evidence.json`.
 
-`board-header-player-count` was the 9th, and the run doc's diagnosis of it was correct: the check
+`board-header-player-count` was the one that had been failing (8 of 9 before tonight), and the run
+doc's diagnosis of it was correct: the check
 was wrong, not the app. It asserted `"N of TOTAL players loaded"`; the frontend fix removed the
 denominator rather than correcting it, so `Board.tsx` renders `"511 players loaded"` and its own
 test asserts the `of \d+` form is *absent*. The check was failing on a string the app no longer
@@ -211,7 +140,19 @@ parent (PID 17456), both started **2026-07-27 11:52**, i.e. ~36 hours stale. Bot
 from the main checkout, not a worktree. No server was left on any other port.
 
 Started **one** server from the **main checkout** on port **5173** (`prep` in
-`.claude/launch.json`). **It is still running.**
+`.claude/launch.json`).
+
+**Caveat, stated plainly because it affects what you will find:** that server died once during this
+session, unprompted, while the verification work was still going on. It was restarted and was
+listening on 5173 at the end of the run (PID 21092). But it is managed by the session's preview
+harness, not detached, so **it may not survive this session ending.** If port 5173 is dead when you
+read this, that is the expected failure and not a regression in the app:
+
+```bash
+npm --prefix frontend run dev
+```
+
+Nothing else was left on any other port.
 
 Verified with runtime evidence, not by reading code — `tools/acceptance/shot-5173.mjs`, which
 attaches to whatever is already on 5173 rather than starting its own server (a script that started
@@ -272,6 +213,12 @@ already covered by open work rather than needing a new item.
 7. **Put the screenshot script in `tools/acceptance/`** rather than `tools/`, only because that is
    where playwright is installed. Noted in its header that it is not part of the harness run.
 
+8. **Fixed the `tools/state.py` Windows bug** rather than just reporting it. It was blocking this
+   session's own write-back duty (regenerating the `CURRENT-STATE.md` build-state table with
+   measured counts), the fix is four lines and provably correct, and `tests/test_state.py` covers
+   the module. Judged in scope because the alternative was to leave a tool that landed tonight
+   broken on the only machine it runs on.
+
 ---
 
 ## Things I halted on, or deliberately left alone
@@ -325,10 +272,7 @@ test directory, and a `;`-containing pipeline. Worked around without weakening e
    design pass on what "blocking" means before Frontend can start. Explicitly not built tonight.
    Verified present and correctly worded, along with D-025 (CLOSED, no work); Phase 5 needed no
    action.
-4. The dev server on **5173 is still running** from the main checkout. Anything that wants a
-   server should reuse it rather than starting a second one.
+4. **Check port 5173 before starting a server.** One was left running from the main checkout, but
+   see the caveat above — it may not have survived. Reuse it if it is up; do not start a second.
 5. `docs/dashboard.html` and `docs/roles-workflow-map.html` are **stale** — this session changed
    project state and did not regenerate them.
-
----
-

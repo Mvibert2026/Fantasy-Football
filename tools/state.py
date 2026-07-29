@@ -21,6 +21,7 @@ Backend tests use the project's conda interpreter, not whatever `python`/`py` re
 """
 import argparse
 import re
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -42,6 +43,16 @@ def _rel(path: Path) -> str:
 
 
 def run(cmd, cwd=REPO_ROOT, timeout=600):
+    # Resolve argv[0] through PATH before handing it to CreateProcess. On Windows
+    # `npx` is `npx.cmd` and a bare "npx" raises FileNotFoundError, which is how
+    # --tests failed the first time this ran on the project's own machine.
+    # shutil.which applies PATHEXT, so it finds .cmd/.exe/.bat without hardcoding
+    # an extension or resorting to shell=True with a list argv.
+    if not isinstance(cmd, str):
+        cmd = list(cmd)
+        resolved = shutil.which(cmd[0])
+        if resolved:
+            cmd[0] = resolved
     result = subprocess.run(
         cmd, cwd=cwd, capture_output=True, text=True, shell=isinstance(cmd, str), timeout=timeout
     )
