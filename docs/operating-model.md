@@ -84,6 +84,15 @@ Append a row whenever usage data is available.
 | pre-2026-07-26 | Backend | Sonnet, low–moderate | 31 tests, ADRs, measured constant, 24-config matrix | Comfortable | Yes |
 | pre-2026-07-26 | Frontend | Sonnet, effort→5 | Full 38K-char spec port | Hard stop ~97% | **No — false completion claim** |
 | pre-2026-07-26 | Researcher | Opus, 4–5 | Competitive UX + platform + Reddit research | Within session | Yes |
+| 2026-07-29 | Data Ops | Sonnet | One-command DB rebuild, ADP CSV loader, dependency fixes | **~196k tokens**, 131 tool calls, 27 min | Yes — 17 tests, rebuild measured at 64s |
+| 2026-07-29 | Frontend | Sonnet | Cloud-readiness check + screenshot recipe | **~105k tokens**, 46 tool calls, 8 min | Yes — 202 tests, real screenshots |
+| 2026-07-29 | Frontend | Sonnet | Standalone single-file build, phone WIP + revert, Draft mode restore | **~374k tokens**, 219 tool calls, 40 min | Yes — but ~a third was the phone work the founder then pulled |
+
+**Read the third row before planning a round.** It is the single most expensive agent run on record here, and a substantial slice of it was spent building responsive layouts the founder cancelled once he saw what the request implied. The cost was not the agent's — the dispatch was wrong. **A dispatch that misreads scope is the most expensive error available to the PM**, more so than choosing the wrong tier.
+
+**Rough session total, 2026-07-29 (in-repo PM takeover): ~700k tokens across completed chains**, plus three Fable mandates killed part-way and three chains still running at the time of writing. That is a heavy day by this project's standards and worth weighing against a weekly budget.
+
+**What can and cannot be measured here.** Subagents report their own token usage on completion, so per-dispatch cost is knowable and should be logged every session. **The founder's account-level usage, remaining quota, and the separate Fable budget are not visible to any agent** — no tool in the session exposes them. He checks those himself via `/usage` or his account settings. Do not claim to be monitoring his usage; state plainly what is and is not visible.
 
 ---
 

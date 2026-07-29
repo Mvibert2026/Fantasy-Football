@@ -5,11 +5,11 @@ Per-request files in this directory are the source of truth. Edit a request's ow
 `STATUS:` line, then re-run sync. Protocol: [`README.md`](README.md).
 Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests.md).
 
-**8 requests since freeze.**
+**9 requests since freeze.**
 
 ---
 
-## NEW — 6
+## NEW — 7
 
 | ID | Subject | Raised | Source |
 |---|---|---|---|
@@ -19,6 +19,7 @@ Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests
 | [FR-021](FR-021-fable-work-happens-at-the-end-of-the-week-before.md) | Fable work happens at the end of the week before | 2026-07-29 | claude code session 2026-07-29 (PM takeover) |
 | [FR-022](FR-022-access-the-working-app-from-a-url-without-a-serv.md) | Access the working app from a url without a serv | 2026-07-29 | claude code session 2026-07-29 (PM takeover) |
 | [FR-023](FR-023-ffc-is-unblocked-founder-confirmed-no-restrictio.md) | Ffc is unblocked founder confirmed no restrictio | 2026-07-29 | claude code session 2026-07-29 (PM takeover) |
+| [FR-026](FR-026-capture-non-ppr-adp-as-well-alongside-half-ppr.md) | Capture non ppr adp as well alongside half ppr | 2026-07-29 | chat session 2026-07-29 (PM takeover) |
 
 ## SCOPING — 0
 

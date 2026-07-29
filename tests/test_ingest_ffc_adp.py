@@ -135,6 +135,92 @@ def test_retrospective_aggregate_is_flagged():
     assert flag == 1
 
 
+def test_store_adp_called_twice_same_day_overwrites_not_appends():
+    """A second store_adp() call for the same (source, period, teams, format,
+    as_of_date) must replace the day's rows, never accumulate a second copy
+    at a different retrieved_at -- the CSV export selects by date, so an
+    append here becomes a duplicated canonical archive file."""
+    conn = _conn_with_ff_playerids()
+    rows = ffc.parse_adp_table(_SAMPLE_TABLE_HTML)
+    kwargs = dict(
+        period=2026, teams=10, fmt="half-ppr", is_retrospective_aggregate=False,
+        as_of_date="2026-07-29", total_drafts_in_sample=1187, sample_window="w",
+    )
+    ffc.store_adp(conn, rows, **kwargs)
+    ffc.store_adp(conn, rows, **kwargs)  # simulate a re-run later the same day
+
+    stored = conn.execute("SELECT COUNT(*) FROM ffc_adp_snapshots").fetchone()[0]
+    quarantined = conn.execute("SELECT COUNT(*) FROM ffc_adp_quarantine").fetchone()[0]
+    assert stored == 1  # one resolved player (Gibbs), not two
+    assert quarantined == 1  # one quarantined player (Seattle Defense), not two
+
+
+def test_export_snapshot_csv_after_repeated_store_has_no_duplicate_rows(tmp_path):
+    conn = _conn_with_ff_playerids()
+    rows = ffc.parse_adp_table(_SAMPLE_TABLE_HTML)
+    kwargs = dict(
+        period=2026, teams=10, fmt="half-ppr", is_retrospective_aggregate=False,
+        as_of_date="2026-07-29", total_drafts_in_sample=1187, sample_window="w",
+    )
+    ffc.store_adp(conn, rows, **kwargs)
+    ffc.store_adp(conn, rows, **kwargs)
+
+    db_path = tmp_path / "nfl.db"
+    out = ffc.export_snapshot_csv(conn, db_path, "2026-07-29", period=2026)
+    with out.open(newline="", encoding="utf-8") as f:
+        csv_rows = list(csv.DictReader(f))
+    assert len(csv_rows) == 1
+
+
+def test_formats_map_has_three_distinct_10team_sources():
+    assert ffc.FORMATS == {"non_ppr": "standard", "half_ppr": "half-ppr", "ppr": "ppr"}
+    sources = {ffc.format_key_to_source(k) for k in ffc.FORMATS}
+    assert sources == {"ffc_non_ppr_10team", "ffc_half_ppr_10team", "ffc_ppr_10team"}
+
+
+def test_three_formats_store_to_distinct_adp_source_rows_never_blended():
+    """Each format is its own adp_source; storing all three must never merge
+    or overwrite another format's rows (CLAUDE.md SS4 never-blend rule,
+    extended from the FFC-vs-MFL case to FFC's own three formats)."""
+    conn = _conn_with_ff_playerids()
+    rows = ffc.parse_adp_table(_SAMPLE_TABLE_HTML)
+    for format_key, format_slug in ffc.FORMATS.items():
+        ffc.store_adp(
+            conn, rows, period=2026, teams=10, fmt=format_slug,
+            is_retrospective_aggregate=False, as_of_date="2026-07-29",
+            total_drafts_in_sample=1187, sample_window="w",
+            adp_source=ffc.format_key_to_source(format_key),
+        )
+    sources = {r[0] for r in conn.execute("SELECT DISTINCT adp_source FROM ffc_adp_snapshots")}
+    assert sources == {"ffc_non_ppr_10team", "ffc_half_ppr_10team", "ffc_ppr_10team"}
+    # one Gibbs row per format, none clobbered by another
+    per_source_counts = dict(conn.execute(
+        "SELECT adp_source, COUNT(*) FROM ffc_adp_snapshots GROUP BY adp_source"
+    ).fetchall())
+    assert per_source_counts == {
+        "ffc_non_ppr_10team": 1, "ffc_half_ppr_10team": 1, "ffc_ppr_10team": 1,
+    }
+
+
+def test_three_formats_export_to_distinct_csv_filenames(tmp_path):
+    conn = _conn_with_ff_playerids()
+    rows = ffc.parse_adp_table(_SAMPLE_TABLE_HTML)
+    db_path = tmp_path / "nfl.db"
+    paths = set()
+    for format_key, format_slug in ffc.FORMATS.items():
+        adp_source = ffc.format_key_to_source(format_key)
+        ffc.store_adp(
+            conn, rows, period=2026, teams=10, fmt=format_slug,
+            is_retrospective_aggregate=False, as_of_date="2026-07-29",
+            total_drafts_in_sample=1187, sample_window="w",
+            adp_source=adp_source,
+        )
+        out = ffc.export_snapshot_csv(conn, db_path, "2026-07-29", period=2026, adp_source=adp_source)
+        assert out is not None
+        paths.add(out)
+    assert len(paths) == 3  # no filename collision across formats
+
+
 def test_already_fetched_today_false_when_empty():
     conn = sqlite3.connect(":memory:")
     conn.execute(ffc._CREATE_SQL)
@@ -175,7 +261,7 @@ def test_export_snapshot_csv_writes_one_row_per_stored_player(tmp_path):
     ).fetchone()[0]
     db_path = tmp_path / "nfl.db"
     out = ffc.export_snapshot_csv(conn, db_path, date_str, period=2026)
-    assert out == tmp_path / "adp-snapshots-ffc" / f"{date_str}.csv"
+    assert out == tmp_path / "adp-snapshots-ffc" / f"{date_str}_half_ppr.csv"
     assert out.exists()
     with out.open(newline="", encoding="utf-8") as f:
         csv_rows = list(csv.DictReader(f))

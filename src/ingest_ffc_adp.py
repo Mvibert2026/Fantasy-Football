@@ -96,9 +96,27 @@ import identity
 
 DEFAULT_DB_PATH = Path(__file__).resolve().parent.parent / "data" / "nfl.db"
 
+# One adp_source per FFC scoring format, at 10 teams -- the league's own team
+# count. CLAUDE.md SS4's never-blend rule applies exactly as it does between
+# this source and mfl_proxy: ffc_non_ppr_10team, ffc_half_ppr_10team, and
+# ffc_ppr_10team are three DISTINCT adp_source values, never merged or
+# averaged into a "consensus" ADP. Requested by the founder 2026-07-29 to (a)
+# capture non-PPR, the format his actual mock-draft rooms run (public Yahoo
+# autodraft rooms are standard scoring, not Westwood's half-PPR), and (b) let
+# the format correction between non-PPR/half-PPR/PPR be measured empirically
+# from the same site, same drafters, same day, rather than assumed -- and to
+# get a second, independent same-day measurement against mfl_proxy (full PPR).
+FORMATS = {
+    "non_ppr": "standard",
+    "half_ppr": "half-ppr",
+    "ppr": "ppr",
+}
+TEAMS = 10
+
+# Kept for backward compatibility with the original half-PPR-only entry point;
+# the CLI now drives all three formats via FORMATS by default.
 ADP_SOURCE = "ffc_half_ppr_10team"
 FORMAT_SLUG = "half-ppr"
-TEAMS = 10
 
 USER_AGENT = (
     "FantasyFootballBacktestProject/1.0 "
@@ -296,6 +314,7 @@ def store_adp(
     as_of_date: str,
     total_drafts_in_sample: Optional[int],
     sample_window: Optional[str],
+    adp_source: str = ADP_SOURCE,
 ) -> dict:
     """Writes resolved rows to ffc_adp_snapshots and unresolved rows to
     ffc_adp_quarantine. Returns counts. Never guesses a mfl_id -- an
@@ -309,6 +328,24 @@ def store_adp(
     ).fetchone()
     if not has_canonical:
         identity.build_identity_tables(conn)
+
+    # OVERWRITE, NEVER APPEND, for the same (source, period, teams, format,
+    # as_of_date). FFC's rolling 5-day sample window can legitimately change
+    # within a day (--force re-run, or a retry after a transient failure), and
+    # the CSV this feeds is the canonical archive -- a second run must replace
+    # that day's rows, never add a second copy at a different `retrieved_at`.
+    # Refusing the second run (like MFL's once-per-day cache check) still
+    # governs whether main() re-fetches over the network at all; this governs
+    # what store_adp() does if it is called again for the same day regardless.
+    conn.execute(
+        "DELETE FROM ffc_adp_snapshots WHERE adp_source=? AND period=? AND teams=? "
+        "AND format=? AND as_of_date=?",
+        (adp_source, period, teams, fmt, as_of_date),
+    )
+    conn.execute(
+        "DELETE FROM ffc_adp_quarantine WHERE adp_source=? AND substr(retrieved_at,1,10)=?",
+        (adp_source, as_of_date),
+    )
 
     now = dt.datetime.now(dt.timezone.utc).isoformat()
     stored_rows = []
@@ -335,11 +372,11 @@ def store_adp(
                 f"ambiguous_name_match:{len(matches)}_candidates"
             )
             quarantine_rows.append((
-                ADP_SOURCE, r["player_name"], r["position"], r["team"], reason, now, now,
+                adp_source, r["player_name"], r["position"], r["team"], reason, now, now,
             ))
             continue
         stored_rows.append((
-            ADP_SOURCE, r["ffc_player_id"], mfl_id, r["player_name"], r["position"], r["team"],
+            adp_source, r["ffc_player_id"], mfl_id, r["player_name"], r["position"], r["team"],
             r["bye"], r["rank"], r["average_pick"], r["std_dev"], r["high_pick"], r["low_pick"],
             r["times_drafted"], total_drafts_in_sample, sample_window, period, teams, fmt,
             int(is_retrospective_aggregate), as_of_date, now, now,
@@ -383,7 +420,13 @@ def export_snapshot_csv(
         return None
     out_dir = snapshot_dir_for_db(db_path)
     out_dir.mkdir(parents=True, exist_ok=True)
-    suffix = f"{date_str}_period{period}" if period != dt.datetime.now(dt.timezone.utc).year else date_str
+    # adp_source is embedded in the filename -- three formats capture on the
+    # same date, and {date_str}.csv alone would let a later format's write
+    # silently clobber an earlier one's file for the same day.
+    fmt_tag = adp_source.removeprefix("ffc_").removesuffix(f"_{TEAMS}team")
+    suffix = f"{date_str}_{fmt_tag}"
+    if period != dt.datetime.now(dt.timezone.utc).year:
+        suffix += f"_period{period}"
     out_path = out_dir / f"{suffix}.csv"
     with out_path.open("w", newline="", encoding="utf-8") as f:
         writer = csv.writer(f)
@@ -437,12 +480,67 @@ def import_all_snapshot_csvs(conn: sqlite3.Connection, snapshot_dir: Path) -> di
     return results
 
 
+def format_key_to_source(format_key: str, teams: int = TEAMS) -> str:
+    return f"ffc_{format_key}_{teams}team"
+
+
+def capture_one_format(
+    conn: sqlite3.Connection,
+    db_path: Path,
+    format_key: str,
+    format_slug: str,
+    period: int,
+    teams: int,
+    force: bool,
+) -> dict:
+    """Fetch, store, and export the CSV for exactly one FFC format. Isolated
+    per-format so a failure or thin sample in one (e.g. non-PPR) does not
+    block or contaminate the other two -- each format's adp_source, DELETE
+    scope, and CSV filename are already fully independent (store_adp /
+    export_snapshot_csv), so this just sequences one fetch per format."""
+    adp_source = format_key_to_source(format_key, teams)
+    today = dt.datetime.now(dt.timezone.utc).date().isoformat()
+    current_year = dt.datetime.now(dt.timezone.utc).year
+    is_retro = period != current_year
+
+    if not force and already_fetched_today(conn, adp_source=adp_source, period=period):
+        csv_path = export_snapshot_csv(conn, db_path, today, period, adp_source=adp_source)
+        return {
+            "format_key": format_key, "adp_source": adp_source, "skipped": True,
+            "csv_path": csv_path,
+        }
+
+    page_html = fetch_html(period, teams, format_slug)
+    parsed = parse_adp_table(page_html)
+    total_drafts, window = parse_sample_window(page_html)
+    if not parsed:
+        raise RuntimeError(
+            f"parsed zero rows from FFC ADP page for format={format_key} -- "
+            "refusing to write an empty snapshot"
+        )
+
+    result = store_adp(
+        conn, parsed, period, teams, format_slug, is_retro, today,
+        total_drafts, window, adp_source=adp_source,
+    )
+    csv_path = export_snapshot_csv(conn, db_path, today, period, adp_source=adp_source)
+    return {
+        "format_key": format_key, "adp_source": adp_source, "skipped": False,
+        "csv_path": csv_path, "total_drafts": total_drafts, "window": window,
+        "is_retrospective_aggregate": is_retro, **result,
+    }
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--db", type=Path, default=DEFAULT_DB_PATH)
     ap.add_argument("--period", type=int, default=dt.datetime.now(dt.timezone.utc).year)
     ap.add_argument("--teams", type=int, default=TEAMS)
-    ap.add_argument("--format", type=str, default=FORMAT_SLUG)
+    ap.add_argument(
+        "--format-key", type=str, default=None, choices=sorted(FORMATS),
+        help="Capture only this one format (e.g. for a manual/historical pull). "
+             "Default: capture all three (non_ppr, half_ppr, ppr).",
+    )
     ap.add_argument("--force", action="store_true")
     ap.add_argument(
         "--import-csv-dir", type=Path, default=None,
@@ -462,51 +560,47 @@ def main() -> None:
             conn.close()
         return
 
+    formats_to_run = (
+        {args.format_key: FORMATS[args.format_key]} if args.format_key else FORMATS
+    )
+
     conn = sqlite3.connect(args.db)
     conn.execute(_CREATE_SQL)
     conn.execute(_QUARANTINE_CREATE_SQL)
     try:
-        today = dt.datetime.now(dt.timezone.utc).date().isoformat()
-        current_year = dt.datetime.now(dt.timezone.utc).year
-        is_retro = args.period != current_year
-        if not args.force and already_fetched_today(conn, period=args.period):
-            print("already fetched today (UTC) for this period; use --force to re-fetch")
-            csv_path = export_snapshot_csv(conn, args.db, today, args.period)
-            if csv_path is not None:
-                print(f"CSV archive already present: {csv_path}")
-            return
-
-        page_html = fetch_html(args.period, args.teams, args.format)
-        parsed = parse_adp_table(page_html)
-        total_drafts, window = parse_sample_window(page_html)
-
-        if not parsed:
-            raise RuntimeError("parsed zero rows from FFC ADP page -- refusing to write an empty snapshot")
-
-        result = store_adp(
-            conn, parsed, args.period, args.teams, args.format, is_retro, today,
-            total_drafts, window,
-        )
-        print(
-            f"wrote {result['stored']} rows, adp_source={ADP_SOURCE}, "
-            f"quarantined={result['quarantined']}, match_rate={result['match_rate']}, "
-            f"sample=totalDrafts={total_drafts}, window={window}, "
-            f"is_retrospective_aggregate={is_retro}"
-        )
-        if is_retro:
+        summary = []
+        for format_key, format_slug in formats_to_run.items():
+            r = capture_one_format(conn, args.db, format_key, format_slug, args.period, args.teams, args.force)
+            summary.append(r)
+            if r["skipped"]:
+                print(f"[{r['adp_source']}] already fetched today (UTC); use --force to re-fetch")
+                if r["csv_path"] is not None:
+                    print(f"  CSV archive already present: {r['csv_path']}")
+                continue
             print(
-                "NOTE: this pull is for a PAST season and FFC exposes no as-of date for it -- "
-                "treated as a RETROSPECTIVE AGGREGATE, not a preseason snapshot. Do not use as a "
-                "preseason board (CLAUDE.md SS6.1 look-ahead bias)."
+                f"[{r['adp_source']}] wrote {r['stored']} rows, quarantined={r['quarantined']}, "
+                f"match_rate={r['match_rate']}, sample=totalDrafts={r['total_drafts']}, "
+                f"window={r['window']}, is_retrospective_aggregate={r['is_retrospective_aggregate']}"
             )
-        if total_drafts and total_drafts < 100:
-            print(f"CAUTION: only {total_drafts} drafts behind this snapshot -- thin sample")
+            if r["is_retrospective_aggregate"]:
+                print(
+                    "  NOTE: this pull is for a PAST season and FFC exposes no as-of date for it -- "
+                    "treated as a RETROSPECTIVE AGGREGATE, not a preseason snapshot. Do not use as a "
+                    "preseason board (CLAUDE.md SS6.1 look-ahead bias)."
+                )
+            if r["total_drafts"] and r["total_drafts"] < 100:
+                print(f"  CAUTION: only {r['total_drafts']} drafts behind this snapshot -- thin sample")
+            if r["csv_path"] is None:
+                print(f"  WARNING: no rows for today's date -- CSV archive NOT written")
+            else:
+                print(f"  wrote CSV archive: {r['csv_path']} ({r['stored']} rows)")
 
-        csv_path = export_snapshot_csv(conn, args.db, today, args.period)
-        if csv_path is None:
-            print("WARNING: no ffc_adp_snapshots rows found for today's date -- CSV archive NOT written")
-        else:
-            print(f"wrote CSV archive: {csv_path} ({result['stored']} rows)")
+        print()
+        print("summary (side by side):")
+        for r in summary:
+            td = r.get("total_drafts")
+            print(f"  {r['adp_source']:<24} stored={r.get('stored', '(skipped)')} "
+                  f"totalDrafts={td}")
     finally:
         conn.close()
 
