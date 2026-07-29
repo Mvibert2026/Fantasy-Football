@@ -2983,3 +2983,52 @@ confirmed via the Browser pane against the already-running dev server, not asser
 code alone.
 
 **Permission prompts hit: none.**
+
+---
+
+## 2026-07-28 -- Mock-draft calibration snapshot + kicker consensus export (backend, branch backend/mock-calibration-kickers)
+
+Worked in an isolated worktree (.claude/worktrees/backend-mock-calibration), own branch, per
+explicit scope: backend-only, no handoff-thread work (threads 002/034 read for context but not
+touched), not merged to main.
+
+**Deliverable 1 (ADR-054).** Extended the batch mock-draft ingestion path
+(src/ingest_mock_drafts.py) so a logged mock carries a frozen LeagueConfig snapshot
+(teams/draft_type/user_draft_slot/starters/flex/bench/ir/scoring, plus a SHA-256
+league_config_hash) and a computed, gated per-pick prediction snapshot. New module
+src/mock_prediction.py reuses mock_lab_store.predict_next_pick (the D-3 model-free baseline,
+adp_rank_exp_v1) rather than forking the formula, after confirming directly against
+live_availability.py/run_availability.py (not just trusting mock_lab_store.py's docstring) that
+no general-purpose hazard-model P0 exists for arbitrary slots on demand -- P0 generation is a
+batch Monte-Carlo script tied to each configs own fixed user_draft_slot, not a callable
+prediction source. Look-ahead-bias guard reuses freshness.py's existing as_of_date machinery
+(new sibling function historical_snapshot_date, anchored to a past cutoff instead of "today")
+rather than inventing a parallel query. New calibration_usable gate (format_conforms AND
+bot-seat conformance AND predictions_complete) is additive to mock_validation_report.py's
+existing conforming_mock_ids() -- that function is untouched since depletion-only reports do not
+need per-pick predictions; calibration_usable is the stricter gate future Brier-based delta
+decisions (D-004) must use instead. A quarantined pick poisons prediction-completeness for the
+whole mock (undrafted-pool bookkeeping cannot be trusted past an unresolved pick). Non-destructive
+migration (_migrate_add_column, ADR-043's pattern) -- the one real logged mock
+(2025_league_draft_real) survives untouched; its new columns land NULL until re-ingested from
+data/real_drafts/2025_league_draft.json (not done this session, flagged as a follow-up).
+
+**Deliverable 2 (ADR-055, founder directive).** Confirmed K is excluded from every combined board
+(make_board.BOARD_POSITIONS, module-level, verified against both the primary league and Ethans
+Expert League which does roster a K starter). Checked rankings_quarantine directly: zero K rows
+quarantined ever -- the briefs premise that K needed un-quarantining did not hold, kickers
+resolve like any skill player, the DST identity problem does not generalize to them. Built
+export_contract.build_kickers_json: consensus-only raw rank from rankings, no VBD/replacement/
+projection, wired into write_all as kickers.json, never merged into board.json's player list.
+CONTRACT_VERSION bumped 1.13.0 -> 1.14.0 (new artifact + note-text updates on board.json/
+league.json pointing at it). Frontend needs to be told -- not done here per explicit no-handoff
+scope; stated plainly for the orchestrating session.
+
+**Tests added:** tests/test_mock_prediction.py (9), tests/test_mock_calibration_snapshot.py (11),
+tests/test_kickers_export.py (8); tests/test_rosters_export.py::test_contract_version_bumped
+updated to 1.14.0. All new tests run green in isolation; full-suite run against a copied
+data/nfl.db in progress at session-end (see this session's reply for the final count once it
+completes).
+
+**Not done / escalations:** none -- no genuine architectural fork this brief did not resolve.
+The existing real mock not being auto-reingested is flagged above, not hidden.

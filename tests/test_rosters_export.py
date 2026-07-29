@@ -180,6 +180,9 @@ def test_never_infers_a_team_need_beyond_slot_arithmetic():
 
 
 def test_contract_version_bumped():
+    # 1.14.0 (ADR-055): new kickers.json artifact (consensus-only K rank
+    # list), plus board.json/league.json unsupported_positions_note text
+    # updated to point at it instead of implying K has no data anywhere.
     # 1.13.0 (thread 074, T5 export): board.json top level gained
     # snapshot_as_of_date/snapshot_age_days/snapshot_max_age_days/
     # snapshot_stale/snapshot_freshness_note -- the FreshnessResult
@@ -190,7 +193,7 @@ def test_contract_version_bumped():
     # suspension_adjustment_note (src/suspensions.py wired into
     # build_board_json). 1.11.0 was thread 053/067's rewire onto
     # fantasypros_csv_2026draft plus the top-level scoring_format field.
-    assert ec.CONTRACT_VERSION == "1.13.0"
+    assert ec.CONTRACT_VERSION == "1.14.0"
 
 
 # -- real-DB test: today's actual state must be the empty case ---------------

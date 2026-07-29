@@ -66,6 +66,28 @@ def snapshot_age_days(
     return (_today(today) - as_of_date).days
 
 
+def historical_snapshot_date(
+    conn: sqlite3.Connection,
+    season: int,
+    source: str,
+    on_or_before: str,
+) -> Optional[str]:
+    """Like `snapshot_age_days`'s MAX(as_of_date) lookup, but anchored to a
+    PAST cutoff date instead of "today" -- the look-ahead-bias-safe query for
+    computing what board a historical/backfilled record (e.g. a mock draft)
+    could actually have seen (CLAUDE.md SS6.1, ADR-054). Returns the most
+    recent as_of_date that is <= `on_or_before`, or None if no such snapshot
+    exists on file at all. Never falls back to the latest/current snapshot --
+    that would leak future information into a historical record, which is
+    exactly the bug this function exists to prevent."""
+    row = conn.execute(
+        "SELECT MAX(as_of_date) FROM rankings WHERE source = ? AND season = ? "
+        "AND as_of_date <= ?",
+        (source, season, on_or_before),
+    ).fetchone()
+    return row[0] if row and row[0] else None
+
+
 def check_freshness(
     conn: sqlite3.Connection,
     season: int,

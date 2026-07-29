@@ -42,7 +42,7 @@ import team_codes as tc
 from config import DEFAULT_CONFIG
 from scoring import LEAGUE, ReplacementLevels
 
-CONTRACT_VERSION = "1.13.0"
+CONTRACT_VERSION = "1.14.0"
 SEASON = 2026
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 EXPORT_DIR = DATA_DIR / "export"
@@ -414,10 +414,67 @@ def build_board_json(
             None if not unsupported else
             f"{', '.join(unsupported)} {'is' if len(unsupported) == 1 else 'are'} rostered "
             f"starting slot(s) with no scoring data ingested, so no replacement level, "
-            f"projection, VBD or board row exists for {'it' if len(unsupported) == 1 else 'them'}. "
-            f"See league.json:positions_without_replacement_levels."
+            f"projection, VBD or board row exists for {'it' if len(unsupported) == 1 else 'them'} "
+            f"HERE. See league.json:positions_without_replacement_levels. Kickers specifically "
+            f"are NOT absent from this project entirely -- see kickers.json (ADR-055) for a "
+            f"separate, consensus-only rank list. DEF has no equivalent list; no DST scoring "
+            f"data of any kind is ingested."
         ),
         "players": players,
+    }
+
+
+def build_kickers_json(
+    conn: sqlite3.Connection, cfg: lc.LeagueConfig = lc.CURRENT_LEAGUE, season: int = SEASON,
+) -> dict:
+    """ADR-055 (founder directive): kickers are permanently excluded from the
+    combined/ranked board (`make_board.BOARD_POSITIONS`, ADR-039/041's
+    `unsupported_positions` generalization) because no kicker scoring engine
+    or replacement level exists. That does NOT mean K should be invisible
+    everywhere -- this is the one place a kicker appears at all: raw
+    consensus rank, straight from `rankings`, no VBD, no replacement level,
+    no proprietary modeling, and NEVER blended into board.json's player list.
+
+    K rows are not quarantined anywhere in this project (checked directly
+    against `rankings_quarantine` before writing this -- zero K rows there;
+    the DST-style "no individual identity" problem is specific to team
+    defenses and does not apply to individual kickers, who resolve by name/
+    gsis_id exactly like any offensive skill player). So this is a plain
+    read of rows that already exist and are already resolved -- no
+    un-quarantining or identity-robustness upgrade happening here.
+    """
+    rows = conn.execute(
+        "SELECT player_id, player_name, adp_rank, as_of_date FROM rankings "
+        "WHERE source = ? AND season = ? AND position = 'K' AND adp_rank IS NOT NULL "
+        "ORDER BY adp_rank",
+        (make_board.SOURCE, season),
+    ).fetchall()
+    kickers = [
+        {
+            "player_id_gsis": r[0],
+            "player_name": r[1],
+            "position": "K",
+            "consensus_rank": r[2],
+            "as_of_date": r[3],
+        }
+        for r in rows
+    ]
+    return {
+        "contract_version": CONTRACT_VERSION,
+        "generated_utc": datetime.now(timezone.utc).isoformat(),
+        "league_id": cfg.league_id,
+        "season": season,
+        "source": make_board.SOURCE,
+        "note": (
+            "Consensus-only kicker list: raw expert-consensus rank from the same source "
+            "board.json uses, and nothing else. No proprietary modeling, no VBD, no "
+            "replacement level, no points projection -- kickers are permanently excluded "
+            "from the combined ranked board (see board.json:unsupported_positions_note) "
+            "because no kicker scoring engine exists in this project. This file is where "
+            "K data lives instead; it is never merged into board.json's player list."
+        ),
+        "kicker_starter_in_this_league": "K" in cfg.starters,
+        "kickers": kickers,
     }
 
 
@@ -576,7 +633,8 @@ def build_league_json(cfg: lc.LeagueConfig = lc.CURRENT_LEAGUE) -> dict:
             f"{', '.join(unsupported)} {'is a' if len(unsupported) == 1 else 'are'} starting "
             f"slot(s) with no scoring data ingested (no kicker or DST stats exist in this "
             f"project). Do not derive a value for {'it' if len(unsupported) == 1 else 'them'} "
-            f"from these files."
+            f"from these files. Kickers (if rostered) have a separate consensus-only rank list "
+            f"at kickers.json (ADR-055) -- DEF has no such list; no DST data exists at all."
         )
 
     return {
@@ -816,6 +874,7 @@ def write_all(
         "availability.json": build_availability_json(cfg),
         "league.json": build_league_json(cfg),
         "rosters.json": build_rosters_json(conn, cfg),
+        "kickers.json": build_kickers_json(conn, cfg),
     }
     if strategies is not None:
         artifacts["strategies.json"] = strategies

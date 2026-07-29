@@ -1981,3 +1981,153 @@ instruction not to delete it.
 **T6 (roster status) — spot-checked, not rebuilt.** `tests/test_roster_status.py` (6 tests,
 including the Tom Brady proxy-verification case) still passes unmodified; `src/roster_status.py`
 unchanged. No gap found.
+
+## ADR-054 — Batch mock-draft ingestion gains a frozen league-config snapshot and a computed,
+gated prediction snapshot per pick (2026-07-28, backend)
+
+**Why.** CURRENT-STATE's central open item: the availability model's "calibrated" claim rests on
+mock drafts, but `mock_picks.predicted_top`/`predicted_p` were populated only when the source
+JSON happened to supply them — nothing computed a prediction at ingest time, so a logged mock
+carried no board-survival prediction to validate anything against. Separately,
+`mock_drafts.league_config_id` was a bare FK string: if the referenced `LeagueConfig` file is
+edited later, every historical mock under that id silently reinterprets under the new shape.
+
+**Fork #1, resolved by reading the code, not by guessing.** Does a general-purpose hazard-model
+P0 exist for arbitrary draft slots/configs, or only the founder's own primary-league sequence?
+Read `src/live_availability.py` end to end: every function (`live_survival`,
+`_hazards_at_pick`, `run_multiplier`, etc.) takes `p0`, `positions`, `gap` as plain arguments —
+nothing about a specific slot or league is hardcoded in the re-weighting math itself. But the
+re-weighting math needs a prep-mode marginal P0 to re-weight, and P0 is not produced on demand:
+`src/run_availability.py` generates it via `availability.simulate_availability`, a Monte-Carlo
+run of thousands of simulated drafts, written to a per-league CSV keyed to that config's own
+fixed `user_draft_slot` (`LeagueConfig.user_draft_slot`, consumed via `draft_sim.DraftEngine`).
+There is no function anywhere in this codebase that returns a P0 for an arbitrary
+(config, slot, as-of-date) triple on demand — it is a batch script producing a dated artifact,
+not a callable prediction source, and running it per-mock at ingest time would mean an
+expensive fresh Monte-Carlo simulation per historical draft, which is out of scope here.
+**Decision:** ingest-time snapshots reuse `mock_lab_store.predict_next_pick` (the D-3 model-free
+baseline, `MODEL_VERSION = "adp_rank_exp_v1"`, zero fitted parameters) rather than fork a second
+copy of the formula — imported directly from `mock_lab_store` in the new `src/mock_prediction.py`
+module. `mock_lab_store.py`'s own docstring says the same thing about P0 not existing generally;
+that claim was verified independently against `live_availability.py`/`run_availability.py`
+directly rather than trusted at face value, per this session's instruction. When a general P0
+source is built, `mock_prediction.py` is the one place that needs to change.
+
+**Fork #2: reusing existing as-of-date infrastructure rather than inventing a parallel one.**
+`src/freshness.py` already owns "how old is the latest rankings snapshot" (`snapshot_age_days`,
+keyed off `MAX(as_of_date)` for a `(source, season)` pair, compared against *today*). The
+look-ahead-bias guard needed here is the same query anchored to a **past** cutoff (`drafted_at`)
+instead of today, so `freshness.historical_snapshot_date(conn, season, source, on_or_before)` was
+added as a sibling function in that same module — same query shape, new anchor — rather than a
+new ad hoc SQL string somewhere else. `mock_prediction.historical_board_ranks_as_of` calls it,
+then resolves `rankings.player_id` (a gsis_id) to `mfl_id` via `identity.resolve(conn, "gsis",
+...)` (mfl_id is this project's hub id, per `identity.py`'s own measured finding) to build the
+`{mfl_id: consensus_rank}` dict `predict_next_pick` needs. If no snapshot exists on or before
+`drafted_at` at all, that is surfaced as an honest gap (`board_as_of_date=None`), never filled
+from the current/live board.
+
+**Fork #3: extending the real conformance/counting mechanism, not guessing at one.** Read
+`src/mock_validation_report.py`'s `conforming_mock_ids()` — the actual function every level1/
+level2/level3 report and the `_power_note` "N of ~30" framing is built from
+(`format_conforms=1 AND bot_seat_status != 'excluded_too_many_bots'`). Level 1 (positional
+depletion counts) needs only the pick sequence, not per-pick predictions, so `conforming_mock_ids`
+itself is left untouched. A new, additive gate — `calibration_usable`
+(`ingest_mock_drafts.calibration_usable`) — requires format conformance AND bot-seat conformance
+AND `predictions_complete`, stored as `mock_drafts.calibration_usable`/`calibration_usable_note`.
+**Any session wiring the pre-registered delta decision rule (D-004: delta -> 0 if need+run does
+not beat marginal-only on Brier across >=30 conforming mocks) must gate on `calibration_usable`,
+not on `conforming_mock_ids()` alone** — a mock without predictions cannot enter a Brier
+comparison at all, and counting it toward "30" would be exactly the "quietly counted despite
+missing data" failure the founder's framing explicitly rejected.
+
+**What's frozen per mock (`mock_drafts`, new nullable columns via `_migrate_add_column` — same
+non-destructive ALTER TABLE pattern ADR-043 used for `drafter_type`/`bot_seat_count`, so the one
+real logged mock (`2025_league_draft_real`, is_mock=0) survives untouched until re-ingested):**
+`teams`, `draft_type`, `user_draft_slot`, `starters_json`, `flex_slots`, `flex_eligible_json`,
+`bench`, `ir`, `scoring_json` (all snapshotted from the resolved `LeagueConfig` at ingest time,
+never re-read live later) plus `league_config_hash` (SHA-256 of the full frozen config dict, so
+two mocks whose `league_config_id` string later diverges in meaning — or collides — can still be
+told apart). Prediction bookkeeping: `predictions_model_version`, `predictions_board_source`,
+`predictions_board_as_of_date`, `predictions_complete`, `predictions_note`,
+`calibration_usable`, `calibration_usable_note`. Per-pick (`mock_picks`, also additive columns):
+`predicted_top5_json`, `prediction_source` (`computed_at_ingest` | `source_supplied` | `missing`),
+`board_as_of_date`.
+
+**Per-pick shape decision (closes thread 002's open question in substance, without touching that
+thread file per this session's explicit scope exclusion).** `mock_picks` already stores
+`overall_pick`/`team_slot`/`mfl_id` in strict pick order — option (b) from thread 002 (the raw
+ordered pick list with team attribution) is already satisfied by the existing schema; no
+redundant per-team drafted-counts table was added. `live_availability.py`'s `N_t(p)` need term
+consumes a team's *drafted counts so far*, which is trivially derivable by replaying the ordered
+pick list filtered by `team_slot` — recomputing it from the raw sequence is cheap and avoids a
+second source of truth that could drift from the pick log.
+
+**A quarantined pick poisons the whole mock's predictions, not just that pick.** If any pick is
+unresolved, the undrafted pool from that point forward cannot be trusted (we don't know which
+player actually left the pool), so `mock_prediction.compute_pick_predictions` refuses to compute
+ANY prediction for a mock with a quarantined pick, and `predictions_complete=False` follows.
+
+**Not done, flagged rather than silently skipped:** the existing real mock
+(`2025_league_draft_real`) is NOT automatically re-ingested by this migration — the new columns
+land as NULL on that row until someone re-runs `ingest_mock_draft_file` against
+`data/real_drafts/2025_league_draft.json` (the source file still exists on disk). Doing so now
+would work: `fantasypros_ecr` has a season=2025 snapshot dated 2025-08-29, one day before that
+draft's `drafted_at=2025-08-30`, so the historical-snapshot lookup succeeds for the one real mock
+on file — but re-ingesting was left to a follow-up rather than done inside this schema-migration
+session, to keep the migration itself provably non-destructive and separately reviewable from a
+re-ingest that changes that row's computed fields.
+
+**Tests:** `tests/test_mock_prediction.py` (9, new module: as-of-date lookup incl. the
+look-ahead guard, gsis->mfl resolution, baseline-formula reuse, pool-shrinking replay, quarantine
+refusal), `tests/test_mock_calibration_snapshot.py` (11, new: frozen config snapshot + hash,
+end-to-end prediction computation, missing-snapshot and quarantine gating,
+`calibration_usable` combining format/bot-seat/predictions gates, non-destructive migration
+survival of a simulated pre-ADR-054 `mock_drafts`/`mock_picks` pair). `tests/
+test_ingest_mock_drafts.py` (18 pre-existing) re-verified green against the new code path
+unchanged.
+
+## ADR-055 — Kickers get a consensus-only export artifact, never blended into the combined board
+(2026-07-28, backend, founder directive)
+
+**Not up for debate — founder decision.** The model does not need to represent kickers. What was
+missing was not a modeling decision but visibility: K rows exist in `rankings` (539 rows,
+`fantasypros_csv_2026draft` + `fantasypros_ecr` combined, 2026) and are fully resolved — checked
+`rankings_quarantine` directly before writing this and found **zero K rows there at all**. The
+brief's premise that K rows might need "un-quarantining" does not hold: kickers were never
+quarantined. They resolve by name/gsis_id exactly like any offensive skill player; the DST-style
+"no individual identity" problem (why DEF has a permanent, structural exclusion) is specific to
+team defenses and does not generalize to individual kickers. So this ADR is purely additive —
+read already-good rows, expose them — not an identity-robustness fix.
+
+**Confirmed K exclusion holds for every league config, not just the primary one.** `make_board.
+BOARD_POSITIONS = ("QB", "RB", "WR", "TE")` is a module-level constant, not per-league, so it
+excludes K from the combined ranked board unconditionally. Verified specifically against "Ethan's
+Expert League" (`data/leagues/ethans_expert_league.json`), which DOES roster a K starter
+(`starters.K == 1`) — confirmed the exclusion holds there too (new test:
+`test_ethans_expert_league_rosters_k_but_board_still_excludes_it`), and that K correctly appears
+in that league's `unsupported_positions` (ADR-039/041's generalization of the DEF exclusion,
+`ReplacementLevels.SCOREABLE_POSITIONS`).
+
+**New artifact: `kickers.json`** (`export_contract.build_kickers_json`), wired into `write_all`
+alongside `board.json`/`availability.json`/`league.json`/`rosters.json`. Raw consensus rank from
+`rankings` (`make_board.SOURCE`, i.e. the same live 2026 source `board.json` uses), filtered to
+`position='K'`, ordered by `adp_rank`. No VBD, no replacement level, no points projection, no
+proprietary modeling of any kind — deliberately a plain read. Never merged into `board.json`'s
+`players` list; a separate top-level file, matching how `rosters.json`/`availability.json` are
+already separate artifacts rather than board.json subsections.
+
+**`unsupported_positions_note` (board.json) and `positions_without_replacement_levels_note`
+(league.json) updated** so they no longer read as "no K data exists anywhere" — both now
+explicitly point at `kickers.json` for kickers specifically, while DEF is called out as having no
+equivalent (no DST data of any kind is ingested, ADR-039).
+
+**Contract version bumped 1.13.0 -> 1.14.0** (new top-level artifact + note-text changes on two
+existing artifacts). **Frontend must be told** — not done in this session per explicit scope
+exclusion (no handoff-thread work); flagging plainly here for the orchestrating session to open
+that thread.
+
+**Tests:** `tests/test_kickers_export.py` (8, new: kicker-only filtering/ordering, no VBD/
+projection fields present, consensus-only note wording, empty-case handling, K-excluded-from-
+combined-board confirmed against both the primary config and Ethan's Expert League, `write_all`
+wiring). `tests/test_rosters_export.py::test_contract_version_bumped` updated to assert
+`1.14.0`.

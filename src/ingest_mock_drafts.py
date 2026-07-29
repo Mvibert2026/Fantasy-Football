@@ -48,6 +48,7 @@ DISCARD GATES (protocol SS4), BOTH NOW CHECKABLE:
 
 from __future__ import annotations
 
+import hashlib
 import json
 import sqlite3
 from dataclasses import dataclass
@@ -57,6 +58,7 @@ from typing import Dict, List, Optional, Tuple
 
 import identity as idn
 import league_config as lc
+import mock_prediction as mpred
 
 _CREATE_SQL = [
     """
@@ -127,6 +129,34 @@ def ensure_tables(conn: sqlite3.Connection) -> None:
     _migrate_add_column(conn, "mock_drafts", "bot_seat_count", "INTEGER")
     _migrate_add_column(conn, "mock_picks", "drafter_type", "TEXT")
 
+    # ADR-054: frozen per-draft league-shape snapshot (never a live re-lookup
+    # -- see module docstring update below). ALTER TABLE, same non-destructive
+    # pattern as bot_seat_count/drafter_type above -- these tables accumulate
+    # real logged mock drafts and must not be rebuilt.
+    _migrate_add_column(conn, "mock_drafts", "teams", "INTEGER")
+    _migrate_add_column(conn, "mock_drafts", "draft_type", "TEXT")
+    _migrate_add_column(conn, "mock_drafts", "user_draft_slot", "INTEGER")
+    _migrate_add_column(conn, "mock_drafts", "starters_json", "TEXT")
+    _migrate_add_column(conn, "mock_drafts", "flex_slots", "INTEGER")
+    _migrate_add_column(conn, "mock_drafts", "flex_eligible_json", "TEXT")
+    _migrate_add_column(conn, "mock_drafts", "bench", "INTEGER")
+    _migrate_add_column(conn, "mock_drafts", "ir", "INTEGER")
+    _migrate_add_column(conn, "mock_drafts", "scoring_json", "TEXT")
+    _migrate_add_column(conn, "mock_drafts", "league_config_hash", "TEXT")
+
+    # ADR-054: prediction-snapshot completeness, the structural gate.
+    _migrate_add_column(conn, "mock_drafts", "predictions_model_version", "TEXT")
+    _migrate_add_column(conn, "mock_drafts", "predictions_board_source", "TEXT")
+    _migrate_add_column(conn, "mock_drafts", "predictions_board_as_of_date", "TEXT")
+    _migrate_add_column(conn, "mock_drafts", "predictions_complete", "INTEGER")
+    _migrate_add_column(conn, "mock_drafts", "predictions_note", "TEXT")
+    _migrate_add_column(conn, "mock_drafts", "calibration_usable", "INTEGER")
+    _migrate_add_column(conn, "mock_drafts", "calibration_usable_note", "TEXT")
+
+    _migrate_add_column(conn, "mock_picks", "predicted_top5_json", "TEXT")
+    _migrate_add_column(conn, "mock_picks", "prediction_source", "TEXT")
+    _migrate_add_column(conn, "mock_picks", "board_as_of_date", "TEXT")
+
 
 def _migrate_add_column(conn: sqlite3.Connection, table: str, column: str, sql_type: str) -> None:
     """ADR-043 added drafter_type/bot_seat_count after mock_drafts/mock_picks
@@ -159,6 +189,51 @@ def format_conforms(cfg: lc.LeagueConfig) -> tuple[bool, str]:
     if reasons:
         return False, "; ".join(reasons)
     return True, "conforms to the 10-team/3WR-2FLEX/no-kicker/half-PPR gate"
+
+
+def _league_config_hash(cfg: lc.LeagueConfig) -> str:
+    """SHA-256 of the full frozen config, so two mocks whose
+    `league_config_id` string collides (or whose referenced file is later
+    edited) can still be told apart -- CURRENT-STATE flagged this as a real
+    gap: `mock_drafts` previously stored only the FK-style
+    `league_config_id`, so a later edit to that saved file would silently
+    reinterpret every historical mock under the new shape."""
+    return hashlib.sha256(
+        json.dumps(cfg.to_dict(), sort_keys=True, default=str).encode("utf-8")
+    ).hexdigest()
+
+
+def calibration_usable(
+    format_ok: bool, bot_seat_status: str, predictions_complete: bool
+) -> Tuple[bool, str]:
+    """ADR-054's structural gate: 'conforming' is necessary but not
+    sufficient for calibration use. A mock is usable toward the ~30-mock
+    pre-registered decision rule (CLAUDE.md SS6.3, ADR-045's D-004) only if
+    it ALSO carries a complete per-pick prediction snapshot -- otherwise
+    there is nothing to score a Brier/calibration comparison against, and a
+    mock silently missing that must never be counted toward the target
+    (founder's framing: "visibly worse than not-yet-logged", not quietly
+    included). This is additive to, not a replacement for,
+    `format_conforms`/`_bot_seat_status` -- see
+    `mock_validation_report.conforming_mock_ids` for the pre-existing gate
+    those two alone drive (depletion-only reports that need no per-pick
+    prediction at all)."""
+    reasons = []
+    if not format_ok:
+        reasons.append("format does not conform to the protocol gate")
+    if bot_seat_status == "excluded_too_many_bots":
+        reasons.append("too many bot seats (>3)")
+    if not predictions_complete:
+        reasons.append(
+            "prediction snapshot incomplete -- this mock cannot validate the "
+            "availability model and must not count toward the ~30-mock target"
+        )
+    if reasons:
+        return False, "; ".join(reasons)
+    return True, (
+        "usable for calibration: format conforms, bot-seat gate passes, "
+        "prediction snapshot complete for every pick"
+    )
 
 
 def _bot_seat_status(picks: List[dict]) -> Tuple[str, Optional[int]]:
@@ -211,16 +286,29 @@ def ingest_mock_draft_file(conn: sqlite3.Connection, path: Path) -> IngestReport
     conforms, conforms_note = format_conforms(cfg)
     picks = raw.get("picks", [])
     bot_seat_status, bot_seat_count = _bot_seat_status(picks)
+    drafted_at = str(raw["drafted_at"])
+
+    # ADR-054: frozen league-shape snapshot, taken from the LeagueConfig
+    # resolved above -- never re-read live later, so a subsequent edit to the
+    # saved config file cannot silently reinterpret an already-logged mock.
+    starters_json = json.dumps(cfg.starters, sort_keys=True)
+    flex_eligible_json = json.dumps(list(cfg.flex_eligible))
+    scoring_json = json.dumps(cfg.scoring, sort_keys=True, default=str)
+    cfg_hash = _league_config_hash(cfg)
 
     now = datetime.now(timezone.utc).isoformat()
     conn.execute(
         "INSERT OR REPLACE INTO mock_drafts "
         "(mock_id, league_config_id, platform, drafted_at, source, is_mock, "
-        " format_conforms, format_conforms_note, bot_seat_status, bot_seat_count, ingested_at) "
-        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-        (mock_id, league_config_id, str(raw["platform"]), str(raw["drafted_at"]),
+        " format_conforms, format_conforms_note, bot_seat_status, bot_seat_count, ingested_at, "
+        " teams, draft_type, user_draft_slot, starters_json, flex_slots, flex_eligible_json, "
+        " bench, ir, scoring_json, league_config_hash) "
+        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        (mock_id, league_config_id, str(raw["platform"]), drafted_at,
          raw.get("source"), int(bool(raw.get("is_mock", True))),
-         int(conforms), conforms_note, bot_seat_status, bot_seat_count, now),
+         int(conforms), conforms_note, bot_seat_status, bot_seat_count, now,
+         cfg.teams, cfg.draft_type, cfg.user_draft_slot, starters_json, cfg.flex_slots,
+         flex_eligible_json, cfg.bench, cfg.ir, scoring_json, cfg_hash),
     )
     conn.execute("DELETE FROM mock_picks WHERE mock_id=?", (mock_id,))
     conn.execute("DELETE FROM mock_pick_quarantine WHERE mock_id=?", (mock_id,))
@@ -237,6 +325,7 @@ def ingest_mock_draft_file(conn: sqlite3.Connection, path: Path) -> IngestReport
 
     resolved = 0
     quarantined = 0
+    resolved_entries: List[dict] = []  # buffered; inserted after prediction replay below
     for p in picks:
         pick_missing = [f for f in REQUIRED_PICK_FIELDS if f not in p]
         if pick_missing:
@@ -279,18 +368,96 @@ def ingest_mock_draft_file(conn: sqlite3.Connection, path: Path) -> IngestReport
                 (mock_id, overall_pick, name_raw,
                  str(mfl_id_supplied) if mfl_id_supplied is not None else None, reason, now),
             )
+            resolved_entries.append({"overall_pick": overall_pick, "mfl_id": None})
             continue
 
         resolved += 1
+        resolved_entries.append({
+            "overall_pick": overall_pick, "mfl_id": mfl_id, "round": p.get("round"),
+            "team_slot": p.get("team_slot"), "name_raw": name_raw,
+            "source_predicted_top": p.get("predicted_top"),
+            "source_predicted_p": p.get("predicted_p"),
+            "timestamp": p.get("timestamp"), "drafter_type": p.get("drafter_type"),
+            "method": method,
+        })
+
+    # ADR-054: replay every pick (in overall_pick order) through the D-3
+    # baseline, board state built from the snapshot valid as of `drafted_at`
+    # -- never the current/live board (CLAUDE.md SS6.1). A mock with ANY
+    # quarantined pick, or with no valid as-of snapshot on file at all,
+    # comes back with an all-None prediction list -- see
+    # mock_prediction.compute_pick_predictions for why (the undrafted pool
+    # cannot be trusted past an unresolved pick).
+    resolved_entries.sort(key=lambda e: e["overall_pick"])
+    season = int(drafted_at[:4])
+    board_source, board_as_of_date, predictions = mpred.compute_pick_predictions(
+        conn, [e["mfl_id"] for e in resolved_entries], season, drafted_at,
+    )
+
+    predictions_complete = (
+        quarantined == 0
+        and len(predictions) > 0
+        and all(pred is not None for pred in predictions)
+    )
+    if quarantined > 0:
+        predictions_note = (
+            f"{quarantined} pick(s) quarantined (unresolved identity) -- the undrafted "
+            "pool cannot be trusted past an unresolved pick, so no prediction snapshot "
+            "was computed for this mock at all."
+        )
+    elif board_as_of_date is None:
+        predictions_note = (
+            f"no rankings snapshot on file at or before drafted_at={drafted_at!r} for "
+            f"season {season} -- an honest gap (CLAUDE.md SS6.1: never fall back to the "
+            "live/current board for a historical record), not computed."
+        )
+    else:
+        predictions_note = (
+            f"computed at ingest time from {board_source!r} as of {board_as_of_date} "
+            f"(model_version={mpred.PREDICTION_MODEL_VERSION!r}), replayed pick-by-pick "
+            "per mock_lab_store.predict_next_pick, reused rather than re-derived."
+        )
+
+    for entry, pred in zip(resolved_entries, predictions):
+        if entry["mfl_id"] is None:
+            continue  # quarantined; no mock_picks row
+        if pred is not None:
+            predicted_top = pred["predicted_top"]
+            predicted_p = pred["predicted_p"]
+            top5_json = json.dumps(pred["predicted_top5"])
+            pick_board_as_of = pred["board_as_of_date"]
+            prediction_source = "computed_at_ingest"
+        else:
+            # Fall back to whatever the source JSON supplied, if anything --
+            # never fabricated, and predictions_complete is already False.
+            predicted_top = entry["source_predicted_top"]
+            predicted_p = entry["source_predicted_p"]
+            top5_json = None
+            pick_board_as_of = None
+            prediction_source = (
+                "source_supplied" if predicted_top is not None or predicted_p is not None
+                else "missing"
+            )
         conn.execute(
             "INSERT OR REPLACE INTO mock_picks "
             "(mock_id, overall_pick, round, team_slot, mfl_id, player_name_raw, "
-            " predicted_top, predicted_p, timestamp, drafter_type, resolution_method) "
-            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-            (mock_id, overall_pick, p.get("round"), p.get("team_slot"), mfl_id, name_raw,
-             p.get("predicted_top"), p.get("predicted_p"), p.get("timestamp"),
-             p.get("drafter_type"), method),
+            " predicted_top, predicted_p, timestamp, drafter_type, resolution_method, "
+            " predicted_top5_json, prediction_source, board_as_of_date) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            (mock_id, entry["overall_pick"], entry.get("round"), entry.get("team_slot"),
+             entry["mfl_id"], entry.get("name_raw"), predicted_top, predicted_p,
+             entry.get("timestamp"), entry.get("drafter_type"), entry["method"],
+             top5_json, prediction_source, pick_board_as_of),
         )
+
+    usable, usable_note = calibration_usable(conforms, bot_seat_status, predictions_complete)
+    conn.execute(
+        "UPDATE mock_drafts SET predictions_model_version=?, predictions_board_source=?, "
+        "predictions_board_as_of_date=?, predictions_complete=?, predictions_note=?, "
+        "calibration_usable=?, calibration_usable_note=? WHERE mock_id=?",
+        (mpred.PREDICTION_MODEL_VERSION, board_source, board_as_of_date,
+         int(predictions_complete), predictions_note, int(usable), usable_note, mock_id),
+    )
 
     conn.commit()
     return IngestReport(

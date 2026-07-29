@@ -58,7 +58,7 @@ re-synced to `frontend/public/data/`.
 | Backend branch / commit | `main`, `9d8e09b52ff1a96ce7e2d8dfc8f427f96507ed59` | Pushed, in sync with `origin/main` (remote: `github.com/Mvibert2026/Fantasy-Football`) |
 | Backend tests | **614 passing, 0 failures** | Full suite, `pytest -q`, single run, ~533s, real `data/nfl.db`, run this session post-merge at `9d8e09b`. |
 | Agent infrastructure | **Live, mailbox check currently FAILING** | Six subagents in `.claude/agents/` (backend, frontend, data-ops, strategist, researcher, librarian), `/inbox` command, mailbox tooling at `tools/handoffs.py` + `tools/sprint_status.py`, mailbox health enforced in the test suite (`tests/test_handoffs.py`) — `tools/handoffs.py check` (2026-07-28, this merge session) fails: threads 069 and 073 are marked `RESOLVED` with no reply, which the checker requires an artifact for. Not fixed in this session — flagged for `frontend` to reply on those threads before the next `tools/handoffs.py sync`. Thread count therefore not re-stated here rather than reported from a failing check. |
-| Data contract | **1.13.0** | `CONTRACT_VERSION` in `src/export_contract.py`, read directly. `board.json` carries `scoring_format` (ADR-051), `roster_status` (ADR-050), four suspension fields (ADR-053), and five snapshot-freshness fields (thread 074). |
+| Data contract | **1.13.0 on `main`; 1.14.0 on unmerged branch `backend/mock-calibration-kickers`** | `CONTRACT_VERSION` in `src/export_contract.py`, read directly. `board.json` carries `scoring_format` (ADR-051), `roster_status` (ADR-050), four suspension fields (ADR-053), and five snapshot-freshness fields (thread 074). The 1.14.0 bump (ADR-055, not yet on `main`) adds a new `kickers.json` artifact and updates two existing notes — frontend needs to be told once this branch is reviewed/merged. |
 | Frontend location | `frontend/` subdirectory of this repo | Merged from `frontend-prep` via `git subtree add`, full history preserved. No longer a separate working copy. |
 | Frontend tests | **201 passing, 0 failing** (22 files) | Full suite, `npx vitest run` (needs `node scripts/sync-exports.mjs` first, or use `npm test` which runs it via `pretest`), single run, ~59s in isolation, 2026-07-28 in this merge session post-fix. `TRACE_CONTRACT` and `EXPECTED_CONTRACT` re-pinned `1.12.0` → `1.13.0` this session (was stale against the real `data/export/board.json`, failing `ui/__tests__/trace-fields.test.ts`'s pin check). Confirmed in-browser this was a test-time failure, not the founder's reported runtime hang: the mismatch is informational only at runtime (`contract.ts`'s own doc comment), and the app rendered the board correctly against the dev server both before and after the pin bump — see `docs/status.md` this session's entry for what the "stuck loading" report actually was. No red-by-design tests remain in the frontend suite. |
 | Python modules | **41** in `src/` | `ls src/*.py \| wc -l` |
@@ -163,6 +163,21 @@ The signature claim is **calibrated availability**. It is currently **not calibr
 **1 of ~30** required mock drafts is logged (and that one is the real 2025 draft, `is_mock=0`).
 Until that number moves, availability output is an honest estimate, not a validated probability.
 This is a data-volume fact, not a defect, and stating it plainly is required by Principle #2.
+
+**ADR-054 (branch `backend/mock-calibration-kickers`, not yet on `main`)** closed the load-bearing
+gap in HOW that count gets computed: the batch mock-draft path (`ingest_mock_drafts.py`) now
+freezes a full league-config snapshot per mock and computes a per-pick prediction snapshot at
+ingest time (D-3 baseline, `adp_rank_exp_v1`, reused from `mock_lab_store.py` — not a real hazard-
+model P0, which does not exist for arbitrary slots on demand, see that ADR for the evidence trail
+from reading `live_availability.py`/`run_availability.py` directly). A new
+`mock_drafts.calibration_usable` gate additionally requires the prediction snapshot to be complete
+before a mock counts toward the ~30 target — a mock missing predictions is now structurally worse
+than not-yet-logged, per the founder's framing, rather than silently counted. **This does not by
+itself move the "1 of ~30" figure**: the one real 2025 draft still needs to be RE-ingested from
+its source file (`data/real_drafts/2025_league_draft.json`) for the new columns to populate (the
+schema migration is non-destructive but does not retroactively backfill computed fields on
+existing rows) — flagged as a follow-up, not done in this session to keep the migration itself
+provably non-destructive and separately reviewable.
 
 Mock-logging contamination control is **specified and must land before the first logged pick**
 (ADR-D, thread 034): entry shortlist ordered by frozen board rank with no probabilities shown, a
@@ -376,7 +391,13 @@ assistant" wiring · LLM prose renderer
 
 1. **Per-pick draft-state logging + ADR-D contamination instrumentation** — must land *before* mock
    collection begins, or the mocks collected cannot validate `delta` no matter how many there are,
-   and cannot be defended against shortcut bias at all.
+   and cannot be defended against shortcut bias at all. **Partially addressed by ADR-054** (branch
+   `backend/mock-calibration-kickers`, unmerged): the batch path now freezes league-config shape
+   and computes a gated per-pick prediction snapshot per mock. ADR-D's live-entry contamination
+   fields (`entry_mode`, `dwell_ms`, `shortlist_shown`, `blind_arm`, etc.) remain entirely
+   out of scope for the batch path — those describe what's rendered on-screen during live
+   keystroke entry, which has no equivalent in a completed-JSON-file ingest. Still not done: the
+   live-entry UI itself, and ADR-D's contamination fields on `mocklab_picks`.
 2. **ADP snapshot capture** — unrecoverable if delayed; a past date's snapshot cannot be backfilled.
    `adp_source='mfl_proxy'` (ADR-035, `src/ingest_mfl_adp.py`) is the only live source (FFC/Yahoo/
    ESPN remain blocked/unattemptable per `docs/deferred.md`). `adp_snapshots` currently has rows for
