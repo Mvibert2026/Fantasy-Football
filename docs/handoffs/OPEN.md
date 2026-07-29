@@ -1,10 +1,10 @@
 # Open handoffs
 
-**Generated 2026-07-27 by `tools/handoffs.py sync` — do not hand-edit.**
+**Generated 2026-07-28 by `tools/handoffs.py sync` — do not hand-edit.**
 Threads are the source of truth. Change a thread's `STATUS:`, then re-run sync.
 Protocol: [`README.md`](README.md).
 
-**50 open** · 28 resolved
+**48 open** · 30 resolved
 
 ---
 
@@ -17,94 +17,94 @@ not an omission. Start your session at your own heading.
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
-| [005](005-fantasypros-tier.md) | Fantasypros tier | `pm` | BLOCKED-ON-YOU | 1d | bootstrap CIs, full-board projections |
-| [068](068-acceptance-harness-design-captures.md) | Acceptance harness design captures | `design` | OPEN | 0d | design drift being caught by a diff rather than by the founder |
-| [078](078-pick-level-adp-velocity-capture-blocked-mfl-has.md) | Pick level adp velocity capture blocked mfl has | `data-ops` | OPEN | 0d | none |
+| [005](005-fantasypros-tier.md) | Fantasypros tier | `pm` | BLOCKED-ON-YOU | 2d | bootstrap CIs, full-board projections |
+| [068](068-acceptance-harness-design-captures.md) | Acceptance harness design captures | `design` | OPEN | 1d | design drift being caught by a diff rather than by the founder |
+| [078](078-pick-level-adp-velocity-capture-blocked-mfl-has.md) | Pick level adp velocity capture blocked mfl has | `data-ops` | OPEN | 1d | none |
 
 ### `backend` — 23 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
-| [001](001-adopt-current-state.md) | Adopt current state | `pm` | OPEN | 1d | none |
-| [002](002-per-pick-draft-state.md) | Per pick draft state | `pm` | OPEN | 1d | 007 (mock collection, not yet opened) |
-| [012](012-sprint-1-runbook.md) | Sprint 1 runbook | `pm` | OPEN | 1d | none |
-| [021](021-per-position-rank-correlation.md) | Per position rank correlation | `pm` | OPEN | 1d | D-002, D-003 |
-| [022](022-test-suite-speedup.md) | Test suite speedup | `pm` | OPEN | 1d | none |
-| [026](026-recompute-progress-streaming.md) | Recompute progress streaming | `pm` | OPEN | 1d | Settings editor build |
-| [032](032-assistant-dev-mode.md) | Assistant dev mode | `pm` | OPEN | 1d | none |
-| [033](033-assistant-query-architecture.md) | Assistant query architecture | `pm` | OPEN | 1d | the assistant rebuild sprint |
-| [036](036-mocklab-staleness-retrofit.md) | Mocklab staleness retrofit | `pm` | OPEN | 1d | Mock Lab build |
-| [037](037-audit-followups.md) | Audit followups | `pm` | OPEN | 1d | none |
-| [040](040-multi-league-slot-and-undo.md) | Multi league slot and undo | `pm` | OPEN | 0d | Mock Lab build, Settings build |
-| [042](042-strategies-json-stale-at-contract-1-7-0.md) | Strategies json stale at contract 1 7 0 | `frontend` | OPEN | 1d | none |
-| [045](045-simulation-lookahead.md) | Simulation lookahead | `pm` | OPEN | 0d | 044 (the roster-aware recommendation should use this once it exists) |
-| [047](047-manual-draft-setup-entry.md) | Manual draft setup entry | `pm` | OPEN | 0d | usable mock drafting |
-| [050](050-sprint-3-runbook.md) | Sprint 3 runbook | `pm` | OPEN | 0d | none |
-| [059](059-on-deck-recommendations.md) | On deck recommendations | `pm` | OPEN | 0d | FR-006 (draft chatbot), calm-preparation use case |
-| [060](060-draft-time-compute-architecture.md) | Draft time compute architecture | `pm` | OPEN | 0d | 059 (on-deck recommendations), 045 (lookahead), draft-day viability of everything computed live |
-| [064](064-current-state-verification.md) | Current state verification | `pm` | OPEN | 0d | any honest statement about project status |
-| [067](067-t1-multiformat-consensus-rescope.md) | T1 multiformat consensus rescope | `pm` | OPEN | 0d | T1 completion for leagues 2/3, board correctness for the non-primary leagues |
-| [071](071-global-tier-field-for-all-tab-board-grouping.md) | Global tier field for all tab board grouping | `frontend` | OPEN | 0d | 058 section B1 (design fidelity) |
-| [072](072-sim-staleness-fields-for-league-identity-current.md) | Sim staleness fields for league identity current | `frontend` | OPEN | 0d | 058 section C3 (design fidelity) |
-| [076](076-structural-gap-thread-id-allocator-race-across-c.md) | Structural gap thread id allocator race across c | `pm` | OPEN | 0d | none |
-| [077](077-adp-backfill-scheduled-task-landed-frontend-test.md) | Adp backfill scheduled task landed frontend test | `data-ops` | OPEN | 0d | none |
+| [001](001-adopt-current-state.md) | Adopt current state | `pm` | OPEN | 2d | none |
+| [002](002-per-pick-draft-state.md) | Per pick draft state | `pm` | OPEN | 2d | 007 (mock collection, not yet opened) |
+| [012](012-sprint-1-runbook.md) | Sprint 1 runbook | `pm` | OPEN | 2d | none |
+| [021](021-per-position-rank-correlation.md) | Per position rank correlation | `pm` | OPEN | 2d | D-002, D-003 |
+| [022](022-test-suite-speedup.md) | Test suite speedup | `pm` | OPEN | 2d | none |
+| [026](026-recompute-progress-streaming.md) | Recompute progress streaming | `pm` | OPEN | 2d | Settings editor build |
+| [032](032-assistant-dev-mode.md) | Assistant dev mode | `pm` | OPEN | 2d | none |
+| [033](033-assistant-query-architecture.md) | Assistant query architecture | `pm` | OPEN | 2d | the assistant rebuild sprint |
+| [036](036-mocklab-staleness-retrofit.md) | Mocklab staleness retrofit | `pm` | OPEN | 2d | Mock Lab build |
+| [037](037-audit-followups.md) | Audit followups | `pm` | OPEN | 2d | none |
+| [040](040-multi-league-slot-and-undo.md) | Multi league slot and undo | `pm` | OPEN | 1d | Mock Lab build, Settings build |
+| [042](042-strategies-json-stale-at-contract-1-7-0.md) | Strategies json stale at contract 1 7 0 | `frontend` | OPEN | 2d | none |
+| [045](045-simulation-lookahead.md) | Simulation lookahead | `pm` | OPEN | 1d | 044 (the roster-aware recommendation should use this once it exists) |
+| [047](047-manual-draft-setup-entry.md) | Manual draft setup entry | `pm` | OPEN | 1d | usable mock drafting |
+| [050](050-sprint-3-runbook.md) | Sprint 3 runbook | `pm` | OPEN | 1d | none |
+| [059](059-on-deck-recommendations.md) | On deck recommendations | `pm` | OPEN | 1d | FR-006 (draft chatbot), calm-preparation use case |
+| [060](060-draft-time-compute-architecture.md) | Draft time compute architecture | `pm` | OPEN | 1d | 059 (on-deck recommendations), 045 (lookahead), draft-day viability of everything computed live |
+| [064](064-current-state-verification.md) | Current state verification | `pm` | OPEN | 1d | any honest statement about project status |
+| [067](067-t1-multiformat-consensus-rescope.md) | T1 multiformat consensus rescope | `pm` | OPEN | 1d | T1 completion for leagues 2/3, board correctness for the non-primary leagues |
+| [071](071-global-tier-field-for-all-tab-board-grouping.md) | Global tier field for all tab board grouping | `frontend` | OPEN | 1d | 058 section B1 (design fidelity) |
+| [072](072-sim-staleness-fields-for-league-identity-current.md) | Sim staleness fields for league identity current | `frontend` | OPEN | 1d | 058 section C3 (design fidelity) |
+| [076](076-structural-gap-thread-id-allocator-race-across-c.md) | Structural gap thread id allocator race across c | `pm` | OPEN | 1d | none |
+| [077](077-adp-backfill-scheduled-task-landed-frontend-test.md) | Adp backfill scheduled task landed frontend test | `data-ops` | OPEN | 1d | none |
 
 ### `frontend` — 16 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
-| [003](003-frontend-reconnect.md) | Frontend reconnect | `pm` | OPEN | 1d | none |
-| [006](006-design-sync-pilot.md) | Design sync pilot | `pm` | OPEN | 1d | none |
-| [007](007-design-fidelity-harness.md) | Design fidelity harness | `pm` | OPEN | 1d | none |
-| [011](011-locate-frontend-spec.md) | Locate frontend spec | `pm` | OPEN | 1d | 007 |
-| [029](029-frequency-array-on-board.md) | Frequency array on board | `pm` | OPEN | 1d | none |
-| [030](030-inline-why-rank-differs.md) | Inline why rank differs | `pm` | OPEN | 1d | none |
-| [031](031-frontend-spec-audit-and-wiring.md) | Frontend spec audit and wiring | `pm` | OPEN | 1d | 027, 028, Settings build |
-| [035](035-frontend-catchup-runbook.md) | Frontend catchup runbook | `pm` | OPEN | 1d | 003, 027, 028, 029, 030, 031, and every future frontend thread |
-| [036](036-mocklab-staleness-retrofit.md) | Mocklab staleness retrofit | `pm` | OPEN | 1d | Mock Lab build |
-| [037](037-audit-followups.md) | Audit followups | `pm` | OPEN | 1d | none |
-| [040](040-multi-league-slot-and-undo.md) | Multi league slot and undo | `pm` | OPEN | 0d | Mock Lab build, Settings build |
-| [043](043-weekly-finishes-json-season-stats-json-ready-con.md) | Weekly finishes json season stats json ready con | `backend` | OPEN | 1d | none |
-| [047](047-manual-draft-setup-entry.md) | Manual draft setup entry | `pm` | OPEN | 0d | usable mock drafting |
-| [049](049-draft-mode-gap-list.md) | Draft mode gap list | `pm` | OPEN | 0d | none |
-| [059](059-on-deck-recommendations.md) | On deck recommendations | `pm` | OPEN | 0d | FR-006 (draft chatbot), calm-preparation use case |
-| [066](066-contract-1-10-0-board-json-rows-gained-roster-st.md) | Contract 1 10 0 board json rows gained roster st | `backend` | OPEN | 0d | none |
+| [003](003-frontend-reconnect.md) | Frontend reconnect | `pm` | OPEN | 2d | none |
+| [006](006-design-sync-pilot.md) | Design sync pilot | `pm` | OPEN | 2d | none |
+| [007](007-design-fidelity-harness.md) | Design fidelity harness | `pm` | OPEN | 2d | none |
+| [011](011-locate-frontend-spec.md) | Locate frontend spec | `pm` | OPEN | 2d | 007 |
+| [029](029-frequency-array-on-board.md) | Frequency array on board | `pm` | OPEN | 2d | none |
+| [030](030-inline-why-rank-differs.md) | Inline why rank differs | `pm` | OPEN | 2d | none |
+| [031](031-frontend-spec-audit-and-wiring.md) | Frontend spec audit and wiring | `pm` | OPEN | 2d | 027, 028, Settings build |
+| [035](035-frontend-catchup-runbook.md) | Frontend catchup runbook | `pm` | OPEN | 2d | 003, 027, 028, 029, 030, 031, and every future frontend thread |
+| [036](036-mocklab-staleness-retrofit.md) | Mocklab staleness retrofit | `pm` | OPEN | 2d | Mock Lab build |
+| [037](037-audit-followups.md) | Audit followups | `pm` | OPEN | 2d | none |
+| [040](040-multi-league-slot-and-undo.md) | Multi league slot and undo | `pm` | OPEN | 1d | Mock Lab build, Settings build |
+| [043](043-weekly-finishes-json-season-stats-json-ready-con.md) | Weekly finishes json season stats json ready con | `backend` | OPEN | 2d | none |
+| [047](047-manual-draft-setup-entry.md) | Manual draft setup entry | `pm` | OPEN | 1d | usable mock drafting |
+| [049](049-draft-mode-gap-list.md) | Draft mode gap list | `pm` | OPEN | 1d | none |
+| [059](059-on-deck-recommendations.md) | On deck recommendations | `pm` | OPEN | 1d | FR-006 (draft chatbot), calm-preparation use case |
+| [066](066-contract-1-10-0-board-json-rows-gained-roster-st.md) | Contract 1 10 0 board json rows gained roster st | `backend` | OPEN | 1d | none |
 
 ### `data-ops` — 7 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
-| [046](046-bottom-up-ranking-data.md) | Bottom up ranking data | `pm` | OPEN | 0d | bottom-up ranking framework |
-| [053](053-founder-csv-ingestion.md) | Founder csv ingestion | `pm` | OPEN | 0d | FR-001 comparison view |
-| [054](054-ftn-and-sleeper-harvest.md) | Ftn and sleeper harvest | `pm` | OPEN | 0d | any subscription decision |
-| [055](055-ffc-adp-history-harvest.md) | Ffc adp history harvest | `pm` | OPEN | 0d | 046, 048 (bottom-up ranking), any ADP-vs-value work, availability model calibration |
-| [057](057-timeseries-data-audit.md) | Timeseries data audit | `pm` | OPEN | 0d | injury-aware rankings, ADP drift model, suspension correctness guarantee, Fable Addendum 2 |
-| [067](067-t1-multiformat-consensus-rescope.md) | T1 multiformat consensus rescope | `pm` | OPEN | 0d | T1 completion for leagues 2/3, board correctness for the non-primary leagues |
-| [070](070-recurring-injury-suspension-feed.md) | Recurring injury suspension feed | `pm` | OPEN | 0d | T4 (suspensions/roster-status table stakes), E[games_played] per ADR-E Amendment E-A1 |
+| [046](046-bottom-up-ranking-data.md) | Bottom up ranking data | `pm` | OPEN | 1d | bottom-up ranking framework |
+| [053](053-founder-csv-ingestion.md) | Founder csv ingestion | `pm` | OPEN | 1d | FR-001 comparison view |
+| [054](054-ftn-and-sleeper-harvest.md) | Ftn and sleeper harvest | `pm` | OPEN | 1d | any subscription decision |
+| [055](055-ffc-adp-history-harvest.md) | Ffc adp history harvest | `pm` | OPEN | 1d | 046, 048 (bottom-up ranking), any ADP-vs-value work, availability model calibration |
+| [057](057-timeseries-data-audit.md) | Timeseries data audit | `pm` | OPEN | 1d | injury-aware rankings, ADP drift model, suspension correctness guarantee, Fable Addendum 2 |
+| [067](067-t1-multiformat-consensus-rescope.md) | T1 multiformat consensus rescope | `pm` | OPEN | 1d | T1 completion for leagues 2/3, board correctness for the non-primary leagues |
+| [070](070-recurring-injury-suspension-feed.md) | Recurring injury suspension feed | `pm` | OPEN | 1d | T4 (suspensions/roster-status table stakes), E[games_played] per ADR-E Amendment E-A1 |
 
 ### `strategist` — 5 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
-| [033](033-assistant-query-architecture.md) | Assistant query architecture | `pm` | OPEN | 1d | the assistant rebuild sprint |
-| [045](045-simulation-lookahead.md) | Simulation lookahead | `pm` | OPEN | 0d | 044 (the roster-aware recommendation should use this once it exists) |
-| [046](046-bottom-up-ranking-data.md) | Bottom up ranking data | `pm` | OPEN | 0d | bottom-up ranking framework |
-| [053](053-founder-csv-ingestion.md) | Founder csv ingestion | `pm` | OPEN | 0d | FR-001 comparison view |
-| [056](056-round-varying-need-and-run-saturation.md) | Round varying need and run saturation | `pm` | OPEN | 0d | any change to the need term or the run term |
+| [033](033-assistant-query-architecture.md) | Assistant query architecture | `pm` | OPEN | 2d | the assistant rebuild sprint |
+| [045](045-simulation-lookahead.md) | Simulation lookahead | `pm` | OPEN | 1d | 044 (the roster-aware recommendation should use this once it exists) |
+| [046](046-bottom-up-ranking-data.md) | Bottom up ranking data | `pm` | OPEN | 1d | bottom-up ranking framework |
+| [053](053-founder-csv-ingestion.md) | Founder csv ingestion | `pm` | OPEN | 1d | FR-001 comparison view |
+| [056](056-round-varying-need-and-run-saturation.md) | Round varying need and run saturation | `pm` | OPEN | 1d | any change to the need term or the run term |
 
 ### `researcher` — 3 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
-| [054](054-ftn-and-sleeper-harvest.md) | Ftn and sleeper harvest | `pm` | OPEN | 0d | any subscription decision |
-| [057](057-timeseries-data-audit.md) | Timeseries data audit | `pm` | OPEN | 0d | injury-aware rankings, ADP drift model, suspension correctness guarantee, Fable Addendum 2 |
-| [070](070-recurring-injury-suspension-feed.md) | Recurring injury suspension feed | `pm` | OPEN | 0d | T4 (suspensions/roster-status table stakes), E[games_played] per ADR-E Amendment E-A1 |
+| [054](054-ftn-and-sleeper-harvest.md) | Ftn and sleeper harvest | `pm` | OPEN | 1d | any subscription decision |
+| [057](057-timeseries-data-audit.md) | Timeseries data audit | `pm` | OPEN | 1d | injury-aware rankings, ADP drift model, suspension correctness guarantee, Fable Addendum 2 |
+| [070](070-recurring-injury-suspension-feed.md) | Recurring injury suspension feed | `pm` | OPEN | 1d | T4 (suspensions/roster-status table stakes), E[games_played] per ADR-E Amendment E-A1 |
 
 ### `librarian` — 1 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
-| [062](062-backlog-reconciliation.md) | Backlog reconciliation | `pm` | OPEN | 0d | none |
+| [062](062-backlog-reconciliation.md) | Backlog reconciliation | `pm` | OPEN | 1d | none |
 
 ### `design` — 0 waiting  ⚠️ *cannot read this repo — needs a human hop via pm*
 
@@ -114,8 +114,8 @@ _Nothing waiting on you._
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
-| [011](011-locate-frontend-spec.md) | Locate frontend spec | `pm` | OPEN | 1d | 007 |
-| [035](035-frontend-catchup-runbook.md) | Frontend catchup runbook | `pm` | OPEN | 1d | 003, 027, 028, 029, 030, 031, and every future frontend thread |
+| [011](011-locate-frontend-spec.md) | Locate frontend spec | `pm` | OPEN | 2d | 007 |
+| [035](035-frontend-catchup-runbook.md) | Frontend catchup runbook | `pm` | OPEN | 2d | 003, 027, 028, 029, 030, 031, and every future frontend thread |
 
 ### `fable` — 0 waiting
 
@@ -163,8 +163,8 @@ _Nothing waiting on you._
 | [061](061-competitor-recommendation-audit.md) | Competitor recommendation audit | `pm` → `researcher` |
 | [063](063-suggester-reopen-regression.md) | Suggester reopen regression | `pm` → `frontend` |
 | [065](065-mailbox-tooling-build-for-062.md) | Mailbox tooling build for 062 | `librarian` → `backend` |
-| [074](074-export-t5-freshness-result-onto-board-json.md) | Export t5 freshness result onto board json | `frontend` → `backend` |
 | [069](069-board-json-contract-1-11-0-new-scoring-format-fi.md) | Board json contract 1 11 0 new scoring format fi | `backend` → `frontend` |
 | [073](073-board-json-contract-1-12-0-suspension-fields.md) | Board json contract 1 12 0 suspension fields | `backend` → `frontend` |
+| [074](074-export-t5-freshness-result-onto-board-json.md) | Export t5 freshness result onto board json | `frontend` → `backend` |
 | [075](075-defect-fabricated-reconstruction-of-thread-067-u.md) | Defect fabricated reconstruction of thread 067 u | `pm` → `pm` |
 

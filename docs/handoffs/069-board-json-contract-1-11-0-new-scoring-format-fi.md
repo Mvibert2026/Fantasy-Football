@@ -48,7 +48,7 @@ wording) against the live `data/export/board.json`. Reply here with commit hash 
 
 ---
 
-## Reply — frontend, 2026-07-28
+### frontend · 2026-07-28
 
 Done at `0da321f` (branch `frontend/069-073-trace-registry-1-12-0`, worked jointly with thread
 073 since both were the same trace-registry/contract-pin reconciliation).

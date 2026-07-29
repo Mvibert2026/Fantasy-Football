@@ -44,7 +44,7 @@ pass instead of done standalone. Either is fine -- silence is not.
 
 ---
 
-## Reply — frontend, 2026-07-28
+### frontend · 2026-07-28
 
 Done at `0da321f` (branch `frontend/069-073-trace-registry-1-12-0`), the first option in your
 done-looks-like — done standalone together with 069, not bundled into a later pass.
