@@ -134,3 +134,28 @@ newest at the bottom.
   will keep failing after merge too. Also unresolved: `078-pick-level-adp-velocity-capture-
   blocked-mfl-has.md` is RESOLVED with no reply (pre-existing, not from this session) -- still
   the other thing keeping `test_mailbox_health` red.
+
+- 2026-07-29 · (pm) **Three defects found by the founder on the live site**, recorded not fixed —
+  budget exhausted. (a) **Per-league exports are incomplete**: `data/export/ethans_expert_league/`
+  holds only availability/board/league/rosters — **no `nulls.json`** — so switching leagues in the
+  app fails. Backend job: whatever generates per-league exports does not emit the full artifact set
+  the frontend requires. (b) **The SPA fallback masks it confusingly**: `wrangler.jsonc` sets
+  `not_found_handling: single-page-application`, so a missing `/data/**` file returns index.html
+  with HTTP 200 and the app reports "non-JSON response" rather than "not found". The fallback is
+  right for routes and wrong for data paths — exclude `/data/*` from it. PM's own change, PM's own
+  defect. (c) **"Refresh data" is present-but-inert on the hosted build** — it calls a dev-server
+  endpoint that cannot exist on a static deploy. Correct behaviour, wrong surface: the same
+  present-but-inert problem Draft/Season were excluded from the standalone build to avoid. Hide or
+  relabel it when not served by a dev server.
+- 2026-07-29 · (pm) **Founder likes the dashboard format and wants it kept until told otherwise**,
+  ideally made live against the repo rather than a hand-built snapshot. Format to preserve: honesty
+  banner first, tile row, then filterable tabs (next / today / backlog / cost / leagues / gaps),
+  dark terminal styling matching the app, figures absent rather than guessed where unverified.
+- 2026-07-29 · (pm) **The founder challenged the QB delta and was right to.** His league pays 4 per
+  passing TD, which should push QBs *down*, yet the board moves Josh Allen +20 and Lamar Jackson
+  +19 against consensus. Most likely mechanism is the stacking passing-yardage bonuses widening the
+  QB1-to-QB10 gap, but **this is unverified and a 20-rank jump in a QB-unfriendly league is exactly
+  the "too good, suspect leakage" signal CLAUDE.md §8 says to escalate.** Cheap test: rebuild the
+  board with yardage bonuses disabled and see whether the QBs fall back. Confirms a real edge or
+  catches a bug.
+

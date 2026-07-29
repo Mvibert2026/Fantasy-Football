@@ -83,6 +83,20 @@ The founder should be able to open one session, say what he wants, and leave —
   written, and a plain statement of what to pick up first.
 - **Report once, at the end.** Not between steps.
 
+## The PM dashboard
+
+The founder asked for an interactive dashboard he can browse while waiting on budget, **and asked
+for its format kept until he says otherwise.** Preserve: the honesty banner first (the unproven core
+claim, stated before anything flattering), a tile row of measured figures, then filterable tabs —
+next / today / backlog / cost / leagues / honest gaps. Dark terminal styling matching the app's own
+language rather than a separate identity. **Where a figure could not be verified it is absent, not
+guessed.**
+
+**He wants it live against the repo** rather than a hand-assembled snapshot. Not built that way yet;
+the current one is point-in-time and says so. A generator that reads `CURRENT-STATE.md` and the
+open-threads file is the standing recommendation, because a hand-maintained dashboard drifts and
+this project already has two stale ones.
+
 ## Protecting the founder's attention
 
 - Report by exception. Silence is a valid update.
