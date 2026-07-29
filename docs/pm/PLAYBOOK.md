@@ -48,6 +48,10 @@ test counts reported with any deliberate failures named.
 **The first paragraph is the highest-value line you write.** It has caught five bad PM instructions.
 Never drop it to save space.
 
+**The command-style paragraph is LOCAL ONLY.** It exists because chained commands stop and wait for a
+human on the founder's machine. **Drop it from cloud dispatches** — there is nothing to interrupt and
+no machine to protect. Everything else in the template applies everywhere.
+
 ## Scoping a dispatch
 
 - **One clear outcome per chain.** If you are writing "and also", it is a second chain.

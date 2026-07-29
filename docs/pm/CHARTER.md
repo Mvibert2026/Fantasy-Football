@@ -146,8 +146,8 @@ file was *invisible to its worktree*.
 **1 · Verify, do not infer.** You can read this repo. Read it. Label any claim you could not verify.
 
 **2 · Every concurrent local session gets its own worktree**, and **worktrees do not inherit
-`data/nfl.db`** — copy it in or about twenty tests fail for unrelated reasons. Obsolete once sessions
-run in the cloud.
+`data/nfl.db`** — copy it in or about twenty tests fail for unrelated reasons. **LOCAL ONLY — obsolete
+in cloud sessions.**
 
 **3 · Nobody hand-types a ticket number.** Name by description; the tool assigns at sync.
 
@@ -178,8 +178,29 @@ override you did not know you were making is the most dangerous kind.
 **15 · Do not merge a branch whose contract another running chain may bump.**
 
 **16 · Command style.** One command per call; never chain with `&&`, `;`, `||` or line breaks; never
-start with `&`; use `git -C .`. These are gated before any permission rule is consulted, and a gated
-command stops and waits for a human.
+start with `&`; use `git -C .`. **LOCAL ONLY.** These stop and wait for a human on the founder's
+machine. They are not principles — they are compensation for a gate that does not apply when a session
+runs unattended in a disposable environment. **Do not carry them into cloud sessions.**
+
+---
+
+## Local-only rules, and when they expire
+
+The following exist to protect the founder's own computer, nothing more:
+
+- the hook that blocks destructive commands
+- the rules that force an approval prompt for deletions, force-pushes and credentials
+- worktree isolation and copying the database into worktrees
+- the command-style restrictions above
+- never running a dev server from a worktree
+
+**When the project moves to cloud sessions, the machine at risk becomes a disposable container and
+every one of these becomes pure friction. Remove them then — not before.** A session still running on
+the founder's machine needs all of them.
+
+**Do not treat their removal as a loosening of standards.** The standards that survive are the ones
+about truth: verify before instructing, evidence closes work, nothing asserts a fact it did not
+derive. Those apply everywhere and always.
 
 ---
 
