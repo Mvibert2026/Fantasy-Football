@@ -92,13 +92,13 @@ by the session whose work changed them, per the agent operating rules.
 
 | | Value | Notes |
 |---|---|---|
-| Backend branch / commit | `worktree-agent-aff79d3df50a140ce`, `a88f041e98f8f2948adaaa3271c94d31a072d45d` | `git rev-parse --abbrev-ref HEAD` / `HEAD` |
+| Backend branch / commit | `worktree-agent-ad3fc0f6ee64497b5`, `1775ac69d0b00eb7ef4d8a2b8cf09e8a520912ce` | `git rev-parse --abbrev-ref HEAD` / `HEAD` |
 | Data contract | `1.14.0` | `CONTRACT_VERSION` in `src/export_contract.py` |
 | Python modules | 42 | `src/*.py`, counted |
 | Export artifacts | 11 | top-level files in `data/export/` |
 | Config matrix | 26 | dirs under `data/export/` |
-| Backend tests | (skipped — pass --tests to run the suite) |  |
-| Frontend tests | (skipped — pass --tests to run the suite) |  |
+| Backend tests | 29 failed, 688 passed, 3 skipped, 1 warning, 9 errors in 30.51s | `pytest -q`, single run |
+| Frontend tests | 242 passed (242) (26 passed (26)) | `npx vitest run`, single run |
 
 <!-- BUILD-STATE:END -->
 
@@ -419,12 +419,22 @@ post-merge count.)
 
 ## Not built / null-stated
 
-Predictions tab (**absent from the shipped app**) · Season mode entirely · Settings editor ·
+Season mode entirely · Settings editor ·
 Mock Lab UI (backend store now exists, thread 025 — see Built and working) · Compare tray ·
-league creation / real multi-league slot support (thread 040 item 1, open) · live "Ask the
+league creation (thread 040 item 1, still open) · live "Ask the
 assistant" wiring · LLM prose renderer
 (deliberately deferred — hallucination risk, reasoning stated in code) · `RB_HANDCUFF` archetype
 (depth charts end 2024) · recompute progress streaming.
+
+**Correction, 2026-07-29 (frontend, FR-034/035/036 session):** this line previously read
+"Predictions tab (absent from the shipped app)" — stale since thread 028 shipped it (see
+`Predictions.tsx`'s own module doc), rediscovered this session while diagnosing FR-035. Also,
+**"real multi-league slot support" is now partially built** (FR-034): the draft slot is
+selectable per league in both Prep and Draft mode, with everything downstream (availability,
+pick sequence, RoundGrid's "mine" highlighting, Predictions) recomputing from it. League
+*creation* — adding a wholly new league to the app — remains unbuilt; that is a separate,
+larger ask (thread 040 item 1) than "pick a different slot in a league that already exists,"
+which is what FR-034 asked for and what shipped.
 
 ## Top open items
 
