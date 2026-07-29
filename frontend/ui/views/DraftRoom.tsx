@@ -19,7 +19,7 @@ import {
 import { computeLiveAvailability, dotsFilled, freqText, type LiveAvailabilityResult } from '../data/liveAvailability';
 import type { Dataset } from '../data/load';
 import type { LeagueConfig } from '../data/league';
-import { rankByRecommendation } from '../data/recommendation';
+import { findVbdOverride, rankByRecommendation } from '../data/recommendation';
 import { buildRosterSlots } from '../data/rosterSlots';
 import {
   depletionWarning,
@@ -31,6 +31,7 @@ import {
 } from '../data/scarcity';
 import { useWatchlist } from '../data/useWatchlist';
 import { PlayerDetail } from '../components/PlayerDetail';
+import { computeAdpHeaderTitle } from './Board';
 import { LiveOpponents } from './LiveOpponents';
 import { Value } from '../components/Value';
 import { decimal, integer, interval as intervalText, percent, signed } from '../lib/format';
@@ -174,11 +175,16 @@ type PositionTab = (typeof POSITION_TABS)[number];
 // "persisted within session" here means "survives re-renders while the Draft
 // Room stays mounted," the same guarantee every other piece of this screen's
 // local state gets.
+// FR-050: VBD added as a fifth sort, ported from Board.tsx's own sortable VBD
+// column (Board.tsx:99) rather than display-only -- it is "what the board
+// actually ranks on" per the founder's request, so letting the draft list be
+// ordered by it directly, not just showing the number, completes the port.
 const SORT_TABS = [
   { key: 'rank', label: 'Our rank' },
   { key: 'consensus', label: 'Consensus' },
   { key: 'delta', label: 'Delta' },
   { key: 'proj', label: 'Proj pts' },
+  { key: 'vbd', label: 'VBD' },
 ] as const;
 type SortKey = (typeof SORT_TABS)[number]['key'];
 
@@ -210,6 +216,14 @@ function compareBySort(a: BoardRow, b: BoardRow, sort: SortKey): number {
     if (pa !== null && pb !== null) return pb - pa;
     if (pa !== null) return -1;
     if (pb !== null) return 1;
+    return rankA - rankB;
+  }
+  if (sort === 'vbd') {
+    const va = a.vbd.kind === 'present' ? a.vbd.value : null;
+    const vb = b.vbd.kind === 'present' ? b.vbd.value : null;
+    if (va !== null && vb !== null) return vb - va;
+    if (va !== null) return -1;
+    if (vb !== null) return 1;
     return rankA - rankB;
   }
   return rankA - rankB;
@@ -798,8 +812,17 @@ export function DraftRoom({
       giveUp = `${altName} (${alt.row.raw.position}) is the next best. ${valueClause}${survivalClause}`;
     }
 
-    return { top, alt, reason, pointsRange, giveUp };
-  }, [userOnClock, recommended, followingUserPick, data, league, draft.picks, rowsById, available]);
+    // FR-058: "if the recommendation strays from VBD ... the panel needs to
+    // provide an explanation." Computed against the whole available pool
+    // (every undrafted player with a VBD value), not just the top-6 shortlist
+    // already shown below -- the founder's complaint was specifically that a
+    // higher-VBD player can sit unmentioned off the shortlist entirely. Null
+    // whenever the recommendation's #1 pick already IS the highest-VBD
+    // available player, per "nothing at all when nothing moved."
+    const vbdOverride = findVbdOverride(top.row, available, currentRound, unfilledPositions);
+
+    return { top, alt, reason, pointsRange, giveUp, vbdOverride };
+  }, [userOnClock, recommended, followingUserPick, data, league, draft.picks, rowsById, available, currentRound, unfilledPositions]);
 
   const watchRows = useMemo(() => {
     if (userOnClock || nextUserPick === null) return [];
@@ -1214,6 +1237,79 @@ export function DraftRoom({
               {availableInTab.length} left
             </span>
           </div>
+          {/* FR-055: the founder's own report -- "Board in Draft needs column
+              headers so I know what I'm looking at" -- confirmed against this
+              file before this change: the board list below had rank, name,
+              position, team, ADP, delta, availability and freq-dots on every
+              row and no header row naming any of them, unlike Prep's Board.tsx
+              (RANK/PLAYER/POS/TM/BYE/PROJ(CI)/CONS/ADP(MFL)/Δ/VBD/TIER,
+              Board.tsx:89-101). Labels ported verbatim from Board.tsx where
+              the same number is shown (RANK, PLAYER, TM, Δ, VBD); POS keeps
+              this screen's own existing positional-label cell ("WR12", not
+              bare "WR" -- thread 058 section B2, unchanged here) since that is
+              a real, different rendering already shipped, not a new name for
+              Board's plain-position column. Static (not position: sticky) --
+              it already sits outside the scrollable row list below, so it
+              never scrolls away, satisfying FR-055's "sticky if the list
+              scrolls" the same way the position/sort bars above it do.
+              VBD (FR-050) is new: the number the board actually ranks on,
+              previously visible only inside a row's expanded "why" detail as a
+              delta component, never as its own value on this screen. AVAIL
+              spans both the baseline/live percent text and the ten-dot
+              frequency array beside it -- one label for one concept shown two
+              ways, matching PROJ (CI)'s own combined-cell precedent in
+              Board.tsx. The trailing star/✕ icons keep their existing
+              hover titles instead of a header label -- they are actions
+              (watch, mark taken), not rendered values, so Principle #1
+              ("every rendered number traces to a named field") does not apply
+              to them. */}
+          <div
+            style={{
+              flex: 'none',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 9,
+              padding: '4px 12px',
+              borderBottom: '1px solid var(--line2)',
+              background: 'var(--panel2)',
+            }}
+          >
+            <span className="num" style={{ fontSize: 9, letterSpacing: '.04em', color: 'var(--dim2)', width: 22, textAlign: 'right' }}>
+              RANK
+            </span>
+            <span style={{ fontSize: 9, letterSpacing: '.08em', color: 'var(--dim2)', flex: 1 }}>PLAYER</span>
+            <span style={{ fontSize: 9, letterSpacing: '.08em', color: 'var(--dim2)', width: 38 }}>POS</span>
+            <span style={{ fontSize: 9, letterSpacing: '.08em', color: 'var(--dim2)', width: 26 }}>TM</span>
+            <span
+              className="num"
+              title={computeAdpHeaderTitle(data.board.adp_source_note, data.board.adp_as_of_date)}
+              style={{ fontSize: 9, letterSpacing: '.02em', color: 'var(--dim2)', width: 34, textAlign: 'right' }}
+            >
+              ADP
+            </span>
+            <span
+              className="num"
+              title="Our rank minus consensus rank -- click a row's number to see why"
+              style={{ fontSize: 9, color: 'var(--dim2)', width: 30, textAlign: 'right' }}
+            >
+              Δ
+            </span>
+            <span
+              className="num"
+              title="Value over positional replacement (board.json:players[].vbd) -- what the board is actually ranked on"
+              style={{ fontSize: 9, letterSpacing: '.02em', color: 'var(--dim2)', width: 40, textAlign: 'right' }}
+            >
+              VBD
+            </span>
+            <span
+              className="num"
+              title="Baseline -> live-adjusted availability at your next pick, then the same number as ten dots"
+              style={{ fontSize: 9, letterSpacing: '.02em', color: 'var(--dim2)', width: 58, textAlign: 'right' }}
+            >
+              AVAIL
+            </span>
+            <span style={{ flex: 1 }} />
+          </div>
           {positionTab === 'DEF' && availableInTab.length === 0 ? (
             <div style={{ padding: '12px', fontSize: 12.5, color: 'var(--dim2)', lineHeight: 1.5 }}>
               No DEF players on this board. {data.board.def_note}
@@ -1287,6 +1383,16 @@ export function DraftRoom({
                       style={{ fontSize: 11, fontWeight: 600, color: deltaColor, width: 30, textAlign: 'right', cursor: 'pointer' }}
                     >
                       {delta === null ? '—' : delta > 2 ? `▲${integer(delta)}` : delta < -2 ? `▼${integer(Math.abs(delta))}` : '·'}
+                    </span>
+                    {/* FR-050: value over replacement, same field and same
+                        decimal() formatting Board.tsx's own VBD column uses
+                        (Board.tsx:590) -- not a second version. */}
+                    <span
+                      className="num"
+                      title="Value over positional replacement -- board.json:players[].vbd"
+                      style={{ fontSize: 11, color: 'var(--dim2)', width: 40, textAlign: 'right' }}
+                    >
+                      <Value cell={r.vbd} render={decimal} />
                     </span>
                     {avail ? (
                       <span
@@ -1457,6 +1563,63 @@ export function DraftRoom({
                       <div style={{ marginTop: 6, fontSize: 12.5, lineHeight: 1.5, color: 'var(--dim)' }}>
                         {recommendationDetail.giveUp}
                       </div>
+                    </div>
+                  ) : null}
+                  {/* FR-058: "if the recommendation strays from VBD ... the
+                      panel needs to provide an explanation" -- renders only
+                      when recommendationDetail.vbdOverride is non-null, i.e.
+                      only when the #1 pick is NOT the highest-VBD player still
+                      available. Two hard limits from the request, both
+                      enforced here: (1) this states which named constant
+                      fired and what it cost -- it does not argue the pick is
+                      good, so there is no "so this is the right call" clause
+                      anywhere in this block; (2) every rule cited is labelled
+                      untested, verbatim, every time -- recommendation.ts's own
+                      module doc calls the formula "a stopgap, not a validated
+                      model," and this panel repeats that rather than letting
+                      a cited constant read as a finding. */}
+                  {recommendationDetail.vbdOverride ? (
+                    <div style={{ borderTop: '1px solid var(--line)', padding: '11px 14px', background: 'var(--bg)' }}>
+                      <div style={{ fontFamily: 'var(--font-num)', fontSize: 10, letterSpacing: '.12em', color: 'var(--dim2)' }}>
+                        WHY NOT HIGHEST VBD
+                      </div>
+                      <div style={{ marginTop: 6, fontSize: 12.5, lineHeight: 1.5, color: 'var(--dim)' }}>
+                        {recommendationDetail.vbdOverride.displaced.name.kind === 'present'
+                          ? recommendationDetail.vbdOverride.displaced.name.value
+                          : 'The next player'}{' '}
+                        ({recommendationDetail.vbdOverride.displaced.raw.position}) has{' '}
+                        <span className="num">{integer(Math.round(recommendationDetail.vbdOverride.vbdGap))}</span> more VBD (
+                        <span className="num">
+                          {decimal(
+                            recommendationDetail.vbdOverride.displaced.vbd.kind === 'present'
+                              ? recommendationDetail.vbdOverride.displaced.vbd.value
+                              : 0,
+                          )}
+                        </span>{' '}
+                        vs{' '}
+                        <span className="num">
+                          {recommendationDetail.top.row.vbd.kind === 'present' ? decimal(recommendationDetail.top.row.vbd.value) : '—'}
+                        </span>
+                        ) and was ranked below this pick because:
+                      </div>
+                      <ul style={{ margin: '6px 0 0', paddingLeft: 18, display: 'flex', flexDirection: 'column', gap: 3 }}>
+                        {recommendationDetail.vbdOverride.firing.map(({ term, appliesTo }, i) => (
+                          <li key={i} style={{ fontSize: 12.5, lineHeight: 1.5, color: 'var(--dim)' }}>
+                            <span className="num" style={{ color: term.points > 0 ? 'var(--up)' : 'var(--down)' }}>
+                              {signed(term.points)}
+                            </span>{' '}
+                            {appliesTo === 'top'
+                              ? `for the recommended pick, because ${term.reason}`
+                              : `against ${
+                                  recommendationDetail.vbdOverride!.displaced.name.kind === 'present'
+                                    ? recommendationDetail.vbdOverride!.displaced.name.value
+                                    : 'the higher-VBD player'
+                                }, because ${term.reason}`}
+                            {' — '}
+                            <span style={{ color: 'var(--dim2)' }}>an unbacktested stopgap constant, not a finding</span>
+                          </li>
+                        ))}
+                      </ul>
                     </div>
                   ) : null}
                 </div>
