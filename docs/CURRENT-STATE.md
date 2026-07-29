@@ -112,7 +112,7 @@ by the session whose work changed them, per the agent operating rules.
 
 | | Value | Notes |
 |---|---|---|
-| Agent infrastructure | **Live, mailbox check PASSING** | Seven subagents in `.claude/agents/` (backend, frontend, data-ops, strategist, researcher, librarian, pm), `/inbox` command, mailbox tooling at `tools/handoffs.py` + `tools/sprint_status.py`, mailbox health enforced in the test suite (`tests/test_handoffs.py`). `tools/handoffs.py check` (2026-07-29, PM session, cloud): **OK — 81 threads, none stale, all addressed; 47 open / 34 resolved.** The earlier 069/073 failure was fixed when the frontend replies landed and `047ff90` corrected thread 080's reply heading. The check still emits ~29 non-fatal contradiction warnings (shared-target antonym pairs, plus five threads citing D-021 as undecided when it is DECIDED) — glance-and-disposition items, not failures. |
+| Agent infrastructure | **Live, mailbox check FAILING — deliberately, see Top open items #15** | Seven subagents in `.claude/agents/` (backend, frontend, data-ops, strategist, researcher, librarian, pm), `/inbox` command, mailbox tooling at `tools/handoffs.py` + `tools/sprint_status.py`, mailbox health enforced in the test suite (`tests/test_handoffs.py`). `tools/handoffs.py check` (2026-07-29, PM closeout, cloud): **FAILS on two cross-branch ADR collisions only — 90 threads, 49 open / 41 resolved, none stale, all addressed.** Threads 083/084/087 collided the same way and were renumbered to 088/089/090 at this closeout. The earlier 069/073 failure was fixed when the frontend replies landed and `047ff90` corrected thread 080's reply heading. The check still emits ~29 non-fatal contradiction warnings (shared-target antonym pairs, plus five threads citing D-021 as undecided when it is DECIDED) — glance-and-disposition items, not failures. |
 | Document-claim detector | **Live, PASSING** (ADR-059, 2026-07-29) | `docs/state-claims.toml` (registry) + `tools/state_claims.py` (checker) + `tests/test_state_claims.py` (21 tests). Fails when one of ten **live** documents asserts something the repo contradicts: existence, a constant quoted in prose, a source/capability status, a count, or two live docs disagreeing. Append-only logs are deliberately out of scope. Caught **eight live false claims** on its first run, all corrected here; proved on six planted faults reproducing the real 2026-07-29 failures, in both directions. **Rule it enforces: a factual claim of those classes in a live document must be registered with its verification.** Known gap, asserted in a test: whether a GitHub Actions *schedule* has fired is not readable from a checkout, so the ADP-capture claim has no registered truth — a single document asserting the false version still passes. `docs/pm/**` is not yet scanned (thread 083). |
 | Frontend location | `frontend/` subdirectory of this repo | Merged from `frontend-prep` via `git subtree add`, full history preserved. No longer a separate working copy. |
 
@@ -120,3 +120,85 @@ by the session whose work changed them, per the agent operating rules.
 
 | | Value | Notes |
 |---|---|---|
+
+## Top open items
+
+Current state only. An item leaves this list when it is done — history lives in ADRs and
+`docs/status/`, not here. Verified 2026-07-29 (PM session); every claim below was measured this
+pass or is marked as unverified.
+
+**Data capture — time-sensitive, cannot be backfilled**
+
+1. **A *scheduled* ADP capture has still never fired.** `.github/workflows/adp-snapshot.yml`
+   (09:15 UTC daily) has exactly one run in repository history, `event: workflow_dispatch`,
+   triggered by hand. First scheduled opportunity is **2026-07-30 09:15 UTC**. Check `event:`, never
+   the commit author — `github-actions[bot]` authors manual dispatches too, and that is precisely
+   how this was got wrong once already. Do not retire the local Windows task until an
+   `event: schedule` run succeeds, and do not treat one success as a track record.
+   Captured so far: MFL proxy `data/adp-snapshots/` (2026-07-26, -28, -29 — **07-27 UTC is a
+   permanent gap**), FFC three-format `data/adp-snapshots-ffc/` (2026-07-29 half/non/full only).
+2. **Pick-level ADP velocity is not built.** No longer blocked — FFC is unblocked by the founder
+   (FR-023). MFL cannot serve it (`TYPE=adp` is final figures with no pick sequence). Standing
+   conditions: private single-user use, one fetch per day per format, and `adp_source` values are
+   never blended into one consensus figure.
+3. **Mock drafts toward n=30.** Gates the pre-registered availability decision rule. Still 0 of ~30
+   usable; the one logged draft was placeholder data.
+
+**Correctness — the app states something that is not so**
+
+4. **All 24 preset leagues carry Westwood's scoring ruleset while being labelled platform
+   defaults** (FR-042, founder ruling). `src/generate_config_matrix.py:71-74` deep-copies `LEAGUE`
+   and swaps only the reception value. Regenerate, do not edit — this invalidates projections in
+   every preset export. **Sequence before the custom-league builder**, or the builder inherits it.
+   That file's docstring also contradicts itself on whether ESPN scoring was ever verified
+   (lines 6-11 versus 52-53).
+5. **Non-primary leagues are missing four export artifacts.** Primary carries 11, the 26
+   sub-leagues carry 7. Absent everywhere: `strategies.json`, `player_descriptions.json`,
+   `season_stats.json`, `weekly_finishes.json`. Consequence: **the Strategy guide is empty in 26 of
+   27 leagues**, and three other screens thin out on league switch.
+6. **Six present-but-inert controls** (FR-037): Export CSV, Export PDF, League settings, Compare,
+   Ask, and Ask-the-assistant per glossary term. All carry `aria-disabled`. The founder is finding
+   them by clicking. One design treatment covers all six.
+7. **Duplicate founder-request ids.** FR-029 and FR-030 each name two different requests, so a
+   status update to one is invisible in the other. `tools/dashboard.py` now flags this on every run.
+
+**Data the model wants and does not have**
+
+8. **T6 full roster-status ingest.** `board.json:roster_status` is a proxy derived from
+   `contracts.is_active` (ADR-050), not a real active/IR/practice-squad feed. Needs a
+   `roster_status_weekly`-shaped table from `nflreadpy.load_rosters()`.
+9. **T7 depth-chart contradiction.** Unresolved and unmeasured — `SELECT MAX(dt) FROM depth_charts`
+   has not been run.
+10. **Three nflverse pulls worth making**, from the 13 of 23 loaders this repo never calls
+    (`docs/research/nflverse-unused-data-audit-2026-07-29.md`): `load_schedules()` head-coach
+    columns (1999-2026, closes coach *identity* but not coordinator duty), `load_participation()`
+    route columns (2016-2025, a documented proxy for the route gap — must be labelled a proxy), and
+    `load_ff_opportunity()` (2006-2025 pre-fitted xFP, needs Statistician sign-off before it is a
+    ranking input). Nothing ingested yet.
+
+**Model**
+
+11. **Where the TE mispricing sits in the draft is unanswered.** 33.6% of a tight end's stable
+    quality is unpriced by consensus versus 15.1% RB/WR and 6.3% QB, but that is pooled across all
+    tight ends. If it concentrates in the top few, the founder's late-round strategy is wrong and
+    the finding argues the opposite way. Survivorship is the specific way this analysis fails.
+12. **The shipped rank curve pools all seasons flat.** The QB slope collapsed monotonically
+    2021→2025 (−67, −73, −59, −45, **−4**), so the board recommends from a regime that has
+    disappeared. Whether other positions are doing the same has never been checked.
+
+**Known-red, deliberately**
+
+15. **`tools/handoffs.py check` fails on two ADR numbers, and that failure is the record.** ADR-054
+    and ADR-055 each carry a second, different definition on the unmerged branch
+    `origin/backend/mock-calibration-kickers` ("Batch mock-draft ingestion…" and "Kickers get a
+    consensus-only export artifact…"). Both sets are real work. Renumbering belongs to whoever merges
+    that branch, knowingly — not to a passing session guessing which wins. Do not silence it.
+    `tests/test_handoffs.py::test_mailbox_health` is red for this reason and no other.
+
+**Suspended, not forgotten**
+
+13. **T4 suspension data** — interim closed (ADR-053); `data/suspensions_2026.json` is real, dated
+    and currently empty, which is verified rather than an oversight. Thread 057's fuller
+    structured-source design stays open if a permanent solution is wanted.
+14. **FantasyPros licence** — closed (D-020) while the product stays private and single-user.
+    Reopens on any second user, alongside D-021.
