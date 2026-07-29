@@ -128,3 +128,54 @@ findings sit in the build and the seven regexes never surface them.
    knowledge, and it must survive a better retriever. Wider retrieval must not become licence to
    answer from the model's own priors.
 
+---
+
+## The standard the founder has set, 2026-07-29
+
+> "so all this specific finding in your last message about jayden daniels, I need the chatbot to be
+> able to act like that if I need it to explain things"
+
+**The answer he is pointing at, verbatim in substance:** the quarterback slope collapse this project
+had recorded as a live defect is *not established* — the trend's CI spans zero, it depends on an
+arbitrary depth choice, and **dropping one player, Jayden Daniels, moves the 2025 slope from −4.1 to
++28.6**. Further: the fix on record would have been backwards, because the underlying QB value curve
+is steepening. And the board cost of the whole thing is one player moving ten places.
+
+**That is the bar. It is achievable and it is not close to what exists.** It needs three things, and
+only one of them is currently being built.
+
+1. **The research has to be in the build.** Pass 3 lives in `docs/ranking/bottom-up-research-pass-3.md`
+   and nothing ships it. Covered above.
+2. **Retrieval has to find it.** In progress.
+3. **The corpus has to carry status *and supersession* — this is the new requirement.**
+
+### Why supersession, specifically
+
+The Daniels answer is not a fact lookup. **It is a correction of something this project previously
+told the founder twice**, and its value is almost entirely in that reversal. An assistant holding
+only the current state would answer "the QB slope collapsed −67 to −4" — which is the *old* claim,
+still true as a set of point estimates, and misleading without pass 3 beside it.
+
+So a finding record needs, beyond `claim` / `interval` / `n` / `status`:
+
+- **`supersedes`** — which earlier finding this overturns or qualifies, by id.
+- **`fragility`** — what the result depends on. Here: one player, and one depth parameter. A result
+  that flips on a single observation must say so, because that is the most decision-relevant fact
+  about it.
+- **`board_impact`** — what changes if we act on it. Pass 3's "one player moves ten places" is the
+  difference between a finding and an actionable one, and it is the sentence that stops a true result
+  becoming wasted work.
+
+**Without supersession the assistant becomes a machine for repeating superseded claims confidently**
+— which is the exact failure `docs/assistant-context.md` was created to prevent for the decision log,
+and it would be worse here because the draft screen is where it would surface.
+
+### The one thing that must not be inferred from this
+
+The founder is asking for the *style* of that answer — leads with the answer, names what it depends
+on, states the reversal plainly. **He is not asking the assistant to generate findings.** Pass 3's
+conclusion came from a program that fitted curves, bootstrapped intervals and ran a jackknife. An
+assistant given the same question and no such artifact would produce something that sounds identical
+and is invented. **The persona rules (`docs/assistant-persona.md`) stay exactly as they are; what
+changes is the corpus underneath them.**
+
