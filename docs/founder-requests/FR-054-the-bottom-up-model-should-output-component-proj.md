@@ -66,3 +66,40 @@ researcher pass (FR-053) covers it.
 
 **FTN is named by the founder as another projection source.** Note it for the researcher; it appears
 in Yahoo's own source dropdown as a paid option.
+
+---
+
+## Start condition, set 2026-07-29
+
+Founder: *"Ok start the big one when it makes sense. Continue work in sequence as allowed."*
+
+**Approved to start, gated on two things that are running now.** This is the largest piece of work on
+the list and both of these change its foundations, so starting before them means building on numbers
+that are about to move:
+
+1. **Ranker pass 3 — the rank curve across positions.** The current curve pools all seasons flat and
+   the QB slope collapsed −67 → −4. A component model has to be fitted against *something*; fitting
+   it against a regime that has already been shown to be mis-specified would bake the same error in
+   one layer deeper.
+2. **Thread 055 — FFC ADP history, 2018-2024.** Named by the ranker as the binding constraint on
+   everything pass 2 found. It takes the usable sample from 4 seasons to 7 and replaces an ECR proxy
+   with real draft position. A component model built on the 4-season proxy would need refitting the
+   week it lands.
+
+**Start when both have reported.** Neither needs to have *succeeded* — a clear negative from either
+is equally usable, and thread 055 reporting "the historical endpoint does not serve dated snapshots"
+would itself be the answer that unblocks this.
+
+**What it is, restated so the next session does not have to reconstruct it:** a per-player projection
+of the components scoring consumes — passing/rushing/receiving yards, receptions, touchdowns,
+turnovers — from which a rank falls out under *any* ruleset. Not a better ordering. The ordering is
+the by-product.
+
+**With a per-game distribution or at least a variance estimate**, because a threshold bonus is a
+nonlinear function of a per-game distribution and cannot be recovered from a season total. That is the
+mechanism by which "my league pays for ceiling" becomes a number.
+
+**Sleeper's 2,007 component rows (`data/projection-snapshots/`) are a baseline to beat, never an
+input.** Blending a vendor's projections into our own is precisely what `CLAUDE.md` §4's separate
+`ranking_source` rule exists to prevent.
+
