@@ -4,7 +4,7 @@
 Session files in this directory are the source of truth. Add a new dated file, then
 re-run sync. Protocol: [`README.md`](README.md).
 
-**28 sessions recorded.**
+**29 sessions recorded.**
 
 ---
 
@@ -1595,6 +1595,103 @@ Screenshots in `frontend/e2e/artifacts/`: `fr034-*.png`, `fr035-*.png`, `fr036-*
 `e54b83f`, `6a2523a` (pm-preserved WIP through two API outages), `4dc84ec` (async-race fix),
 `3455074` (FR-035 fix + 39 tests), `1775ac6` (screenshots), `b1bd17f` (docs), `cce7893`
 (Refresh button removal). Final: `cce7893`.
+
+---
+
+<!-- 2026-07-29-frontend-fr050-055-058.md -->
+
+# 2026-07-29 · frontend · FR-055 (draft column headers) + FR-050 (VBD in draft list) + FR-058 (recommendation explains VBD overrides)
+
+**Role:** frontend (Sonnet, effort 3→4-5 for a fidelity-sensitive change) · **Shell:** worktree
+`agent-a2ac0a9c4c8191c5e`
+
+## What was asked
+
+Three founder requests naming the same screen and the same underlying complaint — "the draft
+room's numbers do not explain themselves" — batched deliberately into one pass so they wouldn't
+fight over the same column space:
+
+- **FR-055**: Draft mode's board list has no column headers ("so I know what I'm looking at").
+- **FR-050**: VBD is a sortable Prep column, absent from the Draft list.
+- **FR-058**, the substantial one: when the recommendation panel's score departs from raw VBD
+  ordering, it must say why — which of the three unvalidated stopgap constants fired, what it
+  displaced, and the size of the gap — without arguing the pick is good, and while saying every
+  cited rule is unbacktested.
+
+## Verified first
+
+FR-055's premise (draft room had no header row) was confirmed directly against
+`frontend/ui/views/DraftRoom.tsx` before building anything — position tabs, then a SORT row, then
+straight into row data, no header. Prep's `Board.tsx:89-101` does carry one.
+
+## What shipped
+
+**`frontend/ui/views/DraftRoom.tsx`**
+- A static header row (`RANK · PLAYER · POS · TM · ADP · Δ · VBD · AVAIL`) above the scrollable
+  row list, outside the `overflowY: auto` container — never scrolls away, no `position: sticky`
+  needed. Labels ported verbatim from `Board.tsx` where the number matches; `computeAdpHeaderTitle`
+  exported from `Board.tsx` and reused rather than reimplemented.
+- A VBD cell on every row (`Value cell={r.vbd} render={decimal}`, Board.tsx's own formatting),
+  between Δ and the availability cell.
+- VBD added as a sixth SORT control (`Our rank | Consensus | Delta | Proj pts | VBD`).
+- A "WHY NOT HIGHEST VBD" panel in the RECOMMENDED card, rendered only when the #1 recommendation
+  is not the highest-VBD player still available anywhere on the board (not just the six-deep
+  shortlist) — names the displaced player, the exact VBD points overridden, and every firing term
+  in plain words, each one tagged "an unbacktested stopgap constant, not a finding." Nothing when
+  the ordering already agrees with VBD.
+
+**`frontend/ui/data/recommendation.ts`**
+- `recommendationTerms(row, round, unfilledPositions)`: the three reachable stopgap constants
+  (unfilled-need +8, tier-1-TE +18, early-QB −25 — DEF's −40 was never reachable, no DST data,
+  ADR-039), each paired with a plain-word reason. `recommendationScore` now builds from this list
+  so the score and its own explanation can never drift apart — same arithmetic, same output.
+- `findVbdOverride(top, available, round, unfilledPositions)`: compares the recommendation's #1
+  pick against the whole board's actual VBD leader; returns `null` when they agree.
+
+## Verification
+
+Real, reproducible scenario (not a synthetic fixture) built from the live board export: with the
+top five real VBD players drafted off, the user's next turn recommends Jaxon Smith-Njigba over
+Josh Allen (7 more VBD) because of the unfilled-WR bonus and the early-QB penalty combined — the
+panel names Josh Allen, the 7-point gap, and both terms. A second scenario (the user's actual first
+real turn) confirms the negative case: recommendation #1 already is the VBD leader, no panel
+renders. Screenshots looked at directly:
+`frontend/e2e/artifacts/fr055-fr050-headers-and-vbd.png`,
+`frontend/e2e/artifacts/fr058-vbd-override-explanation.png`,
+`frontend/e2e/artifacts/fr058-no-override-when-order-agrees.png`. Script:
+`frontend/e2e/verify-fr050-055-058.mjs` (dev server + pre-installed Chromium via `executablePath`,
+per `docs/frontend-cloud-runbook.md`).
+
+## Tests
+
+`npx tsc -b --noEmit`: clean. Unit tests: 12 new/changed in `ui/__tests__/recommendation.test.ts`
+(`recommendationTerms` reasons, `findVbdOverride` null/non-null, displaced player, exact VBD gap,
+both `appliesTo` sides) and 4 new in `ui/__tests__/draft-room-scarcity-and-sort.test.tsx` (header
+row content, VBD sort, VBD cell on a real row) — full counts and pass/fail in the session's final
+reply, since the full-suite run was still finishing when this file was written.
+
+**A real bug caught by the suite, not by eyeballing**: the first version of the header-row test
+used an unscoped `getByText('VBD', { exact: true })`, which correctly failed — "VBD" legitimately
+appears twice on screen (the new header cell and the pre-existing SORT tab button). Fixed by
+scoping the assertion to the header row's own container via `within()`.
+
+**Container flakiness, isolated and ruled out, not silenced**: the first full-suite run showed 3
+timeouts (`board-filters.test.tsx`, `draft-room-typeahead.test.tsx`, `offline.test.tsx`) at the
+container's default 5000ms budget. Reproduced the identical failures with `git stash` (unmodified
+code) run the same way, and got 100% pass on all three re-run alone with no other vitest process
+competing for CPU — confirming container-CPU contention, not a regression, before trusting the
+final number.
+
+## Founder-request files updated
+
+`docs/founder-requests/FR-055-*.md`, `FR-050-*.md`, `FR-058-*.md` — each `STATUS: SHIPPED` with a
+`## Resolution` section; `python tools/founder_requests.py sync` run.
+
+## Out of scope, on purpose
+
+FR-058's "or any selected strategy" — no strategy selector exists in the app for a recommendation
+to depart from; noted as separate, dependent work in the request's own initial read, not built
+here.
 
 ---
 

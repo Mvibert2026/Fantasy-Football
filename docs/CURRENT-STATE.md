@@ -24,7 +24,39 @@ repo — Cloudflare holds its own deploy token. This closes the last dependency 
 machine: development, tests, the database rebuild, the daily capture and now viewing the app all run
 without it.
 
-**Last verified:** 2026-07-29, backend session (PM-dispatched, worktree
+**Last verified:** 2026-07-29, frontend session (worktree `agent-a2ac0a9c4c8191c5e`) shipping
+FR-055/FR-050/FR-058 together — the same draft-room screen, the same founder complaint ("the
+numbers do not explain themselves"). Confirmed FR-055's premise first: the Draft-mode board list
+had no column header row at all (Prep's `Board.tsx` has one). Added a static header row (RANK ·
+PLAYER · POS · TM · ADP · Δ · VBD · AVAIL, labels ported verbatim from `Board.tsx` where the
+number matches) and a VBD cell on every row plus a fifth SORT option (FR-050). The substantial
+piece, FR-058: `ui/data/recommendation.ts` gained `recommendationTerms()` (the three reachable
+stopgap constants — unfilled-need +8, tier-1-TE +18, early-QB −25 — each paired with a plain-word
+reason) and `findVbdOverride()`, comparing the recommendation's #1 pick against the whole board's
+real VBD leader, not just the six-deep shortlist. `DraftRoom.tsx`'s RECOMMENDED card now shows a
+"WHY NOT HIGHEST VBD" panel exactly when they disagree — the displaced player by name, the exact
+VBD points overridden, and every firing term explicitly tagged "an unbacktested stopgap constant,
+not a finding" — and nothing when the ordering already agrees with VBD. Verified against a real,
+reproducible scenario built from the live board export (not synthetic): with the board's real top
+five VBD players drafted off, the recommendation prefers Jaxon Smith-Njigba over the actual VBD
+leader Josh Allen, and the panel names him, the 7-point gap, and both firing terms; a second
+scenario (the user's real first turn) confirms no panel renders when recommendation already agrees
+with VBD. Screenshots looked at directly (`frontend/e2e/artifacts/fr055-fr050-headers-and-vbd.png`,
+`fr058-vbd-override-explanation.png`, `fr058-no-override-when-order-agrees.png`). `npx tsc -b
+--noEmit` clean; 16 tests added/changed across `ui/__tests__/recommendation.test.ts` and
+`ui/__tests__/draft-room-scarcity-and-sort.test.tsx`. Caught and fixed one real defect via the
+suite itself, not eyeballing: the first header-row test used an unscoped text query and correctly
+failed on "VBD" appearing twice on screen (header cell + pre-existing SORT tab button) — scoped
+with `within()`. Three flaky test-file timeouts in the full suite (`board-filters.test.tsx`,
+`draft-room-typeahead.test.tsx`, `offline.test.tsx`) were reproduced identically against
+unmodified (`git stash`) code under the same CPU contention and disappeared entirely re-run alone
+— container speed, not a regression, confirmed rather than assumed. FR-058's "or any selected
+strategy" is explicitly out of scope: no strategy selector exists in the app to depart from; noted
+as separate, dependent work. `docs/founder-requests/FR-055-*.md`, `FR-050-*.md`, `FR-058-*.md` each
+carry `STATUS: SHIPPED` with a `## Resolution` section. Full test count and commit hash: see
+`docs/status/2026-07-29-frontend-fr050-055-058.md`.
+
+Prior verification: 2026-07-29, backend session (PM-dispatched, worktree
 `agent-a2a7e52225b3a7db0`, ADR-060) closing a real gap: contract 1.14.0 (thread 082) put real ADP
 fields on the board but defined the term nowhere reachable — 13-term glossary, zero mentions in
 Methodology. Added an `ADP` glossary term (`src/export_static.py`, folding

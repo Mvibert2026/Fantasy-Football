@@ -384,7 +384,7 @@ export function Board({
  *  a permanent extra bar eating vertical space on every row (Principle #4:
  *  density is the product). Null-safe: a pre-1.14.0 export still renders the
  *  column, just without this detail. */
-function computeAdpHeaderTitle(note: string | null | undefined, asOfDate: string | null | undefined): string {
+export function computeAdpHeaderTitle(note: string | null | undefined, asOfDate: string | null | undefined): string {
   const parts = [note ?? 'MyFantasyLeague ADP proxy -- not this league\'s own draft history.'];
   if (asOfDate) parts.push(`Snapshot as of ${asOfDate}.`);
   return parts.join(' ');

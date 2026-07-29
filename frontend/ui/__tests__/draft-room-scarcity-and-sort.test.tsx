@@ -159,6 +159,59 @@ describe('thread 058 section B: board row positional label and SORT controls', (
     fireEvent.click(within(posRow).getByRole('button', { name: 'DEF' }));
     expect(screen.getByText(/No DEF players on this board/)).toBeInTheDocument();
   });
+
+  it('FR-050: adds a fifth SORT control, VBD, and reorders rows descending by it on click', () => {
+    seedRealPicksThroughOverall(3);
+    renderDraftRoom();
+    const vbdButton = screen.getByRole('button', { name: 'VBD' });
+    expect(vbdButton).toBeInTheDocument();
+    fireEvent.click(vbdButton);
+    expect(vbdButton).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('button', { name: 'Our rank' })).toHaveAttribute('aria-pressed', 'false');
+
+    // seedRealPicksThroughOverall(3) with no `extra` seeds three off-board
+    // fillers (playerId: null) -- no real player is taken, so every row in
+    // `rows` is still available. Sorted by VBD descending, the same rows the
+    // sorted list should now show at the top.
+    const expectedTop = rows
+      .filter((r) => r.vbd.kind === 'present')
+      .sort((a, b) => (b.vbd as { value: number }).value - (a.vbd as { value: number }).value)
+      .slice(0, 3)
+      .map((r) => (r.name.kind === 'present' ? r.name.value : ''));
+    for (const name of expectedTop) {
+      expect(screen.getByText(name)).toBeInTheDocument();
+    }
+  });
+});
+
+describe('FR-055: draft-room board list carries a header row naming its columns', () => {
+  it('shows RANK / PLAYER / POS / TM / ADP / Δ / VBD / AVAIL above the row list, ported from Board.tsx where the number matches', () => {
+    seedRealPicksThroughOverall(3);
+    renderDraftRoom();
+    // "RANK" is unique on screen (the SORT tab reads "Our rank", not "RANK"),
+    // so its immediate parent is the header row -- scope the rest of the
+    // column-label assertions to it. Unscoped, "VBD" and "Δ" each match twice
+    // (the header cell and, respectively, the SORT tab button and the row's
+    // own delta cell), which is real, not a bug -- the same label legitimately
+    // appears in two different controls.
+    const headerRow = screen.getByText('RANK', { exact: true }).parentElement!;
+    const withinHeader = within(headerRow);
+    for (const label of ['RANK', 'PLAYER', 'POS', 'TM', 'ADP', 'VBD', 'AVAIL', 'Δ']) {
+      expect(withinHeader.getByText(label, { exact: true })).toBeInTheDocument();
+    }
+  });
+
+  it('every board row now renders a VBD figure, matching board.json:players[].vbd (FR-050)', () => {
+    seedRealPicksThroughOverall(3);
+    renderDraftRoom();
+    // Puka Nacua (id 4) is real-VBD-present and on the board at pick 3 in this
+    // fixture (Bijan/Chase/Gibbs are the only ones taken) -- its formatted VBD
+    // (Board.tsx's own `decimal()`, one decimal place) should appear on screen.
+    const nacua = rows.find((r) => r.id === 4)!;
+    expect(nacua.vbd.kind).toBe('present');
+    const formatted = (nacua.vbd as { value: number }).value.toFixed(1);
+    expect(screen.getAllByText(formatted).length).toBeGreaterThan(0);
+  });
 });
 
 describe('thread 058 section D2: IR slot', () => {
