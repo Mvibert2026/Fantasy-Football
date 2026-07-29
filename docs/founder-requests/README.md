@@ -1,0 +1,54 @@
+# Founder request protocol — how the backlog gets recorded now
+
+This directory replaces new writes to `docs/founder-requests.md` (frozen 2026-07-28, existing
+FR-001..FR-017 kept there as archive). That file was a single append-only log every session wrote
+new entries to *and* later sessions edited in place to flip an existing entry's `Status:` —
+concurrent edits to one blob, the same conflict shape as `docs/CURRENT-STATE.md`, not the pure
+append shape `docs/status.md` had. So this follows `docs/handoffs/` instead: one file per request,
+numbered, individually addressable — because FR numbers are referenced by number elsewhere in the
+repo (ADRs, handoff threads, reviews), unlike a session-log entry nothing else points at.
+
+---
+
+## The rules
+
+**1. Capture every founder request, still.** Nothing about *when* to record a request changed —
+just *where*. If the founder expresses a want, a constraint, a preference, or a "wouldn't it be
+good if" in any session, it gets an entry before that session ends.
+
+**2. Nobody types the ID.** Same reasoning as `docs/handoffs/README.md` §"nobody types the
+number" — hand-computed numbering already collided four times in this project (threads
+043/049/053, ADR-048). To open a request:
+
+```
+python tools/founder_requests.py new --raised-by "cowork chat" --subject "Research/comparison section for prep mode"
+```
+
+This writes `NEW-<slug>.md` with no `ID:` field, then runs `sync`, which allocates the real
+`FR-NNN` immediately (seeded past the archive's highest number, so it can never collide with
+FR-001..FR-017).
+
+**3. Status changes are edits to the request's own file, not a shared log.** Change the `STATUS:`
+line in `FR-NNN-slug.md` directly — `NEW` → `SCOPING` → `SPECCED` → `IN PROGRESS` →
+`SHIPPED`/`DECLINED`/`DEFERRED`, matching the vocabulary the archive used. Append reasoning under
+a `## Resolution` or `## Update (date)` heading in the same file rather than deleting what was
+there before — a request the founder made and the team decided against is worth keeping, same
+rule the archive followed.
+
+**4. Regenerate the index after any change.**
+
+```
+python tools/founder_requests.py sync
+```
+
+Rebuilds `docs/founder-requests/INDEX.md`, grouped by status, from every `FR-*.md` file in this
+directory. Never hand-edit `INDEX.md` — fix the request's own file and re-sync.
+
+---
+
+## Filename format
+
+`FR-NNN-slug.md`, zero-padded, allocated by `sync` — never hand-typed, never reused. Numbering
+continues from the archive: the first request opened here is `FR-018` (archive tops out at
+`FR-017`; note the archive itself has a pre-existing duplicate `FR-015` heading, left as-is since
+this directory doesn't rewrite the archive).
