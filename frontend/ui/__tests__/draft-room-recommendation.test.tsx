@@ -147,18 +147,39 @@ describe('thread 049 item 1: Board/Opponents/Predictions tab shell', () => {
     expect(screen.getByPlaceholderText(/Mark pick/)).toBeInTheDocument();
   });
 
-  it('switching to Opponents/Predictions shows an honest not-wired-in state, not fabricated content', () => {
+  it('switching to Opponents/Predictions renders the real screens, folded in per the founder\'s ask', () => {
     // Thread 058 section C1: hub tab labels are sentence case ("Opponents",
     // not "OPPONENTS"), matching the design's boxed-tab treatment.
     renderDraftRoom();
     fireEvent.click(screen.getByRole('button', { name: 'Opponents' }));
-    expect(screen.getByText(/Opponents is not wired into Draft mode yet/)).toBeInTheDocument();
+    // The real Opponents.tsx screen (real opponents.json cards), not the old
+    // "not wired into Draft mode yet" placeholder -- plus this fold-in's own
+    // live-vs-static caveat (rosters.json doesn't move with local picks).
+    expect(screen.getByRole('heading', { name: 'Opponents' })).toBeInTheDocument();
+    expect(screen.getByText(/does not move the cards below/)).toBeInTheDocument();
+    expect(screen.queryByText(/Opponents is not wired into Draft mode yet/)).not.toBeInTheDocument();
     expect(screen.queryByPlaceholderText(/Mark pick/)).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: 'Predictions' }));
-    expect(screen.getByText(/Predictions is not wired into Draft mode yet/)).toBeInTheDocument();
+    // The real Predictions.tsx screen -- its own calibration caveat is the
+    // clearest unique real-content marker.
+    expect(screen.getByRole('heading', { name: 'Predictions' })).toBeInTheDocument();
+    expect(screen.getByText(/It is currently not calibrated/)).toBeInTheDocument();
+    expect(screen.queryByText(/Predictions is not wired into Draft mode yet/)).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: 'Board' }));
     expect(screen.getByPlaceholderText(/Mark pick/)).toBeInTheDocument();
+  });
+
+  it('Predictions reflects a pick recorded in this same Draft-mode session (shared localStorage draft state)', () => {
+    // This is the scenario the founder's ask is actually about: recording a
+    // pick in Draft mode's own pane, then checking Predictions shows it --
+    // not merely that both screens mount. seedUpToUsersFirstPick() writes
+    // through saveDraftState, the exact store Predictions.tsx re-reads on
+    // mount (ui/data/draft.ts's `prep.draft.<leagueId>` key).
+    seedUpToUsersFirstPick();
+    renderDraftRoom();
+    fireEvent.click(screen.getByRole('button', { name: 'Predictions' }));
+    expect(screen.getByText(/Live availability at pick 3/)).toBeInTheDocument();
   });
 });

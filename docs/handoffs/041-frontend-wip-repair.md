@@ -2,7 +2,7 @@
 ID: 041
 FROM: pm
 TO: frontend
-STATUS: BLOCKED-EXTERNAL
+STATUS: RESOLVED
 OPENED: 2026-07-27
 BLOCKS: all further frontend work
 ---
@@ -129,3 +129,31 @@ on either side.
 **Commit:** see this session's closing commit in `git log`.
 
 STATUS: BLOCKED-EXTERNAL
+
+---
+### frontend · 2026-07-29
+
+**Screenshot obtained** — this cloud container has no shared/compositing-limited Browser pane
+(`docs/frontend-cloud-runbook.md`). `frontend/e2e/artifacts/01-prep-board.png` and
+`frontend/e2e/artifacts/14-refresh-panel.png`, real Playwright captures against
+`npm run dev -- --port 5199` on the current `main`-derived worktree, looked at directly:
+
+- **01**: app displays — league selector reads `WESTWOOD · yahoo · snake · 10T`, board header
+  `fantasypros_csv_2026draft · half ppr · preseason moving · generated
+  2026-07-29T16:39:37.728849+00:00 · 510 players loaded`, real ranked rows render (Bijan Robinson
+  #1 RB ATL through row 19+), no error state, no blank screen.
+- **14**: clicked "Refresh data" directly — the panel reads "No update available. data/export/ has
+  not been re-copied since the last refresh," and "This app is written against contract 1.14.0."
+  The one named artifact still on an older version is `strategies (1.7.0)` — the same, already-
+  documented gap this thread's own reply found and routed to backend as thread 042, not a new
+  mismatch and not `board.json` (which matches). No "contract mismatch" banner text found anywhere
+  on the page (checked via full body-text search).
+
+This is a different session/branch than the one that did the diagnostic and fix work in the reply
+above (that work is unrelated to this session's own three jobs), so this reply only supplies the
+missing evidence artifact this thread was left `BLOCKED-EXTERNAL` on — no new engineering. Frontend
+suite this session: 203 passed, 0 failed, 22 files (`npm test`, 2026-07-29) — at or above the 116
+floor this thread's "Done looks like" set. `tsc -b --noEmit` clean. Commit: see this session's
+closing commit on branch `worktree-agent-aa652207ba4ef71bd`.
+
+Everything in "Done looks like" is now met. **Setting `STATUS: RESOLVED`.**
