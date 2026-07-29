@@ -441,11 +441,18 @@ assistant" wiring · LLM prose renderer
    (2026-07-29): no `2026-07-29.csv` existed until one was captured by hand, so the task did not
    fire.** **Superseded by `.github/workflows/adp-snapshot.yml`** (daily 09:15 UTC +
    `workflow_dispatch`), which runs the capture off this machine and fails the run rather than
-   committing an empty file. **The cloud run has now been observed to succeed (2026-07-29,
-   `4a299df`, authored by `github-actions[bot]` at 15:38 UTC — it rewrote the hand-captured
-   `2026-07-29.csv` with its own 225-row automated pull). The local Windows Scheduled Task is now
-   redundant and can be disabled.** Leaving both enabled is harmless (the workflow's commit step
-   no-ops when the day's CSV is unchanged) but pointless. One success is not a track record — keep
+   committing an empty file. **CORRECTION, 2026-07-29 (PM session, measured through the Actions
+   API): a *scheduled* run has never fired.** Exactly one run exists in the repository's entire
+   history — `event: workflow_dispatch`, triggered by the founder by hand at 15:38 UTC, producing
+   `4a299df` (225 rows, rewriting the hand-captured `2026-07-29.csv`). The text previously here said
+   the cloud run "has been observed to succeed" and that "the local Windows Scheduled Task is now
+   redundant and can be disabled." The first is true only of a manual run; **the second is wrong.**
+   The commit being authored by `github-actions[bot]` does **not** distinguish a manual dispatch
+   from a cron fire, and that is exactly how this was got wrong — check `event`, never the author.
+   **Do NOT disable the Windows Scheduled Task until a run with `event: schedule` succeeds.** First
+   opportunity is 2026-07-30 09:15 UTC. Until then the local task is the only capture with any
+   track record at all, and a missed day can never be re-fetched. One success is not a track record
+   either — keep
    checking for a same-day CSV daily for a week before treating the capture as unattended. Verify
    periodically:
    `SELECT MAX(retrieved_at) FROM adp_snapshots WHERE adp_source='mfl_proxy'` and check
