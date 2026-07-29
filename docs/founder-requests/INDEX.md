@@ -5,7 +5,7 @@ Per-request files in this directory are the source of truth. Edit a request's ow
 `STATUS:` line, then re-run sync. Protocol: [`README.md`](README.md).
 Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests.md).
 
-**19 requests since freeze.**
+**20 requests since freeze.**
 
 ---
 
@@ -43,13 +43,14 @@ _None._
 | [FR-024](FR-024-show-adp-on-the-prep-board-the-draft-screen-and.md) | Show adp on the prep board the draft screen and | 2026-07-29 | chat session 2026-07-29 (PM takeover) |
 | [FR-026](FR-026-capture-non-ppr-adp-as-well-alongside-half-ppr.md) | Capture non ppr adp as well alongside half ppr | 2026-07-29 | chat session 2026-07-29 (PM takeover) |
 
-## SHIPPED — 3
+## SHIPPED — 4
 
 | ID | Subject | Raised | Source |
 |---|---|---|---|
 | [FR-034](FR-034-draft-position-must-be-selectable-in-prep-this-i.md) | Draft position must be selectable in prep this i | 2026-07-29 | chat session 2026-07-29 |
 | [FR-035](FR-035-predictions-in-prep-must-be-scoped-to-the-select.md) | Predictions in prep must be scoped to the select | 2026-07-29 | chat 2026-07-29, PM session |
 | [FR-036](FR-036-manual-team-name-entry-for-opponents-in-the-draf.md) | Manual team name entry for opponents in the draf | 2026-07-29 | chat 2026-07-29, PM session |
+| [FR-037](FR-037-remove-the-refresh-data-button-since-it-cannot-w.md) | Remove the refresh data button since it cannot w | 2026-07-29 | pm relay, 2026-07-29 (second ask, first was missed) |
 
 ## DECLINED — 0
 

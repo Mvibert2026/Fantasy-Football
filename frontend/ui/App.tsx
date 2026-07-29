@@ -4,7 +4,6 @@ import { NotBuilt } from './components/shell/NotBuilt';
 import { NAV_MAIN, SOON_ITEMS, Sidebar, type ScreenId } from './components/shell/Sidebar';
 import { TopBar, type Mode } from './components/shell/TopBar';
 import { useTheme } from './components/shell/useTheme';
-import { RefreshData } from './components/RefreshData';
 import { Assistant } from './views/Assistant';
 import { Availability } from './views/Availability';
 import { Board } from './views/Board';
@@ -65,10 +64,6 @@ export function App() {
   // see the App() doc comment above -- this only enriches its context string.
   const [draftPick, setDraftPick] = useState<number | null>(null);
 
-  // Bumping this re-runs the load, which is how the Refresh control applies new exports
-  // without a page reload.
-  const [reloadKey, setReloadKey] = useState(0);
-
   const [leagues, setLeagues] = useState<SelectableLeague[]>([{ id: DEFAULT_LEAGUE_ID, label: 'Default league' }]);
   const [leagueId, setLeagueId] = useState<string>(DEFAULT_LEAGUE_ID);
 
@@ -92,7 +87,7 @@ export function App() {
 
   useEffect(() => {
     fetchSelectableLeagues().then(setLeagues);
-  }, [reloadKey]);
+  }, []);
 
   // Found while verifying FR-036's persistence (not part of that request, but a real
   // bug surfaced by switching leagues repeatedly): this effect had no guard against
@@ -125,7 +120,7 @@ export function App() {
     return () => {
       cancelled = true;
     };
-  }, [reloadKey, leagueId]);
+  }, [leagueId]);
 
   const rows = useMemo(() => (data ? buildRows(data) : []), [data]);
   // FR-034: the override is applied once, here, so every consumer below (Board,
@@ -253,8 +248,7 @@ export function App() {
         onSelectSlot={setDraftSlotOverride}
         onClearSlot={clearDraftSlotOverride}
         refreshSlot={
-          <RefreshData
-            onApplied={() => setReloadKey((k) => k + 1)}
+          <FreshnessNote
             boardGeneratedUtc={data?.board.generated_utc ?? null}
             snapshotAgeDays={data?.board.snapshot_age_days ?? null}
             snapshotMaxAgeDays={data?.board.snapshot_max_age_days ?? null}
@@ -271,5 +265,60 @@ export function App() {
         </AssistantDock>
       ) : null}
     </div>
+  );
+}
+
+/**
+ * The founder asked twice for the "Refresh data" button to be removed (recorded, but
+ * the first ask was never actioned) -- it called a dev-server-only endpoint
+ * (`/__refresh`, `server/refresh.ts`) that has never existed on the hosted static
+ * build, so on the live site every click could only fail. Present-but-inert is the
+ * one state this project's own standing rule rules out (see the module docs on
+ * DraftRoom/Season mode's "not built" panes for the same principle applied
+ * elsewhere) -- so the button and the component behind it (`RefreshData.tsx`) are
+ * gone entirely, not merely hidden in production.
+ *
+ * The freshness line survives, unconditionally -- it is real information
+ * (`board.json:generated_utc` and the snapshot-freshness fields, contract 1.13.0),
+ * and the button was never its source, only something sitting upstream of it. This
+ * mirrors `StandaloneApp.tsx`'s `StandaloneFreshnessNote`, the working pattern
+ * already in this codebase for "the note without the button" -- not reinvented here,
+ * just adapted for the live app (this one still gets fresher data on a real page
+ * reload or a league switch; the standalone build never does, hence its extra
+ * "static snapshot, not live" clause, correctly absent here).
+ */
+function FreshnessNote({
+  boardGeneratedUtc,
+  snapshotAgeDays,
+  snapshotMaxAgeDays,
+  snapshotStale,
+}: {
+  boardGeneratedUtc: string | null;
+  snapshotAgeDays: number | null;
+  snapshotMaxAgeDays: number | null;
+  snapshotStale: boolean | null;
+}) {
+  const hasFreshness = snapshotAgeDays !== null && snapshotMaxAgeDays !== null && snapshotStale !== null;
+  const freshnessText = hasFreshness
+    ? `snapshot ${snapshotStale ? 'STALE' : 'fresh'} (${snapshotAgeDays}d old, max ${snapshotMaxAgeDays}d)`
+    : 'snapshot freshness not exported by backend';
+  return (
+    <span
+      className="num"
+      data-testid="freshness-note"
+      title="board.json:generated_utc is the export-file timestamp. snapshot_age_days/snapshot_max_age_days/
+        snapshot_stale are src/freshness.py's separate staleness check (T5), attached to the export since
+        contract 1.13.0. Reload the page, or switch leagues, to re-check against the latest export."
+      style={{
+        fontSize: 11,
+        color: 'var(--dim2)',
+        whiteSpace: 'nowrap',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        minWidth: 0,
+      }}
+    >
+      {`exported ${boardGeneratedUtc ?? '—'} · ${freshnessText}`}
+    </span>
   );
 }
