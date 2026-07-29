@@ -487,3 +487,49 @@ a live crash:
 Full detail, plus the resolved ESPN-scoring docstring self-contradiction and the static-hosting vs.
 job-queue-API contradiction between `SETTINGS-EDITOR-SPEC.md` and the current Cloudflare Worker
 deploy: `docs/specs/FR-040-custom-league-settings-costing.md`.
+
+---
+
+## 2026-07-29 — ranker, pass 3: the rank-curve slope collapse, priced
+
+Answers `docs/CURRENT-STATE.md` item 12 and the recency-weighting request at line 229 of this
+file (ADR-057). Full evidence `docs/ranking/bottom-up-research-pass-3.md`, thread **093** to
+`strategist`. Exploratory; nothing registered, nothing near the board.
+
+1. **The QB collapse is not established.** Point estimates reproduce exactly (-66.6, -72.6,
+   -58.6, -45.0, -4.1); the confidence does not. Trend +15.3/season **[-3.5, +34.1]**, CI spans
+   zero. 2025's own CI is **[-46.5, +69.2]** and contains 2024's estimate. The monotonicity is a
+   property of `RELEVANT_DEPTH["QB"]=20` — at depth 12 the series is -15.0, -106.9, -68.5, -41.7,
+   -38.5 and 2021 is the *flattest* season. And it is one player: dropping Jayden Daniels
+   (consensus QB3, 114 pts) takes 2025 from -4.1 to **+28.6**, a swing larger than the -45 -> -4
+   gap the whole story rests on.
+2. **It is not happening elsewhere.** RB's 2025 slope is **-77.9, the steepest of its five**; WR
+   is flat (-37.7 -> -37.0); TE is monotone but its magnitude CI spans zero and it breaks at
+   depth 32. Item 12's open question is now answered: no.
+3. **The mechanism is the market, not the position.** 2025 realised QB value curve **-58.7**,
+   flat against era means -57.7/-59.0/-56.8. What moved is consensus ordering skill: tau_b
+   +0.484, +0.305, +0.263, +0.263, **-0.042** (worse than random). RB is the mirror — tau_b
+   **+0.507**, its best, on a flat value curve.
+4. **The recorded fix inverts at QB.** Recency weighting the *value* curve is strongly supported
+   on a 9-season holdout (QB RMSE 45.00 -> 22.41, **-22.6 [-30.3, -13.6]**) and the QB value
+   curve is **steepening** (-0.461/season [-0.874, -0.034]) — so it makes the QB premium
+   *bigger*. Recency weighting the *consensus* curve tracks ordering skill, whose lag-1
+   autocorrelation is **r = -0.007 [-0.414, +0.411]**. Zero persistence.
+5. **Per position, per CLAUDE.md 6.4, on the value curve:** QB **yes** (hl1, -22.6 [-30.3,
+   -13.6]); RB **no**; WR **contraindicated** — last1 is **+2.75 [+0.96, +4.80] worse**, CI
+   excluding zero; TE weak (hl5, -2.69 [-4.71, -0.48]) and its *training* pick returns nothing on
+   test, which is a live overfitting demonstration.
+6. **The board cost is ~zero.** `vbd = b*ln(rank/base)` exactly — the intercept cancels, verified
+   against the live 510-row board with zero ordering mismatches, so the whole board is four
+   numbers. Under half-life 3 **one** player in the top 150 moves >=10 places; under half-life 5,
+   **none**. Every scheme from last3 down leaves all four slopes **inside the board's own
+   published 95% CI**, i.e. no player can move outside his own published VBD interval. Only
+   `last1` moves the board, and `last1` puts *more* QBs in the top 100 (11 -> 17) by parking them
+   all at replacement — the opposite of what was wanted.
+7. **The board's curve weighting is unanswerable on current data: n = 2 evaluable targets**
+   (2023, 2024), and they disagree at the 4th decimal of Kendall tau (spread 0.004 across twelve
+   schemes). Threads **055** (FFC ADP 2018-2024) and **084** (pre-2021 consensus) would take this
+   to 5-6 targets and are what unblocks it.
+8. **Flagged, not claimed:** mean attenuation ratio is 0.686 / 0.702 / 0.693 / 0.691 across
+   QB/RB/WR/TE. Four positions agreeing to 0.016. Too neat; escalated in thread 093, not
+   celebrated.
