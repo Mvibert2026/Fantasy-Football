@@ -57,3 +57,25 @@ supports only the weak features; the strong features have about thirteen seasons
 how a quarterback premium that had collapsed to near zero still showed as a +20 signal. Nobody has
 checked whether the same is happening at other positions. That is one of the first questions, not a
 detail.
+
+## Update — 2026-07-29, `ranker`, research pass 1
+
+Founder restated alongside the directive that **this is his edge and he wants it researched deeply**.
+Recorded here rather than as a new FR, because it is the same request with an added emphasis.
+
+First pass delivered: `docs/ranking/bottom-up-research-pass-1.md`. Exploratory, nothing registered,
+no model shipped. Three things the founder should know, because two of them contradict what this
+file says above:
+
+1. **The "other positions" question is answered: TE behaves like QB, RB and WR do not.** But the
+   mechanism recorded above — "a quarterback premium that had collapsed" — is probably wrong. The
+   *realised* QB value curve is at an era high; it is the *consensus-rank* curve that flattened,
+   because consensus got worse at ordering quarterbacks. Ruling requested from `strategist`, thread
+   **085**. If confirmed, recency-weighting the pooled curve is the wrong fix.
+2. **How much of a season is reducible at all, measured**: at WR, ~12.5% of season-ppg variance is
+   week-to-week noise, ~20% real season-specific change, ~52% already priced by consensus, ~15%
+   stable quality left unpriced. Availability is the larger unexplained block and is
+   near-unforecastable (r = 0.09-0.18). **The edge is not in forecasting a player's rate.**
+3. **Two data gaps are now closed by deciding not to buy them** — coaching staff history and Vegas
+   implied team totals both sit inside a team-environment channel bounded at <= +0.055 tau by a
+   generous oracle, with zero excess team fixed-effect variance at any position.

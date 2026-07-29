@@ -1,0 +1,584 @@
+<title>Draft Assistant — PM Dashboard</title>
+<style>
+  :root{
+    --ground:#f1f3f2; --surface:#ffffff; --surface2:#e9edec; --line:#d2d9d7;
+    --ink:#0f1615; --ink2:#43514e; --muted:#6d7b78;
+    --accent:#0d7a52; --accent-dim:#0d7a5222;
+    --ok:#0d7a52; --warn:#a8620a; --crit:#b3282d; --info:#1f5f8b;
+    --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+    --sans:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#0b0f10; --surface:#141a1c; --surface2:#1b2325; --line:#26302f;
+      --ink:#dfe6e4; --ink2:#a3b2af; --muted:#74847f;
+      --accent:#3ddc97; --accent-dim:#3ddc9722;
+      --ok:#3ddc97; --warn:#e8a33d; --crit:#e5646a; --info:#6cb6e8;
+    }
+  }
+  :root[data-theme="dark"]{
+    --ground:#0b0f10; --surface:#141a1c; --surface2:#1b2325; --line:#26302f;
+    --ink:#dfe6e4; --ink2:#a3b2af; --muted:#74847f;
+    --accent:#3ddc97; --accent-dim:#3ddc9722;
+    --ok:#3ddc97; --warn:#e8a33d; --crit:#e5646a; --info:#6cb6e8;
+  }
+  :root[data-theme="light"]{
+    --ground:#f1f3f2; --surface:#ffffff; --surface2:#e9edec; --line:#d2d9d7;
+    --ink:#0f1615; --ink2:#43514e; --muted:#6d7b78;
+    --accent:#0d7a52; --accent-dim:#0d7a5222;
+    --ok:#0d7a52; --warn:#a8620a; --crit:#b3282d; --info:#1f5f8b;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+       font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1100px;margin:0 auto;padding:28px 20px 72px}
+  .mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+
+  header.top{display:flex;flex-wrap:wrap;gap:14px;align-items:baseline;
+             justify-content:space-between;padding-bottom:14px;border-bottom:1px solid var(--line)}
+  h1{font-size:1.35rem;margin:0;letter-spacing:-.02em;font-weight:650;text-wrap:balance}
+  .sub{font-family:var(--mono);font-size:.74rem;color:var(--muted);letter-spacing:.04em}
+  .live{display:inline-flex;align-items:center;gap:7px;font-family:var(--mono);
+        font-size:.72rem;color:var(--ok);text-decoration:none;border:1px solid var(--line);
+        padding:5px 10px;border-radius:2px;background:var(--surface)}
+  .live:hover{border-color:var(--accent)}
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--ok);flex:none}
+
+  .banner{margin:20px 0 0;background:var(--surface);border:1px solid var(--line);
+          border-left:3px solid var(--crit);padding:15px 18px}
+  .banner h2{margin:0 0 5px;font-size:.72rem;letter-spacing:.11em;text-transform:uppercase;
+             color:var(--crit);font-weight:600}
+  .banner p{margin:0;color:var(--ink2);max-width:68ch}
+  .banner strong{color:var(--ink)}
+
+  .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(158px,1fr));gap:1px;
+         background:var(--line);border:1px solid var(--line);margin-top:20px}
+  .tile{background:var(--surface);padding:14px 16px}
+  .tile .k{font-family:var(--mono);font-size:.66rem;letter-spacing:.1em;text-transform:uppercase;
+           color:var(--muted)}
+  .tile .v{font-family:var(--mono);font-size:1.5rem;font-weight:600;margin-top:5px;letter-spacing:-.02em}
+  .tile .n{font-size:.75rem;color:var(--ink2);margin-top:3px;line-height:1.35}
+  .v.ok{color:var(--ok)} .v.warn{color:var(--warn)} .v.crit{color:var(--crit)}
+
+  nav.tabs{display:flex;gap:0;margin:26px 0 0;border-bottom:1px solid var(--line);overflow-x:auto}
+  .tab{appearance:none;background:none;border:0;border-bottom:2px solid transparent;
+       color:var(--muted);font-family:var(--mono);font-size:.76rem;letter-spacing:.05em;
+       padding:9px 14px;cursor:pointer;white-space:nowrap}
+  .tab:hover{color:var(--ink2)}
+  .tab[aria-selected="true"]{color:var(--accent);border-bottom-color:var(--accent)}
+  .tab:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+
+  .panel{display:none;padding-top:20px}
+  .panel[data-open]{display:block}
+  h3{font-size:.72rem;letter-spacing:.11em;text-transform:uppercase;color:var(--muted);
+     margin:26px 0 10px;font-weight:600}
+  h3:first-child{margin-top:0}
+
+  .row{background:var(--surface);border:1px solid var(--line);margin-bottom:-1px}
+  .row summary{list-style:none;cursor:pointer;padding:11px 15px;display:flex;gap:12px;
+               align-items:baseline}
+  .row summary::-webkit-details-marker{display:none}
+  .row summary:hover{background:var(--surface2)}
+  .row summary:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+  .row .ttl{flex:1;min-width:0}
+  .row .body{padding:0 15px 14px 15px;color:var(--ink2);max-width:76ch}
+  .row .body p{margin:0 0 8px}
+  .stripe{width:3px;align-self:stretch;flex:none;background:var(--muted)}
+  .s-crit{background:var(--crit)} .s-warn{background:var(--warn)}
+  .s-ok{background:var(--ok)} .s-info{background:var(--info)}
+
+  .chip{font-family:var(--mono);font-size:.63rem;letter-spacing:.07em;text-transform:uppercase;
+        padding:2px 7px;border:1px solid var(--line);color:var(--muted);border-radius:2px;flex:none}
+  .chip.crit{color:var(--crit);border-color:var(--crit)}
+  .chip.warn{color:var(--warn);border-color:var(--warn)}
+  .chip.ok{color:var(--ok);border-color:var(--ok)}
+  .chip.info{color:var(--info);border-color:var(--info)}
+
+  .filters{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+  .f{appearance:none;background:var(--surface);border:1px solid var(--line);color:var(--muted);
+     font-family:var(--mono);font-size:.68rem;letter-spacing:.05em;padding:5px 11px;
+     cursor:pointer;border-radius:2px}
+  .f:hover{color:var(--ink2)}
+  .f[aria-pressed="true"]{background:var(--accent-dim);color:var(--accent);border-color:var(--accent)}
+  .f:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+
+  .scroll{overflow-x:auto;border:1px solid var(--line);background:var(--surface)}
+  table{border-collapse:collapse;width:100%;min-width:540px}
+  th,td{text-align:left;padding:9px 14px;border-bottom:1px solid var(--line);font-size:.82rem}
+  th{font-family:var(--mono);font-size:.65rem;letter-spacing:.09em;text-transform:uppercase;
+     color:var(--muted);font-weight:600}
+  td.num{font-family:var(--mono);text-align:right;font-variant-numeric:tabular-nums}
+  tbody tr:last-child td{border-bottom:0}
+  tr.total td{border-top:1px solid var(--line);font-weight:650;color:var(--ink)}
+  .bar{height:4px;background:var(--accent);border-radius:1px;min-width:2px;display:block}
+
+  ol.steps{counter-reset:s;list-style:none;padding:0;margin:0}
+  ol.steps li{counter-increment:s;position:relative;padding:12px 0 12px 42px;
+              border-bottom:1px solid var(--line)}
+  ol.steps li:last-child{border-bottom:0}
+  ol.steps li::before{content:counter(s);position:absolute;left:0;top:12px;
+    font-family:var(--mono);font-size:.7rem;color:var(--accent);border:1px solid var(--line);
+    width:24px;height:24px;display:grid;place-items:center;border-radius:2px}
+  ol.steps .why{display:block;color:var(--ink2);font-size:.85rem;margin-top:3px;max-width:72ch}
+  .yours{border-left:3px solid var(--accent);padding-left:14px}
+
+  footer{margin-top:44px;padding-top:14px;border-top:1px solid var(--line);
+         font-family:var(--mono);font-size:.68rem;color:var(--muted);line-height:1.7}
+  @media (prefers-reduced-motion:no-preference){
+    .row .body{animation:fade .16s ease-out}
+    @keyframes fade{from{opacity:0}to{opacity:1}}
+  }
+
+  /* No-JS interaction: the radios are the state, CSS is the behaviour. The
+     previous version drove tabs from JS, which silently produced a page stuck
+     on one panel wherever scripts are blocked -- and left the cost table empty.
+     Radios sit before the nav and the panels so ~ can reach both. */
+  .tabsel{position:absolute;opacity:0;pointer-events:none;width:0;height:0}
+  .tab,.f{cursor:pointer;user-select:none}
+  #t-next:checked ~ .tabs label[for="t-next"]{color:var(--accent);border-bottom-color:var(--accent)}
+  #t-next:checked ~ .panel[data-panel="next"]{display:block}
+  #t-today:checked ~ .tabs label[for="t-today"]{color:var(--accent);border-bottom-color:var(--accent)}
+  #t-today:checked ~ .panel[data-panel="today"]{display:block}
+  #t-backlog:checked ~ .tabs label[for="t-backlog"]{color:var(--accent);border-bottom-color:var(--accent)}
+  #t-backlog:checked ~ .panel[data-panel="backlog"]{display:block}
+  #t-cost:checked ~ .tabs label[for="t-cost"]{color:var(--accent);border-bottom-color:var(--accent)}
+  #t-cost:checked ~ .panel[data-panel="cost"]{display:block}
+  #t-leagues:checked ~ .tabs label[for="t-leagues"]{color:var(--accent);border-bottom-color:var(--accent)}
+  #t-leagues:checked ~ .panel[data-panel="leagues"]{display:block}
+  #t-risks:checked ~ .tabs label[for="t-risks"]{color:var(--accent);border-bottom-color:var(--accent)}
+  #t-risks:checked ~ .panel[data-panel="risks"]{display:block}
+  #f-all:checked ~ .filters label[for="f-all"]{background:var(--accent-dim);color:var(--accent);border-color:var(--accent)}
+  #f-bug:checked ~ .filters label[for="f-bug"]{background:var(--accent-dim);color:var(--accent);border-color:var(--accent)}
+  #f-live:checked ~ .filters label[for="f-live"]{background:var(--accent-dim);color:var(--accent);border-color:var(--accent)}
+  #f-blocked:checked ~ .filters label[for="f-blocked"]{background:var(--accent-dim);color:var(--accent);border-color:var(--accent)}
+  #f-done:checked ~ .filters label[for="f-done"]{background:var(--accent-dim);color:var(--accent);border-color:var(--accent)}
+  #f-bug:checked ~ #items .row:not([data-c="bug"]){display:none}
+  #f-live:checked ~ #items .row:not([data-c="live"]){display:none}
+  #f-blocked:checked ~ #items .row:not([data-c="blocked"]){display:none}
+  #f-done:checked ~ #items .row:not([data-c="done"]){display:none}
+  .tab:focus-visible,.f:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+</style>
+
+<div class="wrap">
+
+<header class="top">
+  <div>
+    <h1>Fantasy Draft Assistant — Project State</h1>
+    <div class="sub" id="stamp">updated 29 July 2026, evening · Westwood drafts 7 September</div>
+  </div>
+  <a class="live" href="https://draft.maplerock.net" target="_blank" rel="noopener">
+    <span class="dot"></span>draft.maplerock.net</a>
+</header>
+
+<div class="banner">
+  <h2>Read this before quoting the product</h2>
+  <p>The signature claim is <strong>calibrated availability</strong> — who survives to your next pick.
+  It is <strong>not calibrated</strong>. Zero of roughly thirty real drafts are logged, so there is no
+  evidence a stated 30% happens 30% of the time. The board is also <strong>consensus-derived at player
+  level</strong>: it cannot disagree with the market about any individual player, only about how much a
+  position is worth. Both are honest states, not defects — and both are what the next six weeks are for.</p>
+</div>
+
+<div class="tiles">
+  <div class="tile"><div class="k">Days to draft</div><div class="v warn">40</div>
+    <div class="n">Monday 7 Sep 2026<br>as of 29 July</div></div>
+  <div class="tile"><div class="k">Calibration drafts</div><div class="v crit">0 / 30</div>
+    <div class="n">Gates the core claim</div></div>
+  <div class="tile"><div class="k">Tests</div><div class="v ok">951</div>
+    <div class="n">741 backend · 210 frontend<br>1 red by design · 8 skipped</div></div>
+  <div class="tile"><div class="k">Board</div><div class="v">511</div>
+    <div class="n">players · half-PPR</div></div>
+  <div class="tile"><div class="k">Open threads</div><div class="v warn">46</div>
+    <div class="n">41 resolved · 7 closed today<br>14 top items, list rewritten</div></div>
+  <div class="tile"><div class="k">Your requests</div><div class="v">28</div>
+    <div class="n">22 raised today · 2 share an id</div></div>
+</div>
+
+<input class="tabsel" type="radio" name="tabs" id="t-next" checked>
+<input class="tabsel" type="radio" name="tabs" id="t-today">
+<input class="tabsel" type="radio" name="tabs" id="t-backlog">
+<input class="tabsel" type="radio" name="tabs" id="t-cost">
+<input class="tabsel" type="radio" name="tabs" id="t-leagues">
+<input class="tabsel" type="radio" name="tabs" id="t-risks">
+<nav class="tabs">
+  <label class="tab" for="t-next" tabindex="0">NEXT</label>
+  <label class="tab" for="t-today" tabindex="0">TODAY</label>
+  <label class="tab" for="t-backlog" tabindex="0">BACKLOG</label>
+  <label class="tab" for="t-cost" tabindex="0">COST</label>
+  <label class="tab" for="t-leagues" tabindex="0">LEAGUES</label>
+  <label class="tab" for="t-risks" tabindex="0">HONEST GAPS</label>
+</nav>
+
+<section class="panel" data-panel="next">
+  <h3>Recommended order</h3>
+  <ol class="steps">
+    <li><strong>Rebuild the 24 preset leagues on standard scoring.</strong>
+      <span class="why">Your call today, and it is a correction rather than a feature. Every preset
+      currently carries Westwood's rulebook — the stacking bonuses, the touchdown values, the defence
+      scoring — while being labelled an ESPN or Yahoo default. Must land before the custom-league
+      builder, or the builder inherits the same fault into every league you create.</span></li>
+    <li><strong>Check tomorrow's automatic data capture actually fires.</strong>
+      <span class="why">09:15 UTC, and it has still never fired on schedule — the only run in the
+      whole history was you triggering it by hand. Keep the task on your machine until a scheduled
+      one succeeds. A missed day cannot be recovered from anyone.</span></li>
+    <li><strong>Build the League settings screen, with the custom option.</strong>
+      <span class="why">You named it important. The engine for it already existed in the repo and
+      nobody knew — what is missing is the screen. Half of "custom" works on the hosted site today;
+      anything touching scoring does not, and the screen must refuse what it cannot apply.</span></li>
+    <li><strong>Agree what to capture in a mock draft, before running one.</strong>
+      <span class="why">You can log mocks by hand — the only real measurement this project has was
+      transcribed from screenshots. But capture the wrong fields and the draft is unusable, and you
+      cannot go back and re-run it.</span></li>
+    <li><strong>Answer where the tight-end mispricing sits in the draft.</strong>
+      <span class="why">Your strategy point, and it is the right question. A third of a tight end's
+      quality goes unpriced by the market, but that figure is pooled across all tight ends. If it
+      concentrates at the top, taking one late is the wrong conclusion.</span></li>
+    <li><strong>Fix the rank curve that averages five seasons flat.</strong>
+      <span class="why">The quarterback advantage fell from −67 to −4 across 2021-2025 and the board
+      still recommends from the old world. Nobody has checked whether the other positions are doing
+      the same thing.</span></li>
+  </ol>
+
+  <h3>Two minutes, and only you can do it</h3>
+  <div class="yours">
+    <p><strong>Open your Yahoo pre-draft rankings in Westwood, then in Ethan's league.</strong> Both are
+    Yahoo, both ten teams — only Westwood has the stacking yardage bonuses. <strong>If the player order
+    is identical, Yahoo ignores your bonuses</strong>, which means the whole room is under-pricing ceiling
+    in a league that specifically pays for it. That would be a real, mechanical edge. It costs nothing
+    to find out and no agent can do it — every Yahoo page blocks them by name.</p>
+  </div>
+</section>
+
+<section class="panel" data-panel="today">
+  <h3>What changed on 29 July</h3>
+
+  <p class="sub" style="margin:0 0 14px">Evening additions first. Five jobs were interrupted mid-run by an Anthropic API outage; all of their work is committed where it stood and none of it is verified yet.</p>
+
+  <details class="row"><summary><span class="stripe s-crit"></span>
+    <span class="ttl"><strong>Every preset league is wearing Westwood's rulebook</strong></span><span class="chip crit">your call, queued</span></summary>
+    <div class="body"><p>All 24 presets are built by copying your league's scoring and changing only
+    the receptions value. So a preset labelled "ESPN default, 12 teams" is Westwood with a different
+    name on it. The file that builds them also contradicts itself twelve lines apart — one paragraph
+    says the scoring was confirmed against ESPN, another says the check was blocked and never
+    happened. <strong>You settled it without needing that check to work.</strong></p></div></details>
+
+  <details class="row"><summary><span class="stripe s-warn"></span>
+    <span class="ttl"><strong>Your other leagues are thinner than anyone said</strong></span><span class="chip warn">open</span></summary>
+    <div class="body"><p>Westwood carries eleven data files. Every other league carries seven. The four
+    missing ones feed the strategy guide, player descriptions, season stats and weekly finishes — so
+    <strong>the strategy guide is empty in 26 of your 27 leagues</strong> and three other screens quietly
+    thin out when you switch. Found while checking whether those screens needed a rewrite.</p></div></details>
+
+  <details class="row"><summary><span class="stripe s-warn"></span>
+    <span class="ttl"><strong>Six controls in the app do nothing</strong></span><span class="chip warn">design owns it</span></summary>
+    <div class="body"><p>You clicked two of them — Export CSV and Export PDF. There are four more:
+    League settings, Compare, Ask, and Ask-the-assistant on every glossary term. All were copied over
+    from the prototype's layout to keep the shell looking right. One design decision covers all six,
+    and it stops you finding number seven by clicking.</p></div></details>
+
+  <details class="row"><summary><span class="stripe s-info"></span>
+    <span class="ttl"><strong>The custom-league engine already existed</strong></span><span class="chip info">finding</span></summary>
+    <div class="body"><p>A complete builder — name, team count, scoring, roster shape, draft slot — has
+    been sitting in the repository with nothing calling it and no mention in any plan. Found by
+    accident while scoping your League settings request. <strong>Without that accident we would have
+    specced and built a second one.</strong> An audit for whatever else is sitting there is now
+    running.</p></div></details>
+
+  <details class="row"><summary><span class="stripe s-info"></span>
+    <span class="ttl"><strong>Tight end is where the market is most wrong</strong></span><span class="chip info">finding</span></summary>
+    <div class="body"><p>A third of a tight end's genuine, repeatable quality goes unpriced by
+    consensus — against 15% at running back and receiver, and 6% at quarterback. Roughly three times
+    the opportunity anywhere else on the field, confirmed three separate ways.</p>
+    <p><strong>What is not yet known is where in the draft you can spend it.</strong> That figure is
+    pooled across all tight ends. Your late-round strategy depends on the answer, and if the
+    mispricing sits at the top it argues the opposite.</p></div></details>
+
+  <details class="row"><summary><span class="stripe s-info"></span>
+    <span class="ttl"><strong>The case for a front-end overhaul got weaker</strong></span><span class="chip info">research</span></summary>
+    <div class="body"><p>A competitive sweep of the category came back arguing against a broad
+    re-skin: the evidence suggests returns on visual investment go negative around where this app
+    already is, and the complaints users actually voice are about density, not looks. It also found
+    this project appears to have <strong>bought the same research once before</strong> — a completed
+    pass is logged, six live documents quote its conclusions, and the document itself is not in the
+    repository.</p></div></details>
+
+  <details class="row"><summary><span class="stripe s-ok"></span>
+    <span class="ttl"><strong>The app is on the internet</strong></span><span class="chip ok">done</span></summary>
+    <div class="body"><p>Live at draft.maplerock.net, rebuilding itself on every push. Confirmed
+    working in your own browser, and independently verified that it serves the current data rather
+    than a stale shell. This closed the last thing that needed your laptop.</p></div></details>
+
+  <details class="row"><summary><span class="stripe s-ok"></span>
+    <span class="ttl"><strong>A single file that runs a full draft</strong></span><span class="chip ok">done</span></summary>
+    <div class="body"><p>One HTML file, no server, no internet, nothing installed. Pick entry, undo,
+    live availability, position scarcity, your real roster shape and snake picks. Originally left out
+    on the assumption it needed a backend — that assumption was wrong. This is your fallback if
+    anything breaks on 7 September.</p></div></details>
+
+  <details class="row"><summary><span class="stripe s-crit"></span>
+    <span class="ttl"><strong>Four days of ADP were captured in the wrong format</strong></span><span class="chip crit">unrecoverable</span></summary>
+    <div class="body"><p>MyFantasyLeague's scoring flag is all-or-nothing, so a full-PPR proxy was
+    being captured for a half-PPR league. Fantasy Football Calculator publishes half-PPR at ten teams
+    — an exact match, with twenty-seven times the sample — and you had already lifted the restriction
+    on it. Now capturing three formats daily. The four lost days cannot be re-fetched from anyone.</p></div></details>
+
+  <details class="row"><summary><span class="stripe s-warn"></span>
+    <span class="ttl"><strong>The automatic capture had never actually run on schedule</strong></span><span class="chip warn">verify tomorrow</span></summary>
+    <div class="body"><p>Records said it was working and the local backup was redundant. One run
+    existed and you had triggered it by hand. <strong>Keep the Windows task running until a genuinely
+    scheduled run succeeds</strong> — a missed day is permanent.</p></div></details>
+
+  <details class="row"><summary><span class="stripe s-ok"></span>
+    <span class="ttl"><strong>The model reads your league settings now</strong></span><span class="chip ok">done</span></summary>
+    <div class="body"><p>Your roster shape was written into the code rather than read from your
+    settings — correct by luck. Now derived, with a test proving two different roster shapes produce
+    different answers. No Westwood number moved. This unblocks both mock collection and your other
+    two leagues.</p></div></details>
+
+  <details class="row"><summary><span class="stripe s-ok"></span>
+    <span class="ttl"><strong>Approvals removed, and numbering fixed properly</strong></span><span class="chip ok">done</span></summary>
+    <div class="body"><p>The command hook, all approval rules and the Windows scripts behind them are
+    gone. Separately, the ID collisions that had bitten five times now fail loudly instead — and the
+    new check found two genuine collisions on its first run, waiting on an unmerged branch.</p></div></details>
+
+  <details class="row"><summary><span class="stripe s-ok"></span>
+    <span class="ttl"><strong>League switching fixed — and it was broken everywhere</strong></span><span class="chip ok">done</span></summary>
+    <div class="body"><p>Selecting Ethan's league failed to load. Two export paths were only writing
+    four of the six files the app requires, and <strong>all 24 league configurations had the same
+    gap</strong> — not just the one clicked. Every league directory now carries the full set, with a
+    test that checks each one so it cannot come back quietly.</p></div></details>
+
+  <details class="row"><summary><span class="stripe s-ok"></span>
+    <span class="ttl"><strong>Opponents and Predictions now live in the draft room</strong></span><span class="chip ok">done</span></summary>
+    <div class="body"><p>Both screens already existed; the draft room was showing placeholders while
+    the real screens sat elsewhere. Verified by recording five picks and watching the predictions move
+    from "not yet" to live percentages. <strong>One honest limit stated on screen:</strong> Opponents
+    reads roster data from the backend only, so it does not reflect picks entered live. Making that
+    work is open.</p></div></details>
+
+  <details class="row"><summary><span class="stripe s-info"></span>
+    <span class="ttl"><strong>The quarterback jump: explained, not a bug — but it exposed a real one</strong></span><span class="chip info">finding</span></summary>
+    <div class="body"><p>4-point passing touchdowns <em>do</em> push quarterbacks down and the board
+    already does that. What lifts them is <strong>rushing</strong> — 56% of Josh Allen's value, scored
+    at running-back rates. The passing bonuses are 2%.</p>
+    <p><strong>The finding underneath is bigger.</strong> The quarterback advantage shrank every year
+    and was near zero last season, but the board averages five seasons flat — so it recommends from a
+    world that no longer exists. Nothing checks whether it is doing the same at other positions.</p></div></details>
+</section>
+
+<section class="panel" data-panel="backlog">
+  <h3>46 open threads, sorted against reality</h3>
+<input class="tabsel" type="radio" name="filt" id="f-all" checked>
+  <input class="tabsel" type="radio" name="filt" id="f-bug">
+  <input class="tabsel" type="radio" name="filt" id="f-live">
+  <input class="tabsel" type="radio" name="filt" id="f-blocked">
+  <input class="tabsel" type="radio" name="filt" id="f-done">
+  <div class="filters">
+    <label class="f" for="f-all" tabindex="0">ALL</label>
+    <label class="f" for="f-bug" tabindex="0">BUGS · 2</label>
+    <label class="f" for="f-live" tabindex="0">STILL LIVE · 19</label>
+    <label class="f" for="f-blocked" tabindex="0">BLOCKED · 10</label>
+    <label class="f" for="f-done" tabindex="0">DONE, NEVER CLOSED · 5</label>
+  </div>
+  <div id="items">
+    <details class="row" data-c="bug"><summary><span class="stripe s-crit"></span>
+      <span class="ttl"><strong>Every preset league carries Westwood's scoring</strong></span><span class="chip crit">bug</span></summary>
+      <div class="body"><p>All 24 presets are built by copying your rulebook and changing only the
+      receptions value, then labelling the result an ESPN or Yahoo default. Your ruling today settles
+      it. The rebuild is queued behind a job that is rewriting the same league files.</p></div></details>
+
+    <details class="row" data-c="bug"><summary><span class="stripe s-crit"></span>
+      <span class="ttl"><strong>Four data files are missing from every league but Westwood</strong></span><span class="chip crit">bug</span></summary>
+      <div class="body"><p>Westwood has eleven, the other 26 have seven. The strategy guide is empty in
+      all of them and three more screens thin out on a league switch, with nothing on screen saying
+      why.</p></div></details>
+
+    <details class="row" data-c="live"><summary><span class="stripe s-warn"></span>
+      <span class="ttl"><strong>Mock draft collection has not started</strong></span><span class="chip warn">the long pole</span></summary>
+      <div class="body"><p>Roughly thirty needed, zero logged. Everything about the availability claim
+      waits on this. You can autodraft Yahoo rooms in minutes each.</p></div></details>
+
+    <details class="row" data-c="live"><summary><span class="stripe s-warn"></span>
+      <span class="ttl"><strong>The bottom-up ranking experiment has never been run</strong></span><span class="chip warn">still live</span></summary>
+      <div class="body"><p>It beats a weak baseline at two positions and loses at a third, and no
+      confidence interval has ever been computed. If that interval includes zero, even the win is
+      unproven.</p></div></details>
+
+    <details class="row" data-c="live"><summary><span class="stripe s-warn"></span>
+      <span class="ttl"><strong>The recommendation card ignores the measured parameter</strong></span><span class="chip warn">still live</span></summary>
+      <div class="body"><p>What you see on screen runs on five hand-picked constants never fitted to
+      anything. The one number this project actually measured steers something else. Whether to wire
+      it in or drop the claim is a genuine open question.</p></div></details>
+
+    <details class="row" data-c="blocked"><summary><span class="stripe s-info"></span>
+      <span class="ttl"><strong>Ten items marked blocked on screenshots</strong></span><span class="chip info">probably free</span></summary>
+      <div class="body"><p>That limitation was solved today — real browser screenshots now work in the
+      cloud and the recipe is written down. These were sorted using a blocker nobody re-tested.</p></div></details>
+
+    <details class="row" data-c="blocked"><summary><span class="stripe s-info"></span>
+      <span class="ttl"><strong>Design-fidelity work, including the phone layout</strong></span><span class="chip info">deferred</span></summary>
+      <div class="body"><p>Paused deliberately, with Design owning it. Most of the deferred list was
+      generated by the PM rather than requested by you — worth saying whenever it is defended.</p></div></details>
+
+    <details class="row" data-c="done"><summary><span class="stripe s-ok"></span>
+      <span class="ttl"><strong>Five items finished but never closed</strong></span><span class="chip ok">close them</span></summary>
+      <div class="body"><p>Including season-history exports and most of the draft-room panel work. The
+      risk is somebody redoing them — which has happened here before.</p></div></details>
+  </div>
+</section>
+
+<section class="panel" data-panel="cost">
+  <h3>Agent spend, 29 July</h3>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>Chain</th><th>Role</th><th style="text-align:right">Tokens</th>
+        <th style="text-align:right">Calls</th><th style="text-align:right">Time</th><th>Share</th></tr></thead>
+      <tbody>
+        <tr><td>Standalone build, phone, draft mode</td><td><span class="chip">frontend</span></td><td class="num">373,848</td><td class="num">219</td><td class="num">40m 28s</td><td><span class="bar" style="width:100%"></span></td></tr>
+        <tr><td>Backlog + review triage</td><td><span class="chip">librarian</span></td><td class="num">292,046</td><td class="num">83</td><td class="num">5m 30s</td><td><span class="bar" style="width:78%"></span></td></tr>
+        <tr><td>Draft hub, ADP display, captures</td><td><span class="chip">frontend</span></td><td class="num">253,839</td><td class="num">151</td><td class="num">24m 19s</td><td><span class="bar" style="width:68%"></span></td></tr>
+        <tr><td>ADP display (first pass)</td><td><span class="chip">frontend</span></td><td class="num">205,966</td><td class="num">139</td><td class="num">18m 29s</td><td><span class="bar" style="width:55%"></span></td></tr>
+        <tr><td>One-command database rebuild</td><td><span class="chip">data-ops</span></td><td class="num">195,843</td><td class="num">131</td><td class="num">26m 36s</td><td><span class="bar" style="width:52%"></span></td></tr>
+        <tr><td>Bottom-up registration (revision)</td><td><span class="chip">strategist</span></td><td class="num">165,645</td><td class="num">9</td><td class="num">9m 08s</td><td><span class="bar" style="width:44%"></span></td></tr>
+        <tr><td>Per-league exports (part 2)</td><td><span class="chip">backend</span></td><td class="num">165,810</td><td class="num">133</td><td class="num">29m 17s</td><td><span class="bar" style="width:44%"></span></td></tr>
+        <tr><td>Historical ADP hunt</td><td><span class="chip">researcher</span></td><td class="num">157,270</td><td class="num">76</td><td class="num">13m 24s</td><td><span class="bar" style="width:42%"></span></td></tr>
+        <tr><td>Half-PPR capture (part 2)</td><td><span class="chip">data-ops</span></td><td class="num">151,061</td><td class="num">113</td><td class="num">20m 09s</td><td><span class="bar" style="width:40%"></span></td></tr>
+        <tr><td>Yahoo draft assistant</td><td><span class="chip">researcher</span></td><td class="num">132,706</td><td class="num">50</td><td class="num">11m 28s</td><td><span class="bar" style="width:35%"></span></td></tr>
+        <tr><td>Half-PPR capture (part 1)</td><td><span class="chip">data-ops</span></td><td class="num">130,182</td><td class="num">88</td><td class="num">16m 05s</td><td><span class="bar" style="width:35%"></span></td></tr>
+        <tr><td>Per-league exports (part 1)</td><td><span class="chip">backend</span></td><td class="num">123,529</td><td class="num">86</td><td class="num">12m 03s</td><td><span class="bar" style="width:33%"></span></td></tr>
+        <tr><td>Bottom-up registration (first)</td><td><span class="chip">strategist</span></td><td class="num">119,630</td><td class="num">25</td><td class="num">6m 50s</td><td><span class="bar" style="width:32%"></span></td></tr>
+        <tr><td>League settings fix</td><td><span class="chip">backend</span></td><td class="num">116,802</td><td class="num">50</td><td class="num">11m 36s</td><td><span class="bar" style="width:31%"></span></td></tr>
+        <tr><td>Quarterback delta investigation</td><td><span class="chip">backend</span></td><td class="num">110,608</td><td class="num">69</td><td class="num">14m 36s</td><td><span class="bar" style="width:30%"></span></td></tr>
+        <tr><td>Cloud readiness check</td><td><span class="chip">frontend</span></td><td class="num">105,080</td><td class="num">46</td><td class="num">7m 58s</td><td><span class="bar" style="width:28%"></span></td></tr>
+        <tr><td>ID collision fix</td><td><span class="chip">backend</span></td><td class="num">89,680</td><td class="num">41</td><td class="num">4m 53s</td><td><span class="bar" style="width:24%"></span></td></tr>
+        <tr><td>Blocked-item re-test</td><td><span class="chip">librarian</span></td><td class="num">53,789</td><td class="num">24</td><td class="num">2m 09s</td><td><span class="bar" style="width:14%"></span></td></tr>
+        </tbody>
+      <tr class="total"><td>Total reported</td><td>18 runs</td>
+        <td class="num">2,943,334</td><td class="num">1,533</td><td class="num">4h 55m</td><td></td></tr>
+    </table>
+  </div>
+  <h3>What these numbers do not include</h3>
+  <div class="row"><div class="body" style="padding-top:12px">
+    <p><strong>Four chains reported nothing</strong> because they were stopped mid-run — three
+    adversarial reviews dispatched on the wrong day, and one export job halted to save budget.
+    Killing an agent loses the measurement as well as the work.</p>
+    <p><strong>This conversation is not counted.</strong> No tool exposes it. Given its length and
+    eight hundred-plus tool calls it is likely a substantial share on top. Your own usage view is the
+    only honest source.</p>
+    <p><strong>The most expensive single chain was 374k</strong>, and roughly a third of it went on
+    phone-layout work that was cancelled once you saw what it implied. A dispatch that misreads scope
+    costs more than choosing the wrong model.</p>
+  </div></div>
+</section>
+
+<section class="panel" data-panel="leagues">
+  <h3>Three leagues, two tiers</h3>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>League</th><th>Platform</th><th style="text-align:right">Teams</th>
+        <th>Scoring</th><th>Treatment</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Westwood</strong></td><td>Yahoo</td><td class="num">10</td>
+          <td>Half-PPR, <strong>stacking</strong> yardage bonuses, INT −2, no kicker, two flex</td>
+          <td><span class="chip ok">deep + opponents</span></td></tr>
+        <tr><td>Ethan's Expert</td><td>Yahoo</td><td class="num">10</td>
+          <td>Yahoo default half-PPR, no bonuses, INT −1, kicker, one flex</td>
+          <td><span class="chip info">generic</span></td></tr>
+        <tr><td>ESPN league</td><td>ESPN</td><td class="num">?</td>
+          <td>Unknown — settings not captured</td>
+          <td><span class="chip info">generic</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <h3>What makes Westwood different</h3>
+  <div class="row"><div class="body" style="padding-top:12px">
+    <p>Yahoo's default scoring is <strong>already half-PPR</strong>, so the receptions difference you
+    might expect isn't there. The real divergence is the <strong>stacking yardage bonuses</strong> —
+    a player crossing several thresholds collects all of them.</p>
+    <p>Those bonuses reward ceiling over floor, which should change how variance is valued. And there
+    is an open question, deliberately unanswered, about whether the platform's own rankings price them
+    at all — a threshold bonus depends on single-game distributions, not season totals, so platforms
+    often skip them.</p>
+  </div></div>
+  <h3>Where the ADP comes from</h3>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>Source</th><th>Format</th><th style="text-align:right">Players</th>
+        <th style="text-align:right">Drafts behind it</th></tr></thead>
+      <tbody>
+        <tr><td>FFC</td><td>Full PPR, 10-team</td><td class="num">213</td><td class="num">3,673</td></tr>
+        <tr><td>FFC</td><td><strong>Half-PPR, 10-team</strong> — your league</td><td class="num">180</td><td class="num">1,187</td></tr>
+        <tr><td>FFC</td><td>Non-PPR, 10-team — mock rooms</td><td class="num">171</td><td class="num">628</td></tr>
+        <tr><td>MyFantasyLeague</td><td>Full PPR proxy</td><td class="num">225</td><td class="num">43</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="panel" data-panel="risks">
+  <h3>Things that are true and uncomfortable</h3>
+
+  <details class="row"><summary><span class="stripe s-crit"></span>
+    <span class="ttl"><strong>The core claim has no evidence behind it</strong></span><span class="chip crit">unproven</span></summary>
+    <div class="body"><p>Availability is the differentiator and nothing in the category ships anything
+    like it. It is calibrated on zero drafts. Until mocks are collected and scored, the survival
+    numbers are an honest estimate and should be labelled as one on screen.</p></div></details>
+
+  <details class="row"><summary><span class="stripe s-warn"></span>
+    <span class="ttl"><strong>The main edge is partly competed away</strong></span><span class="chip warn">finding</span></summary>
+    <div class="body"><p>Positional revaluation is recorded as the board's only edge channel. Yahoo's
+    paid draft tool uses value-over-replacement — the same family of maths. Against anyone in your
+    league who pays for it, that edge narrows.</p></div></details>
+
+  <details class="row"><summary><span class="stripe s-warn"></span>
+    <span class="ttl"><strong>Mock drafts teach the wrong league by default</strong></span><span class="chip warn">now handled</span></summary>
+    <div class="body"><p>Public rooms are standard scoring and standard rosters; yours is three
+    receivers, two flex and no kicker. What transfers is how drafters <em>behave</em>; what does not is
+    how much demand exists per position. Capturing all three scoring formats is what lets that
+    difference be measured rather than assumed.</p></div></details>
+
+  <details class="row"><summary><span class="stripe s-info"></span>
+    <span class="ttl"><strong>Nothing about Yahoo's draft room could be verified firsthand</strong></span><span class="chip info">gap</span></summary>
+    <div class="body"><p>Every Yahoo host blocks research agents by name. Anything certain about what
+    your league sees on screen has to come from you.</p></div></details>
+
+  <details class="row"><summary><span class="stripe s-warn"></span>
+    <span class="ttl"><strong>Your presets have never been what they say they are</strong></span><span class="chip warn">queued</span></summary>
+    <div class="body"><p>Every preset league carries Westwood's scoring while being labelled a platform
+    default. Nobody caught it because the file that builds them asserts the scoring was confirmed
+    against ESPN — and twelve lines later says that check was blocked and never ran. <strong>A
+    confident sentence next to its own contradiction survived in the codebase for days.</strong></p></div></details>
+
+  <details class="row"><summary><span class="stripe s-warn"></span>
+    <span class="ttl"><strong>The app explains itself less than it used to</strong></span><span class="chip warn">queued</span></summary>
+    <div class="body"><p>ADP now shows on three screens and carries the biggest caveat of anything on
+    the board — other people's drafts, at full PPR, against your half-PPR league, with only about 144
+    of 511 players having one at all. It was defined nowhere. Being fixed. The glossary defines 13
+    terms for a board that shows considerably more than 13 things.</p></div></details>
+
+  <details class="row"><summary><span class="stripe s-info"></span>
+    <span class="ttl"><strong>Two numbers quoted in six documents have no source</strong></span><span class="chip info">caught</span></summary>
+    <div class="body"><p>A visual-polish score of 5/10 and a light-mode score of 4/10 are cited across
+    the design record. They trace to a research pass that is logged as completed and whose document is
+    not in the repository. They may well be right; nothing in the repo establishes it. <strong>Treat
+    them as unsourced until re-derived.</strong></p></div></details>
+
+  <details class="row"><summary><span class="stripe s-info"></span>
+    <span class="ttl"><strong>Two of your requests share an id number</strong></span><span class="chip info">now flagged</span></summary>
+    <div class="body"><p>FR-029 and FR-030 each name two different things you asked for, so marking one
+    done leaves its twin looking untouched. The dashboard generator now checks for this on every
+    run.</p></div></details>
+
+  <details class="row"><summary><span class="stripe s-info"></span>
+    <span class="ttl"><strong>Two decisions share a number, on an unmerged branch</strong></span><span class="chip info">caught</span></summary>
+    <div class="body"><p>Found by the check built today, on its first run. They would have landed
+    silently. Left deliberately unfixed so whoever merges that branch resolves it knowingly.</p></div></details>
+</section>
+
+<footer>
+  Built from the repository state on 29 July 2026, evening · figures are measured, not estimated<br>
+  This page is a snapshot and does not update itself. Where a number could not be verified it is
+  absent rather than guessed.
+</footer>
+</div>
+

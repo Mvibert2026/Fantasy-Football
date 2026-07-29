@@ -5,11 +5,11 @@ Per-request files in this directory are the source of truth. Edit a request's ow
 `STATUS:` line, then re-run sync. Protocol: [`README.md`](README.md).
 Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests.md).
 
-**16 requests since freeze.**
+**32 requests since freeze.**
 
 ---
 
-## NEW — 12
+## NEW — 22
 
 | ID | Subject | Raised | Source |
 |---|---|---|---|
@@ -25,6 +25,16 @@ Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests
 | [FR-031](FR-031-consensus-as-an-adjustment-to-bottom-up-not-a-ri.md) | Consensus as an adjustment to bottom up not a ri | 2026-07-29 | pm relay, 2026-07-29 |
 | [FR-032](FR-032-make-the-opponents-screen-functional-during-a-li.md) | Make the opponents screen functional during a li | 2026-07-29 | chat session 2026-07-29 |
 | [FR-033](FR-033-build-a-bottom-up-ranking-from-zero-a-directive.md) | Build a bottom up ranking from zero a directive | 2026-07-29 | chat session 2026-07-29 |
+| [FR-037](FR-037-export-csv-and-export-pdf-do-not-work-low-priori.md) | Export csv and export pdf do not work low priori | 2026-07-29 | chat 2026-07-29, PM session |
+| [FR-038](FR-038-look-at-other-apps-ux-before-committing-to-an-ov.md) | Look at other apps ux before committing to an ov | 2026-07-29 | chat session 2026-07-29, relayed via researcher dispatch |
+| [FR-039](FR-039-late-round-te-is-the-draft-strategy-expression-o.md) | Late round te is the draft strategy expression o | 2026-07-29 | chat 2026-07-29, PM session |
+| [FR-040](FR-040-custom-league-option-in-league-settings-two-hard.md) | Custom league option in league settings two hard | 2026-07-29 | chat 2026-07-29, PM session |
+| [FR-041](FR-041-prose-design-and-relevance-review-of-strategy-gu.md) | Prose design and relevance review of strategy gu | 2026-07-29 | chat 2026-07-29, PM session |
+| [FR-042](FR-042-presets-must-use-standard-scoring-only-westwood.md) | Presets must use standard scoring only westwood | 2026-07-29 | chat 2026-07-29, PM session |
+| [FR-044](FR-044-periodic-table-grid-view-in-draft-colour-coded-p.md) | Periodic table grid view in draft colour coded p | 2026-07-29 | chat 2026-07-29, PM session |
+| [FR-045](FR-045-position-scarcity-reads-every-position-as-behind.md) | Position scarcity reads every position as behind | 2026-07-29 | chat 2026-07-29, PM session |
+| [FR-046](FR-046-make-auto-fill-actually-draft-players-wire-up-th.md) | Make auto fill actually draft players wire up th | 2026-07-29 | chat 2026-07-29, PM session |
+| [FR-047](FR-047-per-opponent-deviation-and-deviation-should-wide.md) | Per opponent deviation and deviation should wide | 2026-07-29 | chat 2026-07-29, PM session |
 
 ## SCOPING — 1
 
@@ -36,16 +46,23 @@ Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests
 
 _None._
 
-## IN PROGRESS — 2
+## IN PROGRESS — 4
 
 | ID | Subject | Raised | Source |
 |---|---|---|---|
 | [FR-024](FR-024-show-adp-on-the-prep-board-the-draft-screen-and.md) | Show adp on the prep board the draft screen and | 2026-07-29 | chat session 2026-07-29 (PM takeover) |
 | [FR-026](FR-026-capture-non-ppr-adp-as-well-alongside-half-ppr.md) | Capture non ppr adp as well alongside half ppr | 2026-07-29 | chat session 2026-07-29 (PM takeover) |
+| [FR-029](FR-029-opponents-screen-must-be-functional-during-a-liv.md) | Opponents screen must be functional during a liv | 2026-07-29 | frontend session, dispatched as "FR-032" in the task brief |
+| [FR-043](FR-043-audit-for-capability-already-built-and-sitting-u.md) | Audit for capability already built and sitting u | 2026-07-29 | chat 2026-07-29, PM session |
 
-## SHIPPED — 0
+## SHIPPED — 4
 
-_None._
+| ID | Subject | Raised | Source |
+|---|---|---|---|
+| [FR-030](FR-030-remove-the-refresh-data-button-since-it-cannot-w.md) | Remove the refresh data button since it cannot w | 2026-07-29 | coordinator relay, mid-session, 2026-07-29 |
+| [FR-034](FR-034-draft-position-must-be-selectable-in-prep-this-i.md) | Draft position must be selectable in prep this i | 2026-07-29 | chat session 2026-07-29 |
+| [FR-035](FR-035-predictions-in-prep-must-be-scoped-to-the-select.md) | Predictions in prep must be scoped to the select | 2026-07-29 | chat 2026-07-29, PM session |
+| [FR-036](FR-036-manual-team-name-entry-for-opponents-in-the-draf.md) | Manual team name entry for opponents in the draf | 2026-07-29 | chat 2026-07-29, PM session |
 
 ## DECLINED — 0
 

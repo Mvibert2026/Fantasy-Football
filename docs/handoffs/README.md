@@ -102,6 +102,11 @@ noticed). So a thread addressed to `design` needs no hop to be *read*: design op
 What still needs a hop is the return leg — every design output arrives as a file for the PM or
 `frontend` to commit, because design cannot land anything itself. Keep `VIA: pm` only where the
 thread expects something committed back.
+`design` has read access to this repo and no write access (`docs/design-protocol.md` §1 — corrected
+here 2026-07-29; this file previously said design could not read the repo at all, which had been
+false for two days and cost the founder repeated hand-relaying of files). Mark a thread to design
+`TO: design VIA: pm` only for the **landing** hop — design produces files but cannot commit them.
+Do not paste file contents into a thread for design to read; name the path and the ref.
 
 ---
 

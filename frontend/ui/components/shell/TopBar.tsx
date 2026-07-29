@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { randomSlot } from '../../data/draftSlot';
 import type { LeagueConfig } from '../../data/league';
 import type { SelectableLeague } from '../../data/league-registry';
 import type { Theme } from './useTheme';
@@ -40,6 +41,8 @@ export function TopBar({
   leagues,
   leagueId,
   onSelectLeague,
+  onSelectSlot,
+  onClearSlot,
   refreshSlot,
   modes = DEFAULT_MODES,
 }: {
@@ -53,6 +56,11 @@ export function TopBar({
   leagues: SelectableLeague[];
   leagueId: string;
   onSelectLeague: (id: string) => void;
+  /** FR-034: sets a local draft-slot override for the current league. Optional so the
+   *  standalone build (ui/StandaloneApp.tsx) can render this bar with no override
+   *  affordance at all rather than a control that silently does nothing. */
+  onSelectSlot?: (slot: number) => void;
+  onClearSlot?: () => void;
   refreshSlot?: ReactNode;
   /**
    * Which mode buttons render, defaulting to all three. The standalone build
@@ -190,6 +198,8 @@ export function TopBar({
         </span>
       </div>
 
+      {onSelectSlot && onClearSlot ? <DraftSlotControl league={league} onSelectSlot={onSelectSlot} onClearSlot={onClearSlot} /> : null}
+
       <button
         title="League settings"
         aria-disabled="true"
@@ -246,6 +256,140 @@ export function TopBar({
           );
         })}
       </div>
+    </div>
+  );
+}
+
+/**
+ * FR-034: draft-slot selector, present in both Prep and Draft since this bar is mounted
+ * for every mode (App.tsx only swaps the body below it). Minimal clicks by design -- one
+ * select, one optional clear, one optional randomise -- and nothing here ever hides the
+ * board behind a modal, matching FR-036's same "usable during a live draft" requirement.
+ *
+ * Range is strictly `1..teams` from the loaded league, never a hardcoded fallback (e.g.
+ * 1-12) -- when `teams` isn't a present Cell yet (loading, or an export that predates
+ * it), this renders a disabled placeholder that says so instead of guessing a range.
+ *
+ * Overridden vs. sourced is never the same visual treatment (Principle #1/#2, and the
+ * same rule FR-036 states explicitly for typed opponent names): the accent colour and
+ * the "· sourced N" suffix only appear when `league.userSlotOverridden` is true, and the
+ * clear ("x") button only exists in that state, since "clear" is meaningless otherwise.
+ */
+function DraftSlotControl({
+  league,
+  onSelectSlot,
+  onClearSlot,
+}: {
+  league: LeagueConfig | null;
+  onSelectSlot: (slot: number) => void;
+  onClearSlot: () => void;
+}) {
+  if (!league || league.teams.kind !== 'present') {
+    return (
+      <div
+        title="Draft slot selection needs league.json:teams, which isn't loaded yet."
+        style={{
+          display: 'flex',
+          flex: 'none',
+          alignItems: 'center',
+          gap: 6,
+          padding: '4px 10px',
+          border: '1px solid var(--line2)',
+          color: 'var(--dim2)',
+          fontFamily: 'var(--font-num)',
+          fontSize: 11,
+        }}
+      >
+        SLOT — (no team count yet)
+      </div>
+    );
+  }
+
+  const teams = league.teams.value;
+  const effective = league.userSlot.kind === 'present' ? league.userSlot.value : null;
+  const overridden = league.userSlotOverridden;
+  const sourced = league.userSlotSourced.kind === 'present' ? league.userSlotSourced.value : null;
+  const options = Array.from({ length: teams }, (_, i) => i + 1);
+
+  return (
+    <div
+      title={
+        overridden
+          ? `Draft slot overridden locally. league.json's own value is ${sourced ?? '—'}.`
+          : "Your draft slot for this league. Overriding it here doesn't touch league.json -- it's local to this browser."
+      }
+      style={{
+        display: 'flex',
+        flex: 'none',
+        whiteSpace: 'nowrap',
+        alignItems: 'center',
+        gap: 6,
+        padding: '4px 10px',
+        border: `1px solid ${overridden ? 'var(--acc)' : 'var(--line2)'}`,
+        background: 'var(--panel2)',
+        fontFamily: 'var(--font-num)',
+        fontSize: 11,
+      }}
+    >
+      <span style={{ color: overridden ? 'var(--acc)' : 'var(--dim2)', letterSpacing: '.05em' }}>SLOT</span>
+      <select
+        aria-label="Your draft slot"
+        value={effective ?? ''}
+        onChange={(e) => onSelectSlot(Number(e.target.value))}
+        style={{
+          flex: 'none',
+          background: 'transparent',
+          border: 0,
+          color: overridden ? 'var(--acc)' : 'var(--txt)',
+          fontFamily: 'var(--font-num)',
+          fontSize: 11,
+          fontWeight: 600,
+        }}
+      >
+        {options.map((n) => (
+          <option key={n} value={n}>
+            {n}
+          </option>
+        ))}
+      </select>
+      {overridden ? (
+        <>
+          <span style={{ color: 'var(--dim2)', fontSize: 10 }}>· sourced {sourced ?? '—'}</span>
+          <button
+            onClick={onClearSlot}
+            title="Clear override, back to league.json's value"
+            aria-label="Clear draft slot override"
+            style={{
+              flex: 'none',
+              width: 16,
+              height: 16,
+              lineHeight: '14px',
+              padding: 0,
+              background: 'transparent',
+              border: '1px solid var(--acc)',
+              color: 'var(--acc)',
+              fontSize: 10,
+            }}
+          >
+            ×
+          </button>
+        </>
+      ) : null}
+      <button
+        onClick={() => onSelectSlot(randomSlot(teams))}
+        title="Rehearse prep from a random slot"
+        aria-label="Randomise draft slot"
+        style={{
+          flex: 'none',
+          padding: '1px 6px',
+          background: 'transparent',
+          border: '1px solid var(--line2)',
+          color: 'var(--dim)',
+          fontSize: 10,
+        }}
+      >
+        rand
+      </button>
     </div>
   );
 }

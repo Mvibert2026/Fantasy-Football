@@ -29,6 +29,11 @@ python scripts/rebuild_database.py --db data/nfl.db
 This document went through three revisions in one day, each correcting the previous one. In
 order, so the history is legible rather than silently overwritten:
 
+<!-- state-claims: ignore-block — the numbered list below narrates superseded conclusions on
+     purpose. Point 1 states the "rankings history is unrecoverable" claim that point 2
+     disproves; without this marker the claim checker reads it as a live assertion. Anything
+     that is still true must live OUTSIDE this block. -->
+
 1. **First pass (scratch `--db` path only, not a clean clone).** Concluded three artifacts were
    permanently unrecoverable: the 2021–2025 rankings history, the founder's 2026 half-PPR
    FantasyPros export, and the 160-pick real 2025 draft. All three were then committed as files
@@ -46,6 +51,8 @@ order, so the history is legible rather than silently overwritten:
 3. **This pass.** Confirmed (2) end to end in this session, found and fixed one further ordering
    bug that pass (2) had not caught, and closed the one remaining code gap: an `adp_snapshots`
    CSV→DB loader. Full detail below.
+
+<!-- state-claims: end-ignore -->
 
 **What this means for the three "unreproducible" artifacts:** two of them (rankings history,
 founder export) turn out to be either re-pullable or already loadable straight from their

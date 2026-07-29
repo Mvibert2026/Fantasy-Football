@@ -83,7 +83,7 @@ Append a row whenever usage data is available.
 |---|---|---|---|---|---|
 | pre-2026-07-26 | Backend | Sonnet, low–moderate | 31 tests, ADRs, measured constant, 24-config matrix | Comfortable | Yes |
 | pre-2026-07-26 | Frontend | Sonnet, effort→5 | Full 38K-char spec port | Hard stop ~97% | **No — false completion claim** |
-| pre-2026-07-26 | Researcher | Opus, 4–5 | Competitive UX + platform + Reddit research | Within session | Yes |
+| pre-2026-07-26 | Researcher | Opus, 4–5 | Competitive UX + platform + Reddit research | Within session | **Unverifiable — 2026-07-29, librarian (FR-043/thread 086): the artifact this row logs as complete does not exist anywhere in the repo or its worktrees. At least six live documents cite its conclusions on paraphrase alone. Do not cite this row as evidence the research happened; a fresh pass exists at `docs/research/competitive-ux-2026-07-29.md`.** |
 | 2026-07-29 | Data Ops | Sonnet | One-command DB rebuild, ADP CSV loader, dependency fixes | **~196k tokens**, 131 tool calls, 27 min | Yes — 17 tests, rebuild measured at 64s |
 | 2026-07-29 | Frontend | Sonnet | Cloud-readiness check + screenshot recipe | **~105k tokens**, 46 tool calls, 8 min | Yes — 202 tests, real screenshots |
 | 2026-07-29 | Frontend | Sonnet | Standalone single-file build, phone WIP + revert, Draft mode restore | **~374k tokens**, 219 tool calls, 40 min | Yes — but ~a third was the phone work the founder then pulled |

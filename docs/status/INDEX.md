@@ -4,7 +4,7 @@
 Session files in this directory are the source of truth. Add a new dated file, then
 re-run sync. Protocol: [`README.md`](README.md).
 
-**17 sessions recorded.**
+**24 sessions recorded.**
 
 ---
 
@@ -398,6 +398,140 @@ this session was scoped to the QB question only. No thread statuses changed.
 
 ---
 
+<!-- 2026-07-29-backend-state-claims.md -->
+
+# 2026-07-29 — backend — a claim checker for live documents (ADR-059)
+
+**Branch:** `worktree-agent-afa13ac8a8bd0c533` (worktree, not merged).
+
+## The premise, checked first
+
+The dispatch said five false claims were found by accident on 2026-07-29 and asked for a
+detector. I checked each against the repo before building anything, because a detector built on
+a wrong account of the failures would encode the wrong checks:
+
+| Claim in the dispatch | What the repo says |
+|---|---|
+| FFC "blocked by robots.txt" in CURRENT-STATE | Confirmed still live, in **two** places (lines 192 and 474), contradicted by `docs/pm/MEMORY.md` §0/§4, `docs/research/source-audit-2026-07.md` (row rewritten to UNBLOCKED) and `FR-023` |
+| ADP capture "observed to succeed" / local task "redundant" | Already corrected in place in CURRENT-STATE, with the correction narrated inline |
+| Predictions tab "absent from the shipped app" | Confirmed still live. `frontend/ui/views/Predictions.tsx` exists and is routed from `App.tsx:167` and `StandaloneApp.tsx:127` |
+| `handoffs/README.md`: "design cannot read this repo" | Confirmed still live at line 99; `docs/design-protocol.md` §1 says the opposite and explicitly calls the README line false |
+| rankings history unrecoverable | Confirmed live in CURRENT-STATE item 9 and in `can-we-rebuild-the-database.md`'s revision history; the same document's pass 2 disproves it (2,540 rows, row-for-row) |
+
+Premise held. No contradiction with a written rule, so I proceeded without escalating.
+
+## What I built
+
+A **closed registry plus a closed document scope** — deliberately not prose analysis.
+
+- `docs/state-claims.toml` — the registry. `[[artifact]]` (path on disk), `[[constant]]` (value
+  read from the file that defines it), `[[status]]` (a named source or capability with a
+  polarity vocabulary), `[[count]]` (measured from a file), `[[ignore]]` and `[[paths.allow]]`
+  (suppressions, each with a written reason).
+- `tools/state_claims.py` — the checker, also a CLI (`python tools/state_claims.py`).
+- `tests/test_state_claims.py` — 21 tests, including the planted-fault proof.
+- `tests/fixtures/state_claims/` — six planted faults with corrected counterparts, plus a
+  two-document contradiction pair.
+
+Three design choices did the real work, and each is a precision decision rather than a coverage
+one:
+
+1. **Only ten "live" documents are scanned.** `docs/status.md`, `docs/status/`,
+   `docs/decisions.md`, numbered handoff threads, `docs/founder-requests/`, `SNAPSHOT-*` and
+   `RUN-*` are never read. They record what was believed then; flagging them would be flagging a
+   document for doing its job, and that is the false-alarm factory that gets a checker switched
+   off. `test_append_only_logs_are_out_of_scope` pins this so a later session cannot widen it
+   casually.
+2. **A live document may narrate a superseded belief if it marks it** — `~~struck through~~`, an
+   `<!-- state-claims: ignore-block -->` region, or a named suppression carrying a reason. I used
+   the region marker once, on `can-we-rebuild-the-database.md`'s "three revisions in one day"
+   list, which is genuinely history sitting inside a live document.
+3. **A `[[status]]` claim with no registered `truth` flags disagreement *between* documents.**
+   That is the cross-document-contradiction class, and it is the only honest form for a fact
+   nobody has settled — it needs no ground truth at all.
+
+Two implementation details were bugs I found by measuring rather than reasoning, and both would
+have made the tool quietly useless:
+
+- Phrases must match across a **soft line wrap**. The real CURRENT-STATE fault reads
+  `FFC remains\n   blocked`; matching a literal single space missed it. The first draft of the
+  checker did exactly that and silently under-reported. Fixed with `[^\S\n]+` joins.
+- Matching must **not** cross a paragraph or heading boundary. A `## Not built` heading sits
+  inside the proximity window of the first sentence under it and manufactures a false positive
+  — it did, on my own corrected fixture, which is how I caught it.
+
+## Planted faults — both directions
+
+Six fixtures, each reproducing a real failure in roughly the words the real document used.
+`{{CONTRACT_VERSION}}` and `{{BOARD_PLAYERS}}` are substituted from the live repo at test time,
+so a *correct* fixture cannot rot into a false one when the real value moves.
+
+| Fixture | Class | Caught | Corrected version silent |
+|---|---|---|---|
+| F1 FFC blocked by robots.txt | source status | yes | yes |
+| F2 Predictions tab absent | existence | yes | yes |
+| F3 design cannot read this repo | capability status | yes | yes |
+| F4 `CONTRACT_VERSION` quoted as 1.13.0 | version | yes | yes |
+| F5 board stated as 511 players | count | yes | yes |
+| F6 rankings history unrecoverable | cross-doc / recoverability | yes | yes |
+| F7 two docs disagreeing on the ADP capture | cross-doc, no ground truth | yes | n/a (pair) |
+
+## Eight live false claims, found and corrected
+
+The checker's first run on the real documents:
+
+| Document | Claim | Corrected to |
+|---|---|---|
+| `CURRENT-STATE.md:419` | Predictions tab absent from the shipped app | removed from "Not built", replaced with a stated correction and the two routing sites |
+| `CURRENT-STATE.md:44` | `CONTRACT_VERSION` is 1.13.0 | 1.14.0 — the file's own generated Build-state table had been right all along |
+| `CURRENT-STATE.md:192` | FFC blocked by robots.txt | FFC unblocked; it is still the wrong *shape* for consensus, which is the point that paragraph was actually making |
+| `CURRENT-STATE.md:474` | FFC remains blocked, founder decision needed | FFC unblocked, decision answered, remaining work is scoping |
+| `CURRENT-STATE.md:55` and `:349` | board is 511 players | 510, measured from `data/export/board.json` |
+| `handoffs/README.md:99` | design cannot read this repo | design has read access, no write access; `VIA: pm` is the landing hop only |
+| `can-we-rebuild-the-database.md:33` | rankings history permanently unrecoverable | wrapped the superseded-conclusions list in an ignore-block, since the document's own pass 2 disproves it two paragraphs later |
+
+After the corrections: `python tools/state_claims.py` → **OK, 10 live documents, no contradicted
+claims.** Zero false positives across roughly 4,000 lines of live prose, and exactly one reasoned
+path allowance (`src/mock_prediction.py`, which `CODE-MAP.md` correctly cites as living on
+`backend/mock-calibration-kickers`, not on main — the allowance itself fails if that branch lands
+or if the mention disappears).
+
+## What it does not catch, stated plainly
+
+**Failure #2 — the ADP capture — is the one it cannot verify.** "Has been observed to succeed"
+and "the local task is now redundant" were false because no run with `event: schedule` had ever
+fired; only a manual `workflow_dispatch` had. That is not readable from a checkout. It is
+registered *truth-less*, so the checker flags the two polarities coexisting across documents but
+**a single document asserting the false version alone still passes.**
+`test_each_document_alone_does_not_fire_on_the_contested_claim` asserts that limitation rather
+than describing it, so the gap is a measured property and not a paragraph nobody rereads. Closing
+it properly needs a step that queries the Actions API — checking `event`, never the commit
+author, since `github-actions[bot]` authors a manual dispatch too, and that is precisely how this
+was got wrong. Raised as thread 083 item 3.
+
+Also not covered, and deliberately: inferring a *presence* claim from free prose (imprecise — the
+exact form, "a doc names a code path that is gone", is covered instead); and `docs/pm/**`, which
+holds the richest live claims in the repo but is outside this role's write boundary, so a
+violation there would produce a red suite with no available fix. One-line change, raised as
+thread 083 item 1.
+
+## Suite
+
+`pytest -q` on this branch: 674 passed, 26 failed, 9 errors. The failing and erroring set is
+**byte-identical to the same run with my changes stashed** — all pre-existing, all DB- or
+snapshot-dependent, plus `tests/test_handoffs.py::test_mailbox_health`, which is red by design
+over a real ADR numbering collision on an unmerged branch and was left alone.
+`tests/test_state_claims.py` alone: 21 passed.
+
+## Documents edited
+
+`docs/CURRENT-STATE.md` (six corrections in place, plus a new Build-state row for the detector),
+`docs/handoffs/README.md` (design's access), `docs/can-we-rebuild-the-database.md` (ignore-block
+around the superseded-conclusions list), `docs/decisions.md` (ADR-059), `docs/ideas-inbox.md`
+(four entries). Thread 083 opened to `pm`.
+
+---
+
 <!-- 2026-07-29-data-ops-db-rebuild.md -->
 
 # 2026-07-29 — Data Ops: single-command database rebuild, closed the ADP-loader gap
@@ -614,6 +748,63 @@ not investigated or touched, per task scope).
   not touched, per the task's explicit file boundary.
 - FFC historical backfill.
 - Model/ranking changes of any kind.
+
+---
+
+<!-- 2026-07-29-data-ops-nflverse-audit.md -->
+
+# 2026-07-29 — data-ops — nflverse unused-data audit
+
+**Task:** audit only, no ingestion. Enumerate every `nflreadpy` loader (23 total, pinned
+`nflreadpy==0.1.5`) against what `data/nfl.db` and `src/ingest_reference.py` /
+`src/ingest_weekly_stats.py` already pull, and identify what's free, licensed, and unused that
+would plausibly matter to a player-level ranking model — specifically checking whether it closes
+any of the coaching or route-participation gaps.
+
+**Worktree setup note:** `data/nfl.db` in this worktree was a 0-byte stub (per
+`docs/environment.md` §4 — sqlite silently creates one on first touch). Copied the real 854.7MB
+file from the main checkout before querying.
+
+**Method:** called every loader not already used by this repo directly against the network
+(nflverse's public GitHub-release mirrors), inspected real `.columns`/`.shape`, cross-checked
+against `sqlite3` queries on the copied `data/nfl.db` (22 tables, matches CURRENT-STATE).
+
+**Findings (full detail in `docs/research/nflverse-unused-data-audit-2026-07-29.md`):**
+
+- 10 of 23 loaders already called by this repo; 13 never called.
+- `load_schedules()` carries `home_coach`/`away_coach` per game, 1999–2026, 7,548 rows total,
+  zero nulls in every season sampled (1999/2010/2020/2025/2026). Not currently ingested.
+  **Partially** closes the coaching gap — head-coach identity only, not coordinator/play-caller
+  duty, so `src/ingest_play_callers.py` (confirmed still parked, zero rows, no table in
+  `data/nfl.db`) remains the right approach for that piece.
+- `load_participation()` carries a `route` column (route type run by the targeted receiver) and
+  `offense_players` (all 11 on-field players) per pass play, 2016–2025, ~45–48K plays/season.
+  This is the "documented proxy calculation" CLAUDE.md §5 anticipates for route data — not
+  currently ingested. Confirmed the three already-ingested NGS tables
+  (`ngs_receiving`/`rushing`/`passing`, 14,731/6,059/5,933 rows, 2016–2025) carry no route field
+  at all — so the existing route-gap claim was accurate for those tables, the miss was never
+  checking `load_participation`.
+- `load_ff_opportunity()` (2006–2025, ~5,200–6,100 rows/season, 159 columns) is a pre-fitted xFP
+  model, not raw data — flagged for a Statistician call before use as a ranking input, not
+  something Data Ops should decide alone.
+- `load_ff_rankings()` attempted, got `403 Forbidden` from the proxy fetching
+  `github.com/dynastyprocess/data` — recorded as blocked, not retried, not worked around.
+- Other unused loaders checked and deprioritized: `load_rosters_weekly` (marginal overlap with
+  `injuries`/`depth_charts_weekly`), `load_ftn_charting` (test-registry #16/#17 pointed here —
+  checked, **no route-participation column exists in it**, that pointer was stale), `load_pfr_advstats`,
+  `load_team_stats`, `load_officials`, `load_trades`, `load_players`/`load_rosters` (no distinct
+  signal over what's already held), `load_pbp`/`load_stats`/`load_ffverse` (raw source or
+  dispatcher/meta, nothing new).
+
+**Rows ingested:** 0 (audit only, per task constraint).
+**Rows quarantined:** 0.
+**Sources attempted:** nflreadpy loaders — all succeeded except `load_ff_rankings` (403 via
+proxy, blocked, recorded).
+**Commit:** see `git log` in this worktree, branch pushed, not merged.
+**Test count:** no code changed; no new/changed tests this session.
+
+**Docs touched:** `docs/research/nflverse-unused-data-audit-2026-07-29.md` (new),
+`docs/CURRENT-STATE.md` (item 10 added, in place), this file.
 
 ---
 
@@ -1043,6 +1234,111 @@ panels, real snake sequence 3/18/23/...) and `standalone-draft-after-pick.png` (
 
 ---
 
+<!-- 2026-07-29-frontend-fr034-035-036-037.md -->
+
+# 2026-07-29 — Frontend: FR-034/035/036/037
+
+Worktree `worktree-agent-ad3fc0f6ee64497b5`, branch of the same name, base `main@4980b29`.
+Final commit: `cce7893`.
+
+## Scope
+
+Dispatched to diagnose and fix FR-035 (Predictions must be scoped to the selected league) and
+build FR-036 (manual opponent team names). Mid-session, scope expanded twice by coordinator
+message: FR-034 (draft-slot selector, Prep + Draft) and FR-037 (remove the "Refresh data"
+button, which turned out not to be FR-030 in this tree — see collision note below).
+
+## FR-035 diagnosis (the specific question asked)
+
+**Re-derivation was already correct; the defect was that nothing on screen named the league.**
+Switched leagues live in a running app (Westwood 10T/16rd/slot3 vs. Ethan's Expert League
+10T/15rd/slot1), screenshot-confirmed the header line, BASELINE column, and "on the clock"
+message all changed correctly on switch. Fix: a `Predicting for <league> · N teams · M rounds ·
+your slot S` line under the Predictions heading, falling back to `league_id` when
+`league_name` is absent, marking an FR-034 override distinctly (accent colour, "overridden,
+sourced N").
+
+**One separate, real bug found and fixed along the way:** `App.tsx`'s league-load effect had no
+guard against out-of-order async resolution. Repeated league switches (not fast-clicking — real
+waits between each) could leave `data` pointing at a stale league while every visible control
+reported the new one selected. Fixed with a standard effect-cancellation flag. Regression test
+confirmed to actually fail without the fix (temporarily disabled the guard, reran, restored).
+
+## Opponents.tsx vs. LiveOpponents.tsx (the specific question asked)
+
+**In this worktree, only `Opponents.tsx` exists — no `LiveOpponents.tsx` anywhere.** It is
+reachable both as its own Prep-mode sidebar screen and, unmodified, as Draft mode's own
+"Opponents" hub tab (`DraftRoom.tsx`'s `AdaptedOpponentsPane` wraps it). Confirmed by grep and by
+screenshot in both surfaces.
+
+**However:** a sibling, unmerged branch (`claude/pm-agent-setup-gobxa0`, commit `59b58cf`) *does*
+carry a real `LiveOpponents.tsx` — a Draft-mode-only reimplementation reading live
+`DraftState.picks` instead of `rosters.json`. That branch was never merged to `main`
+(`origin/main` is still at `4980b29`), so this worktree never saw it. The original dispatch's
+reference to `LiveOpponents.tsx` was accurate for that branch, not for this one — see the
+collision note below for what this means for merging.
+
+## Real cross-branch collision found, logged, not resolved unilaterally
+
+While verifying FR-036, discovered:
+
+1. **FR-034/035/036 numbering collision (self-inflicted, corrected before committing):** ran
+   `tools/founder_requests.py new` against this worktree, which had no FR past 033, allocating
+   034/035 to the wrong subjects. The real, already-allocated files (034=draft slot, 035=predictions,
+   036=opponent names) existed only on `claude/pm-agent-setup-gobxa0` (commits `f987195`/`35854e2`).
+   Fixed by discarding my own uncommitted, wrongly-numbered files and copying the real content via
+   `git show <commit>:<path>` — never merged the branch, never touched anything already committed.
+
+2. **FR-030 numbering collision (pre-existing, both sides real, not self-inflicted):** this
+   worktree's real FR-030 is "run the rankings validation at maximum effort." The sibling branch's
+   commit `59b58cf` independently created its *own* `FR-030-remove-the-refresh-data-button-...md`
+   — same number, different subject, both real, on branches neither saw the other. Filed the
+   refresh-button removal fresh as FR-037 here rather than overwriting the real FR-030 or guessing
+   which branch's FR-030 should win.
+
+3. **Two different implementations of the same fix**, both removing the Refresh button from the
+   hosted site but architecturally different: the sibling branch kept `RefreshData.tsx` and gated
+   it behind `import.meta.env.DEV`; this worktree deleted the component entirely (per this
+   session's explicit instruction). Merging both branches as-is will conflict on `App.tsx` and
+   `RefreshData.tsx`, and separately needs a decision on which Opponents-in-Draft-mode
+   implementation (`AdaptedOpponentsPane`+`Opponents.tsx` here vs. `LiveOpponents.tsx` there) is
+   kept. Not decided here — flagged in `docs/founder-requests/FR-037-...md` for whoever merges.
+
+`python tools/founder_requests.py check` reported "no cross-branch ID collisions" both times,
+despite two real ones existing — worth someone checking why it didn't catch either.
+
+## What shipped, this worktree
+
+- **FR-034**: draft-slot selector (`ui/components/shell/TopBar.tsx`'s `DraftSlotControl`),
+  `1..teams`, present in both Prep and Draft mode, local per-league storage
+  (`ui/data/draftSlot.ts`), single-seam recompute (`ui/data/league.ts`'s
+  `applyUserSlotOverride`) that also recomputes `pickSequence` for the overridden slot (not left
+  stale — would have silently broken RoundGrid's "mine" highlighting and DraftRoom's MY PICKS
+  panel otherwise).
+- **FR-035**: `Predicting for` context line (above), plus the async-race fix.
+- **FR-036**: click-to-edit typed opponent names (`ui/data/opponentNames.ts`,
+  `ui/views/Opponents.tsx`'s `OpponentNameField`), names-only, per-league, survives reload,
+  never blends into any model input, clears to the sourced name (not blank), TYPED marker
+  visually distinct from a sourced name. Works identically in Draft mode's Opponents tab with
+  zero extra code (same component).
+- **FR-037**: Refresh data button removed entirely; freshness line kept via a new `FreshnessNote`
+  in `App.tsx`.
+
+## Evidence
+
+231/231 frontend tests pass (up from 203 at session start: +39 new, -12 removed with
+`refresh.test.tsx`, +1 net for the button-removal regression test), `tsc -b --noEmit` clean.
+Screenshots in `frontend/e2e/artifacts/`: `fr034-*.png`, `fr035-*.png`, `fr036-*.png`,
+`topbar-no-refresh-button*.png` — all looked at directly, not just captured.
+
+## Commits
+
+`e54b83f`, `6a2523a` (pm-preserved WIP through two API outages), `4dc84ec` (async-race fix),
+`3455074` (FR-035 fix + 39 tests), `1775ac6` (screenshots), `b1bd17f` (docs), `cce7893`
+(Refresh button removal). Final: `cce7893`.
+
+---
+
 <!-- 2026-07-29-frontend-hub-adp-captures.md -->
 
 # 2026-07-29 — frontend — draft-hub fold-in, ADP verification, four screenshot backlog threads
@@ -1173,6 +1469,194 @@ docs" class of thing this project's rules say to escalate, not silently fix.
   session's handoff-reply boundary (027/028/029/041/082 only) even though item 1 is now functionally
   closed by this session's job 1 — noted here so the thread's owner can update it, not updated
   directly.
+
+---
+
+<!-- 2026-07-29-frontend-opponents-live.md -->
+
+# Frontend — Opponents live in Draft mode + Refresh data removal — 2026-07-29
+
+**Scope given:** `frontend/**` only. Not `src/`, not `docs/CURRENT-STATE.md`, not `.github/`.
+Dispatched as FR-032 (see numbering note below); a second ask was relayed mid-session by the
+coordinator (remove the Refresh data button on the hosted site).
+
+## What the founder asked for
+
+> "For opponents we will need to fix that.. make it functional for the user."
+
+A prior session (same day) had mounted `Opponents.tsx` into the Draft-mode hub tab and found the
+real limit: it reads roster/next-pick data only from backend `rosters.json`, which is real,
+non-mock completed-draft data. During a live draft that file reflects nothing (no real 2026 draft
+has been logged there), so the tab rendered as a placeholder. This session's job was to make the
+tab actually useful mid-draft.
+
+## Numbering note
+
+The dispatch referred to this request as "FR-032" throughout. `tools/founder_requests.py new` in
+this worktree allocated **FR-029** (this worktree's `docs/founder-requests/` only went up to
+FR-028; `check` reports no cross-branch collision). Filed under FR-029, with the FR-032 label
+preserved in its `SOURCE:` field in case a real FR-032 already exists in a branch this worktree
+doesn't see — flagged for whoever reconciles branches, not resolved unilaterally here.
+
+## What was built
+
+**Found the existing roster-need arithmetic rather than writing a second one**, per the task's own
+instruction: `buildRosterSlots` in `frontend/ui/views/DraftRoom.tsx` (previously private to that
+file, used only to build the user's own MY ROSTER panel from `userPicks` -- a filter of
+`draft.picks` by the user's own `teamSlot`). The function itself was already slot-agnostic; it has
+never looked at which team's picks it's handed. Extracted verbatim, no logic change, to
+`frontend/ui/data/rosterSlots.ts` so a second caller could use the identical arithmetic per team
+instead of re-deriving it. `DraftRoom.tsx` now imports it from there; its own MY ROSTER panel is
+unchanged in behavior.
+
+**New component: `frontend/ui/views/LiveOpponents.tsx`.** Mounted at `DraftRoom.tsx`'s Opponents
+hub tab in place of the old "Opponents is not wired into Draft mode yet" placeholder. For each of
+the league's real team slots (`league.json:teams`), it filters `DraftState.picks` (this session's
+local, in-browser pick log -- the same object `DraftRoom.tsx`'s own MY ROSTER already reads) by
+`teamSlot`, runs `buildRosterSlots`, and renders:
+
+- Real drafted players by roster slot (QB/RB/WR/TE/FLEX/DEF), matching the Prep-mode Opponents
+  card's visual language (bordered team cards, colored position rows, "empty" in dim italic).
+- **STILL NEEDS** chips: real `required - filled` per starter position -- QB/RB/WR/TE/DEF, no
+  fabricated urgency ranking, no predicted next pick.
+- **next #N**: real snake-order arithmetic (`nextPickForSlot`, already existing in `ui/data/
+  draft.ts`, imported not reimplemented) -- the same helper that already computes the user's own
+  next pick.
+- **ON THE CLOCK**: which team slot is currently up, from `teamSlotAtPick(currentOverallPick(...))`
+  -- also already-existing arithmetic, not new.
+- **(you)**: the user's own slot, from `league.json:user_draft_slot`.
+
+**Boundaries honored, not just stated:**
+
+- **No inferred strategy anywhere on this screen.** `opponents.json`'s `positional_tendencies` /
+  `first_pick_by_position` / `consensus_tracking_behaviour` fields are not read by this component
+  at all -- there is no code path that could render them here, not just an unused prop. Verified by
+  a test asserting those strings and "NOT A MODEL INPUT" never appear on this tab
+  (`ui/__tests__/live-opponents.test.tsx`, "STILL NEEDS reflects real unfilled starter counts, not
+  a fabricated tendency").
+- **The two data sources never merge.** This component imports nothing from `rosters.json` --
+  only `opponents.json`'s static `team_name` field (an identity label, not a roster number) is
+  read, the same field the Prep-mode screen already uses for the same purpose. The empty-state
+  text and the populated-state banner both name `rosters.json` explicitly, by contrast, so the
+  distinction is visible on screen, not just true in the code.
+- **Empty state reads as "nothing happened," not as a finding.** Before any pick is entered,
+  `LiveOpponents` renders one sentence ("No picks yet. Mark picks on the Board tab...") and zero
+  team cards -- not a ten-team grid where every team needs every position, which would look like a
+  discovered fact rather than the absence of one. Confirmed live and by test.
+
+**Doc comments updated in place**, not left describing stale behavior: `DraftRoom.tsx`'s own
+module doc previously said Opponents/Predictions were "not yet folded into this pane"; corrected
+to say Opponents is now wired in via `LiveOpponents.tsx` and explain why it isn't a reuse of the
+Prep-mode screen.
+
+## Mid-session addition: remove the Refresh data button
+
+Coordinator relayed, mid-task: **"We also can remove that refresh data button at the top."**
+Reasoning given: `/__refresh` is dev-server-only Vite middleware
+(`server/refresh.ts`'s `configureServer` hook never attaches under `vite build`), and the
+founder's daily use has moved to the hosted static site, where the button can only ever fail.
+
+Verified directly rather than taking the reasoning on faith: built the app (`npm run build`),
+served the real production output with `vite preview`, and confirmed by screenshot that
+`/__refresh` genuinely does not exist there -- this is a compile-time absence (no route registered
+at all), not a flaky-network question, so the fix uses a compile-time signal
+(`import.meta.env.DEV`), not a runtime probe.
+
+`RefreshData.tsx` gained a `refreshAvailable` prop, defaulting to `import.meta.env.DEV`. The
+button renders only when true. **The freshness line is unconditional either way** -- per the
+coordinator's explicit hard requirement, hiding the button must never also hide the fact it
+existed to report (`generated_utc` + the snapshot-freshness fields, contract 1.13.0). Confirmed by
+screenshot: production build shows `exported <timestamp> · snapshot fresh (...)` with no button;
+dev server shows the same text plus the button.
+
+## Evidence
+
+Screenshots taken and looked at (not merely captured) -- `frontend/e2e/artifacts/`:
+
+- **`live-opponents-empty-2026-07-29.png`** -- Draft mode, Opponents tab, zero picks entered.
+  Shows exactly one sentence: "No picks yet. Mark picks on the Board tab and each team's roster
+  will fill in here as the draft happens. This view is built from picks entered in this session
+  (this browser's local draft log), separate from and never merged with backend `rosters.json`
+  -- the Prep-mode Opponents screen's data source, which reflects only real, completed drafts on
+  file." No team cards, no STILL NEEDS chips, nothing that could be mistaken for a finding.
+- **`live-opponents-populated-2026-07-29.png`** -- same tab after seeding 6 real picks across 6
+  different team slots (real board players: Bijan Robinson -> slot 1 "Cucked Commish", Ja'Marr
+  Chase -> slot 2 "Shit Leopards", Josh Allen -> slot 3, the user's own slot, labelled "(you)",
+  Puka Nacua -> slot 4, Jonathan Taylor -> slot 5, Amon-Ra St. Brown -> slot 6). Each card shows
+  only its own player, correct STILL NEEDS chips (e.g. slot 1's RB row went from "×2" to "×1"
+  after Bijan Robinson filled one of two RB starter slots), and real per-team next-pick numbers
+  that check out against the league's real 10-team snake order (slot 1's "next #20" and slot 2's
+  "next #19" both match round-2 snake reversal by hand calculation). Slot 7, on the clock at
+  overall pick 7, is the only card marked "ON THE CLOCK." Slots 8-10 (not yet reached) show fully
+  empty, honest zero state -- real per-team absence, not the global "nothing happened yet" state
+  from the empty screenshot above.
+- **`topbar-dev-2026-07-29.png`** -- dev server (`npm run dev`): "Refresh data" button present,
+  next to the freshness text.
+- **`topbar-prod-2026-07-29.png`** -- real production build (`npm run build` + `vite preview`):
+  button gone; freshness text (`exported 2026-07-29T16:39:37... · snapshot fresh (2d old, max
+  3...)`) still fully present, unchanged from the dev screenshot's text.
+
+**Degrades sensibly with zero picks entered:** confirmed above (the empty-state screenshot) and by
+an explicit test asserting no `live-opponent-slot-*` test id and no "STILL NEEDS" text render
+before any pick exists.
+
+## Tests
+
+- `frontend/ui/__tests__/live-opponents.test.tsx` (new, 4 tests): empty state; each team's card
+  shows only its own picks; STILL NEEDS arithmetic + no inferred-strategy text; on-the-clock badge
+  + real next-pick numbers.
+- `frontend/ui/__tests__/draft-room-recommendation.test.tsx` (1 assertion updated to match the new
+  empty-state text instead of the retired placeholder text).
+- `frontend/ui/__tests__/refresh.test.tsx` (2 new tests): button hidden + freshness text intact
+  when `refreshAvailable={false}`; button shown when `refreshAvailable={true}`.
+
+**Full suite: 209 passed, 0 failed, 23 test files** (`npm test`, this worktree, 2026-07-29).
+`npx tsc -b --noEmit`: clean.
+
+**Fidelity harness:** `docs/design-fidelity.md` names `tools/fidelity.py`; the actual file lives at
+`docs/design-reference/fidelity.py` (a known, already-tracked relocation gap -- see
+`docs/backlog-triage-2026-07-29.md` thread 037 items 3-4, not something to fix unilaterally in this
+session). Its `screens.json` maps `opponents` to route `/draft/opponents`, but this app has no
+router at all (`grep` for `react-router`/`BrowserRouter` in `ui/`/`server/` returns nothing) --
+navigation is in-memory tab state, not URLs. Running the harness as-is would not measure this
+change meaningfully (it would `goto` a path this SPA doesn't route on). Not run this session;
+flagged rather than silently skipped or forced to a misleading result.
+
+## Founder requests logged
+
+- **FR-029** (`docs/founder-requests/FR-029-...md`) -- this Opponents-live request. `SOURCE:` notes
+  the dispatch called it "FR-032."
+- **FR-030** (`docs/founder-requests/FR-030-...md`) -- the Refresh data button removal, relayed
+  by the coordinator mid-session.
+
+Both left `STATUS: IN PROGRESS`, not `SHIPPED` -- this session's own report is not the evidence bar
+per `docs/operating-model.md`; founder review of the attached screenshots is.
+
+## Files touched
+
+- `frontend/ui/data/rosterSlots.ts` (new -- extracted from `DraftRoom.tsx`)
+- `frontend/ui/views/LiveOpponents.tsx` (new)
+- `frontend/ui/views/DraftRoom.tsx` (import shared roster-slot module; mount `LiveOpponents`;
+  doc comment corrected)
+- `frontend/ui/components/RefreshData.tsx` (`refreshAvailable` prop, default from
+  `import.meta.env.DEV`)
+- `frontend/ui/__tests__/live-opponents.test.tsx` (new)
+- `frontend/ui/__tests__/draft-room-recommendation.test.tsx` (assertion updated)
+- `frontend/ui/__tests__/refresh.test.tsx` (2 new tests)
+- `frontend/e2e/live-opponents-shot.mjs`, `frontend/e2e/topbar-prod-shot.mjs` (new capture
+  scripts, tracked per the existing `e2e/` convention)
+- `frontend/e2e/artifacts/live-opponents-empty-2026-07-29.png`,
+  `live-opponents-populated-2026-07-29.png`, `topbar-dev-2026-07-29.png`,
+  `topbar-prod-2026-07-29.png` (new, tracked)
+- `docs/founder-requests/FR-029-...md`, `FR-030-...md` (new), `docs/founder-requests/INDEX.md`
+  (regenerated)
+
+## Not done / explicitly out of scope this session
+
+- Thread 027 (Prep-mode Opponents screenshot) was not touched -- different screen
+  (`Opponents.tsx`, backend-`rosters.json`-backed), not modified by this session's work.
+- The `fidelity.py` relocation (backlog thread 037 items 3-4) was not fixed here.
+- `docs/CURRENT-STATE.md` was intentionally not edited -- out of this dispatch's stated boundary.
 
 ---
 
@@ -1662,6 +2146,216 @@ were captured at full PPR for a half-PPR league. FFC publishes half-PPR at 10 te
 
 ---
 
+<!-- 2026-07-29-ranker-research-pass-1.md -->
+
+# 2026-07-29 — ranker — bottom-up research pass 1: where is the edge, and is it reducible at all
+
+**Task.** Opening research pass for the founder's bottom-up ranking. Explore widely, commit to
+nothing, ship no model. Answer first how much of a season's variance is reducible at all, then
+survey four candidate edge channels cheaply. Deliverable:
+`docs/ranking/bottom-up-research-pass-1.md`.
+
+**Effort tier.** Opus/xhigh, per `.claude/agents/ranker.md`. Statistical methodology and model
+design, CLAUDE.md §9.
+
+## Premise check, done before any work
+
+Every load-bearing claim in the brief was checked against the repo and holds — with one
+correction that turned into the session's main finding. The "consensus explains 0.16-0.27"
+figure is real (`docs/data-contract.md:95`) but it is the R² of the *consensus-rank curve*, not a
+property of the game; the same curve fitted on realised finish rank has R² 0.91-0.98. The QB
+slope series (`docs/ideas-inbox.md:229`) is real and reproduces; its *interpretation* is now
+contested.
+
+## What was measured
+
+Five scripts, read-only handle on `data/nfl.db`, points scored through the real
+`src/scoring.py` league config. **Season 2025 was never loaded** — not for features, not for
+evaluation, not once. Universe frozen from season N−1 before N is opened, so busts and zero-game
+seasons count. Bootstrap CIs resample seasons, not players.
+
+1. An **oracle ladder** on season points (folds 2010-2024): naive baselines, consensus where it
+   exists, and two impossible predictors that know exactly one thing about the target season.
+2. A **three-way variance decomposition** of season ppg into stable player level, real
+   season-specific shift, and week-to-week noise — the first from adjacent-season correlation
+   (never the middle season), the third from within-season split-half.
+3. **Bonus arithmetic**: every player-season 2009-2024 scored twice, with and without the
+   stacking bonuses.
+4. **Regime curves**: `points ~ a + b·ln(rank)` fitted per position per season, 1999-2024, on
+   realised finish rank *and* on consensus rank, side by side.
+5. **Two independent bounds on the team channel**: a perfect-foresight team-volume oracle, and a
+   team fixed-effect ANOVA on prediction residuals against its own chance expectation.
+
+## Findings, all exploratory, none registered
+
+**The variance question has an answer and it is uncomfortable.** At WR, of observed season-ppg
+variance: 12.5% week-to-week noise, 20.1% real season-specific change, 52.3% already priced by
+consensus, ~15.1% stable quality left unpriced. Availability is the bigger unexplained block and
+is near-unforecastable (prior games predicts games at r = 0.09-0.18). **The founder's edge is not
+in forecasting a player's rate.**
+
+**The shipped board's rank curve confounds positional value with market skill.** Realised QB value
+spread is at an era *high* (era-mean slope −72.9 in 2021-2024 vs −57 to −59 before) while the
+consensus-fitted slope fell. TE shows the same pattern; RB and WR do not. If that reading is
+right, the recency-weighting fix on record would make the board chase market noise. **Opened
+thread 085 to `strategist` rather than acting** — I do not rule on my own work, and this argues
+against another agent's finding.
+
+**TE is the position with unpriced stable signal**, on three independent lines: the ledger
+(0.336 unpriced vs 0.151 at RB/WR), consensus failing to beat prior-season ppg there
+(0.303 vs 0.407), and the prior prototype's only CI-clear VBD win.
+
+**Two data gaps closed by deciding not to buy them.** The whole team-environment channel —
+coaching a strict subset — is bounded at ≤ +0.055 τ by a *leaky, generous* oracle and shows zero
+excess fixed-effect variance at every position. Coaching staff history and Vegas implied totals
+should not be funded on this evidence.
+
+**The bonus channel is now quantified for the first time**: half a positional rank of realised
+reordering, less ex ante, and cross-positional rather than within-position (~6.8 points of
+relative VBD between WR and TE). Real, small, and not the structural edge it has been called.
+
+## Things I got wrong or nearly got wrong, recorded deliberately
+
+- **Regression to the mean nearly became a finding.** Bucketing consensus residuals by consensus
+  tier showed top-12 "underperforming" everywhere. That is Galton, not market error. Caught and
+  removed by de-trending before anything was written down.
+- **I rebuilt the V3 self-inclusion leak.** My first team-environment oracle let a player's own
+  production into his team's total — the exact leak the ext-2 session found and named. Rebuilding
+  it with self-exclusion produced a numerically unstable specification with negative τ, which I
+  discarded as a broken spec rather than reporting as a negative result. The leaky version is
+  reported as what it is: a generous upper bound.
+- **The calibration prior applied to my own output.** Two consensus-residual patterns look like
+  good stories (RB touchdown regression, WR post-injury over-rating). Both are r² ≈ 0.03 on n=4
+  seasons with ~16 uncorrected comparisons. Recorded at half weight as hypotheses; neither is
+  proposed as a factor.
+
+## Repo defect fixed in passing
+
+`tools/handoffs.py:31` — `ROLES` did not include `ranker` although `.claude/agents/ranker.md`
+exists, so this role could not open a correctly attributed thread. One-line addition.
+
+## Threads opened
+
+- **084 → `data-ops`**: deepen expert consensus history before 2021. This is the only measured
+  data gap that still binds; n=4 caps every market-relative claim below significance permanently.
+- **085 → `strategist`**: rule on the rank-curve confound, and register (or reject) the
+  decomposition experiment. No confirmatory run happens without it.
+
+## Where I would go next
+
+The decomposition experiment in thread 085 — it is the only candidate that touches a live defect
+in a shipped artefact, needs no new data, is few-parameter, and is testable on 26 seasons rather
+than 4. Runner-up and close: a TE arm built on `snap_counts` (2013-2025, 324,611 rows, already in
+the database, never read by the prototype) as a labelled route-participation proxy.
+
+---
+
+<!-- 2026-07-29-researcher-competitive-ux.md -->
+
+# 2026-07-29 · researcher · competitive UX ahead of a possible frontend overhaul
+
+**Role:** researcher (Opus, effort 4–5) · **Type:** research only, nothing built · **Shell:** none
+
+## What was asked
+
+The founder is weighing a major frontend overhaul and wants to know what good looks like first —
+*"features of other apps out there to see if we want to include them, or looking at good UI/UX
+features."* He also corrected the PM's framing: **this is a multi-league tool, three leagues at
+least, and draft position must be selectable in prep** (FR-034). Four questions: what the good ones
+do well (weighted toward under-the-clock, density, uncertainty, multi-league/multi-slot), what they
+do badly, what exists that this project has not considered, and what to deliberately not build.
+
+## Artifact
+
+`docs/research/competitive-ux-2026-07-29.md` — conclusion-first, every factual claim tagged
+`[VERIFIED]` / `[SNIPPET]` / `[SECONDARY]` / `[GAP]` / `[ANALYSIS]`.
+
+## Headline
+
+**The evidence weakens the case for an overhaul rather than strengthening it.** ESPN's 2025 redesign
+is the category's cautionary case and the verbatim complaints are about density specifically
+(*"so zoomed in, can barely see any of the roster"*, *"everything just blends together"*). The prior
+competitive UX pass already concluded the fix here was token-level, and that work shipped. What the
+evidence *does* support is a scoped structural change: league and slot as first-class selectable
+state, uncertainty surfaced on the board row, and three or four on-the-clock affordances.
+
+Three to steal: (1) publish the uncertainty already computed at the point of decision — Draft Sharks
+ships 80%/95% confidence prediction limits per player plus a published MAE, ROC-AUC and calibration
+plot, so the honest version is commercially survivable; (2) rehearsing from a *randomised* draft slot
+as a prep loop, not a settings value; (3) modelling actual league-mates from your own league's draft
+history (FantasyPros "Draft Intel") — this project holds 160 real 2025 picks and spends them only on
+λ. Three to avoid: spending an overhaul on whitespace, an ambient "trending/recommended" feed (the
+one feature ESPN users explicitly asked to have removed), and live platform sync (ToS-blocked here
+*and* the category's most common in-draft failure).
+
+**One correction to prior work:** thread 061 concluded *"no competitor found publishes calibration
+evidence."* That needs narrowing — it holds for availability modelling, but Draft Sharks publishes
+out-of-sample metrics and a reliability check for its injury model. The defensible claim is
+pre-registered calibration of the *availability* model specifically, which this project still cannot
+make at 1 of ~30 mocks.
+
+## Three things that had never been considered
+
+1. **An agent-facing MCP surface instead of an in-app chatbot.** STACKED ships a hosted, OAuth-scoped,
+   read-only MCP endpoint exposing 20 tools to Claude/ChatGPT/Codex `[VERIFIED]`. This dissolves the
+   hallucination trade-off that caused the LLM prose renderer to be deferred, rather than resolving
+   it. Recorded as an option, explicitly **not** recommended as work — no consumer, out of Phase 1.
+2. **League-mate tendency modelling from your own league's history.**
+3. **The product as the *second* screen.** Every screen spec assumes this app is the screen being
+   looked at. On draft day it will be beside Yahoo's draft room. Nothing in the repo addresses that.
+
+## Decided, not escalated
+
+- **Did not halt on the premise, but recorded three challenges** (§0.5 of the artifact): the thread
+  061 audit is in `docs/research/`, not `docs/reviews/`; a frontend overhaul sits outside written
+  Phase 1 scope per `CLAUDE.md` §2/§8 and needs a spec amendment rather than a sprint; multi-league is
+  *not* a contradiction with §1 because one founder with three leagues is still one user.
+- **Escalating, and it is the reason this dispatch was partly unavoidable rework:** the prior
+  **competitive UX research artifact does not exist in this repository.** `docs/operating-model.md`'s
+  budget table logs the pass as completed and verified, and at least six live documents cite its
+  conclusions (`design-handoff/HANDOFF-NOTES.md`, `design-handoff/README.md` Addendum 3,
+  `handoffs/030`, `handoffs/047`, `adr-drafts/ADR-A`, `screenshot-checklist.html`). I searched the
+  whole tree including every agent worktree. Its conclusions survive only as paraphrase inside the
+  documents that consumed them. **This project has now bought the same research twice.**
+- **Honoured every recorded block rather than routing around it.** `www.reddit.com` was refused by the
+  tool outright and is the single largest hole in the voice-of-customer section — recorded, not
+  worked around. ESPN/Yahoo/CBS not attempted. `forums.footballguys.com` and `www.fantasylife.com`
+  both had relevant material surface in search and were left unfetched to stay consistent with the
+  blocks recorded in thread 009 and the Yahoo audit, even though `fantasylife.com/articles/` is not
+  robots-disallowed. Flagging that path-level loophole rather than exploiting it alone.
+- **Refused to convert a `[GAP]` into a number** in three places: the visual form of Boris Chen's
+  tier charts (output is a PNG my tools cannot read), what a BeerSheet contains (page carries only
+  download links), and whether any user anywhere has asked for uncertainty display (every search
+  returned vendor marketing). That last one is flagged in the artifact as the gap that would most
+  change the confidence of the headline recommendation.
+- **Flagged sample quality as the main caveat, including where it agreed with us.** Five of the
+  richest sources are vendors describing their own products; the best competitor comparison is
+  written by a competitor; the App Store review sets are curated by Apple and skew positive. And the
+  ESPN density finding is exactly what this repo already believed — I went looking for it and found
+  it, and did not look as hard for a disconfirming source.
+
+## Not done — no shell in this session
+
+This container has no Bash tool, so `python tools/handoffs.py new` and
+`python tools/founder_requests.py new` could not be run. Hand-typing an ID is refused (threads
+043/049/053, ADR-048). Two bodies are staged with their exact allocator commands:
+
+- `docs/research/HANDOFF-BODY-unallocated-competitive-ux-2026-07-29.md` (researcher → pm, frontend)
+- `docs/founder-requests/NEW-look-at-other-apps-ux-before-committing-to-an-overhaul.md`
+
+Also not run: `python tools/status_log.py sync` to regenerate `docs/status/INDEX.md`, and
+`python tools/state.py --apply`. `docs/CURRENT-STATE.md` was **not** edited — nothing in this
+session changed build state, and this is research, not a state change.
+
+## Fourth session to report it
+
+`docs/ideas-inbox.md` still carries unresolved merge-conflict markers (`<<<<<<< HEAD`, `=======`,
+`>>>>>>>`) around the strategist PR-004 and backend ADR-057/ADR-059 entries. Both sides look like
+real work. I appended below them without touching either side. Three prior sessions reported the same
+thing.
+
+---
+
 <!-- 2026-07-29-researcher-historical-adp.md -->
 
 # 2026-07-29 · researcher · historical preseason ADP availability
@@ -1739,6 +2433,97 @@ allocated for this work — the reply went on the existing thread 055, which is 
 `docs/ideas-inbox.md` append.
 </content>
 </invoke>
+
+---
+
+<!-- 2026-07-29-researcher-missing-inputs.md -->
+
+# 2026-07-29 · researcher · sourcing the three unbuilt inputs
+
+**Task:** research only — establish what exists and on what terms for the three inputs `CLAUDE.md`
+§5 names but that were never built: Vegas odds, coaching staff history, route participation.
+Build nothing, ingest nothing, write no scraper.
+
+**Output:** `docs/research/missing-inputs-sourcing-2026-07-29.md`.
+
+---
+
+## What was done
+
+Read first, as instructed: `docs/CURRENT-STATE.md`, `docs/environment.md`, `docs/pm/MEMORY.md` §4,
+`docs/research/source-audit-2026-07.md`, `CLAUDE.md` §5/§10. Then read
+`docs/test-registry.md` (rows 11, 16/17, 29/29b/30), `docs/data-availability.md` §7.9,
+`docs/deferred.md`, `docs/research/tier1-usage-source-inventory-2026-07.md`, and
+`docs/handoffs/054-ftn-and-sleeper-harvest.md`.
+
+Roughly 30 external fetches/searches. Every claim in the output document is tagged `[VERIFIED]`,
+`[SNIPPET]`, `[SECONDARY]` or `[GAP]`. No `[GAP]` was filled.
+
+## Premise challenges raised, not resolved unilaterally
+
+1. **The dispatch calls Vegas odds "probably the highest-value missing input."
+   `docs/test-registry.md` rates it Tier 0, edge "Low", and defines Tier 0 as "having them is not an
+   edge" — while rating route participation (#17) and coordinator continuity (#29) "High".** That is
+   a contradiction between the task framing and a written project document. I did the research on all
+   three as asked, but did not adopt the ordering as fact; the recommendation is decided on the
+   evidence gathered. Escalated in the output document §0(b), for PM/founder to settle.
+2. Minor citation slip: the dispatch attributes the MFL retrospective-aggregate trap to `CLAUDE.md`
+   §6.1; it is actually recorded in `docs/CURRENT-STATE.md` open item 2 and `docs/pm/MEMORY.md` §4.
+3. `docs/environment.md` describes a Windows conda box with a `PreToolUse` hook. This session ran in
+   a Linux cloud container **with no shell tool of any kind** — read/write/grep/glob/web only. Not a
+   conflict to resolve, but it meant **zero `[MODAL-SAMPLED]` evidence was possible**: no `nflreadpy`
+   call, no `data/nfl.db` query, no API call needing a key. Several gaps in the report are one
+   Python query away for anyone with a shell, and the report says which.
+
+## Headline findings
+
+- **Vegas game lines are not a sourcing problem.** `nflreadpy.load_schedules()` already carries
+  `spread_line`, `total_line`, four odds columns and two moneylines, CC-BY-4.0, $0, from 1999. Implied
+  team total is arithmetic on two of them. The repo references none of these columns anywhere in
+  `src/` (grepped). **The one gap that matters — opening vs closing line — is undocumented**, and the
+  report explains precisely where that bites (season-N in-season use) and where it does not
+  (season N−1 aggregates, which is what the backtest rule permits anyway).
+- **The Odds API is the only odds source whose terms permit display to a third party.** Genuine
+  10-minute point-in-time snapshots from 2020-06-06, paid-plans-only, historical requests at 10×
+  credits, cheapest usable tier **$30/month**. **It has no NFL season-win-totals market** — verified
+  against their sport-key list, so it must not be bought expecting that.
+- **Season win totals: covers.com/sportsoddshistory, 1999–2026, $0, fetch permitted, display
+  prohibited.** Sample-quality caveat is the decisive finding: the 2020 page is dated "As of
+  September 10, 2020"; the **2012 page carries no date at all.** n = 2 of 28 seasons and they
+  disagree on the property that determines look-ahead safety.
+- **Coaching staff — the real finding of the session.** PFR re-verified as blocked today (both
+  `robots.txt` and `sports-reference.com/data_use.html` return HTTP 403; recorded and stopped).
+  nflverse confirmed to carry head coaches only. **Wikipedia's `Template:NFL final staff` is
+  transcluded on 1,062+ mainspace articles spanning 1946–2024, names offensive and defensive
+  coordinators, is reachable through the official MediaWiki API, and is CC BY-SA 4.0 — fetch *and*
+  display both permitted.** Two hazards flagged: I verified only two articles, both Atlanta, so
+  per-team-season population rate is a `[GAP]`; and the template is *final* staff, an end-of-season
+  end-state with no `as_of_date`, which is a genuine look-ahead problem for a preseason input.
+- **Route participation: record is still accurate.** No routes-run column in nflverse. The
+  participation `route` field describes only the *targeted* receiver's route, not who ran routes.
+  The defensible proxy is pass-play presence via `offense_players`, 2016–2024 only, with a
+  **systematic position-correlated bias** (overstates blocking-heavy RBs and inline TEs) that must be
+  named in the column and not just called "a proxy". Fantasy Points sells real route data and its ToS
+  forbids automated collection outright; its price is a `[GAP]` because the page renders client-side.
+  Thread 054 (the founder's existing, unaudited FTN subscription) is the cheaper next move and was
+  deliberately not duplicated.
+
+**Recommendation: coaching staff first** — it is the only one of the three that ungates a
+registry item rated High edge, and the only one whose licence permits display.
+
+## Not done, and why
+
+- **No handoff thread was opened or replied to.** This task named no thread, and the three open
+  `researcher` threads (054, 057, 070) are different asks. A new thread would need
+  `python tools/handoffs.py new` for its ID, and IDs must never be hand-typed or computed from a
+  directory listing (the 043/049/053 and ADR-048 collisions). **No shell tool was available in this
+  session**, so the allocator could not be run. Flagged for the coordinator.
+- **Nothing was committed** — same reason: no shell. Files written: this log and
+  `docs/research/missing-inputs-sourcing-2026-07-29.md`. `python tools/status_log.py sync` has not
+  been run, so `docs/status/INDEX.md` is stale by one entry.
+- No founder statement occurred in this session, so no `docs/founder-requests/` entry was created.
+- `docs/CURRENT-STATE.md` not edited: this session changed no build state, only added a research
+  document.
 
 ---
 

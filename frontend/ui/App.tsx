@@ -4,7 +4,6 @@ import { NotBuilt } from './components/shell/NotBuilt';
 import { NAV_MAIN, SOON_ITEMS, Sidebar, type ScreenId } from './components/shell/Sidebar';
 import { TopBar, type Mode } from './components/shell/TopBar';
 import { useTheme } from './components/shell/useTheme';
-import { RefreshData } from './components/RefreshData';
 import { Assistant } from './views/Assistant';
 import { Availability } from './views/Availability';
 import { Board } from './views/Board';
@@ -15,7 +14,8 @@ import { Opponents } from './views/Opponents';
 import { Predictions } from './views/Predictions';
 import { StrategyGuide } from './views/StrategyGuide';
 import { buildRows } from './data/board';
-import { buildLeagueConfig } from './data/league';
+import { applyUserSlotOverride, buildLeagueConfig } from './data/league';
+import { clearSlotOverride, loadSlotOverride, saveSlotOverride } from './data/draftSlot';
 import { DEFAULT_LEAGUE_ID, fetchSelectableLeagues, type SelectableLeague } from './data/league-registry';
 import { loadDataset, type Dataset } from './data/load';
 
@@ -64,28 +64,74 @@ export function App() {
   // see the App() doc comment above -- this only enriches its context string.
   const [draftPick, setDraftPick] = useState<number | null>(null);
 
-  // Bumping this re-runs the load, which is how the Refresh control applies new exports
-  // without a page reload.
-  const [reloadKey, setReloadKey] = useState(0);
-
   const [leagues, setLeagues] = useState<SelectableLeague[]>([{ id: DEFAULT_LEAGUE_ID, label: 'Default league' }]);
   const [leagueId, setLeagueId] = useState<string>(DEFAULT_LEAGUE_ID);
 
+  // FR-034: draft-slot override, local and per-league (ui/data/draftSlot.ts), same
+  // storage shape/lifecycle as draft state. Re-read whenever the league changes so a
+  // switch never carries one league's override into another's -- the exact leak FR-034
+  // explicitly rules out.
+  const [slotOverride, setSlotOverride] = useState<number | null>(() => loadSlotOverride(leagueId));
   useEffect(() => {
-    fetchSelectableLeagues().then(setLeagues);
-  }, [reloadKey]);
+    setSlotOverride(loadSlotOverride(leagueId));
+  }, [leagueId]);
+
+  function setDraftSlotOverride(slot: number) {
+    saveSlotOverride(leagueId, slot);
+    setSlotOverride(slot);
+  }
+  function clearDraftSlotOverride() {
+    clearSlotOverride(leagueId);
+    setSlotOverride(null);
+  }
 
   useEffect(() => {
+    fetchSelectableLeagues().then(setLeagues);
+  }, []);
+
+  // Found while verifying FR-036's persistence (not part of that request, but a real
+  // bug surfaced by switching leagues repeatedly): this effect had no guard against
+  // out-of-order async resolution. loadDataset(leagueId) is a Promise with no
+  // cancellation; if leagueId changes again before it resolves, the OLD call is still
+  // in flight and can resolve *after* the new one, overwriting `data` with a dataset
+  // for a league that is no longer selected -- `leagueId` (state) and `data.league`
+  // (what's rendered) silently disagree, with no error and no loading state to
+  // signal it. That's a Principle #3 violation, and a worse one than the principle's
+  // usual case: not "still holds the pre-edit value," but "holds an actively wrong
+  // value that looks current." Reproduced directly: switch to a non-default league,
+  // back to default, then to the same non-default league again -- `data` can end up
+  // never updating from the "back to default" load, while every UI affordance
+  // (the league <select>, TopBar's pill) reports the new league as selected.
+  // Standard fix: an effect-scoped cancellation flag via the cleanup function, so a
+  // stale resolution becomes a no-op instead of a write.
+  useEffect(() => {
+    let cancelled = false;
     setData(null);
     setError(null);
     setFocusedPlayer(null);
-    loadDataset(leagueId).then(setData, (e: unknown) =>
-      setError(e instanceof Error ? e.message : String(e)),
+    loadDataset(leagueId).then(
+      (d) => {
+        if (!cancelled) setData(d);
+      },
+      (e: unknown) => {
+        if (!cancelled) setError(e instanceof Error ? e.message : String(e));
+      },
     );
-  }, [reloadKey, leagueId]);
+    return () => {
+      cancelled = true;
+    };
+  }, [leagueId]);
 
   const rows = useMemo(() => (data ? buildRows(data) : []), [data]);
-  const league = useMemo(() => (data ? buildLeagueConfig(data) : null), [data]);
+  // FR-034: the override is applied once, here, so every consumer below (Board,
+  // DraftRoom, PlayerDetail, Predictions, RoundGrid, the assistant) reads the
+  // overridden userSlot/pickSequence automatically -- no per-screen change needed,
+  // and no screen can accidentally read the un-overridden `league.json` value instead.
+  const baseLeague = useMemo(() => (data ? buildLeagueConfig(data) : null), [data]);
+  const league = useMemo(
+    () => (baseLeague ? applyUserSlotOverride(baseLeague, slotOverride) : null),
+    [baseLeague, slotOverride],
+  );
 
   // league.json:league_name (contract 1.7.0+) is a better label than "Default
   // league" once it's actually loaded -- overlaid here rather than baked into the
@@ -199,9 +245,10 @@ export function App() {
         leagues={displayLeagues}
         leagueId={leagueId}
         onSelectLeague={setLeagueId}
+        onSelectSlot={setDraftSlotOverride}
+        onClearSlot={clearDraftSlotOverride}
         refreshSlot={
-          <RefreshData
-            onApplied={() => setReloadKey((k) => k + 1)}
+          <FreshnessNote
             boardGeneratedUtc={data?.board.generated_utc ?? null}
             snapshotAgeDays={data?.board.snapshot_age_days ?? null}
             snapshotMaxAgeDays={data?.board.snapshot_max_age_days ?? null}
@@ -218,5 +265,60 @@ export function App() {
         </AssistantDock>
       ) : null}
     </div>
+  );
+}
+
+/**
+ * The founder asked twice for the "Refresh data" button to be removed (recorded, but
+ * the first ask was never actioned) -- it called a dev-server-only endpoint
+ * (`/__refresh`, `server/refresh.ts`) that has never existed on the hosted static
+ * build, so on the live site every click could only fail. Present-but-inert is the
+ * one state this project's own standing rule rules out (see the module docs on
+ * DraftRoom/Season mode's "not built" panes for the same principle applied
+ * elsewhere) -- so the button and the component behind it (`RefreshData.tsx`) are
+ * gone entirely, not merely hidden in production.
+ *
+ * The freshness line survives, unconditionally -- it is real information
+ * (`board.json:generated_utc` and the snapshot-freshness fields, contract 1.13.0),
+ * and the button was never its source, only something sitting upstream of it. This
+ * mirrors `StandaloneApp.tsx`'s `StandaloneFreshnessNote`, the working pattern
+ * already in this codebase for "the note without the button" -- not reinvented here,
+ * just adapted for the live app (this one still gets fresher data on a real page
+ * reload or a league switch; the standalone build never does, hence its extra
+ * "static snapshot, not live" clause, correctly absent here).
+ */
+function FreshnessNote({
+  boardGeneratedUtc,
+  snapshotAgeDays,
+  snapshotMaxAgeDays,
+  snapshotStale,
+}: {
+  boardGeneratedUtc: string | null;
+  snapshotAgeDays: number | null;
+  snapshotMaxAgeDays: number | null;
+  snapshotStale: boolean | null;
+}) {
+  const hasFreshness = snapshotAgeDays !== null && snapshotMaxAgeDays !== null && snapshotStale !== null;
+  const freshnessText = hasFreshness
+    ? `snapshot ${snapshotStale ? 'STALE' : 'fresh'} (${snapshotAgeDays}d old, max ${snapshotMaxAgeDays}d)`
+    : 'snapshot freshness not exported by backend';
+  return (
+    <span
+      className="num"
+      data-testid="freshness-note"
+      title="board.json:generated_utc is the export-file timestamp. snapshot_age_days/snapshot_max_age_days/
+        snapshot_stale are src/freshness.py's separate staleness check (T5), attached to the export since
+        contract 1.13.0. Reload the page, or switch leagues, to re-check against the latest export."
+      style={{
+        fontSize: 11,
+        color: 'var(--dim2)',
+        whiteSpace: 'nowrap',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        minWidth: 0,
+      }}
+    >
+      {`exported ${boardGeneratedUtc ?? '—'} · ${freshnessText}`}
+    </span>
   );
 }

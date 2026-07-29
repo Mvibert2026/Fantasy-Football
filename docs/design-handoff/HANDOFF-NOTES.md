@@ -33,7 +33,14 @@ colours desaturated so saturated amber reads as attention only. Pinned 26 Jul 20
 ## What changed this round
 
 A competitive UX research pass scored our visual polish 5/10 and our light mode 4/10 — middle of
-the pack — and was explicit that the fix is token-level, not a redesign. The mandate was to raise
+the pack. **Librarian correction, 2026-07-29 (FR-043 audit, thread 086):** that pass's artifact is
+not in this repository and could not be located in any agent worktree. The 5/10 and 4/10 figures
+above are unverifiable — they survive only as this paraphrase. Treat them as an unconfirmed prior,
+not a measured score, until either the original artifact turns up or the pass is re-run (a re-run,
+`docs/research/competitive-ux-2026-07-29.md`, reached the same "token-level, not a redesign"
+conclusion independently — see that document for citations that do exist). This does not change
+the recommendation below, which the 2026-07-29 pass reaffirms on its own evidence. It was explicit
+that the fix is token-level, not a redesign. The mandate was to raise
 production quality **without losing information per screen**, because the cautionary case (ESPN's
 2025 redesign) spent its budget on type size and imagery and users experienced it as seeing less.
 Row counts are unchanged.

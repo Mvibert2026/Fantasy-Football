@@ -22,6 +22,51 @@ factor at a time.
 
 ---
 
+## The edge is not where the project assumed
+
+Bottom-up work here has been framed as *build better projections of yards and touchdowns*, then
+deprioritised on the grounds that everyone does that. **Both halves of that were wrong.**
+
+**Consensus rank explains 0.16–0.27 of the variance in what a player actually scores.** That number
+is on the board's own screen. If projection were a solved problem it would be high. **Two-thirds of
+the variance is unexplained**, and nobody here has asked how much of that is reducible signal versus
+irreducible noise — injury, game script, randomness. **Ask it early.** It bounds everything else you
+could do, and it is answerable.
+
+Four candidate edge channels. Range across all of them before committing:
+
+1. **Ceiling and variance, priced for THIS league.** Stacking bonuses mean a player scoring 5-25-5
+   is worth more than one scoring 12-12-12 with the same total. **Every public ranking treats them
+   identically.** This is arithmetic on data already held, it applies to every player, and the
+   project's own notes call it the single honest consensus-relative claim available — while nobody
+   ever quantified how many players it moves. **Cheapest real edge on the list. Start here.**
+2. **Regime detection.** The market lags trend changes. The quarterback premium collapsed across
+   2021–2025 while both consensus and this project's own model averaged it flat. Detecting a turn
+   before consensus reprices it is edge, and the failure case proves both are currently blind to it.
+3. **Coach and coordinator tendency, following the person not the team.** The architecture reserved
+   `coach_id` as a first-class dimension for exactly this and **the data does not exist in the
+   database.** Promising and expensive — it must be sourced before it can be tested.
+4. **Better projection of the same variables.** Not dismissed. Given the unexplained two-thirds and
+   that consensus is a blend of humans — slow to update, regressing to conventional wisdom — there
+   may be real room here. The founder pushed back on deprioritising it and was right to.
+
+**Explore widely, then kill ruthlessly.** Generating candidates and testing them are different
+activities and both are your job. A cheap speculative pass that produces twenty hypotheses is good
+work; shipping any of them untested is not.
+
+## When you need data that does not exist
+
+**Say so, immediately and specifically, and keep working on what is not blocked.** Do not design
+around a gap silently and do not build a proxy without labelling it.
+
+You may commission directly — open a thread to `data-ops` for ingestion and capture, or to
+`researcher` for sourcing and licensing questions, via `tools/handoffs.py new`. **The PM owns turning
+"we need X" into "X exists"** and will not treat a data request as out of scope.
+
+**Known gaps, all named in `CLAUDE.md` §5 and none built:** coaching staff history · Vegas odds and
+implied team totals · route participation. **A missing input is a finding worth reporting even if you
+route around it** — the reason a factor was untested matters as much as the result.
+
 ## Start from zero
 
 **Do not inherit the existing board's assumptions.** The shipped board is consensus-derived at player
@@ -94,6 +139,11 @@ empirical question per position, not an assumption — treat it as one of your f
 than a detail.
 
 ## How to work
+
+**Two phases, and do not collapse them.** A wide, deliberately speculative research pass first —
+cheap, generating candidates including ones you cannot yet quantify — then narrow, disciplined
+testing. Making an unquantified idea measurable is itself a deliverable; trusting one before it is
+measured is the failure.
 
 **One factor at a time, each earning its place against a holdout — never against training fit.**
 Prefer simple, transparent, few-parameter models. Start with weighted and regression approaches.

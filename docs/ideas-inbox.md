@@ -267,3 +267,155 @@ newest at the bottom.
   redistribution is a `[GAP]` — FFC's ToS was unretrievable for the third time today.
   **Also, stale line:** `CURRENT-STATE.md` still says "FFC is blocked by robots.txt regardless" and
   "FFC remains blocked" while MEMORY §4 and FR-023 record it unblocked and say they supersede.
+
+- **2026-07-29, backend (ADR-059).** `docs/pm/CHARTER.md` and `docs/pm/MEMORY.md` are the two
+  richest sources of live factual claims in the repo and are deliberately **not** in
+  `docs/state-claims.toml`'s `live_docs` — they are the PM role's files and outside the backend
+  write boundary, and a checker that can flag a document the failing session may not edit
+  produces a red suite with no fix. Adding them is a one-line change to `live_docs` and should be
+  done by a PM session that can also fix what it finds. Decided and logged rather than escalated.
+- **2026-07-29, backend.** The claim checker's `[[status]]` polarity mechanism generalises past
+  documentation: the same shape would catch a thread asserting a source is blocked when the audit
+  says otherwise. `tools/handoffs.py check` already emits ~29 non-fatal "contradiction warnings"
+  that nobody dispositions — worth folding those into the registry so contradictions are either
+  a failure with a named claim or nothing at all, rather than a warning stream. Not done here:
+  threads are history, and history is deliberately out of scope for this checker.
+- **2026-07-29, backend.** `docs/CURRENT-STATE.md` line ~44 and its own machine-generated Build
+  state table disagreed on the contract version for at least one session, because the prose is
+  hand-maintained and the table is generated. Anything `tools/state.py --apply` already measures
+  should probably not be restated in prose at all — the claim checker now makes the drift loud,
+  but the cheaper fix is not to write the number twice.
+- **2026-07-29, backend.** `CLAUDE.md` §12's companion-docs table should probably list
+  `docs/state-claims.toml` + `tools/state_claims.py` (ADR-059) alongside the other standing
+  guardrails, so a new session learns the "register a factual claim or don't make it" rule from
+  the spec rather than from a test failure. Not done here — CLAUDE.md is the standing law and
+  editing it is an escalation, not a backend decision. Raised in thread 083.
+
+- 2026-07-29 · (researcher, missing inputs: odds / coaching / routes) **Decided, not escalated —
+  four calls.** (a) **Did not halt on the premise contradiction, but did not adopt it either.** The
+  dispatch calls Vegas odds "probably the highest-value missing input"; `docs/test-registry.md` rates
+  it Tier 0 / edge **Low** and defines Tier 0 as "having them is not an edge", while rating route
+  participation (#17) and coordinator continuity (#29) **High**. Halting would have cost the whole
+  session over a framing dispute, so I researched all three as asked and decided the recommendation
+  on evidence instead of on the dispatch's ordering. Flagged prominently in
+  `docs/research/missing-inputs-sourcing-2026-07-29.md` §0(b) for PM/founder to settle — the two
+  claims are reconcilable (cheapest is not the same claim as highest-edge) but somebody should say
+  which one drives the roadmap. (b) **Recommended coaching staff first, against the dispatch's
+  ordering**, because it is the only one of the three that ungates a High-rated registry item and the
+  only one whose licence permits display to a second human. (c) **Left the Fantasy Points Data Suite
+  price as an explicit `[GAP]`** rather than quoting a figure — `/plans` renders prices client-side
+  and returned only "Loading Subscription Plans", `/nfl/data-suite` 404'd. Their ToS permits manual
+  browser reading, so the founder can read it off the page in a minute; a plausible number here is
+  exactly the contamination this project has been burned by. (d) **Did not duplicate thread 054.**
+  The founder already holds an unaudited FTN subscription, and FTN is the upstream supplier of
+  nflverse's 2023+ participation data — whether it already grants per-player routes is 054's
+  question, not this one's.
+  **Recorded and stopped, not routed around:** Pro Football Reference `robots.txt` and
+  `sports-reference.com/data_use.html` both returned HTTP 403 again today, so the crawl policy is
+  still unreadable and the conservative default still applies. No scraper considered, no alternate
+  user-agent tried.
+  **Escalating, unchanged from the previous researcher session:** this file still carries unresolved
+  merge-conflict markers (`<<<<<<< HEAD`, `=======`, `>>>>>>> origin/worktree-agent-afa13ac8a8bd0c533`)
+  around the strategist PR-004 and backend ADR-057/ADR-059 entries. Both sides look like real work.
+  Appended below them without altering either side. This is now the second session to report it.
+  **Also escalating, new:** `docs/environment.md` documents a Windows conda interpreter and a
+  `PreToolUse` hook. This session ran in a Linux cloud container with **no shell tool at all**, so
+  neither applies and no `[MODAL-SAMPLED]` evidence was obtainable — no `nflreadpy` call, no
+  `data/nfl.db` query. Several gaps in the report (e.g. which season nflverse's betting columns first
+  become non-null) are one query away for anyone with a shell.
+- **2026-07-29, ranker (research pass 1, `docs/ranking/bottom-up-research-pass-1.md`).** Four calls
+  made without escalating, logged here.
+  (a) **Did not fund the coaching-data sourcing decision.** Two independent bounds — a
+  perfect-foresight team-volume oracle (delta <= +0.055 tau_b, and that version carries a known
+  self-inclusion leak so it is generous) and a team fixed-effect ANOVA on residuals (excess share
+  over chance -0.042 to -0.002, i.e. none at any position) — put the whole team-environment channel,
+  of which coaching is a strict subset, near zero. The same argument deprioritises Vegas implied team
+  totals. Recorded so the decision is not silently re-litigated later as a fresh idea.
+  (b) **Quantified the yardage-bonus channel for the first time, and it is small.** Realised
+  within-position reordering is a mean 0.19-0.60 positional ranks (tau_b 0.93-0.98 with vs without
+  bonuses); ex ante it is smaller still, because PR-002 already returned NULL on whether the
+  reorder-driving shape residual persists. The bonuses act **across** positions instead: +9.4 / +7.4
+  / +5.7 / +2.7 points of top-3 VBD at WR / RB / QB / TE, a ~6.8-point WR-vs-TE differential. Keep
+  the bonuses in the scoring engine; stop calling this the structural edge.
+  (c) **Contested ADR-057's QB mechanism rather than building its fix.** The realised finish-rank
+  value curve at QB is at an era high (-72.9 in 2021-2024 vs -57 to -59 before) while the
+  consensus-fitted slope fell, and the two R-squareds are 0.91-0.98 vs 0.15-0.41. TE shows the same
+  pattern; RB and WR do not. Recency-weighting the pooled consensus curve may therefore make the
+  board track market noise faster, not slower. **Not acted on — thread 085 to strategist**, because
+  ruling on my own analysis is exactly what the role structure forbids.
+  (d) **Added `ranker` to `tools/handoffs.py:31` ROLES.** `.claude/agents/ranker.md` existed but the
+  role did not, so this agent could not open a correctly attributed thread. One line.
+  **Flagging for whoever picks the model up next, as the cheapest real lead in the document:**
+  `snap_counts` (2013-2025, 324,611 rows), `ngs_receiving` (2016-2025), `ngs_rushing` and `injuries`
+  are all already in `data/nfl.db`, and **none of them is read by `experiments/bottomup/data.py`**,
+  which touches only `player_weekly_stats`, `draft_picks` and `ff_playerids`. Twelve-plus seasons of
+  role data, zero acquisition cost, no licensing question.
+  **Third session to report it:** this file still carries unresolved merge-conflict markers further
+  up, around the PR-004 / ADR-057 entries. Appended below them without touching either side.
+
+- 2026-07-29 · (researcher, competitive UX) **Decided, not escalated — four calls.**
+  (a) **Did not halt on the premise, but recorded three challenges rather than absorbing them**
+  (`docs/research/competitive-ux-2026-07-29.md` §0.5): the thread-061 audit is at
+  `docs/research/competitor-recommendation-audit-2026-07.md`, not `docs/reviews/` where the dispatch
+  said; a frontend overhaul sits outside written Phase 1 scope (`CLAUDE.md` §2 says "Not the draft
+  tool", §8 requires escalation) so committing to one needs a spec amendment, not a sprint; and
+  multi-league is **not** a contradiction with §1 — one founder with three leagues is still one user
+  and §4 already mandates `league_id` everywhere. Halting on any of these would have cost the session
+  over a framing dispute.
+  (b) **Answered the commissioned question against its implied direction.** The dispatch was framed
+  around "what to include" in an overhaul; the evidence says **do not do a visual overhaul.** The
+  prior competitive UX pass already concluded the fix was token-level and that work shipped; ESPN's
+  2025 redesign is evidence the marginal return goes negative past where we are; and
+  `docs/operating-model.md` records the 38K-char spec port that hard-stopped at ~97% and
+  self-reported inaccurately. Recommended three scoped, independently shippable changes instead
+  (uncertainty on the board row, slot selectable + randomisable in prep setup, league-vs-account
+  state labelled on screen).
+  (c) **Narrowed a prior conclusion rather than repeating it.** Thread 061 said "no competitor found
+  publishes calibration evidence." That holds for availability modelling only — Draft Sharks
+  publishes out-of-sample ROC-AUC 0.809, R² 0.401, MAE 1.610 and a binned reliability check for its
+  injury model, and ships 80%/95% confidence prediction limits per player. The defensible claim is
+  *pre-registered calibration of the availability model specifically*, still unmet at 1 of ~30 mocks.
+  (d) **Left three `[GAP]`s empty rather than plausible**: the visual form of Boris Chen's tier charts
+  (output is a PNG the tools cannot read), what a BeerSheet contains (page carries only download
+  links), and whether any user anywhere has asked for uncertainty display — every search returned
+  vendor marketing. That last one is flagged in the artifact as the gap that would most change the
+  confidence of the headline recommendation, since the case for it currently rests on one vendor's
+  commercial survival plus this project's own principles, not on demand evidence.
+  **Recorded and stopped, not routed around:** `www.reddit.com` was **refused outright by the fetch
+  tool** — it is the category's main voice-of-customer channel and its absence is the largest hole in
+  the report. ESPN/Yahoo/CBS not attempted per standing blocks.
+  `forums.footballguys.com` and `www.fantasylife.com` both surfaced relevant material in search and
+  were deliberately left unfetched for consistency with thread 009's recorded blocks, even though
+  `fantasylife.com/articles/` is **not** robots-disallowed — flagging that path-level loophole rather
+  than exploiting it alone.
+  **Escalating, and it is why this dispatch was partly rework:** the **prior competitive UX research
+  artifact does not exist in this repository.** `docs/operating-model.md`'s budget table logs the pass
+  as completed and verified, and at least six live documents cite its conclusions
+  (`design-handoff/HANDOFF-NOTES.md`, `design-handoff/README.md` Addendum 3, `handoffs/030`,
+  `handoffs/047`, `adr-drafts/ADR-A`, `screenshot-checklist.html`) — including the 5/10 visual-polish
+  and 4/10 light-mode scores, which are quoted with no evidence behind them anywhere in the repo. I
+  searched the whole tree including every agent worktree. **This project has now bought the same
+  research twice.** Candidate `docs/state-claims.toml` entry of the "cited artifact must exist" class.
+  **Also escalating, fourth session to report it:** this file still carries unresolved merge-conflict
+  markers around the PR-004 / ADR-057 / ADR-059 entries. Appended below them without touching either
+  side.
+  **No shell in this session**, so no allocator access: the handoff body is staged unallocated at
+  `docs/research/HANDOFF-BODY-unallocated-competitive-ux-2026-07-29.md` and the founder request at
+  `docs/founder-requests/NEW-look-at-other-apps-ux-before-committing-to-an-overhaul.md`, each with the
+  exact command. Hand-typing an ID was refused (043/049/053, ADR-048).
+- 2026-07-29, frontend session (worktree `agent-ad3fc0f6ee64497b5`, dispatched to fix FR-035/036 as
+  named in the dispatch): **real FR-number collision found and self-corrected, not escalated, because
+  nothing had been committed yet.** The dispatch described FR-035 (predictions league-scoping) and
+  FR-036 (opponent team names) as "recorded in the repo" — they were not, in this worktree. Ran
+  `tools/founder_requests.py new` twice per protocol, which allocated FR-034 and FR-035 (not 035/036)
+  since the local branch's highest was FR-033. Mid-session a coordinator message revealed the real
+  files already exist, allocated correctly (FR-034 draft-slot selector, FR-035 predictions scoping,
+  FR-036 opponent names, matching the original dispatch), committed on an **unmerged sibling branch**
+  `claude/pm-agent-setup-gobxa0` (commits `f987195`, `35854e2`) that this worktree's branch never saw.
+  `python tools/founder_requests.py check` reported "no cross-branch ID collisions" even though one
+  existed — worth someone checking why `_git_ref_names()`/`find_fr_collisions()` missed a branch that
+  `git branch -a` shows as a real local ref. Resolved by discarding my own two uncommitted, wrongly-
+  numbered files and copying the authoritative content from the sibling branch via `git show
+  <commit>:<path>` (not a merge — did not pull in that branch's other, unrelated changes). No commit
+  of mine ever carried the wrong numbers. Flagging rather than silently proceeding, per the standing
+  rule that ID collisions are always logged, never resolved by picking a number and moving on.

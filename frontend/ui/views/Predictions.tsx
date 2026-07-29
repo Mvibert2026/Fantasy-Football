@@ -71,6 +71,20 @@ import { integer, percent } from '../lib/format';
  * roster side panels (panes 2/3) -- those are DraftRoom's own panes already, and
  * duplicating them is exactly the "follow-up, not core" work DraftRoom.tsx's doc
  * comment already defers.
+ *
+ * FR-035 (docs/founder-requests/FR-035-predictions-in-prep-must-be-scoped-to-the-
+ * select.md): diagnosed live, in a real running app, switching between the primary
+ * league (Westwood, 10 teams/16 rounds/slot 3) and Ethan's Expert League (10 teams/15
+ * rounds/slot 1). The re-derivation itself was already correct -- the header line, the
+ * "on the clock" text and every row's live-availability number all changed to match
+ * the new league's teams/rounds/slot on switch, confirmed via a real Playwright
+ * screenshot, not just reading the code. The actual defect was (1) from the dispatch,
+ * not (2): nothing on this screen ever named which league it was predicting under, so
+ * the founder had no way to *tell* it had re-scoped short of reading player names. The
+ * `PredictingUnder` line below is the fix -- league name, team count, round count and
+ * draft slot, all sourced (never invented when `data.league.league_name` is absent on
+ * an older export), plus the FR-034 override marker when the slot in play is a local
+ * override rather than league.json's own value.
  */
 
 const POSITION_COLOR: Record<string, string> = {
@@ -166,6 +180,7 @@ export function Predictions({ data, rows, league }: { data: Dataset; rows: Board
     <div className="stack" style={{ display: 'flex', flexDirection: 'column', minHeight: 0, flex: 1 }}>
       <section>
         <h2>Predictions</h2>
+        <PredictingUnder data={data} league={league} teams={teams} rounds={rounds} userSlot={userSlot} />
         <p className="notice" style={{ borderColor: 'var(--down)', color: 'var(--down)' }}>
           {CALIBRATION_CAVEAT}
         </p>
@@ -298,6 +313,70 @@ function headerMessage({
     text: `${picksLogged} picks logged across ${roundsLogged} rounds. Roster-need arithmetic and run detection are both in play.`,
     warn: false,
   };
+}
+
+/**
+ * FR-035's actual fix: states what this screen is predicting under, so a league switch
+ * is *visible on this screen* rather than something you have to infer from which
+ * players appear. League name falls back to the raw `league_id` when
+ * `league.json:league_name` is absent (older export, contract < 1.7.0) -- never a
+ * blank or invented name. Team/round counts read the same Cells the rest of the
+ * screen's math already uses, not a second source. The slot clause is deliberately not
+ * a `<Value>` render when overridden (FR-034): an override does not trace to a backend
+ * field, and Principle #1/#2 require that to stay visually distinct rather than folded
+ * into the same "sourced" treatment as everything else on this line.
+ */
+function PredictingUnder({
+  data,
+  league,
+  teams,
+  rounds,
+  userSlot,
+}: {
+  data: Dataset;
+  league: LeagueConfig;
+  teams: number;
+  rounds: number;
+  userSlot: number;
+}) {
+  const leagueName = data.league.league_name ?? data.league.league_id ?? 'this league';
+  const overridden = league.userSlotOverridden;
+  const sourcedSlot = league.userSlotSourced.kind === 'present' ? league.userSlotSourced.value : null;
+
+  return (
+    <div
+      className="num"
+      data-testid="predicting-under"
+      style={{
+        marginTop: 4,
+        marginBottom: 8,
+        fontSize: 11.5,
+        letterSpacing: '.02em',
+        color: 'var(--dim)',
+      }}
+    >
+      Predicting for <span style={{ color: 'var(--txt)', fontWeight: 600 }}>{leagueName}</span>
+      {' · '}
+      {teams > 0 ? `${teams} teams` : 'team count unavailable'}
+      {' · '}
+      {rounds > 0 ? `${rounds} rounds` : 'round count unavailable'}
+      {' · '}
+      {userSlot > 0 ? (
+        <>
+          your slot{' '}
+          <span style={{ color: overridden ? 'var(--acc)' : 'var(--txt)', fontWeight: 600 }}>{userSlot}</span>
+          {overridden ? (
+            <span style={{ color: 'var(--acc)' }} title="Set locally via the SLOT control in the top bar, not from league.json.">
+              {' '}
+              (overridden{sourcedSlot !== null ? `, sourced ${sourcedSlot}` : ''})
+            </span>
+          ) : null}
+        </>
+      ) : (
+        'draft slot unavailable'
+      )}
+    </div>
+  );
 }
 
 function liveColor(p: number): string {
