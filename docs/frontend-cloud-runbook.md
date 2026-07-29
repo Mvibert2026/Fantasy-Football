@@ -162,3 +162,74 @@ Chromium build the container doesn't have and can't download — solved with `ex
 against the pre-installed binary, not with `playwright install`. That workaround is now captured in
 `frontend/e2e/cloud-board-screenshot.mjs` and as an opt-in env var in `frontend/e2e/smoke.mjs`, so
 the next cloud session does not have to rediscover it.
+
+---
+
+## Standalone build (`frontend/dist-standalone/board.html`)
+
+Added the same session as the section above closed, for a different problem: opening `localhost`
+requires a dev server on the founder's own machine, which is exactly the dependency this whole move
+is trying to remove (FR-022). This produces one self-contained HTML file — every artifact's data,
+all JS, all CSS inlined, opens from `file://` with no server, no network, no build step at the far
+end.
+
+```
+cd frontend
+npm run build:standalone
+# -> frontend/dist-standalone/board.html (~1.0-1.1MB)
+```
+
+Pipeline: `scripts/build-standalone-data.mjs` (embeds `../data/export/*.json` — except
+`weekly_finishes.json`/`season_stats.json`, ~11MB together and not worth it for a phone-sized file —
+into `ui/data/standaloneEmbedded.generated.ts`, a **tracked, regenerate-on-demand** file, not
+gitignored, so `tsc -b`/`npm run build`/`npm test` all resolve it without anyone having to know to
+run the generator first) → `vite build --config vite.standalone.config.ts`
+(`vite-plugin-singlefile`, `publicDir: false`, `base: './'`) → `scripts/finalize-standalone.mjs`
+(renames the plugin's output to `board.html`, fails loudly if anything besides that one file landed
+in `dist-standalone/`).
+
+**Verify:**
+```
+node e2e/verify-standalone.mjs         # Board + PlayerDetail, over file://, zero network requests
+node e2e/verify-standalone-draft.mjs   # Draft mode: pick entry, undo, roster, Export draft log
+```
+Both launch Chromium the same `executablePath` way as the cloud screenshot recipe above — this is
+not a new problem, same fix.
+
+**What's in:** Board (full — table, sort, filters, tier bands, delta view, round grid, player
+detail with the structural rank-attribution breakdown, watchlist via `localStorage`), **Draft mode**
+(pick entry, undo, queue, roster panel, live availability/scarcity — all client-side over
+`localStorage` + the embedded dataset; "Export draft log" is a `Blob` download, not a network call),
+Availability, Opponents, Predictions, Strategy Guide, Methodology, Glossary.
+
+**What's out, and why:**
+- **Season mode** — not built in the live app either (`docs/CURRENT-STATE.md`); nothing to restore.
+- **The multi-league switcher** — shows the one real league this file was built from, not a dropdown
+  implying others are reachable.
+- **"Refresh data"** — POSTs to a dev-server-only endpoint that doesn't exist here. Absent, not a
+  disabled button; the export timestamp and snapshot-freshness claim are still shown as static text.
+- **The Assistant chat dock** — absent entirely, for a hard, verifiable zero-`fetch()`-at-runtime
+  guarantee (its template/fallback lanes are pure local computation and would have worked; its
+  reasoning lane calls a dev-only endpoint).
+- **PlayerDetail's season-history sections (weekly finishes heatmap, three-season table)** — report
+  the same real `error` state the component already has for a genuine fetch failure ("Could not load
+  weekly_finishes.json: not included in this static snapshot..."), gated by a `__STANDALONE__`
+  compile-time flag (`vite.standalone.config.ts`'s `define`) checked in `ui/data/playerHistory.ts`
+  itself, so it never issues the fetch at all rather than issuing one that could only fail. An
+  earlier version of this tried a `resolve.alias` swap to a separate stub module instead; that
+  silently failed to match (Vite aliases match the raw import specifier text, not the resolved
+  absolute path) and shipped a real `fetch()` that failed at runtime with "Failed to fetch" — caught
+  by `verify-standalone.mjs` actually driving the interaction, not assumed away. Left as a documented
+  cautionary example in `vite.standalone.config.ts`'s own comment.
+
+**Draft mode's inclusion is a correction, not a first draft.** It was excluded initially on the
+assumption it needed a backend. Challenged (rightly) by the founder's own read of the code: checked
+`ui/data/draft.ts` and `DraftRoom.tsx` directly, confirmed no `fetch()` anywhere in the draft-mode
+code path, and that "Export draft log" is a `Blob` download. Put back, verified with a real pick
+committed and undone against the built file, not just re-reasoned about.
+
+**A phone-responsive layout (collapsing sidebar, sticky board columns, touch targets) was built,
+then explicitly reverted the same day** — the founder's call: a mobile layout on a deliberately
+dense board is a design decision, not one to make ad hoc in code, and it should go through Design
+when wanted (FR-025). `ui/styles/responsive.css` does not exist; `Sidebar.tsx`/`TopBar.tsx` carry no
+mobile-specific code. Confirmed via a real screenshot post-revert, not just a clean `tsc`.
