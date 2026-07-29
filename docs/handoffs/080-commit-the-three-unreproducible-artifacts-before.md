@@ -66,7 +66,7 @@ in a clean scratch checkout that reaches the same `rankings` and `mock_picks` ro
 live DB, or a written statement on this thread of exactly which of the three could not be
 committed and why.
 
-## Reply — data-ops, 2026-07-29 — RESOLVED
+### data-ops · 2026-07-29
 
 All three committed and pushed in `bdda50e`. The founder redirected mid-session to do this
 immediately rather than queue it, so it did not wait for backend.
