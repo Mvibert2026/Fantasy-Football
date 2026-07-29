@@ -5,11 +5,11 @@ Per-request files in this directory are the source of truth. Edit a request's ow
 `STATUS:` line, then re-run sync. Protocol: [`README.md`](README.md).
 Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests.md).
 
-**32 requests since freeze.**
+**36 requests since freeze.**
 
 ---
 
-## NEW — 22
+## NEW — 26
 
 | ID | Subject | Raised | Source |
 |---|---|---|---|
@@ -35,6 +35,10 @@ Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests
 | [FR-045](FR-045-position-scarcity-reads-every-position-as-behind.md) | Position scarcity reads every position as behind | 2026-07-29 | chat 2026-07-29, PM session |
 | [FR-046](FR-046-make-auto-fill-actually-draft-players-wire-up-th.md) | Make auto fill actually draft players wire up th | 2026-07-29 | chat 2026-07-29, PM session |
 | [FR-047](FR-047-per-opponent-deviation-and-deviation-should-wide.md) | Per opponent deviation and deviation should wide | 2026-07-29 | chat 2026-07-29, PM session |
+| [FR-048](FR-048-insights-from-research-must-reach-the-chatbot-an.md) | Insights from research must reach the chatbot an | 2026-07-29 | chat 2026-07-29, PM session |
+| [FR-049](FR-049-tabs-in-the-draft-middle-pane-including-recommen.md) | Tabs in the draft middle pane including recommen | 2026-07-29 | chat 2026-07-29, PM session |
+| [FR-050](FR-050-show-vbd-in-the-draft-player-list.md) | Show vbd in the draft player list | 2026-07-29 | chat 2026-07-29, PM session |
+| [FR-051](FR-051-show-value-over-the-player-expected-at-my-next-p.md) | Show value over the player expected at my next p | 2026-07-29 | chat 2026-07-29, PM session |
 
 ## SCOPING — 1
 
