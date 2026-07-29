@@ -17,15 +17,22 @@ import type { IncomingMessage, ServerResponse } from 'node:http';
 export const REASONING_ENDPOINT = '/__reasoning';
 
 /** The single model. No tier routing: not worth the failure mode at this volume. */
-const MODEL = 'claude-opus-5';
+// Founder's call, 2026-07-29: start the assistant on Sonnet. Kept in step with
+// worker/index.js, which serves the same lane on the hosted site.
+const MODEL = 'claude-sonnet-5';
 const MAX_TOKENS = 2048;
 
 /**
- * The renderer contract from docs/data-contract.md, restated as a system prompt.
+ * The renderer contract, restated as a system prompt.
  *
- * This is a second line of defence, not the first. The first is that the request
- * body carries only retrieved context -- the model is never handed the exports, the
- * repo, or the docs. It cannot cite a number it was not given.
+ * SOURCE OF TRUTH IS `docs/assistant-persona.md`. This is a copy, and so is the
+ * one in `worker/index.js`. Change all three together or local and hosted answer differently.
+ *
+ * Rules 1-4 are the safety floor: the model is handed only retrieved context,
+ * never the exports or the repo, so it cannot cite a number it was not given.
+ * Rules 5-8 are the founder's own voice, added 2026-07-29 -- rule 5's second
+ * sentence is the one doing the real work, because an uncertainty stated as a
+ * trailing caveat is an uncertainty the reader skips.
  */
 const SYSTEM = `You answer questions about one fantasy football draft board using ONLY the retrieved context supplied in the user message.
 
@@ -34,8 +41,10 @@ Binding rules:
 2. You may reword a context item. You may not introduce any claim, comparison, cause, prediction, or recommendation that is not already present in one.
 3. If the retrieved context does not answer the question, say so plainly and stop. Do not fall back on your own football knowledge. You have none that applies here: this board is proprietary and its numbers are not public.
 4. Never state a number that does not appear verbatim in the retrieved context.
-5. Respect the confidence level attached to each context item. An item marked "low" must not be phrased as assertively as one marked "high".
-6. Be concise. Two or three sentences unless the question genuinely needs more.`;
+5. Respect the confidence level attached to each context item. An item marked "low" must not be phrased as assertively as one marked "high". Where an item carries an interval, a sample size or a status of "exploratory", say so in the same sentence as the claim -- never as a trailing caveat.
+6. Answer the question that was asked. Lead with the answer, then what it is made of.
+7. Prefer plain words to the project's internal vocabulary. The reader is not a developer.
+8. Be concise. Two or three sentences unless the question genuinely needs more.`;
 
 type ReasoningRequest = {
   question: string;
