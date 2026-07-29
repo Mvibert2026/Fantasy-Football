@@ -5,6 +5,7 @@ import { useTheme } from './components/shell/useTheme';
 import { NotBuilt } from './components/shell/NotBuilt';
 import { Availability } from './views/Availability';
 import { Board } from './views/Board';
+import { DraftRoom } from './views/DraftRoom';
 import { Glossary } from './views/Glossary';
 import { Methodology } from './views/Methodology';
 import { Opponents } from './views/Opponents';
@@ -27,13 +28,16 @@ import { STANDALONE_DATASET } from './data/standaloneEmbedded.generated';
  *   - Data is STANDALONE_DATASET, a build-time-embedded object
  *     (scripts/build-standalone-data.mjs), not an async `loadDataset()` fetch.
  *     There is no loading state because there is nothing to wait for.
- *   - Only Prep mode exists. Draft mode is the live-draft pick-entry loop --
- *     recomputing availability/scarcity against picks nobody is logging --
- *     and Season mode has no content in the live app either. Both require a
- *     session with a backend or at least a live localStorage draft in
- *     progress; neither belongs in a frozen file, so TopBar's `modes` prop
- *     renders only Prep, not a disabled Draft/Season button that would invite
- *     a click leading nowhere.
+ *   - Draft mode IS included (as of this pass -- an earlier version of this
+ *     file excluded it on the assumption it needed a backend; checked and
+ *     that assumption was wrong). `ui/data/draft.ts`'s own module doc: "No
+ *     backend call per pick -- picks and the queue persist to localStorage."
+ *     Confirmed no `fetch()` anywhere in DraftRoom.tsx, draft.ts,
+ *     liveAvailability.ts, scarcity.ts or recommendation.ts. "Export draft
+ *     log" is a client-side Blob download (`downloadJson`, DraftRoom.tsx),
+ *     not a network call, and works from `file://`.
+ *   - Season mode stays out. `docs/CURRENT-STATE.md` lists it as not built at
+ *     all in the live app -- there is nothing to restore, standalone or not.
  *   - The league switcher shows exactly one option, the real league this file
  *     was built from -- not a dropdown implying other leagues are reachable.
  *     Matches TopBar's own existing "single honest option" convention for
@@ -47,24 +51,32 @@ import { STANDALONE_DATASET } from './data/standaloneEmbedded.generated';
  *     guarantee rather than a mixed dock where one lane works offline and
  *     the rest have to explain themselves.
  *   - PlayerDetail's sections 7/8 (season history) report a real, existing
- *     error state instead of fetching: see ui/data/playerHistory.standalone.ts,
- *     aliased in over the network-backed module by vite.standalone.config.ts.
+ *     error state instead of fetching: see ui/data/playerHistory.ts's
+ *     `__STANDALONE__` compile-time flag (set by vite.standalone.config.ts's
+ *     `define`), which skips the fetch entirely rather than issuing one that
+ *     would only ever fail.
  *
  * Everything else -- Board (table, sort, filters, tier bands, delta view,
  * round grid, player detail, structural rank-attribution breakdown, watchlist
- * via localStorage), Availability, Opponents, Predictions (reads/writes the
- * same localStorage draft-state key the live app uses; honestly reports
- * "not yet" with zero picks logged), Strategy Guide, Methodology, and
- * Glossary -- is the real, unmodified view component, because none of them
- * need anything beyond the embedded Dataset.
+ * via localStorage), Draft (pick entry, undo, queue, roster panel, live
+ * availability/scarcity, all over localStorage + the embedded Dataset),
+ * Availability, Opponents, Predictions (reads/writes the same
+ * localStorage draft-state key Draft mode does; honestly reports "not yet"
+ * with zero picks logged), Strategy Guide, Methodology, and Glossary -- is
+ * the real, unmodified view component, because none of them need anything
+ * beyond the embedded Dataset and the browser's own localStorage.
  */
 
 const SOON_MAP = new Map(SOON_ITEMS.map((item) => [item.key, item]));
-const PREP_ONLY_MODES: Array<{ key: Mode; label: string }> = [{ key: 'prep', label: 'Prep' }];
+const PREP_AND_DRAFT_MODES: Array<{ key: Mode; label: string }> = [
+  { key: 'prep', label: 'Prep' },
+  { key: 'draft', label: 'Draft' },
+];
 
 const data = STANDALONE_DATASET;
 
 export function StandaloneApp() {
+  const [mode, setMode] = useState<Mode>('prep');
   const [screen, setScreen] = useState<ScreenId>('board');
   const [theme, toggleTheme] = useTheme();
 
@@ -83,52 +95,75 @@ export function StandaloneApp() {
   }
 
   let body: ReactNode;
-  if (soon) {
-    body = <NotBuilt title={soon.label} body={soon.body} />;
-  } else if (screen === 'board') {
-    body = <Board data={data} rows={rows} league={league} />;
-  } else if (screen === 'availability') {
-    body = <Availability data={data} rows={rows} />;
-  } else if (screen === 'opponents') {
+  if (mode === 'draft') {
+    // Full-width, no Sidebar -- matching App.tsx's own layout for Draft mode
+    // (DraftRoom has its own three-pane board/scarcity/roster layout that
+    // doesn't share the Prep-mode nav rail).
+    body = <DraftRoom data={data} rows={rows} league={league} />;
+  } else if (soon) {
     body = (
-      <div className="view" style={{ flex: 1, minHeight: 0 }}>
-        <Opponents data={data} />
-      </div>
-    );
-  } else if (screen === 'predictions') {
-    body = (
-      <div className="view" style={{ flex: 1, minHeight: 0 }}>
-        <Predictions data={data} rows={rows} league={league} />
-      </div>
-    );
-  } else if (screen === 'strategy') {
-    body = (
-      <div className="view" style={{ flex: 1, minHeight: 0 }}>
-        <StrategyGuide data={data} />
-      </div>
-    );
-  } else if (screen === 'method') {
-    body = (
-      <div className="view" style={{ flex: 1, minHeight: 0 }}>
-        <Methodology data={data} league={league} />
-      </div>
-    );
-  } else if (screen === 'glossary') {
-    body = (
-      <div className="view" style={{ flex: 1, minHeight: 0 }}>
-        <Glossary data={data} />
-      </div>
+      <>
+        <Sidebar screen={screen} onScreen={changeScreen} />
+        <div style={{ flex: 1, minWidth: 0, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+          <NotBuilt title={soon.label} body={soon.body} />
+        </div>
+      </>
     );
   } else {
-    body = null;
+    let screenBody: ReactNode;
+    if (screen === 'board') {
+      screenBody = <Board data={data} rows={rows} league={league} />;
+    } else if (screen === 'availability') {
+      screenBody = <Availability data={data} rows={rows} />;
+    } else if (screen === 'opponents') {
+      screenBody = (
+        <div className="view" style={{ flex: 1, minHeight: 0 }}>
+          <Opponents data={data} />
+        </div>
+      );
+    } else if (screen === 'predictions') {
+      screenBody = (
+        <div className="view" style={{ flex: 1, minHeight: 0 }}>
+          <Predictions data={data} rows={rows} league={league} />
+        </div>
+      );
+    } else if (screen === 'strategy') {
+      screenBody = (
+        <div className="view" style={{ flex: 1, minHeight: 0 }}>
+          <StrategyGuide data={data} />
+        </div>
+      );
+    } else if (screen === 'method') {
+      screenBody = (
+        <div className="view" style={{ flex: 1, minHeight: 0 }}>
+          <Methodology data={data} league={league} />
+        </div>
+      );
+    } else if (screen === 'glossary') {
+      screenBody = (
+        <div className="view" style={{ flex: 1, minHeight: 0 }}>
+          <Glossary data={data} />
+        </div>
+      );
+    } else {
+      screenBody = null;
+    }
+    body = (
+      <>
+        <Sidebar screen={screen} onScreen={changeScreen} />
+        <div style={{ flex: 1, minWidth: 0, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+          {screenBody}
+        </div>
+      </>
+    );
   }
 
   return (
     <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       <TopBar
-        mode="prep"
-        onModeChange={() => {}}
-        modes={PREP_ONLY_MODES}
+        mode={mode}
+        onModeChange={setMode}
+        modes={PREP_AND_DRAFT_MODES}
         theme={theme}
         onToggleTheme={toggleTheme}
         league={league}
@@ -138,12 +173,7 @@ export function StandaloneApp() {
         refreshSlot={<StandaloneFreshnessNote />}
       />
 
-      <div style={{ flex: 1, minHeight: 0, display: 'flex' }}>
-        <Sidebar screen={screen} onScreen={changeScreen} />
-        <div style={{ flex: 1, minWidth: 0, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
-          {body}
-        </div>
-      </div>
+      <div style={{ flex: 1, minHeight: 0, display: 'flex' }}>{body}</div>
     </div>
   );
 }
