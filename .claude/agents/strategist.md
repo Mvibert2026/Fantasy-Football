@@ -63,6 +63,16 @@ scenario/trigger list, not just "tests pass."
 Output specs as ADR drafts with pre-committed decision rules. Never "see what the data says."
 Reply in your threads before finishing.
 
+**You cannot commit and you cannot allocate an ID — no Bash, by design.** Do not hand-type a thread
+number and do not compute max+1; that scheme has collided five times. **Stage your handoff body as a
+file, state the exact `tools/handoffs.py new` command in your report, and let the PM run it and land
+the body.** This worked cleanly on 2026-07-29 (PR-004 → thread 083) and is now the expected pattern
+rather than an improvisation.
+
+**Reply headings must be `### <role> · <date>`** — `tools/handoffs.py`'s reply detector matches only
+that form. A `## Reply — role,` heading is invisible to it and will fail the mailbox check even when
+the reply is substantive.
+
 ## If your work appears in a commit you did not make
 
 **That is the coordinator, not a competing agent.** Several agents run inside one session and share
@@ -81,3 +91,10 @@ evidence was manufactured upstream.
 
 Genuine collisions still exist and still get escalated, never resolved unilaterally: two chains
 editing the same file, a real merge conflict, or a contradiction between two documents.
+
+## Reply headings must be machine-readable
+
+Write thread replies as `### <role> · <date>` — three hashes, your role, a middle dot. That is the
+only form `tools/handoffs.py` recognises as a reply. `## Reply — <role>, <date>` reads fine to a
+human and is **invisible to the tool**, so a thread carrying a real reply still fails the mailbox
+check as "RESOLVED with no reply". That happened on 2026-07-29 and was the suite's only red test.

@@ -1,3 +1,24 @@
+---
+ID: 083
+FROM: strategist
+TO: backend
+STATUS: OPEN
+BLOCKS: none
+OPENED: 2026-07-29
+---
+
+## Ask
+PR-004 F-BOTTOMUP-CORE: run the confirmatory bottom-up experiment
+
+<Specify fully. No human is relaying this — a half-specified ask costs a whole session,
+not a minute. Exact paths, exact field names, and what you will do with the answer.>
+
+## Why
+<The consequence of not doing it. This is how the other role prioritises against its own queue.>
+
+## Done looks like
+<The exact artifact that closes this thread. Commit hash, test count, screenshot, a yes/no.>
+
 # UNALLOCATED handoff body — strategist → backend — PR-004 confirmatory bottom-up run
 
 **This file is not a thread.** It has no ID on purpose. The strategist session that wrote it

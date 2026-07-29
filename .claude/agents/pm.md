@@ -85,3 +85,10 @@ evidence was manufactured upstream.
 
 Genuine collisions still exist and still get escalated, never resolved unilaterally: two chains
 editing the same file, a real merge conflict, or a contradiction between two documents.
+
+## Reply headings must be machine-readable
+
+Write thread replies as `### <role> · <date>` — three hashes, your role, a middle dot. That is the
+only form `tools/handoffs.py` recognises as a reply. `## Reply — <role>, <date>` reads fine to a
+human and is **invisible to the tool**, so a thread carrying a real reply still fails the mailbox
+check as "RESOLVED with no reply". That happened on 2026-07-29 and was the suite's only red test.
