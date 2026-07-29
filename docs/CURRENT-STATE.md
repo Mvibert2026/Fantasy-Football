@@ -95,7 +95,7 @@ by the session whose work changed them, per the agent operating rules.
 
 | | Value | Notes |
 |---|---|---|
-| Backend branch / commit | `worktree-agent-afa13ac8a8bd0c533`, `75bf095b48567de06edd67b6bb8a8ea5635814cc` | `git rev-parse --abbrev-ref HEAD` / `HEAD` |
+| Backend branch / commit | `claude/pm-agent-setup-gobxa0`, `47e589cee90f0c49fb435be3f3ee7da58f9ab6b3` | `git rev-parse --abbrev-ref HEAD` / `HEAD` |
 | Data contract | `1.14.0` | `CONTRACT_VERSION` in `src/export_contract.py` |
 | Python modules | 42 | `src/*.py`, counted |
 | Export artifacts | 11 | top-level files in `data/export/` |
