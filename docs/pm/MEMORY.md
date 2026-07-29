@@ -11,6 +11,21 @@ outside-the-repo one, running in the cloud).
 
 # 0 · Corrections made this session — things believed here that were false
 
+**THE APP IS ONLINE. 2026-07-29.** `https://fantasy-football.soft-water-e755.workers.dev`, a
+Cloudflare Worker serving the static Vite build from `main`, rebuilding itself on every push.
+**Founder confirmed it working in his own browser** — the only evidence standard this project
+accepts for a screen. Verified independently too: `/data/board.json` serves `contract_version
+1.14.0` with Bijan Robinson at the top, so it is today's build and not a stale shell.
+`maplerock.net` is on Cloudflare DNS (nameservers `ashley`/`margo`) with the custom domain added;
+it had not answered yet when this was written — certificate issuance, expected to resolve on its
+own. Config is `wrangler.jsonc` at the repo root. **Cloudflare holds its own deploy token; no
+credential is in this repo.** The site is **public by the founder's explicit choice** — the trade
+was stated to him (nine league mates could read his board) and he chose public for now. Cloudflare
+Access can gate it for free in about ten minutes without touching the build.
+
+**This closes the last dependency on his machine.** Development, tests, the database rebuild, the
+daily capture, and now *viewing the app* all run without it.
+
 **New founder constraints, learned the expensive way:**
 
 - **Fable work happens at the END OF THE WEEK, before the budget reset. Never mid-week.** Fable runs

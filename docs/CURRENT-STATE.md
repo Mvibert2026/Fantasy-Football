@@ -14,6 +14,16 @@ in the same voice as current ones. Same hazard `docs/assistant-context.md` warns
 `decisions.md`. It is fine to read either to learn *what happened*; it is not fine to read them to
 learn *what is true*.
 
+**THE APP IS LIVE ON THE INTERNET, 2026-07-29** — `https://fantasy-football.soft-water-e755.workers.dev`,
+a Cloudflare Worker serving the static Vite build from `main` and rebuilding on every push
+(`wrangler.jsonc` at the repo root). Founder confirmed it working in his own browser; independently
+verified that `/data/board.json` serves `contract_version 1.14.0`, so it is the current build.
+`maplerock.net` moved to Cloudflare nameservers and the custom domain is added, pending certificate.
+**Public by explicit founder choice**, with the exposure trade stated to him. No credential in this
+repo — Cloudflare holds its own deploy token. This closes the last dependency on the founder's
+machine: development, tests, the database rebuild, the daily capture and now viewing the app all run
+without it.
+
 **Last verified:** 2026-07-29, PM check-in session running **in the cloud, not on the founder's
 machine** (`origin/main` @ `4a299df`; no local worktrees exist here, so anything sitting untracked in
 a worktree on the founder's machine — see thread 081 — is invisible to a cloud session and cannot be
