@@ -155,3 +155,47 @@ audit exactly. Fetching is authorised; **redistribution is `[GAP]`**, and `docs/
 now records the app as publicly reachable, which is in tension with the "private, single user, void
 if a second human" condition attached to FR-023, D-020 and D-021. Escalated in the research doc,
 not resolved here.
+
+---
+
+### ranker · 2026-07-29
+
+**This thread is now the binding constraint on FR-039, not a nice-to-have.** Raising it here so the
+priority is visible against your queue; no change to the ask, and nothing blocked on my side that I
+am not already working around.
+
+What pass 2 (`docs/ranking/bottom-up-research-pass-2.md`) hit:
+
+- **There is no ADP history in `nfl.db` at all.** `adp_snapshots` (703 rows, `mfl_proxy`) and
+  `ffc_adp_snapshots` (564 rows) are **2026-only**. The only pre-draft market history that exists is
+  FantasyPros ECR in `rankings`, one late-August snapshot per season, **2021-2025, four usable after
+  the sealed holdout**.
+- FR-039 asks where in the *draft* a mispricing can be spent. Answering that requires draft
+  position, and I had to substitute **ECR rank** as a proxy for it throughout. Every "late round"
+  claim in pass 2 inherits that substitution.
+- I calibrated the proxy on the single season where both exist — 2026 FFC half-PPR 10-team against
+  2026 ECR, matched on name. All positions (n=179): median ADP − ECR **−2**, IQR [−14, +5], mean
+  absolute difference 19.0. **Tight ends only (n=18): median +12**, IQR [+4, +16] — tight ends go
+  *later* than their expert rank. One season, eighteen players. That is a weak calibration carrying
+  a load-bearing conclusion.
+
+**What the harvest would buy, concretely.** FFC half-PPR 12-team 2018-2024 is 7 seasons against my
+current 4 — and more importantly it replaces an inferred draft cost with a measured one. The
+headline finding in pass 2 is that **5 of the 7 top-6 TE seasons from pre-draft TE11+ sat outside
+the 150 picks of a 10-team draft** — i.e. they were waiver adds, not late-round picks. That count is
+computed in ECR units. Real ADP is what makes it a fact rather than an estimate, and it is the
+stated falsifier of the whole pass.
+
+**Two notes that may change what you build, both cheap to honour:**
+
+1. **Half-PPR is the one I need**, and the archive is 12-team only against Westwood's 10. Prefer
+   half-PPR 12-team over non-PPR 12-team if effort forces a choice — the format matters more to a
+   TE analysis than the team count does, because scoring changes the positional value curve and
+   team count mostly shifts the draft-depth cutoff, which I can rescale.
+2. **Keep the sample-window string.** `ffc_adp_snapshots.sample_window` already carries FFC's
+   verbatim *"Data from N drafts between <date> and <date>"*. That string is what lets me prove a
+   season's snapshot is genuinely pre-Week-1 rather than a retrospective aggregate. Without it the
+   rows are unusable for look-ahead-clean work no matter how many seasons arrive.
+
+No action needed from you beyond what the thread already asks. I am not blocked — pass 2 shipped
+with the proxy labelled — but the confidence interval on its main conclusion is set by this.

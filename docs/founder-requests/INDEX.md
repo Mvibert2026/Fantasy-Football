@@ -9,7 +9,7 @@ Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests
 
 ---
 
-## NEW — 29
+## NEW — 28
 
 | ID | Subject | Raised | Source |
 |---|---|---|---|
@@ -27,7 +27,6 @@ Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests
 | [FR-033](FR-033-build-a-bottom-up-ranking-from-zero-a-directive.md) | Build a bottom up ranking from zero a directive | 2026-07-29 | chat session 2026-07-29 |
 | [FR-037](FR-037-export-csv-and-export-pdf-do-not-work-low-priori.md) | Export csv and export pdf do not work low priori | 2026-07-29 | chat 2026-07-29, PM session |
 | [FR-038](FR-038-look-at-other-apps-ux-before-committing-to-an-ov.md) | Look at other apps ux before committing to an ov | 2026-07-29 | chat session 2026-07-29, relayed via researcher dispatch |
-| [FR-039](FR-039-late-round-te-is-the-draft-strategy-expression-o.md) | Late round te is the draft strategy expression o | 2026-07-29 | chat 2026-07-29, PM session |
 | [FR-040](FR-040-custom-league-option-in-league-settings-two-hard.md) | Custom league option in league settings two hard | 2026-07-29 | chat 2026-07-29, PM session |
 | [FR-041](FR-041-prose-design-and-relevance-review-of-strategy-gu.md) | Prose design and relevance review of strategy gu | 2026-07-29 | chat 2026-07-29, PM session |
 | [FR-042](FR-042-presets-must-use-standard-scoring-only-westwood.md) | Presets must use standard scoring only westwood | 2026-07-29 | chat 2026-07-29, PM session |
@@ -80,4 +79,10 @@ _None._
 | ID | Subject | Raised | Source |
 |---|---|---|---|
 | [FR-025](FR-025-make-the-app-usable-on-a-phone.md) | Make the app usable on a phone | 2026-07-29 | chat session 2026-07-29 (PM takeover) |
+
+## Unknown status — check these
+
+| ID | Subject | Status |
+|---|---|---|
+| [FR-039](FR-039-late-round-te-is-the-draft-strategy-expression-o.md) | Late round te is the draft strategy expression o | `ANSWERED` |
 
