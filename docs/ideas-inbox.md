@@ -487,3 +487,34 @@ a live crash:
 Full detail, plus the resolved ESPN-scoring docstring self-contradiction and the static-hosting vs.
 job-queue-API contradiction between `SETTINGS-EDITOR-SPEC.md` and the current Cloudflare Worker
 deploy: `docs/specs/FR-040-custom-league-settings-costing.md`.
+
+## 2026-07-29 — backend, FR-057 part 1 (availability multi-slot floor)
+
+**Decided, not escalated — three calls.**
+
+1. **The fix does not need a `by_slot` nesting level.** `pick_order()` (which team owns which
+   overall pick number) is independent of which team is "the user" for a fixed team/round count, so
+   sweeping every slot 1..teams and merging `player_avail`/`tier_avail`/`best_avail_dist` into the
+   EXISTING `by_player`/`by_tier` shape is a disjoint union, never a collision — verified in
+   `tests/test_run_availability_multi_slot.py` before writing the merge code. This kept the contract
+   change additive (new `metadata` fields only) rather than a breaking restructure of an artifact
+   `board.json` and `narrate.py` also read.
+2. **Only the primary league (real founder data) was regenerated with the full 10-slot sweep.** The
+   24 preset configs and `ethans_expert_league` have never had a real Monte Carlo run at all
+   (ADR-047's deliberate cost-scoping, unrelated to this change) — extending that to a real sweep for
+   26 more leagues × their team counts is a materially larger, unbudgeted piece of work this task did
+   not ask for. The CODE PATH (`run_availability.py`, `export_contract.build_availability_json`) now
+   works identically for any `LeagueConfig` regardless of team count, so whenever someone DOES run a
+   real sim for another league, it is multi-slot from day one with no follow-up fix needed. Left
+   `data/leagues/yahoo_standard_mock/availability.csv` (a labelled "mock, approximate" test fixture,
+   not one of the founder's real leagues) un-swept for the same reason.
+3. **Kept the founder's own slot on the exact pre-existing code path (`engine=None` for primary)
+   instead of unifying every slot onto `ds.DraftEngine`.** A scratchpad comparison (200 sims, sigma
+   10, same seed) found the generalized `DraftEngine` path differs from the original module-level
+   free-function path by up to ~0.02 absolute probability at late picks for the identical slot —
+   almost certainly a `legal_mask`/`picks_left` off-by-one between the two parallel implementations,
+   since they SHOULD be numerically identical and are not. Not root-caused here (would require
+   comparing `ds._legal_mask` against `DraftEngine.legal_mask` line by line and is a separate,
+   contained investigation) — flagging it here rather than silently shipping a ~2%-at-late-picks
+   discrepancy nobody would notice without this comparison. This does NOT affect the founder's own
+   slot's numbers, which are unchanged from before this session.

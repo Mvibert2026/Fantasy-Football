@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import dataclasses
 import json
 import sqlite3
 from collections import defaultdict
@@ -42,7 +43,7 @@ import team_codes as tc
 from config import DEFAULT_CONFIG
 from scoring import LEAGUE, ReplacementLevels
 
-CONTRACT_VERSION = "1.14.0"
+CONTRACT_VERSION = "1.15.0"
 SEASON = 2026
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 EXPORT_DIR = DATA_DIR / "export"
@@ -549,6 +550,29 @@ def build_board_json(
     }
 
 
+def _all_slot_pick_numbers(cfg: lc.LeagueConfig) -> Dict[str, List[int]]:
+    """Pick-number sequence for EVERY slot 1..cfg.teams, not just cfg's own.
+
+    FR-057 part 1: the multi-slot sweep in run_availability.py already relies
+    on pick_order() being independent of which team is "the user" (see that
+    module's docstring), which is exactly what makes this cheap -- no
+    simulation needed, just the same snake-order arithmetic the frontend's
+    slot selector already performs elsewhere. Shipped here too so the
+    frontend has ONE source of truth for "which pick numbers belong to slot
+    N" instead of a second, independently-written implementation that could
+    drift from this one (see FR-057's "two implementations must agree").
+    """
+    out: Dict[str, List[int]] = {}
+    for slot in range(1, cfg.teams + 1):
+        if slot == cfg.user_draft_slot:
+            out[str(slot)] = ds.user_pick_numbers() if cfg.is_primary else ds.DraftEngine(cfg).user_pick_numbers()
+        else:
+            out[str(slot)] = ds.DraftEngine(
+                dataclasses.replace(cfg, user_draft_slot=slot)
+            ).user_pick_numbers()
+    return out
+
+
 def build_availability_json(cfg: lc.LeagueConfig = lc.CURRENT_LEAGUE) -> dict:
     payload = _load_availability_csv(avail_csv_for(cfg.league_id))
     is_primary = cfg.is_primary
@@ -589,6 +613,27 @@ def build_availability_json(cfg: lc.LeagueConfig = lc.CURRENT_LEAGUE) -> dict:
                 "client_simulation_parameters against the real board state instead of reading "
                 "these numbers as still current. See data-contract.md."
             ),
+            # FR-057 part 1 (contract 1.15.0). run_availability.py now sweeps
+            # EVERY draft slot 1..teams, not just user_draft_slot above, and
+            # merges the results into by_player/by_tier keyed by OVERALL pick
+            # number (1..teams*rounds) rather than nesting a nesting level per
+            # slot -- see run_availability.py's module docstring for why a
+            # merge is safe (no two slots ever write the same pick number).
+            # Practical effect: switching the draft-slot selector to slot N
+            # and looking up picks_by_slot["N"] in by_player/by_tier now finds
+            # real numbers instead of missing keys. Client-side recomputation
+            # conditioned on live picks (FR-057 part 2, the founder's stated
+            # preference) is a separate, larger build and is NOT this.
+            "multi_slot_coverage": True,
+            "multi_slot_note": (
+                "by_player and by_tier cover pick numbers for EVERY draft slot in this league, "
+                "not only user_draft_slot above -- look up picks_by_slot[str(slot)] for the "
+                "pick sequence belonging to whichever slot is currently selected in the UI, "
+                "then read those pick numbers out of by_player/by_tier as usual. A pick number "
+                "not present in ANY slot's sequence (the auto-filled DEF/K reserved round) has "
+                "no entry, same as before this change."
+            ),
+            "picks_by_slot": _all_slot_pick_numbers(cfg),
         },
         # ADR-034. Enough for a client to re-run the same Monte Carlo model
         # CONDITIONED on live draft state (players already gone, each team's
