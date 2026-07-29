@@ -267,3 +267,25 @@ newest at the bottom.
   redistribution is a `[GAP]` — FFC's ToS was unretrievable for the third time today.
   **Also, stale line:** `CURRENT-STATE.md` still says "FFC is blocked by robots.txt regardless" and
   "FFC remains blocked" while MEMORY §4 and FR-023 record it unblocked and say they supersede.
+
+- 2026-07-29 · backend (ADP glossary/methodology gap, PM dispatch). **Decided, not escalated —
+  three calls.** (a) Added an `ADP` glossary term (`src/export_static.py`) and a Methodology
+  section covering it, folding `adp_min_pick`/`adp_max_pick`/`adp_selected_pct` into the one term
+  rather than four separate ones — precedent is `confidence interval` covering `ci_low`/`ci_high`
+  the same way. (b) While there, corrected two now-stale claims found sitting next to the new ADP
+  text: the `consensus rank` glossary entry and `board.json`'s `consensus_source_note` both still
+  said "no ADP source is legally obtainable (ADR-018)" — false since ADR-035 (MFL ADP proxy)
+  partially superseded ADR-018 and the board has shipped a real ADP field since contract
+  1.14.0/thread 082. Fixed both to point at the real (thin, proxy) ADP instead of denying it
+  exists. (c) **Fixed, not just flagged, two files carrying literal leftover `<<<<<<< HEAD` /
+  `=======` / `>>>>>>>` git-conflict markers** (`docs/decisions.md` around ADR-057/058,
+  `docs/handoffs/082-adp-fields-on-board-json-contract-1-14-0.md` around its two frontend
+  replies) — same failure shape flagged but left alone in this file's 2026-07-29 researcher entry
+  for `ideas-inbox.md` itself (already clean by the time this session read it). Confirmed safe
+  before touching: in both files the two sides were sequential, non-overlapping, already
+  machine-readable content (two different ADR numbers; two separately-headed `### frontend ·`
+  replies) — stripped only the three marker lines, kept every word of both sides, changed nothing
+  else. **Did not touch** the actual ADR-054/ADR-055 duplicate-header collision underneath —
+  that is `docs/decisions.md`'s ADR-056, already decided and left unresolved on purpose (widened
+  allocators instead, per that ADR's own text); re-litigating it wasn't this session's call to
+  make.

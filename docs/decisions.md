@@ -2190,7 +2190,6 @@ documents -- both true positives, not test bugs; confirmed pre-existing via `git
 `test_find_fr_collisions_flags_conflicting_slugs`,
 `test_find_fr_collisions_silent_when_no_conflict` (`tests/test_founder_requests.py`).
 
-<<<<<<< HEAD
 ---
 
 ## ADR-057 — The board's QB premium is a rushing-QB regime effect, not a bonus artifact; and that regime collapsed in 2025 (2026-07-29, backend, thread backend-qb-delta)
@@ -2314,7 +2313,9 @@ changes that require the Statistician + Red-team gate (CLAUDE.md §8), not a bac
 
 **Evidence.** `tests/test_qb_board_delta.py`, 9 tests, all passing. Diagnostics are reproducible:
 `experiments/qb_board_delta_diagnostic.py` and `experiments/qb_board_delta_uncertainty.py`.
-=======
+
+---
+
 ## ADR-058 — Non-primary leagues get their full six-artifact export set (2026-07-29, backend)
 
 **Bug (founder-reported, live site).** Switching to "Ethan's Expert League" in the app failed:
@@ -2369,4 +2370,92 @@ loading correctly, confirming those two really are optional rather than another 
 (`test_mailbox_health` — the ADR-054/055 collision ADR-056 already documents and left
 unresolved by explicit design; unrelated to this change, reconfirmed via `git stash` equivalent
 by checking the failure predates this commit). Commit `a88f041`.
->>>>>>> 03566fc753e1ec3c11213fae9ef83e9773a5a2b2
+
+---
+
+## ADR-060 — ADP gets a glossary term and a Methodology section; two stale "no ADP" claims corrected (2026-07-29, backend, PM dispatch)
+
+**Problem.** Contract 1.14.0 (thread 082) put real ADP fields on every board row and shipped them
+to the prep board, draft screen, and player profile — but the term was defined nowhere.
+`data/export/*/glossary.json` carried 13 terms and none of them was ADP; `Methodology.tsx` had
+five sections and none mentioned it. A number with the largest caveat on the board (MFL proxy,
+full-PPR capture against this half-PPR league, thin sample, ~230-player coverage ceiling) was
+explained in exactly zero places a user could reach.
+
+**Fix.**
+1. `src/export_static.py::_GLOSSARY_BASE` gains an `"ADP"` term. `adp_min_pick`/`adp_max_pick`/
+   `adp_selected_pct` are folded into this one entry via a parenthetical rather than given their
+   own terms — same pattern as `confidence interval` covering `ci_low`/`ci_high`. The definition
+   states the MFL proxy caveats up front (population, full-PPR-vs-half-PPR, thin sample, ~230-
+   player ceiling) and states plainly that it does not feed the projection, VBD, tier, or any
+   recommendation.
+2. `frontend/ui/views/Methodology.tsx` gains an "ADP (market average draft position)" section,
+   rendering `board.json`'s `adp_source_note`/`adp_match_rate_note` verbatim, with explicit
+   display-only language naming the fields it does NOT touch (`projected_points`, `vbd`, tiers,
+   availability, recommendations).
+3. `frontend/ui/data/glossaryCategories.ts` maps `ADP` to a new-in-practice `draft` (Draft
+   mechanics) category — that bucket existed in `CATEGORY_ORDER` since an earlier session but had
+   no members until now — with `field: 'board.json:players[].adp'`.
+4. Regenerated `glossary.json`/`nulls.json`/`opponents.json` (the three hand-authored artifacts
+   `write_static_artifacts` emits together) for the primary league and all 26 saved league configs
+   under `data/leagues/` — 27 `glossary.json` files total, all now carrying the ADP term. No `.db`
+   connection needed for this path (`build_glossary`/`build_nulls`/`build_opponents` are pure
+   functions of `LeagueConfig`), so this was possible without rebuilding `nfl.db`.
+5. **Corrected two now-stale claims found sitting directly next to the new text**: the
+   `consensus rank` glossary entry and `board.json`'s `consensus_source_note` (`export_contract.py`)
+   both still said "no ADP source is legally obtainable (ADR-018)". False since ADR-035 partially
+   superseded ADR-018 with the real (if thin, proxy) MFL ADP now on the board. Left the
+   single-source/no-blend claim about *consensus* itself untouched — only removed the false
+   "does not exist" framing about ADP and pointed at where the real thing is documented instead.
+
+**ADP is confirmed display-only, not wired into anything the board computes.** Evidence, not
+assertion: `_load_adp_snapshot()`'s own docstring in `export_contract.py` — "for DISPLAY only --
+does NOT feed the model (`availability.load_mfl_adp_source` stays unwired by design)"; ADR-035's
+own status note that `load_mfl_adp_source()` "exists, is tested, and is NOT wired into the shipped
+default"; and thread 082's frontend reply confirming `AdpCell`/`AdpBlock`/`DraftRoomAdpCell` read
+`row.adp`/`row.adpSource` exclusively, never merged into `consensus_rank` or its delta. Nothing in
+this session rewired that — the new Methodology section states it, it does not create it.
+
+**No contract version bump.** Every field used (`adp`, `adp_source_note`, `adp_match_rate_note`,
+etc.) already existed at 1.14.0 (thread 082); this session only added prose that reads them.
+`CONTRACT_VERSION` in `src/export_contract.py` is untouched, still `"1.14.0"`.
+
+**Scoring-format caveat kept future-proof.** FR-042 (raised the same day this ADR was written)
+will move the 24 preset leagues to standard scoring, leaving only the primary league (Westwood) on
+the custom stacking-bonus ruleset — a separate, not-yet-built change. Neither the new glossary
+entry nor the new Methodology section asserts anything about which leagues share which scoring
+rules, so neither needs revisiting when FR-042 lands.
+
+**Also fixed, found in the course of this work, not part of the ask.** Two files carried literal
+leftover `<<<<<<< HEAD` / `=======` / `>>>>>>>` git-conflict markers: this file (`docs/decisions.md`,
+around ADR-057/ADR-058) and `docs/handoffs/082-adp-fields-on-board-json-contract-1-14-0.md` (around
+its two frontend replies). Confirmed both sides in each case were sequential, non-overlapping, already
+correctly-headed content before touching anything — stripped only the three marker lines, changed no
+prose. Did **not** touch the actual ADR-054/ADR-055 duplicate-header collision underneath — that is
+ADR-056's decision, made and left unresolved on purpose (allocators widened instead); not this
+session's call to re-open. See `docs/ideas-inbox.md`, 2026-07-29 backend entry, for the full
+reasoning trail.
+
+**Evidence.** Backend: `python3 -m pytest tests/ -q` — 688 passed, 29 failed, 9 errors, 3 skipped;
+every failure/error is `nfl.db` being absent in this container (a documented, session-local GitHub
+proxy 403 on `github.com/dynastyprocess/*` blocks `scripts/rebuild_database.py` step 4, per
+`docs/can-we-rebuild-the-database.md` — reported, not re-solved, per that doc's own instruction) or
+the pre-existing ADR-054/055 mailbox failure; none touch glossary/methodology code. With the DB
+absent, `test_multi_league_export.py`/`test_export_contract.py`/`test_export_directory_contract.py`/
+`test_league_builder.py` (the glossary-adjacent suites that don't need a live board build) run clean.
+Frontend: `npm test` — 203 passed, 0 failed, 22 files; `tsc -b --noEmit` clean. Screenshots (Playwright,
+`frontend/e2e/verify-adp-glossary-methodology.mjs`): `adp-glossary-2026-07-29.png`,
+`adp-glossary-expanded-2026-07-29.png`, `adp-methodology-2026-07-29.png`,
+`adp-methodology-scrolled-2026-07-29.png` in `frontend/e2e/artifacts/` — looked at directly, ADP
+card renders under "Draft mechanics" and expands to the real MFL text; Methodology's new section
+renders the real `adp_source_note`/`adp_match_rate_note` (147 of 225 `mfl_proxy` rows resolved,
+snapshot 2026-07-29) beneath the "does not feed" language.
+
+**Known limitation, not fixed here.** `data/export/board.json`'s `consensus_source_note` field
+itself (the actual shipped artifact, not the Python source) still contains the OLD "ADR-018" text,
+because regenerating `board.json` needs a live `nfl.db` connection this session could not establish
+(same 403 as above). The source fix is real and will take effect the next time `board.json` is
+rebuilt with a working database — until then, the live site's Methodology page will keep showing
+the stale sentence in the "What the board does not claim" section even though the new ADP section
+right below it is already correct (it reads a different field, `adp_source_note`, which was already
+populated correctly before this session).

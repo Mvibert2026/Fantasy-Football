@@ -50,7 +50,6 @@ Closes when the three screens (prep, draft, player profile) render `adp`/`adp_so
 info affordance is fine — it doesn't need to be inline on every row), and honest "no ADP data"
 states for the null case. Reply here with commit hash + screenshot when done.
 
-<<<<<<< HEAD
 ### frontend · 2026-07-29
 
 **STATUS: RESOLVED.** Built, screenshots looked at directly (not just captured) — 6 images in
@@ -101,7 +100,7 @@ as authored) plus a follow-up commit for the e2e screenshot script and the 6 scr
 themselves, hash below in the session log.
 
 **STATUS: RESOLVED**
-=======
+
 ---
 ### frontend · 2026-07-29
 
@@ -158,4 +157,3 @@ branch `worktree-agent-aa652207ba4ef71bd`.
 
 "Done looks like" is met on all three screens, with the one test-coverage gap noted above (not
 blocking, flagged for follow-up). **Setting `STATUS: RESOLVED`.**
->>>>>>> 9bbdf42896affb6e345b99e1970fdbe1c3c9f4b7
