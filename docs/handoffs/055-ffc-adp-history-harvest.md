@@ -104,3 +104,54 @@ migration adding `ffc_adp`. Do **not** touch `src/` recommendation code, `fronte
 Note for whoever picks this up: 057 §1 asked whether FFC exposes ADP by date range as a prerequisite
 question for this harvest, and has been struck/merged there (reconciliation pass). No new scope added
 here — it's the same question this thread already answers by building the harvest.
+
+---
+### researcher · 2026-07-29
+
+**Prerequisite question answered before you build. Full findings:
+`docs/research/historical-adp-availability-2026-07-29.md`.** Research only — no code written, no
+page cached, nothing ingested. STATUS left OPEN; this thread is yours to resolve.
+
+**Yes, FFC exposes a date range, and it changes this thread's plan in three ways.** Every archived
+season that carries data states its own sample window verbatim — e.g. *"Data from 1535 fantasy
+football mock drafts between September 6, 2010 and September 8, 2010."* `[VERIFIED]` That is a
+bounded draft-date range, so a per-season look-ahead gate (`window_end < min(gameday)` for that
+season, from nflverse `schedules` already in `nfl.db`) is computable and should be a **hard refusal,
+not a flag**.
+
+1. **"Back to 2007" is not achievable. 2007, 2008 and 2009 all fail the gate** — their windows run
+   to **June 20, 2010**, i.e. they are accumulated aggregates, the same look-ahead failure MFL has.
+   **2011 also fails** (window Sep 7–9 2011, kickoff Sep 8) and **2012 is marginal** (window ends on
+   kickoff day). Clean non-PPR seasons are **2010 and 2013–2024 = 13**. Record 2007–2009/2011 as
+   present-but-unusable, not as absent.
+2. **The 10-team archive does not exist, and FFC does not tell you.** `/adp/half-ppr/10-team/all/2021`
+   returns **HTTP 200 with the 12-team page** — only the `<h1>` reveals it. Four independent
+   observations, incl. `14-team` → 12-team and `standard/10-team/2015` → the identical 822-draft
+   12-team sample. This thread's "12 and 10 first" should become **12 only** for history. The
+   *current* season at 10-team is fine and is what the daily capture already gets.
+3. **Half-PPR history starts in 2018, not 2007** — 2015/2016/2017 return the empty default shell.
+   That is **7 usable half-PPR seasons (2018–2024)**. A missing format-year does not 404; it serves
+   a zero-row "Non-PPR, 10 Teams" shell with a nonsense `Data from 100 ... July 29, 2026 to July 29,
+   2026` sentence. Your `parse_adp_table` zero-row `RuntimeError` already catches this — keep it.
+4. **No 2025 archive exists in any of the three formats** `[VERIFIED]`. Since 2025 is the sealed
+   holdout, that means the eventual unseal has no FFC market baseline and it cannot be captured
+   retroactively. Worth a re-check later in case the archive lags.
+
+**Three defects in `src/ingest_ffc_adp.py`, reported not fixed** (§8 of the research doc): the
+docstring's claim that FFC exposes no as-of date for past seasons is falsified by the module's own
+`parse_sample_window()`; `is_retro = period != current_year` is a calendar test where an evidence
+test is available; and `store_adp()` writes `teams`/`fmt` from CLI args, so a `--teams 10 --period
+2021` pull would tag 12-team data as `ffc_half_ppr_10team`. Parse the `<h1>` and refuse on mismatch
+before backfilling anything.
+
+**Revised size of the job:** 13 non-PPR + 7 half-PPR = **19 requests**, 12-team only, one-time.
+
+**Two things I could not settle.** Exact row counts per season are `[GAP]` — WebFetch's markdown
+conversion drops rows (a 2010 dump returned 25 rows with no running backs, which cannot be real);
+max Overall ADP per year runs 156–209, so the boards are full-depth, but run
+`parse_adp_table()` over saved HTML for a real count. And FFC's **Terms of Service is still
+unretrievable** (`/terms` 404s, `/terms-of-service` renders navigation only) — reproducing the July
+audit exactly. Fetching is authorised; **redistribution is `[GAP]`**, and `docs/CURRENT-STATE.md`
+now records the app as publicly reachable, which is in tension with the "private, single user, void
+if a second human" condition attached to FR-023, D-020 and D-021. Escalated in the research doc,
+not resolved here.

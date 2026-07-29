@@ -8,9 +8,29 @@ RAISED: 2026-07-29
 ## Request
 Run the rankings validation at maximum effort across several agents - the ultimate test
 
-<Founder's own words where possible -- paraphrase only when necessary, and say so.>
+> "at some point we may want to run a few of the agents on table really high to lock in our rankings
+> work at some point. Like the ultimate test. That's the core of the product so probable the most
+> important thing for effort."
+
+Founder's own words, 2026-07-29.
 
 ## Why it matters
 
+**Rankings are the product.** Availability, the draft board and the pick recommendation all sit on
+top of whether the ranking is good. It is the one place where a cheap answer costs the season rather
+than a retry.
+
 ## Initial read
-<Not the founder's own words -- your read on scope, constraints, sequencing.>
+**Agreed. The sequencing matters more than the setting.**
+
+**Not yet — there is nothing to validate.** The bottom-up model has not been built. The registrations
+exist (PR-004, PR-005, thread 083); the model does not.
+
+**The order:** build → run the registered test at maximum, with its decision rule already committed →
+**then** Fable attacks the result at `max` before anyone believes it.
+
+**Do not collapse the run and the review.** The agent producing a result must not be the one deciding
+it survived — the reason Fable sits on a separate budget and the strategist has no database access.
+
+Fable runs end-of-week only, so this has to be scheduled around that rather than fired when the model
+happens to finish.
