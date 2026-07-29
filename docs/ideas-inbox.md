@@ -101,3 +101,20 @@ newest at the bottom.
   network steps in this session's gated proxy -- session-local only, per
   explicit coordinator instruction; see docs/can-we-rebuild-the-database.md's
   "environment-specific finding" section.
+- 2026-07-29 · (data-ops, FFC ADP session) Decided, not escalated: gave FFC's three
+  scoring formats (non-PPR/half-PPR/PPR, all 10-team) three distinct `adp_source`
+  values rather than defaulting to half-PPR only, once the founder's mid-session
+  follow-up asked for non-PPR too (public Yahoo mock rooms run standard scoring,
+  Westwood runs half-PPR) -- lets the format correction be measured directly from
+  same-day, same-site, same-drafter-pool data instead of assumed. Also decided a
+  standalone `data/adp-snapshots-ffc/` directory rather than reusing MFL's
+  `data/adp-snapshots/`, since three formats sharing one date would make
+  `YYYY-MM-DD.csv` ambiguous; filenames instead carry the format tag. Chose an
+  80% (not MFL's 90%) name-resolution floor for FFC's CI check, because
+  `ff_playerids` carries zero team-defense rows at all -- a structural ceiling on
+  match rate, not a join defect, verified by direct count rather than assumed.
+  Historical FFC backfill (data going back to 2007, per the source's own claim)
+  was left unbuilt this session -- FFC exposes no as-of date for past seasons, so
+  a pull would need explicit `is_retrospective_aggregate` labelling and a decision
+  about whether a retrospective aggregate is worth capturing at all before
+  building it; flagging rather than building speculatively.

@@ -1981,3 +1981,67 @@ instruction not to delete it.
 **T6 (roster status) — spot-checked, not rebuilt.** `tests/test_roster_status.py` (6 tests,
 including the Tom Brady proxy-verification case) still passes unmodified; `src/roster_status.py`
 unchanged. No gap found.
+
+## ADR-054 — FFC half-PPR/non-PPR/PPR 10-team ADP ingester, daily capture wired into CI (2026-07-29, data-ops, FR-023/FR-026)
+
+**Context.** The daily ADP capture has been MFL-only (`adp_source='mfl_proxy'`), and MFL's
+`IS_PPR` flag is binary (0/1/-1) with no half-PPR option, so the project has been capturing
+full-PPR ADP as a proxy for Westwood, a half-PPR league. Full-PPR ADP is receiver-forward relative
+to half-PPR. FFC was recorded **blocked** in `docs/research/source-audit-2026-07.md` (ToS
+unretrievable → conservative default). The founder contacted FFC directly on 2026-07-29 and
+reported no restrictions on use, recorded in `docs/pm/MEMORY.md` §4 and
+`docs/founder-requests/FR-023-ffc-is-unblocked-founder-confirmed-no-restrictio.md`. This is
+broader than D-021's one-time historical-pull authorisation — recurring use is covered.
+
+**Independently re-verified this session, not taken on trust:** `robots.txt` disallows `/api/`,
+`/ajax/`, `/ajax-v2/`, `/import/`, `/adp/csv/`, `/draft/`, `/rate-my-team/results/`,
+`/rankings/custom/`. The HTML pages this ingester fetches —
+`/adp/<format>/<teams>-team/all/<year>` — are **not** on that list, and `/adp/csv/` is never
+touched.
+
+**What shipped.** `src/ingest_ffc_adp.py`: three formats, three `adp_source` values
+(`ffc_non_ppr_10team`, `ffc_half_ppr_10team`, `ffc_ppr_10team`), all at 10 teams — the primary
+league's own team count. Per CLAUDE.md §4's never-blend rule, platforms/formats are never merged
+into a consensus number; each format is its own row set, own `adp_source`, own dated CSV under
+`data/adp-snapshots-ffc/` (a directory distinct from MFL's `data/adp-snapshots/` on purpose — one
+`YYYY-MM-DD.csv` per date would be ambiguous between sources; this ingester's filenames carry the
+format tag, e.g. `2026-07-29_half_ppr.csv`).
+
+Identity resolution goes through `identity.resolve_name()` (name + position, existing
+suffix/punctuation normalization). A name that resolves to zero or more-than-one `mfl_id` is
+quarantined to `ffc_adp_quarantine` with a reason (`no_name_match` /
+`ambiguous_name_match:N_candidates`), never guessed. Measured 2026-07-29: non-PPR 171/188 stored
+(91.0%), half-PPR 180/203 (88.7%), PPR 213/242 (88.0%). The bulk of quarantined rows are team
+defenses — FFC lists "Seattle Defense" etc. as players; `ff_playerids`/`players_canonical` carries
+**zero** DEF rows at all (verified this session), so that gap is structural, not a join defect,
+and will not close without adding a DEF identity space to `ff_playerids` itself (out of scope
+here).
+
+CSV is the canonical archive (DB is gitignored, 813 MB); `--import-csv-dir` restores it into a
+rebuilt DB, same pattern as `src/ingest_mfl_adp.py`. A same-day re-run (`--force`, or a scheduled
+retry) `DELETE`s that day's existing rows for the same `(adp_source, period, teams, format,
+as_of_date)` before inserting — found and fixed a real duplicate-row defect during this session's
+own testing (a second same-day store call was appending, not replacing).
+
+**CI.** `tools/ci_ffc_adp_snapshot.py` mirrors `tools/ci_adp_snapshot.py`'s fail-loud posture
+(no DB / short `ff_playerids` / fetch or parse failure / zero rows / no CSV / under 100 rows all
+exit non-zero) but with an **80%, not 90%, name-resolution floor** — MFL's 90% assumes a
+near-lossless id-based join; FFC's is name-based against a crosswalk with a structural DEF gap, so
+90% would fail every good run. `.github/workflows/adp-snapshot.yml` now captures MFL and all three
+FFC formats in the same run, verifies all four CSVs exist before committing, and commits
+`data/adp-snapshots/` and `data/adp-snapshots-ffc/` together.
+
+**Historical backfill — deliberately not run this session.** `src/ingest_ffc_adp.py --period
+<year>` can pull a past season, but FFC exposes no as-of date for historical years and there is no
+way to confirm the sample predates that season's Week 1 rather than accumulating across the whole
+year. Rows from a non-current `--period` are stamped `is_retrospective_aggregate=1` so nothing
+downstream mistakes one for a real preseason board (CLAUDE.md §6.1 look-ahead bias). No historical
+pull was executed this session — flagged as available, not done.
+
+**Tests.** `tests/test_ingest_ffc_adp.py` (18 new), `tests/test_holdout_audit.py`
+(`ingest_ffc_adp.py` added to `CONNECT_ALLOWLIST` — it is an ingestion module, same class as
+`ingest_mfl_adp.py`).
+
+**Not touched:** `src/export_contract.py`, `src/make_board.py`, `src/availability.py` — whether
+FFC ADP feeds the board/availability model is a separate, deliberately open decision per the task
+boundary.
