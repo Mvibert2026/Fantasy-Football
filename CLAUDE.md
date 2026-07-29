@@ -285,7 +285,7 @@ tier is ambiguous, say which tier you think it is and why before starting.
 | `docs/test-registry.md` | The tiered factor list (Tier 0 table stakes / Tier 1 analytics / Tier 2 league-specific), with effort, expected edge, data source, and status per item |
 | `docs/deferred.md` | Deliberately postponed decisions and why |
 | `docs/decisions.md` | Architecture decision log — what changed, when, and the reasoning |
-| `docs/status.md` | Running project status — read first; standing requirements, current phase, latest session findings |
+| `docs/status.md` | **Frozen 2026-07-28**, historical archive only. New session narratives: `docs/status/` (one dated file per session, `tools/status_log.py sync` generates `docs/status/INDEX.md`) |
 | `docs/statistical-guardrails.md` | Methodology reference expanding §6 into concrete, checkable procedures. Read before running any backtest; every backtest report must state which checks were applied |
 | `docs/assistant-context.md` | Curated, current-state-only summary for the in-app assistant's "why" questions. One paragraph per settled decision, no history, no superseded numbers. Edited in place when an ADR supersedes something in it — never appended to. The assistant must read this instead of `decisions.md`/`test-registry.md`, both of which contain figures later entries overwrote |
 
@@ -297,15 +297,19 @@ link it here. An overloaded spec file gets ignored, which defeats its purpose.
 ### Read at session start, in this order
 1. `docs/CURRENT-STATE.md` — canonical project state. Trust this.
 2. `docs/operating-model.md` — your role, effort tier, and evidence standards.
-3. `docs/founder-requests.md` — the standing backlog of what the founder has asked for.
+3. `docs/founder-requests.md` (archive, frozen 2026-07-28) plus
+   `docs/founder-requests/INDEX.md` (everything raised since) — the standing backlog of what the
+   founder has asked for.
 4. `docs/handoffs/OPEN.md` — your inbox. Open every thread where `TO:` includes your role and
    `STATUS:` is `OPEN` or `BLOCKED-ON-YOU`.
 5. Only the specific ADR or doc your task names.
 
-**Do not read `docs/status.md` for current state.** It is an append-only historical log containing
-superseded figures stated in the same voice as current ones — three conflicting "current state"
-headers and roughly fifteen internal contradictions. Read it to learn what happened, never to learn
-what is true. Same hazard `docs/assistant-context.md` describes for `decisions.md`.
+**Do not read `docs/status.md` or `docs/status/` for current state.** `docs/status.md` is a frozen
+append-only historical log containing superseded figures stated in the same voice as current
+ones — three conflicting "current state" headers and roughly fifteen internal contradictions.
+`docs/status/` (its successor) is the same kind of log, just sharded. Read either to learn what
+happened, never to learn what is true. Same hazard `docs/assistant-context.md` describes for
+`decisions.md`.
 
 ### Dispatch, do not absorb
 For each thread, use the Task tool to dispatch the agent named in its `TO:` field. Do not work
@@ -331,14 +335,23 @@ has already caused collisions (threads 043, 049, 053; ADR-048) — full protocol
 
 ### Capture what the founder says — every session, no exceptions
 If the founder expresses a want, a constraint, a preference, or a "wouldn't it be good if" in your
-session, append it to `docs/founder-requests.md` before you finish. Do not judge whether it is
-important enough, and do not wait for it to be formally specced. Chat transcripts are invisible to
-every other agent and are discarded — a request that never reaches that file has, as far as this
-project is concerned, never been made.
+session, record it before you finish: `python tools/founder_requests.py new --raised-by "<where>"
+--subject "..."` (see `docs/founder-requests/README.md`). Do not judge whether it is important
+enough, and do not wait for it to be formally specced. `docs/founder-requests.md` is frozen
+(archive only, do not append there) — new requests get their own numbered file so status updates
+later don't collide with another session's. Chat transcripts are invisible to every other agent
+and are discarded — a request that never reaches one of these files has, as far as this project is
+concerned, never been made.
 
 ### Write back, every session
 - Update `docs/CURRENT-STATE.md` **in place** — replace stale lines, never append a new section.
-- Append the session narrative to `docs/status.md`.
+  The "Build state" table's machine-measured rows come from `python tools/state.py --apply`
+  (`--tests` to also run the suites); don't hand-type those, or the next `--apply` silently
+  overwrites your edit. The rows above the markers, and everything outside "## Build state", stay
+  hand-edited, one session at a time.
+- Write the session narrative to `docs/status/YYYY-MM-DD-role-slug.md` (new file, never an edit to
+  another session's), then `python tools/status_log.py sync` to regenerate
+  `docs/status/INDEX.md`. `docs/status.md` is frozen — do not append there.
 - New decision → an ADR in `docs/decisions.md`.
 - Contract schema change → bump the version **and** open a handoff thread to `frontend`.
 
