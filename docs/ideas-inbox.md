@@ -268,6 +268,7 @@ newest at the bottom.
   **Also, stale line:** `CURRENT-STATE.md` still says "FFC is blocked by robots.txt regardless" and
   "FFC remains blocked" while MEMORY §4 and FR-023 record it unblocked and say they supersede.
 
+<<<<<<< HEAD
 - **2026-07-29, backend (ADR-059).** `docs/pm/CHARTER.md` and `docs/pm/MEMORY.md` are the two
   richest sources of live factual claims in the repo and are deliberately **not** in
   `docs/state-claims.toml`'s `live_docs` — they are the PM role's files and outside the backend
@@ -323,3 +324,34 @@ newest at the bottom.
   neither applies and no `[MODAL-SAMPLED]` evidence was obtainable — no `nflreadpy` call, no
   `data/nfl.db` query. Several gaps in the report (e.g. which season nflverse's betting columns first
   become non-null) are one query away for anyone with a shell.
+=======
+- **2026-07-29, ranker (research pass 1, `docs/ranking/bottom-up-research-pass-1.md`).** Four calls
+  made without escalating, logged here.
+  (a) **Did not fund the coaching-data sourcing decision.** Two independent bounds — a
+  perfect-foresight team-volume oracle (delta <= +0.055 tau_b, and that version carries a known
+  self-inclusion leak so it is generous) and a team fixed-effect ANOVA on residuals (excess share
+  over chance -0.042 to -0.002, i.e. none at any position) — put the whole team-environment channel,
+  of which coaching is a strict subset, near zero. The same argument deprioritises Vegas implied team
+  totals. Recorded so the decision is not silently re-litigated later as a fresh idea.
+  (b) **Quantified the yardage-bonus channel for the first time, and it is small.** Realised
+  within-position reordering is a mean 0.19-0.60 positional ranks (tau_b 0.93-0.98 with vs without
+  bonuses); ex ante it is smaller still, because PR-002 already returned NULL on whether the
+  reorder-driving shape residual persists. The bonuses act **across** positions instead: +9.4 / +7.4
+  / +5.7 / +2.7 points of top-3 VBD at WR / RB / QB / TE, a ~6.8-point WR-vs-TE differential. Keep
+  the bonuses in the scoring engine; stop calling this the structural edge.
+  (c) **Contested ADR-057's QB mechanism rather than building its fix.** The realised finish-rank
+  value curve at QB is at an era high (-72.9 in 2021-2024 vs -57 to -59 before) while the
+  consensus-fitted slope fell, and the two R-squareds are 0.91-0.98 vs 0.15-0.41. TE shows the same
+  pattern; RB and WR do not. Recency-weighting the pooled consensus curve may therefore make the
+  board track market noise faster, not slower. **Not acted on — thread 085 to strategist**, because
+  ruling on my own analysis is exactly what the role structure forbids.
+  (d) **Added `ranker` to `tools/handoffs.py:31` ROLES.** `.claude/agents/ranker.md` existed but the
+  role did not, so this agent could not open a correctly attributed thread. One line.
+  **Flagging for whoever picks the model up next, as the cheapest real lead in the document:**
+  `snap_counts` (2013-2025, 324,611 rows), `ngs_receiving` (2016-2025), `ngs_rushing` and `injuries`
+  are all already in `data/nfl.db`, and **none of them is read by `experiments/bottomup/data.py`**,
+  which touches only `player_weekly_stats`, `draft_picks` and `ff_playerids`. Twelve-plus seasons of
+  role data, zero acquisition cost, no licensing question.
+  **Third session to report it:** this file still carries unresolved merge-conflict markers further
+  up, around the PR-004 / ADR-057 entries. Appended below them without touching either side.
+>>>>>>> origin/worktree-agent-ac1685c1cf9cd2954

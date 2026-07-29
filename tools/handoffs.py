@@ -28,7 +28,7 @@ DECISIONS_NEEDED = ROOT / "docs" / "decisions-needed.md"
 DECISIONS_LOG = ROOT / "docs" / "decisions.md"
 ADR_DRAFTS = ROOT / "docs" / "adr-drafts"
 
-ROLES = ["pm", "backend", "frontend", "data-ops", "strategist", "researcher", "librarian", "design", "founder", "fable"]
+ROLES = ["pm", "backend", "frontend", "data-ops", "strategist", "researcher", "librarian", "design", "founder", "fable", "ranker"]
 OPEN_STATUSES = {"OPEN", "BLOCKED-ON-YOU", "BLOCKED-EXTERNAL"}
 STALE_DAYS = 14
 NEW_STALE_DAYS = 1  # W1(d): an unfiled NEW-*.md thread older than this is a problem

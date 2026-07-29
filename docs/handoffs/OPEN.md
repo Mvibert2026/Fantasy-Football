@@ -4,7 +4,7 @@
 Threads are the source of truth. Change a thread's `STATUS:`, then re-run sync.
 Protocol: [`README.md`](README.md).
 
-**43 open** · 41 resolved
+**45 open** · 41 resolved
 
 ---
 
@@ -68,7 +68,7 @@ not an omission. Start your session at your own heading.
 | [059](059-on-deck-recommendations.md) | On deck recommendations | `pm` | OPEN | 2d | FR-006 (draft chatbot), calm-preparation use case |
 | [066](066-contract-1-10-0-board-json-rows-gained-roster-st.md) | Contract 1 10 0 board json rows gained roster st | `backend` | OPEN | 2d | none |
 
-### `data-ops` — 7 waiting
+### `data-ops` — 8 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
@@ -79,8 +79,9 @@ not an omission. Start your session at your own heading.
 | [057](057-timeseries-data-audit.md) | Timeseries data audit | `pm` | OPEN | 2d | injury-aware rankings, ADP drift model, suspension correctness guarantee, Fable Addendum 2 |
 | [067](067-t1-multiformat-consensus-rescope.md) | T1 multiformat consensus rescope | `pm` | OPEN | 2d | T1 completion for leagues 2/3, board correctness for the non-primary leagues |
 | [070](070-recurring-injury-suspension-feed.md) | Recurring injury suspension feed | `pm` | OPEN | 2d | T4 (suspensions/roster-status table stakes), E[games_played] per ADR-E Amendment E-A1 |
+| [084](084-deepen-expert-consensus-history-beyond-2021-2025.md) | Deepen expert consensus history beyond 2021 2025 | `ranker` | OPEN | 0d | none |
 
-### `strategist` — 5 waiting
+### `strategist` — 6 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
@@ -89,6 +90,7 @@ not an omission. Start your session at your own heading.
 | [046](046-bottom-up-ranking-data.md) | Bottom up ranking data | `pm` | OPEN | 2d | bottom-up ranking framework |
 | [053](053-founder-csv-ingestion.md) | Founder csv ingestion | `pm` | OPEN | 2d | FR-001 comparison view |
 | [056](056-round-varying-need-and-run-saturation.md) | Round varying need and run saturation | `pm` | OPEN | 2d | any change to the need term or the run term |
+| [085](085-the-board-rank-curve-slope-confounds-positional.md) | The board rank curve slope confounds positional | `ranker` | OPEN | 0d | none |
 
 ### `researcher` — 3 waiting
 
@@ -115,6 +117,10 @@ _Nothing waiting on you._
 | [035](035-frontend-catchup-runbook.md) | Frontend catchup runbook | `pm` | OPEN | 3d | 003, 027, 028, 029, 030, 031, and every future frontend thread |
 
 ### `fable` — 0 waiting
+
+_Nothing waiting on you._
+
+### `ranker` — 0 waiting
 
 _Nothing waiting on you._
 
