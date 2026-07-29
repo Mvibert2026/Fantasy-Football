@@ -263,18 +263,28 @@ distinction is being settled by whoever writes the component.
 **3 · One treatment for controls that cannot work.** Six of them (FR-037). The founder is finding
 them by clicking. One decision covers all six and it is the cheapest high-value thing in this file.
 
-**4 · The phone layout.** Still real, still yours, still the only item he has personally been blocked
-on — now fourth at his instruction rather than first. The constraint is unchanged and is the whole
-difficulty: **do not solve narrow screens by hiding data.** Make it reachable — sticky first column,
-horizontal scroll inside the table rather than the page, disclosure. Absence is only correct when
-something genuinely cannot function.
-
-**5 · The two-track expression** (§9.1). How a screen says "this league is the generic track" without
+**4 · The two-track expression** (§9.1). How a screen says "this league is the generic track" without
 reading as broken. 26 of 27 leagues have no strategy data at all and four screens thin out on a
 league switch.
 
-**6 · The League settings boundary** (§9.2) — the line between settings that apply instantly and
+**5 · The League settings boundary** (§9.2) — the line between settings that apply instantly and
 settings that cannot apply at all on a hosted site.
 
-**7 · The large-null ADP column** (§4) and **the acceptance capture list** (§6 item 4). Both
+**6 · The large-null ADP column** (§4) and **the acceptance capture list** (§6 item 4). Both
 unchanged, both still worth doing.
+
+---
+
+**Paused, at the founder's instruction 2026-07-29: the phone layout.** Verbatim: *"let's have design
+pause on the phone for now, it's not much added value to me right now."*
+
+It went from first, to fourth, to parked, in one evening. **Do not spend a run on it.** §3 and §6 of
+this file both push it as the top priority; both are superseded on this point.
+
+Nothing about the problem changed and nothing is retracted — the constraint from FR-025 still holds
+whenever it resumes: **do not solve narrow screens by hiding data.** What changed is its value to the
+founder right now, which is his call and not a design judgement.
+
+**Why it was ever first is worth keeping, because it is the one thing that would restart it:** it is
+the only item he had personally asked for and been blocked on. If he starts using the app on a phone
+under a draft clock, this returns to the top of the list immediately.
