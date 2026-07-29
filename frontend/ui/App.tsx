@@ -94,13 +94,37 @@ export function App() {
     fetchSelectableLeagues().then(setLeagues);
   }, [reloadKey]);
 
+  // Found while verifying FR-036's persistence (not part of that request, but a real
+  // bug surfaced by switching leagues repeatedly): this effect had no guard against
+  // out-of-order async resolution. loadDataset(leagueId) is a Promise with no
+  // cancellation; if leagueId changes again before it resolves, the OLD call is still
+  // in flight and can resolve *after* the new one, overwriting `data` with a dataset
+  // for a league that is no longer selected -- `leagueId` (state) and `data.league`
+  // (what's rendered) silently disagree, with no error and no loading state to
+  // signal it. That's a Principle #3 violation, and a worse one than the principle's
+  // usual case: not "still holds the pre-edit value," but "holds an actively wrong
+  // value that looks current." Reproduced directly: switch to a non-default league,
+  // back to default, then to the same non-default league again -- `data` can end up
+  // never updating from the "back to default" load, while every UI affordance
+  // (the league <select>, TopBar's pill) reports the new league as selected.
+  // Standard fix: an effect-scoped cancellation flag via the cleanup function, so a
+  // stale resolution becomes a no-op instead of a write.
   useEffect(() => {
+    let cancelled = false;
     setData(null);
     setError(null);
     setFocusedPlayer(null);
-    loadDataset(leagueId).then(setData, (e: unknown) =>
-      setError(e instanceof Error ? e.message : String(e)),
+    loadDataset(leagueId).then(
+      (d) => {
+        if (!cancelled) setData(d);
+      },
+      (e: unknown) => {
+        if (!cancelled) setError(e instanceof Error ? e.message : String(e));
+      },
     );
+    return () => {
+      cancelled = true;
+    };
   }, [reloadKey, leagueId]);
 
   const rows = useMemo(() => (data ? buildRows(data) : []), [data]);
