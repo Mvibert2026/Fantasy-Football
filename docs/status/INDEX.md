@@ -4,7 +4,7 @@
 Session files in this directory are the source of truth. Add a new dated file, then
 re-run sync. Protocol: [`README.md`](README.md).
 
-**11 sessions recorded.**
+**13 sessions recorded.**
 
 ---
 
@@ -576,6 +576,128 @@ the session. 3,487 is the whole table; 2021–2025 is 2,540, and the 36 quaranti
 
 ---
 
+<!-- 2026-07-29-frontend-adp-display.md -->
+
+# 2026-07-29 — frontend — ADP display on board, draft room, player detail
+
+**Role:** frontend · **Type:** UI wiring against an already-landed export contract bump
+**Thread:** 082 (backend -> frontend, FR-024) · **Contract:** 1.13.0 -> 1.14.0
+
+## Task
+
+Founder asked (2026-07-29, recorded as FR-024): "ADP should be shown on both the prep and draft
+screens as well as player profile." Backend's half landed same day (thread 082, commit `3690217`/
+`c6b45be`, contract bump to 1.14.0): `board.json` player rows gained `adp`/`adp_min_pick`/
+`adp_max_pick`/`adp_selected_pct`/`adp_source`; the board top level gained `adp_source`/
+`adp_as_of_date`/`adp_match_rate_note`/`adp_source_note`. Nothing rendered any of it. This session
+closes the frontend half.
+
+## Premise check
+
+Read `CLAUDE.md`, `docs/CURRENT-STATE.md`, `docs/operating-model.md`, `docs/design-fidelity.md`,
+thread 082, `docs/founder-requests/FR-024-*.md`, and `docs/backlog-triage-2026-07-29.md` before
+acting. All consistent, no contradiction found. `data/export/board.json` and
+`frontend/public/data/board.json` were both already at `contract_version: 1.14.0`, byte-identical,
+already synced — confirmed measured, 144/510 rows carry a real `adp` value, 366 null, matching
+backend's reported count.
+
+## What was built
+
+- `frontend/ui/data/types.ts` — `RawBoardPlayer` gains 5 optional ADP fields; `RawBoard` gains 4
+  optional top-level ADP fields. Optional so a pre-1.14.0 export still parses.
+- `frontend/ui/data/board.ts` — `BoardRow` gains `adp`/`adpMinPick`/`adpMaxPick`/`adpSelectedPct`
+  as `Cell<number>` (through `fromNullable`, honest-null convention, authored reason citing MFL's
+  ~top-230 coverage limit) and `adpSource` as a plain string travelling alongside them.
+- `frontend/ui/data/contract.ts` — `EXPECTED_CONTRACT` 1.13.0 -> 1.14.0.
+- `frontend/ui/data/trace-fields.ts` — `TRACE_CONTRACT` 1.13.0 -> 1.14.0, new 1.14.0 changelog
+  entry (records the delta-column decision below), all 5 player-row ADP fields registered in
+  `BOARD_TRACE_FIELDS` (required — the registry is compared 1:1 against exported player-row keys
+  by `trace-fields.test.ts`), all 4 top-level fields registered in `BOARD_HEADER_TRACE_FIELDS`.
+- `frontend/ui/views/Board.tsx` — new `ADP (MFL)` column between CONS and Δ, sortable
+  (`SortKey` gains `'adp'`). Header label is the glance-level "not your league's ADP" signal (per
+  the founder's explicit requirement); `AdpCell` shows the value with a tooltip carrying source,
+  pick range, and selected%; absent renders through the same em-dash convention as every other
+  column on this table. Column header itself carries a title with the full `adp_source_note` +
+  `adp_as_of_date`, reachable without depending on any row having data.
+- `frontend/ui/views/DraftRoom.tsx` — compact `DraftRoomAdpCell` (value + "MFL" superscript, or
+  em-dash) inserted between team and the existing delta-vs-consensus cell in the board list.
+- `frontend/ui/components/PlayerDetail.tsx` — new `AdpBlock` section below "WHY OUR RANK DIFFERS
+  FROM THE MARKET": value, pick range, selected%, and `board.adp_source_note` rendered verbatim
+  (the one place on any of the three screens the full caveat is always visible, not gated behind
+  hover) plus `adp_as_of_date`. Null case shows the row's own absent-cell reason, distinct wording
+  from the projection/availability null states elsewhere in the same sheet.
+- `frontend/e2e/cloud-adp-screenshot.mjs` — new screenshot script following the cloud recipe in
+  `docs/frontend-cloud-runbook.md` (explicit `executablePath` against the pre-installed Chromium
+  1194 binary; never `playwright install`).
+
+## Judgement call: no second delta column
+
+Thread 082 and FR-024 both explicitly left this to frontend ("the board already shows a delta
+against consensus, and two adjacent delta columns measuring different things would confuse more
+than they reveal... left to frontend, which can see the layout").
+
+**Decision: do not add a delta column comparing our rank to ADP.** Reasons:
+
+1. The board already renders one delta (`delta_vs_consensus`, our rank vs. FantasyPros expert
+   consensus). A second delta beside it (our rank vs. MFL-proxy ADP) is a different comparison but
+   would sit in the same visual slot doing the same visual job — a reader skimming Δ columns has no
+   cheap way to remember which delta means what without re-reading a header each time.
+2. No backend field computes "our rank minus ADP." Adding that column would mean computing it
+   client-side from two independently-sourced numbers, which is closer to inventing a value than
+   displaying one — thin justification against Principle #1 (every rendered number traces to a
+   named backend field).
+3. The raw ADP value placed beside CONS lets a reader compare three sourced numbers (consensus
+   rank, ADP, our rank) directly, which is the information FR-024 actually asked for, without
+   introducing an unsourced fourth number.
+
+Recorded in `trace-fields.ts`'s 1.14.0 changelog entry and in the thread 082 reply so the reasoning
+is visible from both places a future session would look.
+
+## Evidence
+
+`npm test`: **202 passed, 0 failed, 22 test files** (`frontend/`). `npx tsc -b --noEmit`: clean.
+`npm run smoke` (against a live dev server, contract 1.14.0 confirmed via `curl`): **18/19 passed**
+— the one failure (`no console errors during the loop`) is the pre-existing missing-
+`ANTHROPIC_API_KEY` reasoning-proxy network error already documented in
+`docs/frontend-cloud-runbook.md` as unrelated to any data screen; unchanged by this session.
+
+Six screenshots, looked at directly (not just captured), in `frontend/e2e/artifacts/`:
+
+- `adp-board-2026-07-29.png` — Board table, top 16 rows, ADP (MFL) column populated (Bijan
+  Robinson 3.3, Ja'Marr Chase 2.9, ...).
+- `adp-board-null-row-2026-07-29.png` — scrolled to rank 33 (Jeremiyah Love), ADP column shows
+  "—" distinct from populated neighbors above and below.
+- `adp-draft-room-2026-07-29.png` — Draft Room board list, compact ADP figures with "MFL"
+  superscript beside the existing delta column.
+- `adp-draft-room-null-row-2026-07-29.png` — same list scrolled to Jeremiyah Love, "—" with no
+  MFL tag, delta and availability columns unaffected.
+- `adp-player-detail-present.png` — Bijan Robinson detail sheet, MARKET ADP block: 3.3 avg pick,
+  range 1–7, taken in 16% of sampled drafts, full caveat paragraph visible.
+- `adp-player-detail-null.png` — Jeremiyah Love detail sheet, MARKET ADP block: "No MFL ADP data
+  for this player -- MyFantasyLeague's public sample only covers roughly the top ~230 players in a
+  10-team pull... Not a zero, not a rank -- not computed."
+
+## Coordinator commit note
+
+Most of this session's edits (`board.ts`, `contract.ts`, `trace-fields.ts`, `types.ts`,
+`Board.tsx`, plus `DraftRoom.tsx`/`PlayerDetail.tsx`) appear in commits `b6d5a0d` and `75bf095`,
+authored by the coordinator mid-session ("wip: ADP display, in flight" / "Also carries in-flight
+ADP display work from the frontend chain"), not by a competing agent. Verified via `git diff HEAD
+-- <files>` before concluding anything: empty diff both times, byte-for-byte the session's own
+work. No reconciliation needed, work continued.
+
+## Boundary
+
+Touched only `frontend/**`, this status file, and thread 082. Did not touch `src/`, `tests/`
+outside frontend, `.claude/`, `docs/pm/`, `docs/CURRENT-STATE.md`, `wrangler.jsonc`, `.github/`.
+
+## Result
+
+Commit (this session's remaining diff — screenshots + screenshot script): see `git log` after
+`tools/handoffs.py sync`. Test count: 202 frontend unit tests passing, 0 failed, 22 files.
+
+---
+
 <!-- 2026-07-29-frontend-cloud-readiness.md -->
 
 # 2026-07-29 — frontend — cloud readiness verification
@@ -1115,6 +1237,36 @@ None. No new gap was found that warranted a fresh thread — the two real bugs (
 - `/home/user/Fantasy-Football/docs/fable-still-live-2026-07-29.md`
 - `/home/user/Fantasy-Football/docs/status/2026-07-29-librarian-triage.md` (this file)
 
+## Same-day correction: BLOCKED bucket re-tested
+
+The founder flagged that this same document's original BLOCKED bucket had carried the
+screenshot-compositing limitation forward from earlier sessions without re-testing it against
+today's environment — a document asserting something nobody re-checked, this project's recorded
+failure mode, happening again in a document I wrote hours earlier the same day.
+
+Went back through every thread in the BLOCKED bucket and re-read each one's own reply chain rather
+than trusting the bucket label. Result: **027, 028, 029, 041** were each blocked solely on the same
+screenshot-compositing gap ("the Browser pane is not displayed, so the page is not compositing
+frames") — verified by reading each thread's own text, not inferred. That gap is fixed today per
+`docs/frontend-cloud-runbook.md` (real Chromium via `executablePath`,
+`frontend/e2e/cloud-board-screenshot.mjs`, dated captures in `frontend/e2e/artifacts/`). Moved all
+four to STILL LIVE with a note that the remaining work is running the capture and attaching it, not
+re-building anything.
+
+Checked the rest of the BLOCKED bucket too, not just the ones that looked suspicious: 003, 006, 007,
+012, 030, 031, 035, 050 are blocked on a deliberate, on-record design-fidelity pause (confirmed in
+`docs/handoffs/035-frontend-catchup-runbook.md:77-81`, not a stale artifact). 076 and 081 are blocked
+on a genuinely unresolved thread-ID/ADR-allocator design question, unrelated to screenshots, FFC, or
+the database — confirmed by reading 081's latest reply, which explicitly says the problem is broader
+than worktrees and still needs a design owner. Also checked for the other two classes the founder
+named (FFC-blocked and database-unavailable-in-cloud-blocked items in the open BLOCKED bucket): none
+found — FFC's unblocking was already reflected correctly in STILL LIVE (thread 054/055), and the one
+thread about DB rebuild-in-cloud (080) was already closed, not sitting in BLOCKED.
+
+Edited `docs/backlog-triage-2026-07-29.md` in place (correction note at top, BLOCKED section trimmed,
+four items added to STILL LIVE with unblock reasons). No thread STATUS changed — that belongs to
+`frontend`/`pm`, not this role.
+
 ---
 
 <!-- 2026-07-29-pm-cloud-migration-and-deploy.md -->
@@ -1323,6 +1475,104 @@ than a normal `[SNIPPET]` and is stated as such.
 Nothing else was modified, per instruction. No handoff thread was opened or replied to — the task
 named none, and the three threads standing open to `researcher` (054, 057, 070) are unrelated to it
 and were deliberately not absorbed into this session.
+
+---
+
+<!-- 2026-07-29-strategist-bottomup-registration.md -->
+
+# 2026-07-29 · strategist · PR-004 bottom-up confirmatory registration
+
+**Role:** strategist (Opus/high). **Shell:** none, by design — this session wrote a
+pre-registration and could not, and did not, run any measurement.
+
+## What was asked
+
+Pre-register the one confirmatory bottom-up ranking experiment that has never been run
+(ADR-E §9 / F-A §1's A0, "F-BOTTOMUP-CORE"), and commit the decision rule before anyone runs it.
+
+## Premise challenged
+
+The brief asserted *"the baseline that matters is consensus, not last-season rank."* Correct in
+principle (`CLAUDE.md` §6.5), **not achievable with this data**, and the registration says so
+rather than hedging. Consensus ECR coverage is 2021–2025; 2025 is the sealed holdout, leaving
+n=4. The exact two-sided sign-test floor at n=4 is p=0.125 — unreachable at alpha=0.05 before
+any correction, the same wall PR-003 documented. Consensus is registered as **descriptive
+only** (no p-value, no CI, per ADR-B and ADR-C's exploratory-artifact rule), and the
+registration states the consequence in full: **no outcome of PR-004 may be reported as an edge,
+as beating the market, or as evidence our rankings beat consensus.** The descriptive evidence
+already on file has consensus ahead of the V5 model at every position. A PASS licenses a
+labelled, non-binding overlay at the passing position and nothing more.
+
+Not a refusal. An accuracy claim against a stated naive baseline, scope-limited, is defensible
+with the data in hand. What would be indefensible is running it and calling it an edge — so the
+scope limit is registered where it cannot be relaxed after the number is seen.
+
+## What was produced
+
+| Artifact | Path |
+|---|---|
+| Registration (ADR-C nine-field confirmatory) | `docs/preregistration/PR-004-bottomup-core-confirmatory.md` |
+| Family manifest (m=4, fixes the BH denominator) | `docs/preregistration/families/F-BOTTOMUP-CORE.yaml` |
+| Handoff body, **unallocated** | `docs/reviews/PR-004-handoff-body-unallocated-2026-07-29.md` |
+| Decision log | `docs/ideas-inbox.md`, 2026-07-29 strategist entry |
+
+## The decision rule, in one place
+
+Per position, six conjunctive criteria: mean dtau_b vs prior-season-points baseline **>= +0.04**;
+positive in **>= 10 of 13** embargoed-LOSO folds; season-level bootstrap 95% CI excludes 0 **and**
+the bootstrap p survives BH across m=4; points-per-game variant agrees in sign; no ADR-E §8
+audit trigger; cross-process determinism from seed 20260729. Projected-points adoption
+additionally requires mean dR2 > 0 at >= 10/13 folds.
+
+**STOP: if neither RB nor WR clears, bottom-up is dead as a 2026 product input** — consensus-only
+board, no overlay, no further configs before the draft, family closed. Three escape routes are
+closed by name in §4 (lowering the floor, promoting a descriptive arm, re-running with different
+knobs).
+
+## Four judgement calls, made not asked
+
+1. **Consensus refused as confirmatory baseline** (above).
+2. **F-A's ordering inverted.** A0 runs *before* N-1/N-2. Choosing the frozen candidate after
+   seeing N-1/N-2 is a `data_seen` selection step; amending PR-004 on it would irreversibly
+   demote it to exploratory under ADR-C's one rule with teeth. V5 is frozen unconditionally;
+   N-1/N-2 become post-hoc exploratory work that cannot change this verdict.
+3. **QB run confirmatorily**, against F-A §2.3's "closed, not run", keeping ADR-E §9's declared
+   m=4. Dropping the position we expect to fail would shrink the BH denominator by exactly the
+   failing test. Strictly more conservative; costs nothing.
+4. **Materiality floor +0.04 dtau_b**, derived from decision-relevance arithmetic (~23 pairwise
+   inversions over a ~48-player universe ≈ one improved pick per draft) and deliberately set
+   **above WR's exploratory point estimate of +0.036**. A threshold set beneath every estimate
+   already seen is not a threshold.
+
+## Calibration prior, applied
+
+Four of five registered prediction sets across sessions 3–4 were materially wrong, every miss
+over-crediting a situation story — and V5's advantage over V1 comes precisely from a situation
+feature family. §5 registers the pessimistic reading: **modal outcome is STOP**; at most RB
+clears; WR is predicted to fail on materiality even if it clears significance.
+
+## The limitation that must survive into every downstream summary
+
+**Selection contamination.** V5 was chosen from eight configurations evaluated on these same
+folds (2012–2024). PR-004 does not measure V5 against data unseen by the selection process. It
+measures, for the first time, what the effect looks like under a pre-registered rule with an
+honest season-level CI, a fixed denominator, the ADR-E embargo, and a threshold that can fail.
+It cannot establish out-of-sample skill for the configuration choice. Only the sealed 2025
+unseal (n=1, one shot) or P-2026 (prospective) could.
+
+## Not done, and why
+
+- **Handoff thread not opened.** No Bash in this role by design, therefore no allocator access.
+  Hand-typing or computing an ID was refused (collisions at threads 043/049/053, ADR-048). The
+  body is staged with the exact `python tools/handoffs.py new --from strategist --to backend`
+  command; whoever has a shell allocates, pastes, syncs, deletes the staging file.
+- **`content_hash` left as `PENDING-FREEZE`.** Cannot compute sha256 without a shell.
+  `compute_content_hash` redacts the field before hashing, so backend writing the real value in
+  is the designed two-pass freeze; §9 spells out the four steps and makes them a prerequisite to
+  running anything.
+- **2025 holdout not unsealed and not authorised.** Irreversible, permanently closes the family,
+  requires a named human approver in `UNSEAL_LOG.md`. That is an escalation, not an agent call.
+- **No measurement of any kind run.** That is the role working as intended.
 
 ---
 

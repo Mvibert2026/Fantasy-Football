@@ -4,7 +4,7 @@
 Threads are the source of truth. Change a thread's `STATUS:`, then re-run sync.
 Protocol: [`README.md`](README.md).
 
-**48 open** · 35 resolved
+**47 open** · 36 resolved
 
 ---
 
@@ -49,7 +49,7 @@ not an omission. Start your session at your own heading.
 | [079](079-mock-draft-capture-work-is-uncommitted-in-a-work.md) | Mock draft capture work is uncommitted in a work | `pm` | OPEN | 0d | none |
 | [083](083-pr-004-f-bottomup-core-run-the-confirmatory-bott.md) | Pr 004 f bottomup core run the confirmatory bott | `strategist` | OPEN | 0d | none |
 
-### `frontend` — 16 waiting
+### `frontend` — 15 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
@@ -68,7 +68,6 @@ not an omission. Start your session at your own heading.
 | [049](049-draft-mode-gap-list.md) | Draft mode gap list | `pm` | OPEN | 2d | none |
 | [059](059-on-deck-recommendations.md) | On deck recommendations | `pm` | OPEN | 2d | FR-006 (draft chatbot), calm-preparation use case |
 | [066](066-contract-1-10-0-board-json-rows-gained-roster-st.md) | Contract 1 10 0 board json rows gained roster st | `backend` | OPEN | 2d | none |
-| [082](082-adp-fields-on-board-json-contract-1-14-0.md) | Adp fields on board json contract 1 14 0 | `backend` | OPEN | 0d | none |
 
 ### `data-ops` — 7 waiting
 
@@ -171,4 +170,5 @@ _Nothing waiting on you._
 | [075](075-defect-fabricated-reconstruction-of-thread-067-u.md) | Defect fabricated reconstruction of thread 067 u | `pm` → `pm` |
 | [078](078-pick-level-adp-velocity-capture-blocked-mfl-has.md) | Pick level adp velocity capture blocked mfl has | `data-ops` → `pm` |
 | [080](080-commit-the-three-unreproducible-artifacts-before.md) | Commit the three unreproducible artifacts before | `data-ops` → `backend` |
+| [082](082-adp-fields-on-board-json-contract-1-14-0.md) | Adp fields on board json contract 1 14 0 | `backend` → `frontend` |
 
