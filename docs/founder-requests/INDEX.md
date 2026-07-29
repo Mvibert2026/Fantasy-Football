@@ -5,7 +5,7 @@ Per-request files in this directory are the source of truth. Edit a request's ow
 `STATUS:` line, then re-run sync. Protocol: [`README.md`](README.md).
 Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests.md).
 
-**9 requests since freeze.**
+**10 requests since freeze.**
 
 ---
 
@@ -19,7 +19,7 @@ Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests
 | [FR-021](FR-021-fable-work-happens-at-the-end-of-the-week-before.md) | Fable work happens at the end of the week before | 2026-07-29 | claude code session 2026-07-29 (PM takeover) |
 | [FR-022](FR-022-access-the-working-app-from-a-url-without-a-serv.md) | Access the working app from a url without a serv | 2026-07-29 | claude code session 2026-07-29 (PM takeover) |
 | [FR-023](FR-023-ffc-is-unblocked-founder-confirmed-no-restrictio.md) | Ffc is unblocked founder confirmed no restrictio | 2026-07-29 | claude code session 2026-07-29 (PM takeover) |
-| [FR-026](FR-026-capture-non-ppr-adp-as-well-alongside-half-ppr.md) | Capture non ppr adp as well alongside half ppr | 2026-07-29 | chat session 2026-07-29 (PM takeover) |
+| [FR-027](FR-027-two-tiers-this-season-deep-custom-westwood-gener.md) | Two tiers this season deep custom westwood gener | 2026-07-29 | chat session 2026-07-29 (PM takeover) |
 
 ## SCOPING — 0
 
@@ -29,11 +29,12 @@ _None._
 
 _None._
 
-## IN PROGRESS — 1
+## IN PROGRESS — 2
 
 | ID | Subject | Raised | Source |
 |---|---|---|---|
 | [FR-024](FR-024-show-adp-on-the-prep-board-the-draft-screen-and.md) | Show adp on the prep board the draft screen and | 2026-07-29 | chat session 2026-07-29 (PM takeover) |
+| [FR-026](FR-026-capture-non-ppr-adp-as-well-alongside-half-ppr.md) | Capture non ppr adp as well alongside half ppr | 2026-07-29 | chat session 2026-07-29 (PM takeover) |
 
 ## SHIPPED — 0
 
