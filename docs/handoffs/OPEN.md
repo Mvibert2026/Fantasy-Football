@@ -4,11 +4,7 @@
 Threads are the source of truth. Change a thread's `STATUS:`, then re-run sync.
 Protocol: [`README.md`](README.md).
 
-<<<<<<< HEAD
-**47 open** · 36 resolved
-=======
-**42 open** · 40 resolved
->>>>>>> 9bbdf42896affb6e345b99e1970fdbe1c3c9f4b7
+**43 open** · 40 resolved
 
 ---
 
@@ -53,11 +49,7 @@ not an omission. Start your session at your own heading.
 | [079](079-mock-draft-capture-work-is-uncommitted-in-a-work.md) | Mock draft capture work is uncommitted in a work | `pm` | OPEN | 0d | none |
 | [083](083-pr-004-f-bottomup-core-run-the-confirmatory-bott.md) | Pr 004 f bottomup core run the confirmatory bott | `strategist` | OPEN | 0d | none |
 
-<<<<<<< HEAD
-### `frontend` — 15 waiting
-=======
 ### `frontend` — 14 waiting
->>>>>>> 9bbdf42896affb6e345b99e1970fdbe1c3c9f4b7
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
