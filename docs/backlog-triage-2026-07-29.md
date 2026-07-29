@@ -1,5 +1,21 @@
 # Backlog triage — 2026-07-29
 
+## Correction, same day
+
+This document's original BLOCKED bucket carried a screenshot-compositing limitation forward from
+earlier sessions without re-testing it. That limitation was removed in today's cloud environment —
+real Chromium screenshots now work (`docs/frontend-cloud-runbook.md`,
+`frontend/e2e/cloud-board-screenshot.mjs`, captures in `frontend/e2e/artifacts/` including
+`standalone-draft-after-pick.png` and `board-post-revert-2026-07-29.png`, both taken today). The
+founder caught it; this triage inherited the blocker from a document instead of testing it — the
+project's known failure mode, and a fresh instance of it in a document written hours earlier the
+same day. Re-checked every BLOCKED thread against today's environment below. **4 items freed**
+(027, 028, 029, 041 — all blocked solely on the same screenshot-compositing gap). The remaining
+BLOCKED threads (003, 006, 007, 012, 030, 031, 035, 050, 076, 081) were checked and are genuinely
+still blocked on other things — a deliberate design-fidelity pause (verified in
+`docs/handoffs/035-frontend-catchup-runbook.md:77-81`) or a real unresolved allocator-design
+question (076, 081) — not on anything that changed today.
+
 Read against `docs/pm/MEMORY.md`, `docs/CURRENT-STATE.md`, and the 2026-07-29 status log, plus the
 full text of all 47 open threads in `docs/handoffs/`. Two things checked directly in the repo rather
 than trusted from a reply: whether ADP actually shows on screen (it does not), and whether
@@ -69,15 +85,20 @@ Real net-new work is a much smaller list than "47 open" suggests.
 | 067 | Your second league's board is built. Your ESPN league is still waiting on you (you said "not ready yet") — correctly not touched. |
 | 071/072 | Two small "does the design mockup's fancy grouping feature deserve real backend work" questions — low priority, tied to deferred design-fidelity work. |
 | 068 | A screenshot-comparison testing tool — three of seven screens can be captured today; the other four need screens that don't exist yet (Settings, Mock Lab UI). |
+| 027 | Opponents tab — built and tested per the thread's own record; only missing a screenshot a human has looked at. Freed today: real Chromium screenshots now work in the cloud environment (`docs/frontend-cloud-runbook.md`). Someone needs to run the capture and attach it, then close the thread — ordinary work, not blocked. |
+| 028 | Predictions tab — same as 027: built, tested, only the screenshot was missing. Freed today for the same reason. Separately (not a blocker): the thread also flags a real, undone scope gap — folding this into the Draft-mode hub as an actual tab rather than a standalone screen — that remains open work regardless of the screenshot. |
+| 029 | 10-dot frequency array + tier grouping on DraftRoom — built, verified twice via live DOM measurement, only the screenshot was missing. Freed today. |
+| 041 | Frontend WIP repair — diagnosis, tree cleanup, and contract-version fixes were already done and committed; only the confirming screenshot was missing. Freed today. |
 
 ## BLOCKED
 
 | Thread | Blocked on |
 |---|---|
-| 003, 006, 007, 012, 029 (screenshot only), 030, 031, 035, 050 | Various frontend work items, several already substantially done — genuinely blocked on the design-fidelity pause you and the PM agreed to, or minor loose ends. Not urgent before the draft. |
-| 027, 028 | Opponents and Predictions tabs — both are actually built and tested, blocked only on a screenshot. **This may now be unblocked**: the app went live on the internet today and a cloud session captured real screenshots for the first time (per `docs/status/2026-07-29-pm-cloud-migration-and-deploy.md`). Worth a quick re-check rather than treating as still stuck. |
-| 041 | Same screenshot limitation as above — everything else this thread asked for is already done. |
-| 076, 081 | The ticket-numbering system itself has a structural flaw (parallel sessions can grab the same ticket number). This has now happened four times. Needs a founder/PM-level decision on a real fix, not another patch. |
+| 003, 006, 007, 012, 030, 031, 035, 050 | Various frontend work items, several already substantially done — genuinely blocked on the design-fidelity pause you and the PM agreed to (confirmed deliberate, not a stale artifact — see `docs/handoffs/035-frontend-catchup-runbook.md:77-81`), or minor loose ends. Not urgent before the draft. |
+| 076, 081 | The ticket-numbering system itself has a structural flaw (parallel sessions can grab the same ticket number). This has now happened four times, across three distinct causes (worktree races, parallel branches, FR-020 allocated twice), not just one. Needs a founder/PM-level decision on a real fix, not another patch — genuinely unresolved as of thread 081's latest reply. |
+
+Freed today, moved to STILL LIVE below: **027, 028, 029, 041** — all were blocked solely on the
+screenshot-compositing gap, now fixed. See the correction note at the top of this document.
 
 ## DONE ALREADY — thread never closed
 
