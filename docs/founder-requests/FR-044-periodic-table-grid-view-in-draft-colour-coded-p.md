@@ -50,13 +50,28 @@ already nearly built a second copy of something it already had):
 | Live pick log and availability | `frontend/ui/data/liveAvailability.ts`, `draft.ts` | Draining cells as players go |
 | Tier bands | `Board.tsx` | Existing grouping logic |
 
-**A constraint that is not negotiable, and it is already written down.** `teamColors.ts` states in
-its own header that team colours are used *"only for the identity chip and the initials placeholder
-— never as a data colour, so it can't collide with the app's two reserved accents."* A grid that
-tints cells by team brand colour would break that rule. **Position colour and team colour cannot
-both be the primary encoding of a cell.** Pick one as fill and give the other a different channel —
-border, grouping, axis position, label. Whichever way round, it has to survive a colour-blind reader
-and dark mode, so position should also be legible from its label and not from hue alone.
+**Colour encodes position, not team. The founder corrected this explicitly:**
+
+> "Not team colors, colors by position, pretty standard draft room stuff. I will share some Yahoo
+> and fantasy pros screenshots soon."
+
+So: a fixed colour per position (QB / RB / WR / TE / DEF), applied consistently, matching what every
+draft room already does. This is convention, not invention — do not design a novel palette when the
+category has a shared one the founder already reads fluently. **Wait for his screenshots before
+choosing the hues**; matching what he is used to is the point.
+
+Two things that still need care and are not negotiable:
+
+- **Position must be legible without colour.** Every cell carries its position as text. Hue is the
+  fast channel, not the only one — it has to survive a colour-blind reader, and it has to hold up in
+  both light and dark mode.
+- **Position colour must not collide with the app's two reserved accents**, which already carry
+  meaning (good/bad, up/down) elsewhere on the board. `frontend/ui/styles/tokens.css` already
+  defines a `--pos` token; check what it currently resolves to before adding five more.
+
+`TEAM_COLOR` (`frontend/ui/data/teamColors.ts`) stays out of the fill. It is documented there as
+identity-only. Team belongs on an axis or a label in the position-by-team layout, which is what the
+founder described anyway.
 
 **This is design's call before it is engineering's.** It is a new information-display idiom for this
 app, not a variation on an existing screen, and the founder has an outstanding instruction that
