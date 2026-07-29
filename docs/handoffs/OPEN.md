@@ -4,7 +4,7 @@
 Threads are the source of truth. Change a thread's `STATUS:`, then re-run sync.
 Protocol: [`README.md`](README.md).
 
-**47 open** · 41 resolved
+**49 open** · 41 resolved
 
 ---
 
@@ -13,7 +13,7 @@ Protocol: [`README.md`](README.md).
 Every role gets a section, including empty ones — an empty inbox is a fact worth stating,
 not an omission. Start your session at your own heading.
 
-### `pm` — 5 waiting
+### `pm` — 6 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
@@ -21,7 +21,8 @@ not an omission. Start your session at your own heading.
 | [081](081-thread-079-id-collision-between-main-and-the-pha.md) | Thread 079 id collision between main and the pha | `data-ops` | OPEN | 0d | none |
 | [083](083-claim-checker-is-live-eight-false-document-claim.md) | Claim checker is live eight false document claim | `backend` | OPEN | 0d | none |
 | [086](086-competitive-ux-the-overhaul-case-is-weaker-than.md) | Competitive ux the overhaul case is weaker than | `researcher` | OPEN | 0d | none |
-| [087](087-fr-043-audit-claude-md-ss5-staleness-built-but-u.md) | Fr 043 audit claude md ss5 staleness built but u | `librarian` | OPEN | 0d | none |
+| [89](089-fr-040-costing-static-hosting-blocks-scoring-rec.md) | Fr 040 costing static hosting blocks scoring rec | `backend` | OPEN | 0d | FR-040 custom league settings screen |
+| [90](090-fr-043-audit-claude-md-ss5-staleness-built-but-u.md) | Fr 043 audit claude md ss5 staleness built but u | `librarian` | OPEN | 0d | none |
 
 ### `backend` — 23 waiting
 
@@ -49,9 +50,9 @@ not an omission. Start your session at your own heading.
 | [076](076-structural-gap-thread-id-allocator-race-across-c.md) | Structural gap thread id allocator race across c | `pm` | OPEN | 2d | none |
 | [077](077-adp-backfill-scheduled-task-landed-frontend-test.md) | Adp backfill scheduled task landed frontend test | `data-ops` | OPEN | 2d | none |
 | [079](079-mock-draft-capture-work-is-uncommitted-in-a-work.md) | Mock draft capture work is uncommitted in a work | `pm` | OPEN | 0d | none |
-| [083](083-pr-004-f-bottomup-core-run-the-confirmatory-bott.md) | Pr 004 f bottomup core run the confirmatory bott | `strategist` | OPEN | 0d | none |
+| [88](088-pr-004-f-bottomup-core-run-the-confirmatory-bott.md) | Pr 004 f bottomup core run the confirmatory bott | `strategist` | OPEN | 0d | none |
 
-### `frontend` — 15 waiting
+### `frontend` — 16 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
@@ -70,6 +71,7 @@ not an omission. Start your session at your own heading.
 | [059](059-on-deck-recommendations.md) | On deck recommendations | `pm` | OPEN | 2d | FR-006 (draft chatbot), calm-preparation use case |
 | [066](066-contract-1-10-0-board-json-rows-gained-roster-st.md) | Contract 1 10 0 board json rows gained roster st | `backend` | OPEN | 2d | none |
 | [086](086-competitive-ux-the-overhaul-case-is-weaker-than.md) | Competitive ux the overhaul case is weaker than | `researcher` | OPEN | 0d | none |
+| [89](089-fr-040-costing-static-hosting-blocks-scoring-rec.md) | Fr 040 costing static hosting blocks scoring rec | `backend` | OPEN | 0d | FR-040 custom league settings screen |
 
 ### `data-ops` — 8 waiting
 
@@ -84,7 +86,7 @@ not an omission. Start your session at your own heading.
 | [070](070-recurring-injury-suspension-feed.md) | Recurring injury suspension feed | `pm` | OPEN | 2d | T4 (suspensions/roster-status table stakes), E[games_played] per ADR-E Amendment E-A1 |
 | [084](084-deepen-expert-consensus-history-beyond-2021-2025.md) | Deepen expert consensus history beyond 2021 2025 | `ranker` | OPEN | 0d | none |
 
-### `strategist` — 6 waiting
+### `strategist` — 7 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
@@ -94,6 +96,7 @@ not an omission. Start your session at your own heading.
 | [053](053-founder-csv-ingestion.md) | Founder csv ingestion | `pm` | OPEN | 2d | FR-001 comparison view |
 | [056](056-round-varying-need-and-run-saturation.md) | Round varying need and run saturation | `pm` | OPEN | 2d | any change to the need term or the run term |
 | [085](085-the-board-rank-curve-slope-confounds-positional.md) | The board rank curve slope confounds positional | `ranker` | OPEN | 0d | none |
+| [087](087-fr-039-pass-2-register-the-confirmatory-te-windo.md) | Fr 039 pass 2 register the confirmatory te windo | `ranker` | OPEN | 0d | FR-039 reaching the board |
 
 ### `researcher` — 3 waiting
 

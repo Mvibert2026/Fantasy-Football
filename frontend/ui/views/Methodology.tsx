@@ -91,6 +91,26 @@ export function Methodology({ data, league }: { data: Dataset; league: LeagueCon
         <p className="notice">{league.flexSplitNote}</p>
       </section>
 
+      {data.board.adp_source_note ? (
+        <section>
+          <h3>ADP (market average draft position)</h3>
+          <p style={{ color: 'var(--fg-muted)' }}>
+            <code>ADP</code> is display-only. It does not feed <code>projected_points</code>,{' '}
+            <code>vbd</code>, tiers, availability, or any recommendation this board makes — those
+            are all still driven entirely by expert consensus rank (see &ldquo;consensus
+            rank&rdquo; and &ldquo;VBD&rdquo; in the glossary). ADP is shown next to those numbers
+            for comparison, never merged into them.
+          </p>
+          <p className="notice">{data.board.adp_source_note}</p>
+          {data.board.adp_match_rate_note ? (
+            <p style={{ color: 'var(--fg-muted)', fontSize: 'var(--fs-xs)' }}>
+              {data.board.adp_match_rate_note}
+              {data.board.adp_as_of_date ? ` Snapshot as of ${data.board.adp_as_of_date}.` : ''}
+            </p>
+          ) : null}
+        </section>
+      ) : null}
+
       <section>
         <h3>Tested and found nothing</h3>
         <p style={{ color: 'var(--fg-muted)' }}>{data.nulls.preamble}</p>

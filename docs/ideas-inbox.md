@@ -419,3 +419,71 @@ newest at the bottom.
   <commit>:<path>` (not a merge — did not pull in that branch's other, unrelated changes). No commit
   of mine ever carried the wrong numbers. Flagging rather than silently proceeding, per the standing
   rule that ID collisions are always logged, never resolved by picking a number and moving on.
+- 2026-07-29 · backend (ADP glossary/methodology gap, PM dispatch). **Decided, not escalated —
+  three calls.** (a) Added an `ADP` glossary term (`src/export_static.py`) and a Methodology
+  section covering it, folding `adp_min_pick`/`adp_max_pick`/`adp_selected_pct` into the one term
+  rather than four separate ones — precedent is `confidence interval` covering `ci_low`/`ci_high`
+  the same way. (b) While there, corrected two now-stale claims found sitting next to the new ADP
+  text: the `consensus rank` glossary entry and `board.json`'s `consensus_source_note` both still
+  said "no ADP source is legally obtainable (ADR-018)" — false since ADR-035 (MFL ADP proxy)
+  partially superseded ADR-018 and the board has shipped a real ADP field since contract
+  1.14.0/thread 082. Fixed both to point at the real (thin, proxy) ADP instead of denying it
+  exists. (c) **Fixed, not just flagged, two files carrying literal leftover `<<<<<<< HEAD` /
+  `=======` / `>>>>>>>` git-conflict markers** (`docs/decisions.md` around ADR-057/058,
+  `docs/handoffs/082-adp-fields-on-board-json-contract-1-14-0.md` around its two frontend
+  replies) — same failure shape flagged but left alone in this file's 2026-07-29 researcher entry
+  for `ideas-inbox.md` itself (already clean by the time this session read it). Confirmed safe
+  before touching: in both files the two sides were sequential, non-overlapping, already
+  machine-readable content (two different ADR numbers; two separately-headed `### frontend ·`
+  replies) — stripped only the three marker lines, kept every word of both sides, changed nothing
+  else. **Did not touch** the actual ADR-054/ADR-055 duplicate-header collision underneath —
+  that is `docs/decisions.md`'s ADR-056, already decided and left unresolved on purpose (widened
+  allocators instead, per that ADR's own text); re-litigating it wasn't this session's call to
+  make.
+
+- 2026-07-29 `ranker` (pass 2, FR-039) — **TE consensus error scale is flat across the draft range
+  and this is unexplained.** Residual RMSE against the fitted consensus curve runs 45.9 / 51.0 /
+  45.7 / 43.5 / 41.0 / 43.4 from TE1-3 to TE25-40, while RB falls 104.7 → 61.2 and WR 80.6 → 57.8
+  over comparable bands. Consensus is equally wrong in absolute points about a TE at pick 20 and a
+  TE at pick 200. No mechanism proposed. Worth a pass of its own; it is the one genuinely new
+  structural fact pass 2 turned up. Source: `docs/ranking/bottom-up-research-pass-2.md` §1.1.
+- 2026-07-29 `ranker` (pass 2, FR-039) — **Late TE has a higher floor and no better ceiling than
+  late RB/WR.** At overall ECR 140-210: mean VBD TE −42.8 vs WR −55.6, RB −63.8, but P(VBD>+30) TE
+  4.5% vs WR 4.7%, RB 5.9%. In a league whose stacking bonuses reward ceiling, that is the wrong
+  shape for a late-round upside strategy — and it is the reverse of how late TE is usually argued.
+- 2026-07-29 `ranker` (pass 2, FR-039) — **`spread_sd` (cross-expert disagreement) is dead as a
+  mispricing tell at late TE**: AUC 0.487 / 0.500 / 0.432 across three band-threshold
+  configurations. Cheap, already in `rankings`, and it does not work. Recorded so it is not
+  re-proposed.
+- 2026-07-29 `ranker` (pass 2, FR-039) — **No ADP history exists in `nfl.db`** — `adp_snapshots`
+  and `ffc_adp_snapshots` are 2026-only. Every historical draft-cost claim in the project is
+  currently an ECR-rank proxy. Measured proxy error on the one overlapping season: TEs go **+12
+  picks later** than their ECR rank (median, IQR [+4,+16], n=18). Thread 055 is the fix and is now
+  the binding constraint on FR-039, not a nice-to-have.
+## 2026-07-29 — backend, FR-040 spec/costing pass: two real defects found in `league_builder.py`
+
+Not fixed this pass (spec/costing scope, no contract bump authorized, a second backend agent was
+working in a separate worktree the same session). Logged so whichever chain builds the FR-040
+custom-league screen (or fixes FR-042's `generate_config_matrix.py`) does not rediscover these from
+a live crash:
+
+1. **`league_builder.build_scoring()` silently defaults to Westwood's ruleset.** It starts from
+   `copy.deepcopy(scoring.LEAGUE)` and only overrides the offense fields explicitly passed in
+   `scoring_overrides`. This is the identical defect class FR-042 just corrected in
+   `generate_config_matrix.py` (all 24 presets wearing Westwood's stacking bonuses while labelled
+   platform defaults) — it exists a second time, independently, in the one function every future
+   custom league will go through, and has never been exercised (no caller anywhere but
+   `scripts/rebuild_ethans_expert_league.py`, which happens to override every bonus field by hand).
+   Confirmed by running: a test league with `ppr=1.0` and only TD-value overrides silently kept
+   Westwood's +1/+1.5/+2 yardage bonuses until the test explicitly zeroed them out too.
+2. **`build_scoring()` validates override *keys* but not nested *shape*.** Passing a bonus as
+   `{"threshold": 250, "bonus": 3}` (the natural JSON shape a settings form would submit) crashes
+   five frames deep inside `scoring.score_offensive_game` with `TypeError: '>=' not supported
+   between instances of 'int' and 'str'` — nowhere near the actual bad input, and would surface to
+   whoever submits the form as an opaque 500. The correct shape is a list of `[threshold, bonus]`
+   pairs. Needs a validation layer in front of `create_league()`, or a schema that normalizes
+   object-shaped bonus input before it reaches `scoring.py`.
+
+Full detail, plus the resolved ESPN-scoring docstring self-contradiction and the static-hosting vs.
+job-queue-API contradiction between `SETTINGS-EDITOR-SPEC.md` and the current Cloudflare Worker
+deploy: `docs/specs/FR-040-custom-league-settings-costing.md`.

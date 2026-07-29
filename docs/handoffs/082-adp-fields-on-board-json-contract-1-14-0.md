@@ -100,6 +100,7 @@ as authored) plus a follow-up commit for the e2e screenshot script and the 6 scr
 themselves, hash below in the session log.
 
 **STATUS: RESOLVED**
+
 ---
 ### frontend · 2026-07-29
 

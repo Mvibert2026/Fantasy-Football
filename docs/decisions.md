@@ -2254,3 +2254,228 @@ measured property rather than a paragraph in a report nobody rereads.
 authority document, a suppression matching nothing, or a path allowance that has become
 unnecessary all fail the test. A suppression that outlives its reason is how this class of tool
 quietly stops working.
+| component | VBD@QB1 | share |
+|---|---|---|
+| rush yds (base) | 35.5 | 31.2% |
+| rush TD @6 | 28.7 | 25.3% |
+| pass TD @4 | 26.5 | 23.3% |
+| pass yds (base) | 24.4 | 21.4% |
+| **pass yd BONUSES** | **2.4** | **2.1%** |
+| interceptions | −2.4 | −2.1% |
+| everything else | −1.3 | −1.1% |
+
+**56.5% of the elite-QB edge is rushing**, which is scored at RB rates (10 yds/pt, 6 per TD) and is
+untouched by the league's passing stinginess. Consensus top-3 QBs in 2021–2025 were Allen, Mahomes,
+Hurts, Jackson and Daniels, with rushing shares of 13–47% and trending up. That is the mechanism.
+
+**THE FINDING THAT MATTERS MORE, AND IT IS BAD NEWS.** The QB slope is not stable across the five
+training seasons the curve pools with equal weight:
+
+| season | b_QB | implied VBD@QB1 | b_RB | VBD@RB1 |
+|---|---|---|---|---|
+| 2021 | −66.6 | 153.4 | −34.9 | 118.8 |
+| 2022 | −72.6 | 167.2 | −51.7 | 176.0 |
+| 2023 | −58.6 | 135.0 | −41.4 | 140.8 |
+| 2024 | −45.0 | 103.6 | −47.1 | 160.1 |
+| **2025** | **−4.1** | **9.3** | **−77.9** | **265.1** |
+
+A monotone collapse, with the most recent season essentially flat — 2025 says the QB1 slot was
+worth **9 points** over QB10, not 114 — while RB moved hard the other way. 2025 is verified
+complete (18 weeks, 18,521 rows, the largest season on file), so this is not truncation. It is
+real: in 2025 consensus QB2 and QB3 (Jackson, Daniels) missed time while QB10/QB15/QB16/QB18 all
+finished above 300 points.
+
+`fit_rank_curves()` pools all five seasons **flat, with no recency weighting**, despite CLAUDE.md
+§6.4 ("how far back to weight is an empirical question") and the schema principle that a
+`season_weight` field exist from the start. **The shipped QB premium is therefore an average over a
+regime that was disappearing during the training window.** Pinned by
+`test_qb_curve_slope_collapsed_in_2025`.
+
+**And the uncertainty already said so.** Allen's VBD is 113.7 with a bootstrap 95% CI of
+**[57.0, 155.2]**. That interval overlaps the CI of **29 of the top 40 players**, spanning overall
+ranks **1 through 31**. The board's own machinery already reports that "+20" is not distinguishable
+from "consensus was right." The point estimate was being read without its interval.
+
+**Secondary finding — the estimator is misspecified, asymmetrically across positions.** Fitting the
+log-linear curve on sub-ranges shows RB and WR are strongly concave in log-rank while QB is not:
+
+| pos | b on ranks 1–20 | b on deep ranks | ratio |
+|---|---|---|---|
+| RB | −33.0 | −87.0 (21–45) | 2.6× |
+| WR | −31.2 | −63.5 (21–60) | 2.0× |
+| QB | −44.2 (1–10) | −40.2 (11–20) | 0.9× |
+
+A single log-linear fit overstates the top-of-board gap for RB/WR and does not for QB. Because the
+board ranks positions **against each other**, an asymmetric misspecification is a real ordering
+risk. Pinned by `test_rank_points_curve_is_misspecified_for_rb_and_wr`.
+
+**Defects looked for and NOT found.** Bonuses are applied **per game**, not to season totals — the
+leading defect hypothesis, checked at the engine level and against real 2024 QB seasons (Burrow
+18.5 bonus points off 7 games ≥300; Jackson 2.0 off 2 games; a season-total bug would have paid a
+flat 4.5 to every one of them). Bonuses stack correctly at thresholds per CLAUDE.md §7. Passing TD
+is 4. Replacement is genuinely applied at QB10/RB30/WR40/TE10, and QB10 is the *most conservative*
+choice in the plausible range — assuming streaming (QB12–QB18 replacement) moves Allen **up** to
+#5–#3, not down. No units error, no look-ahead: training on 2025 for the live 2026 board is
+explicitly sanctioned by `src/holdout.py` ("locking governs selection, not fitting"), so this is
+**not** a HoldoutViolation.
+
+**Constant?** None introduced. Every figure above is a measurement with a stated n: curve fits are
+n=100 (QB), 225 (RB), 300 (WR) player-seasons over 5 seasons; R² = 0.158 / 0.263 / 0.266; CIs are
+2000-draw season-level bootstraps on 5 units.
+
+**Decision.** (1) The QB premium is **explained and is not a bug** — it is a rushing-QB regime
+effect, correctly computed. (2) It is **not, on this evidence, a defensible edge**: the CI overlaps
+consensus, and the single most recent season contradicts it outright. The board's QB ranking should
+be treated as "consensus is probably fine here" rather than as a +20 signal to act on. (3) Two
+methodology gaps are now documented and test-pinned but **deliberately not fixed here** — flat
+season pooling with no recency weight, and the log-linear misspecification. Both are estimator
+changes that require the Statistician + Red-team gate (CLAUDE.md §8), not a backend patch.
+
+**Evidence.** `tests/test_qb_board_delta.py`, 9 tests, all passing. Diagnostics are reproducible:
+`experiments/qb_board_delta_diagnostic.py` and `experiments/qb_board_delta_uncertainty.py`.
+
+---
+
+## ADR-058 — Non-primary leagues get their full six-artifact export set (2026-07-29, backend)
+
+**Bug (founder-reported, live site).** Switching to "Ethan's Expert League" in the app failed:
+*"Could not read leagues/ethans_expert_league/nulls.json (HTTP 200, non-JSON response)."*
+`data/export/ethans_expert_league/` carried only 4 artifacts (board/availability/league/rosters)
+against the primary league's 11. The HTTP-200-with-HTML-body framing is the deployed site's SPA
+fallback for a missing file (a `wrangler.jsonc` concern, explicitly out of scope here, someone
+else's fix in flight) — but the underlying file really was missing, which is this bug.
+
+**Root cause.** ADR-041 requires six artifacts in every non-primary league's export directory
+(board/availability/league/glossary/nulls/opponents), and `frontend/ui/data/load.ts` fetches and
+`league_id`-checks all six unconditionally (only `rosters.json`/`strategies.json` are genuinely
+optional — the loader has explicit fallback-to-null paths for exactly those two, confirmed by
+reading `load.ts` directly rather than trusting a prior session's framing). But
+`league_builder.export_league()` and `generate_config_matrix.py` both called only
+`export_contract.write_all` (board/availability/league/rosters) and never
+`export_static.py`'s glossary/nulls/opponents builders. Every one of the 24 pre-generated
+config-matrix leagues had the identical gap — confirmed a real oversight, not documented scope:
+`generate_config_matrix.py`'s own docstring only carves out `strategies.json`/Monte Carlo as
+deliberately deferred, says nothing about the three prose artifacts.
+
+**Fix.** Factored `export_static.py`'s inline `main()` payload construction into
+`build_static_artifacts(cfg)` / `write_static_artifacts(out_dir, cfg)`, and call the latter from
+both `league_builder.export_league()` and `generate_config_matrix.generate_all()`. Rebuilt all
+affected exports: `ethans_expert_league` now carries 7 artifacts (was 4), all 24 config-matrix
+directories now carry 7 (was 3), primary league unchanged at 11.
+
+**Bug 2, same session (thread 042, `docs/backlog-triage-2026-07-29.md`).** `strategies.json` was
+stamped `contract_version 1.7.0` against everything else at `1.14.0` — stale since a prior
+contract bump, not a code bug (`src/export_strategies.py` already reads `CONTRACT_VERSION`
+correctly). Re-ran `src/export_strategies.py`; now `1.14.0`.
+
+**No `CONTRACT_VERSION` bump.** No artifact's shape changed, only which artifacts get generated
+for non-primary leagues. No frontend handoff needed for a schema reason; thread 042 gets a reply
+closing it out.
+
+**Regression guard.** New `tests/test_export_directory_contract.py`: parametrized over every
+`data/export/<league_id>/` directory found on disk, asserting the six required artifacts are all
+present (plus a vacuous-pass guard so removing every league directory can't make this silently
+pass), a primary-league full-set check, and a `strategies.json` contract-version-matches-source
+check. Extended `test_create_and_export_league_board_uses_its_own_replacement_levels` in
+`tests/test_league_builder.py` to assert the same six-plus-rosters set directly at the
+`league_builder.export_league()` call site.
+
+**Scope not taken.** Every subdirectory of `data/export/` becomes a switchable "league" in the
+frontend (`sync-exports.mjs` treats any directory as a league, no allowlist) — this includes the
+24 config-matrix combos, which is why their gap mattered too. `yahoo_standard_mock` is a real,
+on-disk, working example of a league with only 6 artifacts (no `rosters.json`/`strategies.json`)
+loading correctly, confirming those two really are optional rather than another hidden gap.
+
+**Evidence.** `.venv/bin/python -m pytest -q`: 719 passed, 1 pre-existing failure
+(`test_mailbox_health` — the ADR-054/055 collision ADR-056 already documents and left
+unresolved by explicit design; unrelated to this change, reconfirmed via `git stash` equivalent
+by checking the failure predates this commit). Commit `a88f041`.
+
+---
+
+## ADR-060 — ADP gets a glossary term and a Methodology section; two stale "no ADP" claims corrected (2026-07-29, backend, PM dispatch)
+
+**Problem.** Contract 1.14.0 (thread 082) put real ADP fields on every board row and shipped them
+to the prep board, draft screen, and player profile — but the term was defined nowhere.
+`data/export/*/glossary.json` carried 13 terms and none of them was ADP; `Methodology.tsx` had
+five sections and none mentioned it. A number with the largest caveat on the board (MFL proxy,
+full-PPR capture against this half-PPR league, thin sample, ~230-player coverage ceiling) was
+explained in exactly zero places a user could reach.
+
+**Fix.**
+1. `src/export_static.py::_GLOSSARY_BASE` gains an `"ADP"` term. `adp_min_pick`/`adp_max_pick`/
+   `adp_selected_pct` are folded into this one entry via a parenthetical rather than given their
+   own terms — same pattern as `confidence interval` covering `ci_low`/`ci_high`. The definition
+   states the MFL proxy caveats up front (population, full-PPR-vs-half-PPR, thin sample, ~230-
+   player ceiling) and states plainly that it does not feed the projection, VBD, tier, or any
+   recommendation.
+2. `frontend/ui/views/Methodology.tsx` gains an "ADP (market average draft position)" section,
+   rendering `board.json`'s `adp_source_note`/`adp_match_rate_note` verbatim, with explicit
+   display-only language naming the fields it does NOT touch (`projected_points`, `vbd`, tiers,
+   availability, recommendations).
+3. `frontend/ui/data/glossaryCategories.ts` maps `ADP` to a new-in-practice `draft` (Draft
+   mechanics) category — that bucket existed in `CATEGORY_ORDER` since an earlier session but had
+   no members until now — with `field: 'board.json:players[].adp'`.
+4. Regenerated `glossary.json`/`nulls.json`/`opponents.json` (the three hand-authored artifacts
+   `write_static_artifacts` emits together) for the primary league and all 26 saved league configs
+   under `data/leagues/` — 27 `glossary.json` files total, all now carrying the ADP term. No `.db`
+   connection needed for this path (`build_glossary`/`build_nulls`/`build_opponents` are pure
+   functions of `LeagueConfig`), so this was possible without rebuilding `nfl.db`.
+5. **Corrected two now-stale claims found sitting directly next to the new text**: the
+   `consensus rank` glossary entry and `board.json`'s `consensus_source_note` (`export_contract.py`)
+   both still said "no ADP source is legally obtainable (ADR-018)". False since ADR-035 partially
+   superseded ADR-018 with the real (if thin, proxy) MFL ADP now on the board. Left the
+   single-source/no-blend claim about *consensus* itself untouched — only removed the false
+   "does not exist" framing about ADP and pointed at where the real thing is documented instead.
+
+**ADP is confirmed display-only, not wired into anything the board computes.** Evidence, not
+assertion: `_load_adp_snapshot()`'s own docstring in `export_contract.py` — "for DISPLAY only --
+does NOT feed the model (`availability.load_mfl_adp_source` stays unwired by design)"; ADR-035's
+own status note that `load_mfl_adp_source()` "exists, is tested, and is NOT wired into the shipped
+default"; and thread 082's frontend reply confirming `AdpCell`/`AdpBlock`/`DraftRoomAdpCell` read
+`row.adp`/`row.adpSource` exclusively, never merged into `consensus_rank` or its delta. Nothing in
+this session rewired that — the new Methodology section states it, it does not create it.
+
+**No contract version bump.** Every field used (`adp`, `adp_source_note`, `adp_match_rate_note`,
+etc.) already existed at 1.14.0 (thread 082); this session only added prose that reads them.
+`CONTRACT_VERSION` in `src/export_contract.py` is untouched, still `"1.14.0"`.
+
+**Scoring-format caveat kept future-proof.** FR-042 (raised the same day this ADR was written)
+will move the 24 preset leagues to standard scoring, leaving only the primary league (Westwood) on
+the custom stacking-bonus ruleset — a separate, not-yet-built change. Neither the new glossary
+entry nor the new Methodology section asserts anything about which leagues share which scoring
+rules, so neither needs revisiting when FR-042 lands.
+
+**Also fixed, found in the course of this work, not part of the ask.** Two files carried literal
+leftover `<<<<<<< HEAD` / `=======` / `>>>>>>>` git-conflict markers: this file (`docs/decisions.md`,
+around ADR-057/ADR-058) and `docs/handoffs/082-adp-fields-on-board-json-contract-1-14-0.md` (around
+its two frontend replies). Confirmed both sides in each case were sequential, non-overlapping, already
+correctly-headed content before touching anything — stripped only the three marker lines, changed no
+prose. Did **not** touch the actual ADR-054/ADR-055 duplicate-header collision underneath — that is
+ADR-056's decision, made and left unresolved on purpose (allocators widened instead); not this
+session's call to re-open. See `docs/ideas-inbox.md`, 2026-07-29 backend entry, for the full
+reasoning trail.
+
+**Evidence.** Backend: `python3 -m pytest tests/ -q` — 688 passed, 29 failed, 9 errors, 3 skipped;
+every failure/error is `nfl.db` being absent in this container (a documented, session-local GitHub
+proxy 403 on `github.com/dynastyprocess/*` blocks `scripts/rebuild_database.py` step 4, per
+`docs/can-we-rebuild-the-database.md` — reported, not re-solved, per that doc's own instruction) or
+the pre-existing ADR-054/055 mailbox failure; none touch glossary/methodology code. With the DB
+absent, `test_multi_league_export.py`/`test_export_contract.py`/`test_export_directory_contract.py`/
+`test_league_builder.py` (the glossary-adjacent suites that don't need a live board build) run clean.
+Frontend: `npm test` — 203 passed, 0 failed, 22 files; `tsc -b --noEmit` clean. Screenshots (Playwright,
+`frontend/e2e/verify-adp-glossary-methodology.mjs`): `adp-glossary-2026-07-29.png`,
+`adp-glossary-expanded-2026-07-29.png`, `adp-methodology-2026-07-29.png`,
+`adp-methodology-scrolled-2026-07-29.png` in `frontend/e2e/artifacts/` — looked at directly, ADP
+card renders under "Draft mechanics" and expands to the real MFL text; Methodology's new section
+renders the real `adp_source_note`/`adp_match_rate_note` (147 of 225 `mfl_proxy` rows resolved,
+snapshot 2026-07-29) beneath the "does not feed" language.
+
+**Known limitation, not fixed here.** `data/export/board.json`'s `consensus_source_note` field
+itself (the actual shipped artifact, not the Python source) still contains the OLD "ADR-018" text,
+because regenerating `board.json` needs a live `nfl.db` connection this session could not establish
+(same 403 as above). The source fix is real and will take effect the next time `board.json` is
+rebuilt with a working database — until then, the live site's Methodology page will keep showing
+the stale sentence in the "What the board does not claim" section even though the new ADP section
+right below it is already correct (it reads a different field, `adp_source_note`, which was already
+populated correctly before this session).

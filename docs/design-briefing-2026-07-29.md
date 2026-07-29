@@ -251,3 +251,34 @@ half and not the accuracy half.
 5. **The phone layout**, still real and still yours, demoted only because the research in §7 weakened
    the case for broad visual investment ahead of scoped work.
 6. **The large-null ADP column** (§4) and the acceptance capture list (§6 item 4), both unchanged.
+
+
+---
+
+# Addendum 2 — founder's own read of the competition, 2026-07-29
+
+He drafted in a live Yahoo room and captured five screenshots (recorded in
+`docs/founder-requests/FR-053-*`). His verdict, verbatim and unprompted:
+
+> "yahoo seems to have gotten worse and looks like a childs toy"
+
+> "fantasy pros still looks pretty good"
+
+**Treat this as the strongest single piece of design direction in the file.** It is the founder's own
+taste, stated about products he uses under a real clock, and it aligns with the independent research
+finding in §7 — that the category's returns on visual investment go negative past a certain point,
+and that ESPN's 2025 redesign drew complaints about density specifically.
+
+Two things follow, and they narrow the design space usefully:
+
+- **Do not take Yahoo's visual language as the reference**, even where its *structure* is worth
+  copying. FR-053 catalogues real structural ideas there — the tabbed centre pane, the position-
+  coloured board grid, the "your turn" divider in the ranked list. Those are conventions worth
+  following. The chrome around them is not.
+- **FantasyPros is the closer reference for look and feel.** The founder named it unprompted as the
+  one that still reads well. Worth studying specifically rather than treating all competitors as one
+  undifferentiated category.
+
+This also sharpens FR-044's palette question. "Colour by position, pretty standard draft room stuff"
+plus "Yahoo looks like a child's toy" is a coherent brief: **the convention, executed with restraint**
+— saturated enough to scan at a glance, not so saturated it reads as a game.

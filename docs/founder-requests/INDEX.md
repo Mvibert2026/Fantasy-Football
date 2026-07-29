@@ -5,11 +5,11 @@ Per-request files in this directory are the source of truth. Edit a request's ow
 `STATUS:` line, then re-run sync. Protocol: [`README.md`](README.md).
 Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests.md).
 
-**32 requests since freeze.**
+**39 requests since freeze.**
 
 ---
 
-## NEW — 22
+## NEW — 28
 
 | ID | Subject | Raised | Source |
 |---|---|---|---|
@@ -27,7 +27,6 @@ Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests
 | [FR-033](FR-033-build-a-bottom-up-ranking-from-zero-a-directive.md) | Build a bottom up ranking from zero a directive | 2026-07-29 | chat session 2026-07-29 |
 | [FR-037](FR-037-export-csv-and-export-pdf-do-not-work-low-priori.md) | Export csv and export pdf do not work low priori | 2026-07-29 | chat 2026-07-29, PM session |
 | [FR-038](FR-038-look-at-other-apps-ux-before-committing-to-an-ov.md) | Look at other apps ux before committing to an ov | 2026-07-29 | chat session 2026-07-29, relayed via researcher dispatch |
-| [FR-039](FR-039-late-round-te-is-the-draft-strategy-expression-o.md) | Late round te is the draft strategy expression o | 2026-07-29 | chat 2026-07-29, PM session |
 | [FR-040](FR-040-custom-league-option-in-league-settings-two-hard.md) | Custom league option in league settings two hard | 2026-07-29 | chat 2026-07-29, PM session |
 | [FR-041](FR-041-prose-design-and-relevance-review-of-strategy-gu.md) | Prose design and relevance review of strategy gu | 2026-07-29 | chat 2026-07-29, PM session |
 | [FR-042](FR-042-presets-must-use-standard-scoring-only-westwood.md) | Presets must use standard scoring only westwood | 2026-07-29 | chat 2026-07-29, PM session |
@@ -35,6 +34,13 @@ Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests
 | [FR-045](FR-045-position-scarcity-reads-every-position-as-behind.md) | Position scarcity reads every position as behind | 2026-07-29 | chat 2026-07-29, PM session |
 | [FR-046](FR-046-make-auto-fill-actually-draft-players-wire-up-th.md) | Make auto fill actually draft players wire up th | 2026-07-29 | chat 2026-07-29, PM session |
 | [FR-047](FR-047-per-opponent-deviation-and-deviation-should-wide.md) | Per opponent deviation and deviation should wide | 2026-07-29 | chat 2026-07-29, PM session |
+| [FR-048](FR-048-insights-from-research-must-reach-the-chatbot-an.md) | Insights from research must reach the chatbot an | 2026-07-29 | chat 2026-07-29, PM session |
+| [FR-049](FR-049-tabs-in-the-draft-middle-pane-including-recommen.md) | Tabs in the draft middle pane including recommen | 2026-07-29 | chat 2026-07-29, PM session |
+| [FR-050](FR-050-show-vbd-in-the-draft-player-list.md) | Show vbd in the draft player list | 2026-07-29 | chat 2026-07-29, PM session |
+| [FR-051](FR-051-show-value-over-the-player-expected-at-my-next-p.md) | Show value over the player expected at my next p | 2026-07-29 | chat 2026-07-29, PM session |
+| [FR-052](FR-052-third-league-identified-as-yahoo-roster-and-stat.md) | Third league identified as yahoo roster and stat | 2026-07-29 | chat 2026-07-29, PM session, Yahoo screenshots |
+| [FR-053](FR-053-yahoo-draft-room-reference-capture-features-to-c.md) | Yahoo draft room reference capture features to c | 2026-07-29 | chat 2026-07-29, PM session, Yahoo draft room screenshots |
+| [FR-054](FR-054-the-bottom-up-model-should-output-component-proj.md) | The bottom up model should output component proj | 2026-07-29 | chat 2026-07-29, PM session |
 
 ## SCOPING — 1
 
@@ -73,4 +79,10 @@ _None._
 | ID | Subject | Raised | Source |
 |---|---|---|---|
 | [FR-025](FR-025-make-the-app-usable-on-a-phone.md) | Make the app usable on a phone | 2026-07-29 | chat session 2026-07-29 (PM takeover) |
+
+## Unknown status — check these
+
+| ID | Subject | Status |
+|---|---|---|
+| [FR-039](FR-039-late-round-te-is-the-draft-strategy-expression-o.md) | Late round te is the draft strategy expression o | `ANSWERED` |
 

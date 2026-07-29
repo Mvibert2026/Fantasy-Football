@@ -1,6 +1,6 @@
 {
   "contract_version": "1.14.0",
-  "generated_utc": "2026-07-29T18:27:03.148385+00:00",
+  "generated_utc": "2026-07-29T19:42:51.057270+00:00",
   "league_id": "yahoo_12_standard",
   "user_draft_slot": 6,
   "coverage_warning": "11 of 11 opponents have NO data. The simulator therefore models all opponents identically -- drafting to consensus with noise -- rather than with individual tendencies. To populate these profiles the prior season's draft board (pick number, team, player) must be supplied; it is not derivable from anything currently ingested.",

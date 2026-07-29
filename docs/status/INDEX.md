@@ -4,7 +4,7 @@
 Session files in this directory are the source of truth. Add a new dated file, then
 re-run sync. Protocol: [`README.md`](README.md).
 
-**24 sessions recorded.**
+**27 sessions recorded.**
 
 ---
 
@@ -77,6 +77,169 @@ instruction not to lose history.
   `tests/test_state.py` — 16 tests, all passing.
 - Full backend suite (`pytest -q`, real `data/nfl.db`) run post-change to confirm nothing else
   regressed — see this session's commit message / PR for the pass count.
+
+---
+
+<!-- 2026-07-29-backend-adp-glossary-methodology.md -->
+
+# 2026-07-29 — backend — ADP glossary/methodology gap
+
+**Dispatch:** PM finding. Contract 1.14.0 (thread 082) shipped real ADP fields to the board,
+draft screen, and player profile, but the term was defined nowhere: `glossary.json` carried 13
+terms and none was ADP; `Methodology.tsx` had five sections and none mentioned it.
+
+## What shipped
+
+1. **`ADP` glossary term** (`src/export_static.py::_GLOSSARY_BASE`). States the caveats up
+   front: MFL proxy population (not this league's), captured full-PPR against this half-PPR
+   league, thin sample, ~230-player coverage ceiling, and that it is display-only. Folded
+   `adp_min_pick`/`adp_max_pick`/`adp_selected_pct` into this one entry rather than four separate
+   terms — same pattern the existing `confidence interval` term uses for `ci_low`/`ci_high`.
+2. **Methodology section** (`frontend/ui/views/Methodology.tsx`). Renders `board.json`'s real
+   `adp_source_note`/`adp_match_rate_note` verbatim, states explicitly which fields ADP does
+   *not* feed (`projected_points`, `vbd`, tiers, availability, recommendations).
+3. **`frontend/ui/data/glossaryCategories.ts`** maps `ADP` to the `draft` (Draft mechanics)
+   category — previously declared but empty — with `field: 'board.json:players[].adp'`.
+4. **Regenerated all 27 `glossary.json` files** (primary + 26 saved league configs under
+   `data/leagues/`) via `export_static.write_static_artifacts`, which needs no `.db` connection.
+5. **Corrected two now-stale claims** found next to the new text: the `consensus rank` glossary
+   entry and `board.json`'s `consensus_source_note` (`export_contract.py`) both said "no ADP
+   source is legally obtainable (ADR-018)" — false since ADR-035's real MFL proxy. Fixed both to
+   point at the real (thin) ADP instead of denying it exists.
+6. **Fixed two files with literal leftover git-conflict markers** (`docs/decisions.md` around
+   ADR-057/058; `docs/handoffs/082-...md` around its two frontend replies) — mechanical, marker
+   lines only, no content change, both sides already sequential/non-overlapping. Did **not**
+   touch the actual ADR-054/055 duplicate-header collision, which is ADR-056's already-made,
+   deliberately-left decision.
+
+Full reasoning, including why each judgement call was made without escalating, is in
+`docs/decisions.md` ADR-060 and `docs/ideas-inbox.md`'s 2026-07-29 backend entry.
+
+## Explicit answer to the dispatch's central question
+
+**ADP is display-only.** It does not feed `projected_points`, VBD, tier, availability, or any
+recommendation. Evidence: `_load_adp_snapshot()`'s own docstring in `export_contract.py` ("for
+DISPLAY only -- does NOT feed the model"); ADR-035's status note that
+`availability.load_mfl_adp_source()` "exists, is tested, and is NOT wired into the shipped
+default"; thread 082's frontend reply confirming `AdpCell`/`AdpBlock`/`DraftRoomAdpCell` read
+`row.adp`/`row.adpSource` exclusively, never merged into `consensus_rank` or its delta. This
+session did not rewire any of that — the new Methodology section states the existing fact, it
+does not create it.
+
+## Contract
+
+**No version bump.** Every field used (`adp`, `adp_source_note`, `adp_match_rate_note`, etc.)
+already existed at contract 1.14.0 from thread 082. `CONTRACT_VERSION` in
+`src/export_contract.py` untouched.
+
+## Known limitation, not fixed this session
+
+`data/export/board.json`'s `consensus_source_note` field (the shipped artifact, not the Python
+source) still contains the old ADR-018 text. Regenerating it needs a live `nfl.db`; this
+session's `scripts/rebuild_database.py` run got through steps 1-3 and failed at step 4
+(`ingest_rankings.py`, `github.com/dynastyprocess/*` returns 403 in this kind of session) — a
+documented, pre-existing, session-local restriction (`docs/can-we-rebuild-the-database.md`),
+reported rather than re-solved per that doc's own instruction. The source fix will take effect
+automatically the next time `board.json` is rebuilt with a working database.
+
+## Evidence
+
+- Backend: `python3 -m pytest tests/ -q` (no `nfl.db` in this container) — **688 passed, 29
+  failed, 9 errors, 3 skipped**. Every failure/error is the missing-DB condition or the
+  pre-existing `test_mailbox_health` ADR-054/055 collision (ADR-056, unrelated to this work,
+  same before and after). Glossary-adjacent suites that don't need a live board build
+  (`test_multi_league_export.py`'s pure-function tests, `test_export_contract.py`,
+  `test_export_directory_contract.py`, `test_league_builder.py`) run clean.
+- Frontend: `npm test` — **203 passed, 0 failed, 22 files**. `tsc -b --noEmit` clean.
+- Screenshots (Playwright, `frontend/e2e/verify-adp-glossary-methodology.mjs` plus a follow-up
+  scroll/expand pass), looked at directly: `adp-glossary-2026-07-29.png`,
+  `adp-glossary-expanded-2026-07-29.png`, `adp-methodology-2026-07-29.png`,
+  `adp-methodology-scrolled-2026-07-29.png` in `frontend/e2e/artifacts/`. Confirmed: ADP renders
+  under "Draft mechanics" in the Glossary and expands to the real MFL text; the new Methodology
+  section renders the real `adp_source_note` (147 of 225 `mfl_proxy` rows resolved, snapshot
+  2026-07-29) beneath the "does not feed" language.
+- All 27 `data/export/*/glossary.json` files (primary root + 26 sub-league dirs) confirmed via
+  script to contain the `ADP` term.
+
+## Files touched
+
+- `src/export_static.py` — ADP term, `consensus rank` fix
+- `src/export_contract.py` — `consensus_source_note` fix (comment + string), no version bump
+- `frontend/ui/views/Methodology.tsx` — new ADP section
+- `frontend/ui/data/glossaryCategories.ts` — `ADP` -> `draft` category mapping
+- `data/export/**/glossary.json`, `nulls.json`, `opponents.json` — regenerated (content diff
+  limited to the new ADP term plus timestamps)
+- `docs/decisions.md` — ADR-060, plus conflict-marker cleanup around ADR-057/058
+- `docs/handoffs/082-adp-fields-on-board-json-contract-1-14-0.md` — conflict-marker cleanup
+- `docs/ideas-inbox.md` — session entry
+- `docs/CURRENT-STATE.md` — in-place update
+- `frontend/e2e/verify-adp-glossary-methodology.mjs` (new) — screenshot verification script
+
+---
+
+<!-- 2026-07-29-backend-fr040-costing.md -->
+
+# Backend — FR-040 spec/costing pass, 2026-07-29
+
+Dispatched as a spec/costing pass on FR-040 (custom league option). Explicit constraints: no
+`src/export_contract.py` changes beyond reading, no contract version bump — a second backend agent
+was working in a separate worktree the same session. Two founder rulings landed mid-session and were
+folded in: FR-042 (presets must use standard scoring, only Westwood keeps the custom ruleset) and
+FR-043 (audit for unused capability, fed by this session's `league_builder.py` findings).
+
+**Everything under "verified by running" was actually run** — `data/nfl.db` was copied from the main
+checkout into the worktree per `docs/environment.md` §4 (worktrees do not inherit it), and
+`league_builder.create_and_export_league()` was called twice with real, non-Westwood scoring
+overrides: once with a malformed bonus shape (crashed, real defect found — see below), once
+corrected (succeeded, 7 real artifacts, genuinely re-scored `board.json`).
+
+**Findings, full detail in `docs/specs/FR-040-custom-league-settings-costing.md`:**
+
+1. **The backend for arbitrary custom leagues mostly exists, with two real bugs.**
+   `league_builder.build_scoring()` starts from `scoring.LEAGUE` (Westwood's ruleset) and only
+   overrides fields explicitly passed — the identical defect FR-042 just corrected in
+   `generate_config_matrix.py`, present a second time, never previously exercised (no caller besides
+   `scripts/rebuild_ethans_expert_league.py`). It also validates override *keys* but not nested
+   *shape* — a bonus passed as `{"threshold": 250, "bonus": 3}` (the natural form a settings form
+   would submit) crashes deep inside `scoring.py` with an opaque `TypeError`.
+2. **Component projections do not exist.** Traced `make_board.py`: `board.json`'s
+   `projected_points` is `curve.predict(consensus_rank)` — a single per-position rank curve
+   (`points ≈ intercept + slope·ln(rank)`), never a per-player, per-stat forward projection. The
+   "ship components so the browser can re-score any format" idea from FR-040's initial read is dead,
+   confirmed by source trace, not assumed.
+3. **Client-side team-count/roster-shape recompute is real but incomplete.** `board.json` already
+   ships `replacement_levels_used` and every player's `positional_rank`, so VBD for the
+   *currently-exported* config needs no recompute at all. A *changed* team count/roster shape needs
+   `flex_split` (the RB/WR/TE flex allocation, `scoring.py`, ADR-029) to compute a new replacement
+   count, and that value is never exported anywhere in the contract.
+4. **`docs/design-handoff/settings/SETTINGS-EDITOR-SPEC.md` §7 specifies a job-queue backend API
+   that cannot exist against the current static Cloudflare Worker deploy.** Real, previously
+   unflagged contradiction between two live documents — flagged to `frontend`/`pm`, not resolved
+   here.
+5. **Resolved a docstring self-contradiction** in `generate_config_matrix.py` (also present in
+   `docs/decisions.md`'s ADR-047 entry itself): the "ESPN's confirmed platform defaults exactly"
+   claim is unsupported — the same file and the same ADR entry separately say ESPN scoring was
+   "unverified, bot-detection blocked the fetch." No citation anywhere supports "confirmed."
+
+**Not fixed, deliberately** (spec/costing scope only, per the dispatch): the two `league_builder.py`
+bugs, the `flex_split` export gap, the docstring/ADR-047 contradiction text itself. All logged —
+`docs/ideas-inbox.md` (bugs), this doc + the spec doc + thread 084 (everything else).
+
+**Infrastructure note, not a project finding:** the original worktree
+(`.claude/worktrees/agent-a1e9b46c312d8548a`) lost its git-worktree registration mid-session (an
+apparent side effect of the API outage this session hit) — `.git` link file and the corresponding
+`.git/worktrees/agent-a1e9b46c312d8548a/` admin directory were both gone, and the branch had been
+deleted. The already-written spec file survived on disk (git-worktree removal doesn't delete
+directory contents by itself unless forced with a discard) and was copied into a fresh worktree
+(`backend/fr-040-costing-spec`, branched from `main` at `4980b29`) rather than reconstructed from
+memory. No content was lost; the recovery is why this session has two worktree paths in its history.
+
+**Thread 084** opened to `frontend`,`pm` — full ask in the thread body, not duplicated here.
+
+## Commit / test count
+See parent report — this pass did not run the Python test suite (spec/costing pass, no `src/` code
+changed; the one code path exercised was via a scratch script, not a test file). `git rev-parse
+HEAD` in the worktree at time of commit is the source of truth for what shipped.
 
 ---
 
@@ -2143,6 +2306,81 @@ were captured at full PPR for a half-PPR league. FFC publishes half-PPR at 10 te
    one role with no definition.
 4. **ID allocation is broken structurally**, not by indiscipline — three collisions today, all from
    tool-allocated IDs on parallel branches. See thread 081.
+
+---
+
+<!-- 2026-07-29-ranker-pass-2-late-round-te.md -->
+
+# 2026-07-29 — `ranker` — bottom-up pass 2: where the TE mispricing can be spent (FR-039)
+
+**Scope.** FR-039, the founder's narrowing of the pass-1 TE finding into a draft-strategy claim:
+*if we aren't taking TE or QB early, find an underrated TE at late-round ADP.* Three questions —
+where in the ADP distribution the mispricing sits, whether late TE hits are forecastable, and
+whether the Kraft example represents a recurring pattern. Absorbed the previously queued TE arm on
+`snap_counts` rather than running it beside.
+
+**Posture: exploratory.** Nothing registered, nothing corrected for multiplicity, nothing shipped.
+The one confirmatory test worth running is an *ask* in thread 087 and was deliberately not run.
+
+## What was measured
+
+Universe frozen pre-season from the FantasyPros ECR preseason list (`is_preseason_final=1`,
+late-August `as_of_date`), 2021–2024, 344 TE player-seasons. Never-played TEs scored 0 and
+retained. 2025 outcomes never read.
+
+- **Hit rate by pre-draft band is steeply front-loaded with no late bump** — TE1-3 66.7%
+  [39.1, 86.2] down to TE11-16 4.2% [0.7, 20.2].
+- **5 of the 7 top-6 TE seasons that came from pre-draft TE11+ were outside the 150 picks of a
+  10-team draft** — waiver adds, not late-round picks. In the actual last four rounds (ECR
+  111–150) the top-6 rate is 7.4% [2.1, 23.4].
+- **Consensus error scale is flat across the TE draft range** (residual RMSE 45.9 → 43.4) where RB
+  falls 104.7 → 61.2. New, unexplained, logged to `ideas-inbox.md`.
+- **A TE at overall ECR 75–113 costs the same VBD as a WR at the same pick** (−12.2 vs −12.2) and
+  buys a 25.0% [10.2, 49.5] top-6 shot. One such pick beats three darts at ECR 111–150 (20.6%).
+- **Forecastability is near-nil.** Of 11 pre-draft signals only consensus rank (0.649 [0.56, 0.74])
+  and the panel's most optimistic expert (0.692 [0.61, 0.78]) exclude a coin flip, and both are the
+  market restated. Expert disagreement killed (0.487/0.500/0.432). Snap-share proxy not supported
+  at TE11+ (0.630 [0.36, 0.89]).
+- **Kraft was consensus TE11 at overall ECR 105 going into 2025**, off a TE9 2024 — a mid-round TE,
+  not a late-round unknown. Pattern test 2021–2024: Kraft-type 1.9% [0.5, 6.6] vs 2.5% [1.1, 5.8]
+  for other late TEs. No advantage.
+
+## Two methodological corrections made mid-pass
+
+1. **Rank statistics were initially pooled across seasons**, which compares a 2021 player to a 2024
+   player. Rebuilt so every rank-based statistic is computed inside a season and then averaged. The
+   pooled version was discarded, not reported.
+2. **Band sensitivity in the AUC table.** Running the late band to the end of the consensus list
+   (TE41-95) moves the AUCs to 0.826 / 0.860 / 0.629 / 0.555 / 0.803 — every killed signal appears
+   to work. The denominator does all the work. Recorded in the report as a trap, because the
+   flattering version is what an unconstrained analysis produces by default.
+
+## Escalated rather than celebrated
+
+TE1-3 produced exactly two top-6 tight ends in each of the four seasons (2, 2, 2, 2) — a 3.9%
+coincidence under its own base rate. Not believed to be leakage (pre-draft input, realised
+outcome, no path between them) but the regularity must not be read as precision.
+
+## Data gap, now binding
+
+**There is no ADP history in `nfl.db` at all** — `adp_snapshots` and `ffc_adp_snapshots` are
+2026-only. The only pre-draft market history is FantasyPros ECR, 4 usable seasons. Every
+"late-round" claim in this pass uses ECR rank as a draft-cost proxy, calibrated on the one
+overlapping season (2026: TE median ADP − ECR **+12**, IQR [+4, +16], n=18). The proxy error runs
+*against* the founder's hypothesis, not for it. Thread 055 is the fix and was replied to.
+
+## Artifacts
+
+| | |
+|---|---|
+| Report | `docs/ranking/bottom-up-research-pass-2.md` |
+| Code (runs, reproduces every headline figure) | `experiments/bottomup/pass2_te_adp.py` |
+| Registration ask | thread **087** → `strategist` (stopping condition committed in advance) |
+| Data escalation | thread **055** → `data-ops`, replied |
+| Founder answer | `FR-039`, status → ANSWERED, replied on-thread |
+| Leads logged | 4 entries in `docs/ideas-inbox.md` |
+
+Commits: `e0d6299`, `68cde7f`, `7497477`, `b109100`.
 
 ---
 
