@@ -25,6 +25,34 @@ outside-the-repo one, running in the cloud).
   ever uses the product. Still rate-limit and cache; permission is not licence to hammer a hobby
   endpoint.
 
+**PM defects committed this session — read these before running parallel chains:**
+
+- **The PM manufactured a phantom collision, twice.** A repo stop-hook requires a clean tree at the
+  end of every turn; background agents share the PM's working directory; satisfying the hook with
+  `git add -A` swept two running chains' in-flight files into PM commits. The first passed unnoticed
+  (a frontend revert landed under a docs commit message). The second cost a full decision cycle: the
+  data-ops chain saw its own files under another agent's commit message, concluded a parallel chain
+  was duplicating its work, and halted to escalate. Verified afterwards with `git diff HEAD` —
+  **byte-identical, 609 lines, nothing to reconcile.** Rules now in `PLAYBOOK.md` ("Committing while
+  agents are running"), and every agent definition carries a section telling it what this looks like
+  and not to halt. **Never stage a path you did not write.**
+- **The worktree rewrite was an overcorrection.** This session's charter edit declared worktree
+  discipline obsolete in the cloud. Half right — worktrees isolated the *database* and the *dev
+  server* locally, and those reasons are gone. The *concurrent-write* reason was not; it moved from
+  session level to agent level, and removing the discipline without noticing caused the defect above
+  within hours. Corrected in `CHARTER.md` rule 2.
+- **A dispatch that misreads scope is the most expensive error available to the PM** — more than
+  choosing the wrong model tier. "Optimize all for phone viewing right now" was read as *build
+  responsive layouts* and dispatched as engineering; roughly a third of the single largest agent run
+  on record (~374k tokens) went on work the founder cancelled once he saw the scope implied.
+  **"Right now" is about urgency, not scope.**
+
+**Latent numbering collision, not yet a problem:** `docs/decisions.md` has exactly one ADR-054 (the
+FFC ingester, this session) and the allocator says next is 55. But `CURRENT-STATE.md` records
+ADR-054 as belonging to the unmerged, unreviewed `backend/mock-calibration-kickers` branch. **When
+that branch merges, two ADR-054s meet.** Same structural cause as thread 081 and the 043/049/053
+collisions: the allocator only sees its own working tree.
+
 **Things this memory and `CURRENT-STATE.md` asserted that turned out false:**
 
 - **The ADP capture has NEVER run on schedule.** The previous entry said the cloud capture "has been

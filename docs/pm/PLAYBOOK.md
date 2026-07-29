@@ -29,6 +29,14 @@ Decide and log; do not ask. Make the call, append a line to
 docs/ideas-inbox.md, continue. Escalate only if the action is
 irreversible, contradicts a written rule, or spends money.
 
+The coordinator may commit your in-flight files without warning, to
+satisfy a clean-tree check before the container is reclaimed. If you
+see your own work appear in a commit you did not make, that is this
+and not a competing agent. Verify with `git diff HEAD -- <your files>`
+before concluding anything: an empty diff means what landed IS your
+work. Do not halt, do not reconcile against a phantom, and do not
+reset or check out anything to "fix" it.
+
 Stop on red: if you cannot produce evidence for a step, do not start
 the next one. Report and halt.
 
@@ -100,6 +108,44 @@ forty-five tickets came to compete for the same weeks.
 
 Hand it to Fable with the framing written by someone else, and **say explicitly that the PM authored
 the position under review.** The PM is the least-checked component here.
+
+## Committing while agents are running — the phantom-collision rule
+
+**The failure this prevents happened twice on 2026-07-29.** A repo stop-hook requires a clean tree at
+the end of every turn. Background agents work in the **same directory** as the PM. Satisfying that
+hook with `git add -A` swept two running chains' in-flight files into PM commits.
+
+The first went unnoticed — a frontend chain's staged revert landed under a documentation commit
+message, so the history described something other than what it contained. The second was worse: the
+data-ops chain saw its own files land under someone else's commit message, reasonably concluded a
+parallel agent was duplicating its work, and **halted to escalate.** A full decision cycle spent on a
+collision that never existed. Its judgement was correct on the evidence it had; the evidence was
+manufactured by the PM.
+
+**The rules, strongest first.**
+
+1. **Prefer isolation to discipline.** A dispatch that writes files can be given its own git worktree
+   (`isolation: "worktree"` on the Agent tool). Two write-capable chains should not share a
+   directory. This is the only fix that makes the failure *impossible* rather than merely unlikely,
+   and the project's own meta-lesson ranks structural impossibility above any rule.
+2. **Never stage a path you did not write.** No `git add -A`. No `git add <directory>`. Stage explicit
+   files that this session authored. **A dirty tree full of someone else's work is not yours to
+   commit** — it is evidence a chain is still running.
+3. **If you genuinely must commit another chain's work** — the container is ephemeral and the
+   alternative is losing it — then say so *in the commit message*, name the chain, and mark it
+   unverified. A message that silently claims another agent's work is precisely how the phantom
+   collision was manufactured.
+4. **Tell every agent this can happen.** The dispatch template carries the line. An agent that knows
+   the coordinator may commit its in-flight files will not mistake that for a competing chain.
+5. **Never `git checkout`, reset or revert a file a running agent may be editing** without telling it
+   first. If a revert is needed mid-flight, ask the owning chain to do it.
+
+**A correction this forced, worth keeping visible.** The charter's cloud rewrite declared worktrees
+obsolete. That was half right. Worktrees existed locally to isolate the *database* and the *dev
+server*, and both reasons are genuinely gone. **The concurrent-write reason is not — it moved from
+session level to agent level.** Several agents inside one session share one directory exactly as
+several sessions once shared one checkout. Removing the discipline without noticing the reason had
+relocated is the same class of error as the rule it replaced.
 
 ## A branch is ready
 

@@ -159,11 +159,18 @@ file was *invisible to its worktree*.
 
 **1 · Verify, do not infer.** You can read this repo. Read it. Label any claim you could not verify.
 
-**2 · Sessions run in disposable cloud containers.** Each one clones, works and pushes; there is no
-shared working directory and no worktree discipline to maintain. A container's writable disk is a
-fixed allowance and everything in it is lost when the session ends, so **anything worth keeping is
-committed and pushed before you finish.** `data/nfl.db` is gitignored and absent from a fresh clone —
-rebuild it with `scripts/rebuild_database.py` when a task needs real numbers.
+**2 · Sessions run in disposable cloud containers**, and everything in one is lost when it ends, so
+**anything worth keeping is committed and pushed before you finish.** `data/nfl.db` is gitignored and
+absent from a fresh clone — `scripts/rebuild_database.py` rebuilds it in about a minute when a task
+needs real numbers.
+
+**But worktrees are not obsolete — the reason for them moved.** Locally they isolated the database and
+the dev server, and both of those reasons are genuinely gone. Concurrency is not: **several agents
+inside one session share one working directory**, exactly as several sessions once shared one
+checkout. Give write-capable parallel dispatches their own worktree, and never stage a path you did
+not write. See the phantom-collision rule in `PLAYBOOK.md` — the first version of this charter
+declared worktree discipline dead without noticing its purpose had relocated, and that cost a chain a
+full decision cycle within hours.
 
 **3 · Nobody hand-types a ticket number.** Name by description; the tool assigns at sync.
 
