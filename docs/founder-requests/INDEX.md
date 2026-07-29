@@ -5,11 +5,11 @@ Per-request files in this directory are the source of truth. Edit a request's ow
 `STATUS:` line, then re-run sync. Protocol: [`README.md`](README.md).
 Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests.md).
 
-**29 requests since freeze.**
+**30 requests since freeze.**
 
 ---
 
-## NEW — 23
+## NEW — 24
 
 | ID | Subject | Raised | Source |
 |---|---|---|---|
@@ -36,6 +36,7 @@ Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests
 | [FR-042](FR-042-presets-must-use-standard-scoring-only-westwood.md) | Presets must use standard scoring only westwood | 2026-07-29 | chat 2026-07-29, PM session |
 | [FR-043](FR-043-audit-for-capability-already-built-and-sitting-u.md) | Audit for capability already built and sitting u | 2026-07-29 | chat 2026-07-29, PM session |
 | [FR-044](FR-044-periodic-table-grid-view-in-draft-colour-coded-p.md) | Periodic table grid view in draft colour coded p | 2026-07-29 | chat 2026-07-29, PM session |
+| [FR-045](FR-045-position-scarcity-reads-every-position-as-behind.md) | Position scarcity reads every position as behind | 2026-07-29 | chat 2026-07-29, PM session |
 
 ## SCOPING — 1
 
