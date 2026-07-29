@@ -2643,6 +2643,14 @@ consensus series, infeasible for the 26-season realised one, and it hung silentl
 erroring. Now switches to 20,000 sampled permutations above n = 8 and reports the attainable
 floor either way.
 
+## Suite
+
+**2 failed, 758 passed** (12m29s, worktree with `data/nfl.db` copied in). One is the known-red
+`test_handoffs.py::test_mailbox_health` (CURRENT-STATE item 15). The second is **new and not
+mine**: `test_holdout_audit.py::test_no_new_direct_sqlite_connections_in_src` went red on
+`src/ingest_sleeper_projections.py` from commit `fdd4685` tonight. Pass 3 touches zero files
+under `src/`. Opened as thread **094** to `backend` rather than fixed here.
+
 ## Not done, deliberately
 
 No confirmatory run. No change to `src/`. No board rebuild shipped. Thread 093 asks `strategist`
