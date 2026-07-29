@@ -182,7 +182,7 @@ export function Board({
   const provenance =
     `${data.board.consensus_source} · ${scoringFormat} · ` +
     `${data.board.consensus_state.replace(/_/g, ' ')} · ` +
-    `generated ${data.board.generated_utc} · ${rows.length} of 378 players loaded`;
+    `generated ${data.board.generated_utc} · ${rows.length} players loaded`;
 
   return (
     <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>

@@ -1,11 +1,11 @@
 {
- "when": "2026-07-28T05:39:48.246Z",
+ "when": "2026-07-29T05:00:23.992Z",
  "failures": 0,
  "report": [
   {
    "name": "dev server reachable",
    "ok": true,
-   "detail": "http://localhost:5190"
+   "detail": "http://localhost:5191"
   },
   {
    "name": "app rendered content",
@@ -14,6 +14,21 @@
   },
   {
    "name": "no load-failure banner",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "mode switcher (Season, the rightmost control) is inside the viewport once loaded",
+   "ok": true,
+   "detail": "right edge 1425 vs viewport 1440"
+  },
+  {
+   "name": "Refresh data button does not overhang the top bar",
+   "ok": true,
+   "detail": "button height 32.140625 vs bar height 46"
+  },
+  {
+   "name": "Board provenance line has no hardcoded \"of N players loaded\" denominator",
    "ok": true,
    "detail": ""
   },

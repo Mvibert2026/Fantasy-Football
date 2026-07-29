@@ -100,6 +100,16 @@ describe('board control row', () => {
     expect(screen.getByText(data.board.curve_caveat)).toBeInTheDocument();
   });
 
+  it('shows the real loaded-player count with no hardcoded denominator', () => {
+    // Regression: the provenance line used to read "N of 378 players loaded" -- 378 was a
+    // literal snapshot of the export size at the time it was written, not a sourced field
+    // (buildRows maps 1:1 over board.json:players, so there is no separate "total available"
+    // to divide against). It silently drifted true the moment the export grew past 378 rows.
+    renderBoard();
+    expect(screen.getByText(new RegExp(`${rows.length} players loaded`))).toBeInTheDocument();
+    expect(screen.queryByText(/of \d+ players loaded/)).not.toBeInTheDocument();
+  });
+
   it('reports an empty result as a state, not an error', async () => {
     // DEF is never on this board (no DST data ingested), so filtering to it is a
     // reliable way to reach the empty state without relying on a specific dataset shape.
