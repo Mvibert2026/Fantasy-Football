@@ -84,3 +84,60 @@ Three separate pieces of work, deliberately not collapsed:
 **Do not treat "Yahoo has it" as "we should build it."** Thread 086 found the opposite for at least
 one feature — an ambient recommendation feed users explicitly asked to have removed. The value of
 these screenshots is as evidence of convention, not as a specification.
+
+---
+
+## Addendum — FantasyPros captures, same session
+
+Founder's verdict on both products, verbatim:
+
+> "yahoo seems to have gotten worse and looks like a childs toy"
+> "fantasy pros still looks pretty good"
+> "Their league settings is pretty good, only thing it's really missing is bonuses - this is what I've
+> used for years, so probably my bias, but I like it - the player card looks great, the tabs etc, so
+> easy"
+
+**He named his own bias, which makes the read more useful rather than less.** He has used FantasyPros
+for years, so "it looks good" partly means "it is familiar." That is still the standard his eye will
+judge our screens against.
+
+### The finding that matters commercially
+
+**FantasyPros' custom scoring does not do yardage bonuses.** The founder has used it for years and
+names this as the one real gap. Their Draft Configuration offers Standard / PPR / Half PPR / Custom
+— reception value and the usual per-unit values, no threshold bonuses.
+
+**That is this league's entire distinguishing feature.** Westwood pays +1/+1.5/+2 at 100/150/200
+rushing and receiving and 300/350/400 passing, and they stack. If the tool the founder has used for
+years cannot express them, and Yahoo's own rankings may not price them either (still untested — the
+one-minute check in FR-052), then **no product his league-mates use is valuing ceiling the way his
+scoring actually pays for it.**
+
+This upgrades the bonus-pricing claim from "a plausible edge" to "an edge with a named, observed gap
+in the incumbent." It also sharpens FR-054: a threshold bonus needs a per-game distribution, which is
+exactly what a component-level bottom-up projection would produce and what nobody else appears to be
+computing.
+
+### Structure worth studying (observed, not endorsed)
+
+- **Draft Configuration**: league type, scoring, draft type, **Opponent Pick Logic (Basic /
+  Advanced)**, team count, **Draft Position with a Randomize button**, pick clock, and *"Sync Your
+  League Settings From: Yahoo"*. Directly relevant to FR-040 — this is the settings screen we are
+  about to specify, already built by someone else.
+- **Position Values** — QB/RB/WR/TE/DST/K/Rookies each set Normal/… . That is per-position opponent
+  bias, and with Opponent Pick Logic it is FR-047's territory shipped as two controls.
+- **Draft Against** — expert rankings *or* a choice of ADP sources (composite, several best-ball
+  providers, Yahoo and ESPN pre-draft lists). Multiple opinions, explicitly selected rather than
+  blended.
+- **Centre pane tabs**: Suggestions / Cheat Sheets / Draft Board. Right rail: picks with real team
+  names and *"Next turn in 7 Picks"*.
+- **Suggestion cards** carry *"48% Experts"* — the share of experts recommending that player — plus
+  an **Upside Mode** toggle.
+- **Player card**: ADP / ECR / Last Season / SOS across the top, then tabs (news, game logs, season
+  stats, outlook, depth chart), and an AI "Consensus Draft Sentiment" panel scoring OVERALL / UPSIDE
+  / BUST with prose beneath.
+
+**Two cautions carried from thread 086.** "A competitor ships it" is evidence of convention, not of
+value — that pass found a feature users explicitly asked to have removed. And the AI sentiment panel
+is precisely the shape this project deferred on hallucination grounds; seeing it shipped elsewhere
+does not change that reasoning.
