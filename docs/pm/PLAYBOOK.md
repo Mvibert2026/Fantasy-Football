@@ -176,10 +176,21 @@ manufactured by the PM.
 
 **The rules, strongest first.**
 
-1. **Prefer isolation to discipline.** A dispatch that writes files can be given its own git worktree
-   (`isolation: "worktree"` on the Agent tool). Two write-capable chains should not share a
-   directory. This is the only fix that makes the failure *impossible* rather than merely unlikely,
-   and the project's own meta-lesson ranks structural impossibility above any rule.
+1. **Isolation is the DEFAULT for any dispatch that writes files, not a judgment call.**
+   `isolation: "worktree"` on every such dispatch, every time. Do not reason about whether two chains
+   *will* collide — the reasoning is what fails. **Measured 2026-07-29:** with a shared directory the
+   PM manufactured two phantom collisions and then broke its own freshly-written rule one commit
+   later, by `git add`-ing a directory containing three agent worktrees. Later the same day, four
+   chains ran in parallel in worktrees with zero interference.
+
+   Read-only dispatches (research, triage, review) do not need one and should not pay for it.
+
+   **What worktrees cost, so the default is chosen knowingly:** a few hundred milliseconds and some
+   disk per agent, and their branches must be fetched and merged rather than just committed. Both are
+   trivially cheaper than one phantom collision, which cost a full decision cycle.
+
+   This is the project's own meta-lesson applied: structural impossibility beats a check, and a check
+   beats a rule. The rule version of this failed within an hour of being written.
 2. **Never stage a path you did not write.** No `git add -A`. No `git add <directory>`. Stage explicit
    files that this session authored. **A dirty tree full of someone else's work is not yours to
    commit** — it is evidence a chain is still running.
