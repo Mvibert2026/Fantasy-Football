@@ -5,11 +5,11 @@ Per-request files in this directory are the source of truth. Edit a request's ow
 `STATUS:` line, then re-run sync. Protocol: [`README.md`](README.md).
 Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests.md).
 
-**40 requests since freeze.**
+**41 requests since freeze.**
 
 ---
 
-## NEW — 29
+## NEW — 30
 
 | ID | Subject | Raised | Source |
 |---|---|---|---|
@@ -42,6 +42,7 @@ Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests
 | [FR-053](FR-053-yahoo-draft-room-reference-capture-features-to-c.md) | Yahoo draft room reference capture features to c | 2026-07-29 | chat 2026-07-29, PM session, Yahoo draft room screenshots |
 | [FR-054](FR-054-the-bottom-up-model-should-output-component-proj.md) | The bottom up model should output component proj | 2026-07-29 | chat 2026-07-29, PM session |
 | [FR-055](FR-055-draft-mode-board-needs-column-headers.md) | Draft mode board needs column headers | 2026-07-29 | chat 2026-07-29, PM session |
+| [FR-056](FR-056-personal-use-confirmed-get-the-component-project.md) | Personal use confirmed get the component project | 2026-07-29 | chat 2026-07-29, PM session |
 
 ## SCOPING — 1
 
