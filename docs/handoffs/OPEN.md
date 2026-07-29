@@ -4,7 +4,7 @@
 Threads are the source of truth. Change a thread's `STATUS:`, then re-run sync.
 Protocol: [`README.md`](README.md).
 
-**50 open** · 41 resolved
+**49 open** · 42 resolved
 
 ---
 
@@ -74,14 +74,13 @@ not an omission. Start your session at your own heading.
 | [086](086-competitive-ux-the-overhaul-case-is-weaker-than.md) | Competitive ux the overhaul case is weaker than | `researcher` | OPEN | 0d | none |
 | [89](089-fr-040-costing-static-hosting-blocks-scoring-rec.md) | Fr 040 costing static hosting blocks scoring rec | `backend` | OPEN | 0d | FR-040 custom league settings screen |
 
-### `data-ops` — 8 waiting
+### `data-ops` — 7 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
 | [046](046-bottom-up-ranking-data.md) | Bottom up ranking data | `pm` | OPEN | 2d | bottom-up ranking framework |
 | [053](053-founder-csv-ingestion.md) | Founder csv ingestion | `pm` | OPEN | 2d | FR-001 comparison view |
 | [054](054-ftn-and-sleeper-harvest.md) | Ftn and sleeper harvest | `pm` | OPEN | 2d | any subscription decision |
-| [055](055-ffc-adp-history-harvest.md) | Ffc adp history harvest | `pm` | OPEN | 2d | 046, 048 (bottom-up ranking), any ADP-vs-value work, availability model calibration |
 | [057](057-timeseries-data-audit.md) | Timeseries data audit | `pm` | OPEN | 2d | injury-aware rankings, ADP drift model, suspension correctness guarantee, Fable Addendum 2 |
 | [067](067-t1-multiformat-consensus-rescope.md) | T1 multiformat consensus rescope | `pm` | OPEN | 2d | T1 completion for leagues 2/3, board correctness for the non-primary leagues |
 | [070](070-recurring-injury-suspension-feed.md) | Recurring injury suspension feed | `pm` | OPEN | 2d | T4 (suspensions/roster-status table stakes), E[games_played] per ADR-E Amendment E-A1 |
@@ -169,6 +168,7 @@ _Nothing waiting on you._
 | [048](048-bottom-up-ranking-framework.md) | Bottom up ranking framework | `pm` → `strategist` |
 | [051](051-suggester-fixes.md) | Suggester fixes | `pm` → `frontend` |
 | [052](052-board-json-join-key.md) | Board json join key | `pm` → `backend, frontend` |
+| [055](055-ffc-adp-history-harvest.md) | Ffc adp history harvest | `pm` → `data-ops` |
 | [058](058-draft-board-design-gap.md) | Draft board design gap | `pm` → `frontend` |
 | [061](061-competitor-recommendation-audit.md) | Competitor recommendation audit | `pm` → `researcher` |
 | [063](063-suggester-reopen-regression.md) | Suggester reopen regression | `pm` → `frontend` |

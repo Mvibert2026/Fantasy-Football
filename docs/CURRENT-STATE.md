@@ -24,6 +24,24 @@ repo — Cloudflare holds its own deploy token. This closes the last dependency 
 machine: development, tests, the database rebuild, the daily capture and now viewing the app all run
 without it.
 
+**Last verified:** 2026-07-29, data-ops session (PM-dispatched, worktree
+`agent-a1bcc65cbaf0f88d7`), closing thread 055: historical FFC ADP is no longer absent from
+`nfl.db`. Backfilled 2,467 rows across 19 season-formats into new `adp_source` values
+`ffc_half_ppr_12team` (2018-2024, 7 seasons — the ranker's stated priority format) and
+`ffc_non_ppr_12team` (2013-2024 minus five gate/content exclusions, 12 seasons), never blended
+with the daily 10-team capture or `mfl_proxy`. This directly answers the ranker's pass-2 gap
+(`docs/ranking/bottom-up-research-pass-2.md`): the only pre-draft market history in `nfl.db` was
+previously FantasyPros ECR, 2021-2025 (4 usable seasons), forcing ECR rank to stand in for real
+draft position. `as_of_date` on every new row is the parsed window-END date from FFC's own dated
+sample sentence (verified against `nflreadpy.load_schedules()` per-season kickoff, not assumed),
+never the day the script ran. Full writeup:
+`docs/research/ffc-adp-history-backfill-2026-07-29.md`; quarantine detail (333 rows, mostly the
+documented team-defense `no_name_match` ceiling):
+`data/qa/ffc-adp-history-quarantine-2026-07-29.csv`. New script:
+`tools/backfill_ffc_adp_history.py`, one-time not scheduled, 10 new tests
+(`tests/test_backfill_ffc_adp_history.py`), 44 passed across the touched suites. Thread 055
+replied and `STATUS: RESOLVED`.
+
 **Last verified:** 2026-07-29, backend session (PM-dispatched, worktree
 `agent-a2a7e52225b3a7db0`, ADR-060) closing a real gap: contract 1.14.0 (thread 082) put real ADP
 fields on the board but defined the term nowhere reachable — 13-term glossary, zero mentions in
