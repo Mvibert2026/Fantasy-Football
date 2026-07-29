@@ -50,7 +50,19 @@ import { RoundGrid } from './RoundGrid';
 
 type ViewMode = 'table' | 'grid';
 type PositionFilter = 'ALL' | 'QB' | 'RB' | 'WR' | 'TE' | 'DEF';
-type SortKey = 'rank' | 'name' | 'pos' | 'team' | 'bye' | 'proj' | 'cons' | 'delta' | 'vbd' | 'tier' | 'absdelta';
+type SortKey =
+  | 'rank'
+  | 'name'
+  | 'pos'
+  | 'team'
+  | 'bye'
+  | 'proj'
+  | 'cons'
+  | 'adp'
+  | 'delta'
+  | 'vbd'
+  | 'tier'
+  | 'absdelta';
 
 const POSITION_TABS: PositionFilter[] = ['ALL', 'QB', 'RB', 'WR', 'TE', 'DEF'];
 
@@ -63,11 +75,17 @@ const POSITION_COLOR: Record<string, string> = {
   DEF: 'var(--def)',
 };
 
-const GRID_TEMPLATE = '64px minmax(180px,1fr) 72px 54px 54px 168px 70px 60px 72px 64px';
+const GRID_TEMPLATE = '64px minmax(180px,1fr) 72px 54px 54px 168px 70px 70px 60px 72px 64px';
 
 /** Column id, label, and the direction a first click on it should sort in --
  *  ported from the prototype's `bcols` (line 2314), with "better first" as the
- *  default direction for proj/delta/vbd, matching its own comparator (line 2319). */
+ *  default direction for proj/delta/vbd, matching its own comparator (line 2319).
+ *
+ *  ADP (contract 1.14.0, thread 082) sits beside CONS, not beside Δ. It is a
+ *  separate market-vs-expert claim, deliberately not turned into a second
+ *  delta column -- see the trace-fields.ts 1.14.0 changelog entry for the
+ *  reasoning. Label reads "ADP (MFL)" rather than bare "ADP" so a glance
+ *  cannot mistake a MyFantasyLeague proxy for this league's own draft. */
 const COLUMNS: Array<{ key: SortKey; label: string; defaultDir: 1 | -1 }> = [
   { key: 'rank', label: 'RANK', defaultDir: 1 },
   { key: 'name', label: 'PLAYER', defaultDir: 1 },
@@ -76,6 +94,7 @@ const COLUMNS: Array<{ key: SortKey; label: string; defaultDir: 1 | -1 }> = [
   { key: 'bye', label: 'BYE', defaultDir: 1 },
   { key: 'proj', label: 'PROJ (CI)', defaultDir: -1 },
   { key: 'cons', label: 'CONS', defaultDir: 1 },
+  { key: 'adp', label: 'ADP (MFL)', defaultDir: 1 },
   { key: 'delta', label: 'Δ', defaultDir: -1 },
   { key: 'vbd', label: 'VBD', defaultDir: -1 },
   { key: 'tier', label: 'TIER', defaultDir: 1 },
@@ -113,6 +132,8 @@ function compareRows(a: BoardRow, b: BoardRow, key: SortKey): number {
       return numOrBottom(b.projectedPoints, -1) - numOrBottom(a.projectedPoints, -1);
     case 'cons':
       return numOrBottom(a.consensusRank, 1) - numOrBottom(b.consensusRank, 1);
+    case 'adp':
+      return numOrBottom(a.adp, 1) - numOrBottom(b.adp, 1);
     case 'delta':
       return numOrBottom(b.deltaVsConsensus, -1) - numOrBottom(a.deltaVsConsensus, -1);
     case 'vbd':
@@ -334,6 +355,7 @@ export function Board({
           bandsEnabled={sort.key === 'rank' && sort.dir === 1 && position !== 'ALL'}
           expandedId={expandedId}
           onToggleExpand={(id) => setExpandedId((cur) => (cur === id ? null : id))}
+          adpHeaderTitle={computeAdpHeaderTitle(data.board.adp_source_note, data.board.adp_as_of_date)}
         />
       ) : (
         <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: '15px 20px' }}>
@@ -357,6 +379,17 @@ export function Board({
   );
 }
 
+/** Hover text for the ADP column header -- the export's own `adp_source_note`
+ *  verbatim, so the reachable-caveat requirement (thread 082) is met without
+ *  a permanent extra bar eating vertical space on every row (Principle #4:
+ *  density is the product). Null-safe: a pre-1.14.0 export still renders the
+ *  column, just without this detail. */
+function computeAdpHeaderTitle(note: string | null | undefined, asOfDate: string | null | undefined): string {
+  const parts = [note ?? 'MyFantasyLeague ADP proxy -- not this league\'s own draft history.'];
+  if (asOfDate) parts.push(`Snapshot as of ${asOfDate}.`);
+  return parts.join(' ');
+}
+
 function BoardTable({
   rows,
   league,
@@ -367,6 +400,7 @@ function BoardTable({
   bandsEnabled,
   expandedId,
   onToggleExpand,
+  adpHeaderTitle,
 }: {
   rows: BoardRow[];
   league: LeagueConfig;
@@ -377,6 +411,7 @@ function BoardTable({
   bandsEnabled: boolean;
   expandedId: number | null;
   onToggleExpand: (id: number) => void;
+  adpHeaderTitle: string;
 }) {
   if (rows.length === 0) {
     return (
@@ -539,6 +574,7 @@ function BoardRowLine({
         <span className="num" style={{ color: 'var(--dim2)' }}>
           <Value cell={row.consensusRank} render={integer} />
         </span>
+        <AdpCell row={row} />
         <span
           onClick={(e) => {
             e.stopPropagation();
@@ -645,6 +681,42 @@ function ProjCell({ row }: { row: BoardRow }) {
     <span className="num">
       <span style={{ fontWeight: 600 }}>{decimal(row.projectedPoints.value)}</span>{' '}
       <span style={{ color: 'var(--dim2)', fontSize: 12 }}>{ci}</span>
+    </span>
+  );
+}
+
+/**
+ * ADP (contract 1.14.0, thread 082): MyFantasyLeague public-aggregate proxy,
+ * NOT this league's own draft history. The column header ("ADP (MFL)") is
+ * the glance-level label so this can never be mistaken for the league's own
+ * ADP; the tooltip carries the rest of `adp_source` traveling with the value
+ * (full-PPR-vs-half-PPR caveat, sample range, selection rate) so it is never
+ * displayed bare. Absent renders through the same em-dash convention as
+ * every other column, with the reason (thin MFL coverage past ~top 230) in
+ * the title -- a real null, never a fabricated 0.
+ */
+function AdpCell({ row }: { row: BoardRow }) {
+  if (row.adp.kind === 'absent') {
+    return (
+      <span className="val-absent" title={row.adp.reason} aria-label={row.adp.reason}>
+        —
+      </span>
+    );
+  }
+  const source =
+    row.adpSource === 'mfl_proxy' ? 'MyFantasyLeague proxy, full PPR (not this league\'s ADP)' : (row.adpSource ?? 'unlabelled ADP source');
+  const range =
+    row.adpMinPick.kind === 'present' && row.adpMaxPick.kind === 'present'
+      ? ` · range ${integer(row.adpMinPick.value)}–${integer(row.adpMaxPick.value)}`
+      : '';
+  const selected =
+    row.adpSelectedPct.kind === 'present'
+      ? ` · taken in ${row.adpSelectedPct.value > 0 && row.adpSelectedPct.value < 1 ? '<1' : integer(row.adpSelectedPct.value)}% of sampled drafts`
+      : '';
+  const title = `${source}${range}${selected}\nboard.json:players[].adp`;
+  return (
+    <span className="num" style={{ color: 'var(--dim2)' }} title={title}>
+      {decimal(row.adp.value)}
     </span>
   );
 }

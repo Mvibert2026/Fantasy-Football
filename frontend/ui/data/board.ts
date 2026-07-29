@@ -38,6 +38,21 @@ export interface BoardRow {
   consensusRank: Cell<number>;
   deltaVsConsensus: Cell<number>;
 
+  /**
+   * MFL-proxy ADP (contract 1.14.0, thread 082) -- market draft position, a
+   * different claim from `consensusRank` (expert opinion). Absent for most
+   * of the board (MFL only covers roughly the top ~230 players); that is a
+   * real null, never a fabricated 0 or rank. `adpSource` is not a Cell since
+   * it is always the same string travelling alongside the other four ADP
+   * fields on this row, but it is threaded through raw for display so a
+   * bare ADP number is never shown unlabelled.
+   */
+  adp: Cell<number>;
+  adpMinPick: Cell<number>;
+  adpMaxPick: Cell<number>;
+  adpSelectedPct: Cell<number>;
+  adpSource: string | null;
+
   /** Structural only. See `attribution` below. */
   structuralAdjustment: Cell<number>;
   replacementLevelsComponent: Cell<number>;
@@ -76,6 +91,11 @@ export function buildRows(data: Dataset): BoardRow[] {
             runId,
           );
 
+    const noAdpReason =
+      'No MFL ADP data for this player -- MyFantasyLeague’s public sample only covers ' +
+      'roughly the top ~230 players in a 10-team pull, so most of the board genuinely has no ' +
+      'market opinion on file. Not a zero, not a rank -- not computed.';
+
     return {
       id: p.id,
       name: present(p.player, at('player'), runId),
@@ -96,6 +116,11 @@ export function buildRows(data: Dataset): BoardRow[] {
       vbd: present(p.vbd, at('vbd'), runId),
       consensusRank: present(p.consensus_rank, at('consensus_rank'), runId),
       deltaVsConsensus: present(p.delta_vs_consensus, at('delta_vs_consensus'), runId),
+      adp: fromNullable(p.adp ?? null, at('adp'), runId, noAdpReason),
+      adpMinPick: fromNullable(p.adp_min_pick ?? null, at('adp_min_pick'), runId, noAdpReason),
+      adpMaxPick: fromNullable(p.adp_max_pick ?? null, at('adp_max_pick'), runId, noAdpReason),
+      adpSelectedPct: fromNullable(p.adp_selected_pct ?? null, at('adp_selected_pct'), runId, noAdpReason),
+      adpSource: p.adp_source ?? null,
       structuralAdjustment: present(p.structural_adjustment, at('structural_adjustment'), runId),
       replacementLevelsComponent: present(
         p.structural_breakdown.replacement_levels,

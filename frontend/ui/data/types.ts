@@ -72,6 +72,22 @@ export interface RawBoardPlayer {
   suspension_games?: number | null;
   projected_points_suspension_adjusted?: number | null;
   suspension_adjustment_note?: 'not_suspended' | 'games_adjusted' | 'not_adjusted_pending_appeal';
+  /**
+   * Contract 1.14.0 (thread 082). MyFantasyLeague public-aggregate ADP proxy,
+   * NOT this league's own draft history -- see `RawBoard.adp_source_note` for
+   * the full caveat (population, full-PPR-vs-this-league's-half-PPR capture).
+   * MFL only has an opinion on roughly the top ~230 players in a 10-team pull,
+   * so most rows carry a real, honest null here -- never render `0`/`0%` for
+   * an absent value, that is a different claim. `adp_source` travels with
+   * every non-null value and must never be blended with a differently-sourced
+   * ADP number (e.g. a future `ffc_*` source). Optional so a pre-1.14.0
+   * export still parses.
+   */
+  adp?: number | null;
+  adp_min_pick?: number | null;
+  adp_max_pick?: number | null;
+  adp_selected_pct?: number | null;
+  adp_source?: 'mfl_proxy' | string | null;
 }
 
 export interface RawBoard {
@@ -107,6 +123,18 @@ export interface RawBoard {
   snapshot_max_age_days?: number;
   snapshot_stale?: boolean;
   snapshot_freshness_note?: string;
+  /**
+   * Contract 1.14.0 (thread 082). `adp_source` is always `"mfl_proxy"` today
+   * (or null if the whole board somehow ships with no ADP data at all).
+   * `adp_source_note` is written for display -- render it verbatim rather
+   * than summarising, it carries the caveats (proxy population, full-PPR
+   * capture vs. this half-PPR league) that make this NOT this league's ADP.
+   * Optional so a pre-1.14.0 export still parses.
+   */
+  adp_source?: string | null;
+  adp_as_of_date?: string | null;
+  adp_match_rate_note?: string;
+  adp_source_note?: string;
   consensus_state: string;
   attribution_is_additive: boolean;
   attribution_identity: string;

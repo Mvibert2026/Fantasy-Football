@@ -33,7 +33,7 @@ export interface TraceField {
 }
 
 /** The contract version the registry below is pinned against. */
-export const TRACE_CONTRACT = '1.13.0';
+export const TRACE_CONTRACT = '1.14.0';
 
 /**
  * Changes to the user-visible trace surface, newest first.
@@ -47,6 +47,28 @@ export const TRACE_CHANGELOG: ReadonlyArray<{
   kind: 'rename' | 'value' | 'added' | 'removed';
   summary: string;
 }> = [
+  {
+    version: '1.14.0',
+    kind: 'added',
+    summary:
+      'Thread 082 (FR-024, backend done, this bump wires it into the three screens founder asked ' +
+      'for). Every player row gains five ADP fields -- `adp`, `adp_min_pick`, `adp_max_pick`, ' +
+      '`adp_selected_pct`, `adp_source` -- and board.json gains four top-level fields: ' +
+      '`adp_source`, `adp_as_of_date`, `adp_match_rate_note`, `adp_source_note`. This is a ' +
+      'MyFantasyLeague public-aggregate ADP PROXY (`adp_source: "mfl_proxy"`), a different claim ' +
+      'from `consensus_rank` (FantasyPros expert consensus) and NOT this league\'s own draft ' +
+      'history -- captured at a matching 10-team size but full PPR against this half-PPR league, ' +
+      'so receivers read a few picks earlier than this league would actually take them. Measured ' +
+      'on the live export: 144 of 510 rows carry a real value, 366 are honest nulls (MFL only has ' +
+      'an opinion on roughly the top ~230 players). Rendered on the Board table (new ADP column, ' +
+      'labelled "ADP (MFL)"), the Draft Room board list (compact ADP figure beside the delta), and ' +
+      'the Player Detail sheet (full block: value, min-max range, selected%, the verbatim ' +
+      '`adp_source_note` caveat, and `adp_as_of_date`). Deliberately NOT added as a second delta ' +
+      'column next to `delta_vs_consensus` -- two adjacent deltas measuring different things ' +
+      '(market vs. expert consensus) would read as one signal at a glance; the raw ADP value sits ' +
+      'beside CONS instead, so a reader compares three numbers (CONS, ADP, our rank) rather than ' +
+      'two deltas whose difference is not itself computed anywhere.',
+  },
   {
     version: '1.13.0',
     kind: 'added',
@@ -274,6 +296,31 @@ export const BOARD_TRACE_FIELDS: readonly TraceField[] = [
     label: 'Why the projection was or was not suspension-adjusted',
     since: '1.12.0',
   },
+  {
+    path: 'adp',
+    label: 'Average draft position, MyFantasyLeague proxy -- not this league’s ADP',
+    since: '1.14.0',
+  },
+  {
+    path: 'adp_min_pick',
+    label: 'Earliest pick this player was taken at in the MFL sample',
+    since: '1.14.0',
+  },
+  {
+    path: 'adp_max_pick',
+    label: 'Latest pick this player was taken at in the MFL sample',
+    since: '1.14.0',
+  },
+  {
+    path: 'adp_selected_pct',
+    label: 'Share of sampled MFL drafts that took this player at all',
+    since: '1.14.0',
+  },
+  {
+    path: 'adp_source',
+    label: 'Which ADP source this value came from -- always travels with the value',
+    since: '1.14.0',
+  },
 ];
 
 /**
@@ -317,6 +364,26 @@ export const BOARD_HEADER_TRACE_FIELDS: readonly TraceField[] = [
     path: 'snapshot_freshness_note',
     label: 'What the snapshot-freshness check does and does not claim',
     since: '1.13.0',
+  },
+  {
+    path: 'adp_source',
+    label: 'The ADP source name shown at board level, e.g. "mfl_proxy"',
+    since: '1.14.0',
+  },
+  {
+    path: 'adp_as_of_date',
+    label: 'Date the ADP snapshot was captured',
+    since: '1.14.0',
+  },
+  {
+    path: 'adp_match_rate_note',
+    label: 'How many ADP rows resolved to a board player via the identity join',
+    since: '1.14.0',
+  },
+  {
+    path: 'adp_source_note',
+    label: 'The full ADP proxy caveat -- population, format mismatch, sample size',
+    since: '1.14.0',
   },
 ];
 
