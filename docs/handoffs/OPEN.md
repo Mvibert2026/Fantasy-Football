@@ -4,7 +4,7 @@
 Threads are the source of truth. Change a thread's `STATUS:`, then re-run sync.
 Protocol: [`README.md`](README.md).
 
-**49 open** · 41 resolved
+**50 open** · 41 resolved
 
 ---
 
@@ -13,7 +13,7 @@ Protocol: [`README.md`](README.md).
 Every role gets a section, including empty ones — an empty inbox is a fact worth stating,
 not an omission. Start your session at your own heading.
 
-### `pm` — 6 waiting
+### `pm` — 7 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
@@ -21,6 +21,7 @@ not an omission. Start your session at your own heading.
 | [081](081-thread-079-id-collision-between-main-and-the-pha.md) | Thread 079 id collision between main and the pha | `data-ops` | OPEN | 0d | none |
 | [083](083-claim-checker-is-live-eight-false-document-claim.md) | Claim checker is live eight false document claim | `backend` | OPEN | 0d | none |
 | [086](086-competitive-ux-the-overhaul-case-is-weaker-than.md) | Competitive ux the overhaul case is weaker than | `researcher` | OPEN | 0d | none |
+| [091](091-component-projections-exist-but-none-are-redistr.md) | Component projections exist but none are redistr | `researcher` | OPEN | 0d | none |
 | [89](089-fr-040-costing-static-hosting-blocks-scoring-rec.md) | Fr 040 costing static hosting blocks scoring rec | `backend` | OPEN | 0d | FR-040 custom league settings screen |
 | [90](090-fr-043-audit-claude-md-ss5-staleness-built-but-u.md) | Fr 043 audit claude md ss5 staleness built but u | `librarian` | OPEN | 0d | none |
 
@@ -112,9 +113,11 @@ not an omission. Start your session at your own heading.
 |---|---|---|---|---|---|
 | [062](062-backlog-reconciliation.md) | Backlog reconciliation | `pm` | OPEN | 2d | none |
 
-### `design` — 0 waiting  ⚠️ *cannot read this repo — needs a human hop via pm*
+### `design` — 1 waiting  ⚠️ *cannot read this repo — needs a human hop via pm*
 
-_Nothing waiting on you._
+| ID | Subject | From | Status | Age | Blocks |
+|---|---|---|---|---|---|
+| [091](091-component-projections-exist-but-none-are-redistr.md) | Component projections exist but none are redistr | `researcher` | OPEN | 0d | none |
 
 ### `founder` — 1 waiting
 
