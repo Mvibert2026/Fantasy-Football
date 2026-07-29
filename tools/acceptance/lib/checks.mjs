@@ -63,26 +63,46 @@ export async function checkLeagueName(page, groundTruth) {
   );
 }
 
-/** Fault #1 target: the board header's provenance line states "N of TOTAL
- *  players loaded" -- TOTAL must equal the real player count in board.json,
- *  not a hardcoded figure that can drift as the export grows or shrinks. */
+/** Fault #1 target: the board header's provenance line states how many players
+ *  loaded -- that figure must equal the real player count in board.json, not a
+ *  hardcoded figure that can drift as the export grows or shrinks.
+ *
+ *  The original fault was a hardcoded denominator ("N of 378 players loaded").
+ *  The fix removed the denominator rather than correcting it, so the line now
+ *  reads "N players loaded" and Board.tsx sources N from the unfiltered row
+ *  set. This check asserts the rendered count against ground truth and does
+ *  not require a denominator -- and it actively rejects one, because any
+ *  denominator here would be a reintroduced hardcoded total. Asserting the old
+ *  phrasing would test a string the app no longer emits. */
 export async function checkPlayerCountHeader(page, groundTruth) {
   const text = await page.locator('body').innerText();
-  const m = text.match(/(\d+)\s+of\s+(\d+)\s+players loaded/);
-  if (!m) {
-    return result('board-header-player-count', false, 'a "N of TOTAL players loaded" line', '(not found)', null);
-  }
-  const [, loaded, total] = m.map(Number);
   const expected = groundTruth.playerCount;
-  const ok = total === expected && loaded === expected;
+
+  const denom = text.match(/(\d+)\s+of\s+(\d+)\s+players loaded/);
+  if (denom) {
+    return result(
+      'board-header-player-count',
+      false,
+      `"${expected} players loaded", with no denominator`,
+      denom[0],
+      'Header carries an "of TOTAL" denominator again. That figure is not sourced from board.json and will drift as the export changes.',
+    );
+  }
+
+  const m = text.match(/(\d+)\s+players loaded/);
+  if (!m) {
+    return result('board-header-player-count', false, `a "${expected} players loaded" line`, '(not found)', null);
+  }
+  const loaded = Number(m[1]);
+  const ok = loaded === expected;
   return result(
     'board-header-player-count',
     ok,
-    `${expected} of ${expected}`,
-    `${loaded} of ${total}`,
+    `${expected} players loaded`,
+    `${loaded} players loaded`,
     ok
       ? null
-      : `Header claims ${total} total players; data/export/board.json actually has ${expected} player rows.`,
+      : `Header claims ${loaded} players loaded; data/export/board.json actually has ${expected} player rows.`,
   );
 }
 
