@@ -304,3 +304,68 @@ was PM-generated.** Say so when defending it.
 - An agent refused to modify permission configuration, and another refused a scrape against a recorded
   block. **Both were correct.** An agent that will edit its own permission envelope has no envelope.
 - The acceptance harness caught a real defect on its first unmodified run.
+
+# 9 · 2026-07-29, second half — decisions that must survive this session
+
+**Two tracks, not one product (FR-042).** Westwood is the custom case: verified scoring, real
+opponent knowledge. Everything else is generic — standard scoring varying PPR only, no opponent
+identity, no tendency modelling. This is a founder ruling, not a proposal. It supersedes part of
+ADR-047.
+
+**Presets currently carry Westwood's ruleset and are labelled as platform defaults.**
+`src/generate_config_matrix.py:71-74` deep-copies `LEAGUE` and swaps only the reception value. The
+file's own docstring contradicts itself on whether ESPN scoring was ever verified (lines 6-11 say
+confirmed, lines 52-53 say bot-detection blocked the fetch). **Regenerate, do not edit** — this
+invalidates projections in all 24 preset exports. Sequence it *before* the custom-league builder, or
+the builder inherits the bug into every league the founder creates.
+
+**The custom-league backend already exists.** `src/league_builder.py` —
+`create_league(...)` / `create_and_export_league(...)`. Found by accident. **This triggered FR-043**
+(audit for built-but-unused capability) and it is the single best argument for running that audit
+before any build planning.
+
+**The static deploy splits "custom league" in two.** `board.json` ships `projected_points` and `vbd`
+but **no component stats**. So team count, roster shape, draft slot and playoff structure can be
+recomputed in the browser; anything touching scoring cannot. **Rule: the settings screen must never
+accept a setting it cannot apply.**
+
+**Design direction is temporarily reversed (founder instruction).** The built app is the reference;
+design catches up to code until parity, then we hold until an overhaul is scheduled. Exception: a new
+feature needing visibility before the overhaul still gets specced up front. Briefing addendum is in
+`docs/design-briefing-2026-07-29.md` §7-12.
+
+**The overhaul case is weaker than assumed.** `docs/research/competitive-ux-2026-07-29.md` (thread
+086). Also: the 5/10 visual-polish and 4/10 light-mode scores cited in six live documents trace to a
+research artifact **that is not in the repository**. Treat them as unsourced.
+
+**Six present-but-inert controls (FR-037)**, not one. Export CSV, Export PDF, League settings,
+Compare, Ask, Ask-the-assistant. The founder is finding them by clicking. One design treatment covers
+all six; it is the cheapest high-value design deliverable available.
+
+**Non-primary leagues are thinner than anyone said.** Primary carries 11 export artifacts; the 26
+sub-leagues carry 7. Missing everywhere: `strategies.json`, `player_descriptions.json`,
+`season_stats.json`, `weekly_finishes.json`. **The Strategy guide is empty in 26 of 27 leagues.**
+
+**TE is the ranking finding with legs.** 33.6% of a tight end's stable quality is unpriced by
+consensus, against 15.1% RB/WR and 6.3% QB. The founder's addition — that it is only spendable in
+the late rounds if you are not taking TE or QB early — is the right question and **is not yet
+answered**. If the mispricing concentrates in the top few TEs, the finding argues the opposite way.
+Survivorship is the specific way that analysis fails.
+
+**Correct the 98% goal when it recurs.** That figure came from fitting a curve to *realised* finish
+— hindsight, not prediction. 12.5% of scoring variance is pure weekly noise and availability is
+near-unforecastable (r = 0.09-0.18). The achievable goal is not out-predicting experts; it is
+rankings computed for his scoring, roster and draft slot, which consensus can never do.
+
+## Operating lessons from this session
+
+- **The shell working directory persists between Bash calls.** A `cd` into a worktree silently
+  changes the target of every later command. Verify with `pwd` before trusting a `git status`.
+- **When the API throws 500s, stop resuming and start preserving.** Commit each agent's worktree as
+  an explicit `WIP (pm-preserved)` commit, labelled as *not* agent-verified, then probe with **one**
+  agent rather than retrying all of them. Five agents died in ~15 minutes; every blind retry cost
+  tokens and produced nothing.
+- **Tell interrupted agents to commit after each step, not at the end.** Correct only under
+  instability, and it is correct then.
+- **Screens can be data-driven and still stale.** Methodology and Glossary auto-update their numbers
+  and were still missing ADP entirely. "It reads from the export" is not the same as "it is current."
