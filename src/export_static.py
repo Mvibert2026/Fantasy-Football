@@ -114,7 +114,8 @@ _GLOSSARY_BASE = {
         "long_explanation": (
             "FantasyPros Expert Consensus Rank: many analysts submit rankings and these are "
             "averaged. It is expert opinion, NOT a record of where players actually get "
-            "drafted (that would be ADP, which we could not obtain legally). It is a strong "
+            "drafted -- that would be ADP (see the 'ADP' entry below), which this board also "
+            "shows, from a different, much smaller source, for comparison only. It is a strong "
             "starting point and genuinely hard to beat, but it assumes a generic league, not "
             "ours."
         ),
@@ -227,6 +228,27 @@ _GLOSSARY_BASE = {
             "rules. Be sceptical: consensus rank explains only about 16-27% of what actually "
             "happens, so these are rough guides, not forecasts. Availability probabilities on "
             "this board are far more trustworthy than projections."
+        ),
+    },
+    "ADP": {
+        "short_definition": "Average draft position from one outside platform's real drafts — "
+                            "not this league's own history, and not on most players.",
+        "long_explanation": (
+            "ADP (Average Draft Position, plus the pick range and the percent of sampled "
+            "drafts a player was taken in at all) comes from MyFantasyLeague's public "
+            "aggregate endpoint (adp_source='mfl_proxy', ADR-035) — a real record of where "
+            "players were actually picked, unlike 'consensus rank' above, which is expert "
+            "opinion. Three caveats matter more here than for any other number on this board: "
+            "(1) it is MFL's drafting population (largely dynasty/redraft hobbyists), not this "
+            "league's; (2) it was captured full-PPR, because MFL's format flag is a binary "
+            "PPR/non-PPR switch and this league scores half-PPR — receivers likely run a few "
+            "picks ahead of where this league would actually take them; (3) the sample is "
+            "thin (dozens of drafts, not thousands) and only covers roughly the top 230 "
+            "players, so most rows on this board show no ADP at all — a real null, never a "
+            "filled-in guess. It is shown for reference only: it does not feed the projection, "
+            "VBD, tier, or any recommendation on this board. See adp_source_note and "
+            "adp_match_rate_note on the board export for the exact numbers behind these "
+            "caveats, which move with each new snapshot."
         ),
     },
 }

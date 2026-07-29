@@ -48,6 +48,7 @@ const TERM_META: Record<string, TermMeta> = {
   'power floor': { category: 'prob', field: 'strategies.json:power_floor' },
   holdout: { category: 'state' },
   'projected points': { category: 'value', field: 'board.json:players[].projected_points' },
+  ADP: { category: 'draft', field: 'board.json:players[].adp' },
 };
 
 export function categoryOf(term: string): GlossaryCategory {

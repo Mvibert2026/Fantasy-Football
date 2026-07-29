@@ -435,14 +435,19 @@ def build_board_json(
         "board_source": (
             "fantasypros_csv_2026draft re-scored into league positional value structure"
         ),
-        # The design contract's example shows "blend:4". We have ONE source.
-        # ADR-018: no market ADP is obtainable within CLAUDE.md §10, so there is
-        # nothing to blend. Stated explicitly so the UI does not imply a blend.
+        # The design contract's example shows "blend:4". We have ONE consensus source.
+        # ADR-018 found no market ADP legally obtainable at the time; ADR-035
+        # partially superseded that with a real MFL ADP proxy, now shown
+        # separately (see adp_source/adp_source_note below) -- but it is a
+        # separate, much smaller, display-only field, never blended into this
+        # consensus_source. Stated explicitly so the UI does not imply a blend.
         "consensus_source": "fantasypros_csv_2026draft",
         "consensus_source_count": 1,
         "consensus_source_note": (
             "Single source. Expert consensus rank, NOT market average draft position, and not "
-            "a blend of several providers. No ADP source is legally obtainable (ADR-018). "
+            "a blend of several providers. A real (if thin and proxy) market ADP is shown "
+            "separately below (adp_source='mfl_proxy', ADR-035) -- see adp_source_note -- but "
+            "it is never merged into this consensus figure. "
             "Rewired off the old fantasypros_ecr DynastyProcess mirror (thread 053/067): that "
             "source was rank-only, format-blind, and effectively capped; this is the founder's "
             "own FantasyPros export with a confirmed scoring format (see scoring_format below) "
