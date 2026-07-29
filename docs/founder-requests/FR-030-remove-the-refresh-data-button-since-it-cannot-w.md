@@ -1,6 +1,6 @@
 ---
 ID: FR-030
-STATUS: IN PROGRESS
+STATUS: SHIPPED
 SOURCE: coordinator relay, mid-session, 2026-07-29
 RAISED: 2026-07-29
 ---
