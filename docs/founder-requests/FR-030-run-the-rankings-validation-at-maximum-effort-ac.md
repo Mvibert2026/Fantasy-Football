@@ -34,3 +34,17 @@ it survived — the reason Fable sits on a separate budget and the strategist ha
 
 Fable runs end-of-week only, so this has to be scheduled around that rather than fired when the model
 happens to finish.
+
+**The setting to use is `Ultracode`, not `Max` — and the difference matters here.** The effort scale
+is `Low · Medium · High (default) · Extra · Max · Ultracode`. Max is one agent thinking as hard as it
+can. **Ultracode is Claude planning and running a whole multi-agent workflow** — fan-out, independent
+verification, synthesis.
+
+For this specific job that is the correct shape. The question is not "can one agent think hard about
+whether the rankings are good"; it is "does the result survive several independent attacks." A
+registered confirmatory test with a pre-committed decision rule, verified adversarially, is a
+workflow — not a single deep think.
+
+**It is a session-level setting the founder turns on**, not something the PM assigns per agent, and
+its own warning says it uses limits faster. That is the correct trade for the one test that decides
+the product, and waste on anything else. **Do not spend it before the model exists.**
