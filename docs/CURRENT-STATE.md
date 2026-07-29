@@ -429,7 +429,13 @@ assistant" wiring · LLM prose renderer
    `tools/run_adp_snapshot_task.bat` (main checkout only — ingest, then `git add`/commit/push scoped
    to `data/adp-snapshots/*.csv`) with no agent/WebFetch involvement. Caveat: `schtasks` reports
    `Logon Mode: Interactive only` (no stored run-as password) — it will not fire from a locked/
-   logged-out session; nobody has verified an actual unattended fire yet. Verify periodically:
+   logged-out session. **That caveat is now confirmed as a real miss, not a theoretical one
+   (2026-07-29): no `2026-07-29.csv` existed until one was captured by hand, so the task did not
+   fire.** **Superseded by `.github/workflows/adp-snapshot.yml`** (daily 09:15 UTC +
+   `workflow_dispatch`), which runs the capture off this machine and fails the run rather than
+   committing an empty file. The local Scheduled Task is now redundant and should be disabled once
+   a scheduled cloud run is observed to succeed — leaving both enabled is harmless (the workflow's
+   commit step no-ops when the day's CSV is unchanged) but pointless. Verify periodically:
    `SELECT MAX(retrieved_at) FROM adp_snapshots WHERE adp_source='mfl_proxy'` and check
    `data/adp-snapshots/` for a same-day CSV. **Per-platform stamping is a stated rule** (2026-07-27,
    thread 077 reply): `adp_source` distinguishes platforms and must never be blended/averaged into
