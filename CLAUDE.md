@@ -282,6 +282,8 @@ tier is ambiguous, say which tier you think it is and why before starting.
 
 | File | Contents |
 |---|---|
+| `docs/CODE-MAP.md` | Where things live, answered with `file:line`: how a board is built, where league config enters and where it is bypassed, what the availability model takes and what is hardcoded, what is in the export contract and who reads each field, and what the acceptance harness vs. the mock capture each verify. For giving accurate instructions about the code without reading all of it |
+| `docs/can-we-rebuild-the-database.md` | Whether `data/nfl.db` can be rebuilt from the repo plus public sources — measured, not estimated. Yes for 99.3% in ~4 minutes; the three artifacts that could not be are now committed (thread 080). Read before assuming any table can be regenerated |
 | `docs/environment.md` | **Read before running any command.** The Windows/conda interpreter path, the PreToolUse hook's block list and its known semicolon false positive, why permission allowlists are not the thing stopping you, commit-message quoting, and the worktree DB and screenshot gotchas. Every fact in it was rediscovered the hard way by an earlier agent |
 | `docs/test-registry.md` | The tiered factor list (Tier 0 table stakes / Tier 1 analytics / Tier 2 league-specific), with effort, expected edge, data source, and status per item |
 | `docs/deferred.md` | Deliberately postponed decisions and why |

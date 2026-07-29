@@ -14,8 +14,14 @@ in the same voice as current ones. Same hazard `docs/assistant-context.md` warns
 `decisions.md`. It is fine to read either to learn *what happened*; it is not fine to read them to
 learn *what is true*.
 
-**Last verified:** 2026-07-27, overnight PHASE 1/PHASE 2 closeout session (main @ `9d8e09b`, merge
-of `integration-2026-07-27` into `main`, pushed to `origin/main`) — build-state table below is
+**Last verified:** 2026-07-29, rescue + rebuildability session (main @ `c96739c`, pushed to
+`origin/main`). That session preserved the orphaned mock-calibration work as
+`backend/mock-calibration-kickers` @ `11c794a` (ADR-054, 11 files, **committed as-found and not
+reviewed** — completeness not assessed), added `docs/environment.md`, and measured whether
+`data/nfl.db` is rebuildable (`docs/can-we-rebuild-the-database.md` — yes for 99.3% in ~4 minutes,
+no for three artifacts; see open item 9 and thread 080). Prior verification: 2026-07-27, overnight
+PHASE 1/PHASE 2 closeout session (main @ `9d8e09b`, merge of `integration-2026-07-27` into `main`)
+— build-state table below is
 measured directly from `git rev-parse HEAD`, real backend/frontend full-suite runs,
 `CONTRACT_VERSION` in `src/export_contract.py`, and `tools/handoffs.py check`. `CONTRACT_VERSION`
 is **1.13.0** as of the Phase 3 Chain 1 backend session (worktree
@@ -68,13 +74,13 @@ by the session whose work changed them, per the agent operating rules.
 
 | | Value | Notes |
 |---|---|---|
-| Backend branch / commit | `main`, `1cf61a74377393f542e0be10829ff68ac916f12c` | `git rev-parse --abbrev-ref HEAD` / `HEAD` |
+| Backend branch / commit | `main`, `c96739cce42d531522c661f1e0c890e11649da15` | `git rev-parse --abbrev-ref HEAD` / `HEAD` |
 | Data contract | `1.13.0` | `CONTRACT_VERSION` in `src/export_contract.py` |
 | Python modules | 41 | `src/*.py`, counted |
 | Export artifacts | 11 | top-level files in `data/export/` |
 | Config matrix | 26 | dirs under `data/export/` |
-| Backend tests | 636 passed, 1 warning in 630.00s (0:10:29) | `pytest -q`, single run |
-| Frontend tests | 202 passed (202) (22 passed (22)) | `npx vitest run`, single run |
+| Backend tests | (skipped — pass --tests to run the suite) |  |
+| Frontend tests | (skipped — pass --tests to run the suite) |  |
 
 <!-- BUILD-STATE:END -->
 
@@ -412,8 +418,13 @@ assistant" wiring · LLM prose renderer
    the "today" backfill ran, so the row landed one calendar day later than assumed, and 07-27 UTC
    can no longer be fetched from MFL. Each run now also writes
    `data/adp-snapshots/YYYY-MM-DD.csv` (one per UTC date; **the CSV is canonical, the DB a cache of
-   it** — see `src/ingest_mfl_adp.py` docstring), tracked in git as the off-machine backup for the
-   one table in `data/nfl.db` that cannot be rebuilt. A Windows Scheduled Task
+   it** — see `src/ingest_mfl_adp.py` docstring), tracked in git as the off-machine backup.
+   **Correction (2026-07-29, measured):** `adp_snapshots` is *not* the only unrebuildable table —
+   see open item 12. MFL does serve historical periods, but every response is stamped with today's
+   date and returns the accumulated aggregate (2021 → 2,322 drafts), so re-pulling one and treating
+   it as a preseason board is look-ahead bias. The window is also rolling and can shrink: 2026
+   `totalDrafts` read **43 on 2026-07-29 versus 50 in the committed 2026-07-26 CSV**. The CSVs
+   remain the only point-in-time capture, which is why they matter. A Windows Scheduled Task
    (`FantasyFootball_MFL_ADP_Daily`, daily 09:00, current-user scope) runs
    `tools/run_adp_snapshot_task.bat` (main checkout only — ingest, then `git add`/commit/push scoped
    to `data/adp-snapshots/*.csv`) with no agent/WebFetch involvement. Caveat: `schtasks` reports
@@ -444,3 +455,24 @@ assistant" wiring · LLM prose renderer
    task, deliberately not done this round.
 8. **T7 depth-chart contradiction** — still unresolved (`SELECT MAX(dt) FROM depth_charts` not run
    this pass; out of this round's scope).
+9. **Three unreproducible artifacts — RESOLVED 2026-07-29 (`bdda50e`), thread 080.** All three
+   are now committed, pushed, and guarded by 13 tests in
+   `tests/test_unreproducible_artifacts.py` that read the fixtures rather than the DB (so they
+   pass, and fail meaningfully, in a fresh clone with no database). `tests/fixtures/real_draft_2025/`
+   (160 picks), `data/rankings-history/rankings_2021_2025.csv` (2,540 rows, dispersion intact),
+   `data/raw/founder-export/2026-07-27/` (4 files, now exempted in `.gitignore`).
+   **Cloud sessions are no longer blocked on this.** Original finding, kept because it explains
+   why these files are tracked and must not be "cleaned up":
+   Measured 2026-07-29 by rebuilding `data/nfl.db` from scratch in a scratch directory
+   (`docs/can-we-rebuild-the-database.md`): 99.3% of it comes back from public sources in ~4
+   minutes with no credentials. Three things do not come back at all.
+   (a) **The 2025 real draft** — `mock_drafts`/`mock_picks`/`mock_pick_quarantine`, 160 picks,
+   `source=user_provided_screenshots`. This is the `n=160` behind `DEFAULT_LAMBDA = 0.352`. Lose it
+   and λ reverts from measured to guessed.
+   (b) **The founder FantasyPros export** under `data/raw/founder-export/2026-07-27/` — excluded by
+   `.gitignore:2`, and the only half-PPR-native ranking input in the project.
+   (c) **Rankings history 2021–2025** (3,487 + 36 rows) — the DynastyProcess mirror serves only the
+   current scrape (today: one date, 2026-07-24). Verified per season with the ingester's own
+   `resolve_snapshot_date`: 2021–2025 all fail, only 2026 resolves.
+   The failure mode is silent — a clean checkout rebuilds a DB missing all three and every script
+   still runs green, because nothing asserts those rows exist. **Blocks moving to cloud sessions.**
