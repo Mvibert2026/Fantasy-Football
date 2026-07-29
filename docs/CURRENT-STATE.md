@@ -246,9 +246,29 @@ pass or is marked as unverified.
     quality is unpriced by consensus versus 15.1% RB/WR and 6.3% QB, but that is pooled across all
     tight ends. If it concentrates in the top few, the founder's late-round strategy is wrong and
     the finding argues the opposite way. Survivorship is the specific way this analysis fails.
-12. **The shipped rank curve pools all seasons flat.** The QB slope collapsed monotonically
-    2021→2025 (−67, −73, −59, −45, **−4**), so the board recommends from a regime that has
-    disappeared. Whether other positions are doing the same has never been checked.
+12. **The shipped rank curve pools all seasons flat — and measured 2026-07-29, that costs almost
+    nothing** (`ranker` pass 3, `docs/ranking/bottom-up-research-pass-3.md`, thread **093** to
+    `strategist`, awaiting ruling). The QB slope point estimates reproduce exactly (−66.6, −72.6,
+    −58.6, −45.0, −4.1) but **the collapse is not established**: trend +15.3/season [−3.5, +34.1],
+    CI spanning zero; 2025's own CI [−46.5, +69.2] contains 2024's estimate; the monotonicity is a
+    property of `RELEVANT_DEPTH["QB"]=20` (at depth 12 the series is not monotone and 2021 is the
+    flattest season); and dropping one player (Jayden Daniels, consensus QB3) moves 2025 from −4.1
+    to **+28.6**. **Other positions checked and the answer is no** — RB's 2025 slope is −77.9, the
+    *steepest* of its five; WR is flat; TE is monotone with a magnitude CI spanning zero.
+    **The mechanism is market ordering skill, not positional value**: the 2025 realised QB value
+    curve is −58.7, flat against era means of −57.7/−59.0/−56.8, while consensus τ_b at QB went
+    +0.484 → **−0.042** (worse than random). Ordering skill has **zero measured persistence**
+    (lag-1 r = −0.007 [−0.414, +0.411]), so recency-weighting the *consensus* curve would track the
+    least persistent quantity in the system. On the *value* curve the answer is position-specific
+    (QB strongly yes, hl1 −22.6 [−30.3, −13.6] on a 9-season holdout; RB no; **WR contraindicated**,
+    last1 +2.75 [+0.96, +4.80] worse; TE weak) **and at QB it points the opposite way from the fix
+    on record** — the QB value curve is steepening, so weighting it recently makes the QB premium
+    *larger*. Board cost: `vbd = b·ln(rank/base)` exactly (intercept cancels; verified against the
+    live 510-row board, zero ordering mismatches), so the board is four numbers — under half-life 3
+    **one** top-150 player moves ≥10 places, under half-life 5 **none**, and every scheme from last3
+    down leaves all four slopes inside the board's own published 95% CI. **The board-curve weighting
+    question itself is unanswerable on current data: n = 2 evaluable targets, disagreeing at the 4th
+    decimal of Kendall τ.** Threads **055**/**084** are what unblock it.
 
 **Known-red, deliberately**
 

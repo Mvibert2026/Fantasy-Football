@@ -4,7 +4,7 @@
 Threads are the source of truth. Change a thread's `STATUS:`, then re-run sync.
 Protocol: [`README.md`](README.md).
 
-**50 open** · 43 resolved
+**52 open** · 43 resolved
 
 ---
 
@@ -25,7 +25,7 @@ not an omission. Start your session at your own heading.
 | [89](089-fr-040-costing-static-hosting-blocks-scoring-rec.md) | Fr 040 costing static hosting blocks scoring rec | `backend` | OPEN | 0d | FR-040 custom league settings screen |
 | [90](090-fr-043-audit-claude-md-ss5-staleness-built-but-u.md) | Fr 043 audit claude md ss5 staleness built but u | `librarian` | OPEN | 0d | none |
 
-### `backend` — 23 waiting
+### `backend` — 24 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
@@ -51,6 +51,7 @@ not an omission. Start your session at your own heading.
 | [076](076-structural-gap-thread-id-allocator-race-across-c.md) | Structural gap thread id allocator race across c | `pm` | OPEN | 2d | none |
 | [077](077-adp-backfill-scheduled-task-landed-frontend-test.md) | Adp backfill scheduled task landed frontend test | `data-ops` | OPEN | 2d | none |
 | [079](079-mock-draft-capture-work-is-uncommitted-in-a-work.md) | Mock draft capture work is uncommitted in a work | `pm` | OPEN | 0d | none |
+| [094](094-sleeper-projection-ingest-landed-red-against-the.md) | Sleeper projection ingest landed red against the | `ranker` | OPEN | 0d | a clean suite; the "known-red is exactly one test" claim in CURRENT-STATE item 15 |
 | [88](088-pr-004-f-bottomup-core-run-the-confirmatory-bott.md) | Pr 004 f bottomup core run the confirmatory bott | `strategist` | OPEN | 0d | none |
 
 ### `frontend` — 16 waiting
@@ -86,7 +87,7 @@ not an omission. Start your session at your own heading.
 | [070](070-recurring-injury-suspension-feed.md) | Recurring injury suspension feed | `pm` | OPEN | 2d | T4 (suspensions/roster-status table stakes), E[games_played] per ADR-E Amendment E-A1 |
 | [084](084-deepen-expert-consensus-history-beyond-2021-2025.md) | Deepen expert consensus history beyond 2021 2025 | `ranker` | OPEN | 0d | none |
 
-### `strategist` — 7 waiting
+### `strategist` — 8 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
@@ -96,6 +97,7 @@ not an omission. Start your session at your own heading.
 | [053](053-founder-csv-ingestion.md) | Founder csv ingestion | `pm` | OPEN | 2d | FR-001 comparison view |
 | [056](056-round-varying-need-and-run-saturation.md) | Round varying need and run saturation | `pm` | OPEN | 2d | any change to the need term or the run term |
 | [085](085-the-board-rank-curve-slope-confounds-positional.md) | The board rank curve slope confounds positional | `ranker` | OPEN | 0d | none |
+| [093](093-pass-3-the-qb-slope-collapse-is-not-established.md) | Pass 3 the qb slope collapse is not established | `ranker` | OPEN | 0d | the recency-weighting work requested at docs/ideas-inbox.md:229 (ADR-057) |
 | [094](094-register-the-wr-availability-fix-as-the-confirma.md) | Register the wr availability fix as the confirma | `ranker` | OPEN | 0d | none |
 
 ### `researcher` — 3 waiting
