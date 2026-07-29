@@ -417,6 +417,27 @@ corrections to the thread's reading in the thread 058 reply. (Frontend test coun
 alone was 172, measured before 063 was merged in — see Build state above for the real, current
 post-merge count.)
 
+## FR-040 custom league settings — spec/costing done, 2026-07-29 (thread 084, `docs/specs/
+FR-040-custom-league-settings-costing.md`)
+
+Backend spec/costing pass (no contract bump, no code changes — decided finding, not made). Ran
+`league_builder.create_and_export_league()` live (not just read) and found: (1) it silently
+defaults to Westwood's ruleset unless every scoring field is explicitly overridden — the same
+defect FR-042 just corrected in `generate_config_matrix.py`, independently present in
+`league_builder.build_scoring()`, never previously exercised; (2) it crashes on the natural
+JSON-object bonus shape a settings form would submit (needs `[[threshold, bonus], ...]` tuples, not
+objects) with a confusing `TypeError` five frames deep in `scoring.py`. Confirmed component
+projections do not exist anywhere in the pipeline — `board.json`'s `projected_points` is a single
+rank-curve lookup (`points ≈ a + b·ln(rank)`), not a per-stat projection, so "ship components so the
+browser can re-score" is dead, not merely expensive. Confirmed `flex_split` (the RB/WR/TE flex
+allocation used to compute `replacement_levels_used`) is never exported — client-side VBD recompute
+for a *changed* team count/roster shape needs it and doesn't have it; the *currently-exported*
+config's VBD is already fully client-derivable with no gap. Found `docs/design-handoff/settings/
+SETTINGS-EDITOR-SPEC.md` §7 specifies a job-queue API (`PATCH`/`POST /api/.../recompute`, pollable
+`GET /api/recompute/:job_id`) that cannot exist against the current static Cloudflare Worker deploy
+— a real, previously-unflagged contradiction between two live documents. Thread 084 open to
+`frontend`/`pm`.
+
 ## Not built / null-stated
 
 Predictions tab (**absent from the shipped app**) · Season mode entirely · Settings editor ·

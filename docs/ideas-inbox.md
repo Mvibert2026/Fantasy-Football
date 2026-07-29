@@ -267,3 +267,31 @@ newest at the bottom.
   redistribution is a `[GAP]` — FFC's ToS was unretrievable for the third time today.
   **Also, stale line:** `CURRENT-STATE.md` still says "FFC is blocked by robots.txt regardless" and
   "FFC remains blocked" while MEMORY §4 and FR-023 record it unblocked and say they supersede.
+
+## 2026-07-29 — backend, FR-040 spec/costing pass: two real defects found in `league_builder.py`
+
+Not fixed this pass (spec/costing scope, no contract bump authorized, a second backend agent was
+working in a separate worktree the same session). Logged so whichever chain builds the FR-040
+custom-league screen (or fixes FR-042's `generate_config_matrix.py`) does not rediscover these from
+a live crash:
+
+1. **`league_builder.build_scoring()` silently defaults to Westwood's ruleset.** It starts from
+   `copy.deepcopy(scoring.LEAGUE)` and only overrides the offense fields explicitly passed in
+   `scoring_overrides`. This is the identical defect class FR-042 just corrected in
+   `generate_config_matrix.py` (all 24 presets wearing Westwood's stacking bonuses while labelled
+   platform defaults) — it exists a second time, independently, in the one function every future
+   custom league will go through, and has never been exercised (no caller anywhere but
+   `scripts/rebuild_ethans_expert_league.py`, which happens to override every bonus field by hand).
+   Confirmed by running: a test league with `ppr=1.0` and only TD-value overrides silently kept
+   Westwood's +1/+1.5/+2 yardage bonuses until the test explicitly zeroed them out too.
+2. **`build_scoring()` validates override *keys* but not nested *shape*.** Passing a bonus as
+   `{"threshold": 250, "bonus": 3}` (the natural JSON shape a settings form would submit) crashes
+   five frames deep inside `scoring.score_offensive_game` with `TypeError: '>=' not supported
+   between instances of 'int' and 'str'` — nowhere near the actual bad input, and would surface to
+   whoever submits the form as an opaque 500. The correct shape is a list of `[threshold, bonus]`
+   pairs. Needs a validation layer in front of `create_league()`, or a schema that normalizes
+   object-shaped bonus input before it reaches `scoring.py`.
+
+Full detail, plus the resolved ESPN-scoring docstring self-contradiction and the static-hosting vs.
+job-queue-API contradiction between `SETTINGS-EDITOR-SPEC.md` and the current Cloudflare Worker
+deploy: `docs/specs/FR-040-custom-league-settings-costing.md`.

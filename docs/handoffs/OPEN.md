@@ -4,11 +4,7 @@
 Threads are the source of truth. Change a thread's `STATUS:`, then re-run sync.
 Protocol: [`README.md`](README.md).
 
-<<<<<<< HEAD
-**43 open** · 40 resolved
-=======
-**46 open** · 36 resolved
->>>>>>> 03566fc753e1ec3c11213fae9ef83e9773a5a2b2
+**43 open** · 41 resolved
 
 ---
 
@@ -17,18 +13,15 @@ Protocol: [`README.md`](README.md).
 Every role gets a section, including empty ones — an empty inbox is a fact worth stating,
 not an omission. Start your session at your own heading.
 
-### `pm` — 2 waiting
+### `pm` — 3 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
 | [068](068-acceptance-harness-design-captures.md) | Acceptance harness design captures | `design` | OPEN | 2d | design drift being caught by a diff rather than by the founder |
 | [081](081-thread-079-id-collision-between-main-and-the-pha.md) | Thread 079 id collision between main and the pha | `data-ops` | OPEN | 0d | none |
+| [084](084-fr-040-costing-static-hosting-blocks-scoring-rec.md) | Fr 040 costing static hosting blocks scoring rec | `backend` | OPEN | 0d | FR-040 custom league settings screen |
 
-<<<<<<< HEAD
-### `backend` — 24 waiting
-=======
-### `backend` — 22 waiting
->>>>>>> 03566fc753e1ec3c11213fae9ef83e9773a5a2b2
+### `backend` — 23 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
@@ -56,7 +49,7 @@ not an omission. Start your session at your own heading.
 | [079](079-mock-draft-capture-work-is-uncommitted-in-a-work.md) | Mock draft capture work is uncommitted in a work | `pm` | OPEN | 0d | none |
 | [083](083-pr-004-f-bottomup-core-run-the-confirmatory-bott.md) | Pr 004 f bottomup core run the confirmatory bott | `strategist` | OPEN | 0d | none |
 
-### `frontend` — 14 waiting
+### `frontend` — 15 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
@@ -74,6 +67,7 @@ not an omission. Start your session at your own heading.
 | [049](049-draft-mode-gap-list.md) | Draft mode gap list | `pm` | OPEN | 2d | none |
 | [059](059-on-deck-recommendations.md) | On deck recommendations | `pm` | OPEN | 2d | FR-006 (draft chatbot), calm-preparation use case |
 | [066](066-contract-1-10-0-board-json-rows-gained-roster-st.md) | Contract 1 10 0 board json rows gained roster st | `backend` | OPEN | 2d | none |
+| [084](084-fr-040-costing-static-hosting-blocks-scoring-rec.md) | Fr 040 costing static hosting blocks scoring rec | `backend` | OPEN | 0d | FR-040 custom league settings screen |
 
 ### `data-ops` — 7 waiting
 
@@ -155,11 +149,8 @@ _Nothing waiting on you._
 | [034](034-shortcut-bias-in-mock-logging.md) | Shortcut bias in mock logging | `pm` → `strategist` |
 | [038](038-rosters-json-artifact.md) | Rosters json artifact | `backend` → `frontend` |
 | [039](039-weekly-finishes-and-season-stats-exports-contract.md) | Weekly finishes and season stats exports contract | `frontend` → `backend` |
-<<<<<<< HEAD
 | [041](041-frontend-wip-repair.md) | Frontend wip repair | `pm` → `frontend` |
-=======
 | [042](042-strategies-json-stale-at-contract-1-7-0.md) | Strategies json stale at contract 1 7 0 | `frontend` → `backend` |
->>>>>>> 03566fc753e1ec3c11213fae9ef83e9773a5a2b2
 | [044](044-roster-aware-recommendations.md) | Roster aware recommendations | `pm` → `backend, frontend` |
 | [048](048-bottom-up-ranking-framework.md) | Bottom up ranking framework | `pm` → `strategist` |
 | [051](051-suggester-fixes.md) | Suggester fixes | `pm` → `frontend` |
