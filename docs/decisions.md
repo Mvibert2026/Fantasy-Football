@@ -2045,3 +2045,80 @@ pull was executed this session — flagged as available, not done.
 **Not touched:** `src/export_contract.py`, `src/make_board.py`, `src/availability.py` — whether
 FFC ADP feeds the board/availability model is a separate, deliberately open decision per the task
 boundary.
+
+## ADR-055 — `live_availability.py`'s structural assumptions are now LeagueConfig-derived, not frozen module constants
+
+**Status:** decided, shipped 2026-07-29 (backend session, branch `claude/pm-agent-setup-gobxa0`).
+
+**The defect.** `src/live_availability.py` carried module-level `TARGET`, `EPS`, `SHARE_BAR`,
+`POSITIONS` -- the primary league's (Westwood) measured 2025 final-roster composition and roster
+shape, with no way to substitute a different league's numbers. `LeagueConfig` (ADR-041) already
+existed and already parameterizes `draft_sim.DraftEngine`, but `live_availability.py` was never
+threaded through it. The model was correct for Westwood only because Westwood is the only league
+anyone had run it against -- correct by accident, not by construction. No test asserted that two
+different roster shapes produce different survival numbers; that gap is what made the accident
+invisible.
+
+**Why now.** Mock-draft collection starts imminently in public Yahoo rooms with a different roster
+shape than Westwood's (standard scoring/shape vs. Westwood's 3 WR / 2 RB / 2 FLEX / no kicker) --
+data collected against a frozen-to-Westwood model would teach the wrong league. Separately, FR-027
+asks for generic support for the founder's other leagues; a model hardcoding one roster shape
+cannot serve a second league honestly.
+
+**What shipped.** `src/live_availability.py` gained four config-derived functions, mirroring the
+primary-league-preserved / everyone-else-derived split `draft_sim.DraftEngine` already established
+(ADR-041):
+
+- `positions_for(cfg)` -- scoreable positions (QB/RB/WR/TE, whichever the league starts) plus any
+  starter position with no scoring model (DEF, K, ...), generalizing the primary league's hardcoded
+  `("QB","RB","WR","TE","DEF")`. An unscored position (K, same as DEF under ADR-039) stays IN the
+  model as a real contested pick rather than being dropped.
+- `target_for(cfg)` -- for the primary league, returns the SS2 measured `TARGET` dict **unchanged**
+  (byte-identical, `==` not `approx`). For any other league: starters are allocated exactly
+  (mandatory, arithmetic); flex slots via `cfg.flex_split` if the league has a measured one (ADR-029
+  primary-league value) else split evenly across `flex_eligible` (explicit placeholder); bench slots
+  allocated proportionally to each position's starters+flex share, which is the only allocation that
+  both sums to `cfg.rounds` exactly and does not invent a number for any one position. **This is
+  DERIVED, not measured** -- there is no draft history for a league with no prior season to measure
+  a mean from, and the docstring says so explicitly rather than presenting it as equally well-founded
+  to Westwood's number.
+- `eps_for(cfg)` -- primary league unchanged; other leagues get an explicit unmeasured placeholder
+  (0.25 for scoreable positions, 0.1 for unscored ones, mirroring the primary league's own pattern),
+  flagged as a placeholder in its docstring, not a fitted rate.
+- `share_bar_for(cfg)` -- `target_for(cfg)` normalized to sum to 1; exact primary-league `SHARE_BAR`
+  when `cfg.is_primary`.
+
+`need_share`, `n_need`, `run_z_scores`, `run_multiplier`, `_hazards_at_pick`, `live_survival`, and
+`live_survival_excluding_drafted` all grew an optional `cfg: Optional[LeagueConfig] = None`
+parameter. `cfg=None` (the default, and every pre-existing call site: `draft_sim.py`,
+`lambda_estimation.py`) reproduces the exact pre-ADR-055 module-constant path -- **no Westwood
+number moved**, verified by `test_primary_cfg_reproduces_module_constants_exactly` and
+`test_primary_league_path_no_longer_bypasses_config` (the latter checks that calling WITH
+`cfg=CURRENT_LEAGUE` produces numbers identical to calling with no `cfg` at all -- i.e. the primary
+league now runs the same derivation code as every other league, rather than a hardcoded shortcut
+that happens to match).
+
+**The test that closes this.** `tests/test_league_config_availability.py`,
+`test_two_roster_shapes_produce_different_survival_numbers`: runs the full hazard model
+(`live_survival`) against `lc.CURRENT_LEAGUE` (Westwood) and `data/leagues/ethans_expert_league.json`
+(Ethan's -- has a K starter Westwood entirely lacks, 1 FLEX vs. Westwood's 2, no measured
+`flex_split`) with an identical synthetic scenario, and asserts the resulting survival numbers
+differ. Also: `test_two_roster_shapes_produce_different_target` (K present in one league's derived
+target and absent from the other's), `test_derived_target_sums_to_league_rounds` (the
+sum-to-`cfg.rounds` invariant holds for a non-primary league too, not just the primary one's
+hardcoded `== 16` check), and `test_unmeasured_derivation_is_flagged_not_silently_equal_footing`
+(the flex-split placeholder actually runs, rather than raising or silently reusing Westwood's
+measured split).
+
+**Not changed.** `src/run_availability.py`'s CLI already threads `--league` through to
+`draft_sim.DraftEngine` (ADR-041) for Prep-mode; that path was not touched. This session's scope
+was `live_availability.py` (the LIVE-draft hazard-reweighting model) only, since that is where the
+frozen constants and the missing test lived. Wiring a live-draft CLI/consumer to pass a real `cfg`
+through to `live_survival` is a separate, not-yet-built piece of work (no live-draft-time consumer
+of this module exists yet to wire).
+
+**Evidence.** `../.venv2/bin/python -m pytest tests/ -q` (uv-managed venv, Python 3.12): 673 passed,
+8 skipped, 1 pre-existing unrelated failure (`test_handoffs.py::test_mailbox_health`, thread
+078's resolution missing its artifact -- not touched by or related to this change).
+`tests/test_live_availability.py` and `tests/test_availability.py` (the two pre-existing suites
+touching this module) pass unchanged, 22/22.

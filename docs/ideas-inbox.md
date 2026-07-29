@@ -118,3 +118,11 @@ newest at the bottom.
   a pull would need explicit `is_retrospective_aggregate` labelling and a decision
   about whether a retrospective aggregate is worth capturing at all before
   building it; flagging rather than building speculatively.
+
+- 2026-07-29 (backend, ADR-055): live_availability.py's live-draft hazard model now takes an
+  optional `cfg: LeagueConfig` end to end (positions_for/target_for/eps_for/share_bar_for, threaded
+  through need_share/n_need/run_z_scores/run_multiplier/live_survival). No consumer passes a
+  non-primary cfg yet -- there is no live-draft-time CLI/UI wired to this module at all currently,
+  only draft_sim.DraftEngine's Prep-mode path (already config-aware, ADR-041). Wiring an actual
+  live-draft consumer to pass a real league's cfg through is unbuilt; flagging rather than building
+  speculatively since no caller needs it yet.
