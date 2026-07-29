@@ -424,21 +424,15 @@ def build_opponents(cfg: lc.LeagueConfig = lc.CURRENT_LEAGUE) -> dict:
     }
 
 
-def main() -> None:
-    ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--out", type=Path, default=None)
-    ap.add_argument(
-        "--league", default=lc.PRIMARY_LEAGUE_ID,
-        help="league_id of a saved config under data/leagues/, or 'primary' (default)",
-    )
-    args = ap.parse_args()
-    cfg = (
-        lc.CURRENT_LEAGUE if args.league == lc.PRIMARY_LEAGUE_ID else lc.LeagueConfig.load(args.league)
-    )
-    out_dir = args.out or export_dir_for(cfg.league_id)
-    out_dir.mkdir(parents=True, exist_ok=True)
+def build_static_artifacts(cfg: lc.LeagueConfig = lc.CURRENT_LEAGUE) -> dict:
+    """The three hand-authored/prose artifacts (glossary.json, nulls.json,
+    opponents.json) for `cfg`, keyed by filename -- factored out of `main()`
+    so callers that need these written as part of a larger export (e.g.
+    `league_builder.export_league`) don't have to shell out to this module's
+    CLI. Per ADR-041 every non-primary league's export directory carries
+    these three plus board/availability/league (six artifacts total)."""
     stamp = datetime.now(timezone.utc).isoformat()
-    payloads = {
+    return {
         "glossary.json": {"contract_version": CONTRACT_VERSION, "generated_utc": stamp,
                           "league_id": cfg.league_id, "terms": build_glossary(cfg)},
         "nulls.json": {"contract_version": CONTRACT_VERSION, "generated_utc": stamp,
@@ -456,11 +450,35 @@ def main() -> None:
                        "findings": build_nulls(cfg)},
         "opponents.json": build_opponents(cfg),
     }
-    for name, payload in payloads.items():
+
+
+def write_static_artifacts(out_dir: Path, cfg: lc.LeagueConfig = lc.CURRENT_LEAGUE) -> list:
+    """Writes `build_static_artifacts(cfg)` to `out_dir`, returning the paths
+    written. Shared by this module's CLI and `league_builder.export_league`."""
+    out_dir.mkdir(parents=True, exist_ok=True)
+    written = []
+    for name, payload in build_static_artifacts(cfg).items():
         p = out_dir / name
         # allow_nan=False -- see export_contract.write_all. Bare Infinity/NaN is
         # valid Python and invalid JSON; fail here, not in the browser.
         p.write_text(json.dumps(payload, indent=2, allow_nan=False), encoding="utf-8")
+        written.append(p)
+    return written
+
+
+def main() -> None:
+    ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument("--out", type=Path, default=None)
+    ap.add_argument(
+        "--league", default=lc.PRIMARY_LEAGUE_ID,
+        help="league_id of a saved config under data/leagues/, or 'primary' (default)",
+    )
+    args = ap.parse_args()
+    cfg = (
+        lc.CURRENT_LEAGUE if args.league == lc.PRIMARY_LEAGUE_ID else lc.LeagueConfig.load(args.league)
+    )
+    out_dir = args.out or export_dir_for(cfg.league_id)
+    for p in write_static_artifacts(out_dir, cfg):
         print(f"wrote {p}  ({p.stat().st_size:,} bytes)")
 
 

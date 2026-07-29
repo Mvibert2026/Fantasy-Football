@@ -96,5 +96,6 @@
   "trade_deadline": null,
   "faab_budget": null,
   "schema_version": "1.0.0",
-  "flex_split": null
+  "flex_split": null,
+  "freshness_max_age_days": 3
 }

@@ -40,6 +40,7 @@ from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
 import export_contract as ec
+import export_static as es
 import league_config as lc
 from scoring import LEAGUE as _BASE_LEAGUE
 
@@ -167,11 +168,22 @@ def export_league(
     rosters.json for `cfg`, exactly the same pipeline the 24-config matrix
     and the primary league use (`export_contract.write_all`) -- so a newly
     created league's replacement levels, VBD, and tiers are computed for ITS
-    format, not copied from any other league. No strategies.json (Monte
-    Carlo) -- same scope line the 24-config matrix already draws, not a new
-    limitation introduced here."""
+    format, not copied from any other league.
+
+    ALSO writes glossary.json/nulls.json/opponents.json (`export_static.
+    write_static_artifacts`) -- these are the three hand-authored/prose
+    artifacts ADR-041 puts in every non-primary league's six-artifact
+    directory (board/availability/league/glossary/nulls/opponents). This
+    function used to skip them entirely, which is exactly the bug the
+    founder hit switching to Ethan's Expert League 2026-07-29 (the frontend
+    loader requires all six unconditionally, and only rosters/strategies are
+    genuinely optional) -- see docs/handoffs/ and ADR-041 for the required
+    set. No strategies.json (Monte Carlo) -- same scope line the 24-config
+    matrix already draws, not a new limitation introduced here."""
     resolved_out = out_dir or ec.export_dir_for(cfg.league_id)
-    return ec.write_all(resolved_out, conn, cfg=cfg)
+    written = ec.write_all(resolved_out, conn, cfg=cfg)
+    written += es.write_static_artifacts(resolved_out, cfg)
+    return written
 
 
 def create_and_export_league(

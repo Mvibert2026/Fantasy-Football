@@ -1,0 +1,878 @@
+{
+  "contract_version": "1.14.0",
+  "generated_utc": "2026-07-29T18:23:04.206210+00:00",
+  "league_id": "espn_12_full",
+  "season": 2026,
+  "teams": 12,
+  "draft_state": "not_started",
+  "picks_ingested": 0,
+  "unresolved_position_count": 0,
+  "data_source_note": "Built from a REAL (is_mock=0) draft logged for this league and season only. No such draft is on file for 2026 yet, so every roster below is empty and every need equals the full slot requirement -- this is the honest current state, not a placeholder. As soon as the real draft is logged pick-by-pick, re-running this export fills rosters incrementally without any code change.",
+  "inference_scope_note": "This artifact states what each team HAS (drafted, by slot) and what it still NEEDS (mechanical arithmetic: required minus filled per slot). It does not model, guess, or rank what a team is likely to draft next -- see docs/handoffs/016. For behavioural/tendency data on known opponents, see opponents.json instead.",
+  "rosters": [
+    {
+      "team_slot": 1,
+      "is_user": false,
+      "team_name": null,
+      "roster_slots": {
+        "starters": {
+          "QB": {
+            "required": 1,
+            "filled": 0,
+            "players": []
+          },
+          "RB": {
+            "required": 2,
+            "filled": 0,
+            "players": []
+          },
+          "WR": {
+            "required": 3,
+            "filled": 0,
+            "players": []
+          },
+          "TE": {
+            "required": 1,
+            "filled": 0,
+            "players": []
+          },
+          "DEF": {
+            "required": 1,
+            "filled": 0,
+            "players": []
+          },
+          "K": {
+            "required": 1,
+            "filled": 0,
+            "players": []
+          }
+        },
+        "flex": {
+          "required": 1,
+          "filled": 0,
+          "eligible_positions": [
+            "RB",
+            "WR",
+            "TE"
+          ],
+          "players": []
+        },
+        "bench": {
+          "required": 7,
+          "filled": 0,
+          "players": []
+        },
+        "ir": {
+          "required": 1,
+          "filled": 0,
+          "players": [],
+          "note": "IR is filled off-waiver after the draft, never by a draft pick (league_config.drafted_rounds excludes it). Always 0 here."
+        }
+      },
+      "needs": {
+        "QB": 1,
+        "RB": 2,
+        "WR": 3,
+        "TE": 1,
+        "DEF": 1,
+        "K": 1,
+        "FLEX": 1,
+        "BENCH": 7,
+        "IR": 1
+      },
+      "players": []
+    },
+    {
+      "team_slot": 2,
+      "is_user": false,
+      "team_name": null,
+      "roster_slots": {
+        "starters": {
+          "QB": {
+            "required": 1,
+            "filled": 0,
+            "players": []
+          },
+          "RB": {
+            "required": 2,
+            "filled": 0,
+            "players": []
+          },
+          "WR": {
+            "required": 3,
+            "filled": 0,
+            "players": []
+          },
+          "TE": {
+            "required": 1,
+            "filled": 0,
+            "players": []
+          },
+          "DEF": {
+            "required": 1,
+            "filled": 0,
+            "players": []
+          },
+          "K": {
+            "required": 1,
+            "filled": 0,
+            "players": []
+          }
+        },
+        "flex": {
+          "required": 1,
+          "filled": 0,
+          "eligible_positions": [
+            "RB",
+            "WR",
+            "TE"
+          ],
+          "players": []
+        },
+        "bench": {
+          "required": 7,
+          "filled": 0,
+          "players": []
+        },
+        "ir": {
+          "required": 1,
+          "filled": 0,
+          "players": [],
+          "note": "IR is filled off-waiver after the draft, never by a draft pick (league_config.drafted_rounds excludes it). Always 0 here."
+        }
+      },
+      "needs": {
+        "QB": 1,
+        "RB": 2,
+        "WR": 3,
+        "TE": 1,
+        "DEF": 1,
+        "K": 1,
+        "FLEX": 1,
+        "BENCH": 7,
+        "IR": 1
+      },
+      "players": []
+    },
+    {
+      "team_slot": 3,
+      "is_user": false,
+      "team_name": null,
+      "roster_slots": {
+        "starters": {
+          "QB": {
+            "required": 1,
+            "filled": 0,
+            "players": []
+          },
+          "RB": {
+            "required": 2,
+            "filled": 0,
+            "players": []
+          },
+          "WR": {
+            "required": 3,
+            "filled": 0,
+            "players": []
+          },
+          "TE": {
+            "required": 1,
+            "filled": 0,
+            "players": []
+          },
+          "DEF": {
+            "required": 1,
+            "filled": 0,
+            "players": []
+          },
+          "K": {
+            "required": 1,
+            "filled": 0,
+            "players": []
+          }
+        },
+        "flex": {
+          "required": 1,
+          "filled": 0,
+          "eligible_positions": [
+            "RB",
+            "WR",
+            "TE"
+          ],
+          "players": []
+        },
+        "bench": {
+          "required": 7,
+          "filled": 0,
+          "players": []
+        },
+        "ir": {
+          "required": 1,
+          "filled": 0,
+          "players": [],
+          "note": "IR is filled off-waiver after the draft, never by a draft pick (league_config.drafted_rounds excludes it). Always 0 here."
+        }
+      },
+      "needs": {
+        "QB": 1,
+        "RB": 2,
+        "WR": 3,
+        "TE": 1,
+        "DEF": 1,
+        "K": 1,
+        "FLEX": 1,
+        "BENCH": 7,
+        "IR": 1
+      },
+      "players": []
+    },
+    {
+      "team_slot": 4,
+      "is_user": false,
+      "team_name": null,
+      "roster_slots": {
+        "starters": {
+          "QB": {
+            "required": 1,
+            "filled": 0,
+            "players": []
+          },
+          "RB": {
+            "required": 2,
+            "filled": 0,
+            "players": []
+          },
+          "WR": {
+            "required": 3,
+            "filled": 0,
+            "players": []
+          },
+          "TE": {
+            "required": 1,
+            "filled": 0,
+            "players": []
+          },
+          "DEF": {
+            "required": 1,
+            "filled": 0,
+            "players": []
+          },
+          "K": {
+            "required": 1,
+            "filled": 0,
+            "players": []
+          }
+        },
+        "flex": {
+          "required": 1,
+          "filled": 0,
+          "eligible_positions": [
+            "RB",
+            "WR",
+            "TE"
+          ],
+          "players": []
+        },
+        "bench": {
+          "required": 7,
+          "filled": 0,
+          "players": []
+        },
+        "ir": {
+          "required": 1,
+          "filled": 0,
+          "players": [],
+          "note": "IR is filled off-waiver after the draft, never by a draft pick (league_config.drafted_rounds excludes it). Always 0 here."
+        }
+      },
+      "needs": {
+        "QB": 1,
+        "RB": 2,
+        "WR": 3,
+        "TE": 1,
+        "DEF": 1,
+        "K": 1,
+        "FLEX": 1,
+        "BENCH": 7,
+        "IR": 1
+      },
+      "players": []
+    },
+    {
+      "team_slot": 5,
+      "is_user": false,
+      "team_name": null,
+      "roster_slots": {
+        "starters": {
+          "QB": {
+            "required": 1,
+            "filled": 0,
+            "players": []
+          },
+          "RB": {
+            "required": 2,
+            "filled": 0,
+            "players": []
+          },
+          "WR": {
+            "required": 3,
+            "filled": 0,
+            "players": []
+          },
+          "TE": {
+            "required": 1,
+            "filled": 0,
+            "players": []
+          },
+          "DEF": {
+            "required": 1,
+            "filled": 0,
+            "players": []
+          },
+          "K": {
+            "required": 1,
+            "filled": 0,
+            "players": []
+          }
+        },
+        "flex": {
+          "required": 1,
+          "filled": 0,
+          "eligible_positions": [
+            "RB",
+            "WR",
+            "TE"
+          ],
+          "players": []
+        },
+        "bench": {
+          "required": 7,
+          "filled": 0,
+          "players": []
+        },
+        "ir": {
+          "required": 1,
+          "filled": 0,
+          "players": [],
+          "note": "IR is filled off-waiver after the draft, never by a draft pick (league_config.drafted_rounds excludes it). Always 0 here."
+        }
+      },
+      "needs": {
+        "QB": 1,
+        "RB": 2,
+        "WR": 3,
+        "TE": 1,
+        "DEF": 1,
+        "K": 1,
+        "FLEX": 1,
+        "BENCH": 7,
+        "IR": 1
+      },
+      "players": []
+    },
+    {
+      "team_slot": 6,
+      "is_user": true,
+      "team_name": null,
+      "roster_slots": {
+        "starters": {
+          "QB": {
+            "required": 1,
+            "filled": 0,
+            "players": []
+          },
+          "RB": {
+            "required": 2,
+            "filled": 0,
+            "players": []
+          },
+          "WR": {
+            "required": 3,
+            "filled": 0,
+            "players": []
+          },
+          "TE": {
+            "required": 1,
+            "filled": 0,
+            "players": []
+          },
+          "DEF": {
+            "required": 1,
+            "filled": 0,
+            "players": []
+          },
+          "K": {
+            "required": 1,
+            "filled": 0,
+            "players": []
+          }
+        },
+        "flex": {
+          "required": 1,
+          "filled": 0,
+          "eligible_positions": [
+            "RB",
+            "WR",
+            "TE"
+          ],
+          "players": []
+        },
+        "bench": {
+          "required": 7,
+          "filled": 0,
+          "players": []
+        },
+        "ir": {
+          "required": 1,
+          "filled": 0,
+          "players": [],
+          "note": "IR is filled off-waiver after the draft, never by a draft pick (league_config.drafted_rounds excludes it). Always 0 here."
+        }
+      },
+      "needs": {
+        "QB": 1,
+        "RB": 2,
+        "WR": 3,
+        "TE": 1,
+        "DEF": 1,
+        "K": 1,
+        "FLEX": 1,
+        "BENCH": 7,
+        "IR": 1
+      },
+      "players": []
+    },
+    {
+      "team_slot": 7,
+      "is_user": false,
+      "team_name": null,
+      "roster_slots": {
+        "starters": {
+          "QB": {
+            "required": 1,
+            "filled": 0,
+            "players": []
+          },
+          "RB": {
+            "required": 2,
+            "filled": 0,
+            "players": []
+          },
+          "WR": {
+            "required": 3,
+            "filled": 0,
+            "players": []
+          },
+          "TE": {
+            "required": 1,
+            "filled": 0,
+            "players": []
+          },
+          "DEF": {
+            "required": 1,
+            "filled": 0,
+            "players": []
+          },
+          "K": {
+            "required": 1,
+            "filled": 0,
+            "players": []
+          }
+        },
+        "flex": {
+          "required": 1,
+          "filled": 0,
+          "eligible_positions": [
+            "RB",
+            "WR",
+            "TE"
+          ],
+          "players": []
+        },
+        "bench": {
+          "required": 7,
+          "filled": 0,
+          "players": []
+        },
+        "ir": {
+          "required": 1,
+          "filled": 0,
+          "players": [],
+          "note": "IR is filled off-waiver after the draft, never by a draft pick (league_config.drafted_rounds excludes it). Always 0 here."
+        }
+      },
+      "needs": {
+        "QB": 1,
+        "RB": 2,
+        "WR": 3,
+        "TE": 1,
+        "DEF": 1,
+        "K": 1,
+        "FLEX": 1,
+        "BENCH": 7,
+        "IR": 1
+      },
+      "players": []
+    },
+    {
+      "team_slot": 8,
+      "is_user": false,
+      "team_name": null,
+      "roster_slots": {
+        "starters": {
+          "QB": {
+            "required": 1,
+            "filled": 0,
+            "players": []
+          },
+          "RB": {
+            "required": 2,
+            "filled": 0,
+            "players": []
+          },
+          "WR": {
+            "required": 3,
+            "filled": 0,
+            "players": []
+          },
+          "TE": {
+            "required": 1,
+            "filled": 0,
+            "players": []
+          },
+          "DEF": {
+            "required": 1,
+            "filled": 0,
+            "players": []
+          },
+          "K": {
+            "required": 1,
+            "filled": 0,
+            "players": []
+          }
+        },
+        "flex": {
+          "required": 1,
+          "filled": 0,
+          "eligible_positions": [
+            "RB",
+            "WR",
+            "TE"
+          ],
+          "players": []
+        },
+        "bench": {
+          "required": 7,
+          "filled": 0,
+          "players": []
+        },
+        "ir": {
+          "required": 1,
+          "filled": 0,
+          "players": [],
+          "note": "IR is filled off-waiver after the draft, never by a draft pick (league_config.drafted_rounds excludes it). Always 0 here."
+        }
+      },
+      "needs": {
+        "QB": 1,
+        "RB": 2,
+        "WR": 3,
+        "TE": 1,
+        "DEF": 1,
+        "K": 1,
+        "FLEX": 1,
+        "BENCH": 7,
+        "IR": 1
+      },
+      "players": []
+    },
+    {
+      "team_slot": 9,
+      "is_user": false,
+      "team_name": null,
+      "roster_slots": {
+        "starters": {
+          "QB": {
+            "required": 1,
+            "filled": 0,
+            "players": []
+          },
+          "RB": {
+            "required": 2,
+            "filled": 0,
+            "players": []
+          },
+          "WR": {
+            "required": 3,
+            "filled": 0,
+            "players": []
+          },
+          "TE": {
+            "required": 1,
+            "filled": 0,
+            "players": []
+          },
+          "DEF": {
+            "required": 1,
+            "filled": 0,
+            "players": []
+          },
+          "K": {
+            "required": 1,
+            "filled": 0,
+            "players": []
+          }
+        },
+        "flex": {
+          "required": 1,
+          "filled": 0,
+          "eligible_positions": [
+            "RB",
+            "WR",
+            "TE"
+          ],
+          "players": []
+        },
+        "bench": {
+          "required": 7,
+          "filled": 0,
+          "players": []
+        },
+        "ir": {
+          "required": 1,
+          "filled": 0,
+          "players": [],
+          "note": "IR is filled off-waiver after the draft, never by a draft pick (league_config.drafted_rounds excludes it). Always 0 here."
+        }
+      },
+      "needs": {
+        "QB": 1,
+        "RB": 2,
+        "WR": 3,
+        "TE": 1,
+        "DEF": 1,
+        "K": 1,
+        "FLEX": 1,
+        "BENCH": 7,
+        "IR": 1
+      },
+      "players": []
+    },
+    {
+      "team_slot": 10,
+      "is_user": false,
+      "team_name": null,
+      "roster_slots": {
+        "starters": {
+          "QB": {
+            "required": 1,
+            "filled": 0,
+            "players": []
+          },
+          "RB": {
+            "required": 2,
+            "filled": 0,
+            "players": []
+          },
+          "WR": {
+            "required": 3,
+            "filled": 0,
+            "players": []
+          },
+          "TE": {
+            "required": 1,
+            "filled": 0,
+            "players": []
+          },
+          "DEF": {
+            "required": 1,
+            "filled": 0,
+            "players": []
+          },
+          "K": {
+            "required": 1,
+            "filled": 0,
+            "players": []
+          }
+        },
+        "flex": {
+          "required": 1,
+          "filled": 0,
+          "eligible_positions": [
+            "RB",
+            "WR",
+            "TE"
+          ],
+          "players": []
+        },
+        "bench": {
+          "required": 7,
+          "filled": 0,
+          "players": []
+        },
+        "ir": {
+          "required": 1,
+          "filled": 0,
+          "players": [],
+          "note": "IR is filled off-waiver after the draft, never by a draft pick (league_config.drafted_rounds excludes it). Always 0 here."
+        }
+      },
+      "needs": {
+        "QB": 1,
+        "RB": 2,
+        "WR": 3,
+        "TE": 1,
+        "DEF": 1,
+        "K": 1,
+        "FLEX": 1,
+        "BENCH": 7,
+        "IR": 1
+      },
+      "players": []
+    },
+    {
+      "team_slot": 11,
+      "is_user": false,
+      "team_name": null,
+      "roster_slots": {
+        "starters": {
+          "QB": {
+            "required": 1,
+            "filled": 0,
+            "players": []
+          },
+          "RB": {
+            "required": 2,
+            "filled": 0,
+            "players": []
+          },
+          "WR": {
+            "required": 3,
+            "filled": 0,
+            "players": []
+          },
+          "TE": {
+            "required": 1,
+            "filled": 0,
+            "players": []
+          },
+          "DEF": {
+            "required": 1,
+            "filled": 0,
+            "players": []
+          },
+          "K": {
+            "required": 1,
+            "filled": 0,
+            "players": []
+          }
+        },
+        "flex": {
+          "required": 1,
+          "filled": 0,
+          "eligible_positions": [
+            "RB",
+            "WR",
+            "TE"
+          ],
+          "players": []
+        },
+        "bench": {
+          "required": 7,
+          "filled": 0,
+          "players": []
+        },
+        "ir": {
+          "required": 1,
+          "filled": 0,
+          "players": [],
+          "note": "IR is filled off-waiver after the draft, never by a draft pick (league_config.drafted_rounds excludes it). Always 0 here."
+        }
+      },
+      "needs": {
+        "QB": 1,
+        "RB": 2,
+        "WR": 3,
+        "TE": 1,
+        "DEF": 1,
+        "K": 1,
+        "FLEX": 1,
+        "BENCH": 7,
+        "IR": 1
+      },
+      "players": []
+    },
+    {
+      "team_slot": 12,
+      "is_user": false,
+      "team_name": null,
+      "roster_slots": {
+        "starters": {
+          "QB": {
+            "required": 1,
+            "filled": 0,
+            "players": []
+          },
+          "RB": {
+            "required": 2,
+            "filled": 0,
+            "players": []
+          },
+          "WR": {
+            "required": 3,
+            "filled": 0,
+            "players": []
+          },
+          "TE": {
+            "required": 1,
+            "filled": 0,
+            "players": []
+          },
+          "DEF": {
+            "required": 1,
+            "filled": 0,
+            "players": []
+          },
+          "K": {
+            "required": 1,
+            "filled": 0,
+            "players": []
+          }
+        },
+        "flex": {
+          "required": 1,
+          "filled": 0,
+          "eligible_positions": [
+            "RB",
+            "WR",
+            "TE"
+          ],
+          "players": []
+        },
+        "bench": {
+          "required": 7,
+          "filled": 0,
+          "players": []
+        },
+        "ir": {
+          "required": 1,
+          "filled": 0,
+          "players": [],
+          "note": "IR is filled off-waiver after the draft, never by a draft pick (league_config.drafted_rounds excludes it). Always 0 here."
+        }
+      },
+      "needs": {
+        "QB": 1,
+        "RB": 2,
+        "WR": 3,
+        "TE": 1,
+        "DEF": 1,
+        "K": 1,
+        "FLEX": 1,
+        "BENCH": 7,
+        "IR": 1
+      },
+      "players": []
+    }
+  ]
+}

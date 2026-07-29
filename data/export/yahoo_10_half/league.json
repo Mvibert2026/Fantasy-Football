@@ -1,6 +1,6 @@
 {
-  "contract_version": "1.7.0",
-  "generated_utc": "2026-07-26T17:40:03.249920+00:00",
+  "contract_version": "1.14.0",
+  "generated_utc": "2026-07-29T18:26:16.283228+00:00",
   "league_id": "yahoo_10_half",
   "league_name": "YAHOO-default, 10 teams, half scoring",
   "platform": "yahoo",

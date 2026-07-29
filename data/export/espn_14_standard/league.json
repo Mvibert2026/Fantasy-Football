@@ -1,6 +1,6 @@
 {
-  "contract_version": "1.7.0",
-  "generated_utc": "2026-07-26T17:39:03.906556+00:00",
+  "contract_version": "1.14.0",
+  "generated_utc": "2026-07-29T18:23:30.240985+00:00",
   "league_id": "espn_14_standard",
   "league_name": "ESPN-default, 14 teams, standard scoring",
   "platform": "espn",

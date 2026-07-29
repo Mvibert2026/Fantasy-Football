@@ -1,0 +1,189 @@
+{
+  "contract_version": "1.14.0",
+  "generated_utc": "2026-07-29T18:21:15.218612+00:00",
+  "league_id": "espn_10_half",
+  "user_draft_slot": 5,
+  "coverage_warning": "9 of 9 opponents have NO data. The simulator therefore models all opponents identically -- drafting to consensus with noise -- rather than with individual tendencies. To populate these profiles the prior season's draft board (pick number, team, player) must be supplied; it is not derivable from anything currently ingested.",
+  "opponents": [
+    {
+      "team_name": null,
+      "draft_slot_2026": 1,
+      "draft_slot_2025": null,
+      "known_picks_2026": [
+        1,
+        20,
+        21,
+        40,
+        41,
+        60
+      ],
+      "positional_tendencies": null,
+      "first_pick_by_position": null,
+      "consensus_tracking_behaviour": null,
+      "notes": null,
+      "cited_2025_picks": [],
+      "holds_picks_19_to_22": false,
+      "data_status": "NOT SUPPLIED. No team name, no 2025 draft record, no behavioural history exists in this repository for this slot. Nothing is inferred."
+    },
+    {
+      "team_name": null,
+      "draft_slot_2026": 2,
+      "draft_slot_2025": null,
+      "known_picks_2026": [
+        2,
+        19,
+        22,
+        39,
+        42,
+        59
+      ],
+      "positional_tendencies": null,
+      "first_pick_by_position": null,
+      "consensus_tracking_behaviour": null,
+      "notes": null,
+      "cited_2025_picks": [],
+      "holds_picks_19_to_22": false,
+      "data_status": "NOT SUPPLIED. No team name, no 2025 draft record, no behavioural history exists in this repository for this slot. Nothing is inferred."
+    },
+    {
+      "team_name": null,
+      "draft_slot_2026": 3,
+      "draft_slot_2025": null,
+      "known_picks_2026": [
+        3,
+        18,
+        23,
+        38,
+        43,
+        58
+      ],
+      "positional_tendencies": null,
+      "first_pick_by_position": null,
+      "consensus_tracking_behaviour": null,
+      "notes": null,
+      "cited_2025_picks": [],
+      "holds_picks_19_to_22": false,
+      "data_status": "NOT SUPPLIED. No team name, no 2025 draft record, no behavioural history exists in this repository for this slot. Nothing is inferred."
+    },
+    {
+      "team_name": null,
+      "draft_slot_2026": 4,
+      "draft_slot_2025": null,
+      "known_picks_2026": [
+        4,
+        17,
+        24,
+        37,
+        44,
+        57
+      ],
+      "positional_tendencies": null,
+      "first_pick_by_position": null,
+      "consensus_tracking_behaviour": null,
+      "notes": null,
+      "cited_2025_picks": [],
+      "holds_picks_19_to_22": false,
+      "data_status": "NOT SUPPLIED. No team name, no 2025 draft record, no behavioural history exists in this repository for this slot. Nothing is inferred."
+    },
+    {
+      "team_name": null,
+      "draft_slot_2026": 6,
+      "draft_slot_2025": null,
+      "known_picks_2026": [
+        6,
+        15,
+        26,
+        35,
+        46,
+        55
+      ],
+      "positional_tendencies": null,
+      "first_pick_by_position": null,
+      "consensus_tracking_behaviour": null,
+      "notes": null,
+      "cited_2025_picks": [],
+      "holds_picks_19_to_22": false,
+      "data_status": "NOT SUPPLIED. No team name, no 2025 draft record, no behavioural history exists in this repository for this slot. Nothing is inferred."
+    },
+    {
+      "team_name": null,
+      "draft_slot_2026": 7,
+      "draft_slot_2025": null,
+      "known_picks_2026": [
+        7,
+        14,
+        27,
+        34,
+        47,
+        54
+      ],
+      "positional_tendencies": null,
+      "first_pick_by_position": null,
+      "consensus_tracking_behaviour": null,
+      "notes": null,
+      "cited_2025_picks": [],
+      "holds_picks_19_to_22": false,
+      "data_status": "NOT SUPPLIED. No team name, no 2025 draft record, no behavioural history exists in this repository for this slot. Nothing is inferred."
+    },
+    {
+      "team_name": null,
+      "draft_slot_2026": 8,
+      "draft_slot_2025": null,
+      "known_picks_2026": [
+        8,
+        13,
+        28,
+        33,
+        48,
+        53
+      ],
+      "positional_tendencies": null,
+      "first_pick_by_position": null,
+      "consensus_tracking_behaviour": null,
+      "notes": null,
+      "cited_2025_picks": [],
+      "holds_picks_19_to_22": false,
+      "data_status": "NOT SUPPLIED. No team name, no 2025 draft record, no behavioural history exists in this repository for this slot. Nothing is inferred."
+    },
+    {
+      "team_name": null,
+      "draft_slot_2026": 9,
+      "draft_slot_2025": null,
+      "known_picks_2026": [
+        9,
+        12,
+        29,
+        32,
+        49,
+        52
+      ],
+      "positional_tendencies": null,
+      "first_pick_by_position": null,
+      "consensus_tracking_behaviour": null,
+      "notes": null,
+      "cited_2025_picks": [],
+      "holds_picks_19_to_22": false,
+      "data_status": "NOT SUPPLIED. No team name, no 2025 draft record, no behavioural history exists in this repository for this slot. Nothing is inferred."
+    },
+    {
+      "team_name": null,
+      "draft_slot_2026": 10,
+      "draft_slot_2025": null,
+      "known_picks_2026": [
+        10,
+        11,
+        30,
+        31,
+        50,
+        51
+      ],
+      "positional_tendencies": null,
+      "first_pick_by_position": null,
+      "consensus_tracking_behaviour": null,
+      "notes": null,
+      "cited_2025_picks": [],
+      "holds_picks_19_to_22": false,
+      "data_status": "NOT SUPPLIED. No team name, no 2025 draft record, no behavioural history exists in this repository for this slot. Nothing is inferred."
+    }
+  ]
+}
