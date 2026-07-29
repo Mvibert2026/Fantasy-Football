@@ -2190,183 +2190,67 @@ documents -- both true positives, not test bugs; confirmed pre-existing via `git
 `test_find_fr_collisions_flags_conflicting_slugs`,
 `test_find_fr_collisions_silent_when_no_conflict` (`tests/test_founder_requests.py`).
 
-<<<<<<< HEAD
 ---
 
-## ADR-057 — The board's QB premium is a rushing-QB regime effect, not a bonus artifact; and that regime collapsed in 2025 (2026-07-29, backend, thread backend-qb-delta)
+## ADR-059 — A claim checker for live documents, proved on planted faults (2026-07-29, backend)
 
-**The challenge.** The founder asked why quarterbacks are worth *more* on our board in a league
-that pays only **4 points per passing TD** — the stingy end. The shipped 2026 board has Josh Allen
-at overall #6 (+20 vs consensus) and Lamar Jackson at #13 (+19). CLAUDE.md §8 says a result that
-looks too good is usually leakage. This was investigated as a suspected defect first.
+**Context.** On 2026-07-29 five false claims in this project's own documents were found *by
+accident* during unrelated work: FFC described as robots.txt-blocked on the morning it became
+the primary daily capture; the cloud ADP capture described as "observed to succeed" and the
+local Windows task as "now redundant" when no scheduled run had ever fired (acting on it would
+have deleted the only working capture of an un-backfillable artifact); the Predictions tab
+listed as absent while `frontend/ui/views/Predictions.tsx` shipped; `docs/handoffs/README.md`
+stating design could not read the repo two days after it could, with the founder hand-relaying
+files as a result; and rankings history called unrecoverable when it re-pulls row-for-row. The
+founder personally caught six more the same day. Detection ratio ~6:1 in his favour and not
+improving. `docs/pm/CHARTER.md` sets the threshold for him stepping back as "zero interruptions
+**plus a detector that has caught planted faults**."
 
-**The premise the investigation was launched on was wrong, and is refuted here.** The leading
-hypothesis — that the stacking passing-yardage bonuses (+1/+1.5/+2 at 300/350/400) widen the
-QB1-to-replacement gap — is **false**. Measured, not argued:
+**Decision.** Build the detector as a **closed registry plus a closed document scope**, not as
+prose analysis.
 
-| scoring variant | Allen board rank | QB1 VBD |
-|---|---|---|
-| FULL (shipped rules) | **6** | 113.7 |
-| no PASSING bonuses | **6** | 111.3 |
-| no RUSHING bonuses | 5 | 113.6 |
-| no RECEIVING bonuses | **6** | 113.7 |
-| **no bonuses at all** | **6** | 111.2 |
-| passing TD = 6 (generous) | 4 | 127.0 |
-| passing TD = 2 (brutal) | 8 | 100.4 |
+- `docs/state-claims.toml` registers each checkable fact with its verification: `[[artifact]]`
+  (path on disk), `[[constant]]` (value read out of the defining source file), `[[status]]`
+  (a named source/capability with a polarity vocabulary), `[[count]]` (measured from a file).
+- `[scope].live_docs` names the ten documents that assert what is true *now*. Append-only logs
+  — `docs/status.md`, `docs/status/`, `docs/decisions.md`, `docs/handoffs/NNN-*.md`,
+  `docs/founder-requests/`, `SNAPSHOT-*`, `RUN-*` — are **never** scanned. Flagging a document
+  for correctly recording history is the false-alarm pattern that gets a checker switched off,
+  and this is the single biggest reason it stays quiet enough to be worth reading.
+- A live document may still narrate a superseded belief, if it marks it: `~~struck through~~`,
+  an `<!-- state-claims: ignore-block -->` region, or a named per-document suppression that
+  carries a written reason.
+- A `[[status]]` claim with **no** registered `truth` flags disagreement *between* live
+  documents. That is the cross-document-contradiction class and it needs no ground truth — the
+  honest form for a fact nobody has settled.
 
-Turning **every** yardage bonus off moves Allen zero ranks. Passing bonuses are 2.1% of QB1's
-value over replacement. The bonuses are essentially irrelevant to board ordering.
+**Alternative rejected.** Natural-language detection of factual claims across all documentation.
+It cannot be made precise here, and a checker that flags fifty things nobody acts on is worse
+than none: this project already has documents nobody trusts. The registry deliberately puts the
+cost of a claim on whoever writes it.
 
-**Why the "4 points per passing TD should push QBs down" intuition is right, and the board already
-obeys it.** At 6 points per passing TD Allen would be #4; at 2 points he would be #8. The stingy
-setting **is** already pushing quarterbacks down. The board does not contradict the founder — it
-agrees with him. He is comparing against an implicit standard-league prior, not against this
-board's own counterfactual.
+**Evidence — both directions, which is the acceptance condition.**
+`tests/test_state_claims.py`, 21 tests. Six planted faults in `tests/fixtures/state_claims/`,
+each reproducing a real 2026-07-29 false claim in roughly the words the real document used;
+every one is caught, and every corrected counterpart passes clean. Fixtures substitute
+`{{CONTRACT_VERSION}}`/`{{BOARD_PLAYERS}}` from the live repo so a correct fixture cannot rot
+into a false one. Run against the real ten live documents, the checker found **eight live false
+claims on its first run** — the Predictions-tab line, FFC described as blocked in two places,
+`CONTRACT_VERSION` quoted as 1.13.0 against 1.14.0, the board stated as 511 players against 510
+on disk (twice), design's read access, and one superseded rankings-history conclusion. All eight
+corrected in this session; the checker now reports OK across ~4,000 lines of live prose with
+**zero false positives** and one reasoned path allowance.
 
-**Why level intuitions do not transfer at all: VBD cancels the intercept exactly.** The board
-scores `VBD = curve.predict(rank) − curve.predict(replacement_rank)` where
-`predict(r) = a + b·ln r`. The intercept `a` cancels identically, so
-`VBD = b·(ln rank − ln base)`. **Any scoring rule that shifts a whole position by a constant moves
-the board not at all.** Only the *slope* — how steeply points decay with consensus rank — matters.
-Passing-TD scoring bites only because elite QBs throw more TDs than QB10, which is a slope effect,
-not a level one. Pinned by `test_vbd_is_invariant_to_curve_intercept`.
+**Stated gap, asserted rather than described.** Whether a GitHub Actions *schedule* has fired is
+not readable from a checkout, so failure #2 (the ADP capture) has no verifiable truth. It is
+registered truth-less, which catches the two polarities coexisting across documents but would
+**not** catch a single document asserting the false version alone.
+`test_each_document_alone_does_not_fire_on_the_contested_claim` pins that limitation as a
+measured property rather than a paragraph in a report nobody rereads.
 
-**What actually drives it: rushing.** Because OLS slope is a fixed linear functional of the outcome
-vector, VBD decomposes **exactly** (not approximately) across additive scoring components
-(`test_slope_decomposes_exactly_across_additive_components`). QB1's 113.7 points of VBD:
+**Constant?** None introduced. No statistical parameter, no model change.
 
-| component | VBD@QB1 | share |
-|---|---|---|
-| rush yds (base) | 35.5 | 31.2% |
-| rush TD @6 | 28.7 | 25.3% |
-| pass TD @4 | 26.5 | 23.3% |
-| pass yds (base) | 24.4 | 21.4% |
-| **pass yd BONUSES** | **2.4** | **2.1%** |
-| interceptions | −2.4 | −2.1% |
-| everything else | −1.3 | −1.1% |
-
-**56.5% of the elite-QB edge is rushing**, which is scored at RB rates (10 yds/pt, 6 per TD) and is
-untouched by the league's passing stinginess. Consensus top-3 QBs in 2021–2025 were Allen, Mahomes,
-Hurts, Jackson and Daniels, with rushing shares of 13–47% and trending up. That is the mechanism.
-
-**THE FINDING THAT MATTERS MORE, AND IT IS BAD NEWS.** The QB slope is not stable across the five
-training seasons the curve pools with equal weight:
-
-| season | b_QB | implied VBD@QB1 | b_RB | VBD@RB1 |
-|---|---|---|---|---|
-| 2021 | −66.6 | 153.4 | −34.9 | 118.8 |
-| 2022 | −72.6 | 167.2 | −51.7 | 176.0 |
-| 2023 | −58.6 | 135.0 | −41.4 | 140.8 |
-| 2024 | −45.0 | 103.6 | −47.1 | 160.1 |
-| **2025** | **−4.1** | **9.3** | **−77.9** | **265.1** |
-
-A monotone collapse, with the most recent season essentially flat — 2025 says the QB1 slot was
-worth **9 points** over QB10, not 114 — while RB moved hard the other way. 2025 is verified
-complete (18 weeks, 18,521 rows, the largest season on file), so this is not truncation. It is
-real: in 2025 consensus QB2 and QB3 (Jackson, Daniels) missed time while QB10/QB15/QB16/QB18 all
-finished above 300 points.
-
-`fit_rank_curves()` pools all five seasons **flat, with no recency weighting**, despite CLAUDE.md
-§6.4 ("how far back to weight is an empirical question") and the schema principle that a
-`season_weight` field exist from the start. **The shipped QB premium is therefore an average over a
-regime that was disappearing during the training window.** Pinned by
-`test_qb_curve_slope_collapsed_in_2025`.
-
-**And the uncertainty already said so.** Allen's VBD is 113.7 with a bootstrap 95% CI of
-**[57.0, 155.2]**. That interval overlaps the CI of **29 of the top 40 players**, spanning overall
-ranks **1 through 31**. The board's own machinery already reports that "+20" is not distinguishable
-from "consensus was right." The point estimate was being read without its interval.
-
-**Secondary finding — the estimator is misspecified, asymmetrically across positions.** Fitting the
-log-linear curve on sub-ranges shows RB and WR are strongly concave in log-rank while QB is not:
-
-| pos | b on ranks 1–20 | b on deep ranks | ratio |
-|---|---|---|---|
-| RB | −33.0 | −87.0 (21–45) | 2.6× |
-| WR | −31.2 | −63.5 (21–60) | 2.0× |
-| QB | −44.2 (1–10) | −40.2 (11–20) | 0.9× |
-
-A single log-linear fit overstates the top-of-board gap for RB/WR and does not for QB. Because the
-board ranks positions **against each other**, an asymmetric misspecification is a real ordering
-risk. Pinned by `test_rank_points_curve_is_misspecified_for_rb_and_wr`.
-
-**Defects looked for and NOT found.** Bonuses are applied **per game**, not to season totals — the
-leading defect hypothesis, checked at the engine level and against real 2024 QB seasons (Burrow
-18.5 bonus points off 7 games ≥300; Jackson 2.0 off 2 games; a season-total bug would have paid a
-flat 4.5 to every one of them). Bonuses stack correctly at thresholds per CLAUDE.md §7. Passing TD
-is 4. Replacement is genuinely applied at QB10/RB30/WR40/TE10, and QB10 is the *most conservative*
-choice in the plausible range — assuming streaming (QB12–QB18 replacement) moves Allen **up** to
-#5–#3, not down. No units error, no look-ahead: training on 2025 for the live 2026 board is
-explicitly sanctioned by `src/holdout.py` ("locking governs selection, not fitting"), so this is
-**not** a HoldoutViolation.
-
-**Constant?** None introduced. Every figure above is a measurement with a stated n: curve fits are
-n=100 (QB), 225 (RB), 300 (WR) player-seasons over 5 seasons; R² = 0.158 / 0.263 / 0.266; CIs are
-2000-draw season-level bootstraps on 5 units.
-
-**Decision.** (1) The QB premium is **explained and is not a bug** — it is a rushing-QB regime
-effect, correctly computed. (2) It is **not, on this evidence, a defensible edge**: the CI overlaps
-consensus, and the single most recent season contradicts it outright. The board's QB ranking should
-be treated as "consensus is probably fine here" rather than as a +20 signal to act on. (3) Two
-methodology gaps are now documented and test-pinned but **deliberately not fixed here** — flat
-season pooling with no recency weight, and the log-linear misspecification. Both are estimator
-changes that require the Statistician + Red-team gate (CLAUDE.md §8), not a backend patch.
-
-**Evidence.** `tests/test_qb_board_delta.py`, 9 tests, all passing. Diagnostics are reproducible:
-`experiments/qb_board_delta_diagnostic.py` and `experiments/qb_board_delta_uncertainty.py`.
-=======
-## ADR-058 — Non-primary leagues get their full six-artifact export set (2026-07-29, backend)
-
-**Bug (founder-reported, live site).** Switching to "Ethan's Expert League" in the app failed:
-*"Could not read leagues/ethans_expert_league/nulls.json (HTTP 200, non-JSON response)."*
-`data/export/ethans_expert_league/` carried only 4 artifacts (board/availability/league/rosters)
-against the primary league's 11. The HTTP-200-with-HTML-body framing is the deployed site's SPA
-fallback for a missing file (a `wrangler.jsonc` concern, explicitly out of scope here, someone
-else's fix in flight) — but the underlying file really was missing, which is this bug.
-
-**Root cause.** ADR-041 requires six artifacts in every non-primary league's export directory
-(board/availability/league/glossary/nulls/opponents), and `frontend/ui/data/load.ts` fetches and
-`league_id`-checks all six unconditionally (only `rosters.json`/`strategies.json` are genuinely
-optional — the loader has explicit fallback-to-null paths for exactly those two, confirmed by
-reading `load.ts` directly rather than trusting a prior session's framing). But
-`league_builder.export_league()` and `generate_config_matrix.py` both called only
-`export_contract.write_all` (board/availability/league/rosters) and never
-`export_static.py`'s glossary/nulls/opponents builders. Every one of the 24 pre-generated
-config-matrix leagues had the identical gap — confirmed a real oversight, not documented scope:
-`generate_config_matrix.py`'s own docstring only carves out `strategies.json`/Monte Carlo as
-deliberately deferred, says nothing about the three prose artifacts.
-
-**Fix.** Factored `export_static.py`'s inline `main()` payload construction into
-`build_static_artifacts(cfg)` / `write_static_artifacts(out_dir, cfg)`, and call the latter from
-both `league_builder.export_league()` and `generate_config_matrix.generate_all()`. Rebuilt all
-affected exports: `ethans_expert_league` now carries 7 artifacts (was 4), all 24 config-matrix
-directories now carry 7 (was 3), primary league unchanged at 11.
-
-**Bug 2, same session (thread 042, `docs/backlog-triage-2026-07-29.md`).** `strategies.json` was
-stamped `contract_version 1.7.0` against everything else at `1.14.0` — stale since a prior
-contract bump, not a code bug (`src/export_strategies.py` already reads `CONTRACT_VERSION`
-correctly). Re-ran `src/export_strategies.py`; now `1.14.0`.
-
-**No `CONTRACT_VERSION` bump.** No artifact's shape changed, only which artifacts get generated
-for non-primary leagues. No frontend handoff needed for a schema reason; thread 042 gets a reply
-closing it out.
-
-**Regression guard.** New `tests/test_export_directory_contract.py`: parametrized over every
-`data/export/<league_id>/` directory found on disk, asserting the six required artifacts are all
-present (plus a vacuous-pass guard so removing every league directory can't make this silently
-pass), a primary-league full-set check, and a `strategies.json` contract-version-matches-source
-check. Extended `test_create_and_export_league_board_uses_its_own_replacement_levels` in
-`tests/test_league_builder.py` to assert the same six-plus-rosters set directly at the
-`league_builder.export_league()` call site.
-
-**Scope not taken.** Every subdirectory of `data/export/` becomes a switchable "league" in the
-frontend (`sync-exports.mjs` treats any directory as a league, no allowlist) — this includes the
-24 config-matrix combos, which is why their gap mattered too. `yahoo_standard_mock` is a real,
-on-disk, working example of a league with only 6 artifacts (no `rosters.json`/`strategies.json`)
-loading correctly, confirming those two really are optional rather than another hidden gap.
-
-**Evidence.** `.venv/bin/python -m pytest -q`: 719 passed, 1 pre-existing failure
-(`test_mailbox_health` — the ADR-054/055 collision ADR-056 already documents and left
-unresolved by explicit design; unrelated to this change, reconfirmed via `git stash` equivalent
-by checking the failure predates this commit). Commit `a88f041`.
->>>>>>> 03566fc753e1ec3c11213fae9ef83e9773a5a2b2
+**Anti-rot.** The registry is itself checked: a registered path whose existence flips, a missing
+authority document, a suppression matching nothing, or a path allowance that has become
+unnecessary all fail the test. A suppression that outlives its reason is how this class of tool
+quietly stops working.
