@@ -169,3 +169,24 @@ newest at the bottom.
   a widened regex or a stated convention plus a one-off sweep — not another rule.** Same class as
   the ID allocator: the tool and the documents disagree, and the humans followed the documents.
 
+
+- **2026-07-29, backend (ADR-057).** `make_board.fit_rank_curves()` pools all training seasons with
+  EQUAL weight. Measured: the QB rank->points slope ran -67, -73, -59, -45, -4 across 2021-2025 —
+  a monotone collapse — while RB moved the other way (-35 to -78). Flat pooling averages over a
+  regime change CLAUDE.md §6.4 explicitly warns about, and it is the sole reason the shipped board
+  carries a QB premium. Needs a recency-weighting experiment (and the `season_weight` field the
+  schema principles already call for), gated by Statistician + Red-team.
+- **2026-07-29, backend (ADR-057).** The `points ~ a + b*ln(rank)` estimator is misspecified
+  ASYMMETRICALLY across positions: RB/WR are concave in log-rank (deep-rank slope 2-2.6x the
+  shallow-rank slope), QB is not (0.9x). Since the board ranks positions against each other, this
+  is an ordering risk, not just a fit-quality issue. Candidate fixes: piecewise/segmented fit, or
+  fit on the rank range each position's replacement level actually sits in.
+- **2026-07-29, backend (ADR-057).** The board reports `vbd` alongside `vbd_lo`/`vbd_hi` but the
+  point estimate is what gets read. Josh Allen's CI [57.0, 155.2] overlaps 29 of the top 40
+  players. Consider surfacing "not distinguishable from ranks X-Y" in the export/UI so a +20 delta
+  cannot be read as a signal when the interval says otherwise. (Frontend-facing; needs a thread.)
+- **2026-07-29, backend.** `scripts/rebuild_database.py` step 4 (`ingest_rankings.py`) 403s in a
+  Claude cloud session as documented. The committed `data/rankings-history/rankings_2021_2025.csv`
+  IS a byte-exact dump of what it writes, so a session can restore it — see
+  `experiments/restore_rankings_from_committed_csv.py`. Worth deciding whether that restore belongs
+  in `scripts/` as an explicit `--from-committed` flag rather than living in experiments/.

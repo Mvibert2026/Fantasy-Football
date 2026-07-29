@@ -2189,3 +2189,127 @@ documents -- both true positives, not test bugs; confirmed pre-existing via `git
 `test_next_free_id_widens_past_local_tree_via_refs`,
 `test_find_fr_collisions_flags_conflicting_slugs`,
 `test_find_fr_collisions_silent_when_no_conflict` (`tests/test_founder_requests.py`).
+
+---
+
+## ADR-057 — The board's QB premium is a rushing-QB regime effect, not a bonus artifact; and that regime collapsed in 2025 (2026-07-29, backend, thread backend-qb-delta)
+
+**The challenge.** The founder asked why quarterbacks are worth *more* on our board in a league
+that pays only **4 points per passing TD** — the stingy end. The shipped 2026 board has Josh Allen
+at overall #6 (+20 vs consensus) and Lamar Jackson at #13 (+19). CLAUDE.md §8 says a result that
+looks too good is usually leakage. This was investigated as a suspected defect first.
+
+**The premise the investigation was launched on was wrong, and is refuted here.** The leading
+hypothesis — that the stacking passing-yardage bonuses (+1/+1.5/+2 at 300/350/400) widen the
+QB1-to-replacement gap — is **false**. Measured, not argued:
+
+| scoring variant | Allen board rank | QB1 VBD |
+|---|---|---|
+| FULL (shipped rules) | **6** | 113.7 |
+| no PASSING bonuses | **6** | 111.3 |
+| no RUSHING bonuses | 5 | 113.6 |
+| no RECEIVING bonuses | **6** | 113.7 |
+| **no bonuses at all** | **6** | 111.2 |
+| passing TD = 6 (generous) | 4 | 127.0 |
+| passing TD = 2 (brutal) | 8 | 100.4 |
+
+Turning **every** yardage bonus off moves Allen zero ranks. Passing bonuses are 2.1% of QB1's
+value over replacement. The bonuses are essentially irrelevant to board ordering.
+
+**Why the "4 points per passing TD should push QBs down" intuition is right, and the board already
+obeys it.** At 6 points per passing TD Allen would be #4; at 2 points he would be #8. The stingy
+setting **is** already pushing quarterbacks down. The board does not contradict the founder — it
+agrees with him. He is comparing against an implicit standard-league prior, not against this
+board's own counterfactual.
+
+**Why level intuitions do not transfer at all: VBD cancels the intercept exactly.** The board
+scores `VBD = curve.predict(rank) − curve.predict(replacement_rank)` where
+`predict(r) = a + b·ln r`. The intercept `a` cancels identically, so
+`VBD = b·(ln rank − ln base)`. **Any scoring rule that shifts a whole position by a constant moves
+the board not at all.** Only the *slope* — how steeply points decay with consensus rank — matters.
+Passing-TD scoring bites only because elite QBs throw more TDs than QB10, which is a slope effect,
+not a level one. Pinned by `test_vbd_is_invariant_to_curve_intercept`.
+
+**What actually drives it: rushing.** Because OLS slope is a fixed linear functional of the outcome
+vector, VBD decomposes **exactly** (not approximately) across additive scoring components
+(`test_slope_decomposes_exactly_across_additive_components`). QB1's 113.7 points of VBD:
+
+| component | VBD@QB1 | share |
+|---|---|---|
+| rush yds (base) | 35.5 | 31.2% |
+| rush TD @6 | 28.7 | 25.3% |
+| pass TD @4 | 26.5 | 23.3% |
+| pass yds (base) | 24.4 | 21.4% |
+| **pass yd BONUSES** | **2.4** | **2.1%** |
+| interceptions | −2.4 | −2.1% |
+| everything else | −1.3 | −1.1% |
+
+**56.5% of the elite-QB edge is rushing**, which is scored at RB rates (10 yds/pt, 6 per TD) and is
+untouched by the league's passing stinginess. Consensus top-3 QBs in 2021–2025 were Allen, Mahomes,
+Hurts, Jackson and Daniels, with rushing shares of 13–47% and trending up. That is the mechanism.
+
+**THE FINDING THAT MATTERS MORE, AND IT IS BAD NEWS.** The QB slope is not stable across the five
+training seasons the curve pools with equal weight:
+
+| season | b_QB | implied VBD@QB1 | b_RB | VBD@RB1 |
+|---|---|---|---|---|
+| 2021 | −66.6 | 153.4 | −34.9 | 118.8 |
+| 2022 | −72.6 | 167.2 | −51.7 | 176.0 |
+| 2023 | −58.6 | 135.0 | −41.4 | 140.8 |
+| 2024 | −45.0 | 103.6 | −47.1 | 160.1 |
+| **2025** | **−4.1** | **9.3** | **−77.9** | **265.1** |
+
+A monotone collapse, with the most recent season essentially flat — 2025 says the QB1 slot was
+worth **9 points** over QB10, not 114 — while RB moved hard the other way. 2025 is verified
+complete (18 weeks, 18,521 rows, the largest season on file), so this is not truncation. It is
+real: in 2025 consensus QB2 and QB3 (Jackson, Daniels) missed time while QB10/QB15/QB16/QB18 all
+finished above 300 points.
+
+`fit_rank_curves()` pools all five seasons **flat, with no recency weighting**, despite CLAUDE.md
+§6.4 ("how far back to weight is an empirical question") and the schema principle that a
+`season_weight` field exist from the start. **The shipped QB premium is therefore an average over a
+regime that was disappearing during the training window.** Pinned by
+`test_qb_curve_slope_collapsed_in_2025`.
+
+**And the uncertainty already said so.** Allen's VBD is 113.7 with a bootstrap 95% CI of
+**[57.0, 155.2]**. That interval overlaps the CI of **29 of the top 40 players**, spanning overall
+ranks **1 through 31**. The board's own machinery already reports that "+20" is not distinguishable
+from "consensus was right." The point estimate was being read without its interval.
+
+**Secondary finding — the estimator is misspecified, asymmetrically across positions.** Fitting the
+log-linear curve on sub-ranges shows RB and WR are strongly concave in log-rank while QB is not:
+
+| pos | b on ranks 1–20 | b on deep ranks | ratio |
+|---|---|---|---|
+| RB | −33.0 | −87.0 (21–45) | 2.6× |
+| WR | −31.2 | −63.5 (21–60) | 2.0× |
+| QB | −44.2 (1–10) | −40.2 (11–20) | 0.9× |
+
+A single log-linear fit overstates the top-of-board gap for RB/WR and does not for QB. Because the
+board ranks positions **against each other**, an asymmetric misspecification is a real ordering
+risk. Pinned by `test_rank_points_curve_is_misspecified_for_rb_and_wr`.
+
+**Defects looked for and NOT found.** Bonuses are applied **per game**, not to season totals — the
+leading defect hypothesis, checked at the engine level and against real 2024 QB seasons (Burrow
+18.5 bonus points off 7 games ≥300; Jackson 2.0 off 2 games; a season-total bug would have paid a
+flat 4.5 to every one of them). Bonuses stack correctly at thresholds per CLAUDE.md §7. Passing TD
+is 4. Replacement is genuinely applied at QB10/RB30/WR40/TE10, and QB10 is the *most conservative*
+choice in the plausible range — assuming streaming (QB12–QB18 replacement) moves Allen **up** to
+#5–#3, not down. No units error, no look-ahead: training on 2025 for the live 2026 board is
+explicitly sanctioned by `src/holdout.py` ("locking governs selection, not fitting"), so this is
+**not** a HoldoutViolation.
+
+**Constant?** None introduced. Every figure above is a measurement with a stated n: curve fits are
+n=100 (QB), 225 (RB), 300 (WR) player-seasons over 5 seasons; R² = 0.158 / 0.263 / 0.266; CIs are
+2000-draw season-level bootstraps on 5 units.
+
+**Decision.** (1) The QB premium is **explained and is not a bug** — it is a rushing-QB regime
+effect, correctly computed. (2) It is **not, on this evidence, a defensible edge**: the CI overlaps
+consensus, and the single most recent season contradicts it outright. The board's QB ranking should
+be treated as "consensus is probably fine here" rather than as a +20 signal to act on. (3) Two
+methodology gaps are now documented and test-pinned but **deliberately not fixed here** — flat
+season pooling with no recency weight, and the log-linear misspecification. Both are estimator
+changes that require the Statistician + Red-team gate (CLAUDE.md §8), not a backend patch.
+
+**Evidence.** `tests/test_qb_board_delta.py`, 9 tests, all passing. Diagnostics are reproducible:
+`experiments/qb_board_delta_diagnostic.py` and `experiments/qb_board_delta_uncertainty.py`.
