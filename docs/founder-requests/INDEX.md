@@ -5,11 +5,11 @@ Per-request files in this directory are the source of truth. Edit a request's ow
 `STATUS:` line, then re-run sync. Protocol: [`README.md`](README.md).
 Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests.md).
 
-**36 requests since freeze.**
+**37 requests since freeze.**
 
 ---
 
-## NEW — 26
+## NEW — 27
 
 | ID | Subject | Raised | Source |
 |---|---|---|---|
@@ -39,6 +39,7 @@ Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests
 | [FR-049](FR-049-tabs-in-the-draft-middle-pane-including-recommen.md) | Tabs in the draft middle pane including recommen | 2026-07-29 | chat 2026-07-29, PM session |
 | [FR-050](FR-050-show-vbd-in-the-draft-player-list.md) | Show vbd in the draft player list | 2026-07-29 | chat 2026-07-29, PM session |
 | [FR-051](FR-051-show-value-over-the-player-expected-at-my-next-p.md) | Show value over the player expected at my next p | 2026-07-29 | chat 2026-07-29, PM session |
+| [FR-052](FR-052-third-league-identified-as-yahoo-roster-and-stat.md) | Third league identified as yahoo roster and stat | 2026-07-29 | chat 2026-07-29, PM session, Yahoo screenshots |
 
 ## SCOPING — 1
 
