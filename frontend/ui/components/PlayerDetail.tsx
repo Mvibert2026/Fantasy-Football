@@ -267,6 +267,53 @@ export function PlayerDetail({
               </p>
             )}
 
+            {/* Contract 1.12.0 (thread 073): suspension state, rendered only when
+                a confirmed suspension is on file. Every live row is false today
+                (the curated list is empty -- ADR-053), so this block's absence
+                everywhere is the correct current state. Pending-appeal rows are
+                deliberately NOT point-adjusted upstream; say so rather than
+                showing an adjusted number that does not exist. */}
+            {row.raw.suspension_flag ? (
+              <div
+                data-testid="suspension-note"
+                style={{ marginTop: 9, border: '1px solid var(--down)', padding: '8px 10px' }}
+              >
+                <div style={{ fontSize: 10, letterSpacing: '.08em', color: 'var(--down)' }}>
+                  SUSPENSION ON FILE
+                </div>
+                <div style={{ marginTop: 4, fontSize: 12.5, lineHeight: 1.5 }}>
+                  {row.raw.suspension_adjustment_note === 'games_adjusted' ? (
+                    <>
+                      Suspended{' '}
+                      {row.raw.suspension_games != null
+                        ? `${row.raw.suspension_games} games`
+                        : '(game count missing from export)'}
+                      .{' '}
+                      {row.raw.projected_points_suspension_adjusted != null ? (
+                        <>
+                          Season projection adjusted to{' '}
+                          <span className="num">
+                            {decimal(row.raw.projected_points_suspension_adjusted)}
+                          </span>{' '}
+                          pts for the games missed.
+                        </>
+                      ) : (
+                        'No adjusted projection in the export.'
+                      )}
+                    </>
+                  ) : row.raw.suspension_adjustment_note === 'not_adjusted_pending_appeal' ? (
+                    'Appeal pending — games are not final, so the projection is deliberately not adjusted.'
+                  ) : (
+                    'Suspension flagged without a recognised adjustment note.'
+                  )}
+                </div>
+                <div className="num" style={{ marginTop: 5, fontSize: 9, color: 'var(--dim2)' }}>
+                  board.json:suspension_flag · board.json:suspension_games ·
+                  board.json:projected_points_suspension_adjusted
+                </div>
+              </div>
+            ) : null}
+
             {/* 4. Availability at your picks. */}
             <SectionHeader label="AVAILABILITY AT YOUR PICKS" />
             {nextUserPick === null ? (

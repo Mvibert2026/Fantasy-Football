@@ -2792,3 +2792,122 @@ it). docs/handoffs/OPEN.md updated same session. docs/CURRENT-STATE.md updated i
 (contract-version lines, thread-074 status). No permission prompts encountered. No rule invented
 beyond normal judgment calls (field names, doc backfill scope) already covered by the standing
 rules.
+
+---
+
+## 2026-07-28 — Overnight Phase 3, frontend chain (threads 069/073), isolated worktree
+
+Branch `frontend/069-073-trace-registry-1-12-0` (worktree `phase3-frontend-069-073`, cut from
+`main` @ `8bdf996`). Code at `0da321f`; docs in the follow-up commit.
+
+**Done, per the mandate:**
+- Trace registry reconciled to contract **1.12.0**: `TRACE_CONTRACT` 1.9.0 -> 1.12.0 with an
+  audited changelog entry; `roster_status` + the four suspension fields registered on player
+  rows; `scoring_format`/`scoring_format_note` registered in a new `BOARD_HEADER_TRACE_FIELDS`
+  list (a top-level path in `BOARD_TRACE_FIELDS` would trip that registry's dropped-field
+  check). `EXPECTED_CONTRACT` (contract.ts) 1.8.0 -> 1.12.0.
+- **The two red-by-design trace-contract tests went green with zero edits to the tests** —
+  the tripwire fired exactly as designed. Frontend suite **201 passed / 0 failed** (22 files;
+  was 192/2 measured at session start). Smoke harness 16/16. `tsc -b --noEmit` clean.
+- Rendering: Board header now shows the export-confirmed scoring format beside the consensus
+  source (`fantasypros_csv_2026draft · half ppr · ...`; null renders "scoring format
+  unconfirmed"); SUSP badge on any row with `suspension_flag: true`; PlayerDetail suspension
+  block distinguishing `games_adjusted` from `not_adjusted_pending_appeal`. Live rows are all
+  `false` today (ADR-053 verified-empty list) so the live app correctly shows neither; the
+  rendering states are unit-tested on synthetic rows. Screenshot proof committed:
+  `frontend/e2e/artifacts/board-069-scoring-format.png`,
+  `player-detail-073-no-suspension.png` (real Chromium via `e2e/verify-069-073.mjs`; the
+  sandbox Browser pane still cannot composite, same as thread 058).
+- Pre-mortem checklist (`docs/reviews/fable-draft-day-premortem-2026-07-27.md`) T-1d and T-2h
+  sections: dev-server-only rule (no `vite preview`/dist — autoSync is dev-middleware only)
+  and the autoSync fails-open console-only gap, with the before-30-August in-app-visibility
+  requirement captured as **FR-017** in `docs/founder-requests.md`.
+- Threads: 069 RESOLVED, 073 RESOLVED, 066 given a partial-action reply (registry entry only;
+  its UI-treatment ask deliberately untouched, stays OPEN). `tools/handoffs.py sync`: 76
+  threads, 47 open.
+
+**Not done, deliberately:** thread 074 (blocked on the backend chain, per mandate); thread
+066's roster_status UI treatment; the FR-017 in-app autoSync failure surface (needs its own
+pickup, hard date 2026-08-30).
+
+**Rules invented / judgment calls (logged in `docs/ideas-inbox.md`):** registering
+`roster_status` was treated as in-mandate because the tripwire test names it; a temporary
+worktree entry was added to the main checkout's tracked `.claude/launch.json` for live
+verification and reverted in-session (main tree verified back to pre-session state). Defect
+noted, not fixed: Board header hardcodes "of 378 players loaded" (reads "511 of 378" today).
+
+**Permission prompts hit: none.**
+
+---
+
+## 2026-07-28 — App-down report after the `frontend/069-073-trace-registry-1-12-0` merge into `main`
+
+Founder reported the app stuck on "Loading the exports…", the league selector stuck on
+"LOADING…", and the freshness banner reading "snapshot freshness not exported by backend"
+despite thread 074 (backend) having landed that export in the meantime. `git status` showed
+main mid-merge (`MERGE_HEAD` present) of the frontend chain above, most files already staged
+but `docs/CURRENT-STATE.md` still carrying unresolved conflict markers and three other docs
+resolved-but-unstaged.
+
+**Investigated live, not from reading code:** opened the already-running dev server
+(localhost:5173, another session's) in the Browser pane and read the actual console/network
+state, per instruction. No console errors at any point. The literal "stuck loading" / "LOADING…"
+state reproduced exactly once, immediately after a navigation, and resolved itself within ~2-3s
+once the (511-row) board.json fetch completed — a normal loading window the founder's report
+caught mid-flight, not a hang. `frontend/public/data` vs `data/export`: both already at contract
+1.13.0, manifest `synced_utc` newer than the export mtime — already in sync, contrary to the
+banner's claim about re-copying (that banner text is unconditional, not a live staleness check).
+
+**Actual defect found:** `frontend/ui/data/contract.ts`'s `EXPECTED_CONTRACT` and
+`frontend/ui/data/trace-fields.ts`'s `TRACE_CONTRACT` were still pinned to `1.12.0` (the
+frontend chain's own bump) while `data/export/board.json` had moved to `1.13.0` in the meantime
+(backend's thread-074 session, landed on `main` underneath the frontend branch before this
+merge). This is informational-only at runtime (`league.ts` just renders a drift note, doesn't
+throw) — confirmed by reproducing both the mismatched and matched states live — but it fails
+`ui/__tests__/trace-fields.test.ts`'s pin-check test, which is the real, correct-behavior
+tripwire here. The founder's hypothesis in the task (a new *per-league consensus source field*
+tripping typed presence checking) was checked and ruled out: 1.13.0's actual diff is five
+top-level snapshot-freshness fields only (thread 074), no player-row shape change;
+`consensus_source` has existed since 1.11.0.
+
+**Fixed:**
+- `EXPECTED_CONTRACT` / `TRACE_CONTRACT` bumped `1.12.0` -> `1.13.0`, changelog entry added,
+  the five new fields registered in `BOARD_HEADER_TRACE_FIELDS`, `RawBoard` typed for them
+  (`ui/data/types.ts`).
+- `RefreshData.tsx`'s freshness banner: was a hardcoded, unconditional "snapshot freshness not
+  exported by backend" string — false as of thread 074. Now reads the real
+  `snapshot_age_days`/`snapshot_max_age_days`/`snapshot_stale` fields when present (renders
+  "snapshot fresh (1d old, max 3d)" today) and falls back to the old honest-gap text only for a
+  pre-1.13.0 export. `App.tsx` threads the three new fields down. Existing `refresh.test.tsx`
+  assertions (old text, no new props passed) still pass unmodified — the fallback path is exactly
+  what those tests exercise.
+- Full frontend suite: 201/201 passing (3 apparent failures on a full parallel run were a 5s
+  test-timeout artifact of machine load — confirmed passing in isolated re-runs, not a
+  regression).
+- Separately, while reading `league_config.py` for the second ask below: found
+  `build_current_league()` still hardcoded `name="Primary league (10-team half-PPR)"` /
+  `platform="other"` — a pre-ADR-052 placeholder never updated once the live Yahoo platform
+  verification (2026-07-27, CLAUDE.md SS7) confirmed the real league is "Westwood", ID 154693.
+  Fixed to `name="Westwood"`, `platform="yahoo"`; regenerated `data/export/league.json`;
+  synced to `frontend/public/data/`. Backend suite subset (league_config/export_contract/
+  league_builder, 72 tests) and full frontend suite re-verified green after. League selector now
+  reads "Westwood" instead of the generic placeholder once the default league loads (confirmed
+  live in-browser), addressing the founder's "should not say DEFAULT LEAGUE when a real league
+  config exists" ask — this *is* that league (single real league, per CLAUDE.md SS1 scope), not a
+  second selectable entry; there is no separate Westwood config under `data/leagues/`.
+- Completed the merge: resolved `docs/CURRENT-STATE.md`'s two conflict blocks (combined both
+  branches' true state — threads 069/073/074 all resolved, contract 1.13.0, plus this session's
+  league-identity fix); the other three docs (`founder-requests.md`, `handoffs/OPEN.md`, this
+  file) were already hand-resolved with no markers, just unstaged.
+
+**Not done, flagged not fixed:** `tools/handoffs.py check` fails — threads 069 and 073 are
+`RESOLVED` with no reply, which the checker requires an artifact for. Pre-existing on the
+frontend branch, unrelated to the app-down report; left for `frontend` to reply on those threads
+rather than silently patched here. Merge commit itself left uncommitted, staged and ready —
+did not commit per standing instruction not to commit without being asked.
+
+**Verification:** board renders live (511 rows, Westwood league name, correct freshness banner),
+confirmed via the Browser pane against the already-running dev server, not asserted from reading
+code alone.
+
+**Permission prompts hit: none.**

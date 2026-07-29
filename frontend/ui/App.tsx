@@ -203,6 +203,9 @@ export function App() {
           <RefreshData
             onApplied={() => setReloadKey((k) => k + 1)}
             boardGeneratedUtc={data?.board.generated_utc ?? null}
+            snapshotAgeDays={data?.board.snapshot_age_days ?? null}
+            snapshotMaxAgeDays={data?.board.snapshot_max_age_days ?? null}
+            snapshotStale={data?.board.snapshot_stale ?? null}
           />
         }
       />

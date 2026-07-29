@@ -171,8 +171,11 @@ def build_current_league() -> LeagueConfig:
     nothing regresses."""
     return LeagueConfig(
         league_id=PRIMARY_LEAGUE_ID,
-        name="Primary league (10-team half-PPR)",
-        platform="other",
+        # Real identity confirmed against the live platform 2026-07-27 (ADR-052):
+        # league "Westwood", Yahoo, ID 154693. Was a generic placeholder name/platform
+        # here through the verification -- CLAUDE.md SS7 and this dataclass had drifted.
+        name="Westwood",
+        platform="yahoo",
         teams=10,
         scoring=_current_league_scoring(),
         starters={"QB": 1, "RB": 2, "WR": 3, "TE": 1, "DEF": 1},

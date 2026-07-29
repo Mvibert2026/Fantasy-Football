@@ -73,3 +73,18 @@ newest at the bottom.
   League IDs confirmed from screenshots: Westwood 154693 (primary),
   Ethan's Expert 834236 (10 teams, not the platform's 12).
   tests/test_scoring.py 19 passed after landing.
+- 2026-07-28 · (069/073 frontend chain) Registered `roster_status` in the
+  trace registry alongside the mandated 069/073 fields, because the
+  red-by-design tripwire test names it explicitly — the tests cannot go
+  green without it. Thread 066's fuller UI-treatment ask is NOT done and
+  066 stays OPEN; a no-action-on-UI note appended there.
+- 2026-07-28 · (069/073 frontend chain) Temporarily added a
+  `frontend-069-073-worktree` entry (port 5190) to the main checkout's
+  tracked `.claude/launch.json` for live browser verification of the
+  worktree build, then reverted it in the same session; `git status` on
+  the main tree confirmed byte-identical to its pre-session state.
+- 2026-07-28 · (069/073 frontend chain) Defect noted, not fixed (out of
+  mandate): Board.tsx's provenance line hardcodes "of 378 players
+  loaded" while the live board now carries 511 rows — the header
+  currently reads "511 of 378 players loaded". One-line fix for whoever
+  next touches the Board header.

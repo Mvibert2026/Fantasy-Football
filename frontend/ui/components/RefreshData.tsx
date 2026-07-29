@@ -39,23 +39,29 @@ const CHANGE_LABEL: Record<ArtifactChange['change'], string> = {
 export function RefreshData({
   onApplied,
   boardGeneratedUtc = null,
+  snapshotAgeDays = null,
+  snapshotMaxAgeDays = null,
+  snapshotStale = null,
 }: {
   onApplied: () => void;
   /**
-   * Task 1 (data freshness on load). Real, named field: `board.json:generated_utc`
-   * -- the timestamp the export was written, threaded down from App's loaded
-   * Dataset. Deliberately NOT the same claim as "is the underlying ranking
-   * snapshot stale": `src/freshness.py`'s T5 check (as_of_date/age_days/stale,
-   * measured against `rankings.as_of_date`) runs on every board build and is
-   * printed to the build console, but is never written into board.json or any
-   * other export artifact -- confirmed by reading `export_contract.py` directly,
-   * not assumed. So that number literally does not exist on the client to show.
-   * Rather than invent a second, client-side notion of "current" (or silently
-   * omit the question), the banner below states plainly that the export
-   * timestamp is all that's available and names why. Null (dataset not loaded
-   * yet) renders as "-", never a fabricated placeholder date.
+   * Real, named field: `board.json:generated_utc` -- the timestamp the export was written,
+   * threaded down from App's loaded Dataset. Null (dataset not loaded yet) renders as "-",
+   * never a fabricated placeholder date.
    */
   boardGeneratedUtc?: string | null;
+  /**
+   * Contract 1.13.0 (thread 074). `board.json:snapshot_age_days` / `snapshot_max_age_days` /
+   * `snapshot_stale` -- the `FreshnessResult` `src/freshness.py` computes on every board build
+   * (as_of_date/age_days/stale, measured against `rankings.as_of_date`), now attached to the
+   * export instead of only printed to the build console. Distinct from `boardGeneratedUtc`,
+   * which is the export-file write time, not the underlying ranking snapshot's age. Null when
+   * the loaded export predates 1.13.0 or the dataset hasn't loaded yet -- the banner falls back
+   * to naming that gap explicitly rather than showing a stale claim as if it were current.
+   */
+  snapshotAgeDays?: number | null;
+  snapshotMaxAgeDays?: number | null;
+  snapshotStale?: boolean | null;
 }) {
   const [report, setReport] = useState<RefreshReport | null>(null);
   const [busy, setBusy] = useState(false);
@@ -93,20 +99,28 @@ export function RefreshData({
     }
   }
 
+  const hasFreshness = snapshotAgeDays !== null && snapshotMaxAgeDays !== null && snapshotStale !== null;
+  const freshnessText = hasFreshness
+    ? `snapshot ${snapshotStale ? 'STALE' : 'fresh'} (${snapshotAgeDays}d old, max ${snapshotMaxAgeDays}d)`
+    : 'snapshot freshness not exported by backend';
+  const freshnessTitle = hasFreshness
+    ? 'board.json:generated_utc is the export-file timestamp. snapshot_age_days/snapshot_max_age_days/' +
+      'snapshot_stale are a separate claim -- src/freshness.py\'s check (T5) against ' +
+      'rankings.as_of_date, attached to the export since contract 1.13.0 (thread 074).'
+    : 'board.json:generated_utc is the export-file timestamp. It is NOT the same claim as ' +
+      '"is the underlying ranking snapshot stale" -- src/freshness.py computes that (T5) on ' +
+      'every board build but this export predates contract 1.13.0, so it does not carry that ' +
+      'result. This is an honest gap, not a silent omission.';
+
   return (
     <div ref={wrapperRef} style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 8 }}>
       <span
         className="num"
         data-testid="freshness-note"
-        title={
-          'board.json:generated_utc is the export-file timestamp. It is NOT the same claim as ' +
-          '"is the underlying ranking snapshot stale" -- src/freshness.py computes that (T5) on ' +
-          'every board build but does not currently write it into any export artifact, so this ' +
-          'app cannot show it. This is an honest gap, not a silent omission.'
-        }
+        title={freshnessTitle}
         style={{ fontSize: 11, color: 'var(--dim2)', whiteSpace: 'nowrap' }}
       >
-        {`exported ${boardGeneratedUtc ?? '—'} · snapshot freshness not exported by backend`}
+        {`exported ${boardGeneratedUtc ?? '—'} · ${freshnessText}`}
       </span>
       <button onClick={refresh} disabled={busy} title="Re-read data/export/ and report what changed">
         {busy ? 'Checking…' : 'Refresh data'}

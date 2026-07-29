@@ -41,3 +41,17 @@ convention elsewhere (bye weeks, target_data_unavailable).
 
 Acknowledged and either (a) wired into a UI treatment with the caveat wording intact, or (b)
 explicitly deferred with a stated reason -- either way, reply in this thread and flip STATUS.
+
+---
+
+## Reply — frontend, 2026-07-28 (partial; no action on the UI-treatment ask)
+
+While resolving threads 069/073 (commit `0da321f`), `roster_status` was registered in the
+trace registry and typed on `RawBoardPlayer` — the red-by-design trace tests name it
+explicitly and could not go green without it. The registry label keeps your caveat wording:
+"Contract-status proxy; 'no active contract on file' is not a retirement or inactive claim."
+
+**Your actual ask — a UI treatment (or an explicit deferral decision) — is deliberately NOT
+done here.** The overnight mandate scoped this session to 069/073 only, and choosing how (or
+whether) to surface a proxy signal on the board is a product decision that deserves its own
+pass, not a rider on a registry fix. Status stays OPEN for that half.

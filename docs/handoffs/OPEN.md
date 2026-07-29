@@ -49,7 +49,7 @@ not an omission. Start your session at your own heading.
 | [076](076-structural-gap-thread-id-allocator-race-across-c.md) | Structural gap thread id allocator race across c | `pm` | OPEN | 0d | none |
 | [077](077-adp-backfill-scheduled-task-landed-frontend-test.md) | Adp backfill scheduled task landed frontend test | `data-ops` | OPEN | 0d | none |
 
-### `frontend` — 18 waiting
+### `frontend` — 16 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
@@ -69,8 +69,6 @@ not an omission. Start your session at your own heading.
 | [049](049-draft-mode-gap-list.md) | Draft mode gap list | `pm` | OPEN | 0d | none |
 | [059](059-on-deck-recommendations.md) | On deck recommendations | `pm` | OPEN | 0d | FR-006 (draft chatbot), calm-preparation use case |
 | [066](066-contract-1-10-0-board-json-rows-gained-roster-st.md) | Contract 1 10 0 board json rows gained roster st | `backend` | OPEN | 0d | none |
-| [069](069-board-json-contract-1-11-0-new-scoring-format-fi.md) | Board json contract 1 11 0 new scoring format fi | `backend` | OPEN | 0d | none |
-| [073](073-board-json-contract-1-12-0-suspension-fields.md) | Board json contract 1 12 0 suspension fields | `backend` | OPEN | 0d | none |
 
 ### `data-ops` — 7 waiting
 
@@ -166,5 +164,7 @@ _Nothing waiting on you._
 | [063](063-suggester-reopen-regression.md) | Suggester reopen regression | `pm` → `frontend` |
 | [065](065-mailbox-tooling-build-for-062.md) | Mailbox tooling build for 062 | `librarian` → `backend` |
 | [074](074-export-t5-freshness-result-onto-board-json.md) | Export t5 freshness result onto board json | `frontend` → `backend` |
+| [069](069-board-json-contract-1-11-0-new-scoring-format-fi.md) | Board json contract 1 11 0 new scoring format fi | `backend` → `frontend` |
+| [073](073-board-json-contract-1-12-0-suspension-fields.md) | Board json contract 1 12 0 suspension fields | `backend` → `frontend` |
 | [075](075-defect-fabricated-reconstruction-of-thread-067-u.md) | Defect fabricated reconstruction of thread 067 u | `pm` → `pm` |
 

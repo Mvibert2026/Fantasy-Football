@@ -172,8 +172,16 @@ export function Board({
 
   // The prototype's own provenance-line shape (line 2409): source, state, generated
   // timestamp, and a real count -- every piece a sourced value, nothing invented.
+  // Thread 069: the scoring format sits beside the source it was confirmed for.
+  // board.json:scoring_format is null (or absent, pre-1.11.0) when the source
+  // rows carry no confirmed format -- say so instead of guessing one.
+  const scoringFormat =
+    data.board.scoring_format != null
+      ? data.board.scoring_format.replace(/_/g, ' ')
+      : 'scoring format unconfirmed';
   const provenance =
-    `${data.board.consensus_source} · ${data.board.consensus_state.replace(/_/g, ' ')} · ` +
+    `${data.board.consensus_source} · ${scoringFormat} · ` +
+    `${data.board.consensus_state.replace(/_/g, ' ')} · ` +
     `generated ${data.board.generated_utc} · ${rows.length} of 378 players loaded`;
 
   return (
@@ -516,6 +524,7 @@ function BoardRowLine({
           }}
         >
           <Value cell={row.name} render={(v) => v} />
+          {row.raw.suspension_flag ? <SuspBadge row={row} /> : null}
         </span>
         <span style={{ letterSpacing: '.045em', color: POSITION_COLOR[row.raw.position] ?? 'var(--txt)', fontWeight: 600 }}>
           <Value cell={row.position} render={(v) => v} />
@@ -577,6 +586,42 @@ function BoardRowLine({
         </div>
       ) : null}
     </div>
+  );
+}
+
+/**
+ * Contract 1.12.0 (thread 073): a confirmed suspension on file gets a badge on
+ * the row itself, not only inside the detail sheet -- the pre-mortem's #3
+ * failure mode is a suspended player sitting unflagged in the top 60. Rendered
+ * only when board.json:suspension_flag is true; every live row is false today
+ * (the curated list is empty), so the badge's absence everywhere is the
+ * correct current state, not a dead branch.
+ */
+function SuspBadge({ row }: { row: BoardRow }) {
+  const note = row.raw.suspension_adjustment_note;
+  const games = row.raw.suspension_games;
+  const title =
+    note === 'not_adjusted_pending_appeal'
+      ? 'Suspension on file — appeal pending, projection deliberately not adjusted · board.json:suspension_flag'
+      : note === 'games_adjusted' && games != null
+        ? `Suspended ${games} games — projection adjusted · board.json:suspension_flag`
+        : 'Suspension on file · board.json:suspension_flag';
+  return (
+    <span
+      title={title}
+      style={{
+        marginLeft: 6,
+        fontSize: 9,
+        fontWeight: 600,
+        letterSpacing: '.08em',
+        color: 'var(--down)',
+        border: '1px solid var(--down)',
+        padding: '0 4px',
+        verticalAlign: 'middle',
+      }}
+    >
+      SUSP
+    </span>
   );
 }
 

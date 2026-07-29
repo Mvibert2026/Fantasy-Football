@@ -547,3 +547,23 @@ found in `docs/decisions.md` under that or any other label, and per the founder 
 covered this (recurring) capture even if it existed. **Needs a founder decision**: either get an
 actual ToS reply from FFC, or consciously accept the block indefinitely. Tracked in handoff thread
 078 (data-ops → pm).
+
+---
+
+## FR-017 · Draft day runs on the dev server only; make autoSync failure visible in-app
+
+**Raised:** 2026-07-28 (founder mandate for the overnight frontend chain, threads 069/073).
+**Status:** OPEN — checklist half done (pre-mortem T-1d and T-2h sections updated,
+2026-07-28); the in-app failure surface is unbuilt.
+
+Two connected directives:
+
+1. **Run the app via the dev server on draft day. Do NOT use `vite preview` or a built dist
+   bundle.** Auto-sync of `data/export/` -> `frontend/public/data/` runs only as dev-server
+   middleware (`frontend/server/autoSync.ts`); a built bundle snapshots its data at build time
+   and will silently serve a stale board. Captured as checklist items in
+   `docs/reviews/fable-draft-day-premortem-2026-07-27.md` (T-1d and T-2h).
+2. **autoSync currently fails open with a console-only error. Make that failure visible in-app
+   before 30 August.** Until it lands, the checklist's manual fallback is keeping the browser
+   console open. This is frontend work with a hard date; it was NOT built in the 069/073
+   session (out of that mandate's scope) and needs its own pickup.

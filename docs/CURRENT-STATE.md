@@ -30,13 +30,24 @@ via the shared `write_all` path; ADR-051: top-level `scoring_format`, `board_sou
 Primary board and `ethans_expert_league` both rebuilt at 511 players; 2026 rookies confirmed
 present with real ranks (Jeremiyah Love #33, Carnell Tate #70, Jordyn Tyson #84). Half-PPR yardage
 bonuses independently verified to stack against the live Yahoo platform (ADR-052) — see §7 of
-`CLAUDE.md`. Handoff threads 069 (scoring_format display) and 073 (suspension fields display) and
-the trace-field-registry gate (below) remain open to `frontend`, not touched this session. Thread
-074 (T5 freshness export) is now `RESOLVED` — see this doc's contract-version line above. `main`
-and `integration-2026-07-27` diverged independently this round (2 commits vs. 7) and required a
-founder-authorized merge rather than the fast-forward the standing runbook expects — see
-`docs/handoffs/076-...md` and this session's `docs/status.md` entry for the allocator-race root
-cause.
+`CLAUDE.md`. Handoff threads 069 (scoring_format display) and 073 (suspension fields display) are
+**RESOLVED** (frontend chain, branch `frontend/069-073-trace-registry-1-12-0` @ `0da321f`): the
+trace registry and `EXPECTED_CONTRACT` were pinned to 1.12.0 there, then re-pinned to **1.13.0**
+in this merge session once thread 074 landed on `main` underneath it (`ui/data/contract.ts`,
+`ui/data/trace-fields.ts`; the five new snapshot-freshness fields registered in
+`BOARD_HEADER_TRACE_FIELDS` and wired into `RefreshData.tsx`, which previously asserted freshness
+"is not exported by backend" — false the moment thread 074 landed, now reads the real
+`snapshot_age_days`/`snapshot_max_age_days`/`snapshot_stale` values). Thread 074 (T5 freshness
+result export to `board.json`) is **RESOLVED** — see this doc's contract-version line above.
+`main` and `integration-2026-07-27` diverged independently this round (2 commits vs. 7) and
+required a founder-authorized merge rather than the fast-forward the standing runbook expects —
+see `docs/handoffs/076-...md` and this session's `docs/status.md` entry for the allocator-race
+root cause. Separately, this merge session also caught and fixed a real identity bug unrelated to
+either branch: `src/league_config.py`'s `build_current_league()` still hardcoded
+`name="Primary league (10-team half-PPR)"` / `platform="other"` — a pre-ADR-052 placeholder that
+was never updated once the live platform verification named the real league ("Westwood", Yahoo,
+ID 154693). Now `name="Westwood"`, `platform="yahoo"`; `data/export/league.json` regenerated and
+re-synced to `frontend/public/data/`.
 
 ---
 
@@ -46,10 +57,10 @@ cause.
 |---|---|---|
 | Backend branch / commit | `main`, `9d8e09b52ff1a96ce7e2d8dfc8f427f96507ed59` | Pushed, in sync with `origin/main` (remote: `github.com/Mvibert2026/Fantasy-Football`) |
 | Backend tests | **614 passing, 0 failures** | Full suite, `pytest -q`, single run, ~533s, real `data/nfl.db`, run this session post-merge at `9d8e09b`. |
-| Agent infrastructure | **Live** | Six subagents in `.claude/agents/` (backend, frontend, data-ops, strategist, researcher, librarian), `/inbox` command, mailbox tooling at `tools/handoffs.py` + `tools/sprint_status.py`, mailbox health enforced in the test suite (`tests/test_handoffs.py`) — **76 threads, 49 open, 0 stale** (`tools/handoffs.py check`, 2026-07-27, after this session registered threads 075/076 for the two overnight-round defects) |
+| Agent infrastructure | **Live, mailbox check currently FAILING** | Six subagents in `.claude/agents/` (backend, frontend, data-ops, strategist, researcher, librarian), `/inbox` command, mailbox tooling at `tools/handoffs.py` + `tools/sprint_status.py`, mailbox health enforced in the test suite (`tests/test_handoffs.py`) — `tools/handoffs.py check` (2026-07-28, this merge session) fails: threads 069 and 073 are marked `RESOLVED` with no reply, which the checker requires an artifact for. Not fixed in this session — flagged for `frontend` to reply on those threads before the next `tools/handoffs.py sync`. Thread count therefore not re-stated here rather than reported from a failing check. |
 | Data contract | **1.13.0** | `CONTRACT_VERSION` in `src/export_contract.py`, read directly. `board.json` carries `scoring_format` (ADR-051), `roster_status` (ADR-050), four suspension fields (ADR-053), and five snapshot-freshness fields (thread 074). |
 | Frontend location | `frontend/` subdirectory of this repo | Merged from `frontend-prep` via `git subtree add`, full history preserved. No longer a separate working copy. |
-| Frontend tests | **192 passing, 2 failing** (21 files) | Full suite, `npm test` (runs `pretest`'s export sync first — a bare `npx vitest run` fails all 16 data-backed files with `public/data/_manifest.json` ENOENT), single run, ~62s, re-run this session post-merge. The 2 failures are still `ui/__tests__/trace-fields.test.ts` — **red by design**: `TRACE_CONTRACT` is still pinned to `1.9.0` against the now-`1.12.0` export, and the trace registry doesn't know `roster_status` or the four suspension fields yet. Not fixed here — handoff 069/073 territory, not touched this session. |
+| Frontend tests | **201 passing, 0 failing** (22 files) | Full suite, `npx vitest run` (needs `node scripts/sync-exports.mjs` first, or use `npm test` which runs it via `pretest`), single run, ~59s in isolation, 2026-07-28 in this merge session post-fix. `TRACE_CONTRACT` and `EXPECTED_CONTRACT` re-pinned `1.12.0` → `1.13.0` this session (was stale against the real `data/export/board.json`, failing `ui/__tests__/trace-fields.test.ts`'s pin check). Confirmed in-browser this was a test-time failure, not the founder's reported runtime hang: the mismatch is informational only at runtime (`contract.ts`'s own doc comment), and the app rendered the board correctly against the dev server both before and after the pin bump — see `docs/status.md` this session's entry for what the "stuck loading" report actually was. No red-by-design tests remain in the frontend suite. |
 | Python modules | **41** in `src/` | `ls src/*.py \| wc -l` |
 | Export artifacts | **11** top-level files in `data/export/` | `ls data/export/*.json \| wc -l` |
 | Config matrix | 26 dirs under `data/export/` | board + league + availability stub only; **hazard model not rerun per config**; count is a raw directory count, not inspected for which are real league configs vs. scratch. The 26th is `ethans_expert_league` (real league 2, see below), not a scratch probe config. |
