@@ -79,22 +79,27 @@ console.log('FR-036 "The Testers" present after reload (same league re-selected)
 await page.screenshot({ path: `${OUT}/fr036-opponents-prep-after-reload.png`, fullPage: true });
 
 // ---------- FR-034: switch to Draft mode, confirm slot selector still there ----------
-await click('Draft');
-await page.waitForTimeout(1200);
+// NOT `click('Draft')` -- "text=Draft" case-insensitively matches the "DRAFT
+// ASSISTANT" wordmark too, and .first() grabbed that instead of the mode button,
+// silently doing nothing. Exact role-based match for the actual button.
+await page.getByRole('button', { name: 'Draft', exact: true }).click();
+await page.waitForTimeout(2500);
 await page.screenshot({ path: `${OUT}/fr034-slot-selector-draft-mode.png`, fullPage: false, clip: { x: 0, y: 0, width: 1440, height: 46 } });
 const t5 = await page.locator('body').innerText();
 console.log('Draft mode top bar snippet:', t5.slice(0, 200));
 
 // ---------- FR-036: Opponents tab inside Draft mode (AdaptedOpponentsPane) ----------
-const draftOpponentsTab = page.locator('button:has-text("Opponents")').first();
-if (await draftOpponentsTab.count() > 0) {
-  await draftOpponentsTab.click();
-  await page.waitForTimeout(600);
+const draftOpponentsCount = await page.locator('button:has-text("Opponents")').count();
+console.log('Draft-mode "Opponents" buttons found:', draftOpponentsCount);
+if (draftOpponentsCount > 0) {
+  await page.locator('button:has-text("Opponents")').first().click();
+  await page.waitForTimeout(800);
   await page.screenshot({ path: `${OUT}/fr036-opponents-draft-mode.png`, fullPage: true });
   const t6 = await page.locator('body').innerText();
   console.log('FR-036 "The Testers" visible inside Draft mode tab:', t6.includes('The Testers'));
 } else {
-  console.log('No Opponents tab found inside Draft mode');
+  await page.screenshot({ path: `${OUT}/DEBUG-draft-mode-no-opponents-tab.png`, fullPage: true });
+  console.log('No Opponents tab found inside Draft mode -- see DEBUG screenshot');
 }
 
 console.log('console errors seen:', consoleErrors.filter((e) => !e.includes('ERR_CONNECTION_RESET') && !e.includes('404')));
