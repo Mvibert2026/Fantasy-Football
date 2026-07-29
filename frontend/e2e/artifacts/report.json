@@ -1,11 +1,11 @@
 {
- "when": "2026-07-29T05:00:23.992Z",
- "failures": 0,
+ "when": "2026-07-29T16:04:21.659Z",
+ "failures": 1,
  "report": [
   {
    "name": "dev server reachable",
    "ok": true,
-   "detail": "http://localhost:5191"
+   "detail": "http://localhost:5199"
   },
   {
    "name": "app rendered content",
@@ -94,8 +94,8 @@
   },
   {
    "name": "no console errors during the loop",
-   "ok": true,
-   "detail": ""
+   "ok": false,
+   "detail": "Failed to load resource: net::ERR_CONNECTION_RESET | Failed to load resource: the server responded with a status of 404 (Not Found) | Failed to load resource: net::ERR_CONNECTION_RESET"
   }
  ]
 }
