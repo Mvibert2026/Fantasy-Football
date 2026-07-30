@@ -106,3 +106,39 @@ What a serious, well-read opponent already has.
 | T1-32 | Pre-snap motion rates | blocked (at player level) | Registry rates it Low edge / "largely arbitraged." External evidence agrees on both counts: McFarland reports a large per-play effect (WRs +45% PPR per route in motion) but **FTN's `is_motion` has no player attribution**, so it is unresolvable with free data at the player level the registry needs. Team-level motion rate is computable but a different, coarser object. | internal — `test-registry.md` #31/#32 note; external — `analyst-factor-sweep-2026-07-30.md` N23 [VERIFIED] | No |
 
 ---
+
+## Section 3 — Tier 2, league-specific (our structural edge) (`docs/test-registry.md` #33–#42)
+
+Nobody else does these, because they only matter in *our* league.
+
+| # | Factor | Disposition | Reason | Provenance | Ever run? |
+|---|---|---|---|---|---|
+| T2-33 | Re-score all projections under this league's exact rules (yardage bonuses, −2 INT) | included | Positional value structure re-scored (`src/make_board.py` → `data/board_{season}.csv`). Player-level re-scoring still blocked by T0-2 (needs component-level projections). Directionally positive: mean +84.6 VBD, positive 3 of 4 seasons (dev+holdout), but **not statistically established at n=4** — sign-test floor p=0.125 (ADR-025, correcting an earlier reversed-sign claim). | internal — `test-registry.md` #33/§Tier2 note; `decisions.md` ADR-016/ADR-017/ADR-025 | Yes, partial (positional level only) |
+| T2-34 | Replacement levels RB30 / WR40 / TE10 / QB10 | included | Shipped — `scoring.ReplacementLevels()` derived from measurement, used unmodified by board and backtest. Revised from RB28/WR41/TE11 by measurement (ADR-029); the change is inside measurement noise except at TE. | internal — `test-registry.md` #34; `decisions.md` ADR-029 | Yes |
+| T2-35 | Global flex baseline (~80th flex-eligible replacement, one figure vs. per-position RB30/WR40/TE10) | rejected-with-evidence | **NULL** (PR-006). Season-paired realised-points margin +1.7 [−67.6,+74.8] at σ=10, −6.7 [−51.2,+37.8] at σ=20 — sign flips between noise settings, both CIs wide around zero, well under the ~8.5-pt simulation noise floor at 300 sims/cell. n=4 seasons is the binding constraint, not simulation count. No change to production `ReplacementLevels` (ADR-029 stays). | internal — `test-registry.md` #35; `docs/ranking/valuation-tests-35-36-precommit.md`; `docs/preregistration/PR-006-global-flex-baseline.md` | Yes |
+| T2-36 | VONA with pick-gap awareness (3.5x alternation for `USER_SLOT=3`, vs. a gap-blind one-round constant) | rejected-with-evidence | **NULL on realised-points outcome** (PR-008): margin −37.2 [−118.8,+36.0] at σ=10, −2.8 [−48.0,+37.1] at σ=20, CIs include zero. **But decision-divergence CONFIRMED**: the two arms pick a different full roster in 100% of paired simulated drafts, every one of 8 season×σ cells — gap-awareness changes *which* player almost every time without reliably changing whether the resulting roster is better at this sample size. Secondary, uncorrected finding: this VONA formulation underperforms plain BPA-by-VBD by ~110–125 pts both σs (CIs exclude zero, but sign test floors at p=0.125 and doesn't survive BH) — a caution, not a confirmed loss. Not wired into any live strategy. | internal — `test-registry.md` #36; `docs/ranking/valuation-tests-35-36-precommit.md`; `docs/preregistration/PR-008-vona-pick-gap-awareness.md` | Yes |
+| T2-37 | League-biased ADP (this league's format + manager priors vs. a generic 2WR/1FLEX/K Yahoo board) | untested | Not run. High edge rating is a prior, not a measurement. | internal — `test-registry.md` #37 | No |
+| T2-38 | Bonus-threshold hit rates (does a player "clear" 100/150/200 more often than volume alone implies — a persistent "spike-week" trait) | rejected-with-evidence | **FALSIFIED** (PR-002). Receiving-100 WR YoY residual r = +0.041 [−0.018,+0.099], BH-adj p = 0.668. Rushing-100 RB r = +0.063 [−0.001,+0.124], BH-adj p = 0.336. 36 correlations run, 24 testable, **zero survived Benjamini-Hochberg**. n = 26 seasons, 1,541 WR pairs / 404 players — largest sample in the project. CI upper bounds cap the effect at ~1% of explained variance even optimistically — this rules a large effect out, not merely fails to find one. A regime-dependent near-miss (QB passing-300, 2012–2019: r=+0.265, raw p=0.002) reverses sign in 2020–2024 (r=−0.234) and was pre-committed to be disqualified by regime reversal. | internal — `test-registry.md` #38; `docs/preregistration/` PR-002 | Yes |
+| T2-39 | No-kicker effect on pool depth (one extra skill player per team drafted) | untested | Not run. | internal — `test-registry.md` #39 | No |
+| T2-40 | Post-draft players follow waiver rules (undrafted pool not instantly free — changes Wk 1 FAAB) | untested | Not run; manual/structural. | internal — `test-registry.md` #40 | No |
+| T2-41 | IR restriction (no direct waiver → IR; stashing costs a bench spot, not an IR spot) | untested | Not run; manual/structural. | internal — `test-registry.md` #41 | No |
+| T2-42 | Trade deadline Nov 28 (~Wk 12, caps the trade-to-improve path) | untested | Not run; manual/structural, Low edge rating (prior, not measured). | internal — `test-registry.md` #42 | No |
+
+---
+
+## Section 4 — Tier 5, considered and rejected without measurement (`docs/test-registry.md`)
+
+Listed by the registry so the rejection is explicit and revisitable. None of these carry a
+measured number — they are a priori scope judgments, which is why disposition is `excluded` rather
+than `rejected-with-evidence`.
+
+| Factor | Disposition | Reason | Provenance | Ever run? |
+|---|---|---|---|---|
+| Weather | excluded | Matters for in-season lineup decisions, not pre-draft ranking. Judgment call, no number. | internal — `test-registry.md` Tier 5 | No |
+| QB–WR stacking correlation | excluded | A DFS concept; in redraft H2H it mainly adds variance rather than expected value. Judgment call, no number. | internal — `test-registry.md` Tier 5 | No |
+| DFS ownership as a sentiment proxy | excluded | Different game, different incentives — ownership pressure doesn't exist in a redraft league. Judgment call, no number. | internal — `test-registry.md` Tier 5 | No |
+| Beat-writer sentiment scoring | excluded | High effort, low signal, hard to validate. Judgment call, no number. | internal — `test-registry.md` Tier 5 | No |
+| Nash-equilibrium drafting | excluded | Elegant, but opponents in this league aren't optimizing, so equilibrium is the wrong model for them. Judgment call, no number. | internal — `test-registry.md` Tier 5 | No |
+| Coaching scheme fit (zone vs. gap) | excluded | Real effect in principle, judged too noisy to act on at draft time. Cross-check: external N26 (run-concept mix, McFarland 2016–2025) measured outside zone at 0.48 PPR/att, inside zone 0.47 — a near-tie that arguably supports this rejection, though it measures a narrower slice (run-concept mix, not zone-vs-gap scheme fit generally). | internal — `test-registry.md` Tier 5; external — `analyst-factor-sweep-2026-07-30.md` N26 [VERIFIED] (partial cross-check only) | No (as originally framed) |
+
+---
