@@ -88,7 +88,7 @@ describe('buildDraftPageContextItems', () => {
     expect(text).toContain('10');
   });
 
-  it('states the current, on-the-clock recommendation with its reason and honest points range, never a look-ahead label', () => {
+  it('states the current, on-the-clock recommendation with its reason and the interval labelled with the quantity it is actually on, never a look-ahead label', () => {
     const rb = withVbd('RB');
     const name = rb.name.kind === 'present' ? rb.name.value : '';
     const items = buildDraftPageContextItems(
@@ -97,7 +97,7 @@ describe('buildDraftPageContextItems', () => {
           playerName: name,
           position: rb.raw.position,
           reason: 'Best value by VBD — 42 points over replacement in your format.',
-          pointsRange: { low: 100, high: 130 },
+          ciRange: { low: 100, high: 130, label: 'VBD' },
         },
         recommendationContext: { pick: 7, isLookAhead: false },
       }),
@@ -108,6 +108,11 @@ describe('buildDraftPageContextItems', () => {
     expect(rec.text).not.toMatch(/today's board/i);
     expect(rec.text).toContain('100');
     expect(rec.text).toContain('130');
+    // The regression this guards: the range must say what it is on, and must
+    // never be presented as a projection interval that doesn't exist.
+    expect(rec.text).toMatch(/VBD range/i);
+    expect(rec.text).not.toMatch(/points range/i);
+    expect(rec.text).toContain('not on the point projection');
   });
 
   it('labels a look-ahead recommendation as evaluated on today\'s board, not a forecast', () => {
@@ -120,7 +125,7 @@ describe('buildDraftPageContextItems', () => {
           playerName: name,
           position: wr.raw.position,
           reason: 'Best value by VBD.',
-          pointsRange: null,
+          ciRange: null,
         },
         recommendationContext: { pick: 17, isLookAhead: true },
       }),

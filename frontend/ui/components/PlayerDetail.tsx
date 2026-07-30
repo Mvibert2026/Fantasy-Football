@@ -1,5 +1,5 @@
 import { Component, useEffect, useMemo, type ReactNode } from 'react';
-import type { BoardRow } from '../data/board';
+import { ciTargetFor, type BoardRow } from '../data/board';
 import type { DraftPickRecord } from '../data/draft';
 import { currentOverallPick, nextPickForSlot, pickNumbersForSlot, roundPickLabel } from '../data/draft';
 import { isPresent } from '../data/cell';
@@ -336,7 +336,8 @@ export function PlayerDetail({
               </div>
             ) : null}
 
-            {/* 3. Projection -- point estimate, honest range as a bar, VBD, gloss. */}
+            {/* 3. Projection -- point estimate, VBD, the interval attached to
+                whichever quantity it's actually on, gloss. */}
             <SectionHeader label="PROJECTION" />
             {row.projectedPoints.kind === 'present' ? (
               <>
@@ -350,9 +351,7 @@ export function PlayerDetail({
                     VBD <Value cell={row.vbd} render={decimal} />
                   </span>
                 </div>
-                {row.interval.kind === 'present' ? (
-                  <RangeBar low={row.interval.value.low} high={row.interval.value.high} mid={row.projectedPoints.value} />
-                ) : null}
+                <ProjectionRange row={row} />
                 <p className="notice" style={{ marginTop: 9, fontSize: 12 }}>
                   {data.board.curve_caveat}
                 </p>
@@ -742,6 +741,41 @@ function SectionHeader({ label }: { label: string }) {
       <span style={{ fontSize: 10, letterSpacing: '.12em', color: 'var(--dim2)' }}>{label}</span>
       <span style={{ flex: 1, height: 1, background: 'var(--line)' }} />
     </div>
+  );
+}
+
+/**
+ * Which quantity the row's interval actually brackets, plotted against that
+ * quantity's own value -- never against `projectedPoints` unconditionally.
+ *
+ * Used to always plot `row.interval` here with `mid={row.projectedPoints.value}`
+ * regardless of what the interval was on. Founder, 2026-07-30, on the player
+ * card specifically: the projection (303.2) sat directly above a bar plotting
+ * 135.3-222.4, a VBD range -- `mid` fell outside `[low, high]` every time,
+ * clamped to the far right edge by `RangeBar`'s own `Math.min(100, ...)`, so
+ * the tick looked like "this player's ceiling," which was never a real
+ * reading. `ciTargetFor` resolves the real target per row; the bar plots that
+ * target's value, captioned with its name, so the marker is never stranded
+ * outside its own bounds again.
+ */
+function ProjectionRange({ row }: { row: BoardRow }) {
+  const target = ciTargetFor(row);
+  if (target.kind === 'none') return null;
+  if (target.kind === 'unrecognized') {
+    return (
+      <p className="notice" style={{ marginTop: 8, fontSize: 11 }}>
+        This player has an interval on file, but it applies to &quot;{target.raw}&quot; -- a
+        quantity this card does not display. Not shown here, and not attached to the projection
+        above.
+      </p>
+    );
+  }
+  if (target.cell.kind !== 'present' || row.interval.kind !== 'present') return null;
+  return (
+    <>
+      <div style={{ marginTop: 8, fontSize: 11, color: 'var(--dim2)' }}>{target.label} range</div>
+      <RangeBar low={row.interval.value.low} high={row.interval.value.high} mid={target.cell.value} />
+    </>
   );
 }
 

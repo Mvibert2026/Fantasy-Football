@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
-import type { BoardRow } from '../data/board';
+import { ciTargetFor, type BoardRow } from '../data/board';
 import { buildDraftPageContextItems, type DraftPageContextInput } from '../assistant/pageContext';
 import type { ContextItem } from '../assistant/reasoning';
 import {
@@ -43,6 +43,7 @@ import {
 import { useTraceMode } from '../data/traceMode';
 import { useWatchlist } from '../data/useWatchlist';
 import { PlayerDetail } from '../components/PlayerDetail';
+import { GlossaryHeaderLabel } from '../components/GlossaryHeaderLabel';
 import { computeAdpHeaderTitle } from './Board';
 import { LiveOpponents } from './LiveOpponents';
 import { Value } from '../components/Value';
@@ -77,37 +78,29 @@ const SCARCITY_POSITIONS = ['QB', 'RB', 'WR', 'TE', 'DEF'] as const;
 const AUTO_FILL_PLACEHOLDER = '(auto-filled — unknown pick)';
 
 /**
- * Thread 049 item 2: the RECOMMENDED card's "honest range" on *points*, not
- * VBD -- a deliberate, documented derivation, not a second data source.
+ * Thread 049 item 2 originally built this as a converted *points* range --
+ * retired 2026-07-30. The founder caught the underlying bug directly: "it's a
+ * range, but the projection isn't in it?" It wasn't, because the interval was
+ * never on points. `ci_applies_to` says "vbd" on every one of the 145 rows
+ * that carry an interval today, and this function used to convert that VBD
+ * interval into a points-scale range via an exact affine shift (`projected -
+ * vbd` is a constant per position) and then caption it as the projection's
+ * "honest range" -- a real, traceable unit conversion, but still a projection
+ * interval this app has no such field for, displayed right under "projected
+ * pts" where it reads as one. The line 84 comment in the old version of this
+ * function *named* `ci_applies_to: "vbd"` and still paired the result with
+ * points anyway -- known and not acted on.
  *
- * board.json's own `interval` field is explicitly an interval on VBD
- * (`ci_applies_to: "vbd"` on every one of the 378 real rows -- confirmed
- * directly against the export, not assumed), and this file's board.ts sibling
- * carries a comment warning specifically against treating it as a points
- * interval. That warning is respected here, not overridden: this function
- * does not relabel the VBD interval as a points interval. It converts it.
- *
- * VBD is defined as projected points minus a fixed per-position replacement
- * baseline (verified empirically across the full board: `projected_points -
- * vbd` is constant per position to within floating-point noise, e.g. RB
- * 130.99-131.00 across 116 players, WR 124.45-124.46 across 148). That
- * baseline is therefore a real, row-derivable constant -- not fabricated --
- * so adding it back to both ends of the real VBD interval is an exact,
- * traceable unit conversion (an affine shift), the same kind of arithmetic
- * `signed()`/`decimal()` already apply to real fields elsewhere in this app.
- * Every input (interval.low, interval.high, projectedPoints, vbd) is a named
- * board.json field on the same row.
- *
- * This is a considered call, not an uncontested one -- flagged explicitly in
- * the thread 049 reply for backend/PM to override if a real points-scale
- * interval should exist as its own contract field instead.
+ * This version does not convert anything. It resolves `ciTargetFor(row)` and
+ * hands back the row's own interval attached to whichever Cell that names --
+ * `vbd` today, `projected_points` only if a future export ever sets
+ * `ci_applies_to` to that. `label` is what the caller must caption the range
+ * with; never assume it says "VBD".
  */
-function pointsRangeFromVbdInterval(row: BoardRow): { low: number; high: number } | null {
-  if (row.interval.kind !== 'present' || row.projectedPoints.kind !== 'present' || row.vbd.kind !== 'present') {
-    return null;
-  }
-  const offset = row.projectedPoints.value - row.vbd.value;
-  return { low: row.interval.value.low + offset, high: row.interval.value.high + offset };
+function ciRangeFor(row: BoardRow): { low: number; high: number; label: string } | null {
+  const target = ciTargetFor(row);
+  if (target.kind !== 'known' || row.interval.kind !== 'present') return null;
+  return { low: row.interval.value.low, high: row.interval.value.high, label: target.label };
 }
 
 /**
@@ -957,7 +950,7 @@ export function DraftRoom({
       }
     }
 
-    const pointsRange = pointsRangeFromVbdInterval(top.row);
+    const ciRange = ciRangeFor(top.row);
 
     let giveUp: string | null = null;
     if (alt) {
@@ -999,7 +992,7 @@ export function DraftRoom({
     // available player, per "nothing at all when nothing moved."
     const vbdOverride = findVbdOverride(top.row, available, currentRound, unfilledPositions);
 
-    return { top, alt, reason, pointsRange, giveUp, vbdOverride };
+    return { top, alt, reason, ciRange, giveUp, vbdOverride };
   }, [userOnClock, recommended, followingUserPick, data, league, draft.picks, rowsById, available, currentRound, unfilledPositions]);
 
   // FR-049 / DRAFT-MIDDLE-PANE.md §1: "having the ability to see
@@ -1047,8 +1040,8 @@ export function DraftRoom({
     const round = teams > 0 ? roundOfPick(lookAheadPick, teams) : 0;
     const top = recommendedLookAhead[0]!;
     const reason = buildLookAheadReason(top.row, available);
-    const pointsRange = pointsRangeFromVbdInterval(top.row);
-    return { top, round, reason, pointsRange };
+    const ciRange = ciRangeFor(top.row);
+    return { top, round, reason, ciRange };
   }, [lookAheadPick, teams, recommendedLookAhead, available]);
 
   /**
@@ -1134,9 +1127,9 @@ export function DraftRoom({
 
     const activeTop = lookAheadActive ? recommendationDetailLookAhead?.top ?? null : recommendationDetail?.top ?? null;
     const activeReason = lookAheadActive ? recommendationDetailLookAhead?.reason ?? null : recommendationDetail?.reason ?? null;
-    const activePointsRange = lookAheadActive
-      ? recommendationDetailLookAhead?.pointsRange ?? null
-      : recommendationDetail?.pointsRange ?? null;
+    const activeCiRange = lookAheadActive
+      ? recommendationDetailLookAhead?.ciRange ?? null
+      : recommendationDetail?.ciRange ?? null;
 
     const input: DraftPageContextInput = {
       currentPick,
@@ -1150,7 +1143,7 @@ export function DraftRoom({
       rosterChips,
       activeRecommendation:
         activeTop && activeReason
-          ? { playerName: nameOf(activeTop.row), position: activeTop.row.raw.position, reason: activeReason, pointsRange: activePointsRange }
+          ? { playerName: nameOf(activeTop.row), position: activeTop.row.raw.position, reason: activeReason, ciRange: activeCiRange }
           : null,
       recommendationContext: { pick: lookAheadActive ? lookAheadPick : currentPick, isLookAhead: lookAheadActive },
       giveUp: !lookAheadActive && recommendationDetail?.giveUp ? { text: recommendationDetail.giveUp } : null,
@@ -1605,8 +1598,10 @@ export function DraftRoom({
               file before this change: the board list below had rank, name,
               position, team, ADP, delta, availability and freq-dots on every
               row and no header row naming any of them, unlike Prep's Board.tsx
-              (RANK/PLAYER/POS/TM/BYE/PROJ(CI)/CONS/ADP(MFL)/Δ/VBD/TIER,
-              Board.tsx:89-101). Labels ported verbatim from Board.tsx where
+              (RANK/PLAYER/POS/TM/BYE/PROJ/CONS/ADP(MFL)/Δ/VBD(CI)/TIER --
+              Board.tsx:96-108; PROJ lost its "(CI)" and VBD gained one,
+              2026-07-30, once the founder caught that the interval was never
+              on the projection). Labels ported verbatim from Board.tsx where
               the same number is shown (RANK, PLAYER, TM, Δ, VBD); POS keeps
               this screen's own existing positional-label cell ("WR12", not
               bare "WR" -- thread 058 section B2, unchanged here) since that is
@@ -1620,8 +1615,8 @@ export function DraftRoom({
               delta component, never as its own value on this screen. AVAIL
               spans both the baseline/live percent text and the ten-dot
               frequency array beside it -- one label for one concept shown two
-              ways, matching PROJ (CI)'s own combined-cell precedent in
-              Board.tsx. The trailing star/✕ icons keep their existing
+              ways, the same combined-cell idiom Board.tsx's PROJ column uses.
+              The trailing star/✕ icons keep their existing
               hover titles instead of a header label -- they are actions
               (watch, mark taken), not rendered values, so Principle #1
               ("every rendered number traces to a named field") does not apply
@@ -1666,12 +1661,23 @@ export function DraftRoom({
             </span>
             <span style={{ fontSize: 9, letterSpacing: '.08em', color: 'var(--dim2)', width: DRAFT_LIST_COLS.pos }}>POS</span>
             <span style={{ fontSize: 9, letterSpacing: '.08em', color: 'var(--dim2)', width: DRAFT_LIST_COLS.tm }}>TM</span>
-            <span
-              className="num"
-              title={computeAdpHeaderTitle(data.board.adp_source_note, data.board.adp_as_of_date)}
-              style={{ fontSize: 9, letterSpacing: '.02em', color: 'var(--dim2)', width: DRAFT_LIST_COLS.adp, textAlign: 'right' }}
-            >
-              ADP
+            {/* ADP/VBD/AVAIL headers below carry the dotted-underline hover
+                affordance (docs/design/SUPPLIED-VALUES.md's existing marker,
+                reused for "hover me" rather than its original "you supplied
+                this" meaning -- founder, 2026-07-30: "even hovering over CI
+                to tell me that would have been ok"). Each keeps its own
+                richer, hand-written title (source note / ranking-method
+                clause) via `overrideTitle` rather than the bare glossary
+                sentence, since that wording is already more specific than a
+                12-word gloss -- but now visibly hoverable, same as a header
+                with no bespoke title falls back to the glossary text alone. */}
+            <span className="num" style={{ fontSize: 9, letterSpacing: '.02em', color: 'var(--dim2)', width: DRAFT_LIST_COLS.adp, textAlign: 'right' }}>
+              <GlossaryHeaderLabel
+                data={data}
+                abbreviation="ADP"
+                text="ADP"
+                overrideTitle={computeAdpHeaderTitle(data.board.adp_source_note, data.board.adp_as_of_date)}
+              />
             </span>
             <span
               className="num"
@@ -1680,19 +1686,21 @@ export function DraftRoom({
             >
               Δ
             </span>
-            <span
-              className="num"
-              title={`Value over positional replacement -- what the board is actually ranked on${showSources ? ' (board.json:players[].vbd)' : ''}`}
-              style={{ fontSize: 9, letterSpacing: '.02em', color: 'var(--dim2)', width: DRAFT_LIST_COLS.vbd, textAlign: 'right' }}
-            >
-              VBD
+            <span className="num" style={{ fontSize: 9, letterSpacing: '.02em', color: 'var(--dim2)', width: DRAFT_LIST_COLS.vbd, textAlign: 'right' }}>
+              <GlossaryHeaderLabel
+                data={data}
+                abbreviation="VBD"
+                text="VBD"
+                overrideTitle={`Value over positional replacement -- what the board is actually ranked on${showSources ? ' (board.json:players[].vbd)' : ''}`}
+              />
             </span>
-            <span
-              className="num"
-              title="Baseline -> live-adjusted availability at your next pick, then the same number as ten dots"
-              style={{ fontSize: 9, letterSpacing: '.02em', color: 'var(--dim2)', width: DRAFT_LIST_COLS.avail, textAlign: 'right' }}
-            >
-              AVAIL
+            <span className="num" style={{ fontSize: 9, letterSpacing: '.02em', color: 'var(--dim2)', width: DRAFT_LIST_COLS.avail, textAlign: 'right' }}>
+              <GlossaryHeaderLabel
+                data={data}
+                abbreviation="AVAIL"
+                text="AVAIL"
+                overrideTitle="Baseline -> live-adjusted availability at your next pick, then the same number as ten dots"
+              />
             </span>
             {/* Unlabeled, width-only: the dots repeat AVAIL's own number, and
                 watch/taken are actions, not values -- see the comment above. */}
@@ -2043,17 +2051,23 @@ export function DraftRoom({
                                 </span>
                               </span>
                             </div>
+                            {/* The interval used to render here, captioned "honest range" right
+                                under "projected pts" -- wrong (thread 049 / founder catch
+                                2026-07-30): `ci_applies_to` says the interval is on VBD, not on
+                                the projection, so it now renders on whichever line
+                                `recommendationDetailLookAhead.ciRange.label` actually names --
+                                never assumed. See `ciRangeFor` above. */}
                             {recommendationDetailLookAhead.top.row.projectedPoints.kind === 'present' ? (
                               <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginTop: 8 }}>
                                 <span className="num" style={{ fontSize: 20, fontWeight: 600 }}>
                                   {decimal(recommendationDetailLookAhead.top.row.projectedPoints.value)}
                                 </span>
                                 <span style={{ fontSize: 11, color: 'var(--dim)' }}>projected pts</span>
-                                <span className="num" style={{ fontSize: 11, color: 'var(--dim2)' }}>
-                                  {recommendationDetailLookAhead.pointsRange
-                                    ? `honest range ${intervalText(recommendationDetailLookAhead.pointsRange.low, recommendationDetailLookAhead.pointsRange.high)}`
-                                    : 'range not available for this player'}
-                                </span>
+                                {recommendationDetailLookAhead.ciRange?.label === 'PROJ' ? (
+                                  <span className="num" style={{ fontSize: 11, color: 'var(--dim2)' }}>
+                                    ({intervalText(recommendationDetailLookAhead.ciRange.low, recommendationDetailLookAhead.ciRange.high)})
+                                  </span>
+                                ) : null}
                               </div>
                             ) : (
                               <p className="notice" style={{ marginTop: 8, fontSize: 12 }}>
@@ -2062,6 +2076,12 @@ export function DraftRoom({
                             )}
                             <div style={{ marginTop: 4, fontFamily: 'var(--font-num)', fontSize: 11, color: 'var(--dim2)' }}>
                               VBD <Value cell={recommendationDetailLookAhead.top.row.vbd} render={decimal} />
+                              {recommendationDetailLookAhead.ciRange?.label === 'VBD' ? (
+                                <span className="num">
+                                  {' '}
+                                  ({intervalText(recommendationDetailLookAhead.ciRange.low, recommendationDetailLookAhead.ciRange.high)})
+                                </span>
+                              ) : null}
                               {unfilledPositions.has(recommendationDetailLookAhead.top.row.raw.position) ? ' · fills an open starting slot' : ''}
                             </div>
                             <div style={{ marginTop: 10, fontSize: 13, lineHeight: 1.5, color: 'var(--txt)' }}>
@@ -2138,17 +2158,20 @@ export function DraftRoom({
                                 </span>
                               </span>
                             </div>
+                            {/* Same fix as the look-ahead card above: the interval renders next
+                                to whichever quantity `ciRange.label` actually names, not
+                                unconditionally under "projected pts". */}
                             {recommendationDetail.top.row.projectedPoints.kind === 'present' ? (
                               <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginTop: 8 }}>
                                 <span className="num" style={{ fontSize: 20, fontWeight: 600 }}>
                                   {decimal(recommendationDetail.top.row.projectedPoints.value)}
                                 </span>
                                 <span style={{ fontSize: 11, color: 'var(--dim)' }}>projected pts</span>
-                                <span className="num" style={{ fontSize: 11, color: 'var(--dim2)' }}>
-                                  {recommendationDetail.pointsRange
-                                    ? `honest range ${intervalText(recommendationDetail.pointsRange.low, recommendationDetail.pointsRange.high)}`
-                                    : 'range not available for this player'}
-                                </span>
+                                {recommendationDetail.ciRange?.label === 'PROJ' ? (
+                                  <span className="num" style={{ fontSize: 11, color: 'var(--dim2)' }}>
+                                    ({intervalText(recommendationDetail.ciRange.low, recommendationDetail.ciRange.high)})
+                                  </span>
+                                ) : null}
                               </div>
                             ) : (
                               <p className="notice" style={{ marginTop: 8, fontSize: 12 }}>
@@ -2157,6 +2180,12 @@ export function DraftRoom({
                             )}
                             <div style={{ marginTop: 4, fontFamily: 'var(--font-num)', fontSize: 11, color: 'var(--dim2)' }}>
                               VBD <Value cell={recommendationDetail.top.row.vbd} render={decimal} />
+                              {recommendationDetail.ciRange?.label === 'VBD' ? (
+                                <span className="num">
+                                  {' '}
+                                  ({intervalText(recommendationDetail.ciRange.low, recommendationDetail.ciRange.high)})
+                                </span>
+                              ) : null}
                               {unfilledPositions.has(recommendationDetail.top.row.raw.position) ? ' · fills an open starting slot' : ''}
                             </div>
                             <div style={{ marginTop: 10, fontSize: 13, lineHeight: 1.5, color: 'var(--txt)' }}>

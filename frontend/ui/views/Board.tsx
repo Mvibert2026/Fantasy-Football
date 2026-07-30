@@ -1,11 +1,12 @@
 import { useMemo, useState } from 'react';
-import type { BoardRow } from '../data/board';
+import { ciTargetFor, type BoardRow, type CiQuantity } from '../data/board';
 import { isStartable, type LeagueConfig } from '../data/league';
 import type { Dataset } from '../data/load';
 import { useTraceMode } from '../data/traceMode';
 import { useWatchlist } from '../data/useWatchlist';
 import { Value } from '../components/Value';
 import { PlayerDetail } from '../components/PlayerDetail';
+import { GlossaryHeaderLabel } from '../components/GlossaryHeaderLabel';
 import { decimal, integer, interval, signed } from '../lib/format';
 import { RoundGrid } from './RoundGrid';
 
@@ -80,7 +81,12 @@ const POSITION_COLOR: Record<string, string> = {
   DEF: 'var(--def)',
 };
 
-const GRID_TEMPLATE = '64px minmax(180px,1fr) 72px 54px 54px 168px 70px 70px 60px 72px 64px';
+// PROJ shrank from 168px (it used to carry the combined "value (interval)"
+// cell) to 90px (a bare point estimate); VBD grew by the same 78px, since the
+// interval now attaches to VBD -- ci_applies_to says "vbd" on every one of
+// the 145 rows that carry one (see ciTargetFor, ui/data/board.ts). Total row
+// width is unchanged.
+const GRID_TEMPLATE = '64px minmax(180px,1fr) 72px 54px 54px 90px 70px 70px 60px 150px 64px';
 
 /** Column id, label, and the direction a first click on it should sort in --
  *  ported from the prototype's `bcols` (line 2314), with "better first" as the
@@ -90,20 +96,58 @@ const GRID_TEMPLATE = '64px minmax(180px,1fr) 72px 54px 54px 168px 70px 70px 60p
  *  separate market-vs-expert claim, deliberately not turned into a second
  *  delta column -- see the trace-fields.ts 1.14.0 changelog entry for the
  *  reasoning. Label reads "ADP (MFL)" rather than bare "ADP" so a glance
- *  cannot mistake a MyFantasyLeague proxy for this league's own draft. */
+ *  cannot mistake a MyFantasyLeague proxy for this league's own draft.
+ *
+ *  PROJ used to read "PROJ (CI)" -- wrong, per the founder's own catch
+ *  2026-07-30: the interval on this board is on VBD, not on the point
+ *  projection (`ci_applies_to`, confirmed 145/145). PROJ is now a bare label;
+ *  the VBD column's own label gains the "(CI)" suffix, and only when the
+ *  loaded data actually has an interval to show there -- see
+ *  `vbdColumnLabel` below, not a hardcoded string. */
 const COLUMNS: Array<{ key: SortKey; label: string; defaultDir: 1 | -1 }> = [
   { key: 'rank', label: 'RANK', defaultDir: 1 },
   { key: 'name', label: 'PLAYER', defaultDir: 1 },
   { key: 'pos', label: 'POS', defaultDir: 1 },
   { key: 'team', label: 'TM', defaultDir: 1 },
   { key: 'bye', label: 'BYE', defaultDir: 1 },
-  { key: 'proj', label: 'PROJ (CI)', defaultDir: -1 },
+  { key: 'proj', label: 'PROJ', defaultDir: -1 },
   { key: 'cons', label: 'CONS', defaultDir: 1 },
   { key: 'adp', label: 'ADP (MFL)', defaultDir: 1 },
   { key: 'delta', label: 'Δ', defaultDir: -1 },
   { key: 'vbd', label: 'VBD', defaultDir: -1 },
   { key: 'tier', label: 'TIER', defaultDir: 1 },
 ];
+
+/** Column key -> the glossary alias abbreviation for it (`ui/data/
+ *  glossaryAliases.ts`), so `GlossaryHeaderLabel` can hover the real
+ *  definition automatically. Columns with no glossary concept (RANK, PLAYER,
+ *  POS, TM, BYE, Δ) are simply absent -- they keep rendering as plain text. */
+const COLUMN_GLOSSARY_ABBR: Partial<Record<SortKey, string>> = {
+  proj: 'PROJ',
+  cons: 'CONS',
+  adp: 'ADP',
+  vbd: 'VBD',
+  tier: 'TIER',
+};
+
+/**
+ * Which known CI quantity (if any) the *loaded* rows actually carry an
+ * interval on -- read from the data, never assumed. Drives both the VBD/PROJ
+ * header suffix and which cell renders the range. `null` when nothing in the
+ * current rows has a present interval at all (e.g. every row filtered out);
+ * `'unrecognized'` when at least one row's `ci_applies_to` names something
+ * this app has no Cell for (never observed against the live export, but the
+ * honest-absence path exists rather than silently dropping it).
+ */
+function ciQuantityInRows(rows: BoardRow[]): CiQuantity | 'unrecognized' | null {
+  let sawUnrecognized = false;
+  for (const row of rows) {
+    const target = ciTargetFor(row);
+    if (target.kind === 'known') return target.quantity;
+    if (target.kind === 'unrecognized') sawUnrecognized = true;
+  }
+  return sawUnrecognized ? 'unrecognized' : null;
+}
 
 /** Missing values sort to the bottom regardless of direction -- porting the
  *  prototype's `nz()` helper (line 2318). */
@@ -332,6 +376,7 @@ export function Board({
 
       {view === 'table' ? (
         <BoardTable
+          data={data}
           rows={filtered}
           league={league}
           selected={selected}
@@ -377,6 +422,7 @@ export function computeAdpHeaderTitle(note: string | null | undefined, asOfDate:
 }
 
 function BoardTable({
+  data,
   rows,
   league,
   selected,
@@ -388,6 +434,7 @@ function BoardTable({
   onToggleExpand,
   adpHeaderTitle,
 }: {
+  data: Dataset;
   rows: BoardRow[];
   league: LeagueConfig;
   selected: number | null;
@@ -399,6 +446,10 @@ function BoardTable({
   onToggleExpand: (id: number) => void;
   adpHeaderTitle: string;
 }) {
+  // Data-driven, not assumed: which known quantity (if any) this set of rows
+  // actually carries an interval on. Decides the VBD/PROJ header suffix below
+  // and which cell renders the range -- see ciTargetFor (ui/data/board.ts).
+  const ciQuantity = ciQuantityInRows(rows);
   if (rows.length === 0) {
     return (
       <div style={{ padding: 20 }}>
@@ -447,11 +498,17 @@ function BoardTable({
       >
         {COLUMNS.map((col) => {
           const active = sort.key === col.key || (col.key === 'delta' && sort.key === 'absdelta');
+          const abbr = COLUMN_GLOSSARY_ABBR[col.key];
+          const overrideTitle = col.key === 'adp' ? adpHeaderTitle : undefined;
+          // The "(CI)" suffix is data-driven, per `ciQuantity` above -- it
+          // lands on PROJ or on VBD depending on what the loaded rows'
+          // `ci_applies_to` actually says, never hardcoded to one column.
+          const showCiSuffix =
+            (col.key === 'vbd' && ciQuantity === 'vbd') || (col.key === 'proj' && ciQuantity === 'projected_points');
           return (
             <span
               key={col.key}
               onClick={() => onClickColumn(col.key, col.defaultDir)}
-              title={col.key === 'adp' ? adpHeaderTitle : undefined}
               style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -462,7 +519,12 @@ function BoardTable({
                 cursor: 'pointer',
               }}
             >
-              {col.label}
+              {abbr ? (
+                <GlossaryHeaderLabel data={data} abbreviation={abbr} text={col.label} overrideTitle={overrideTitle} />
+              ) : (
+                col.label
+              )}
+              {showCiSuffix ? <GlossaryHeaderLabel data={data} abbreviation="CI" text="(CI)" /> : null}
               {sort.key === col.key ? <span>{sort.dir === 1 ? '▲' : '▼'}</span> : null}
             </span>
           );
@@ -592,9 +654,7 @@ function BoardRowLine({
         >
           <DeltaCell row={row} />
         </span>
-        <span className="num">
-          <Value cell={row.vbd} render={decimal} />
-        </span>
+        <VbdCell row={row} />
         <span style={{ letterSpacing: '.045em', color: 'var(--dim2)' }}>
           <Value cell={row.tierLabel} render={(v) => v} />
         </span>
@@ -674,10 +734,17 @@ function SuspBadge({ row }: { row: BoardRow }) {
   );
 }
 
-/** PROJ (CI): a projection and its interval are one column in the prototype, since
- *  an interval is never meaningful without the number it brackets. Absence renders
- *  as the em-dash used everywhere else in this app plus "no projection" in dim
- *  text, matching the prototype's own wording for the same state. */
+/**
+ * PROJ: the point estimate alone. Used to read "PROJ (CI)" and pair the
+ * interval here unconditionally -- wrong, per the founder's own catch
+ * 2026-07-30: `ci_applies_to` is "vbd" on every one of the 145 rows that
+ * carry an interval (0/145 apply to `projected_points`), so this cell was
+ * captioning the projection with a range that was never the projection's.
+ * It only shows a range now if `ciTargetFor` actually resolves this row's
+ * interval to `projected_points` -- never as a standing assumption. Absence
+ * renders as the em-dash used everywhere else in this app plus "no
+ * projection" in dim text, matching the prototype's own wording for the
+ * same state. */
 function ProjCell({ row }: { row: BoardRow }) {
   if (row.projectedPoints.kind === 'absent') {
     return (
@@ -689,11 +756,70 @@ function ProjCell({ row }: { row: BoardRow }) {
       </span>
     );
   }
-  const ci = row.interval.kind === 'present' ? `(${interval(row.interval.value.low, row.interval.value.high)})` : '';
+  const target = ciTargetFor(row);
+  const ci =
+    target.kind === 'known' && target.quantity === 'projected_points' && row.interval.kind === 'present'
+      ? `(${interval(row.interval.value.low, row.interval.value.high)})`
+      : '';
   return (
     <span className="num">
-      <span style={{ fontWeight: 600 }}>{decimal(row.projectedPoints.value)}</span>{' '}
-      <span style={{ color: 'var(--dim2)', fontSize: 12 }}>{ci}</span>
+      <span style={{ fontWeight: 600 }}>{decimal(row.projectedPoints.value)}</span>
+      {ci ? (
+        <>
+          {' '}
+          <span style={{ color: 'var(--dim2)', fontSize: 12 }}>{ci}</span>
+        </>
+      ) : null}
+    </span>
+  );
+}
+
+/**
+ * VBD: the value-over-replacement number, plus its own interval when
+ * `ci_applies_to` says this row's interval belongs here -- true for 145/145
+ * of the rows that carry one, confirmed against the live export (the bug
+ * this fixes: every consumer used to attach that same interval to PROJ
+ * instead). `ciTargetFor` decides per row; nothing here hardcodes "vbd".
+ *
+ * `unrecognized`: an interval is on file but names a quantity this app has
+ * no Cell for. Never silently dropped and never paired with VBD anyway --
+ * rendered as an honest, in-place absence note carrying the raw value, per
+ * the same rule `Value.tsx` applies to a missing field.
+ */
+function VbdCell({ row }: { row: BoardRow }) {
+  if (row.vbd.kind === 'absent') {
+    return (
+      <span className="val-absent" title={row.vbd.reason}>
+        —
+      </span>
+    );
+  }
+  const target = ciTargetFor(row);
+  const ci =
+    target.kind === 'known' && target.quantity === 'vbd' && row.interval.kind === 'present'
+      ? `(${interval(row.interval.value.low, row.interval.value.high)})`
+      : '';
+  return (
+    <span className="num">
+      {decimal(row.vbd.value)}
+      {ci ? (
+        <>
+          {' '}
+          <span style={{ color: 'var(--dim2)', fontSize: 12 }}>{ci}</span>
+        </>
+      ) : null}
+      {target.kind === 'unrecognized' ? (
+        <>
+          {' '}
+          <span
+            className="val-absent"
+            style={{ fontSize: 10 }}
+            title={`This player has an interval on file, but it applies to "${target.raw}" -- a quantity this board does not display. Not shown, not attached to VBD.`}
+          >
+            (CI: unrecognized)
+          </span>
+        </>
+      ) : null}
     </span>
   );
 }
