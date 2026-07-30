@@ -1,6 +1,6 @@
 ---
 ID: FR-109
-STATUS: NEW
+STATUS: ANSWERED — ranker 2026-07-30; two follow-ups routed to strategist (see response)
 PRIORITY: HIGH — potential invalidation of a headline result
 SOURCE: chat 2026-07-30, PM session
 RAISED: 2026-07-30
@@ -80,3 +80,67 @@ to sweep every draft slot.
 **PM note:** I relayed "VBD already takes its first RB in round 6.3" to the founder as the
 interesting mechanical explanation behind the null. I did not check it against the slot-value finding
 sitting in the same ledger. That reconciliation was mine to do.
+
+---
+
+## Ranker response, 2026-07-30 — audit complete
+
+Code: `experiments/strategy/audit_vbd.py`, `why_first_rb.py`, `slot_sweep.py`.
+Results written into `docs/ranking/fr085-zero-rb.md` §5.5 (new) and §5.4 (replaced), with §1(6) and
+the closing paragraphs of §5.1 withdrawn. Raw output: `data/qa/fr109-slot-sweep-ffc-r16.json`.
+
+**Step 1 — the arm is NOT mis-specified.** At overall pick 1 the highest-VBD player on the
+simulator's board is RB1 (2022: Jonathan Taylor, VBD 229.5), the second-highest is RB2, five of the
+top ten are running backs, the need penalty is zero for everyone, and the arm takes RB1. There are
+not 60 better players than the first RB; there are none. Dump published in §5.5.1.
+
+**Step 2 — the two results do not contradict each other.** Simulator rank-1 VBD (2021–24 mean) is
+RB 223.1 > WR 178.6 > TE 109.5 ≈ QB 107.1; ADR-016's is RB 168.5 > WR 153.2 > QB 114.1 > TE 73.1.
+**Both rank RB1 first**, which is the claim this FR said could not hold alongside round 6.3. It can,
+and does. The estimators do differ — the simulator reads *finish*-rank curves where ADR-016 fits
+*consensus*-rank curves, inflating magnitudes 1.1–1.5× at the top — and that is an undeclared
+departure from a settled ADR which I have recorded as mine. It does not change the arm's behaviour:
+the round-2 RB-vs-WR call comes out the same way under both curves.
+
+**Step 3 — 6.33 is a mean of a bimodal distribution and should never have been reported alone.**
+44.6% of drafts take an RB in round 1; 44.0% wait until round 11–12; **rounds 3–5 together are 0.5%,
+with zero drafts in round 3.** Slot 1 is 100% round 1. It is also the most extreme cell in the run's
+own σ grid — every other (board, σ) cell is between 1.17 and 4.64, and the primary ECR cell is 1.39.
+And 97% of the round-11/12 picks are caused by the **need-penalty amendment**, not by value.
+The founder's "maybe a certain slot" was the correct diagnosis.
+
+**Step 4 — swept all ten slots.** The pooled §5.2 margins already drew slots uniformly, so they did
+not need redoing; what was missing was the per-slot split, plus one real code bug — §5.4's slot table
+came from the σ=20 cell because `playoff_rate_by_slot` was assigned outside the σ loop. Fixed.
+The sweep's finding: **Zero RB and VBD draft 94–96% of the same players at slots 5–10.** Every
+per-slot Zero RB margin is NULL; 5 MARGINALs out of 160 tests, against ~8 expected by chance.
+
+**Verdict on the rule "do not re-report the Zero RB verdict until 1–3 are settled":** they are
+settled, and **the null does not inherit a defect from the arm** — the arm executes its own
+definition faithfully. The null does carry a **power** qualification now stated in §1(5): seven of
+ten seats carry almost no treatment, so "not distinguishable" is right but "tested" is generous.
+
+**Two things this audit surfaced that need an owner and are not mine to decide:**
+
+1. **Replacement level is the parameter that decides this and it has never been tested.** Under the
+   current teams×starters baselines (QB10/RB30/WR40/TE10) the round-2 call is WR by 25.3 VBD points.
+   Under a "last rostered" baseline measured from the board's own top 150 (QB24/RB54/WR57/TE15) it is
+   **RB by 2.8 — the sign flips.** Neither is obviously right. This is not test-registry #35 (a
+   single global flex baseline, closed NULL); it is a per-position question and needs a
+   pre-registered test owned by `strategist`.
+2. **The need-penalty amendment carries about half the load** in the number I reported to the
+   founder. The `strategist` ruling I asked for on that amendment should happen before any further
+   strategy number is quoted, not after.
+
+**On the QB crowd-out hypothesis** (raised separately, that our board over-ranks QBs and they crowd
+out the RBs): the shipped-board figures reproduce exactly — `data/export/board.json` puts QB1 at
+overall 6 against consensus 26 — but **the simulator does not draft from that board**, and on the one
+it does the effect is not the mechanism. Pooled, the arm takes **0.98 QB against 3.26 WR** before its
+first RB, **zero QBs in round 1**, and the pre-first-RB QBs go in round 4.9 on average. The crowd-out
+is receivers, not quarterbacks. The shipped board's QB placement is a real and separate concern that
+belongs to whoever owns `src/make_board.py`. Detail in §5.5.6.
+
+**One correction back to this FR:** `src/live_availability.py` / ADR-061 is the *availability* model
+covering every draft slot's pick numbers. It is not a strategy-simulation slot sweep and could not be
+reused here — `experiments/strategy/sim.py` already took a `user_slot` argument; what was missing was
+per-slot reporting, which is what `slot_sweep.py` adds.
