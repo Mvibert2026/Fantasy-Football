@@ -60,6 +60,10 @@ export interface LeagueConfig {
   playoffReseeding: boolean;
   /** Non-null while league.json predates the expected threshold contract version. */
   thresholdDrift: string | null;
+  /** league.json:scoring_ruleset_note (contract 1.15.0, ADR-062, thread 093) --
+   *  states plainly which scoring ruleset this league actually runs on. Absent
+   *  on a pre-1.15.0 export. */
+  scoringRulesetNote: Cell<string>;
 }
 
 /**
@@ -171,6 +175,10 @@ export function buildLeagueConfig(data: Dataset): LeagueConfig {
     playoffTeams: present(L.playoff.teams, 'league.json:playoff.teams', runId),
     playoffReseeding: L.playoff.reseeding,
     thresholdDrift,
+    scoringRulesetNote:
+      L.scoring_ruleset_note === undefined
+        ? absent('league.json:scoring_ruleset_note', runId, 'This export predates league.json:scoring_ruleset_note (contract 1.15.0).')
+        : present(L.scoring_ruleset_note, 'league.json:scoring_ruleset_note', runId),
   };
 }
 

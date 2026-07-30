@@ -23,6 +23,15 @@ export function Methodology({ data, league }: { data: Dataset; league: LeagueCon
       </section>
 
       <section>
+        <h3>Scoring ruleset</h3>
+        {league.scoringRulesetNote.kind === 'present' ? (
+          <p style={{ color: 'var(--fg-muted)' }}>{league.scoringRulesetNote.value}</p>
+        ) : (
+          <p className="notice">{league.scoringRulesetNote.reason}</p>
+        )}
+      </section>
+
+      <section>
         <h3>Startable thresholds</h3>
         <p style={{ color: 'var(--fg-muted)' }}>{league.replacementLevelsNote}</p>
         {league.thresholdDrift ? <p className="notice">{league.thresholdDrift}</p> : null}

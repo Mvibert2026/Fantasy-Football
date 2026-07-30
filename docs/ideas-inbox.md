@@ -626,3 +626,60 @@ file (ADR-057). Full evidence `docs/ranking/bottom-up-research-pass-3.md`, threa
    under plain BM25 — added a per-artifact diversity cap (`MAX_PER_KIND = 3`) in
    `ui/assistant/retrieval.ts` to fix it. Worth knowing if a future corpus addition has the same
    templated-boilerplate shape.
+
+## 2026-07-29 — frontend, INERT-CONTROLS + TWO-TRACK-EXPRESSION: decided without asking
+
+1. **"League settings" got INERT-CONTROLS.md's general rule even though design's own six-row
+   table doesn't name it.** The table lists Export CSV, Export PDF, Compare, Ask, per-term Ask
+   the assistant, and Refresh data (already fixed pre-existing, before this session) — six items,
+   but not the same six as `docs/CURRENT-STATE.md`/FR-037's six (which swaps Refresh data for
+   League settings, still `aria-disabled` at `TopBar.tsx`). Design has its own separate, fuller
+   spec for League settings specifically (`docs/design/LEAGUE-SETTINGS-BOUNDARY.md`, priority 5,
+   an editable-roster-fields / read-only-scoring split), not built this pass. Leaving the button
+   dead until that ships would violate this session's explicit instruction ("do not leave any of
+   them in the old state"), and building the full boundary spec was out of scope tonight, so it
+   got the same minimal "remove the button, state the fact" treatment as the other five, with a
+   comment pointing at the fuller design for whoever builds it. Flagging this as a real seam
+   between the two specs rather than a silent judgment call — design or PM should reconcile
+   INERT-CONTROLS.md's table against the actual six FR-037 controls.
+2. **Contract pin bumped 1.14.0 → 1.15.0** (`ui/data/contract.ts:EXPECTED_CONTRACT`,
+   `ui/data/trace-fields.ts:TRACE_CONTRACT` + changelog entry) to match ADR-062's real bump —
+   this was thread 093's explicit ask ("confirm the contract-version bump doesn't break
+   EXPECTED_CONTRACT/TRACE_CONTRACT checks") and the one pre-existing test failure found before
+   any of this session's own changes. Replied to thread 093 with where `scoring_ruleset_note` is
+   now surfaced (league selector's track badge + a new Methodology section).
+3. **The league-selector track badge shows a short label (PRIMARY/GENERIC), not design's full
+   sentence ("primary track · full ruleset · 9 opponents modelled").** Measured first: at this
+   app's usual screenshot width the existing freshness note and league-detail string already
+   truncate with an ellipsis before this badge existed, so a second full sentence had nowhere to
+   go without hard-clipping mid-word. Kept the full sentence as the badge's `title` and in the new
+   dropdown-option markers (●/○); Principle #4 (density is the product) argued against spending
+   the last inches of a bar that was already tight on a second sentence next to information
+   already there.
+4. **`views/Opponents.tsx` was not touched**, even though the generic-track story (real opponent
+   identity vs. none) fits that screen conceptually better than anywhere else in the app. It's the
+   screen implementing the opponent-name and draft-slot controls another frontend agent owns this
+   round (`docs/handoffs/` scope split); adding a track banner there risked a same-file collision
+   for no benefit that couldn't wait a round.
+5. **`weekly_finishes.json`/`season_stats.json` are not one of the "screens that thin out on
+   league switch."** `docs/CURRENT-STATE.md` item 5 lists them among the four artifacts absent
+   from non-primary export directories, which is true of the *export directory* — but
+   `ui/data/playerHistory.ts` always fetches them from the unprefixed root path regardless of
+   which league is loaded (by design, per its own doc comment: "these are unprefixed, not
+   per-league"). PlayerDetail's history sections 7/8 render identically on every league. Only
+   `strategies.json` (StrategyGuide) actually thins per the two-track story; left the other three
+   screens (`Opponents`, `Predictions`, `Methodology`'s nulls section) as they already differentiate
+   honestly and aren't the offending single-string pattern design's spec targets.
+6. **`tools/handoffs.py check` now fails on thread ID 093 and 094, not just ADR-054/055.**
+   `docs/handoffs/093-pass-3-the-qb-slope-collapse-is-not-established.md` (ranker, commit
+   `9da468a`) and `docs/handoffs/093-run-pr-007-recommendation-constants-vs-plain-vbd.md` both
+   collide with the thread 093 this session replied to
+   (`093-contract-1-15-0-scoring-ruleset-note-on-league-j.md`); 094 has a similar collision
+   (`094-sleeper-projection-ingest-landed-red-against-the.md` vs.
+   `094-register-the-wr-availability-fix-as-the-confirma.md`). All pre-date this session (real
+   prior commits, not something dropped in this worktree) — same root cause as
+   `docs/CURRENT-STATE.md`'s already-known ADR-054/055 collision (independent branches allocating
+   numbers without syncing), now confirmed to also hit handoff thread IDs. Not renumbered here,
+   per that item's own standing rule ("renumbering belongs to whoever merges that branch,
+   knowingly"). Flagging so whoever eventually reconciles the unmerged branches treats this as one
+   collision class, not two.
