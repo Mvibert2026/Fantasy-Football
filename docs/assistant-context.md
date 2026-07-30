@@ -11,7 +11,7 @@ file holds no history and no superseded numbers, on purpose, so that problem can
 written below, this file is edited in place — not appended to. If you are updating this file
 after a new ADR lands, replace the affected paragraph; do not leave the old one for contrast.
 
-Contract version referenced below: **1.15.0** (ADR-062).
+Contract version referenced below: **1.16.0** (ADR-062, plus the per-league history export).
 
 ---
 

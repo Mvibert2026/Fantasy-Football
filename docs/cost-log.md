@@ -38,17 +38,24 @@ red-teaming → Opus. So `librarian`, `backend`, `frontend`, `data-ops` bill at 
 | librarian | Backlog triage, 38 threads | 213,070 | complete |
 | backend | ADP vs. production mispricing | 210,285 | complete |
 | librarian | Design-spec build-state audit | 102,970 | complete |
-| ranker | RB/QB/TE component models | not reported | died on session limit |
+| data-ops | FFC PPR ADP + coordinator table | 171,724 | complete |
+| researcher | Archetype taxonomy | 198,034 | complete |
+| librarian | Bookkeeping investigation (FR-090) | 96,650 | complete |
+| backend | Sleeper screen (FR-094) | 172,751 | complete |
+| researcher | Injury-service evaluation (FR-097) | 143,959 | complete |
+| frontend | Assistant page context + chat (FR-076/077) | 398,259 | complete |
+| frontend | Founder feedback batch (FR-067/79/82/83/87) | 502,570 | complete |
+| ranker | Zero RB + volatility (FR-085/086) | 366,670 | complete |
+| ranker | Skewness/kurtosis + dead-zone era contrast | 418,450 | complete |
+| librarian | Insights-ledger backfill | 151,552 | complete |
+| backend | League-scoring export fix | 264,402 | stopped mid-run; work recovered by PM |
+| ranker | RB/QB/TE component models | not reported | died on session limit; work recovered |
 | frontend | Correctness queue (first attempt) | not reported | stopped by PM |
-| frontend | Player card, Opponents, headers, rounds | pending | running |
-| frontend | Chatbot data access + UX | pending | running |
-| ranker | Zero RB simulation, volatility | pending | running |
-| researcher | Archetype taxonomy | pending | running |
-| data-ops | Historical ADP, coordinator table | pending | running |
+| backend | Consensus vs ADP (FR-099) | not reported | died on API error; work recovered |
 
-**Reported so far: 526,325 tokens across three completed agents.**
+**Reported so far: 3,411,346 tokens across 14 agents.** Three more died or were stopped without reporting; their spend is real and missing here.
 
-At Sonnet rates that is **$1.58 if entirely input, $7.89 if entirely output** — the true figure sits
+At Sonnet rates that is **$10.23 if entirely input, $51.17 if entirely output** — the true figure sits between.
 between. A plausible mid-case (80% input) is roughly **$3**. Treat single-digit dollars as the right
 order of magnitude for a session of this size, and do not report a tighter number than that.
 
