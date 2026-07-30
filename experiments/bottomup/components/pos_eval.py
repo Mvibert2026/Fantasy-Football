@@ -297,12 +297,22 @@ def _season_metrics(d: pd.DataFrame, season: int, position: str) -> Dict:
             out[f"adpsub_pts_top_{name}"] = mean_actual_of_top_k(p, a, k)
     # component accuracy against naive persistence -- last season's own total,
     # the honest zero-work baseline for a component projection
+    #
+    # `adpsub_mae_*` added 2026-07-30 (factor batch 2). Batch 1's own §1(3) found
+    # its committed E1 gate was blind to WHERE a gain sits: two arms cleared it on
+    # movement among players nobody drafts. This is the same MAE restricted to the
+    # players who actually appear on the consensus board, so a gate can be written
+    # on the decision-relevant subset instead of the whole universe. Purely
+    # additive -- every pre-existing column is untouched and batch 1 still
+    # reproduces bit-for-bit.
     for pcol, acol, ncol in COMPONENT_LEDGER[position]:
         if pcol not in d.columns:
             continue
         e = d[pcol].to_numpy(dtype=float) - d[acol].to_numpy(dtype=float)
         out[f"mae_{acol}"] = float(np.mean(np.abs(e)))
         out[f"bias_{acol}"] = float(np.mean(e))
+        if has_adp.sum() >= 10:
+            out[f"adpsub_mae_{acol}"] = float(np.mean(np.abs(e[has_adp])))
         if ncol in d.columns:
             en = d[ncol].fillna(0.0).to_numpy(dtype=float) - d[acol].to_numpy(dtype=float)
             out[f"mae_naive_{acol}"] = float(np.mean(np.abs(en)))

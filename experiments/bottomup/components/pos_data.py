@@ -293,6 +293,13 @@ class SeasonPanel:
     birthdates: pd.DataFrame
     draft: pd.DataFrame
     _wk1: pd.DataFrame = field(default_factory=pd.DataFrame)
+    # factor batch 2, 2026-07-30 -- the two inputs the founder's own insight
+    # examples need. Both are season-N reads and both log under the SAME `proxy`
+    # audit tag as `_wk1`, so every assertion already written against
+    # `n_preseason_proxy_reads == 0` keeps working unchanged and an arm that did
+    # not declare them can still be proven not to have touched them.
+    _roster: pd.DataFrame = field(default_factory=pd.DataFrame)
+    _coord: pd.DataFrame = field(default_factory=pd.DataFrame)
     access_log: List[tuple] = field(default_factory=list)
 
     def _gate(self, cutoff: int) -> None:
@@ -352,6 +359,53 @@ class SeasonPanel:
         if not len(self._wk1):
             return pd.DataFrame(columns=["player_id", "season", "team"])
         return self._wk1[self._wk1["season"] == season].copy()
+
+    def preseason_roster(self, season: int) -> pd.DataFrame:
+        """Club membership at season-N Week 1, from `rosters_weekly`.
+
+        THE FIX FOR `week1_roster`, NOT A SECOND COPY OF IT. Both are dated at
+        Week 1 of season N; the difference is what they can see. A depth chart
+        lists only players the club chose to rank, so a player on IR, on PUP,
+        suspended, or simply on the bench behind three others is ABSENT from it
+        and reads as departed. The roster lists everyone under contract WITH A
+        STATUS CODE, so "still this club's player but unavailable" and "gone" are
+        different rows rather than the same silence.
+
+        Measured on this repo's own data (target seasons 2014-2024, players with
+        >=50 carries or >=50 targets the prior season): the depth chart calls 91
+        of 2,166 such players departed while the roster still has them under
+        contract -- 40 of those on reserve/injured. That is the leak channel
+        `docs/ranking/factor-batch-1-results.md` §4 hypothesised, now counted.
+
+        Still a season-N read, still logged under `proxy`. Week-1 roster status
+        is set at the late-August cutdown, i.e. around a real draft rather than
+        strictly before it. Nothing here is backdated to look earlier than it is.
+        """
+        self._gate(season)
+        self.access_log.append(("proxy", season))
+        if not len(self._roster):
+            return pd.DataFrame(columns=["player_id", "season", "team", "status",
+                                         "under_contract", "available"])
+        return self._roster[self._roster["season"] == season].copy()
+
+    def preseason_coordinators(self, season: int) -> pd.DataFrame:
+        """Who was calling the offence for each club GOING INTO season N.
+
+        Sourced from the pre-Week-1 revision of each club's Wikipedia staff
+        navbox (`experiments/bottomup/factors/coord_preseason.py`), NOT from the
+        end-of-season `{{NFL final staff}}` rows in `play_callers` -- those name
+        the replacement in any season with a mid-year firing, and a mid-year
+        firing is caused by the season going badly, which is the exact direction
+        that manufactures fake signal.
+
+        Season-N dated, so it logs under `proxy` like the roster read.
+        """
+        self._gate(season)
+        self.access_log.append(("proxy", season))
+        if not len(self._coord):
+            return pd.DataFrame(columns=["team", "season", "title", "coach_id",
+                                         "head_coach"])
+        return self._coord[self._coord["season"] == season].copy()
 
     def outcomes(self, season: int) -> pd.DataFrame:
         """Realised season-N results. ONLY for evaluation and for training on
