@@ -1,0 +1,410 @@
+{
+  "n": 5510,
+  "dimensions": {
+    "aDOT": {
+      "hypothesised": "stable",
+      "by_position": {
+        "WR": {
+          "r": 0.663825273818867,
+          "lo": 0.6117268949650212,
+          "hi": 0.7065716872335126,
+          "n": 1265,
+          "verdict": "STABLE -- pool career"
+        },
+        "TE": {
+          "r": 0.4998514922730568,
+          "lo": 0.3939680768214966,
+          "hi": 0.5855461952886768,
+          "n": 552,
+          "verdict": "mixed -- weight recent, pool with shrinkage"
+        },
+        "RB": {
+          "r": 0.5097583789482675,
+          "lo": 0.3621840312023047,
+          "hi": 0.6384899350838619,
+          "n": 510,
+          "verdict": "mixed -- weight recent, pool with shrinkage"
+        }
+      }
+    },
+    "catch_rate": {
+      "hypothesised": "stable",
+      "by_position": {
+        "WR": {
+          "r": 0.4328981721544205,
+          "lo": 0.3763844814408818,
+          "hi": 0.4835161629701627,
+          "n": 1265,
+          "verdict": "mixed -- weight recent, pool with shrinkage"
+        },
+        "TE": {
+          "r": 0.2702987820646944,
+          "lo": 0.16363701519034984,
+          "hi": 0.3680632958905939,
+          "n": 552,
+          "verdict": "SITUATIONAL -- recent only, reset on role change"
+        },
+        "RB": {
+          "r": 0.14435816124021797,
+          "lo": 0.04827984278914237,
+          "hi": 0.23727219498803886,
+          "n": 510,
+          "verdict": "SITUATIONAL -- recent only, reset on role change"
+        }
+      }
+    },
+    "yac_per_rec": {
+      "hypothesised": "stable",
+      "by_position": {
+        "WR": {
+          "r": 0.4035305374607975,
+          "lo": 0.3347176481871004,
+          "hi": 0.46973402917415286,
+          "n": 1172,
+          "verdict": "mixed -- weight recent, pool with shrinkage"
+        },
+        "TE": {
+          "r": 0.38666690480588595,
+          "lo": 0.2828316074120514,
+          "hi": 0.4727463271977401,
+          "n": 512,
+          "verdict": "SITUATIONAL -- recent only, reset on role change"
+        },
+        "RB": {
+          "r": 0.15070613569073407,
+          "lo": 0.059321119995275,
+          "hi": 0.23736792391336692,
+          "n": 507,
+          "verdict": "SITUATIONAL -- recent only, reset on role change"
+        }
+      }
+    },
+    "qb_rush_share": {
+      "hypothesised": "stable",
+      "by_position": {
+        "QB": {
+          "r": 0.5718383284579718,
+          "lo": 0.3694857900187342,
+          "hi": 0.7884224119252569,
+          "n": 368,
+          "verdict": "mixed -- weight recent, pool with shrinkage"
+        }
+      }
+    },
+    "ypc": {
+      "hypothesised": "stable",
+      "by_position": {
+        "RB": {
+          "r": 0.17493097529847998,
+          "lo": 0.08606823074203214,
+          "hi": 0.2595974651125844,
+          "n": 669,
+          "verdict": "SITUATIONAL -- recent only, reset on role change"
+        }
+      }
+    },
+    "target_share": {
+      "hypothesised": "situational",
+      "by_position": {
+        "WR": {
+          "r": 0.66667214101069,
+          "lo": 0.6286657076329519,
+          "hi": 0.6991013284361218,
+          "n": 1380,
+          "verdict": "STABLE -- pool career"
+        },
+        "TE": {
+          "r": 0.6614005461969503,
+          "lo": 0.589632875561128,
+          "hi": 0.7193998152351275,
+          "n": 691,
+          "verdict": "STABLE -- pool career"
+        },
+        "RB": {
+          "r": 0.5798527830400216,
+          "lo": 0.49539285740125905,
+          "hi": 0.6507431821435025,
+          "n": 706,
+          "verdict": "mixed -- weight recent, pool with shrinkage"
+        }
+      }
+    },
+    "snap_share_PROXY": {
+      "hypothesised": "situational",
+      "by_position": {
+        "WR": {
+          "r": 0.7070893316559297,
+          "lo": 0.6633504565975953,
+          "hi": 0.7469535482770455,
+          "n": 1115,
+          "verdict": "STABLE -- pool career"
+        },
+        "TE": {
+          "r": 0.6105773406801766,
+          "lo": 0.5293879789026604,
+          "hi": 0.6747772374470746,
+          "n": 554,
+          "verdict": "STABLE -- pool career"
+        },
+        "RB": {
+          "r": 0.6781316404122499,
+          "lo": 0.6194640128415608,
+          "hi": 0.728498527283508,
+          "n": 658,
+          "verdict": "STABLE -- pool career"
+        }
+      }
+    },
+    "rec_share_of_touches": {
+      "hypothesised": "situational",
+      "by_position": {
+        "RB": {
+          "r": 0.7041300920921473,
+          "lo": 0.6266226087241579,
+          "hi": 0.7625942734936962,
+          "n": 818,
+          "verdict": "STABLE -- pool career"
+        }
+      }
+    },
+    "team_carry_share": {
+      "hypothesised": "situational",
+      "by_position": {
+        "RB": {
+          "r": 0.6250983793382314,
+          "lo": 0.5665971099023185,
+          "hi": 0.6748336086390959,
+          "n": 775,
+          "verdict": "STABLE -- pool career"
+        }
+      }
+    },
+    "ppg": {
+      "hypothesised": "reference",
+      "by_position": {
+        "QB": {
+          "r": 0.4853994372835979,
+          "lo": 0.33834977300805186,
+          "hi": 0.6015276188339448,
+          "n": 369,
+          "verdict": "mixed -- weight recent, pool with shrinkage"
+        },
+        "RB": {
+          "r": 0.6907368168996272,
+          "lo": 0.6456402868083085,
+          "hi": 0.7299738781568446,
+          "n": 894,
+          "verdict": "STABLE -- pool career"
+        },
+        "WR": {
+          "r": 0.7338918169176907,
+          "lo": 0.7015008711260237,
+          "hi": 0.7628690347809525,
+          "n": 1503,
+          "verdict": "STABLE -- pool career"
+        },
+        "TE": {
+          "r": 0.7082913663692282,
+          "lo": 0.6414419047949269,
+          "hi": 0.7601964968712482,
+          "n": 744,
+          "verdict": "STABLE -- pool career"
+        }
+      }
+    }
+  },
+  "career_vs_recent": {
+    "aDOT:WR": {
+      "prev_only": 0.6676957595874069,
+      "career_mean": 0.6754763815425193,
+      "delta": 0.007780621955112421,
+      "n": 902,
+      "reading": "no difference"
+    },
+    "aDOT:TE": {
+      "prev_only": 0.5033299585281313,
+      "career_mean": 0.5848593618814584,
+      "delta": 0.08152940335332703,
+      "n": 402,
+      "reading": "career pooling HELPS"
+    },
+    "aDOT:RB": {
+      "prev_only": 0.5196763308093477,
+      "career_mean": 0.5425779049656049,
+      "delta": 0.022901574156257154,
+      "n": 348,
+      "reading": "no difference"
+    },
+    "catch_rate:WR": {
+      "prev_only": 0.42176650294937834,
+      "career_mean": 0.45541908054436536,
+      "delta": 0.03365257759498702,
+      "n": 902,
+      "reading": "career pooling HELPS"
+    },
+    "catch_rate:TE": {
+      "prev_only": 0.2510990556140689,
+      "career_mean": 0.3149980975736063,
+      "delta": 0.06389904195953738,
+      "n": 402,
+      "reading": "career pooling HELPS"
+    },
+    "catch_rate:RB": {
+      "prev_only": 0.15853463142924254,
+      "career_mean": 0.19629734879578115,
+      "delta": 0.037762717366538606,
+      "n": 348,
+      "reading": "career pooling HELPS"
+    },
+    "yac_per_rec:WR": {
+      "prev_only": 0.40085566642876014,
+      "career_mean": 0.4638503079096334,
+      "delta": 0.06299464148087325,
+      "n": 837,
+      "reading": "career pooling HELPS"
+    },
+    "yac_per_rec:TE": {
+      "prev_only": 0.4034672876281715,
+      "career_mean": 0.4466242598356741,
+      "delta": 0.043156972207502586,
+      "n": 372,
+      "reading": "career pooling HELPS"
+    },
+    "yac_per_rec:RB": {
+      "prev_only": 0.16246851845816798,
+      "career_mean": 0.18398372553120432,
+      "delta": 0.021515207073036335,
+      "n": 345,
+      "reading": "no difference"
+    },
+    "qb_rush_share:QB": {
+      "prev_only": 0.6443533882440139,
+      "career_mean": 0.7504460326753951,
+      "delta": 0.10609264443138122,
+      "n": 287,
+      "reading": "career pooling HELPS"
+    },
+    "ypc:RB": {
+      "prev_only": 0.17673091336300628,
+      "career_mean": 0.19867056642559214,
+      "delta": 0.021939653062585857,
+      "n": 459,
+      "reading": "no difference"
+    },
+    "target_share:WR": {
+      "prev_only": 0.6554344023535199,
+      "career_mean": 0.618217027439278,
+      "delta": -0.03721737491424193,
+      "n": 979,
+      "reading": "career pooling HURTS"
+    },
+    "target_share:TE": {
+      "prev_only": 0.653875620302863,
+      "career_mean": 0.6300412904626089,
+      "delta": -0.02383432984025402,
+      "n": 503,
+      "reading": "no difference"
+    },
+    "target_share:RB": {
+      "prev_only": 0.5737677304618548,
+      "career_mean": 0.5763548058331545,
+      "delta": 0.002587075371299652,
+      "n": 487,
+      "reading": "no difference"
+    },
+    "snap_share_PROXY:WR": {
+      "prev_only": 0.7041536068667257,
+      "career_mean": 0.6984795748870621,
+      "delta": -0.005674031979663541,
+      "n": 773,
+      "reading": "no difference"
+    },
+    "snap_share_PROXY:TE": {
+      "prev_only": 0.5897779439615254,
+      "career_mean": 0.5165269758305343,
+      "delta": -0.07325096813099108,
+      "n": 390,
+      "reading": "career pooling HURTS"
+    },
+    "snap_share_PROXY:RB": {
+      "prev_only": 0.6751389097957189,
+      "career_mean": 0.6466914104199173,
+      "delta": -0.0284474993758016,
+      "n": 445,
+      "reading": "no difference"
+    },
+    "rec_share_of_touches:RB": {
+      "prev_only": 0.7237823272985703,
+      "career_mean": 0.6687854192072163,
+      "delta": -0.054996908091353935,
+      "n": 568,
+      "reading": "career pooling HURTS"
+    },
+    "team_carry_share:RB": {
+      "prev_only": 0.63206826260496,
+      "career_mean": 0.6290236543603219,
+      "delta": -0.0030446082446380363,
+      "n": 537,
+      "reading": "no difference"
+    },
+    "ppg:QB": {
+      "prev_only": 0.47324814917213787,
+      "career_mean": 0.5972661000666235,
+      "delta": 0.12401795089448564,
+      "n": 288,
+      "reading": "career pooling HELPS"
+    },
+    "ppg:RB": {
+      "prev_only": 0.6905040032159565,
+      "career_mean": 0.6723623506679118,
+      "delta": -0.018141652548044673,
+      "n": 623,
+      "reading": "no difference"
+    },
+    "ppg:WR": {
+      "prev_only": 0.726822399909513,
+      "career_mean": 0.6915464562209475,
+      "delta": -0.03527594368856557,
+      "n": 1066,
+      "reading": "career pooling HURTS"
+    },
+    "ppg:TE": {
+      "prev_only": 0.6975982114348879,
+      "career_mean": 0.6629476963428506,
+      "delta": -0.034650515092037315,
+      "n": 541,
+      "reading": "career pooling HURTS"
+    }
+  },
+  "survivorship_confound": {
+    "QB": {
+      "r_seasons_vs_ppg": 0.43514881229722113,
+      "ppg_long_career": 16.99081615670654,
+      "ppg_short_career": 11.129939251271605,
+      "n_long": 390,
+      "n_short": 85
+    },
+    "RB": {
+      "r_seasons_vs_ppg": 0.3739097647502816,
+      "ppg_long_career": 9.168594290178701,
+      "ppg_short_career": 4.405899995559995,
+      "n_long": 773,
+      "n_short": 300
+    },
+    "WR": {
+      "r_seasons_vs_ppg": 0.4561417863723486,
+      "ppg_long_career": 8.158145943464948,
+      "ppg_short_career": 3.85294173704416,
+      "n_long": 1326,
+      "n_short": 454
+    },
+    "TE": {
+      "r_seasons_vs_ppg": 0.46199696642683746,
+      "ppg_long_career": 5.7678407735379675,
+      "ppg_short_career": 2.663148376792743,
+      "n_long": 677,
+      "n_short": 213
+    }
+  },
+  "n_interval_tests": 73
+}

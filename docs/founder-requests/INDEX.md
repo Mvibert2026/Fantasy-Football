@@ -5,7 +5,7 @@ Per-request files in this directory are the source of truth. Edit a request's ow
 `STATUS:` line, then re-run sync. Protocol: [`README.md`](README.md).
 Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests.md).
 
-**84 requests since freeze.**
+**86 requests since freeze.**
 
 ---
 
@@ -130,4 +130,6 @@ _None._
 | [FR-054](FR-054-the-bottom-up-model-should-output-component-proj.md) | The bottom up model should output component proj | `IN-PROGRESS` |
 | [FR-073](FR-073-adp-vs-production-analysis-run-on-12-team-mock-a.md) | Adp vs production analysis run on 12 team mock a | `DONE` |
 | [FR-091](FR-091-extend-the-bottom-up-component-model-to-rb-qb-an.md) | Extend the bottom up component model to rb qb an | `IN-PROGRESS` |
+| [FR-100](FR-100-rank-positions-by-volatility-per-roster-slot.md) | Rank positions by volatility per roster slot | `ANSWERED` |
+| [FR-101](FR-101-use-points-distribution-tails-for-volatility-rat.md) | Use points distribution tails for volatility rat | `ANSWERED` |
 

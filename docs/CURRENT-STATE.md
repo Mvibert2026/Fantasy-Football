@@ -450,6 +450,46 @@ pass or is marked as unverified.
     down leaves all four slopes inside the board's own published 95% CI. **The board-curve weighting
     question itself is unanswerable on current data: n = 2 evaluable targets, disagreeing at the 4th
     decimal of Kendall τ.** Threads **055**/**084** are what unblock it.
+13. **Zero RB is not distinguishable from VBD in this league, and that is measured, not
+    underpowered** (2026-07-30, `ranker`, FR-085, `docs/ranking/fr085-zero-rb.md`; rules fixed in
+    advance in `fr085-strategy-sim-precommit.md`, commit `a9e3b2b`). Draft simulation, 10 teams,
+    this league's roster and scoring, random draft slot, common random numbers, 300 sims per cell,
+    paired by season: **P(win title) +0.001 [−0.020, +0.023], P(playoffs) +0.000 [−0.042, +0.041],
+    realistic points +0.9 [−19.8, +21.1]** — all NULL, on both market sources (FFC 2018-2024, ECR
+    2021-2024), at every opponent-noise level, and at both 16- and 11-round depths. The mechanism:
+    **plain VBD in this league already takes its first RB in round 6.3**, so the comparison is
+    round 6.3 against round 10.7, not early-RB against late-RB. On the residual side the founder's
+    premise is only half supported — in rounds 1-3 the RB shortfall is **not** WR-specific (RB−WR
+    −26.6 MARGINAL, RB−TE −28.1 NULL, RB−QB −34.9 SURVIVES) and it vanishes on the expert-consensus
+    board over the same seasons (−4.9 NULL); it **is** WR-specific in rounds 4-8 (−27.5 SURVIVES).
+    The classic dead zone **RB13-24 is NULL** once matched against the WR band at the same draft
+    cost; **RB25-36 is −26.0 [−39.1, −12.5] SURVIVES** and is the best-controlled cell. Whether the
+    dead zone has moved is **not answerable at seven seasons** — every per-season trend is NULL with
+    intervals of ±8 to ±25 VBD points per year. 337 interval tests; grades are the correction.
+14. **The stacking-bonus ceiling channel is now closed by a third, lower-noise instrument, and
+    `CLAUDE.md` §7's operational clause is the open question** (2026-07-30, `ranker`, FR-086,
+    `docs/ranking/fr086-volatility.md` §3). The exceedance curve at
+    `experiments/bottomup/components/pos_model.py:300` predicts threshold clearance from **mean
+    yards per game alone**. Adding the player's own prior-season measured yardage dispersion is
+    **NULL at every threshold, in every family, at every shrinkage from k=0 to k=16** — expected
+    bonus-points MAE moves +0.002 / +0.004 / −0.003 per player-season on errors of 0.81 / 0.97 /
+    1.77 — in the **most favourable setting that exists** (both arms given the realised mean; in
+    production the mean is a projection and noisier). This is a different question from PR-002
+    (categorical) and pass-1 §6.1 (clearance-count instrument) and agrees with both. The league
+    **does** pay for ceiling and the amount is **+0.94 bonus points a season** for a high-volatility
+    WR over a low-volatility one at the same scoring level (SURVIVES). Whether §7's second clause
+    should be amended is escalated to `strategist`, not decided.
+15. **Volatility ranks differently per player than per roster slot, and the per-slot ordering is the
+    decision-relevant one** (2026-07-30, `ranker`, FR-086 §1). Per player: WR 1.084 CV, RB 1.047,
+    TE 1.002, QB 0.573 — **RB vs WR is a clean NULL**, and the only robust position-level statement
+    is that QB is ~45% less volatile than every skill position. Per roster slot, using ADR-029's
+    measured flex split and a **measured** same-position weekly correlation of +0.001 to +0.009:
+    **TE 1.002, RB 0.600, QB 0.573, WR 0.545** — the ordering inverts, and **the TE slot is the most
+    volatile thing on this roster** because it is the one skill slot with no diversification.
+    Player-level volatility persists at r ≈ 0.10 against mean PPG's r ≈ 0.72, so **it must not become
+    a per-player archetype label**; role-level volatility carries forward at −6% to +6% of SD and
+    can. At equal expected points, team variance is worth ~0.5pp of title odds across a 3.3× range —
+    the "worse getting in, better once in" story is measured and is not there.
 
 **Known-red, deliberately**
 

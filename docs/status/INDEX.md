@@ -4,7 +4,7 @@
 Session files in this directory are the source of truth. Add a new dated file, then
 re-run sync. Protocol: [`README.md`](README.md).
 
-**43 sessions recorded.**
+**44 sessions recorded.**
 
 ---
 
@@ -4623,6 +4623,112 @@ both got an `## Update`/note pointing at this work.
   the sibling agent this round). Not run; would not have exercised anything built here.
 - The underlying data gap (`strategies.json` etc. absent for 26 leagues) is unchanged — this
   session made the app honest about it, not closed it.
+
+---
+
+<!-- 2026-07-30-ranker-fr085-fr086.md -->
+
+# 2026-07-30 — ranker — FR-085 Zero RB, FR-086 volatility
+
+Worktree `agent-a2668c91115660701`. Commits `a9e3b2b`, `6fcfdb4`, `be684a8`.
+Suite: **844 passed, 6 failed** — all six pre-existing and none in code I own (see §5).
+
+## What was asked
+
+Two founder research questions. FR-085: does early-round RB underperformance support Zero RB?
+FR-086: rank player types by week-to-week volatility. Three mid-task course corrections arrived and
+were folded in: (a) name which factor families were carried over from WR per position, (b) test a
+per-player dispersion term in the exceedance curve, (c) surface positional volatility as a named
+deliverable with a per-roster-slot view, plus the archetype history-weighting question.
+
+## What was built
+
+| path | what |
+|---|---|
+| `docs/ranking/fr085-strategy-sim-precommit.md` | strategy rules fixed in writing **before** any simulation ran (`a9e3b2b`) |
+| `experiments/strategy/residuals.py` | FR-085 Q1/Q2 — RB residual per opposing position, dead-zone bands, two market sources |
+| `experiments/strategy/board.py` | three-layer season board, look-ahead-safe positional value curves |
+| `experiments/strategy/sim.py` | draft simulator: random slot, measured per-player σ, real H2H season with this league's playoff structure |
+| `experiments/strategy/run_strategies.py` | driver, paired-by-season bootstrap + exact sign test |
+| `experiments/volatility/volatility.py` | FR-086 position/type volatility, per-slot view, persistence, structural variance value |
+| `experiments/volatility/exceedance_dispersion.py` | does measured dispersion improve the exceedance curve beyond the mean |
+| `experiments/volatility/dimension_stability.py` | stable-trait vs situational-role autocorrelation for archetype dimensions |
+| `docs/ranking/fr085-zero-rb.md`, `docs/ranking/fr086-volatility.md` | the two reports |
+
+Raw output: `data/qa/fr085-residuals-*.json`, `fr085-strategy-sim-r16.json`, `-r11.json`,
+`fr086-volatility-*.json`, `fr086-exceedance-dispersion-*.json`, `fr095-dimension-stability-*.json`.
+
+## The results, in one line each
+
+- **Zero RB vs VBD: NULL on all four metrics, both markets, every σ, both depths.** P(title) +0.001
+  [−0.020, +0.023]. A real null, not an underpowered one.
+- **Plain VBD already waits until round 6.3 for its first RB** in this league. That reframes the
+  question the founder asked.
+- **The RB shortfall is not WR-specific in rounds 1-3** and vanishes entirely on the expert board.
+  It **is** WR-specific in rounds 4-8 (−27.5, SURVIVES).
+- **The classic dead zone RB13-24 is NULL** once draft cost is matched; **RB25-36 is SURVIVES**.
+  Whether it has moved over time is not answerable at seven seasons.
+- **Dispersion adds nothing to the exceedance curve** — null everywhere, in the most favourable
+  setting that exists.
+- **Per player WR is most volatile; per roster slot TE is, by 67%.** The ordering inverts.
+- **Role is more persistent than skill** — snap share r=+0.707, yards per carry r=+0.175. The
+  hypothesised stable/situational column assignment is close to backwards, though the recommended
+  *treatment* survives for a different reason (role dimensions drift, so use recent only).
+- **Confidence-by-games-observed is substantially a quality score** — players seen ≥5 seasons score
+  ~2× the PPG of those seen ≤2, at every position.
+
+## Decisions taken without asking
+
+Recorded in `docs/ideas-inbox.md` under `2026-07-30 — ranker`. The two worth repeating here:
+
+**Amended the strategy pre-commitment after a 5-sim smoke test and before any outcome comparison.**
+Unconstrained "always take the highest VBD" drafts 9 WR and 3 QB. Replaced with the project's own
+existing need penalty rather than a constant invented today. Asked `strategist` whether that
+invalidates the pre-registration.
+
+**Used FFC's `std_dev` column as the opponent-noise calibration.** `src/draft_sim.py` assumption 1
+states no observed draft-position data exists in this repo; it does. That module is untouched — its
+PR-003 numbers are ADR-028-reproducible and the new simulator is separate.
+
+## One result flagged rather than reported
+
+The passing-family dispersion coefficient is +0.135 [+0.108, +0.162], which reads as a strong
+SURVIVES. The interval bootstraps across walk-forward target seasons whose training sets overlap
+almost completely — effective n ≈ 1, not 20. Reported as invalid. Asked `strategist` to check that
+reasoning, since if I am wrong about the interval the conclusion changes.
+
+## Threads opened (NEW-, unnumbered — PM allocates)
+
+| file | to | subject |
+|---|---|---|
+| `NEW-fr085-fr086-methodology-review.md` | strategist | close Zero RB; is RB25-36 registrable; does `CLAUDE.md` §7 need amending |
+| `NEW-sleeper-screen-use-recent-usage-not-career-mean.md` | backend | FR-094 feature choice, with the measured deltas |
+| `NEW-archetype-volatility-dimension-and-stability.md` | researcher | volatility as a type attribute not a player label; corrected stable/situational assignment; the survivorship confound |
+
+`docs/ranking/archetypes-proposal.md` and the derivability-review thread do not exist in this
+worktree — both are on a branch it does not have. The actual derivability pass is still owed and the
+thread says so.
+
+## 5. Suite state
+
+6 failures, all pre-existing, none in code I own (I touched only `experiments/`, `docs/`, `data/qa/`):
+
+- `test_handoffs.py::test_mailbox_health` — duplicate thread IDs 093/094 and ADR-054/055 conflicts
+  from earlier parallel worktree agents. **My three new threads are correctly unnumbered `NEW-`
+  files and do not appear in the failure.**
+- `test_holdout_audit.py::test_no_new_direct_sqlite_connections_in_src` — already reported as red by
+  thread 094 (`ingest_sleeper_projections.py`).
+- three `test_ingest_ffc_adp.py` failures and one `test_ingest_sleeper_projections.py` failure —
+  DB-state dependent (quarantine rows and fetch dates already present in the copied `nfl.db`). Not
+  investigated; I do not own `src/`.
+
+## Gaps named rather than proxied
+
+`odds_snapshots` (never built, in the §4 schema, the cheapest route to the RB game-script factor) ·
+o-line quality (absent in any form) · goal-line share (needs play-by-play, no pbp table) · route
+participation (`snap_counts` used as a labelled `[PROXY]` throughout) · in-line vs slot · pace/PROE ·
+`play_callers` empty · **pre-2018 pre-draft ADP, which is the binding constraint on the dead-zone
+trend question and is a data problem, not a method problem**.
 
 ---
 
