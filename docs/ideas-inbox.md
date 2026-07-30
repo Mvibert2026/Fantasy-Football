@@ -1277,3 +1277,17 @@ have been the single most useful number in the report. Nothing committed.
 - **Cross-check: does the shipped board have the same finish-vs-consensus curve confusion?** The
   simulator reads finish-rank curves at consensus ranks, which ADR-016 explicitly settled against.
   `src/make_board.py` does it correctly. Worth grepping for other consumers that do not.
+**2026-07-30, frontend session (FR-075/FR-061/FR-069 build).** `python tools/handoffs.py sync`
+hard-failed for the whole mailbox ("file has no frontmatter block, refusing to stamp it") with no
+filename in the error. Cause: `docs/handoffs/NEW-coordinator-final-staff-lookahead-semantics.md`
+(a `data-ops` session's thread) had its `TO:`/`FROM:`/`SUBJECT:`/`STATUS:` header lines with no
+leading `---` — a lone `---` mid-file (meant as the closing delimiter) but nothing to open the
+block, so the parser's `text.startswith("---")` check failed before it ever got far enough to name
+the file. Fixed mechanically — added the missing leading `---`, changed no content — since this
+blocked every session's end-of-run `sync`, not just this one's, and the fix is unambiguous
+(wrap existing header lines in the delimiter the tool already expects). `sync` then allocated IDs
+101-111 for eleven previously-unallocated `NEW-*.md` threads, including two this session opened.
+Worth a `tools/handoffs.py check`-style structural validator that runs on `NEW-*.md` files at
+write time rather than surfacing as an opaque failure the next time anyone runs `sync` — logged,
+not built (out of scope for a frontend-dispatched session).
+

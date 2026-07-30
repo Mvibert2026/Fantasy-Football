@@ -1,6 +1,6 @@
 ---
 ID: FR-061
-STATUS: NEW
+STATUS: IN PROGRESS
 PRIORITY: HIGH
 SOURCE: chat 2026-07-30, PM session
 RAISED: 2026-07-30
@@ -151,4 +151,48 @@ values were never supplied, so it cannot be simulated until they are).
 So realistically **two now, one when its settings land**. Run those; leave the preset matrix until
 someone asks for it. The purpose is stated plainly in his words — *"good for me to be able to
 choose"* — which is a selector with real numbers beside each option, not a research programme.
+
+## Resolution (2026-07-30, frontend)
+
+Built to `docs/design/STRATEGY-SELECTOR.md`, sitting at the head of the Recommend tab
+(`ui/components/StrategySelector.tsx`), primary league only (`strategies.json` still doesn't exist
+for 26 of 27 leagues -- the generic-track state renders the six strategies as selectable-but-unpriced,
+naming this league's own real roster shape rather than an illustrative one).
+
+**Founder's own separation held exactly**: rankings (the board) never move. Recommendations do, with
+an explanation, via `ui/data/strategySelector.ts`. The harder half -- *how* selecting a strategy
+should change a recommendation -- was the design spec's own explicitly unresolved question (flagged
+to `strategist`). Resolved it honestly rather than inventing a model: `src/draft_sim.py`'s own
+`strategy_hero_rb`/`strategy_zero_rb`/`strategy_elite_te`/`strategy_qb_early` (the exact code that
+produced `strategies.json`'s measured margins) bias a RANK number in rank-slot units; this app's
+recommendation scores in VBD points, a different unit with no established conversion. Porting the raw
+deltas would have fabricated an equivalence. Instead, each strategy's DIRECTION and ROUND WINDOW is
+ported faithfully (cited by function name in the UI's own tooltip) as a hard reorder of the
+recommendation shortlist, never a blended score with an invented magnitude. `balanced`'s rule is
+continuous and need-weighted rather than round-gated; rather than claim equivalence to this app's
+existing unfilled-need term, it applies no additional reorder and says so on screen.
+
+**Critical constraint honoured explicitly**: Zero RB is NULL (FR-085, `docs/ranking/fr085-zero-rb.md`
+-- P(title) +0.001 [-0.020,+0.023], because plain VBD already takes its first RB in round 6.3 in this
+league). No copy anywhere claims a selected strategy improves the pick; the reorder panel states
+outright, every time, "a preference you selected, not a claim that this pick scores higher."
+
+Both required caveats (`power_floor.plain_english`, `lineup_assumption`) render in full, always, per
+the spec's explicit ban on the "results are indicative" shortcut. Season dots fill `--acc`/`--down` by
+each season's own sign, never green regardless of direction (the spec's named FantasyPros bug), read
+from the sigma=10 cell. Strategy display order is computed live from `seasons_positive` descending,
+not hardcoded, so a future re-run of the simulation can't silently drift from what's shown.
+
+**"Robust RB" (the addition below) and the pre-computed 3-league matrix are NOT built** -- both need
+new backend simulation runs (a new `src/draft_sim.py` strategy function with a written definition, and
+`strategies.json` for Ethan's Expert League + the ESPN league), outside a frontend-scoped session.
+**"Bottom-up should be the default"** is also unchanged -- still consensus-derived, per this ticket's
+own "not yet as the state" section.
+
+Commit `4022b40`. Tests: `ui/__tests__/strategy-selector.test.ts` (18, pure functions including the
+round-window ports and live display ordering), `ui/__tests__/draft-room-strategy-selector.test.tsx` (3,
+against the real board -- asserts the actual Zero RB reorder against whatever the live export's own
+VBD leader is, not a hardcoded player name). Screenshots (looked at directly):
+`frontend/e2e/artifacts/fr061-strategy-selector-default.png`,
+`fr061-strategy-zero-rb-adjustment.png`, `fr061-strategy-adjustment-panel-closeup.png`.
 

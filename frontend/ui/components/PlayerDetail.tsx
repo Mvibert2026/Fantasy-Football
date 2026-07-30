@@ -3,11 +3,24 @@ import type { BoardRow } from '../data/board';
 import type { DraftPickRecord } from '../data/draft';
 import { currentOverallPick, nextPickForSlot, pickNumbersForSlot, roundPickLabel } from '../data/draft';
 import { isPresent } from '../data/cell';
+import {
+  archetypeCovers,
+  archetypeFor,
+  archetypeLabel,
+  archetypeShareOfPosition,
+} from '../data/archetype';
 import { computeLiveAvailability, dotsFilled, freqText, type LiveAvailabilityResult } from '../data/liveAvailability';
 import type { Dataset } from '../data/load';
 import type { LeagueConfig } from '../data/league';
 import { recentSeasonKeys, usePlayerHistory, type PlayerHistoryState } from '../data/playerHistory';
-import type { RawBoard, RawSeasonStatsPlayer, RawWeeklyFinishesPlayer, RawWeeklyFinishWeek } from '../data/types';
+import type {
+  RawBoard,
+  RawSeasonStats,
+  RawSeasonStatsPlayer,
+  RawWeeklyFinishes,
+  RawWeeklyFinishesPlayer,
+  RawWeeklyFinishWeek,
+} from '../data/types';
 import { initialsOf, teamColorOf } from '../data/teamColors';
 import { verdictLine } from '../data/verdict';
 import { Value } from './Value';
@@ -20,12 +33,19 @@ import { decimal, integer, percent, signed } from '../lib/format';
  * max-width 96vw), z-index 90, a TRANSPARENT click-catcher at z-index 80 -- no
  * dark scrim, so the board and the pick clock stay visible while it's open.
  *
- * Sections 6 (archetype) and 9 (bullet takeaways) collapse into one line per
- * §8's rule for multiple empty sections on one player ("one collapsed line
- * naming everything missing at once, never three stacked empty headers"):
- * neither has a real field anywhere in this app's exports, for any player,
- * ever -- not a per-player gap, a permanent one. Headshot: same story, §6.9's
- * own admission -- no player in any real export has an ESPN id, so every card
+ * Section 6 (archetype) is NOT permanently empty -- it used to claim "No backend
+ * field in this build," which was false (FR-075, `docs/ranking/archetypes-proposal.md`
+ * SS0): `player_descriptions.json` carries a real per-player `archetype` field, the
+ * app already loads it (`Dataset.playerDescriptions`) and the assistant already reads
+ * it (`ui/assistant/retrieval.ts`). §6 now does the join (`ui/data/archetype.ts`) and
+ * renders whatever the export actually says, with an honest per-player reason when it
+ * doesn't -- absent (no `player_descriptions.json` for this league), not-modelled
+ * (QB/DEF/K -- the taxonomy covers RB/WR/TE only), or unclassified (measured, met no
+ * threshold; SS1 of the proposal doc found this is common, not rare). Section 9
+ * (bullet takeaways) is unrelated and stays the true permanent-absence case -- no
+ * field for it exists anywhere, ever -- so it keeps its own one-line notice rather
+ * than folding into §6's now-real content. Headshot: also a real permanent absence,
+ * §6.9's own admission -- no player in any real export has an ESPN id, so every card
  * renders initials on the team colour, always.
  *
  * Sections 7 (weekly finishes / consistency heat-map) and 8 (three-season
@@ -52,11 +72,22 @@ import { decimal, integer, percent, signed } from '../lib/format';
  * Prep mode honestly shows signal:'none' (no draft in progress to log picks
  * against) rather than a special-cased Prep-only availability path.
  *
- * `stale` is always false: this app has no settings-editor and so no
- * settings-hash system that could ever mark a league's simulation stale (§5.1
- * needs live, editable league settings to compare hashes against; none exist
- * here). Threaded as a real prop rather than deleted, so wiring it up later (if
- * a settings editor is ever built) is additive, not a rewrite.
+ * `stale` is always false: FR-069's Settings panel (`ui/components/shell/
+ * SettingsPanel.tsx`) exists now, but the ONE field it can actually edit --
+ * draft slot -- is a local, display-only override (FR-034) that doesn't touch
+ * league config the simulations run against. Team count and roster shape stay
+ * read-only there not because VBD is unreachable client-side (a replacement-
+ * level recompute is arithmetic on `projected_points` the board already
+ * ships), but because `league.json:flex_split_note`'s measured flex-slot
+ * allocation (26-season simulation, ADR-029) is tied to this league's own
+ * roster shape and would need re-measuring, not guessing, for a different one
+ * -- see that file's own doc comment. Scoring stays read-only for the
+ * genuinely-unreachable reason (no component stats shipped to re-score from).
+ * So there is still no settings-hash system that could mark a league's
+ * simulation stale (§5.1 needs live, editable league settings that feed the
+ * simulation to compare hashes against; none do). Threaded as a real prop
+ * rather than deleted, so wiring it up later (if a setting that DOES feed
+ * simulations becomes editable) is additive, not a rewrite.
  */
 
 export function PlayerDetail({
@@ -89,6 +120,52 @@ export function PlayerDetail({
   onClose: () => void;
 }) {
   const name = row.name.kind === 'present' ? row.name.value : '';
+  // FR-075: the join is real regardless of whether it resolves -- see
+  // ui/data/archetype.ts and the file-level doc comment above for what each
+  // of null/undefined/present actually claims.
+  const archetypeEntry = archetypeFor(data.playerDescriptions, row.raw.player_id_gsis);
+  const archetypeIsCovered = archetypeCovers(row.raw.position);
+  const archetypeShare =
+    archetypeEntry && data.playerDescriptions
+      ? archetypeShareOfPosition(data.playerDescriptions, row.raw.position, archetypeEntry.archetype)
+      : null;
+  // Four distinct on-screen states (Principle #2) -- a positive label, a
+  // position the taxonomy doesn't cover at all, a league with no
+  // player_descriptions.json export, and a covered player the taxonomy
+  // measured and could not place. Never collapsed into one "not computed."
+  const archetypeChip: { text: string; title: string; muted: boolean } = archetypeEntry
+    ? {
+        text: archetypeLabel(archetypeEntry.archetype, row.raw.position).toUpperCase(),
+        title:
+          `player_descriptions.json:players[].archetype = "${archetypeEntry.archetype}" ` +
+          `(confidence: ${archetypeEntry.confidence}).` +
+          (archetypeShare
+            ? ` ${archetypeShare.n} of ${archetypeShare.ofClassified} classified ${row.raw.position}s in ` +
+              `this export carry this same label right now -- a high share means this describes a role ` +
+              `bucket, not a precise type. Computed live, not a cached figure.`
+            : ''),
+        muted: false,
+      }
+    : !archetypeIsCovered
+      ? {
+          text: 'ARCHETYPE N/A',
+          title: `Archetype not modelled for ${row.raw.position} -- src/archetypes.py covers RB/WR/TE only.`,
+          muted: true,
+        }
+      : data.playerDescriptions === null
+        ? {
+            text: 'ARCHETYPE —',
+            title: 'player_descriptions.json is not exported for this league yet (primary league only today).',
+            muted: true,
+          }
+        : {
+            text: 'UNCLASSIFIED',
+            title:
+              'Not classified in player_descriptions.json -- met no defined threshold under the current ' +
+              'taxonomy. This project\'s own review found that fall-through rate is common, not an edge ' +
+              'case (docs/ranking/archetypes-proposal.md) -- a taxonomy gap, not a data gap.',
+            muted: true,
+          };
   const teams = league.teams.kind === 'present' ? league.teams.value : 0;
   const rounds = league.rounds.kind === 'present' ? league.rounds.value : 0;
   const userSlot = league.userSlot.kind === 'present' ? league.userSlot.value : 0;
@@ -207,6 +284,11 @@ export function PlayerDetail({
                 <span style={{ fontSize: 21, fontWeight: 700 }}>
                   <Value cell={row.name} render={(v) => v} />
                 </span>
+                {/* FR-075: archetype, "towards the top of the card... next to the
+                    name... before position comes into play" -- the founder's own
+                    placement request. Hover for the sourced field, confidence and
+                    (where a label exists) the live share stat. */}
+                <ArchetypeChip {...archetypeChip} />
                 <span style={{ fontSize: 14, fontWeight: 600, letterSpacing: '.045em', color: 'var(--txt)' }}>
                   <Value cell={row.positionalLabel} render={(v) => v} />
                 </span>
@@ -433,16 +515,46 @@ export function PlayerDetail({
                 delta here would read as the same signal. */}
             <AdpBlock row={row} board={data.board} league={league} />
 
-            {/* 6. Archetype -- permanently absent, no field in any export, ever.
-                Previously collapsed with section 9 into one shared line under
-                §8's multi-empty-section rule; that only works when the empty
-                sections are adjacent, and 7/8 no longer are (they're a real,
-                distinct claim now -- see above). Each keeps its own one-line
-                header + notice instead, per §7.2's normal numbered layout. */}
+            {/* 6. Archetype -- FR-075. Was a hardcoded "No backend field in this
+                build" regardless of the export; the field exists
+                (`player_descriptions.json`, ADR-044) and the app already loads
+                it (`Dataset.playerDescriptions`), so this section now does the
+                real join (`ui/data/archetype.ts`) instead of asserting
+                absence unconditionally. The compact identity-strip chip above
+                is the same computed state, reused, not a second telling of
+                the same fact that could disagree with this one. */}
             <SectionHeader label="ARCHETYPE" />
-            <p className="notice" style={{ marginTop: 10, fontSize: 12 }}>
-              Not computed: archetype. No backend field in this build.
-            </p>
+            <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', gap: 8 }}>
+              <ArchetypeChip {...archetypeChip} />
+              {archetypeEntry ? (
+                <span style={{ fontSize: 10.5, color: 'var(--dim2)' }}>
+                  confidence: {archetypeEntry.confidence}
+                </span>
+              ) : null}
+            </div>
+            {archetypeEntry ? (
+              <>
+                <p style={{ marginTop: 8, fontSize: 12.5, lineHeight: 1.5 }}>{archetypeEntry.description}</p>
+                {archetypeShare ? (
+                  <p className="notice" style={{ marginTop: 6, fontSize: 11.5 }}>
+                    {archetypeShare.n} of {archetypeShare.ofClassified} classified {row.raw.position}s in this
+                    export ({percent(archetypeShare.n / archetypeShare.ofClassified)}) carry this exact label --
+                    a high share means it describes a usage bucket, not a precise type. Computed live from this
+                    export, not a cached figure; see docs/ranking/archetypes-proposal.md §1 for the fuller
+                    coverage review.
+                  </p>
+                ) : null}
+                <p className="notice" style={{ marginTop: 6, fontSize: 11 }}>
+                  Describes last season's usage, not a 2026 projection -- the archetype system is unvalidated
+                  against outcomes (ADR-044) and never feeds the ranking model.
+                </p>
+              </>
+            ) : (
+              <p className="notice" style={{ marginTop: 8, fontSize: 12 }}>{archetypeChip.title}</p>
+            )}
+            <div className="num" style={{ marginTop: 6, fontSize: 9, color: 'var(--dim2)' }}>
+              player_descriptions.json:players[].archetype
+            </div>
 
             {/* 7. Weekly finishes / consistency heat-map. Real data as of
                 thread 052/ADR-048's join-key fix -- see WeeklyFinishesSection
@@ -450,13 +562,18 @@ export function PlayerDetail({
                 player states, each a distinct claim per Principle #2. */}
             <SectionHeader label="WEEKLY FINISHES" />
             <HistorySectionBoundary label="weekly finishes">
-              <WeeklyFinishesSection history={history} startableLine={startableLine} startableLabel={startableLabel} />
+              <WeeklyFinishesSection
+                history={history}
+                startableLine={startableLine}
+                startableLabel={startableLabel}
+                currentLeagueId={data.league.league_id ?? null}
+              />
             </HistorySectionBoundary>
 
             {/* 8. Three-season table. */}
             <SectionHeader label="THREE SEASONS" />
             <HistorySectionBoundary label="three-season table">
-              <ThreeSeasonSection history={history} />
+              <ThreeSeasonSection history={history} currentLeagueId={data.league.league_id ?? null} />
             </HistorySectionBoundary>
 
             {/* 9. Bullet takeaways -- permanently absent, same as archetype. */}
@@ -556,6 +673,35 @@ class HistorySectionBoundary extends Component<
     }
     return this.props.children;
   }
+}
+
+/** FR-075: small identity-strip badge, reused as-is in the fuller §6 section
+ *  below -- one presentational component, one set of states, never two
+ *  slightly different tellings of the same fact (Principle #2's "collapsing
+ *  states loses information" cuts the other way too: the same state must not
+ *  render two different ways in two places). `muted` marks every non-labelled
+ *  state (not-covered, not-available, unclassified) with the same dim
+ *  treatment the rest of this app uses for "real but empty," never the
+ *  confident look a positive label gets. */
+function ArchetypeChip({ text, title, muted }: { text: string; title: string; muted: boolean }) {
+  return (
+    <span
+      title={title}
+      style={{
+        flex: 'none',
+        fontSize: 10.5,
+        fontWeight: 600,
+        letterSpacing: '.03em',
+        padding: '1px 7px',
+        border: '1px solid var(--line2)',
+        color: muted ? 'var(--dim2)' : 'var(--txt)',
+        background: muted ? 'transparent' : 'var(--panel2)',
+        whiteSpace: 'nowrap',
+      }}
+    >
+      {text}
+    </span>
+  );
 }
 
 function SectionHeader({ label }: { label: string }) {
@@ -827,10 +973,12 @@ function WeeklyFinishesSection({
   history,
   startableLine,
   startableLabel,
+  currentLeagueId,
 }: {
   history: PlayerHistoryState;
   startableLine: number | null;
   startableLabel: string | null;
+  currentLeagueId: string | null;
 }) {
   if (history.status !== 'ready') {
     return <HistoryFallback history={history} file="weekly_finishes.json" />;
@@ -849,10 +997,18 @@ function WeeklyFinishesSection({
       </>
     );
   }
-  return <WeeklyFinishesHeatmap player={history.weeklyFinishes} startableLine={startableLine} startableLabel={startableLabel} />;
+  return (
+    <WeeklyFinishesHeatmap
+      player={history.weeklyFinishes}
+      startableLine={startableLine}
+      startableLabel={startableLabel}
+      envelope={history.weeklyFinishesEnvelope}
+      currentLeagueId={currentLeagueId}
+    />
+  );
 }
 
-function ThreeSeasonSection({ history }: { history: PlayerHistoryState }) {
+function ThreeSeasonSection({ history, currentLeagueId }: { history: PlayerHistoryState; currentLeagueId: string | null }) {
   if (history.status !== 'ready') {
     return <HistoryFallback history={history} file="season_stats.json" />;
   }
@@ -870,7 +1026,28 @@ function ThreeSeasonSection({ history }: { history: PlayerHistoryState }) {
       </>
     );
   }
-  return <ThreeSeasonTable player={history.seasonStats} />;
+  return <ThreeSeasonTable player={history.seasonStats} envelope={history.seasonStatsEnvelope} currentLeagueId={currentLeagueId} />;
+}
+
+/** True scoring-league note for a history file's envelope -- contract 1.16.0. Compares
+ *  the fetched file's own `league_id` against the league actually loaded on screen,
+ *  since the fetch itself is still unprefixed (always the primary league's file, see
+ *  `ui/data/playerHistory.ts`'s module doc comment) regardless of which league the
+ *  rest of this card is showing. Replaces the pre-1.16.0 caveat, which unconditionally
+ *  claimed "standard PPR, not this league's own ruleset" -- true of the OLD export,
+ *  false of this one, which is genuinely re-scored under `envelope.league_id`'s rules. */
+export function historyScoringNote(
+  envelope: { league_id: string; scoring_ruleset_note: string },
+  currentLeagueId: string | null,
+): string {
+  const matches = currentLeagueId !== null && envelope.league_id === currentLeagueId;
+  const base = `Scored under ${envelope.scoring_ruleset_note}`;
+  return matches
+    ? base
+    : `${base} This is league "${envelope.league_id}", not the currently-selected league` +
+        `${currentLeagueId ? ` ("${currentLeagueId}")` : ''} -- this history section is not yet fetched ` +
+        'per league (a known gap, see docs/CURRENT-STATE.md open item 5), so it may not match the ' +
+        "scoring shown elsewhere on this card.";
 }
 
 /** §7.2 item 7: 18-cell heatmap, gradient over positional finish, 2px bottom
@@ -882,10 +1059,14 @@ function WeeklyFinishesHeatmap({
   player,
   startableLine,
   startableLabel,
+  envelope,
+  currentLeagueId,
 }: {
   player: RawWeeklyFinishesPlayer;
   startableLine: number | null;
   startableLabel: string | null;
+  envelope: RawWeeklyFinishes;
+  currentLeagueId: string | null;
 }) {
   const [seasonKey] = recentSeasonKeys(player, 1);
   if (!seasonKey) {
@@ -911,23 +1092,18 @@ function WeeklyFinishesHeatmap({
         Darker = better positional finish that week.
         {startableLabel ? ` Orange bottom rule = finished worse than this league's ${startableLabel} startable line.` : ''}
       </div>
-      {/* FR-079 ("Last few seasons should be in correct fomat as well").
-          Traced, not assumed: `src/export_history.py::build_weekly_finishes`
-          ranks positional finish by `player_weekly_stats.fantasy_points_ppr`
-          -- a fixed, standard-PPR figure computed once, with no `scoring_cfg`
-          argument at all (unlike `make_board.build_board`, which does take
-          one). weekly_finishes.json is also not exported per league -- it
-          lives unprefixed at the top level, never under `leagues/<id>/`
-          (confirmed: `data/export/espn_10_standard/` etc. carry no copy) --
-          so switching leagues cannot change this number even in principle
-          yet. This is a genuine export-contract gap, not a frontend routing
-          bug: converting it in the browser would mean re-deriving fantasy
-          points from raw stats client-side, which this project's rule
-          against approximating scoring outside the pipeline forbids. Say so
-          plainly instead. Flagged to `backend` via a handoff thread. */}
+      {/* FR-079 resolution, contract 1.16.0: `src/export_history.py::
+          build_weekly_finishes` now ranks positional finish by this league's
+          own re-scored `fantasy_points` (`scoring.score_offensive_game`
+          under `cfg.scoring`), never nflreadpy's fixed `fantasy_points_ppr`
+          -- the pre-1.16.0 version of this note claiming "standard PPR, not
+          this league's own ruleset" is now FALSE and has been removed. The
+          fetch itself is still unprefixed (a separate, still-open gap, see
+          `ui/data/types.ts`'s `RawWeeklyFinishes` doc comment) -- so this
+          still checks the fetched envelope's own `league_id` against the
+          league on screen rather than assuming a match. */}
       <p className="notice" style={{ marginTop: 6, fontSize: 10.5 }}>
-        Ranked by standard PPR scoring, not this league's own ruleset (see MARKET ADP above) --
-        weekly_finishes.json does not yet vary by league.
+        {historyScoringNote(envelope, currentLeagueId)}
       </p>
       <div className="num" style={{ marginTop: 5, fontSize: 9, color: 'var(--dim2)' }}>
         weekly_finishes.json:players[].seasons[{seasonKey}].weeks
@@ -1004,7 +1180,15 @@ function HeatCell({ week, startableLine }: { week: RawWeeklyFinishWeek; startabl
  *  a sometimes-null field into a dense numeric grid invites exactly the
  *  0-vs-null confusion Principle #2 forbids -- called out in a footnote
  *  instead, only when it actually applies to a shown season. */
-function ThreeSeasonTable({ player }: { player: RawSeasonStatsPlayer }) {
+function ThreeSeasonTable({
+  player,
+  envelope,
+  currentLeagueId,
+}: {
+  player: RawSeasonStatsPlayer;
+  envelope: RawSeasonStats;
+  currentLeagueId: string | null;
+}) {
   const seasons = [...player.seasons].sort((a, b) => b.year - a.year).slice(0, 3);
   if (seasons.length === 0) {
     return (
@@ -1034,7 +1218,7 @@ function ThreeSeasonTable({ player }: { player: RawSeasonStatsPlayer }) {
         <span>REC TD</span>
         <span>RSH YD</span>
         <span>RSH TD</span>
-        <span>PPR PTS</span>
+        <span>PTS</span>
       </div>
       {seasons.map((s) => (
         <div
@@ -1056,7 +1240,11 @@ function ThreeSeasonTable({ player }: { player: RawSeasonStatsPlayer }) {
           <span>{integer(s.receiving_tds)}</span>
           <span>{integer(s.rushing_yards)}</span>
           <span>{integer(s.rushing_tds)}</span>
-          <span style={{ color: 'var(--acc)', fontWeight: 600 }}>{decimal(s.fantasy_points_ppr)}</span>
+          <span style={{ color: 'var(--acc)', fontWeight: 600 }}>
+            {/* Contract 1.16.0: fantasy_points_available:false is a real "no scoring-view
+                stats resolved for this player-season" state, never a fabricated 0. */}
+            {s.fantasy_points_available && s.fantasy_points !== null ? decimal(s.fantasy_points) : '—'}
+          </span>
         </div>
       ))}
       {unavailableYears.length > 0 ? (
@@ -1066,14 +1254,12 @@ function ThreeSeasonTable({ player }: { player: RawSeasonStatsPlayer }) {
           Not shown as its own column for that reason.
         </p>
       ) : null}
-      {/* FR-079: same fixed-format gap as WeeklyFinishesHeatmap's own note above
-          (`src/export_history.py::build_season_stats` sums the same
-          `player_weekly_stats.fantasy_points_ppr`, no `scoring_cfg`, not
-          exported per league) -- PPR PTS is real historical PPR scoring, not
-          a claim about this league's own ruleset. */}
+      {/* FR-079 resolution, contract 1.16.0: PTS is now this league's own
+          re-scored total (see historyScoringNote / RawSeasonStats doc
+          comment) -- the pre-1.16.0 "standard PPR, not this league's own
+          ruleset" claim is false of this export and has been removed. */}
       <p className="notice" style={{ marginTop: 8, fontSize: 10.5 }}>
-        PPR PTS is standard PPR scoring, not this league's own ruleset (see MARKET ADP above) --
-        season_stats.json does not yet vary by league.
+        {historyScoringNote(envelope, currentLeagueId)}
       </p>
       <div className="num" style={{ marginTop: 6, fontSize: 9, color: 'var(--dim2)' }}>
         season_stats.json:players[].seasons

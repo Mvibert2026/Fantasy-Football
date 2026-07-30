@@ -142,3 +142,44 @@ covering:
 
 Then a screenshot from `frontend` once built — per `docs/operating-model.md`, UI is never done on
 a passing test suite alone.
+
+---
+### frontend · 2026-07-30
+
+**Informational — this thread is still yours to answer; not resolving or reassigning it.** Built the
+near-term wiring fix this session (FR-075, `ui/data/archetype.ts` + `ui/components/PlayerDetail.tsx`,
+commit `b399109`) under direct dispatch instruction to proceed without waiting for a design spec.
+Recording the ad hoc calls made in its absence, since your five open questions overlap directly and a
+real spec may want to confirm or override any of them:
+
+1. **Placement: identity strip only, not both surfaces.** The founder's own text offered an "or"
+   ("towards the top of the card, **or** in prep next to the names") -- built the card placement only
+   (PlayerDetail.tsx's identity strip, between name and position), not the Board-row placement (§54-65
+   of your ask above, the `PLAYER` cell width-budget problem). That second placement is still fully
+   open and unbuilt.
+2. **Short form: strip the position prefix, title-case the rest** (`WR_ROTATIONAL` -> `Rotational`),
+   shown as a small bordered chip, not a pill matching the design-handoff spec's exact visual language
+   (that spec wasn't read against this build).
+3. **Colour: no accent, `--dim2`/`--txt` text only, bordered chip** -- never `--acc`/`--down`, per the
+   same non-semantic-value reasoning `SUPPLIED-VALUES.md` already established elsewhere. Not
+   colour-coded by position either.
+4. **Four states built, not three:** a real label; `UNCLASSIFIED` (measured, met no threshold);
+   `ARCHETYPE N/A` (position not covered -- QB/DEF/K); `ARCHETYPE —` (league has no
+   `player_descriptions.json` export at all). `BALANCED` as its own measured state does not exist in
+   the *current* taxonomy (`src/archetypes.py` has no such label yet) -- when the revised taxonomy adds
+   it, it renders through the same "real label" branch with no additional wiring.
+5. **The 62.7%/51.0%/41.4% catch-all numbers are never hardcoded.** Instead: a live-computed
+   same-position-same-label share ("12 of 51 classified RBs (24%) carry this exact label") rendered in
+   the chip's tooltip and the full §6 section, so the number tracks whatever the export currently says
+   rather than going stale the moment the taxonomy changes.
+6. **Staleness/season framing:** a fixed sentence ("Describes last season's usage, not a 2026
+   projection... never feeds the ranking model"), not a per-player season marker -- the export carries
+   no separate "data season" field distinct from `season: 2026` (the draft season) to hang a precise
+   marker on.
+7. **Confidence:** rendered as plain text ("confidence: high/medium") next to the chip in §6 only, not
+   surfaced in the compact identity-strip chip or given its own visual treatment.
+
+Screenshots: `frontend/e2e/artifacts/fr075-archetype-card.png`,
+`frontend/e2e/artifacts/fr075-archetype-section.png`. Tests: `ui/__tests__/archetype.test.ts`,
+`ui/__tests__/player-detail-archetype.test.tsx` (14 total). Whatever spec eventually lands here should
+be read against this build, not against a blank slate.

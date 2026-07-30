@@ -4,7 +4,7 @@
 Threads are the source of truth. Change a thread's `STATUS:`, then re-run sync.
 Protocol: [`README.md`](README.md).
 
-**69 open** · 45 resolved
+**73 open** · 46 resolved
 
 ---
 
@@ -13,7 +13,7 @@ Protocol: [`README.md`](README.md).
 Every role gets a section, including empty ones — an empty inbox is a fact worth stating,
 not an omission. Start your session at your own heading.
 
-### `pm` — 10 waiting
+### `pm` — 9 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
@@ -25,10 +25,9 @@ not an omission. Start your session at your own heading.
 | [095](095-yahoo-api-appears-open-espn-is-a-clean-no-the-bi.md) | Yahoo api appears open espn is a clean no the bi | `researcher` | OPEN | 0d | none |
 | [106](106-fr090-bookkeeping-investigation-findings.md) | Fr090 bookkeeping investigation findings | `librarian` | OPEN | 0d | none |
 | [108](108-injury-prediction-services-buy-nothing.md) | Injury prediction services buy nothing | `researcher` | OPEN | 0d | FR-097 (injury-prediction-service buy decision); raises priority of open item 8 (T6 roster-status ingest) and the Sleeper daily snapshot job |
-| [89](089-fr-040-costing-static-hosting-blocks-scoring-rec.md) | Fr 040 costing static hosting blocks scoring rec | `backend` | OPEN | 1d | FR-040 custom league settings screen |
 | [90](090-fr-043-audit-claude-md-ss5-staleness-built-but-u.md) | Fr 043 audit claude md ss5 staleness built but u | `librarian` | OPEN | 1d | none |
 
-### `backend` — 28 waiting
+### `backend` — 30 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
@@ -58,7 +57,9 @@ not an omission. Start your session at your own heading.
 | [101](101-coordinator-final-staff-lookahead-semantics.md) | Coordinator final staff lookahead semantics | `data-ops` | OPEN | 0d | none |
 | [103](103-fr-096-bust-candidate-screen-scope.md) | Fr 096 bust candidate screen scope | `backend` | OPEN | 0d |  |
 | [104](104-fr066-availability-ranking-source-export.md) | Fr066 availability ranking source export | `frontend` | OPEN | 0d | none |
-| [110](110-sleeper-screen-use-recent-usage-not-career-mean.md) | Sleeper screen use recent usage not career mean | `ranker` | OPEN | 0d | nothing; changes a feature choice in the FR-094 sleeper screen before it ships |
+| [109](109-league-settings-custom-pane.md) | League settings custom pane | `frontend` | OPEN | 0d | FR-069 (kill the 24-preset matrix; dropdown is 3 leagues + Custom) |
+| [111](110-sleeper-screen-use-recent-usage-not-career-mean.md) | Sleeper screen use recent usage not career mean | `ranker` | OPEN | 0d | nothing; changes a feature choice in the FR-094 sleeper screen before it ships |
+| [111](111-sleeper-screen-use-recent-usage-not-career-mean.md) | Sleeper screen use recent usage not career mean | `ranker` | OPEN | 0d | nothing; changes a feature choice in the FR-094 sleeper screen before it ships |
 | [88](088-pr-004-f-bottomup-core-run-the-confirmatory-bott.md) | Pr 004 f bottomup core run the confirmatory bott | `strategist` | OPEN | 1d | none |
 
 ### `frontend` — 18 waiting
@@ -81,10 +82,10 @@ not an omission. Start your session at your own heading.
 | [066](066-contract-1-10-0-board-json-rows-gained-roster-st.md) | Contract 1 10 0 board json rows gained roster st | `backend` | OPEN | 3d | none |
 | [086](086-competitive-ux-the-overhaul-case-is-weaker-than.md) | Competitive ux the overhaul case is weaker than | `researcher` | OPEN | 1d | none |
 | [093](093-fr-057-part-1-availability-json-now-covers-every.md) | Fr 057 part 1 availability json now covers every | `backend` | OPEN | 1d | none |
-| [109](109-opponents-and-liveopponents-have-diverged.md) | Opponents and liveopponents have diverged | `frontend` | OPEN | 0d | none |
-| [89](089-fr-040-costing-static-hosting-blocks-scoring-rec.md) | Fr 040 costing static hosting blocks scoring rec | `backend` | OPEN | 1d | FR-040 custom league settings screen |
+| [110](109-opponents-and-liveopponents-have-diverged.md) | Opponents and liveopponents have diverged | `frontend` | OPEN | 0d | none |
+| [110](110-opponents-and-liveopponents-have-diverged.md) | Opponents and liveopponents have diverged | `frontend` | OPEN | 0d | none |
 
-### `data-ops` — 8 waiting
+### `data-ops` — 9 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
@@ -96,8 +97,9 @@ not an omission. Start your session at your own heading.
 | [070](070-recurring-injury-suspension-feed.md) | Recurring injury suspension feed | `pm` | OPEN | 3d | T4 (suspensions/roster-status table stakes), E[games_played] per ADR-E Amendment E-A1 |
 | [084](084-deepen-expert-consensus-history-beyond-2021-2025.md) | Deepen expert consensus history beyond 2021 2025 | `ranker` | OPEN | 1d | none |
 | [097](097-ingest-nflverse-weekly-roster-status-the-only-so.md) | Ingest nflverse weekly roster status the only so | `ranker` | OPEN | 0d | the season-ending-IR and suspension error classes in the bottom-up component model (docs/ranking/component-model-rb-qb-te-pass-1.md §5.2). Nothing shipped. |
+| [113](113-rosters-weekly-blocks-vacated-opportunity.md) | Rosters weekly blocks vacated opportunity | `ranker` | OPEN | 0d | test-registry #28 (vacated targets & carries) |
 
-### `strategist` — 12 waiting
+### `strategist` — 13 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
@@ -113,6 +115,7 @@ not an omission. Start your session at your own heading.
 | [102](102-fr-094-sleeper-screen-methodology-review.md) | Fr 094 sleeper screen methodology review | `backend` | OPEN | 0d |  |
 | [105](105-fr085-fr086-methodology-review.md) | Fr085 fr086 methodology review | `ranker` | OPEN | 0d | whether anything from FR-085/FR-086 is registered; whether CLAUDE.md §7's ceiling claim stands |
 | [111](111-valuation-tests-35-36-results.md) | Valuation tests 35 36 results | `backend` | OPEN | 0d | none |
+| [112](112-preregistration-gates-need-a-decision-subset.md) | Preregistration gates need a decision subset | `ranker` | OPEN | 0d | every future pre-registration that gates on projection error |
 
 ### `researcher` — 4 waiting
 
@@ -204,4 +207,5 @@ _Nothing waiting on you._
 | [087](087-fr-039-pass-2-register-the-confirmatory-te-windo.md) | Fr 039 pass 2 register the confirmatory te windo | `ranker` → `strategist` |
 | [093](093-contract-1-15-0-scoring-ruleset-note-on-league-j.md) | Contract 1 15 0 scoring ruleset note on league j | `backend` → `frontend` |
 | [098](098-adp-and-history-not-league-scoring-aware.md) | Adp and history not league scoring aware | `frontend` → `backend` |
+| [89](089-fr-040-costing-static-hosting-blocks-scoring-rec.md) | Fr 040 costing static hosting blocks scoring rec | `backend` → `frontend, pm` |
 

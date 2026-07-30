@@ -54,6 +54,39 @@ implementation they check, per the project's non-negotiable rule. Handoff opened
 for methodology sign-off: `docs/handoffs/NEW-valuation-tests-35-36-results.md`. Both registry
 entries (`docs/test-registry.md` #35/#36) and the corresponding rows in
 `docs/strategic-insights.md` §5b updated in place.
+**Last verified:** 2026-07-30, frontend session (worktree `agent-adf5cfac0336ac921`) shipping three
+design specs that were written and never built, plus the false archetype claim (open item 6 below,
+now closed). **FR-075:** `PlayerDetail.tsx` unconditionally claimed "Not computed: archetype. No
+backend field in this build" — false; `data/export/player_descriptions.json` carries a real
+per-player `archetype` field the app already loaded but never rendered. Fixed with a real join
+(`ui/data/archetype.ts`) surfaced in two places (identity strip next to the name, per the founder's
+own placement request, and the full §6 section), four honest states (labelled/`UNCLASSIFIED`/
+not-covered/not-available), and a **live-computed** same-position-same-label share stat rather than
+a hardcoded percentage, so the catch-all-bucket problem (RB_COMMITTEE 62.7% of RBs measured this
+session) stays visible without going stale. **FR-061:** built the strategy selector
+(`docs/design/STRATEGY-SELECTOR.md`) at the head of the Recommend tab — rankings never move,
+recommendations reorder with an explanation. The harder design question (how selection should affect
+recommendations) was left explicitly unresolved by the spec; resolved honestly by porting each
+strategy's direction and round window from `src/draft_sim.py`'s own strategy functions (cited by
+name) as a hard reorder, never porting the raw rank-slot deltas into this app's VBD-point score,
+which would have fabricated a unit conversion that doesn't exist. Zero RB's own NULL result
+(FR-085) is stated on screen every time it fires: "a preference you selected, not a claim that this
+pick scores higher." **FR-069/FR-040:** built the League Settings panel (replacing TopBar's dead
+"Settings — not built"), enforcing "the screen must not accept a setting it cannot apply" — draft
+slot is genuinely editable; team count and roster shape render read-only because
+`league.json:flex_split_note`'s allocation is a *measured* quantity (ADR-029) tied to this league's
+own roster shape, not a formula (an earlier draft of this exact reasoning overclaimed it was
+categorically server-side-only, contradicting FR-040's own prior analysis — caught and corrected
+the same session, commit `99b666a`); scoring renders as a read-only "SCORED UNDER" statement.
+**Not built:** FR-069's further ask (dropdown collapsed to 3 leagues + Custom, the 24-preset matrix
+retired) — backend-owned (`src/generate_config_matrix.py`, `src/league_builder.py`), handed off
+(`docs/handoffs/NEW-league-settings-custom-pane.md`); the Board-row archetype placement (design
+question still open); the revised archetype taxonomy itself (thread 099, `ranker`). `npx tsc -b
+--noEmit` clean; full suite 356 passed, 0 failed, 42 files (28 new tests across 6 new test files).
+Screenshots looked at directly: `frontend/e2e/artifacts/fr075-*.png` (2), `fr069-settings-panel.png`,
+`fr061-strategy-*.png` (3). 6 commits. Full writeup:
+`docs/status/2026-07-30-frontend-fr075-fr061-fr069.md`.
+
 **Last verified:** 2026-07-30, backend session (worktree `agent-a3257055537f1be4e`) fixing the root
 cause behind FR-079/FR-083 (`docs/handoffs/NEW-adp-and-history-not-league-scoring-aware.md`,
 frontend's diagnosis). Two real defects, both making the app state something false about a
@@ -444,31 +477,35 @@ pass or is marked as unverified.
 
 **Correctness — the app states something that is not so**
 
-5. **Non-primary leagues are still missing four export artifacts** (data gap, unresolved):
-   `strategies.json`, `player_descriptions.json`, `season_stats.json`, `weekly_finishes.json` —
-   primary carries 11, the 26 sub-leagues carry 7. **The UI now explains this rather than reading
-   as broken**, fixed 2026-07-29 (frontend, `docs/design/TWO-TRACK-EXPRESSION.md`): the league
-   selector carries a PRIMARY/GENERIC track badge and a ●/○ marker per option before a league is
-   even selected, and the Strategy guide's old single "Not available for this league" string
-   (which conflated "generic track, by design" with "not yet run") is split by track. Only
-   `strategies.json` actually reads as a thinned screen in practice — `weekly_finishes.json`/
-   `season_stats.json` are fetched from a genuinely shared, unprefixed path regardless of which
-   league is loaded (`ui/data/playerHistory.ts`), so PlayerDetail's history sections render the
-   same on every league; that correction is logged in `docs/ideas-inbox.md` (2026-07-29, frontend,
-   item 5) since it revises this line's own earlier "three other screens thin out" framing.
-6. **The player card says archetype does not exist; it does, and the app already loads it.**
-   `PlayerDetail.tsx:425-434` renders "Not computed: archetype. No backend field in this build"
-   and comments that it is "permanently absent, no field in any export, ever." That is true of
-   `board.json` and **false of the app's own loaded dataset**: `data/export/player_descriptions.json`
-   carries a per-player `archetype` field for 213 players (ADR-044), `frontend/ui/data/load.ts:187,214`
-   loads it into `Dataset.playerDescriptions`, and `ui/assistant/retrieval.ts:507-519` reads it.
-   A wiring + wording defect, not a missing capability — and the likely reason FR-075 was raised as
-   "we need to get archetype built." Taxonomy spec and both fixes scoped in
-   `docs/ranking/archetypes-proposal.md` (researcher, 2026-07-30) with unallocated threads staged to
-   `ranker` and `design`. **Surfacing the existing labels unchanged would make a second, quiet defect
-   loud:** measured from the committed artifact, 62.7% of RBs are `RB_COMMITTEE`, 41.4% of WRs are
-   `WR_ROTATIONAL`, 51.0% of TEs are `TE_SECONDARY_RECEIVER`, and `WR_POSSESSION` has four players
-   in the whole file.
+5. **Non-primary leagues are still missing four export artifacts** (data gap, unresolved for
+   `player_descriptions.json`/`strategies.json`; **partially resolved for the history pair, see
+   below**): `strategies.json`, `player_descriptions.json`, `season_stats.json`,
+   `weekly_finishes.json` — primary carries 11, the 26 sub-leagues carry 7 (though as of 2026-07-30,
+   measured directly: 17 of those 26 now carry `season_stats.json`/`weekly_finishes.json` too — the
+   backend's FR-079/FR-083 history fix exports both per league where it has real data; 9 leagues
+   (`ethans_expert_league`, `yahoo_10_full`, `yahoo_standard_mock`, and six 12/14-team Yahoo presets)
+   still carry neither, unrelated to this fix).
+   **The UI now explains this rather than reading as broken**, fixed 2026-07-29 (frontend,
+   `docs/design/TWO-TRACK-EXPRESSION.md`): the league selector carries a PRIMARY/GENERIC track badge
+   and a ●/○ marker per option before a league is even selected, and the Strategy guide's old single
+   "Not available for this league" string (which conflated "generic track, by design" with "not yet
+   run") is split by track. `weekly_finishes.json`/`season_stats.json` are still fetched from a
+   genuinely shared, unprefixed path regardless of which league is loaded (`ui/data/playerHistory.ts`)
+   — that specific routing gap is still open — but as of 2026-07-30 (frontend) PlayerDetail.tsx at
+   least states honestly, from the fetched envelope's own `league_id`, when the history shown is a
+   different league's than the one on screen, rather than silently presenting it as a match; see
+   `ui/data/types.ts`'s `RawWeeklyFinishes` doc comment.
+6. **RESOLVED, 2026-07-30 (frontend).** The player card no longer says archetype does not exist.
+   `PlayerDetail.tsx` used to render "Not computed: archetype. No backend field in this build" for
+   every player and comment that the field was "permanently absent, no field in any export, ever" —
+   true of `board.json`, false of the app's own loaded `player_descriptions.json`. Fixed: a real join
+   (`ui/data/archetype.ts`), a chip in the identity strip (the founder's own placement request), and
+   four honest states with a live-computed same-label-same-position share stat so the catch-all-
+   bucket problem (RB_COMMITTEE 62.7% of RBs, etc.) stays visible rather than hidden. See this file's
+   own "Last verified" entry above and `docs/founder-requests/FR-075-*.md`'s Resolution section for
+   the full writeup. **Still open, handed to `design`/`ranker`:** the Board-row placement (a second
+   placement the founder also named) and the taxonomy revision itself
+   (`docs/ranking/archetypes-proposal.md`, thread 099).
 7. **Duplicate founder-request ids.** FR-029 and FR-030 each name two different requests, so a
    status update to one is invisible in the other. `tools/dashboard.py` now flags this on every run.
 17. **FR-066 (availability picks not changing on slot override) — the founder-visible defect is

@@ -98,6 +98,13 @@ export type PlayerHistoryState =
       status: 'ready';
       weeklyFinishes: RawWeeklyFinishesPlayer | undefined;
       seasonStats: RawSeasonStatsPlayer | undefined;
+      /** The FULL fetched files (contract 1.16.0's `league_id`/`scoring_note`/
+       *  `scoring_ruleset_note` envelope fields), not narrowed to this player --
+       *  PlayerDetail.tsx compares `league_id` here against whichever league is
+       *  currently loaded, since this fetch is still unprefixed (see the module
+       *  doc comment) and may be a different league's own history. */
+      weeklyFinishesEnvelope: RawWeeklyFinishes;
+      seasonStatsEnvelope: RawSeasonStats;
     };
 
 /**
@@ -145,6 +152,8 @@ export function usePlayerHistory(gsisId: string | null): PlayerHistoryState {
           status: 'ready',
           weeklyFinishes: weeklyFinishesFor(h.weeklyFinishes, gsisId),
           seasonStats: seasonStatsFor(h.seasonStats, gsisId),
+          weeklyFinishesEnvelope: h.weeklyFinishes,
+          seasonStatsEnvelope: h.seasonStats,
         });
       })
       .catch((err: unknown) => {

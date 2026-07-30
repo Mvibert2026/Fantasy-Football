@@ -1,6 +1,6 @@
 ---
 ID: FR-069
-STATUS: NEW
+STATUS: IN PROGRESS
 PRIORITY: HIGH
 SOURCE: chat 2026-07-30, PM session
 RAISED: 2026-07-30
@@ -59,3 +59,30 @@ finding and it survives this change intact.
 
 So Custom either triggers a rebuild, or the scoring fields are honestly out of reach on the hosted
 site and available locally. **Design and backend should settle which before it is built.**
+
+## Resolution (2026-07-30, frontend) — partial
+
+Built the piece that was frontend's to build: `LEAGUE-SETTINGS-BOUNDARY.md`'s boundary rule, as a
+real Settings panel replacing TopBar.tsx's dead "Settings — not built" text
+(`ui/components/shell/SettingsPanel.tsx`, commit `65c8047`). Draft slot is genuinely editable,
+applies immediately, no save button. Team count and roster shape render read-only -- not because VBD
+is unreachable client-side (it isn't; corrected an overclaim to that effect the same session, commit
+`99b666a`), but because `league.json:flex_split_note`'s flex-slot allocation is a measured,
+roster-shape-specific quantity (ADR-029) that would need re-simulating, not guessing, for a different
+shape. Scoring renders as the spec's read-only "SCORED UNDER" statement, no inputs, matching this
+league's real `scoring_ruleset_note`.
+
+**NOT built, and explicitly out of scope for a frontend-only session:** the dropdown still lists all
+26 non-primary leagues, not "3 leagues + Custom." `ui/data/league-registry.ts` already has zero
+hardcoded knowledge of "24 presets" -- it renders whatever `_leagues.json` lists, generated from
+whatever directories exist under `data/export/`. So retiring the preset matrix
+(`src/generate_config_matrix.py`) and promoting `src/league_builder.py` to the primary path shrinks
+the dropdown to the real 3+Custom shape with **zero frontend changes needed** once backend does it.
+Opened `docs/handoffs/NEW-league-settings-custom-pane.md` to `backend` rather than attempting a
+backend change from this dispatch's frontend-only scope. The Custom pane's own rebuild-trigger
+question (this ticket's own closing line) is unresolved and logged in that same thread.
+
+Tests: `ui/__tests__/settings-panel.test.tsx` (5), plus one pre-existing test rewritten
+(`inert-controls-and-two-track.test.tsx`) since its premise (Settings stays permanently dead) this
+commit makes obsolete. Screenshot (looked at directly):
+`frontend/e2e/artifacts/fr069-settings-panel.png`.

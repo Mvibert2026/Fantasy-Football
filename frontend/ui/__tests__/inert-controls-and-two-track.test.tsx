@@ -22,6 +22,12 @@ import { loadDatasetFromDisk } from './helpers';
  * Every one of them must be gone -- not merely still disabled -- and the
  * fact that replaces each one must actually be on screen.
  *
+ * League settings is no longer one of the six dead ones -- FR-069/FR-040
+ * built a real panel this session (`ui/components/shell/SettingsPanel.tsx`).
+ * Its own coverage below now pins the two states TopBar can render rather
+ * than asserting the control stays dead, and full panel coverage lives in
+ * `ui/__tests__/settings-panel.test.tsx`.
+ *
  * TWO-TRACK: the league selector must say which of the two tracks a league
  * is on (Westwood, the one real primary league, vs. every other league,
  * generic) before the user switches to it, and StrategyGuide's old single
@@ -66,8 +72,16 @@ describe('INERT-CONTROLS: Ask the assistant per glossary term (Glossary.tsx)', (
   });
 });
 
-describe('INERT-CONTROLS: League settings (TopBar.tsx)', () => {
-  function renderTopBar(leagues: SelectableLeague[]) {
+describe('League settings (TopBar.tsx) -- built FR-069/FR-040, previously inert', () => {
+  /**
+   * Was "INERT-CONTROLS: renders no League settings button -- only a plain
+   * not-built statement." That premise no longer holds: FR-069/FR-040
+   * (`docs/design/LEAGUE-SETTINGS-BOUNDARY.md`) built a real Settings panel
+   * this session -- see `ui/__tests__/settings-panel.test.tsx` for its full
+   * coverage. This block now pins the two states TopBar itself can be in,
+   * rather than asserting the control is dead, which would be false.
+   */
+  function renderTopBar(leagues: SelectableLeague[], withSlotHandlers: boolean) {
     render(
       <TopBar
         mode="prep"
@@ -78,14 +92,22 @@ describe('INERT-CONTROLS: League settings (TopBar.tsx)', () => {
         leagues={leagues}
         leagueId="default"
         onSelectLeague={() => {}}
+        onSelectSlot={withSlotHandlers ? () => {} : undefined}
+        onClearSlot={withSlotHandlers ? () => {} : undefined}
       />,
     );
   }
 
-  it('renders no League settings button -- only a plain not-built statement', () => {
-    renderTopBar([{ id: 'default', label: 'Westwood' }]);
-    expect(screen.queryByRole('button', { name: /league settings/i })).not.toBeInTheDocument();
-    expect(screen.getByText(/settings.*not built/i)).toBeInTheDocument();
+  it('renders a real, clickable Settings button when slot-override handlers are wired (the live app)', () => {
+    renderTopBar([{ id: 'default', label: 'Westwood' }], true);
+    expect(screen.getByRole('button', { name: 'Settings' })).toBeInTheDocument();
+    expect(screen.queryByText(/settings.*not built/i)).not.toBeInTheDocument();
+  });
+
+  it('renders an honest, still-not-a-dead-button fallback when they are not (e.g. the standalone build)', () => {
+    renderTopBar([{ id: 'default', label: 'Westwood' }], false);
+    expect(screen.queryByRole('button', { name: 'Settings' })).not.toBeInTheDocument();
+    expect(screen.getByText(/settings.*not available in this build/i)).toBeInTheDocument();
   });
 });
 
