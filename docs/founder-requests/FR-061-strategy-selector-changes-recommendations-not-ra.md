@@ -66,3 +66,73 @@ independent view — which is the point of building it — without claiming prim
 
 Behind design's current specs, which are in build. Depends on FR-058's explanation object already
 being built (it is), and on the strategies being available per league, which they are not.
+
+---
+
+## Addition, 2026-07-30: robust RB
+
+> "we should test robust rb strategy too"
+
+**Add robust-RB to the tested set**, alongside the strategies already simulated in PR-003
+(`bpa_consensus`, `balanced`, `hero_rb`, `zero_rb`, `elite_te_early`). It is a named, conventional
+strategy and it is not currently among them — so the selector would either omit it or offer it
+unpriced, and unpriced is the failure mode this ticket exists to prevent.
+
+**Define it before simulating it.** "Robust RB" is used loosely in the category — commonly, taking
+running backs with the first two or three picks rather than one (hero) or none (zero). The exact
+definition changes the result, so it must be committed in writing before the arm runs, not chosen
+afterwards to suit the outcome. `strategist` owns that wording.
+
+**It also fills a real gap in the existing set.** `hero_rb` and `zero_rb` sit at the extremes with
+`balanced` in the middle; robust-RB is the heavy end and nothing currently occupies it. A selector
+offering only the extremes would misrepresent the space of choices.
+
+**The truncated remainder, supplied 2026-07-30:**
+
+> "each strategy tested across all league types and basic presets - then they can be loaded and no
+> math needs to happen, also you'll need to define the rules to each strategy tested somewhere (like
+> how long till you take your first RB in zero RB, do you take a TE or no judgment?) within it is it
+> BPA? VBD? etc. what is balanced?"
+
+### Two requirements, and the second is the more important
+
+**1 · Pre-compute across every league type and preset; the app loads, it does not calculate.**
+
+Right now `strategies.json` exists for **primary only** — one league, one roster shape. The founder
+wants the full matrix so a selector works in any league he opens, with no runtime cost.
+
+Scope it honestly before building: 27 league configs × 6+ strategies × the sigma sweep {5,10,20} ×
+simulated seasons. That is a large grid and the availability sweep already showed this class of
+simulation is expensive — a single 10-slot availability run took hours. **Measure one cell first and
+report the total**, rather than starting a job nobody has costed. If the full matrix is impractical,
+the honest fallback is the presets the founder actually uses, named as such.
+
+**2 · Write down what each strategy actually is. This is the real gap and he is right that it is
+missing.**
+
+His questions are exactly the ambiguities: *how long until the first RB in zero-RB? Is a TE allowed,
+or is that unconstrained? Within the constraint, is the pick BPA or VBD? What does "balanced" even
+mean?*
+
+**The rules do exist — in code, in `src/draft_sim.py` (`strategy_bpa`, `strategy_hero_rb`,
+`strategy_zero_rb`, `_positional_bias`) — and nowhere a human can read, check or disagree with
+them.** That is the defect. A strategy whose definition lives only in a function body cannot be
+audited, cannot be shown on screen beside its measured cost, and cannot be compared to what the
+category means by the same word.
+
+**Every tested strategy needs a written definition covering, at minimum:**
+
+| | |
+|---|---|
+| **The constraint** | What it forbids or forces, and until when — "no RB before round N" |
+| **The within-constraint rule** | Once the constraint is satisfied or inactive, is it BPA, VBD, or something else? |
+| **Unconstrained positions** | Explicitly stated. Is TE free, or does the strategy have a view? |
+| **Termination** | When does the constraint stop applying? |
+| **Source** | Is this the category's conventional meaning, or this project's own? Say which. |
+
+**`balanced` is the one to define first**, because it is the least standard word in the set and the
+most likely to be doing something arbitrary that nobody has looked at.
+
+Owner: `strategist` writes the definitions, since it also owns the pre-registration that tests them;
+`ranker` or `backend` runs the matrix. **Definitions committed before the runs**, or the results
+describe rules nobody agreed to.
