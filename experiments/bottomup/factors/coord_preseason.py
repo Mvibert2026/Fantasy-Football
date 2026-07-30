@@ -50,6 +50,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sqlite3
 import sys
 import time
@@ -114,23 +115,23 @@ def week1_dates(db_path: Path = DEFAULT_DB) -> dict:
     return {int(s): d for s, d in rows if d}
 
 
-def _cache_path(team: str, season: int) -> Path:
-    return RAW_DIR / f"{team}-{season}.json"
+def _cache_path(key: str) -> Path:
+    safe = re.sub(r"[^A-Za-z0-9._-]+", "_", key)
+    return RAW_DIR / f"{safe}.json"
 
 
-def _fetch_preseason_wikitext(team: str, season: int, kickoff: str,
-                              refresh: bool = False) -> Optional[dict]:
-    """Revision content as of the day before `kickoff`. None if no such page.
+def _revision_before(title: str, kickoff: str, refresh: bool = False
+                     ) -> Optional[dict]:
+    """The newest revision of `title` at or before midnight on `kickoff`.
 
-    `rvstart` + `rvdir=older` asks the API for the newest revision at or before
-    that instant, which is precisely "the article as a reader would have seen it
-    the day before Week 1".
+    `rvstart` + `rvdir=older` is exactly "the page as a reader would have seen it
+    the day before Week 1". Returns None if the page does not exist, and a dict
+    with `wikitext=None` if it exists but had no revision that early.
     """
-    path = _cache_path(team, season)
+    path = _cache_path(f"{title}@{kickoff}")
     if path.exists() and not refresh:
         payload = json.loads(path.read_text(encoding="utf-8"))
     else:
-        title = f"{season} {W._team_article_name(team, season)} season"
         params = urllib.parse.urlencode({
             "action": "query", "titles": title, "prop": "revisions",
             "rvprop": "content|timestamp|ids", "rvslots": "main",
@@ -161,6 +162,41 @@ def _fetch_preseason_wikitext(team: str, season: int, kickoff: str,
     return None
 
 
+_STAFF_SECTION_RE = re.compile(
+    r"==+\s*(?:Coaching\s+)?[Ss]taff\s*==+\s*\n+\s*\{\{([^}|\n]+?)\}\}")
+_NAVBOX_GUESS_RE = re.compile(r"\{\{([A-Z][^}|\n]{2,60}? staff)\}\}")
+_HC_LINE_RE = re.compile(r"\*\s*[^\n]*?\bhead coach\b[^\n]*?[–—-]\s*(.+)", re.I)
+
+
+def _navbox_title(article_wikitext: str) -> Optional[str]:
+    """Which live staff navbox that season's article pointed at.
+
+    Read out of the article rather than constructed from the team code, so a
+    franchise rename is handled by whatever the article itself said at the time
+    instead of by a hardcoded mapping that would have to be maintained.
+    """
+    m = _STAFF_SECTION_RE.search(article_wikitext) or \
+        _NAVBOX_GUESS_RE.search(article_wikitext)
+    if not m:
+        return None
+    name = m.group(1).strip()
+    if not name.lower().endswith("staff"):
+        return None
+    return name if name.lower().startswith("template:") else f"Template:{name}"
+
+
+def parse_navbox_staff(wikitext: str) -> dict:
+    """HC / OC / DC out of a team staff navbox. Any field None if absent --
+    never fabricated. Reuses the coordinator regexes from the production
+    ingester so the two sources cannot drift apart in what counts as an OC."""
+    out = {}
+    for key, pattern in (("head_coach", _HC_LINE_RE),
+                         ("oc", W._OC_RE), ("dc", W._DC_RE)):
+        m = pattern.search(wikitext)
+        out[key] = W._clean_name(m.group(1)) if m else None
+    return out
+
+
 def ingest(seasons, teams=None, db_path: Path = DEFAULT_DB,
            refresh: bool = False) -> dict:
     teams = teams or W.TEAMS
@@ -171,60 +207,70 @@ def ingest(seasons, teams=None, db_path: Path = DEFAULT_DB,
     now = datetime.now(timezone.utc).isoformat()
 
     rows, quar = [], []
-    stats = {"stored": 0, "quarantined": 0, "no_page": 0, "no_template": 0,
+    stats = {"team_seasons": 0, "stored": 0, "oc_missing": 0, "dc_missing": 0,
+             "no_page": 0, "no_navbox_link": 0, "no_navbox_page": 0,
              "no_revision_before_kickoff": 0}
     for season in seasons:
         kickoff = kicks.get(season)
         if not kickoff:
             quar.append(("*", season, "no_week1_date_in_schedules", now))
-            stats["quarantined"] += 1
             continue
         for team in teams:
+            stats["team_seasons"] += 1
             try:
-                got = _fetch_preseason_wikitext(team, season, kickoff, refresh=refresh)
+                title = f"{season} {W._team_article_name(team, season)} season"
             except KeyError as e:
                 quar.append((team, season, str(e), now))
-                stats["quarantined"] += 1
                 continue
-            if got is None:
+            art = _revision_before(title, kickoff, refresh=refresh)
+            if art is None:
                 quar.append((team, season, "wikipedia_article_not_found", now))
                 stats["no_page"] += 1
-                stats["quarantined"] += 1
                 continue
-            if not got.get("wikitext"):
-                quar.append((team, season, "no_revision_before_kickoff", now))
+            if not art.get("wikitext"):
+                quar.append((team, season, "no_article_revision_before_kickoff", now))
                 stats["no_revision_before_kickoff"] += 1
-                stats["quarantined"] += 1
                 continue
-            parsed = W.parse_staff(got["wikitext"])
-            if not parsed["template_found"]:
-                quar.append((team, season, "no_final_staff_template_in_preseason_revision", now))
-                stats["no_template"] += 1
-                stats["quarantined"] += 1
+            nav = _navbox_title(art["wikitext"])
+            if not nav:
+                quar.append((team, season, "no_staff_navbox_in_preseason_article", now))
+                stats["no_navbox_link"] += 1
                 continue
-            ts = got["timestamp"]
+            navrev = _revision_before(nav, kickoff, refresh=refresh)
+            if navrev is None:
+                quar.append((team, season, f"navbox_page_missing:{nav}", now))
+                stats["no_navbox_page"] += 1
+                continue
+            if not navrev.get("wikitext"):
+                quar.append((team, season, f"no_navbox_revision_before_kickoff:{nav}", now))
+                stats["no_revision_before_kickoff"] += 1
+                continue
+            parsed = parse_navbox_staff(navrev["wikitext"])
+            ts = navrev["timestamp"]
             try:
                 days = (datetime.fromisoformat(f"{kickoff}T00:00:00+00:00")
-                        - datetime.fromisoformat(ts.replace("Z", "+00:00"))).total_seconds() / 86400
+                        - datetime.fromisoformat(ts.replace("Z", "+00:00"))
+                        ).total_seconds() / 86400
             except Exception:
                 days = None
             hc = parsed["head_coach"]
             for role, name in (("OC", parsed["oc"]), ("DC", parsed["dc"])):
                 if name is None:
-                    quar.append((team, season, f"no_{role.lower()}_field_in_preseason_revision", now))
-                    stats["quarantined"] += 1
-                    continue
+                    stats[f"{role.lower()}_missing"] += 1
+                    quar.append((team, season,
+                                 f"no_{role.lower()}_line_in_preseason_navbox", now))
                 rows.append((team, season, role, name, hc,
-                             1 if (hc and role == "OC" and hc == name) else 0,
-                             ts, got.get("revid"), days,
-                             "wikipedia:NFL final staff @preseason-revision",
-                             "medium", now))
-                stats["stored"] += 1
+                             1 if (hc and role == "OC" and name and hc == name) else 0,
+                             ts, navrev.get("revid"), days, nav,
+                             "wikipedia:team staff navbox @pre-week1 revision",
+                             "medium" if name else "low", now))
+                if name:
+                    stats["stored"] += 1
 
     conn.executemany(
         f'INSERT OR REPLACE INTO "{TABLE}" (team, season, title, coach_id, head_coach, '
-        "is_hc_calling, as_of_date, revid, days_before_kickoff, source, confidence, "
-        "retrieved_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)", rows)
+        "is_hc_calling, as_of_date, revid, days_before_kickoff, navbox, source, "
+        "confidence, retrieved_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)", rows)
     conn.executemany(
         'INSERT INTO "play_callers_preseason_quarantine" '
         "(team, season, reason, retrieved_at) VALUES (?,?,?,?)", quar)
