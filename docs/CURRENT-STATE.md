@@ -27,6 +27,21 @@ repo — Cloudflare holds its own deploy token. This closes the last dependency 
 machine: development, tests, the database rebuild, the daily capture and now viewing the app all run
 without it.
 
+**Last verified:** 2026-07-30, backend session (worktree `agent-afc041a7bd8aaa6ab`) answering
+design's `TWO-VALUE-COLUMNS.md` contract question (FR-115/FR-118, "vs replacement" vs "vs your
+options"): **client computation, no export change.** Every non-live-roster input the second
+column needs already ships (`board.json:players[].position`/`.projected_points`/`.vbd` for all
+510 players, `league.json:roster.starters`/`.flex_eligible`); live roster state is browser-only
+by design and was never going to be an export field. Reconciled against this same session's
+#35/#36 NULLs: `vs your options` is a different quantity (roster-conditioned display number, not
+#35's global replacement constant or #36's forward-looking VONA policy) but restates the same
+underlying hypothesis, so it ships with honest caption text rather than implying a proven edge —
+literal wording specified. FR-118 fully satisfied; FR-115 only partially (the ranking itself
+still needs a validated flex-aware fix, which #35 did not provide — left open for
+strategist/ranker). Full answer: `docs/ranking/vs-your-options-contract.md`. Handoff to
+`frontend`: `docs/handoffs/115-vs-your-options-contract-answer-client-computati.md`. No contract
+version bump (stays `1.16.0`), no new tests — no backend code changed.
+
 **Last verified:** 2026-07-30, backend session (worktree `agent-a299a75833b30b593`) running
 test-registry #35 (global flex baseline) and #36 (VONA pick-gap awareness) — the last two
 untested HIGH-edge bottom-up valuation items, per the founder's ask to start the remaining tests.

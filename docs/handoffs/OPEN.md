@@ -62,7 +62,7 @@ not an omission. Start your session at your own heading.
 | [111](111-sleeper-screen-use-recent-usage-not-career-mean.md) | Sleeper screen use recent usage not career mean | `ranker` | OPEN | 0d | nothing; changes a feature choice in the FR-094 sleeper screen before it ships |
 | [88](088-pr-004-f-bottomup-core-run-the-confirmatory-bott.md) | Pr 004 f bottomup core run the confirmatory bott | `strategist` | OPEN | 1d | none |
 
-### `frontend` — 18 waiting
+### `frontend` — 19 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
@@ -84,6 +84,7 @@ not an omission. Start your session at your own heading.
 | [093](093-fr-057-part-1-availability-json-now-covers-every.md) | Fr 057 part 1 availability json now covers every | `backend` | OPEN | 1d | none |
 | [110](109-opponents-and-liveopponents-have-diverged.md) | Opponents and liveopponents have diverged | `frontend` | OPEN | 0d | none |
 | [110](110-opponents-and-liveopponents-have-diverged.md) | Opponents and liveopponents have diverged | `frontend` | OPEN | 0d | none |
+| [115](115-vs-your-options-contract-answer-client-computati.md) | Vs your options contract answer client computati | `backend` | OPEN | 0d | none |
 
 ### `data-ops` — 9 waiting
 
