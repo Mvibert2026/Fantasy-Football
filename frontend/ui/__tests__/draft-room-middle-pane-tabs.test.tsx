@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { DraftRoom } from '../views/DraftRoom';
 import { buildRows } from '../data/board';
 import { buildLeagueConfig } from '../data/league';
-import { saveDraftState, teamSlotAtPick, type DraftPickRecord } from '../data/draft';
+import { roundPickLabel, saveDraftState, teamSlotAtPick, type DraftPickRecord } from '../data/draft';
 import { loadDatasetFromDisk } from './helpers';
 
 /**
@@ -135,9 +135,14 @@ describe('FR-051: the next-pick reference point', () => {
   it('shows CONSIDERING / LIKELY THERE AT <pick> with real VBD figures while on the clock, "this pick"', () => {
     seedUpToUsersFirstPick();
     renderDraftRoom();
-    expect(screen.getByText('LIKELY BEST AVAILABLE AT YOUR PICK 18')).toBeInTheDocument();
+    // FR-087: round + pick-within-round now render alongside the raw pick
+    // number here too -- same roundPickLabel helper the app itself uses, not
+    // a separately hand-typed expectation.
+    expect(
+      screen.getByText(`LIKELY BEST AVAILABLE AT YOUR PICK 18 (${roundPickLabel(18, teams)})`),
+    ).toBeInTheDocument();
     expect(screen.getByText('CONSIDERING')).toBeInTheDocument();
-    expect(screen.getByText('LIKELY THERE AT 18')).toBeInTheDocument();
+    expect(screen.getByText(`LIKELY THERE AT 18 (${roundPickLabel(18, teams)})`)).toBeInTheDocument();
     // Display-only, never fed into the recommendation -- the footer states so
     // explicitly per FR-051's own instruction.
     expect(screen.getByText(/Display only/)).toBeInTheDocument();
@@ -147,7 +152,9 @@ describe('FR-051: the next-pick reference point', () => {
     seedUpToUsersFirstPick();
     renderDraftRoom();
     fireEvent.click(screen.getByRole('button', { name: /Look ahead → pick 18/ }));
-    expect(screen.queryByText('LIKELY BEST AVAILABLE AT YOUR PICK 18')).not.toBeInTheDocument();
+    expect(
+      screen.queryByText(`LIKELY BEST AVAILABLE AT YOUR PICK 18 (${roundPickLabel(18, teams)})`),
+    ).not.toBeInTheDocument();
   });
 });
 

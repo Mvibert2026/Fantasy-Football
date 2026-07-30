@@ -4,7 +4,9 @@ import {
   isSlotOnClock,
   nextPickForSlot,
   pickNumbersForSlot,
+  pickWithinRound,
   roundOfPick,
+  roundPickLabel,
   takenPlayerIds,
   teamSlotAtPick,
   toDraftLog,
@@ -67,6 +69,27 @@ describe('snake-order math', () => {
     }));
     expect(currentOverallPick(somePicks)).toBe(21);
     expect(nextPickForSlot(somePicks, teams, slot, 16)).toBe(picks.find((p) => p >= 21));
+  });
+
+  it('pickWithinRound and roundPickLabel (FR-087) agree with the forward formula for every pick in a 10-team, 16-round league', () => {
+    const teams = 10;
+    for (let round = 1; round <= 16; round++) {
+      for (let slot = 1; slot <= teams; slot++) {
+        const pick = forwardPick(round, slot, teams);
+        // pickWithinRound is position-in-round, NOT the snake-reversed team slot --
+        // deliberately not comparing against teamSlotAtPick, which is a different value.
+        const positionInRound = round % 2 === 1 ? slot : teams - slot + 1;
+        expect(pickWithinRound(pick, teams)).toBe(positionInRound);
+        expect(roundPickLabel(pick, teams)).toBe(`R${round}.${String(positionInRound).padStart(2, '0')}`);
+      }
+    }
+  });
+
+  it('roundPickLabel zero-pads pick-within-round to two digits, e.g. pick 21 in a 10-team league', () => {
+    // Round 3, position 1 -- single-digit position must still read "01", not "1".
+    expect(roundPickLabel(21, 10)).toBe('R3.01');
+    expect(roundPickLabel(1, 10)).toBe('R1.01');
+    expect(roundPickLabel(10, 10)).toBe('R1.10');
   });
 
   it('isSlotOnClock matches teamSlotAtPick at the current pick', () => {

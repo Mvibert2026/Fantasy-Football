@@ -61,6 +61,45 @@ opened and no ranker code touched — methodology review handed to `strategist` 
 anything here reaches the ranking model. FR-072 logged and marked DONE for the analysis itself.
 This was a Sonnet/default-tier dispatch for statistical-methodology work that CLAUDE.md SS9 says
 belongs at Opus/high effort; flagged in the writeup rather than stopping to ask.
+**Last verified:** 2026-07-30, frontend session (worktree `agent-ac8f0d37236266b62`) shipping a
+4-item founder feedback batch (FR-067, FR-079, FR-082, FR-083, FR-087). Traced the founder's ADP/
+historical-season format complaint to two real backend gaps, not a frontend bug: `board.json:
+adp_source_note` hardcodes Westwood's own ruleset text for every league regardless of `cfg`
+(reproduced live on `espn_10_standard`, a real STANDARD/0-PPR league that still claims "this
+league scores half-PPR"), and `season_stats.json`/`weekly_finishes.json` compute one fixed
+standard-PPR figure with no `scoring_cfg` and aren't exported per league at all. Did not
+approximate scoring in the browser (against project rule); instead added
+`league.json:scoring_ruleset_note` as a second, correctly-varying disclosure next to the ADP
+block plus a static caveat on the history sections, and opened `docs/handoffs/NEW-adp-and-
+history-not-league-scoring-aware.md` to backend for the real fix — FR-079/FR-083 marked `IN
+PROGRESS`, not `SHIPPED`, since the founder's actual ask isn't fixed yet. Fixed three real UI
+defects, verified `SHIPPED`: Draft mode's Opponents tab (`LiveOpponents.tsx`, mounted via
+`DraftRoom.tsx`'s `hubTab === 'opponents'` branch) had no scroll wrapper at all, unlike its
+sibling `predictions` branch — added one, verified against a seeded 23-pick draft (Prep mode's
+`Opponents.tsx` was already correct, no change there); the draft-view board header and rows
+misaligned by a constant pixel offset at every width because the header never reserved space for
+three trailing per-row elements (dots/watch/taken) the rows always render, plus some rows
+silently dropped their AVAIL cell instead of reserving its slot — fixed with one shared
+`DRAFT_LIST_COLS` width table consumed by both, verified at two viewport widths (1500px, 1180px),
+which itself caught a real regression (the header's own "PLAYER" text overflowing into POS under
+space pressure) before it shipped; and every place the app showed a bare overall pick number now
+also shows round + pick-within-round (`ui/data/draft.ts::roundPickLabel`, display-only, `teams`
+read from league config, no computation changed). `docs/handoffs/NEW-opponents-and-liveopponents-
+have-diverged.md` flags real feature divergence between the two Opponents components (found
+mid-task, not fixed — a separate frontend session's own future call). Also found and corrected a
+numbering mismatch: the dispatching task cited FR-074/FR-076/FR-084/FR-077, which were already
+allocated to four unrelated founder requests on `claude/pm-agent-setup-gobxa0` (commit `ea141f4`,
+never merged into this worktree); cherry-picked that commit's real FR-079/FR-083/FR-082/FR-087
+files in rather than create colliding ones (see `docs/ideas-inbox.md`, 2026-07-30 frontend entry).
+`npx tsc -b --noEmit` clean throughout; full suite 277 passing, 0 failed, 30 files (2 new tests in
+`draft.test.ts`, 8 → 10, plus 2 existing assertions in other files updated to match the new
+round-label text — net test-file additions, not a baseline this session independently measured
+pre-edit), reverified green after every commit. 5 commits (`0ee5556`, `583dfc2`, `750447d`,
+`5dc183e`, `7b81fae`), each independently verified via hand-split hunks (`git apply --check
+--cached`) rather than one bundled diff, since the two shared files (`DraftRoom.tsx`,
+`PlayerDetail.tsx`) carry spatially separate hunks per item. Screenshots (all looked at directly):
+`frontend/e2e/artifacts/fr082-*`, `fr067-fr087-*`, `fr083-*`, `fr079-*`, `fr087-*`. Full writeup:
+`docs/status/2026-07-30-frontend-founder-feedback-batch.md`.
 
 **Prior verification:** 2026-07-30, frontend session (worktree `agent-a160788e8e9ccc925`) porting two
 design specs in order, both in `docs/design/`: `DRAFT-MIDDLE-PANE.md` and `SUPPLIED-VALUES.md`. The

@@ -10,6 +10,7 @@ import {
   pickNumbersForSlot,
   pruneQueue,
   roundOfPick,
+  roundPickLabel,
   saveDraftState,
   takenPlayerIds,
   teamSlotAtPick,
@@ -220,6 +221,48 @@ const POSITION_COLOR: Record<string, string> = {
   TE: 'var(--te)',
   DEF: 'var(--def)',
 };
+
+/**
+ * FR-067 ("the column headers don't align in draft view with the stuff
+ * underneath"). Confirmed root cause reading the two blocks side by side: the
+ * header row and each player row both used hand-typed pixel widths, but the
+ * header stopped after AVAIL while every row went on to render a dots array,
+ * a watch star and a "mark taken" x -- three more fixed-width cells the
+ * header never accounted for. Both rows and the header share one `flex: 1`
+ * PLAYER cell that absorbs whatever space is left over, so with a different
+ * total of trailing fixed-width siblings, PLAYER (and therefore every column
+ * after it) ends up a different width in the header than in a row -- a
+ * constant pixel offset, reproducible at any viewport width, not something a
+ * one-width nudge could ever fix.
+ *
+ * Single source of truth now: every width below is used by BOTH
+ * `DraftRoomListHeader` and `DraftRoomListRow`, in the same order, so they
+ * cannot drift apart again by editing one and not the other. `dots`/`watch`/
+ * `taken` get reserved, unlabeled header slots -- they're actions/a second
+ * rendering of AVAIL, not new named values (Principle #1 still only applies
+ * to AVAIL's own label) -- but the SPACE has to be accounted for regardless
+ * of whether the header prints a word into it.
+ *
+ * Rows also stopped conditionally omitting the avail/dots elements
+ * (`{avail ? <span/> : null}`) -- a row with no `avail` yet was rendering
+ * ~110px narrower than one that had it, so rows drifted from EACH OTHER, not
+ * just from the header. Every row now reserves the same slot and prints a
+ * neutral "not yet" state inside it instead of collapsing the column away.
+ */
+const DRAFT_LIST_COLS = {
+  rank: 22,
+  pos: 38,
+  tm: 26,
+  adp: 34,
+  delta: 30,
+  vbd: 40,
+  avail: 58,
+  // 10 dots x 4px + 9 gaps x 1.5px (RowDots' own sizing) = 53.5, rounded up.
+  dots: 54,
+  watch: 16,
+  taken: 20,
+} as const;
+const DRAFT_LIST_GAP = 9;
 
 // Thread 058 section B4: DEF added to the position filter, matching the
 // design's ALL/QB/RB/WR/TE/DEF row. Selecting it shows an honest "no DEF
@@ -1191,7 +1234,17 @@ export function DraftRoom({
       </div>
 
       {hubTab === 'opponents' ? (
-        <LiveOpponents data={data} league={league} draft={draft} rowsById={rowsById} />
+        // FR-082 ("Opponents doesn't scroll down"): unlike the `predictions` branch
+        // right below, this had no wrapping scroll container at all -- LiveOpponents'
+        // own root div carries padding but no `flex`/`minHeight`/`overflow` of its own,
+        // so inside this tab's `flex-direction: column` parent it just grew to its
+        // natural content height with nothing below it able to scroll. Same
+        // `flex: 1, minHeight: 0, overflowY: 'auto'` wrapper the predictions tab already
+        // uses, so a 10-team grid (or any team's roster tall enough to need it) is
+        // reachable instead of clipped at the pane's bottom edge.
+        <div style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
+          <LiveOpponents data={data} league={league} draft={draft} rowsById={rowsById} />
+        </div>
       ) : hubTab === 'predictions' ? (
         <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: 20 }}>
           <Predictions data={data} rows={rows} league={league} />
@@ -1409,7 +1462,12 @@ export function DraftRoom({
               ON THE CLOCK
             </div>
             <div style={{ fontFamily: 'var(--font-num)', fontSize: 18, fontWeight: 600 }}>
-              {draftComplete ? 'done' : `#${currentPick} · team ${onClockSlot}`}
+              {draftComplete
+                ? 'done'
+                : /* FR-087: round + pick-within-round alongside the overall pick
+                     number -- display only, `currentPick` itself still drives
+                     every computation on this screen unchanged. */
+                  `#${currentPick} (${roundPickLabel(currentPick, teams)}) · team ${onClockSlot}`}
             </div>
           </div>
           <div
@@ -1431,6 +1489,11 @@ export function DraftRoom({
             <div style={{ fontFamily: 'var(--font-num)', fontSize: 9, letterSpacing: '.1em', color: 'var(--dim2)' }}>YOUR NEXT</div>
             <div style={{ fontFamily: 'var(--font-num)', fontSize: 18, fontWeight: 600 }}>
               {nextUserPick ?? '—'}
+              {/* FR-087: display only, same round arithmetic as the ON THE CLOCK
+                  badge above -- `nextUserPick` itself is unchanged. */}
+              {nextUserPick !== null ? (
+                <span style={{ fontSize: 10, fontWeight: 400, color: 'var(--dim2)' }}> {roundPickLabel(nextUserPick, teams)}</span>
+              ) : null}
             </div>
           </div>
         </div>
@@ -1520,53 +1583,80 @@ export function DraftRoom({
               hover titles instead of a header label -- they are actions
               (watch, mark taken), not rendered values, so Principle #1
               ("every rendered number traces to a named field") does not apply
-              to them. */}
+              to them -- but per DRAFT_LIST_COLS' own doc comment (FR-067),
+              their WIDTH still has to be reserved here even unlabeled, or
+              PLAYER's flex:1 absorbs a different amount of space in the
+              header than in a row and every column drifts. */}
           <div
             style={{
               flex: 'none',
               display: 'flex',
               alignItems: 'center',
-              gap: 9,
+              gap: DRAFT_LIST_GAP,
               padding: '4px 12px',
               borderBottom: '1px solid var(--line2)',
               background: 'var(--panel2)',
             }}
           >
-            <span className="num" style={{ fontSize: 9, letterSpacing: '.04em', color: 'var(--dim2)', width: 22, textAlign: 'right' }}>
+            <span className="num" style={{ fontSize: 9, letterSpacing: '.04em', color: 'var(--dim2)', width: DRAFT_LIST_COLS.rank, textAlign: 'right' }}>
               RANK
             </span>
-            <span style={{ fontSize: 9, letterSpacing: '.08em', color: 'var(--dim2)', flex: 1 }}>PLAYER</span>
-            <span style={{ fontSize: 9, letterSpacing: '.08em', color: 'var(--dim2)', width: 38 }}>POS</span>
-            <span style={{ fontSize: 9, letterSpacing: '.08em', color: 'var(--dim2)', width: 26 }}>TM</span>
+            {/* overflow/whiteSpace/textOverflow matches the row's own PLAYER cell
+                (below) -- found by testing at a second, narrower viewport
+                (FR-067's own instruction): at 1180px the header's trailing
+                dots/watch/taken slots leave less room for PLAYER than "PLAYER"
+                needs, and minWidth:0 (required so the header shrinks exactly
+                like a row does) let the overflowing text spill into POS
+                instead of eliding cleanly. */}
+            <span
+              style={{
+                fontSize: 9,
+                letterSpacing: '.08em',
+                color: 'var(--dim2)',
+                flex: 1,
+                minWidth: 0,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              PLAYER
+            </span>
+            <span style={{ fontSize: 9, letterSpacing: '.08em', color: 'var(--dim2)', width: DRAFT_LIST_COLS.pos }}>POS</span>
+            <span style={{ fontSize: 9, letterSpacing: '.08em', color: 'var(--dim2)', width: DRAFT_LIST_COLS.tm }}>TM</span>
             <span
               className="num"
               title={computeAdpHeaderTitle(data.board.adp_source_note, data.board.adp_as_of_date)}
-              style={{ fontSize: 9, letterSpacing: '.02em', color: 'var(--dim2)', width: 34, textAlign: 'right' }}
+              style={{ fontSize: 9, letterSpacing: '.02em', color: 'var(--dim2)', width: DRAFT_LIST_COLS.adp, textAlign: 'right' }}
             >
               ADP
             </span>
             <span
               className="num"
               title="Our rank minus consensus rank -- click a row's number to see why"
-              style={{ fontSize: 9, color: 'var(--dim2)', width: 30, textAlign: 'right' }}
+              style={{ fontSize: 9, color: 'var(--dim2)', width: DRAFT_LIST_COLS.delta, textAlign: 'right' }}
             >
               Δ
             </span>
             <span
               className="num"
               title="Value over positional replacement (board.json:players[].vbd) -- what the board is actually ranked on"
-              style={{ fontSize: 9, letterSpacing: '.02em', color: 'var(--dim2)', width: 40, textAlign: 'right' }}
+              style={{ fontSize: 9, letterSpacing: '.02em', color: 'var(--dim2)', width: DRAFT_LIST_COLS.vbd, textAlign: 'right' }}
             >
               VBD
             </span>
             <span
               className="num"
               title="Baseline -> live-adjusted availability at your next pick, then the same number as ten dots"
-              style={{ fontSize: 9, letterSpacing: '.02em', color: 'var(--dim2)', width: 58, textAlign: 'right' }}
+              style={{ fontSize: 9, letterSpacing: '.02em', color: 'var(--dim2)', width: DRAFT_LIST_COLS.avail, textAlign: 'right' }}
             >
               AVAIL
             </span>
-            <span style={{ flex: 1 }} />
+            {/* Unlabeled, width-only: the dots repeat AVAIL's own number, and
+                watch/taken are actions, not values -- see the comment above. */}
+            <span style={{ width: DRAFT_LIST_COLS.dots, flex: 'none' }} />
+            <span style={{ width: DRAFT_LIST_COLS.watch, flex: 'none' }} />
+            <span style={{ width: DRAFT_LIST_COLS.taken, flex: 'none' }} />
           </div>
           {positionTab === 'DEF' && availableInTab.length === 0 ? (
             <div style={{ padding: '12px', fontSize: 12.5, color: 'var(--dim2)', lineHeight: 1.5 }}>
@@ -1614,9 +1704,9 @@ export function DraftRoom({
                 <div key={r.id} style={{ borderBottom: '1px solid var(--line)' }}>
                   <div
                     onClick={() => openDetail(r)}
-                    style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '6px 12px', cursor: 'pointer' }}
+                    style={{ display: 'flex', alignItems: 'center', gap: DRAFT_LIST_GAP, padding: '6px 12px', cursor: 'pointer' }}
                   >
-                    <span className="num" style={{ fontSize: 11, color: 'var(--dim2)', width: 22, textAlign: 'right' }}>
+                    <span className="num" style={{ fontSize: 11, color: 'var(--dim2)', width: DRAFT_LIST_COLS.rank, textAlign: 'right' }}>
                       <Value cell={r.overallRank} render={integer} />
                     </span>
                     <span style={{ fontWeight: 600, fontSize: 13, flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -1626,10 +1716,10 @@ export function DraftRoom({
                         position -- board.json:positional_label, already a real
                         exported field (confirmed "RB1"/"WR1"-style against the
                         real export), just not rendered on this row before. */}
-                    <span style={{ fontSize: 11, letterSpacing: '.045em', fontWeight: 600, color: POSITION_COLOR[r.raw.position], width: 38 }}>
+                    <span style={{ fontSize: 11, letterSpacing: '.045em', fontWeight: 600, color: POSITION_COLOR[r.raw.position], width: DRAFT_LIST_COLS.pos }}>
                       <Value cell={r.positionalLabel} render={(v) => v} />
                     </span>
-                    <span style={{ fontSize: 10, letterSpacing: '.045em', color: 'var(--dim2)', width: 26 }}>{r.raw.team}</span>
+                    <span style={{ fontSize: 10, letterSpacing: '.045em', color: 'var(--dim2)', width: DRAFT_LIST_COLS.tm }}>{r.raw.team}</span>
                     <DraftRoomAdpCell row={r} />
                     <span
                       onClick={(e) => {
@@ -1638,7 +1728,7 @@ export function DraftRoom({
                       }}
                       title="Why this rank -- click to expand"
                       className="num"
-                      style={{ fontSize: 11, fontWeight: 600, color: deltaColor, width: 30, textAlign: 'right', cursor: 'pointer' }}
+                      style={{ fontSize: 11, fontWeight: 600, color: deltaColor, width: DRAFT_LIST_COLS.delta, textAlign: 'right', cursor: 'pointer' }}
                     >
                       {delta === null ? '—' : delta > 2 ? `▲${integer(delta)}` : delta < -2 ? `▼${integer(Math.abs(delta))}` : '·'}
                     </span>
@@ -1648,33 +1738,48 @@ export function DraftRoom({
                     <span
                       className="num"
                       title="Value over positional replacement -- board.json:players[].vbd"
-                      style={{ fontSize: 11, color: 'var(--dim2)', width: 40, textAlign: 'right' }}
+                      style={{ fontSize: 11, color: 'var(--dim2)', width: DRAFT_LIST_COLS.vbd, textAlign: 'right' }}
                     >
                       <Value cell={r.vbd} render={decimal} />
                     </span>
-                    {avail ? (
-                      <span
-                        className="num"
-                        title={
-                          avail.live !== null
+                    {/* FR-067: this cell (and the dots/watch/taken cells below it)
+                        now ALWAYS render their fixed-width slot, even when there is
+                        nothing to show inside it -- previously the whole element was
+                        omitted (`{avail ? <span/> : null}`), which shifted every row
+                        without a computed `avail` yet ~110px left of every row that
+                        had one, i.e. rows drifting from EACH OTHER, not just from the
+                        header. See DRAFT_LIST_COLS' doc comment. */}
+                    <span
+                      className="num"
+                      title={
+                        avail === null
+                          ? 'No further picks for this team in this league\'s format -- nothing to show.'
+                          : avail.live !== null
                             ? 'baseline → live availability at your next pick'
                             : `live not yet computed -- ${avail.picksLogged} of ${avail.picksRequired} picks logged`
-                        }
-                        style={{ fontSize: 10, width: 58, textAlign: 'right', color: 'var(--dim2)' }}
-                      >
-                        <Value cell={avail.baseline} render={percent} />
-                        {avail.live !== null ? (
-                          <span style={{ color: 'var(--acc)' }}> → {percent(avail.live)}</span>
-                        ) : (
-                          // Narrow-cell not-computed treatment (design-system/AUDIT.md
-                          // RETROFIT-1): "--" here, the reason in the title above, never
-                          // the baseline silently standing in for a live value that was
-                          // never computed.
-                          <span style={{ color: 'var(--dim2)' }}> → —</span>
-                        )}
-                      </span>
-                    ) : null}
-                    {dotsValue !== null ? <RowDots value={dotsValue} /> : null}
+                      }
+                      style={{ fontSize: 10, width: DRAFT_LIST_COLS.avail, textAlign: 'right', color: 'var(--dim2)' }}
+                    >
+                      {avail === null ? (
+                        '—'
+                      ) : (
+                        <>
+                          <Value cell={avail.baseline} render={percent} />
+                          {avail.live !== null ? (
+                            <span style={{ color: 'var(--acc)' }}> → {percent(avail.live)}</span>
+                          ) : (
+                            // Narrow-cell not-computed treatment (design-system/AUDIT.md
+                            // RETROFIT-1): "--" here, the reason in the title above, never
+                            // the baseline silently standing in for a live value that was
+                            // never computed.
+                            <span style={{ color: 'var(--dim2)' }}> → —</span>
+                          )}
+                        </>
+                      )}
+                    </span>
+                    <span style={{ width: DRAFT_LIST_COLS.dots, flex: 'none', display: 'flex', justifyContent: 'flex-end' }}>
+                      {dotsValue !== null ? <RowDots value={dotsValue} /> : null}
+                    </span>
                     <span
                       onClick={(e) => {
                         e.stopPropagation();
@@ -1683,6 +1788,9 @@ export function DraftRoom({
                       title="Star to track availability on your next pick"
                       style={{
                         fontSize: 11,
+                        width: DRAFT_LIST_COLS.watch,
+                        textAlign: 'center',
+                        flex: 'none',
                         color: r.name.kind === 'present' && watchlist.includes(r.name.value) ? 'var(--down)' : 'var(--dim2)',
                         cursor: 'pointer',
                       }}
@@ -1696,7 +1804,16 @@ export function DraftRoom({
                       }}
                       title="Mark taken"
                       className="num"
-                      style={{ fontSize: 10, color: 'var(--dim2)', border: '1px solid var(--line)', padding: '0 4px' }}
+                      style={{
+                        fontSize: 10,
+                        width: DRAFT_LIST_COLS.taken,
+                        textAlign: 'center',
+                        boxSizing: 'border-box',
+                        flex: 'none',
+                        color: 'var(--dim2)',
+                        border: '1px solid var(--line)',
+                        padding: '0 4px',
+                      }}
                     >
                       ✕
                     </span>
@@ -2096,7 +2213,7 @@ export function DraftRoom({
                       {referencePoint ? (
                         <div style={{ marginTop: 14, padding: '12px 13px', border: '1px solid var(--line2)', background: 'var(--panel2)' }}>
                           <div style={{ fontFamily: 'var(--font-num)', fontSize: 9, letterSpacing: '.11em', color: 'var(--dim2)' }}>
-                            LIKELY BEST AVAILABLE AT YOUR PICK {referencePoint.pick}
+                            LIKELY BEST AVAILABLE AT YOUR PICK {referencePoint.pick} ({roundPickLabel(referencePoint.pick, teams)})
                           </div>
                           <div style={{ marginTop: 8, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
                             <div>
@@ -2115,7 +2232,7 @@ export function DraftRoom({
                             </div>
                             <div style={{ borderLeft: '1px solid var(--line2)', paddingLeft: 14 }}>
                               <div style={{ fontSize: 9, letterSpacing: '.1em', color: 'var(--dim2)' }}>
-                                LIKELY THERE AT {referencePoint.pick}
+                                LIKELY THERE AT {referencePoint.pick} ({roundPickLabel(referencePoint.pick, teams)})
                               </div>
                               {referencePoint.likelyThere ? (
                                 <>
@@ -2595,7 +2712,7 @@ function DraftRoomAdpCell({ row }: { row: BoardRow }) {
       <span
         className="num"
         title={row.adp.reason}
-        style={{ fontSize: 10, color: 'var(--dim2)', width: 34, textAlign: 'right' }}
+        style={{ fontSize: 10, color: 'var(--dim2)', width: DRAFT_LIST_COLS.adp, textAlign: 'right' }}
       >
         —
       </span>
@@ -2606,7 +2723,7 @@ function DraftRoomAdpCell({ row }: { row: BoardRow }) {
       ? 'MyFantasyLeague proxy ADP, full PPR (not this league\'s own ADP)'
       : (row.adpSource ?? 'unlabelled ADP source')) + ' · board.json:players[].adp';
   return (
-    <span className="num" title={title} style={{ fontSize: 10, color: 'var(--dim2)', width: 34, textAlign: 'right' }}>
+    <span className="num" title={title} style={{ fontSize: 10, color: 'var(--dim2)', width: DRAFT_LIST_COLS.adp, textAlign: 'right' }}>
       {decimal(row.adp.value)}
       <sup style={{ fontSize: 7, marginLeft: 1 }}>MFL</sup>
     </span>

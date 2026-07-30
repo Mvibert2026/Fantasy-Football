@@ -9,7 +9,7 @@ Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests
 
 ---
 
-## NEW — 55
+## NEW — 50
 
 | ID | Subject | Raised | Source |
 |---|---|---|---|
@@ -41,7 +41,6 @@ Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests
 | [FR-064](FR-064-look-and-feel-reads-dated-draft-rankings-pane-to.md) | Look and feel reads dated draft rankings pane to | 2026-07-30 | chat 2026-07-30, PM session |
 | [FR-065](FR-065-resizable-panes-and-pop-out-views-for-the-draft.md) | Resizable panes and pop out views for the draft | 2026-07-30 | chat 2026-07-30, PM session |
 | [FR-066](FR-066-availability-picks-do-not-change-when-the-draft.md) | Availability picks do not change when the draft | 2026-07-30 | chat 2026-07-30, PM session |
-| [FR-067](FR-067-draft-view-column-headers-do-not-align-with-the.md) | Draft view column headers do not align with the | 2026-07-30 | chat 2026-07-30, PM session |
 | [FR-068](FR-068-player-profile-work-still-outstanding.md) | Player profile work still outstanding | 2026-07-30 | chat 2026-07-30, PM session |
 | [FR-069](FR-069-kill-the-24-preset-matrix-the-league-dropdown-is.md) | Kill the 24 preset matrix the league dropdown is | 2026-07-30 | chat 2026-07-30, PM session |
 | [FR-070](FR-070-calibration-mocks-cannot-use-my-real-league-sett.md) | Calibration mocks cannot use my real league sett | 2026-07-30 | chat 2026-07-30, PM session |
@@ -50,15 +49,11 @@ Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests
 | [FR-074](FR-074-backfill-the-rest-of-historical-adp-across-ffc-f.md) | Backfill the rest of historical adp across ffc f | 2026-07-30 | chat 2026-07-30, PM session (feedback batch) |
 | [FR-075](FR-075-build-player-archetype-and-surface-it-high-on-th.md) | Build player archetype and surface it high on th | 2026-07-30 | chat 2026-07-30, PM session (feedback batch) |
 | [FR-078](FR-078-does-early-rb-underperformance-support-zero-rb.md) | Does early rb underperformance support zero rb | 2026-07-30 | chat 2026-07-30, PM session (feedback batch) |
-| [FR-079](FR-079-last-few-seasons-must-render-in-the-selected-sco.md) | Last few seasons must render in the selected sco | 2026-07-30 | chat 2026-07-30, PM session (feedback batch) |
 | [FR-080](FR-080-light-theme-is-too-bright-and-needs-shading.md) | Light theme is too bright and needs shading | 2026-07-30 | chat 2026-07-30, PM session (feedback batch) |
 | [FR-081](FR-081-news-feed-for-prep-and-in-season.md) | News feed for prep and in season | 2026-07-30 | chat 2026-07-30, PM session (feedback batch) |
-| [FR-082](FR-082-opponents-pane-does-not-scroll.md) | Opponents pane does not scroll | 2026-07-30 | chat 2026-07-30, PM session (feedback batch) |
-| [FR-083](FR-083-player-card-adp-shows-wrong-format-for-selected-.md) | Player card adp shows wrong format for selected  | 2026-07-30 | chat 2026-07-30, PM session (feedback batch) |
 | [FR-084](FR-084-populate-the-coordinator-play-callers-table.md) | Populate the coordinator play callers table | 2026-07-30 | chat 2026-07-30, PM session (feedback batch) |
 | [FR-085](FR-085-rank-player-types-by-week-to-week-volatility.md) | Rank player types by week to week volatility | 2026-07-30 | chat 2026-07-30, PM session (feedback batch) |
 | [FR-086](FR-086-save-state-and-league-sharing-if-no-yahoo-api.md) | Save state and league sharing if no yahoo api | 2026-07-30 | chat 2026-07-30, PM session (feedback batch) |
-| [FR-087](FR-087-show-draft-position-in-rounds-not-only-pick-numb.md) | Show draft position in rounds not only pick numb | 2026-07-30 | chat 2026-07-30, PM session (feedback batch) |
 | [FR-088](FR-088-spend-fable-tokens-on-proprietary-rankings.md) | Spend fable tokens on proprietary rankings | 2026-07-30 | chat 2026-07-30, PM session (feedback batch) |
 | [FR-089](FR-089-update-glossary-and-methodology-pages.md) | Update glossary and methodology pages | 2026-07-30 | chat 2026-07-30, PM session (feedback batch) |
 | [FR-090](FR-090-bookkeeping-overhead-must-be-measured-and-cut.md) | Bookkeeping overhead must be measured and cut | 2026-07-30 | chat 2026-07-30, PM session |
@@ -79,7 +74,7 @@ Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests
 
 _None._
 
-## IN PROGRESS — 7
+## IN PROGRESS — 9
 
 | ID | Subject | Raised | Source |
 |---|---|---|---|
@@ -89,9 +84,11 @@ _None._
 | [FR-043](FR-043-audit-for-capability-already-built-and-sitting-u.md) | Audit for capability already built and sitting u | 2026-07-29 | chat 2026-07-29, PM session |
 | [FR-048](FR-048-insights-from-research-must-reach-the-chatbot-an.md) | Insights from research must reach the chatbot an | 2026-07-29 | chat 2026-07-29, PM session |
 | [FR-062](FR-062-yahoo-league-connection-if-no-api-access-what-ar.md) | Yahoo league connection if no api access what ar | 2026-07-30 | chat 2026-07-30, PM session |
+| [FR-079](FR-079-last-few-seasons-must-render-in-the-selected-sco.md) | Last few seasons must render in the selected sco | 2026-07-30 | chat 2026-07-30, PM session (feedback batch) |
+| [FR-083](FR-083-player-card-adp-shows-wrong-format-for-selected-.md) | Player card adp shows wrong format for selected  | 2026-07-30 | chat 2026-07-30, PM session (feedback batch) |
 | [FR-092](FR-092-figure-out-the-coordinator-table-play-callers-is.md) | Figure out the coordinator table play callers is | 2026-07-30 | PM dispatch, data-ops session 2026-07-30 |
 
-## SHIPPED — 15
+## SHIPPED — 18
 
 | ID | Subject | Raised | Source |
 |---|---|---|---|
@@ -107,8 +104,11 @@ _None._
 | [FR-055](FR-055-draft-mode-board-needs-column-headers.md) | Draft mode board needs column headers | 2026-07-29 | chat 2026-07-29, PM session |
 | [FR-056](FR-056-personal-use-confirmed-get-the-component-project.md) | Personal use confirmed get the component project | 2026-07-29 | chat 2026-07-29, PM session |
 | [FR-058](FR-058-the-recommendation-must-explain-itself-whenever.md) | The recommendation must explain itself whenever | 2026-07-29 | chat 2026-07-29, PM session |
+| [FR-067](FR-067-draft-view-column-headers-do-not-align-with-the.md) | Draft view column headers do not align with the | 2026-07-30 | chat 2026-07-30, PM session |
 | [FR-076](FR-076-chatbot-must-see-what-the-front-end-already-disp.md) | Chatbot must see what the front end already disp | 2026-07-30 | chat 2026-07-30, PM session (feedback batch) |
 | [FR-077](FR-077-chatbot-needs-standing-chat-box-and-answer-area.md) | Chatbot needs standing chat box and answer area | 2026-07-30 | chat 2026-07-30, PM session (feedback batch) |
+| [FR-082](FR-082-opponents-pane-does-not-scroll.md) | Opponents pane does not scroll | 2026-07-30 | chat 2026-07-30, PM session (feedback batch) |
+| [FR-087](FR-087-show-draft-position-in-rounds-not-only-pick-numb.md) | Show draft position in rounds not only pick numb | 2026-07-30 | chat 2026-07-30, PM session (feedback batch) |
 | [FR-093](FR-093-historical-adp-get-the-rest-of-it-ffc-has-differ.md) | Historical adp get the rest of it ffc has differ | 2026-07-30 | PM dispatch, data-ops session 2026-07-30 |
 
 ## DECLINED — 0
