@@ -5,11 +5,11 @@ Per-request files in this directory are the source of truth. Edit a request's ow
 `STATUS:` line, then re-run sync. Protocol: [`README.md`](README.md).
 Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests.md).
 
-**119 requests since freeze.**
+**120 requests since freeze.**
 
 ---
 
-## NEW — 72
+## NEW — 73
 
 | ID | Subject | Raised | Source |
 |---|---|---|---|
@@ -85,6 +85,7 @@ Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests
 | [FR-131](FR-131-availability-should-model-adp-not-expert-consens.md) | Availability should model adp not expert consens | 2026-07-30 | PM session 2026-07-30, founder chat |
 | [FR-133](FR-133-leagues-are-hardcoded-and-availability-is-comput.md) | Leagues are hardcoded and availability is comput | 2026-07-30 | PM session 2026-07-30, founder chat |
 | [FR-134](FR-134-test-campaign-prove-the-bottom-up-ranking-and-av.md) | Test campaign prove the bottom up ranking and av | 2026-07-30 | PM session 2026-07-30, founder chat |
+| [FR-135](FR-135-traditional-draft-board-teams-across-the-top-fil.md) | Traditional draft board teams across the top fil | 2026-07-30 | PM session 2026-07-30, founder chat |
 
 ## SCOPING — 1
 
