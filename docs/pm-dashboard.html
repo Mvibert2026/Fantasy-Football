@@ -157,6 +157,15 @@
   #f-blocked:checked ~ #items .row:not([data-c="blocked"]){display:none}
   #f-done:checked ~ #items .row:not([data-c="done"]){display:none}
   .tab:focus-visible,.f:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+  #t-asks:checked ~ .tabs label[for="t-asks"]{color:var(--accent);border-bottom-color:var(--accent)}
+  #t-asks:checked ~ .panel[data-panel="asks"]{display:block}
+  #q-new:checked ~ .scroll #frtable tr[data-q]:not([data-q="new"]){display:none}
+  #q-wip:checked ~ .scroll #frtable tr[data-q]:not([data-q="wip"]){display:none}
+  #q-shipped:checked ~ .scroll #frtable tr[data-q]:not([data-q="shipped"]){display:none}
+  #q-all:checked ~ .filters label[for="q-all"]{background:var(--accent-dim);color:var(--accent);border-color:var(--accent)}
+  #q-new:checked ~ .filters label[for="q-new"]{background:var(--accent-dim);color:var(--accent);border-color:var(--accent)}
+  #q-wip:checked ~ .filters label[for="q-wip"]{background:var(--accent-dim);color:var(--accent);border-color:var(--accent)}
+  #q-shipped:checked ~ .filters label[for="q-shipped"]{background:var(--accent-dim);color:var(--accent);border-color:var(--accent)}
 </style>
 
 <div class="wrap">
@@ -190,13 +199,14 @@
     <div class="n">players · half-PPR</div></div>
   <div class="tile"><div class="k">Open threads</div><div class="v warn">50</div>
     <div class="n">41 resolved · 91 total<br>3 id collisions renumbered</div></div>
-  <div class="tile"><div class="k">Your requests</div><div class="v">37</div>
-    <div class="n">5 shipped today<br>2 still share an id</div></div>
+  <div class="tile"><div class="k">Your requests</div><div class="v">46</div>
+    <div class="n">12 shipped · 7 in flight<br>27 not started</div></div>
 </div>
 
 <input class="tabsel" type="radio" name="tabs" id="t-next" checked>
 <input class="tabsel" type="radio" name="tabs" id="t-today">
 <input class="tabsel" type="radio" name="tabs" id="t-backlog">
+<input class="tabsel" type="radio" name="tabs" id="t-asks">
 <input class="tabsel" type="radio" name="tabs" id="t-cost">
 <input class="tabsel" type="radio" name="tabs" id="t-leagues">
 <input class="tabsel" type="radio" name="tabs" id="t-risks">
@@ -204,6 +214,7 @@
   <label class="tab" for="t-next" tabindex="0">NEXT</label>
   <label class="tab" for="t-today" tabindex="0">TODAY</label>
   <label class="tab" for="t-backlog" tabindex="0">BACKLOG</label>
+  <label class="tab" for="t-asks" tabindex="0">YOUR ASKS</label>
   <label class="tab" for="t-cost" tabindex="0">COST</label>
   <label class="tab" for="t-leagues" tabindex="0">LEAGUES</label>
   <label class="tab" for="t-risks" tabindex="0">HONEST GAPS</label>
@@ -426,6 +437,73 @@
       <div class="body"><p>Including season-history exports and most of the draft-room panel work. The
       risk is somebody redoing them — which has happened here before.</p></div></details>
   </div>
+</section>
+
+<section class="panel" data-panel="asks">
+  <h3>Everything you have asked for — 46 requests</h3>
+  <p class="sub" style="margin:0 0 12px">Every want, constraint and correction from chat, captured as a
+  numbered file so it survives the conversation. Newest first. Source:
+  <code>docs/founder-requests/</code>.</p>
+  <input class="tabsel" type="radio" name="frf" id="q-all" checked>
+  <input class="tabsel" type="radio" name="frf" id="q-new">
+  <input class="tabsel" type="radio" name="frf" id="q-wip">
+  <input class="tabsel" type="radio" name="frf" id="q-shipped">
+  <div class="filters">
+    <label class="f" for="q-all" tabindex="0">ALL · 46</label>
+    <label class="f" for="q-new" tabindex="0">NOT STARTED · 27</label>
+    <label class="f" for="q-wip" tabindex="0">IN FLIGHT · 7</label>
+    <label class="f" for="q-shipped" tabindex="0">SHIPPED · 12</label>
+  </div>
+
+  <div class="scroll"><table id="frtable"><thead><tr><th style="width:70px">ID</th>
+    <th style="width:110px">Status</th><th>Request</th></tr></thead><tbody>
+        <tr data-q="new"><td class="num">FR-064</td><td><span class="chip warn">NEW</span></td><td>Look and feel reads dated draft rankings pane to</td></tr>
+        <tr data-q="new"><td class="num">FR-063</td><td><span class="chip warn">NEW</span></td><td>Scarcity depletion warning uses the next pick no</td></tr>
+        <tr data-q="wip"><td class="num">FR-062</td><td><span class="chip info">IN PROGRESS</span></td><td>Yahoo league connection if no api access what ar</td></tr>
+        <tr data-q="new"><td class="num">FR-061</td><td><span class="chip warn">NEW</span></td><td>Strategy selector changes recommendations not ra</td></tr>
+        <tr data-q="new"><td class="num">FR-060</td><td><span class="chip warn">NEW</span></td><td>Adp versus production find where the market is s</td></tr>
+        <tr data-q="new"><td class="num">FR-059</td><td><span class="chip warn">NEW</span></td><td>Test the recommendation s four constants against</td></tr>
+        <tr data-q="shipped"><td class="num">FR-058</td><td><span class="chip ok">SHIPPED</span></td><td>The recommendation must explain itself whenever</td></tr>
+        <tr data-q="new"><td class="num">FR-057</td><td><span class="chip warn">NEW</span></td><td>Availability must recompute for any draft slot b</td></tr>
+        <tr data-q="shipped"><td class="num">FR-056</td><td><span class="chip ok">SHIPPED</span></td><td>Personal use confirmed get the component project</td></tr>
+        <tr data-q="shipped"><td class="num">FR-055</td><td><span class="chip ok">SHIPPED</span></td><td>Draft mode board needs column headers</td></tr>
+        <tr data-q="new"><td class="num">FR-053</td><td><span class="chip warn">NEW</span></td><td>Yahoo draft room reference capture features to c</td></tr>
+        <tr data-q="new"><td class="num">FR-052</td><td><span class="chip warn">NEW</span></td><td>Third league identified as yahoo roster and stat</td></tr>
+        <tr data-q="shipped"><td class="num">FR-051</td><td><span class="chip ok">SHIPPED</span></td><td>Show value over the player expected at my next p</td></tr>
+        <tr data-q="shipped"><td class="num">FR-050</td><td><span class="chip ok">SHIPPED</span></td><td>Show vbd in the draft player list</td></tr>
+        <tr data-q="shipped"><td class="num">FR-049</td><td><span class="chip ok">SHIPPED</span></td><td>Tabs in the draft middle pane including recommen</td></tr>
+        <tr data-q="wip"><td class="num">FR-048</td><td><span class="chip info">IN PROGRESS</span></td><td>Insights from research must reach the chatbot an</td></tr>
+        <tr data-q="new"><td class="num">FR-047</td><td><span class="chip warn">NEW</span></td><td>Per opponent deviation and deviation should wide</td></tr>
+        <tr data-q="new"><td class="num">FR-046</td><td><span class="chip warn">NEW</span></td><td>Make auto fill actually draft players wire up th</td></tr>
+        <tr data-q="shipped"><td class="num">FR-045</td><td><span class="chip ok">SHIPPED</span></td><td>Position scarcity reads every position as behind</td></tr>
+        <tr data-q="new"><td class="num">FR-044</td><td><span class="chip warn">NEW</span></td><td>Periodic table grid view in draft colour coded p</td></tr>
+        <tr data-q="wip"><td class="num">FR-043</td><td><span class="chip info">IN PROGRESS</span></td><td>Audit for capability already built and sitting u</td></tr>
+        <tr data-q="new"><td class="num">FR-041</td><td><span class="chip warn">NEW</span></td><td>Prose design and relevance review of strategy gu</td></tr>
+        <tr data-q="new"><td class="num">FR-040</td><td><span class="chip warn">NEW</span></td><td>Custom league option in league settings two hard</td></tr>
+        <tr data-q="new"><td class="num">FR-038</td><td><span class="chip warn">NEW</span></td><td>Look at other apps ux before committing to an ov</td></tr>
+        <tr data-q="shipped"><td class="num">FR-037</td><td><span class="chip ok">SHIPPED</span></td><td>Export csv and export pdf do not work low priori</td></tr>
+        <tr data-q="shipped"><td class="num">FR-036</td><td><span class="chip ok">SHIPPED</span></td><td>Manual team name entry for opponents in the draf</td></tr>
+        <tr data-q="shipped"><td class="num">FR-035</td><td><span class="chip ok">SHIPPED</span></td><td>Predictions in prep must be scoped to the select</td></tr>
+        <tr data-q="shipped"><td class="num">FR-034</td><td><span class="chip ok">SHIPPED</span></td><td>Draft position must be selectable in prep this i</td></tr>
+        <tr data-q="new"><td class="num">FR-033</td><td><span class="chip warn">NEW</span></td><td>Build a bottom up ranking from zero a directive</td></tr>
+        <tr data-q="new"><td class="num">FR-032</td><td><span class="chip warn">NEW</span></td><td>Make the opponents screen functional during a li</td></tr>
+        <tr data-q="new"><td class="num">FR-031</td><td><span class="chip warn">NEW</span></td><td>Consensus as an adjustment to bottom up not a ri</td></tr>
+        <tr data-q="new"><td class="num">FR-030</td><td><span class="chip warn">NEW</span></td><td>Run the rankings validation at maximum effort ac</td></tr>
+        <tr data-q="shipped"><td class="num">FR-030</td><td><span class="chip ok">SHIPPED</span></td><td>Remove the refresh data button since it cannot w</td></tr>
+        <tr data-q="new"><td class="num">FR-029</td><td><span class="chip warn">NEW</span></td><td>Be less verbose and technical enough to prioriti</td></tr>
+        <tr data-q="wip"><td class="num">FR-029</td><td><span class="chip info">IN PROGRESS</span></td><td>Opponents screen must be functional during a liv</td></tr>
+        <tr data-q="wip"><td class="num">FR-028</td><td><span class="chip info">SCOPING</span></td><td>Research what yahoo s in draft assistant shows t</td></tr>
+        <tr data-q="new"><td class="num">FR-027</td><td><span class="chip warn">NEW</span></td><td>Two tiers this season deep custom westwood gener</td></tr>
+        <tr data-q="wip"><td class="num">FR-026</td><td><span class="chip info">IN PROGRESS</span></td><td>Capture non ppr adp as well alongside half ppr</td></tr>
+        <tr data-q="new"><td class="num">FR-025</td><td><span class="chip ">DEFERRED</span></td><td>Make the app usable on a phone</td></tr>
+        <tr data-q="wip"><td class="num">FR-024</td><td><span class="chip info">IN PROGRESS</span></td><td>Show adp on the prep board the draft screen and</td></tr>
+        <tr data-q="new"><td class="num">FR-023</td><td><span class="chip warn">NEW</span></td><td>Ffc is unblocked founder confirmed no restrictio</td></tr>
+        <tr data-q="new"><td class="num">FR-022</td><td><span class="chip warn">NEW</span></td><td>Access the working app from a url without a serv</td></tr>
+        <tr data-q="new"><td class="num">FR-021</td><td><span class="chip warn">NEW</span></td><td>Fable work happens at the end of the week before</td></tr>
+        <tr data-q="new"><td class="num">FR-020</td><td><span class="chip warn">NEW</span></td><td>Stop asking permission to save to the repo stand</td></tr>
+        <tr data-q="new"><td class="num">FR-019</td><td><span class="chip warn">NEW</span></td><td>Record the founder s working preferences where a</td></tr>
+        <tr data-q="new"><td class="num">FR-018</td><td><span class="chip warn">NEW</span></td><td>Eliminate remaining permission prompts so unatte</td></tr>
+        </tbody></table></div>
 </section>
 
 <section class="panel" data-panel="cost">
