@@ -325,13 +325,18 @@ function DraftSlotControl({
         alignItems: 'center',
         gap: 6,
         padding: '4px 10px',
-        border: `1px solid ${overridden ? 'var(--acc)' : 'var(--line2)'}`,
+        // SUPPLIED-VALUES.md: the border no longer turns --acc on override --
+        // green already means "good, positive, better than baseline" on this
+        // board (the delta colour), and a slot you set yourself is neither.
+        // Supplied-ness now reads through the dotted underline on the value
+        // and the "set by you" marker below, never a semantic accent.
+        border: '1px solid var(--line2)',
         background: 'var(--panel2)',
         fontFamily: 'var(--font-num)',
         fontSize: 11,
       }}
     >
-      <span style={{ color: overridden ? 'var(--acc)' : 'var(--dim2)', letterSpacing: '.05em' }}>SLOT</span>
+      <span style={{ color: 'var(--dim2)', letterSpacing: '.05em' }}>SLOT</span>
       <select
         aria-label="Your draft slot"
         value={effective ?? ''}
@@ -339,8 +344,12 @@ function DraftSlotControl({
         style={{
           flex: 'none',
           background: 'transparent',
+          // Dotted underline is the one and only "you put this here" signal
+          // in this app (SUPPLIED-VALUES.md) -- applied to the select itself
+          // since there's no separate span to underline around a live control.
           border: 0,
-          color: overridden ? 'var(--acc)' : 'var(--txt)',
+          borderBottom: overridden ? '1px dotted var(--line2)' : '1px solid transparent',
+          color: 'var(--txt)',
           fontFamily: 'var(--font-num)',
           fontSize: 11,
           fontWeight: 600,
@@ -354,7 +363,12 @@ function DraftSlotControl({
       </select>
       {overridden ? (
         <>
-          <span style={{ color: 'var(--dim2)', fontSize: 10 }}>· sourced {sourced ?? '—'}</span>
+          {/* "set by you" -- the lowercase marker naming how this value got
+              here, replacing the accent-coloured "· sourced N" text. The
+              sourced value itself stays visible (kept, per the spec: "where a
+              supplied value overrides a sourced one, the sourced value stays
+              visible in the same control"). */}
+          <span style={{ color: 'var(--dim2)', fontSize: 10 }}>· set by you, league file says {sourced ?? '—'}</span>
           <button
             onClick={onClearSlot}
             title="Clear override, back to league.json's value"
@@ -366,8 +380,8 @@ function DraftSlotControl({
               lineHeight: '14px',
               padding: 0,
               background: 'transparent',
-              border: '1px solid var(--acc)',
-              color: 'var(--acc)',
+              border: '1px solid var(--line2)',
+              color: 'var(--dim2)',
               fontSize: 10,
             }}
           >

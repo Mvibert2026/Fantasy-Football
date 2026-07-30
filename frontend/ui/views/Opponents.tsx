@@ -303,6 +303,14 @@ function OpponentNameField({
 
   return (
     <>
+      {/*
+        SUPPLIED-VALUES.md: a typed name is not marked with the --acc accent
+        anymore -- green already means "good, positive, better than baseline"
+        on this board (the delta colour), and a name you typed is not good,
+        it's yours. The dotted underline plus the lowercase "typed" marker
+        below are the two non-hue channels that carry that distinction now,
+        and both survive greyscale.
+      */}
       <span
         style={{
           flex: 1,
@@ -311,8 +319,10 @@ function OpponentNameField({
           overflow: 'hidden',
           textOverflow: 'ellipsis',
           whiteSpace: 'nowrap',
-          color: isTyped ? 'var(--acc)' : displayName === null ? 'var(--dim2)' : 'var(--txt)',
+          color: displayName === null ? 'var(--dim2)' : 'var(--txt)',
           fontStyle: displayName === null ? 'italic' : 'normal',
+          borderBottom: isTyped ? '1px dotted var(--line2)' : 'none',
+          paddingBottom: isTyped ? 1 : 0,
         }}
       >
         {displayName ?? `Slot ${slot} (no team name supplied)`}
@@ -320,9 +330,9 @@ function OpponentNameField({
       {isTyped ? (
         <span
           title="Typed locally -- not from opponents.json"
-          style={{ fontSize: 9, letterSpacing: '.06em', color: 'var(--acc)', flex: 'none' }}
+          style={{ fontFamily: 'var(--font-num)', fontSize: 9.5, color: 'var(--dim2)', flex: 'none' }}
         >
-          TYPED
+          typed
         </span>
       ) : null}
       <button
