@@ -9,6 +9,7 @@ import type {
   RawLeague,
   RawNulls,
   RawOpponents,
+  RawPlayerDescriptions,
   RawRosters,
   RawStrategies,
 } from './types';
@@ -79,6 +80,13 @@ export interface Dataset {
    * is absent and this is a synthesised empty feed rather than a fetch failure.
    */
   feed: RawFeed;
+  /**
+   * `player_descriptions.json`, primary league only today (see RawPlayerDescriptions
+   * doc comment) -- null for any other league, or for an older sync that predates
+   * the file, exactly like `rosters` above. Consumed by the assistant's retrieval
+   * corpus (`ui/assistant/retrieval.ts`); nothing else reads it yet.
+   */
+  playerDescriptions: RawPlayerDescriptions | null;
 }
 
 /**
@@ -106,12 +114,26 @@ async function fetchRostersOrNull(pathPrefix: string): Promise<RawRosters | null
   }
 }
 
+/** player_descriptions.json exists for the primary league only (see
+ *  Dataset.playerDescriptions) -- absence is a real "not generated for this
+ *  league" state, not a load error, so this resolves to null like
+ *  `fetchRostersOrNull` above rather than failing the whole dataset load. */
+async function fetchPlayerDescriptionsOrNull(pathPrefix: string): Promise<RawPlayerDescriptions | null> {
+  try {
+    return await fetchJson<RawPlayerDescriptions>('player_descriptions', pathPrefix);
+  } catch {
+    return null;
+  }
+}
+
 /** `{ artifactName: league_id }` for everything that must match, skipping the feed
  *  (legitimately absent for every league today), strategies when it wasn't
- *  fetched at all for this league (see the Dataset.strategies doc comment), and
- *  rosters when this league predates contract 1.8.0 (see Dataset.rosters). */
+ *  fetched at all for this league (see the Dataset.strategies doc comment),
+ *  rosters when this league predates contract 1.8.0 (see Dataset.rosters), and
+ *  playerDescriptions -- primary-league-only, and the artifact carries no
+ *  `league_id` field at all to check (see Dataset.playerDescriptions). */
 function leagueIdsOf(
-  d: Omit<Dataset, 'manifest' | 'feed'>,
+  d: Omit<Dataset, 'manifest' | 'feed' | 'playerDescriptions'>,
 ): Record<string, string | null | undefined> {
   return {
     board: d.board.league_id,
@@ -125,7 +147,10 @@ function leagueIdsOf(
   };
 }
 
-function assertLeagueMatches(leagueId: string, data: Omit<Dataset, 'manifest' | 'feed'>): void {
+function assertLeagueMatches(
+  leagueId: string,
+  data: Omit<Dataset, 'manifest' | 'feed' | 'playerDescriptions'>,
+): void {
   const mismatches = Object.entries(leagueIdsOf(data))
     .filter(([, got]) => got !== leagueId)
     .map(([artifact, got]) => `${artifact}.json declares league_id ${JSON.stringify(got ?? null)}`);
@@ -159,7 +184,7 @@ export async function loadDataset(leagueId: string = DEFAULT_LEAGUE_ID): Promise
     hasStrategies = 'strategies' in entry.artifacts;
   }
 
-  const [board, league, glossary, nulls, strategies, availability, opponents, rosters, feed] =
+  const [board, league, glossary, nulls, strategies, availability, opponents, rosters, feed, playerDescriptions] =
     await Promise.all([
       fetchJson<RawBoard>('board', pathPrefix),
       fetchJson<RawLeague>('league', pathPrefix),
@@ -170,6 +195,7 @@ export async function loadDataset(leagueId: string = DEFAULT_LEAGUE_ID): Promise
       fetchJson<RawOpponents>('opponents', pathPrefix),
       fetchRostersOrNull(pathPrefix),
       fetchFeedOrEmpty(pathPrefix),
+      fetchPlayerDescriptionsOrNull(pathPrefix),
     ]);
 
   const data = { board, league, glossary, nulls, strategies, availability, opponents, rosters };
@@ -185,7 +211,7 @@ export async function loadDataset(leagueId: string = DEFAULT_LEAGUE_ID): Promise
     assertLeagueMatches(leagueId, data);
   }
 
-  return { manifest, ...data, feed };
+  return { manifest, ...data, feed, playerDescriptions };
 }
 
 /** Looks up the run id the assistant cites alongside any value from this artifact. */

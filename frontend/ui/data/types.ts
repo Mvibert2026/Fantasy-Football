@@ -502,3 +502,39 @@ export interface RawSeasonStats {
   note: string;
   players: RawSeasonStatsPlayer[];
 }
+
+/**
+ * `player_descriptions.json` (`src/player_descriptions.py`, ADR-044). AI-generated,
+ * display-only prose -- "Never a Fact, never a model input" per the artifact's own
+ * `note`. Own `export_version`, no `contract_version`/`league_id`: primary league
+ * only today (see `docs/CURRENT-STATE.md` open item 5), not part of the per-league
+ * six-artifact set. A player absent from `players` has an UNDETERMINED archetype;
+ * render nothing for them rather than a placeholder.
+ */
+export interface RawPlayerDescription {
+  player_id: string;
+  player_name: string;
+  season: number;
+  position: Position;
+  archetype: string;
+  confidence: 'high' | 'medium' | 'low' | string;
+  description: string;
+  license_tag: string;
+  generated_at: string;
+  source_stats: {
+    carry_share: number;
+    target_share: number;
+    offense_pct: number;
+    adot: number;
+    games_qualified: number;
+  };
+}
+
+export interface RawPlayerDescriptions {
+  export_version: string;
+  license_tag: string;
+  season: number;
+  generated_utc: string;
+  note: string;
+  players: RawPlayerDescription[];
+}

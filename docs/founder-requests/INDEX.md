@@ -1,6 +1,6 @@
 # Founder requests — combined view
 
-**Generated 2026-07-29 by `tools/founder_requests.py sync` — do not hand-edit.**
+**Generated 2026-07-30 by `tools/founder_requests.py sync` — do not hand-edit.**
 Per-request files in this directory are the source of truth. Edit a request's own file's
 `STATUS:` line, then re-run sync. Protocol: [`README.md`](README.md).
 Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests.md).
@@ -9,7 +9,7 @@ Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests
 
 ---
 
-## NEW — 31
+## NEW — 30
 
 | ID | Subject | Raised | Source |
 |---|---|---|---|
@@ -34,7 +34,6 @@ Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests
 | [FR-045](FR-045-position-scarcity-reads-every-position-as-behind.md) | Position scarcity reads every position as behind | 2026-07-29 | chat 2026-07-29, PM session |
 | [FR-046](FR-046-make-auto-fill-actually-draft-players-wire-up-th.md) | Make auto fill actually draft players wire up th | 2026-07-29 | chat 2026-07-29, PM session |
 | [FR-047](FR-047-per-opponent-deviation-and-deviation-should-wide.md) | Per opponent deviation and deviation should wide | 2026-07-29 | chat 2026-07-29, PM session |
-| [FR-048](FR-048-insights-from-research-must-reach-the-chatbot-an.md) | Insights from research must reach the chatbot an | 2026-07-29 | chat 2026-07-29, PM session |
 | [FR-049](FR-049-tabs-in-the-draft-middle-pane-including-recommen.md) | Tabs in the draft middle pane including recommen | 2026-07-29 | chat 2026-07-29, PM session |
 | [FR-050](FR-050-show-vbd-in-the-draft-player-list.md) | Show vbd in the draft player list | 2026-07-29 | chat 2026-07-29, PM session |
 | [FR-051](FR-051-show-value-over-the-player-expected-at-my-next-p.md) | Show value over the player expected at my next p | 2026-07-29 | chat 2026-07-29, PM session |
@@ -55,7 +54,7 @@ Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests
 
 _None._
 
-## IN PROGRESS — 4
+## IN PROGRESS — 5
 
 | ID | Subject | Raised | Source |
 |---|---|---|---|
@@ -63,6 +62,7 @@ _None._
 | [FR-026](FR-026-capture-non-ppr-adp-as-well-alongside-half-ppr.md) | Capture non ppr adp as well alongside half ppr | 2026-07-29 | chat session 2026-07-29 (PM takeover) |
 | [FR-029](FR-029-opponents-screen-must-be-functional-during-a-liv.md) | Opponents screen must be functional during a liv | 2026-07-29 | frontend session, dispatched as "FR-032" in the task brief |
 | [FR-043](FR-043-audit-for-capability-already-built-and-sitting-u.md) | Audit for capability already built and sitting u | 2026-07-29 | chat 2026-07-29, PM session |
+| [FR-048](FR-048-insights-from-research-must-reach-the-chatbot-an.md) | Insights from research must reach the chatbot an | 2026-07-29 | chat 2026-07-29, PM session |
 
 ## SHIPPED — 5
 
