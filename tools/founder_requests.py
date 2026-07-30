@@ -148,9 +148,11 @@ def _git_tree_filenames(ref: str, subdir: str) -> list[str]:
 
 
 def next_free_id() -> int:
-    """W1-style allocation (see tools/handoffs.py): scan filenames on disk, never frontmatter --
-    a file's own ID: field can be wrong or missing. Floor is the archive's highest number so new
-    FRs never collide with the frozen file.
+    """LEGACY (superseded by W3, see DATE_ID_RE comment above). Still answers "highest
+    legacy FR-NNN claimed" honestly and is kept tested for that, but as of W3 it is NOT
+    used to allocate new FR filenames -- new_request_filename() replaces it for that,
+    the same way tools/handoffs.py's next_free_id() was superseded there. Do not wire
+    this back into cmd_new/ingest_pending.
 
     Widened (2026-07-29): also scans docs/founder-requests/ as committed on every local +
     remote-tracking branch, so an FR number claimed on a parallel branch isn't handed out
@@ -165,9 +167,29 @@ def next_free_id() -> int:
     return max(nums) + 1
 
 
+def new_request_filename(date: str, slug: str) -> pathlib.Path:
+    """W3: claim docs/founder-requests/FR-{date}-{slug}[-N].md atomically, with no
+    shared counter and no git ref scan -- see tools/handoffs.py's new_thread_filename()
+    for the full reasoning, which applies identically here."""
+    FR_DIR.mkdir(parents=True, exist_ok=True)
+    base = f"FR-{date}-{slug}"
+    n = 1
+    while True:
+        candidate = base if n == 1 else f"{base}-{n}"
+        path = FR_DIR / f"{candidate}.md"
+        try:
+            fd = os.open(str(path), os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+            os.close(fd)
+            return path
+        except FileExistsError:
+            n += 1
+
+
 def find_fr_collisions() -> list[str]:
     """Backstop: same FR-NNN claimed for a different subject/slug on different branches.
-    Detection only -- does not renumber anything."""
+    Detection only -- does not renumber anything. Legacy-only (`FR-\\d{3}-`) on purpose:
+    W3's FR-YYYY-MM-DD-slug.md requests have no equivalent gap to backstop -- see
+    tools/handoffs.py's find_thread_id_collisions() docstring for why."""
     by_id: dict[str, set[str]] = {}
     if FR_DIR.exists():
         for p in FR_DIR.glob("FR-*.md"):
@@ -192,7 +214,8 @@ def _pending_new_files() -> list[pathlib.Path]:
     return sorted(FR_DIR.glob("NEW-*.md"))
 
 
-def _stamp(text: str, nid: int, today: str) -> str:
+def _stamp(text: str, id_str: str, today: str) -> str:
+    """`id_str` is written verbatim (e.g. `FR-018` legacy or `FR-2026-07-30-slug` W3)."""
     if not text.startswith("---"):
         raise SystemExit("founder_requests sync: file has no frontmatter block, refusing to stamp it")
     _, fm, body = text.split("---", 2)
@@ -202,7 +225,7 @@ def _stamp(text: str, nid: int, today: str) -> str:
     for line in lines:
         stripped = line.strip()
         if stripped.upper().startswith("ID:"):
-            out_lines.append(f"ID: FR-{nid:03d}")
+            out_lines.append(f"ID: {id_str}")
             has_id = True
         elif stripped.upper().startswith("RAISED:"):
             out_lines.append(f"RAISED: {today}")
@@ -210,28 +233,22 @@ def _stamp(text: str, nid: int, today: str) -> str:
         else:
             out_lines.append(line)
     if not has_id:
-        out_lines.insert(0, f"ID: FR-{nid:03d}")
+        out_lines.insert(0, f"ID: {id_str}")
     if not has_raised:
         out_lines.append(f"RAISED: {today}")
     return "---\n" + "\n".join(out_lines) + "\n---" + body
 
 
-def _ingest_one(src: pathlib.Path, nid: int, today: str) -> pathlib.Path:
-    """Allocate a single pending file to a specific ID. Split out from ingest_pending() so the
-    hard-fail-on-collision behaviour is testable as a defense-in-depth property in its own
-    right (mirrors tools/handoffs.py's _ingest_one, same reasoning: thread 076 -- two
-    worktrees can each compute a locally-valid "next free" number that collides at merge)."""
+def _ingest_one(src: pathlib.Path, today: str) -> pathlib.Path:
+    """Allocate a single pending file to docs/founder-requests/FR-{today}-{slug}[-N].md
+    via new_request_filename() (W3). Split out from ingest_pending() so the allocate-
+    plus-stamp step is independently testable (mirrors tools/handoffs.py's _ingest_one)."""
     stem = src.stem
     raw_slug = stem[4:] if stem.upper().startswith("NEW-") else stem
     slug = _slugify(raw_slug)
-    dest = FR_DIR / f"FR-{nid:03d}-{slug}.md"
-    if dest.exists():
-        raise SystemExit(
-            f"founder_requests sync: refusing to overwrite existing "
-            f"{_rel(dest)} while ingesting {_rel(src)}"
-        )
+    dest = new_request_filename(today, slug)
     text = src.read_text(encoding="utf-8")
-    dest.write_text(_stamp(text, nid, today), encoding="utf-8")
+    dest.write_text(_stamp(text, dest.stem, today), encoding="utf-8")
     src.unlink()
     return dest
 
@@ -240,8 +257,7 @@ def ingest_pending(today: str | None = None) -> list[pathlib.Path]:
     today = today or datetime.date.today().isoformat()
     ingested = []
     for src in _pending_new_files():
-        nid = next_free_id()
-        ingested.append(_ingest_one(src, nid, today))
+        ingested.append(_ingest_one(src, today))
     return ingested
 
 
