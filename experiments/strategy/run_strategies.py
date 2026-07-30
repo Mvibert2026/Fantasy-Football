@@ -191,13 +191,23 @@ def run(sims: int, rounds_total: int, sources: Sequence[str], out_path: Path) ->
                         sign_k=k, sign_n=nn, sign_p=p, sign_min_p=minp)
                     print(f"     {name:16s} {pt:+9.3f}  [{lo:+9.3f},{hi:+9.3f}]  {g:9s} "
                           f"sign {k}/{nn} p={p:.4f}")
+            # BUG FIX (FR-109, 2026-07-30). This block used to sit OUTSIDE the
+            # sigma loop and read `per_strategy_slot`, which is rebound at the
+            # top of each sigma iteration -- so the only slot table that ever
+            # survived was the LAST sigma cell (flat20 for ffc, flat20 for ecr),
+            # not the primary one. `docs/ranking/fr085-zero-rb.md` §5.4 printed
+            # that table under the heading "FFC primary sigma". It is the sigma=20
+            # cell, which is why its P(playoff) values (0.71-0.80) do not
+            # reconcile with the primary-sigma pooled values (~0.40) three
+            # sections above. Now keyed per sigma.
+            sig_out["playoff_rate_by_slot"] = {
+                name: {grp: statistics.fmean(v) for grp, v in d.items()}
+                for name, d in per_strategy_slot.items()}
+            print(f"\n  P(make playoffs) by draft slot group, sigma={sig_name}"
+                  f"{' (PRIMARY)' if sig_name == PRIMARY_SIGMA[source] else ''}:")
+            for name, d in sig_out["playoff_rate_by_slot"].items():
+                print("   ", f"{name:16s}", {k: round(v, 3) for k, v in sorted(d.items())})
             src_out["sigma"][sig_name] = sig_out
-        src_out["playoff_rate_by_slot"] = {
-            name: {grp: statistics.fmean(v) for grp, v in d.items()}
-            for name, d in per_strategy_slot.items()}
-        print("\n  P(make playoffs) by draft slot group (primary sigma run shown last):")
-        for name, d in src_out["playoff_rate_by_slot"].items():
-            print("   ", f"{name:16s}", {k: round(v, 3) for k, v in sorted(d.items())})
         results["sources"][source] = src_out
 
     results["n_interval_tests"] = n_tests
