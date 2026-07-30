@@ -5,11 +5,11 @@ Per-request files in this directory are the source of truth. Edit a request's ow
 `STATUS:` line, then re-run sync. Protocol: [`README.md`](README.md).
 Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests.md).
 
-**110 requests since freeze.**
+**111 requests since freeze.**
 
 ---
 
-## NEW — 65
+## NEW — 66
 
 | ID | Subject | Raised | Source |
 |---|---|---|---|
@@ -78,6 +78,7 @@ Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests
 | [FR-123](FR-123-archetypes-need-more-categories-the-35-rule-cann.md) | Archetypes need more categories the 35 rule cann | 2026-07-30 | PM session 2026-07-30, founder chat |
 | [FR-124](FR-124-news-feed-global-per-player-and-eventually-roste.md) | News feed global per player and eventually roste | 2026-07-30 | PM session 2026-07-30, founder chat |
 | [FR-125](FR-125-injury-status-at-a-glance-in-player-lists-and-on.md) | Injury status at a glance in player lists and on | 2026-07-30 | PM session 2026-07-30, founder chat |
+| [FR-126](FR-126-the-scarcity-tab-reads-dated-and-needs-a-facelif.md) | The scarcity tab reads dated and needs a facelif | 2026-07-30 | PM session 2026-07-30, founder chat with screenshot |
 
 ## SCOPING — 1
 
