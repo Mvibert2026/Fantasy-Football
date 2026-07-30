@@ -4,7 +4,7 @@
 Threads are the source of truth. Change a thread's `STATUS:`, then re-run sync.
 Protocol: [`README.md`](README.md).
 
-**74 open** · 46 resolved
+**75 open** · 46 resolved
 
 ---
 
@@ -13,7 +13,7 @@ Protocol: [`README.md`](README.md).
 Every role gets a section, including empty ones — an empty inbox is a fact worth stating,
 not an omission. Start your session at your own heading.
 
-### `pm` — 9 waiting
+### `pm` — 10 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
@@ -25,6 +25,7 @@ not an omission. Start your session at your own heading.
 | [095](095-yahoo-api-appears-open-espn-is-a-clean-no-the-bi.md) | Yahoo api appears open espn is a clean no the bi | `researcher` | OPEN | 0d | none |
 | [106](106-fr090-bookkeeping-investigation-findings.md) | Fr090 bookkeeping investigation findings | `librarian` | OPEN | 0d | none |
 | [108](108-injury-prediction-services-buy-nothing.md) | Injury prediction services buy nothing | `researcher` | OPEN | 0d | FR-097 (injury-prediction-service buy decision); raises priority of open item 8 (T6 roster-status ingest) and the Sleeper daily snapshot job |
+| [115](115-fr-114-shipped-plus-a-suspicious-mid-task-messag.md) | Fr 114 shipped plus a suspicious mid task messag | `frontend` | OPEN | 0d | none |
 | [90](090-fr-043-audit-claude-md-ss5-staleness-built-but-u.md) | Fr 043 audit claude md ss5 staleness built but u | `librarian` | OPEN | 1d | none |
 
 ### `backend` — 30 waiting
@@ -97,7 +98,7 @@ not an omission. Start your session at your own heading.
 | [070](070-recurring-injury-suspension-feed.md) | Recurring injury suspension feed | `pm` | OPEN | 3d | T4 (suspensions/roster-status table stakes), E[games_played] per ADR-E Amendment E-A1 |
 | [084](084-deepen-expert-consensus-history-beyond-2021-2025.md) | Deepen expert consensus history beyond 2021 2025 | `ranker` | OPEN | 1d | none |
 | [097](097-ingest-nflverse-weekly-roster-status-the-only-so.md) | Ingest nflverse weekly roster status the only so | `ranker` | OPEN | 0d | the season-ending-IR and suspension error classes in the bottom-up component model (docs/ranking/component-model-rb-qb-te-pass-1.md §5.2). Nothing shipped. |
-| [114](113-rosters-weekly-blocks-vacated-opportunity.md) | Rosters weekly blocks vacated opportunity | `ranker` | OPEN | 0d | test-registry #28 (vacated targets & carries) |
+| [113](113-rosters-weekly-blocks-vacated-opportunity.md) | Rosters weekly blocks vacated opportunity | `ranker` | OPEN | 0d | test-registry #28 (vacated targets & carries) |
 
 ### `strategist` — 14 waiting
 
@@ -115,8 +116,8 @@ not an omission. Start your session at your own heading.
 | [102](102-fr-094-sleeper-screen-methodology-review.md) | Fr 094 sleeper screen methodology review | `backend` | OPEN | 0d |  |
 | [105](105-fr085-fr086-methodology-review.md) | Fr085 fr086 methodology review | `ranker` | OPEN | 0d | whether anything from FR-085/FR-086 is registered; whether CLAUDE.md §7's ceiling claim stands |
 | [111](111-valuation-tests-35-36-results.md) | Valuation tests 35 36 results | `backend` | OPEN | 0d | none |
+| [112](112-preregistration-gates-need-a-decision-subset.md) | Preregistration gates need a decision subset | `ranker` | OPEN | 0d | every future pre-registration that gates on projection error |
 | [112](114-founder-mock-scoring-format-inference-needs-sepa.md) | Founder mock scoring format inference needs sepa | `data-ops` | OPEN | 0d | none |
-| [113](112-preregistration-gates-need-a-decision-subset.md) | Preregistration gates need a decision subset | `ranker` | OPEN | 0d | every future pre-registration that gates on projection error |
 
 ### `researcher` — 4 waiting
 

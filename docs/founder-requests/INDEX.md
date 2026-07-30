@@ -9,7 +9,7 @@ Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests
 
 ---
 
-## NEW — 61
+## NEW — 60
 
 | ID | Subject | Raised | Source |
 |---|---|---|---|
@@ -68,7 +68,6 @@ Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests
 | [FR-111](FR-111-draft-headers-still-do-not-line-up.md) | Draft headers still do not line up | 2026-07-30 | chat 2026-07-30, PM session (screenshot feedback) |
 | [FR-112](FR-112-insights-tab-timing.md) | Insights tab timing | 2026-07-30 | chat 2026-07-30, PM session (screenshot feedback) |
 | [FR-113](FR-113-player-profile-information-order-and-density.md) | Player profile information order and density | 2026-07-30 | chat 2026-07-30, PM session (screenshot feedback) |
-| [FR-114](FR-114-remove-code-and-sourcing-clutter-across-the-site.md) | Remove code and sourcing clutter across the site | 2026-07-30 | chat 2026-07-30, PM session (screenshot feedback) |
 | [FR-115](FR-115-value-of-next-flex-te-over-suggested-by-pure-vbd.md) | Value of next flex te over suggested by pure vbd | 2026-07-30 | chat 2026-07-30, PM session (screenshot feedback) |
 | [FR-116](FR-116-bpa-on-expected-score-should-be-tested.md) | Bpa on expected score should be tested | 2026-07-30 | chat 2026-07-30, PM session |
 | [FR-117](FR-117-draft-strategies-need-roster-awareness-constrain.md) | Draft strategies need roster awareness constrain | 2026-07-30 | chat 2026-07-30, PM session |
@@ -85,7 +84,7 @@ Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests
 
 _None._
 
-## IN PROGRESS — 12
+## IN PROGRESS — 13
 
 | ID | Subject | Raised | Source |
 |---|---|---|---|
@@ -101,6 +100,7 @@ _None._
 | [FR-075](FR-075-build-player-archetype-and-surface-it-high-on-th.md) | Build player archetype and surface it high on th | 2026-07-30 | chat 2026-07-30, PM session (feedback batch) |
 | [FR-079](FR-079-last-few-seasons-must-render-in-the-selected-sco.md) | Last few seasons must render in the selected sco | 2026-07-30 | chat 2026-07-30, PM session (feedback batch) |
 | [FR-092](FR-092-figure-out-the-coordinator-table-play-callers-is.md) | Figure out the coordinator table play callers is | 2026-07-30 | PM dispatch, data-ops session 2026-07-30 |
+| [FR-114](FR-114-remove-code-and-sourcing-clutter-across-the-site.md) | Remove code and sourcing clutter across the site | 2026-07-30 | chat 2026-07-30, PM session (screenshot feedback) |
 
 ## SHIPPED — 19
 
