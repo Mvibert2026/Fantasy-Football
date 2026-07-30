@@ -2,7 +2,7 @@
   "export_version": "1.0.0",
   "license_tag": "ai_generated",
   "season": 2026,
-  "generated_utc": "2026-07-26T15:09:43.328130+00:00",
+  "generated_utc": "2026-07-30T16:43:49.019240+00:00",
   "note": "Display-only. Never a Fact, never a model input -- see player_descriptions.py's module docstring (ADR-044). A player absent from this file has an UNDETERMINED archetype and no description exists for them; do not render a placeholder.",
   "players": [
     {
@@ -14,7 +14,7 @@
       "confidence": "high",
       "description": "Adam Thielen played a rotational snap share (43%) last season -- his role depends on beating out other receivers for playing time before target volume is even a question.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018043+00:00",
       "source_stats": {
         "carry_share": 0.0,
         "target_share": 0.07829977628635347,
@@ -32,7 +32,7 @@
       "confidence": "high",
       "description": "Zach Ertz is his offense's primary receiving tight end, drawing 20% of the team's targets on a 66% snap share -- a real receiving weapon at a thin fantasy position.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018091+00:00",
       "source_stats": {
         "carry_share": 0.0,
         "target_share": 0.20224719101123595,
@@ -50,11 +50,11 @@
       "confidence": "high",
       "description": "Travis Kelce is his offense's primary receiving tight end, drawing 20% of the team's targets on a 82% snap share -- a real receiving weapon at a thin fantasy position.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018102+00:00",
       "source_stats": {
         "carry_share": 0.002325581395348837,
         "target_share": 0.19672131147540983,
-        "offense_pct": 0.8188235294117647,
+        "offense_pct": 0.8188235294117648,
         "adot": 6.805555555555555,
         "games_qualified": 17
       }
@@ -68,11 +68,11 @@
       "confidence": "high",
       "description": "DeAndre Hopkins is a field-stretcher, averaging 13.2 air yards per target -- his role is built on getting downfield rather than high target volume, which raises his weekly variance.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018108+00:00",
       "source_stats": {
         "carry_share": 0.0,
         "target_share": 0.09582309582309582,
-        "offense_pct": 0.33,
+        "offense_pct": 0.33000000000000007,
         "adot": 13.153846153846153,
         "games_qualified": 17
       }
@@ -86,7 +86,7 @@
       "confidence": "high",
       "description": "Brandin Cooks is a field-stretcher, averaging 14.3 air yards per target -- his role is built on getting downfield rather than high target volume, which raises his weekly variance.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018113+00:00",
       "source_stats": {
         "carry_share": 0.0,
         "target_share": 0.08933002481389578,
@@ -104,7 +104,7 @@
       "confidence": "high",
       "description": "Davante Adams is a high-volume target earner, drawing 25% of his team's targets while playing 71% of the offensive snaps -- the receiver a passing offense is built around.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018118+00:00",
       "source_stats": {
         "carry_share": 0.0,
         "target_share": 0.24782608695652175,
@@ -122,7 +122,7 @@
       "confidence": "high",
       "description": "Stefon Diggs played a rotational snap share (54%) last season -- his role depends on beating out other receivers for playing time before target volume is even a question.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018128+00:00",
       "source_stats": {
         "carry_share": 0.0,
         "target_share": 0.21161825726141079,
@@ -140,11 +140,11 @@
       "confidence": "high",
       "description": "Tyler Lockett played a rotational snap share (50%) last season -- his role depends on beating out other receivers for playing time before target volume is even a question.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018135+00:00",
       "source_stats": {
         "carry_share": 0.0,
         "target_share": 0.10763209393346379,
-        "offense_pct": 0.5,
+        "offense_pct": 0.4999999999999999,
         "adot": 7.745454545454545,
         "games_qualified": 17
       }
@@ -158,11 +158,11 @@
       "confidence": "high",
       "description": "Austin Hooper plays a snap-heavy role (52%) with little receiving usage (7% target share) -- his fantasy floor is thin outside of touchdown-dependent weeks.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018143+00:00",
       "source_stats": {
         "carry_share": 0.0,
         "target_share": 0.07046070460704607,
-        "offense_pct": 0.5184615384615385,
+        "offense_pct": 0.5184615384615384,
         "adot": 9.0,
         "games_qualified": 13
       }
@@ -176,7 +176,7 @@
       "confidence": "medium",
       "description": "Chris Moore is a field-stretcher, averaging 14.4 air yards per target -- his role is built on getting downfield rather than high target volume, which raises his weekly variance.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018148+00:00",
       "source_stats": {
         "carry_share": 0.0036363636363636364,
         "target_share": 0.0954356846473029,
@@ -194,7 +194,7 @@
       "confidence": "high",
       "description": "Kalif Raymond played a rotational snap share (37%) last season -- his role depends on beating out other receivers for playing time before target volume is even a question.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018164+00:00",
       "source_stats": {
         "carry_share": 0.005128205128205128,
         "target_share": 0.06097560975609756,
@@ -212,7 +212,7 @@
       "confidence": "high",
       "description": "Derrick Henry is an early-down runner, carrying the ball on 61% of his team's rush attempts but drawing few targets (5% target share) -- his fantasy floor depends on rushing volume, not receiving work.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018170+00:00",
       "source_stats": {
         "carry_share": 0.6055226824457594,
         "target_share": 0.051597051597051594,
@@ -230,7 +230,7 @@
       "confidence": "high",
       "description": "Hunter Henry is his offense's primary receiving tight end, drawing 18% of the team's targets on a 79% snap share -- a real receiving weapon at a thin fantasy position.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018175+00:00",
       "source_stats": {
         "carry_share": 0.0,
         "target_share": 0.18049792531120332,
@@ -248,7 +248,7 @@
       "confidence": "medium",
       "description": "Tyler Higbee is a secondary receiving option at tight end (11% target share, 55% snap share) -- a real but limited passing-game role.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018188+00:00",
       "source_stats": {
         "carry_share": 0.0,
         "target_share": 0.11214953271028037,
@@ -266,7 +266,7 @@
       "confidence": "high",
       "description": "Christian McCaffrey is a true bell-cow back, handling 65% of his team's carries and playing 83% of the offensive snaps last season -- the kind of workload that makes weekly volume close to guaranteed.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018194+00:00",
       "source_stats": {
         "carry_share": 0.6465696465696466,
         "target_share": 0.23454545454545456,
@@ -284,7 +284,7 @@
       "confidence": "medium",
       "description": "George Kittle is his offense's primary receiving tight end, drawing 22% of the team's targets on a 81% snap share -- a real receiving weapon at a thin fantasy position.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018200+00:00",
       "source_stats": {
         "carry_share": 0.003105590062111801,
         "target_share": 0.21630094043887146,
@@ -302,7 +302,7 @@
       "confidence": "high",
       "description": "Aaron Jones shares his backfield in a committee, at 47% carry share -- a real role, but one that depends on the rest of the room staying the same to keep its value.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018204+00:00",
       "source_stats": {
         "carry_share": 0.46808510638297873,
         "target_share": 0.13758389261744966,
@@ -320,7 +320,7 @@
       "confidence": "high",
       "description": "Samaje Perine shares his backfield in a committee, at 25% carry share -- a real role, but one that depends on the rest of the room staying the same to keep its value.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018209+00:00",
       "source_stats": {
         "carry_share": 0.25,
         "target_share": 0.03925233644859813,
@@ -338,11 +338,11 @@
       "confidence": "high",
       "description": "Mack Hollins is a field-stretcher, averaging 13.1 air yards per target -- his role is built on getting downfield rather than high target volume, which raises his weekly variance.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018215+00:00",
       "source_stats": {
         "carry_share": 0.0024875621890547263,
         "target_share": 0.15892420537897312,
-        "offense_pct": 0.6842857142857143,
+        "offense_pct": 0.6842857142857142,
         "adot": 13.092307692307692,
         "games_qualified": 14
       }
@@ -356,7 +356,7 @@
       "confidence": "high",
       "description": "Jonnu Smith is a secondary receiving option at tight end (10% target share, 53% snap share) -- a real but limited passing-game role.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018220+00:00",
       "source_stats": {
         "carry_share": 0.022113022113022112,
         "target_share": 0.10344827586206896,
@@ -374,7 +374,7 @@
       "confidence": "medium",
       "description": "David Njoku is a secondary receiving option at tight end (12% target share, 65% snap share) -- a real but limited passing-game role.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018225+00:00",
       "source_stats": {
         "carry_share": 0.0,
         "target_share": 0.125,
@@ -392,7 +392,7 @@
       "confidence": "medium",
       "description": "Alvin Kamara shares his backfield in a committee, at 47% carry share -- a real role, but one that depends on the rest of the room staying the same to keep its value.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018230+00:00",
       "source_stats": {
         "carry_share": 0.4729241877256318,
         "target_share": 0.10483870967741936,
@@ -410,11 +410,11 @@
       "confidence": "high",
       "description": "Cooper Kupp is a possession receiver, working underneath (aDOT 7.5) on a real target share (16%) with a heavy snap role (76%) -- reliable, catch-driven production over big-play upside.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018235+00:00",
       "source_stats": {
         "carry_share": 0.0,
         "target_share": 0.16241299303944315,
-        "offense_pct": 0.755625,
+        "offense_pct": 0.7556249999999999,
         "adot": 7.5,
         "games_qualified": 16
       }
@@ -428,11 +428,11 @@
       "confidence": "high",
       "description": "Kareem Hunt shares his backfield in a committee, at 38% carry share -- a real role, but one that depends on the rest of the room staying the same to keep its value.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018239+00:00",
       "source_stats": {
         "carry_share": 0.37906976744186044,
         "target_share": 0.04553734061930783,
-        "offense_pct": 0.47058823529411764,
+        "offense_pct": 0.4705882352941176,
         "adot": 0.0,
         "games_qualified": 17
       }
@@ -446,11 +446,11 @@
       "confidence": "high",
       "description": "Dallas Goedert is his offense's primary receiving tight end, drawing 20% of the team's targets on a 85% snap share -- a real receiving weapon at a thin fantasy position.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018244+00:00",
       "source_stats": {
         "carry_share": 0.0,
         "target_share": 0.20048899755501223,
-        "offense_pct": 0.846,
+        "offense_pct": 0.8460000000000001,
         "adot": 7.109756097560975,
         "games_qualified": 15
       }
@@ -464,11 +464,11 @@
       "confidence": "high",
       "description": "Dalton Schultz is his offense's primary receiving tight end, drawing 19% of the team's targets on a 71% snap share -- a real receiving weapon at a thin fantasy position.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018249+00:00",
       "source_stats": {
         "carry_share": 0.0,
         "target_share": 0.19168173598553345,
-        "offense_pct": 0.7105882352941176,
+        "offense_pct": 0.7105882352941177,
         "adot": 6.216981132075472,
         "games_qualified": 17
       }
@@ -482,7 +482,7 @@
       "confidence": "high",
       "description": "Mark Andrews is a secondary receiving option at tight end (17% target share, 62% snap share) -- a real but limited passing-game role.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018253+00:00",
       "source_stats": {
         "carry_share": 0.01972386587771203,
         "target_share": 0.171990171990172,
@@ -500,11 +500,11 @@
       "confidence": "high",
       "description": "Nick Chubb shares his backfield in a committee, at 30% carry share -- a real role, but one that depends on the rest of the room staying the same to keep its value.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018257+00:00",
       "source_stats": {
         "carry_share": 0.2975609756097561,
         "target_share": 0.04008016032064128,
-        "offense_pct": 0.322,
+        "offense_pct": 0.32200000000000006,
         "adot": 0.75,
         "games_qualified": 15
       }
@@ -518,11 +518,11 @@
       "confidence": "high",
       "description": "Saquon Barkley is a true bell-cow back, handling 61% of his team's carries and playing 78% of the offensive snaps last season -- the kind of workload that makes weekly volume close to guaranteed.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018284+00:00",
       "source_stats": {
         "carry_share": 0.6100217864923747,
         "target_share": 0.11627906976744186,
-        "offense_pct": 0.783125,
+        "offense_pct": 0.7831250000000001,
         "adot": 0.62,
         "games_qualified": 16
       }
@@ -536,11 +536,11 @@
       "confidence": "high",
       "description": "Jakobi Meyers is a high-volume target earner, drawing 23% of his team's targets while playing 85% of the offensive snaps -- the receiver a passing offense is built around.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018293+00:00",
       "source_stats": {
         "carry_share": 0.011210762331838564,
         "target_share": 0.22821576763485477,
-        "offense_pct": 0.85,
+        "offense_pct": 0.8499999999999999,
         "adot": 9.163636363636364,
         "games_qualified": 16
       }
@@ -554,11 +554,11 @@
       "confidence": "medium",
       "description": "Justice Hill is a passing-down back: a light rushing role (6% carry share) paired with real receiving usage (11% target share) makes him more valuable in reception-friendly formats than his carry count alone would suggest.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018300+00:00",
       "source_stats": {
         "carry_share": 0.06474820143884892,
         "target_share": 0.108,
-        "offense_pct": 0.371,
+        "offense_pct": 0.37100000000000005,
         "adot": -0.2222222222222222,
         "games_qualified": 10
       }
@@ -572,11 +572,11 @@
       "confidence": "high",
       "description": "Ashton Dulin is a field-stretcher, averaging 15.8 air yards per target -- his role is built on getting downfield rather than high target volume, which raises his weekly variance.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018306+00:00",
       "source_stats": {
         "carry_share": 0.009375,
         "target_share": 0.02666666666666667,
-        "offense_pct": 0.21333333333333335,
+        "offense_pct": 0.21333333333333337,
         "adot": 15.8,
         "games_qualified": 12
       }
@@ -590,11 +590,11 @@
       "confidence": "high",
       "description": "T.J. Hockenson is a secondary receiving option at tight end (16% target share, 78% snap share) -- a real but limited passing-game role.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018311+00:00",
       "source_stats": {
         "carry_share": 0.002849002849002849,
         "target_share": 0.15566037735849056,
-        "offense_pct": 0.7793333333333333,
+        "offense_pct": 0.7793333333333335,
         "adot": 4.984848484848484,
         "games_qualified": 15
       }
@@ -608,11 +608,11 @@
       "confidence": "high",
       "description": "Josh Oliver plays a snap-heavy role (51%) with little receiving usage (6% target share) -- his fantasy floor is thin outside of touchdown-dependent weeks.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018316+00:00",
       "source_stats": {
         "carry_share": 0.0,
         "target_share": 0.05864197530864197,
-        "offense_pct": 0.5058333333333334,
+        "offense_pct": 0.5058333333333332,
         "adot": 3.3684210526315788,
         "games_qualified": 12
       }
@@ -626,11 +626,11 @@
       "confidence": "high",
       "description": "Tony Pollard is a true bell-cow back, handling 64% of his team's carries and playing 62% of the offensive snaps last season -- the kind of workload that makes weekly volume close to guaranteed.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018320+00:00",
       "source_stats": {
         "carry_share": 0.6402116402116402,
         "target_share": 0.07735849056603773,
-        "offense_pct": 0.6247058823529411,
+        "offense_pct": 0.6247058823529412,
         "adot": 0.2926829268292683,
         "games_qualified": 17
       }
@@ -644,7 +644,7 @@
       "confidence": "high",
       "description": "Greg Dortch played a rotational snap share (34%) last season -- his role depends on beating out other receivers for playing time before target volume is even a question.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018324+00:00",
       "source_stats": {
         "carry_share": 0.025,
         "target_share": 0.0744920993227991,
@@ -662,11 +662,11 @@
       "confidence": "high",
       "description": "Darius Slayton is a field-stretcher, averaging 13.4 air yards per target -- his role is built on getting downfield rather than high target volume, which raises his weekly variance.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018328+00:00",
       "source_stats": {
         "carry_share": 0.0,
         "target_share": 0.15180722891566265,
-        "offense_pct": 0.812857142857143,
+        "offense_pct": 0.8128571428571428,
         "adot": 13.380952380952381,
         "games_qualified": 14
       }
@@ -680,11 +680,11 @@
       "confidence": "medium",
       "description": "Alex Bachman played a rotational snap share (7%) last season -- his role depends on beating out other receivers for playing time before target volume is even a question.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018332+00:00",
       "source_stats": {
         "carry_share": 0.0,
         "target_share": 0.009615384615384616,
-        "offense_pct": 0.06818181818181818,
+        "offense_pct": 0.0681818181818182,
         "adot": 4.666666666666667,
         "games_qualified": 9
       }
@@ -698,7 +698,7 @@
       "confidence": "high",
       "description": "Drew Sample plays a snap-heavy role (56%) with little receiving usage (5% target share) -- his fantasy floor is thin outside of touchdown-dependent weeks.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018336+00:00",
       "source_stats": {
         "carry_share": 0.003484320557491289,
         "target_share": 0.046189376443418015,
@@ -716,11 +716,11 @@
       "confidence": "high",
       "description": "DK Metcalf is a high-volume target earner, drawing 22% of his team's targets while playing 87% of the offensive snaps -- the receiver a passing offense is built around.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018341+00:00",
       "source_stats": {
         "carry_share": 0.005571030640668524,
         "target_share": 0.22448979591836735,
-        "offense_pct": 0.8726666666666667,
+        "offense_pct": 0.8726666666666666,
         "adot": 10.545454545454545,
         "games_qualified": 15
       }
@@ -734,7 +734,7 @@
       "confidence": "medium",
       "description": "Gunner Olszewski played a rotational snap share (10%) last season -- his role depends on beating out other receivers for playing time before target volume is even a question.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018345+00:00",
       "source_stats": {
         "carry_share": 0.0,
         "target_share": 0.027837259100642397,
@@ -752,11 +752,11 @@
       "confidence": "medium",
       "description": "Terry McLaurin is a high-volume target earner, drawing 23% of his team's targets while playing 70% of the offensive snaps -- the receiver a passing offense is built around.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018349+00:00",
       "source_stats": {
         "carry_share": 0.0,
         "target_share": 0.23255813953488372,
-        "offense_pct": 0.704,
+        "offense_pct": 0.7040000000000001,
         "adot": 13.983333333333333,
         "games_qualified": 10
       }
@@ -768,13 +768,13 @@
       "position": "WR",
       "archetype": "WR_ROTATIONAL",
       "confidence": "high",
-      "description": "Marquise Brown played a rotational snap share (54%) last season -- his role depends on beating out other receivers for playing time before target volume is even a question.",
+      "description": "Marquise Brown played a rotational snap share (53%) last season -- his role depends on beating out other receivers for playing time before target volume is even a question.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018352+00:00",
       "source_stats": {
         "carry_share": 0.0,
         "target_share": 0.14258188824662812,
-        "offense_pct": 0.535,
+        "offense_pct": 0.5349999999999999,
         "adot": 11.297297297297296,
         "games_qualified": 16
       }
@@ -788,7 +788,7 @@
       "confidence": "high",
       "description": "A.J. Brown is a high-volume target earner, drawing 30% of his team's targets while playing 91% of the offensive snaps -- the receiver a passing offense is built around.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018356+00:00",
       "source_stats": {
         "carry_share": 0.0,
         "target_share": 0.2951219512195122,
@@ -806,11 +806,11 @@
       "confidence": "high",
       "description": "David Montgomery shares his backfield in a committee, at 36% carry share -- a real role, but one that depends on the rest of the room staying the same to keep its value.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018360+00:00",
       "source_stats": {
         "carry_share": 0.3574660633484163,
         "target_share": 0.05272727272727273,
-        "offense_pct": 0.37058823529411766,
+        "offense_pct": 0.3705882352941176,
         "adot": 0.41379310344827586,
         "games_qualified": 17
       }
@@ -824,7 +824,7 @@
       "confidence": "high",
       "description": "Dawson Knox is a secondary receiving option at tight end (11% target share, 59% snap share) -- a real but limited passing-game role.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018364+00:00",
       "source_stats": {
         "carry_share": 0.0,
         "target_share": 0.1084070796460177,
@@ -842,11 +842,11 @@
       "confidence": "high",
       "description": "Deebo Samuel Sr. is a high-volume target earner, drawing 25% of his team's targets while playing 72% of the offensive snaps -- the receiver a passing offense is built around.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018368+00:00",
       "source_stats": {
         "carry_share": 0.03728070175438596,
         "target_share": 0.24688279301745636,
-        "offense_pct": 0.7225,
+        "offense_pct": 0.7224999999999999,
         "adot": 5.3232323232323235,
         "games_qualified": 16
       }
@@ -860,7 +860,7 @@
       "confidence": "high",
       "description": "Juwan Johnson is his offense's primary receiving tight end, drawing 18% of the team's targets on a 75% snap share -- a real receiving weapon at a thin fantasy position.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018372+00:00",
       "source_stats": {
         "carry_share": 0.0,
         "target_share": 0.18053097345132743,
@@ -878,7 +878,7 @@
       "confidence": "high",
       "description": "Rico Dowdle shares his backfield in a committee, at 51% carry share -- a real role, but one that depends on the rest of the room staying the same to keep its value.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018376+00:00",
       "source_stats": {
         "carry_share": 0.5119305856832972,
         "target_share": 0.10416666666666667,
@@ -896,11 +896,11 @@
       "confidence": "medium",
       "description": "J.K. Dobbins is an early-down runner, carrying the ball on 57% of his team's rush attempts but drawing few targets (4% target share) -- his fantasy floor depends on rushing volume, not receiving work.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018381+00:00",
       "source_stats": {
         "carry_share": 0.5666666666666667,
         "target_share": 0.04229607250755287,
-        "offense_pct": 0.511,
+        "offense_pct": 0.5110000000000001,
         "adot": -2.142857142857143,
         "games_qualified": 10
       }
@@ -914,7 +914,7 @@
       "confidence": "high",
       "description": "Nick Westbrook-Ikhine played a rotational snap share (43%) last season -- his role depends on beating out other receivers for playing time before target volume is even a question.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018384+00:00",
       "source_stats": {
         "carry_share": 0.0,
         "target_share": 0.056022408963585436,
@@ -932,7 +932,7 @@
       "confidence": "high",
       "description": "Jonathan Taylor is a true bell-cow back, handling 73% of his team's carries and playing 83% of the offensive snaps last season -- the kind of workload that makes weekly volume close to guaranteed.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018388+00:00",
       "source_stats": {
         "carry_share": 0.7307692307692307,
         "target_share": 0.10377358490566038,
@@ -950,11 +950,11 @@
       "confidence": "high",
       "description": "Colby Parkinson is a secondary receiving option at tight end (11% target share, 62% snap share) -- a real but limited passing-game role.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018392+00:00",
       "source_stats": {
         "carry_share": 0.0,
         "target_share": 0.11428571428571428,
-        "offense_pct": 0.6242857142857143,
+        "offense_pct": 0.6242857142857144,
         "adot": 4.428571428571429,
         "games_qualified": 14
       }
@@ -968,7 +968,7 @@
       "confidence": "high",
       "description": "Michael Pittman is a possession receiver, working underneath (aDOT 8.2) on a real target share (21%) with a heavy snap role (86%) -- reliable, catch-driven production over big-play upside.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018396+00:00",
       "source_stats": {
         "carry_share": 0.0,
         "target_share": 0.20943396226415095,
@@ -986,11 +986,11 @@
       "confidence": "high",
       "description": "D'Andre Swift shares his backfield in a committee, at 48% carry share -- a real role, but one that depends on the rest of the room staying the same to keep its value.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018400+00:00",
       "source_stats": {
         "carry_share": 0.47649572649572647,
         "target_share": 0.0963855421686747,
-        "offense_pct": 0.57875,
+        "offense_pct": 0.5787500000000001,
         "adot": -0.5208333333333334,
         "games_qualified": 16
       }
@@ -1004,7 +1004,7 @@
       "confidence": "high",
       "description": "Cole Kmet is a secondary receiving option at tight end (10% target share, 71% snap share) -- a real but limited passing-game role.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018403+00:00",
       "source_stats": {
         "carry_share": 0.0,
         "target_share": 0.096579476861167,
@@ -1022,11 +1022,11 @@
       "confidence": "high",
       "description": "Justin Jefferson is a high-volume target earner, drawing 30% of his team's targets while playing 94% of the offensive snaps -- the receiver a passing offense is built around.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018407+00:00",
       "source_stats": {
         "carry_share": 0.004878048780487805,
         "target_share": 0.30128205128205127,
-        "offense_pct": 0.9417647058823531,
+        "offense_pct": 0.9417647058823533,
         "adot": 10.198581560283689,
         "games_qualified": 17
       }
@@ -1040,11 +1040,11 @@
       "confidence": "high",
       "description": "CeeDee Lamb is a high-volume target earner, drawing 25% of his team's targets while playing 78% of the offensive snaps -- the receiver a passing offense is built around.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018411+00:00",
       "source_stats": {
         "carry_share": 0.0026954177897574125,
         "target_share": 0.2526997840172786,
-        "offense_pct": 0.7776923076923077,
+        "offense_pct": 0.7776923076923075,
         "adot": 11.991452991452991,
         "games_qualified": 13
       }
@@ -1058,7 +1058,7 @@
       "confidence": "high",
       "description": "Tee Higgins is a field-stretcher, averaging 13.4 air yards per target -- his role is built on getting downfield rather than high target volume, which raises his weekly variance.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018415+00:00",
       "source_stats": {
         "carry_share": 0.0,
         "target_share": 0.1856060606060606,
@@ -1076,7 +1076,7 @@
       "confidence": "high",
       "description": "Adam Trautman plays a snap-heavy role (60%) with little receiving usage (5% target share) -- his fantasy floor is thin outside of touchdown-dependent weeks.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018419+00:00",
       "source_stats": {
         "carry_share": 0.0,
         "target_share": 0.05066079295154185,
@@ -1094,11 +1094,11 @@
       "confidence": "medium",
       "description": "Tyler Johnson played a rotational snap share (48%) last season -- his role depends on beating out other receivers for playing time before target volume is even a question.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018422+00:00",
       "source_stats": {
         "carry_share": 0.0,
         "target_share": 0.07792207792207792,
-        "offense_pct": 0.4811111111111111,
+        "offense_pct": 0.48111111111111104,
         "adot": 11.666666666666666,
         "games_qualified": 9
       }
@@ -1112,7 +1112,7 @@
       "confidence": "high",
       "description": "Nico Collins is a high-volume target earner, drawing 25% of his team's targets while playing 77% of the offensive snaps -- the receiver a passing offense is built around.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018426+00:00",
       "source_stats": {
         "carry_share": 0.004914004914004914,
         "target_share": 0.2464065708418891,
@@ -1130,7 +1130,7 @@
       "confidence": "high",
       "description": "Chuba Hubbard shares his backfield in a committee, at 34% carry share -- a real role, but one that depends on the rest of the room staying the same to keep its value.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018430+00:00",
       "source_stats": {
         "carry_share": 0.34271099744245526,
         "target_share": 0.09027777777777778,
@@ -1148,11 +1148,11 @@
       "confidence": "high",
       "description": "Jaylen Waddle is a high-volume target earner, drawing 23% of his team's targets while playing 78% of the offensive snaps -- the receiver a passing offense is built around.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018434+00:00",
       "source_stats": {
         "carry_share": 0.004914004914004914,
         "target_share": 0.228310502283105,
-        "offense_pct": 0.77625,
+        "offense_pct": 0.7762499999999999,
         "adot": 13.06,
         "games_qualified": 16
       }
@@ -1166,7 +1166,7 @@
       "confidence": "medium",
       "description": "Dee Eskridge is a field-stretcher, averaging 14.0 air yards per target -- his role is built on getting downfield rather than high target volume, which raises his weekly variance.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018438+00:00",
       "source_stats": {
         "carry_share": 0.0,
         "target_share": 0.021212121212121213,
@@ -1184,7 +1184,7 @@
       "confidence": "medium",
       "description": "Dyami Brown is a field-stretcher, averaging 14.0 air yards per target -- his role is built on getting downfield rather than high target volume, which raises his weekly variance.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018442+00:00",
       "source_stats": {
         "carry_share": 0.01910828025477707,
         "target_share": 0.10306406685236769,
@@ -1202,7 +1202,7 @@
       "confidence": "medium",
       "description": "Tylan Wallace is a field-stretcher, averaging 13.4 air yards per target -- his role is built on getting downfield rather than high target volume, which raises his weekly variance.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018445+00:00",
       "source_stats": {
         "carry_share": 0.0,
         "target_share": 0.0299625468164794,
@@ -1220,7 +1220,7 @@
       "confidence": "high",
       "description": "Noah Gray is a secondary receiving option at tight end (8% target share, 53% snap share) -- a real but limited passing-game role.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018449+00:00",
       "source_stats": {
         "carry_share": 0.0,
         "target_share": 0.08277404921700224,
@@ -1238,7 +1238,7 @@
       "confidence": "medium",
       "description": "Tutu Atwell is a field-stretcher, averaging 20.1 air yards per target -- his role is built on getting downfield rather than high target volume, which raises his weekly variance.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018453+00:00",
       "source_stats": {
         "carry_share": 0.0,
         "target_share": 0.05172413793103448,
@@ -1256,11 +1256,11 @@
       "confidence": "high",
       "description": "Ben Skowronek played a rotational snap share (16%) last season -- his role depends on beating out other receivers for playing time before target volume is even a question.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018458+00:00",
       "source_stats": {
         "carry_share": 0.0,
         "target_share": 0.012371134020618556,
-        "offense_pct": 0.16375,
+        "offense_pct": 0.16374999999999995,
         "adot": 10.166666666666666,
         "games_qualified": 16
       }
@@ -1274,7 +1274,7 @@
       "confidence": "high",
       "description": "Rhamondre Stevenson shares his backfield in a committee, at 32% carry share -- a real role, but one that depends on the rest of the room staying the same to keep its value.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018463+00:00",
       "source_stats": {
         "carry_share": 0.3194103194103194,
         "target_share": 0.09438775510204081,
@@ -1292,7 +1292,7 @@
       "confidence": "high",
       "description": "Pat Freiermuth is a secondary receiving option at tight end (11% target share, 53% snap share) -- a real but limited passing-game role.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018470+00:00",
       "source_stats": {
         "carry_share": 0.0,
         "target_share": 0.11297071129707113,
@@ -1310,11 +1310,11 @@
       "confidence": "high",
       "description": "Ja'Marr Chase is a high-volume target earner, drawing 32% of his team's targets while playing 94% of the offensive snaps -- the receiver a passing offense is built around.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018476+00:00",
       "source_stats": {
         "carry_share": 0.008379888268156424,
         "target_share": 0.32229965156794427,
-        "offense_pct": 0.94375,
+        "offense_pct": 0.9437500000000001,
         "adot": 8.486486486486486,
         "games_qualified": 16
       }
@@ -1328,7 +1328,7 @@
       "confidence": "high",
       "description": "DeVonta Smith is a high-volume target earner, drawing 24% of his team's targets while playing 84% of the offensive snaps -- the receiver a passing offense is built around.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018481+00:00",
       "source_stats": {
         "carry_share": 0.0,
         "target_share": 0.2435344827586207,
@@ -1346,7 +1346,7 @@
       "confidence": "high",
       "description": "Kenny Gainwell is a passing-down back: a light rushing role (28% carry share) paired with real receiving usage (16% target share) makes him more valuable in reception-friendly formats than his carry count alone would suggest.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018486+00:00",
       "source_stats": {
         "carry_share": 0.2800982800982801,
         "target_share": 0.16283524904214558,
@@ -1364,7 +1364,7 @@
       "confidence": "high",
       "description": "Amon-Ra St. Brown is a high-volume target earner, drawing 31% of his team's targets while playing 85% of the offensive snaps -- the receiver a passing offense is built around.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018492+00:00",
       "source_stats": {
         "carry_share": 0.006787330316742082,
         "target_share": 0.31272727272727274,
@@ -1382,11 +1382,11 @@
       "confidence": "high",
       "description": "Kyle Pitts is his offense's primary receiving tight end, drawing 23% of the team's targets on a 88% snap share -- a real receiving weapon at a thin fantasy position.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018498+00:00",
       "source_stats": {
         "carry_share": 0.0,
         "target_share": 0.22736030828516376,
-        "offense_pct": 0.88,
+        "offense_pct": 0.8799999999999999,
         "adot": 7.364406779661017,
         "games_qualified": 17
       }
@@ -1400,7 +1400,7 @@
       "confidence": "high",
       "description": "Travis Etienne shares his backfield in a committee, at 53% carry share -- a real role, but one that depends on the rest of the room staying the same to keep its value.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018504+00:00",
       "source_stats": {
         "carry_share": 0.5316973415132924,
         "target_share": 0.09506398537477148,
@@ -1418,7 +1418,7 @@
       "confidence": "medium",
       "description": "Elijah Moore played a rotational snap share (31%) last season -- his role depends on beating out other receivers for playing time before target volume is even a question.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018510+00:00",
       "source_stats": {
         "carry_share": 0.02197802197802198,
         "target_share": 0.06439393939393939,
@@ -1436,7 +1436,7 @@
       "confidence": "high",
       "description": "Josh Palmer played a rotational snap share (48%) last season -- his role depends on beating out other receivers for playing time before target volume is even a question.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018515+00:00",
       "source_stats": {
         "carry_share": 0.0,
         "target_share": 0.10818713450292397,
@@ -1454,7 +1454,7 @@
       "confidence": "high",
       "description": "Javonte Williams is a true bell-cow back, handling 58% of his team's carries and playing 69% of the offensive snaps last season -- the kind of workload that makes weekly volume close to guaranteed.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018521+00:00",
       "source_stats": {
         "carry_share": 0.5793103448275863,
         "target_share": 0.08732876712328767,
@@ -1472,11 +1472,11 @@
       "confidence": "high",
       "description": "Tommy Tremble is a secondary receiving option at tight end (9% target share, 60% snap share) -- a real but limited passing-game role.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018527+00:00",
       "source_stats": {
         "carry_share": 0.0,
         "target_share": 0.08604651162790698,
-        "offense_pct": 0.604,
+        "offense_pct": 0.6039999999999999,
         "adot": 4.405405405405405,
         "games_qualified": 15
       }
@@ -1490,11 +1490,11 @@
       "confidence": "medium",
       "description": "Jake Tonges is a secondary receiving option at tight end (13% target share, 52% snap share) -- a real but limited passing-game role.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018532+00:00",
       "source_stats": {
         "carry_share": 0.0,
         "target_share": 0.12994350282485875,
-        "offense_pct": 0.5229999999999999,
+        "offense_pct": 0.523,
         "adot": 5.065217391304348,
         "games_qualified": 10
       }
@@ -1508,11 +1508,11 @@
       "confidence": "high",
       "description": "Isiah Pacheco shares his backfield in a committee, at 36% carry share -- a real role, but one that depends on the rest of the room staying the same to keep its value.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018537+00:00",
       "source_stats": {
         "carry_share": 0.35542168674698793,
         "target_share": 0.06435643564356436,
-        "offense_pct": 0.5169230769230769,
+        "offense_pct": 0.5169230769230768,
         "adot": -1.0384615384615385,
         "games_qualified": 13
       }
@@ -1526,11 +1526,11 @@
       "confidence": "high",
       "description": "Drake London is a high-volume target earner, drawing 30% of his team's targets while playing 91% of the offensive snaps -- the receiver a passing offense is built around.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018542+00:00",
       "source_stats": {
         "carry_share": 0.0,
         "target_share": 0.3035230352303523,
-        "offense_pct": 0.9066666666666666,
+        "offense_pct": 0.9066666666666667,
         "adot": 10.901785714285714,
         "games_qualified": 12
       }
@@ -1544,7 +1544,7 @@
       "confidence": "high",
       "description": "Chris Olave is a high-volume target earner, drawing 29% of his team's targets while playing 84% of the offensive snaps -- the receiver a passing offense is built around.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018548+00:00",
       "source_stats": {
         "carry_share": 0.0024449877750611247,
         "target_share": 0.2937853107344633,
@@ -1562,11 +1562,11 @@
       "confidence": "high",
       "description": "George Pickens is a high-volume target earner, drawing 23% of his team's targets while playing 81% of the offensive snaps -- the receiver a passing offense is built around.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018553+00:00",
       "source_stats": {
         "carry_share": 0.0,
         "target_share": 0.2257001647446458,
-        "offense_pct": 0.8111764705882354,
+        "offense_pct": 0.8111764705882352,
         "adot": 11.291970802919709,
         "games_qualified": 17
       }
@@ -1580,11 +1580,11 @@
       "confidence": "high",
       "description": "Rachaad White shares his backfield in a committee, at 28% carry share -- a real role, but one that depends on the rest of the room staying the same to keep its value.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018558+00:00",
       "source_stats": {
         "carry_share": 0.2796610169491525,
         "target_share": 0.08317929759704251,
-        "offense_pct": 0.5105882352941177,
+        "offense_pct": 0.5105882352941176,
         "adot": -2.2666666666666666,
         "games_qualified": 17
       }
@@ -1598,11 +1598,11 @@
       "confidence": "high",
       "description": "Tyler Allgeier shares his backfield in a committee, at 30% carry share -- a real role, but one that depends on the rest of the room staying the same to keep its value.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018564+00:00",
       "source_stats": {
         "carry_share": 0.29979035639413,
         "target_share": 0.030828516377649325,
-        "offense_pct": 0.30235294117647055,
+        "offense_pct": 0.30235294117647066,
         "adot": -1.625,
         "games_qualified": 17
       }
@@ -1616,11 +1616,11 @@
       "confidence": "high",
       "description": "Jordan Mason is an early-down runner, carrying the ball on 42% of his team's rush attempts but drawing few targets (4% target share) -- his fantasy floor depends on rushing volume, not receiving work.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018571+00:00",
       "source_stats": {
         "carry_share": 0.4162303664921466,
         "target_share": 0.03524229074889868,
-        "offense_pct": 0.4275,
+        "offense_pct": 0.42750000000000005,
         "adot": -3.25,
         "games_qualified": 16
       }
@@ -1634,11 +1634,11 @@
       "confidence": "high",
       "description": "John Metchie III played a rotational snap share (55%) last season -- his role depends on beating out other receivers for playing time before target volume is even a question.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018577+00:00",
       "source_stats": {
         "carry_share": 0.00819672131147541,
         "target_share": 0.14035087719298245,
-        "offense_pct": 0.5469230769230768,
+        "offense_pct": 0.546923076923077,
         "adot": 5.583333333333333,
         "games_qualified": 13
       }
@@ -1652,7 +1652,7 @@
       "confidence": "high",
       "description": "Alec Pierce is a field-stretcher, averaging 19.0 air yards per target -- his role is built on getting downfield rather than high target volume, which raises his weekly variance.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018583+00:00",
       "source_stats": {
         "carry_share": 0.0,
         "target_share": 0.17987152034261242,
@@ -1670,7 +1670,7 @@
       "confidence": "high",
       "description": "Jalen Tolbert played a rotational snap share (55%) last season -- his role depends on beating out other receivers for playing time before target volume is even a question.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018588+00:00",
       "source_stats": {
         "carry_share": 0.0,
         "target_share": 0.08056872037914692,
@@ -1688,7 +1688,7 @@
       "confidence": "high",
       "description": "Jahan Dotson is a field-stretcher, averaging 15.4 air yards per target -- his role is built on getting downfield rather than high target volume, which raises his weekly variance.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018594+00:00",
       "source_stats": {
         "carry_share": 0.0,
         "target_share": 0.0851063829787234,
@@ -1706,11 +1706,11 @@
       "confidence": "high",
       "description": "Trey McBride is his offense's primary receiving tight end, drawing 27% of the team's targets on a 91% snap share -- a real receiving weapon at a thin fantasy position.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018600+00:00",
       "source_stats": {
         "carry_share": 0.0,
         "target_share": 0.2739059967585089,
-        "offense_pct": 0.9135294117647058,
+        "offense_pct": 0.9135294117647061,
         "adot": 6.662721893491124,
         "games_qualified": 17
       }
@@ -1724,11 +1724,11 @@
       "confidence": "high",
       "description": "KaVontae Turpin played a rotational snap share (35%) last season -- his role depends on beating out other receivers for playing time before target volume is even a question.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018605+00:00",
       "source_stats": {
         "carry_share": 0.0407673860911271,
         "target_share": 0.06972477064220184,
-        "offense_pct": 0.3546666666666667,
+        "offense_pct": 0.35466666666666663,
         "adot": 8.921052631578947,
         "games_qualified": 15
       }
@@ -1742,11 +1742,11 @@
       "confidence": "high",
       "description": "Jeremy Ruckert plays a snap-heavy role (48%) with little receiving usage (7% target share) -- his fantasy floor is thin outside of touchdown-dependent weeks.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018612+00:00",
       "source_stats": {
         "carry_share": 0.0,
         "target_share": 0.07474226804123711,
-        "offense_pct": 0.4764285714285714,
+        "offense_pct": 0.4764285714285715,
         "adot": 3.5172413793103448,
         "games_qualified": 14
       }
@@ -1760,7 +1760,7 @@
       "confidence": "high",
       "description": "Chig Okonkwo is a secondary receiving option at tight end (15% target share, 64% snap share) -- a real but limited passing-game role.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018617+00:00",
       "source_stats": {
         "carry_share": 0.0,
         "target_share": 0.1490566037735849,
@@ -1778,11 +1778,11 @@
       "confidence": "high",
       "description": "Calvin Austin III played a rotational snap share (54%) last season -- his role depends on beating out other receivers for playing time before target volume is even a question.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018623+00:00",
       "source_stats": {
         "carry_share": 0.0,
         "target_share": 0.13002364066193853,
-        "offense_pct": 0.535,
+        "offense_pct": 0.5350000000000001,
         "adot": 11.0,
         "games_qualified": 14
       }
@@ -1796,11 +1796,11 @@
       "confidence": "high",
       "description": "Kyren Williams is a true bell-cow back, handling 56% of his team's carries and playing 68% of the offensive snaps last season -- the kind of workload that makes weekly volume close to guaranteed.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018629+00:00",
       "source_stats": {
         "carry_share": 0.556989247311828,
         "target_share": 0.08605851979345955,
-        "offense_pct": 0.6829411764705882,
+        "offense_pct": 0.6829411764705883,
         "adot": 2.5,
         "games_qualified": 17
       }
@@ -1814,7 +1814,7 @@
       "confidence": "high",
       "description": "Jake Ferguson is a secondary receiving option at tight end (17% target share, 67% snap share) -- a real but limited passing-game role.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018635+00:00",
       "source_stats": {
         "carry_share": 0.002150537634408602,
         "target_share": 0.16803953871499178,
@@ -1832,11 +1832,11 @@
       "confidence": "high",
       "description": "Skyy Moore is a field-stretcher, averaging 15.7 air yards per target -- his role is built on getting downfield rather than high target volume, which raises his weekly variance.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018641+00:00",
       "source_stats": {
         "carry_share": 0.004158004158004158,
         "target_share": 0.012727272727272728,
-        "offense_pct": 0.1011764705882353,
+        "offense_pct": 0.10117647058823531,
         "adot": 15.714285714285714,
         "games_qualified": 14
       }
@@ -1850,7 +1850,7 @@
       "confidence": "high",
       "description": "Tyquan Thornton is a field-stretcher, averaging 26.9 air yards per target -- his role is built on getting downfield rather than high target volume, which raises his weekly variance.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018647+00:00",
       "source_stats": {
         "carry_share": 0.0,
         "target_share": 0.08872901678657075,
@@ -1868,7 +1868,7 @@
       "confidence": "high",
       "description": "Daniel Bellinger plays a snap-heavy role (51%) with little receiving usage (6% target share) -- his fantasy floor is thin outside of touchdown-dependent weeks.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.326997+00:00",
+      "generated_at": "2026-07-30T16:43:49.018652+00:00",
       "source_stats": {
         "carry_share": 0.0,
         "target_share": 0.06372549019607843,
@@ -1886,11 +1886,11 @@
       "confidence": "high",
       "description": "Wan'Dale Robinson is a high-volume target earner, drawing 30% of his team's targets while playing 91% of the offensive snaps -- the receiver a passing offense is built around.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.018658+00:00",
       "source_stats": {
         "carry_share": 0.006263048016701462,
         "target_share": 0.29723991507430997,
-        "offense_pct": 0.9075,
+        "offense_pct": 0.9075000000000001,
         "adot": 8.478571428571428,
         "games_qualified": 16
       }
@@ -1904,7 +1904,7 @@
       "confidence": "high",
       "description": "Breece Hall is a true bell-cow back, handling 56% of his team's carries and playing 64% of the offensive snaps last season -- the kind of workload that makes weekly volume close to guaranteed.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.018664+00:00",
       "source_stats": {
         "carry_share": 0.5612009237875288,
         "target_share": 0.10666666666666667,
@@ -1922,7 +1922,7 @@
       "confidence": "high",
       "description": "Cade Otton is a secondary receiving option at tight end (17% target share, 94% snap share) -- a real but limited passing-game role.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.018670+00:00",
       "source_stats": {
         "carry_share": 0.0,
         "target_share": 0.16875,
@@ -1940,11 +1940,11 @@
       "confidence": "high",
       "description": "Kenneth Walker III shares his backfield in a committee, at 44% carry share -- a real role, but one that depends on the rest of the room staying the same to keep its value.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.018676+00:00",
       "source_stats": {
         "carry_share": 0.4358974358974359,
         "target_share": 0.07912087912087912,
-        "offense_pct": 0.4688235294117647,
+        "offense_pct": 0.46882352941176475,
         "adot": -1.1388888888888888,
         "games_qualified": 17
       }
@@ -1958,11 +1958,11 @@
       "confidence": "high",
       "description": "Xavier Smith is a field-stretcher, averaging 16.9 air yards per target -- his role is built on getting downfield rather than high target volume, which raises his weekly variance.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.018682+00:00",
       "source_stats": {
         "carry_share": 0.0,
         "target_share": 0.043875685557586835,
-        "offense_pct": 0.214375,
+        "offense_pct": 0.21437499999999998,
         "adot": 16.875,
         "games_qualified": 14
       }
@@ -1976,11 +1976,11 @@
       "confidence": "high",
       "description": "Dontayvion Wicks played a rotational snap share (47%) last season -- his role depends on beating out other receivers for playing time before target volume is even a question.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.018687+00:00",
       "source_stats": {
         "carry_share": 0.002631578947368421,
         "target_share": 0.12885154061624648,
-        "offense_pct": 0.4723076923076924,
+        "offense_pct": 0.47230769230769226,
         "adot": 11.23913043478261,
         "games_qualified": 13
       }
@@ -1994,7 +1994,7 @@
       "confidence": "medium",
       "description": "Nikko Remigio is a field-stretcher, averaging 18.0 air yards per target -- his role is built on getting downfield rather than high target volume, which raises his weekly variance.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.018694+00:00",
       "source_stats": {
         "carry_share": 0.002785515320334262,
         "target_share": 0.002127659574468085,
@@ -2012,7 +2012,7 @@
       "confidence": "high",
       "description": "Bijan Robinson is a true bell-cow back, handling 60% of his team's carries and playing 78% of the offensive snaps last season -- the kind of workload that makes weekly volume close to guaranteed.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.018699+00:00",
       "source_stats": {
         "carry_share": 0.6016771488469602,
         "target_share": 0.19845857418111754,
@@ -2030,11 +2030,11 @@
       "confidence": "high",
       "description": "Jaxon Smith-Njigba is a high-volume target earner, drawing 36% of his team's targets while playing 77% of the offensive snaps -- the receiver a passing offense is built around.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.018705+00:00",
       "source_stats": {
         "carry_share": 0.013806706114398421,
         "target_share": 0.35824175824175825,
-        "offense_pct": 0.7741176470588236,
+        "offense_pct": 0.7741176470588237,
         "adot": 11.245398773006135,
         "games_qualified": 17
       }
@@ -2048,7 +2048,7 @@
       "confidence": "medium",
       "description": "Derius Davis played a rotational snap share (11%) last season -- his role depends on beating out other receivers for playing time before target volume is even a question.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.018711+00:00",
       "source_stats": {
         "carry_share": 0.006309148264984227,
         "target_share": 0.008547008547008548,
@@ -2066,11 +2066,11 @@
       "confidence": "high",
       "description": "Chase Brown is a true bell-cow back, handling 61% of his team's carries and playing 67% of the offensive snaps last season -- the kind of workload that makes weekly volume close to guaranteed.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.018718+00:00",
       "source_stats": {
         "carry_share": 0.6089238845144357,
         "target_share": 0.14473684210526316,
-        "offense_pct": 0.6658823529411765,
+        "offense_pct": 0.6658823529411764,
         "adot": 0.5227272727272727,
         "games_qualified": 17
       }
@@ -2084,7 +2084,7 @@
       "confidence": "high",
       "description": "Kayshon Boutte is a field-stretcher, averaging 17.0 air yards per target -- his role is built on getting downfield rather than high target volume, which raises his weekly variance.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.018724+00:00",
       "source_stats": {
         "carry_share": 0.0,
         "target_share": 0.11645569620253164,
@@ -2102,7 +2102,7 @@
       "confidence": "high",
       "description": "DeMario Douglas played a rotational snap share (26%) last season -- his role depends on beating out other receivers for playing time before target volume is even a question.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.018730+00:00",
       "source_stats": {
         "carry_share": 0.015053763440860216,
         "target_share": 0.0989247311827957,
@@ -2120,7 +2120,7 @@
       "confidence": "medium",
       "description": "Julian Hill plays a snap-heavy role (56%) with little receiving usage (7% target share) -- his fantasy floor is thin outside of touchdown-dependent weeks.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.018737+00:00",
       "source_stats": {
         "carry_share": 0.0,
         "target_share": 0.06779661016949153,
@@ -2138,11 +2138,11 @@
       "confidence": "high",
       "description": "Emanuel Wilson shares his backfield in a committee, at 25% carry share -- a real role, but one that depends on the rest of the room staying the same to keep its value.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.018742+00:00",
       "source_stats": {
         "carry_share": 0.2540650406504065,
         "target_share": 0.03695652173913044,
-        "offense_pct": 0.3111764705882353,
+        "offense_pct": 0.31117647058823533,
         "adot": -1.8823529411764706,
         "games_qualified": 17
       }
@@ -2156,7 +2156,7 @@
       "confidence": "medium",
       "description": "Ryan Miller is a field-stretcher, averaging 17.5 air yards per target -- his role is built on getting downfield rather than high target volume, which raises his weekly variance.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.018748+00:00",
       "source_stats": {
         "carry_share": 0.0,
         "target_share": 0.0136986301369863,
@@ -2174,11 +2174,11 @@
       "confidence": "high",
       "description": "Brycen Tremayne played a rotational snap share (25%) last season -- his role depends on beating out other receivers for playing time before target volume is even a question.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.018753+00:00",
       "source_stats": {
         "carry_share": 0.0,
         "target_share": 0.04128440366972477,
-        "offense_pct": 0.24733333333333332,
+        "offense_pct": 0.2473333333333333,
         "adot": 8.722222222222221,
         "games_qualified": 15
       }
@@ -2192,11 +2192,11 @@
       "confidence": "high",
       "description": "Brenton Strange is a secondary receiving option at tight end (16% target share, 75% snap share) -- a real but limited passing-game role.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.018759+00:00",
       "source_stats": {
         "carry_share": 0.0,
         "target_share": 0.15789473684210525,
-        "offense_pct": 0.7483333333333334,
+        "offense_pct": 0.7483333333333332,
         "adot": 6.9,
         "games_qualified": 12
       }
@@ -2210,11 +2210,11 @@
       "confidence": "high",
       "description": "Marvin Mims Jr. played a rotational snap share (37%) last season -- his role depends on beating out other receivers for playing time before target volume is even a question.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.018765+00:00",
       "source_stats": {
         "carry_share": 0.029556650246305417,
         "target_share": 0.09751434034416825,
-        "offense_pct": 0.3686666666666667,
+        "offense_pct": 0.36866666666666664,
         "adot": 9.372549019607844,
         "games_qualified": 15
       }
@@ -2228,7 +2228,7 @@
       "confidence": "medium",
       "description": "Tucker Kraft is his offense's primary receiving tight end, drawing 19% of the team's targets on a 86% snap share -- a real receiving weapon at a thin fantasy position.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.018771+00:00",
       "source_stats": {
         "carry_share": 0.0043859649122807015,
         "target_share": 0.18803418803418803,
@@ -2246,11 +2246,11 @@
       "confidence": "high",
       "description": "De'Von Achane is a true bell-cow back, handling 58% of his team's carries and playing 75% of the offensive snaps last season -- the kind of workload that makes weekly volume close to guaranteed.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.018777+00:00",
       "source_stats": {
         "carry_share": 0.5847665847665847,
         "target_share": 0.19406392694063926,
-        "offense_pct": 0.75375,
+        "offense_pct": 0.7537500000000001,
         "adot": 0.4117647058823529,
         "games_qualified": 16
       }
@@ -2264,7 +2264,7 @@
       "confidence": "high",
       "description": "Zay Flowers is a high-volume target earner, drawing 29% of his team's targets while playing 86% of the offensive snaps -- the receiver a passing offense is built around.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.018783+00:00",
       "source_stats": {
         "carry_share": 0.01972386587771203,
         "target_share": 0.28992628992628994,
@@ -2282,7 +2282,7 @@
       "confidence": "medium",
       "description": "Sam LaPorta is his offense's primary receiving tight end, drawing 19% of the team's targets on a 91% snap share -- a real receiving weapon at a thin fantasy position.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.018789+00:00",
       "source_stats": {
         "carry_share": 0.0,
         "target_share": 0.18631178707224336,
@@ -2300,11 +2300,11 @@
       "confidence": "high",
       "description": "Michael Mayer is a secondary receiving option at tight end (13% target share, 62% snap share) -- a real but limited passing-game role.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.018795+00:00",
       "source_stats": {
         "carry_share": 0.0,
         "target_share": 0.12886597938144329,
-        "offense_pct": 0.6176923076923077,
+        "offense_pct": 0.6176923076923078,
         "adot": 4.8,
         "games_qualified": 13
       }
@@ -2318,7 +2318,7 @@
       "confidence": "high",
       "description": "Davis Allen plays a snap-heavy role (52%) with little receiving usage (6% target share) -- his fantasy floor is thin outside of touchdown-dependent weeks.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.018800+00:00",
       "source_stats": {
         "carry_share": 0.0,
         "target_share": 0.0637065637065637,
@@ -2336,7 +2336,7 @@
       "confidence": "high",
       "description": "Puka Nacua is a possession receiver, working underneath (aDOT 9.4) on a real target share (30%) with a heavy snap role (68%) -- reliable, catch-driven production over big-play upside.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.018807+00:00",
       "source_stats": {
         "carry_share": 0.022935779816513763,
         "target_share": 0.3029197080291971,
@@ -2354,7 +2354,7 @@
       "confidence": "high",
       "description": "Jahmyr Gibbs shares his backfield in a committee, at 55% carry share -- a real role, but one that depends on the rest of the room staying the same to keep its value.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.018812+00:00",
       "source_stats": {
         "carry_share": 0.5497737556561086,
         "target_share": 0.1709090909090909,
@@ -2372,11 +2372,11 @@
       "confidence": "high",
       "description": "Zach Charbonnet shares his backfield in a committee, at 39% carry share -- a real role, but one that depends on the rest of the room staying the same to keep its value.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.018818+00:00",
       "source_stats": {
         "carry_share": 0.3881856540084388,
         "target_share": 0.05517241379310345,
-        "offense_pct": 0.48375,
+        "offense_pct": 0.48375000000000007,
         "adot": 1.6666666666666667,
         "games_qualified": 16
       }
@@ -2390,7 +2390,7 @@
       "confidence": "high",
       "description": "Brock Bowers is his offense's primary receiving tight end, drawing 24% of the team's targets on a 86% snap share -- a real receiving weapon at a thin fantasy position.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.018824+00:00",
       "source_stats": {
         "carry_share": 0.008032128514056224,
         "target_share": 0.23626373626373626,
@@ -2408,7 +2408,7 @@
       "confidence": "medium",
       "description": "Luke McCaffrey is a field-stretcher, averaging 14.5 air yards per target -- his role is built on getting downfield rather than high target volume, which raises his weekly variance.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.018830+00:00",
       "source_stats": {
         "carry_share": 0.0,
         "target_share": 0.0625,
@@ -2426,11 +2426,11 @@
       "confidence": "high",
       "description": "Ja'Tavion Sanders is a secondary receiving option at tight end (10% target share, 52% snap share) -- a real but limited passing-game role.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.018835+00:00",
       "source_stats": {
         "carry_share": 0.0,
         "target_share": 0.09742120343839542,
-        "offense_pct": 0.5216666666666666,
+        "offense_pct": 0.5216666666666667,
         "adot": 4.823529411764706,
         "games_qualified": 12
       }
@@ -2444,7 +2444,7 @@
       "confidence": "medium",
       "description": "Bucky Irving is a true bell-cow back, handling 59% of his team's carries and playing 62% of the offensive snaps last season -- the kind of workload that makes weekly volume close to guaranteed.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.018842+00:00",
       "source_stats": {
         "carry_share": 0.5924657534246576,
         "target_share": 0.11254019292604502,
@@ -2462,11 +2462,11 @@
       "confidence": "medium",
       "description": "Jamari Thrash played a rotational snap share (34%) last season -- his role depends on beating out other receivers for playing time before target volume is even a question.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.018847+00:00",
       "source_stats": {
         "carry_share": 0.0,
         "target_share": 0.05319148936170213,
-        "offense_pct": 0.3425,
+        "offense_pct": 0.34249999999999997,
         "adot": 6.8,
         "games_qualified": 8
       }
@@ -2480,7 +2480,7 @@
       "confidence": "high",
       "description": "Tyrone Tracy Jr. shares his backfield in a committee, at 40% carry share -- a real role, but one that depends on the rest of the room staying the same to keep its value.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.018853+00:00",
       "source_stats": {
         "carry_share": 0.4,
         "target_share": 0.10810810810810811,
@@ -2498,11 +2498,11 @@
       "confidence": "high",
       "description": "Kameron Johnson played a rotational snap share (10%) last season -- his role depends on beating out other receivers for playing time before target volume is even a question.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.018859+00:00",
       "source_stats": {
         "carry_share": 0.00423728813559322,
         "target_share": 0.012939001848428836,
-        "offense_pct": 0.09705882352941175,
+        "offense_pct": 0.09705882352941178,
         "adot": 12.571428571428571,
         "games_qualified": 14
       }
@@ -2516,7 +2516,7 @@
       "confidence": "high",
       "description": "Blake Corum shares his backfield in a committee, at 31% carry share -- a real role, but one that depends on the rest of the room staying the same to keep its value.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.018865+00:00",
       "source_stats": {
         "carry_share": 0.3118279569892473,
         "target_share": 0.024096385542168676,
@@ -2534,7 +2534,7 @@
       "confidence": "high",
       "description": "Jordan Whittington played a rotational snap share (43%) last season -- his role depends on beating out other receivers for playing time before target volume is even a question.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.018871+00:00",
       "source_stats": {
         "carry_share": 0.007653061224489796,
         "target_share": 0.04844961240310078,
@@ -2552,7 +2552,7 @@
       "confidence": "high",
       "description": "AJ Barner is a secondary receiving option at tight end (15% target share, 77% snap share) -- a real but limited passing-game role.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.018876+00:00",
       "source_stats": {
         "carry_share": 0.01972386587771203,
         "target_share": 0.14945054945054945,
@@ -2570,11 +2570,11 @@
       "confidence": "high",
       "description": "Theo Johnson is a secondary receiving option at tight end (17% target share, 87% snap share) -- a real but limited passing-game role.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.018883+00:00",
       "source_stats": {
         "carry_share": 0.0,
         "target_share": 0.167420814479638,
-        "offense_pct": 0.8673333333333333,
+        "offense_pct": 0.8673333333333332,
         "adot": 8.324324324324325,
         "games_qualified": 15
       }
@@ -2588,7 +2588,7 @@
       "confidence": "high",
       "description": "Adonai Mitchell is a field-stretcher, averaging 14.9 air yards per target -- his role is built on getting downfield rather than high target volume, which raises his weekly variance.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.018890+00:00",
       "source_stats": {
         "carry_share": 0.0024509803921568627,
         "target_share": 0.14979757085020243,
@@ -2606,11 +2606,11 @@
       "confidence": "high",
       "description": "Brian Thomas Jr. is a field-stretcher, averaging 14.5 air yards per target -- his role is built on getting downfield rather than high target volume, which raises his weekly variance.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.018895+00:00",
       "source_stats": {
         "carry_share": 0.007751937984496124,
         "target_share": 0.19279661016949154,
-        "offense_pct": 0.7764285714285715,
+        "offense_pct": 0.7764285714285714,
         "adot": 14.45054945054945,
         "games_qualified": 14
       }
@@ -2624,7 +2624,7 @@
       "confidence": "medium",
       "description": "Ricky Pearsall is a field-stretcher, averaging 14.1 air yards per target -- his role is built on getting downfield rather than high target volume, which raises his weekly variance.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.018900+00:00",
       "source_stats": {
         "carry_share": 0.0072992700729927005,
         "target_share": 0.1840277777777778,
@@ -2642,11 +2642,11 @@
       "confidence": "high",
       "description": "Rome Odunze is a high-volume target earner, drawing 24% of his team's targets while playing 88% of the offensive snaps -- the receiver a passing offense is built around.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.018906+00:00",
       "source_stats": {
         "carry_share": 0.0,
         "target_share": 0.23684210526315788,
-        "offense_pct": 0.8808333333333334,
+        "offense_pct": 0.8808333333333332,
         "adot": 13.911111111111111,
         "games_qualified": 12
       }
@@ -2660,11 +2660,11 @@
       "confidence": "high",
       "description": "Savion Williams played a rotational snap share (12%) last season -- his role depends on beating out other receivers for playing time before target volume is even a question.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.018912+00:00",
       "source_stats": {
         "carry_share": 0.03021978021978022,
         "target_share": 0.02967359050445104,
-        "offense_pct": 0.11499999999999999,
+        "offense_pct": 0.11500000000000003,
         "adot": 1.7,
         "games_qualified": 12
       }
@@ -2678,11 +2678,11 @@
       "confidence": "high",
       "description": "Ashton Jeanty is a true bell-cow back, handling 72% of his team's carries and playing 78% of the offensive snaps last season -- the kind of workload that makes weekly volume close to guaranteed.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.018918+00:00",
       "source_stats": {
         "carry_share": 0.7208672086720868,
         "target_share": 0.14777327935222673,
-        "offense_pct": 0.7788235294117647,
+        "offense_pct": 0.7788235294117648,
         "adot": -1.4246575342465753,
         "games_qualified": 17
       }
@@ -2696,11 +2696,11 @@
       "confidence": "high",
       "description": "Tetairoa McMillan is a high-volume target earner, drawing 25% of his team's targets while playing 87% of the offensive snaps -- the receiver a passing offense is built around.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.018922+00:00",
       "source_stats": {
         "carry_share": 0.0,
         "target_share": 0.25416666666666665,
-        "offense_pct": 0.871764705882353,
+        "offense_pct": 0.8717647058823529,
         "adot": 11.557377049180328,
         "games_qualified": 17
       }
@@ -2714,7 +2714,7 @@
       "confidence": "high",
       "description": "Colston Loveland is a secondary receiving option at tight end (17% target share, 64% snap share) -- a real but limited passing-game role.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.018926+00:00",
       "source_stats": {
         "carry_share": 0.0020876826722338203,
         "target_share": 0.16532258064516128,
@@ -2732,7 +2732,7 @@
       "confidence": "high",
       "description": "Tyler Warren is his offense's primary receiving tight end, drawing 21% of the team's targets on a 84% snap share -- a real receiving weapon at a thin fantasy position.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.018931+00:00",
       "source_stats": {
         "carry_share": 0.013574660633484163,
         "target_share": 0.21132075471698114,
@@ -2750,11 +2750,11 @@
       "confidence": "high",
       "description": "Emeka Egbuka is a high-volume target earner, drawing 23% of his team's targets while playing 78% of the offensive snaps -- the receiver a passing offense is built around.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.018935+00:00",
       "source_stats": {
         "carry_share": 0.00423728813559322,
         "target_share": 0.23475046210720887,
-        "offense_pct": 0.776470588235294,
+        "offense_pct": 0.7764705882352942,
         "adot": 12.377952755905511,
         "games_qualified": 17
       }
@@ -2768,7 +2768,7 @@
       "confidence": "high",
       "description": "Kyle Williams is a field-stretcher, averaging 19.0 air yards per target -- his role is built on getting downfield rather than high target volume, which raises his weekly variance.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.018939+00:00",
       "source_stats": {
         "carry_share": 0.004901960784313725,
         "target_share": 0.051470588235294115,
@@ -2786,11 +2786,11 @@
       "confidence": "high",
       "description": "Jaylin Noel played a rotational snap share (26%) last season -- his role depends on beating out other receivers for playing time before target volume is even a question.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.018944+00:00",
       "source_stats": {
         "carry_share": 0.01263157894736842,
         "target_share": 0.06329113924050633,
-        "offense_pct": 0.26,
+        "offense_pct": 0.26000000000000006,
         "adot": 9.342857142857143,
         "games_qualified": 17
       }
@@ -2804,11 +2804,11 @@
       "confidence": "high",
       "description": "Jaylin Lane is a field-stretcher, averaging 13.3 air yards per target -- his role is built on getting downfield rather than high target volume, which raises his weekly variance.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.018948+00:00",
       "source_stats": {
         "carry_share": 0.00234192037470726,
         "target_share": 0.08163265306122448,
-        "offense_pct": 0.362,
+        "offense_pct": 0.36200000000000004,
         "adot": 13.34375,
         "games_qualified": 15
       }
@@ -2822,7 +2822,7 @@
       "confidence": "medium",
       "description": "KeAndre Lambert-Smith is a field-stretcher, averaging 17.6 air yards per target -- his role is built on getting downfield rather than high target volume, which raises his weekly variance.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.018953+00:00",
       "source_stats": {
         "carry_share": 0.0,
         "target_share": 0.0375,
@@ -2840,7 +2840,7 @@
       "confidence": "high",
       "description": "Jackson Hawes plays a snap-heavy role (46%) with little receiving usage (5% target share) -- his fantasy floor is thin outside of touchdown-dependent weeks.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.018957+00:00",
       "source_stats": {
         "carry_share": 0.0,
         "target_share": 0.05277777777777778,
@@ -2858,7 +2858,7 @@
       "confidence": "medium",
       "description": "Devin Neal shares his backfield in a committee, at 26% carry share -- a real role, but one that depends on the rest of the room staying the same to keep its value.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.018961+00:00",
       "source_stats": {
         "carry_share": 0.2626728110599078,
         "target_share": 0.06333333333333334,
@@ -2876,11 +2876,11 @@
       "confidence": "high",
       "description": "Kyle Monangai shares his backfield in a committee, at 33% carry share -- a real role, but one that depends on the rest of the room staying the same to keep its value.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.018964+00:00",
       "source_stats": {
         "carry_share": 0.3346534653465347,
         "target_share": 0.05639097744360902,
-        "offense_pct": 0.4088235294117647,
+        "offense_pct": 0.40882352941176475,
         "adot": 0.06666666666666667,
         "games_qualified": 17
       }
@@ -2894,7 +2894,7 @@
       "confidence": "high",
       "description": "Tez Johnson played a rotational snap share (47%) last season -- his role depends on beating out other receivers for playing time before target volume is even a question.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.018968+00:00",
       "source_stats": {
         "carry_share": 0.017369727047146403,
         "target_share": 0.09224318658280922,
@@ -2912,7 +2912,7 @@
       "confidence": "high",
       "description": "Jacory Croskey-Merritt shares his backfield in a committee, at 36% carry share -- a real role, but one that depends on the rest of the room staying the same to keep its value.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.018972+00:00",
       "source_stats": {
         "carry_share": 0.3615702479338843,
         "target_share": 0.03009259259259259,
@@ -2930,7 +2930,7 @@
       "confidence": "medium",
       "description": "Dont'e Thornton Jr. is a field-stretcher, averaging 16.6 air yards per target -- his role is built on getting downfield rather than high target volume, which raises his weekly variance.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.018975+00:00",
       "source_stats": {
         "carry_share": 0.0,
         "target_share": 0.09404388714733543,
@@ -2948,7 +2948,7 @@
       "confidence": "high",
       "description": "Arian Smith is a field-stretcher, averaging 13.5 air yards per target -- his role is built on getting downfield rather than high target volume, which raises his weekly variance.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.018979+00:00",
       "source_stats": {
         "carry_share": 0.011267605633802818,
         "target_share": 0.0449438202247191,
@@ -2966,7 +2966,7 @@
       "confidence": "high",
       "description": "Woody Marks shares his backfield in a committee, at 44% carry share -- a real role, but one that depends on the rest of the room staying the same to keep its value.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.018983+00:00",
       "source_stats": {
         "carry_share": 0.4365256124721604,
         "target_share": 0.06936416184971098,
@@ -2984,7 +2984,7 @@
       "confidence": "high",
       "description": "Gunnar Helm is a secondary receiving option at tight end (11% target share, 53% snap share) -- a real but limited passing-game role.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.018986+00:00",
       "source_stats": {
         "carry_share": 0.0,
         "target_share": 0.11066398390342053,
@@ -3002,11 +3002,11 @@
       "confidence": "medium",
       "description": "Tory Horton is a field-stretcher, averaging 15.3 air yards per target -- his role is built on getting downfield rather than high target volume, which raises his weekly variance.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.018990+00:00",
       "source_stats": {
         "carry_share": 0.0,
         "target_share": 0.10628019323671498,
-        "offense_pct": 0.48125,
+        "offense_pct": 0.48125000000000007,
         "adot": 15.318181818181818,
         "games_qualified": 8
       }
@@ -3020,11 +3020,11 @@
       "confidence": "high",
       "description": "Harold Fannin Jr. is his offense's primary receiving tight end, drawing 21% of the team's targets on a 76% snap share -- a real receiving weapon at a thin fantasy position.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.018994+00:00",
       "source_stats": {
         "carry_share": 0.017632241813602016,
         "target_share": 0.21357285429141717,
-        "offense_pct": 0.759375,
+        "offense_pct": 0.7593750000000001,
         "adot": 6.037383177570093,
         "games_qualified": 16
       }
@@ -3038,11 +3038,11 @@
       "confidence": "medium",
       "description": "Omarion Hampton shares his backfield in a committee, at 51% carry share -- a real role, but one that depends on the rest of the room staying the same to keep its value.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.018998+00:00",
       "source_stats": {
         "carry_share": 0.5145228215767634,
         "target_share": 0.12323943661971831,
-        "offense_pct": 0.6344444444444445,
+        "offense_pct": 0.6344444444444446,
         "adot": -1.542857142857143,
         "games_qualified": 9
       }
@@ -3056,11 +3056,11 @@
       "confidence": "high",
       "description": "Matthew Golden played a rotational snap share (53%) last season -- his role depends on beating out other receivers for playing time before target volume is even a question.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.019001+00:00",
       "source_stats": {
         "carry_share": 0.02544529262086514,
         "target_share": 0.11671087533156499,
-        "offense_pct": 0.5321428571428571,
+        "offense_pct": 0.532142857142857,
         "adot": 12.545454545454545,
         "games_qualified": 14
       }
@@ -3074,11 +3074,11 @@
       "confidence": "high",
       "description": "Isaac TeSlaa is a field-stretcher, averaging 13.0 air yards per target -- his role is built on getting downfield rather than high target volume, which raises his weekly variance.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.019007+00:00",
       "source_stats": {
         "carry_share": 0.0,
         "target_share": 0.05844155844155844,
-        "offense_pct": 0.4307142857142857,
+        "offense_pct": 0.43071428571428566,
         "adot": 13.037037037037036,
         "games_qualified": 14
       }
@@ -3092,11 +3092,11 @@
       "confidence": "medium",
       "description": "Cam Skattebo shares his backfield in a committee, at 43% carry share -- a real role, but one that depends on the rest of the room staying the same to keep its value.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.019012+00:00",
       "source_stats": {
         "carry_share": 0.43162393162393164,
         "target_share": 0.1322314049586777,
-        "offense_pct": 0.5225,
+        "offense_pct": 0.5225000000000001,
         "adot": -0.15625,
         "games_qualified": 8
       }
@@ -3110,11 +3110,11 @@
       "confidence": "high",
       "description": "Tre Harris played a rotational snap share (49%) last season -- his role depends on beating out other receivers for playing time before target volume is even a question.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.019016+00:00",
       "source_stats": {
         "carry_share": 0.004555808656036446,
         "target_share": 0.083984375,
-        "offense_pct": 0.4925,
+        "offense_pct": 0.49249999999999994,
         "adot": 9.255813953488373,
         "games_qualified": 16
       }
@@ -3128,11 +3128,11 @@
       "confidence": "high",
       "description": "Jack Bech played a rotational snap share (44%) last season -- his role depends on beating out other receivers for playing time before target volume is even a question.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.019020+00:00",
       "source_stats": {
         "carry_share": 0.0,
         "target_share": 0.07611548556430446,
-        "offense_pct": 0.4414285714285714,
+        "offense_pct": 0.44142857142857145,
         "adot": 8.275862068965518,
         "games_qualified": 13
       }
@@ -3146,7 +3146,7 @@
       "confidence": "high",
       "description": "RJ Harvey shares his backfield in a committee, at 32% carry share -- a real role, but one that depends on the rest of the room staying the same to keep its value.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.019024+00:00",
       "source_stats": {
         "carry_share": 0.3201754385964912,
         "target_share": 0.09931506849315068,
@@ -3164,11 +3164,11 @@
       "confidence": "high",
       "description": "TreVeyon Henderson shares his backfield in a committee, at 36% carry share -- a real role, but one that depends on the rest of the room staying the same to keep its value.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.019027+00:00",
       "source_stats": {
         "carry_share": 0.3643724696356275,
         "target_share": 0.08713692946058091,
-        "offense_pct": 0.4588235294117647,
+        "offense_pct": 0.45882352941176474,
         "adot": -0.023809523809523808,
         "games_qualified": 17
       }
@@ -3182,11 +3182,11 @@
       "confidence": "high",
       "description": "Luther Burden III played a rotational snap share (40%) last season -- his role depends on beating out other receivers for playing time before target volume is even a question.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.019031+00:00",
       "source_stats": {
         "carry_share": 0.013574660633484163,
         "target_share": 0.1279317697228145,
-        "offense_pct": 0.39666666666666667,
+        "offense_pct": 0.3966666666666666,
         "adot": 7.666666666666667,
         "games_qualified": 15
       }
@@ -3200,7 +3200,7 @@
       "confidence": "high",
       "description": "Mason Taylor is his offense's primary receiving tight end, drawing 18% of the team's targets on a 81% snap share -- a real receiving weapon at a thin fantasy position.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.019035+00:00",
       "source_stats": {
         "carry_share": 0.0,
         "target_share": 0.1846590909090909,
@@ -3218,11 +3218,11 @@
       "confidence": "high",
       "description": "Isaiah Bond is a field-stretcher, averaging 17.1 air yards per target -- his role is built on getting downfield rather than high target volume, which raises his weekly variance.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.019044+00:00",
       "source_stats": {
         "carry_share": 0.014044943820224719,
         "target_share": 0.09322033898305085,
-        "offense_pct": 0.48333333333333334,
+        "offense_pct": 0.4833333333333334,
         "adot": 17.068181818181817,
         "games_qualified": 15
       }
@@ -3236,11 +3236,11 @@
       "confidence": "high",
       "description": "Tim Patrick played a rotational snap share (30%) last season -- his role depends on beating out other receivers for playing time before target volume is even a question.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.019048+00:00",
       "source_stats": {
         "carry_share": 0.0,
         "target_share": 0.055299539170506916,
-        "offense_pct": 0.29538461538461536,
+        "offense_pct": 0.2953846153846154,
         "adot": 10.75,
         "games_qualified": 13
       }
@@ -3254,11 +3254,11 @@
       "confidence": "medium",
       "description": "Marquez Valdes-Scantling played a rotational snap share (49%) last season -- his role depends on beating out other receivers for playing time before target volume is even a question.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.019052+00:00",
       "source_stats": {
         "carry_share": 0.0,
         "target_share": 0.08529411764705883,
-        "offense_pct": 0.4933333333333333,
+        "offense_pct": 0.4933333333333334,
         "adot": 12.206896551724139,
         "games_qualified": 9
       }
@@ -3272,7 +3272,7 @@
       "confidence": "high",
       "description": "Darnell Mooney is a field-stretcher, averaging 14.2 air yards per target -- his role is built on getting downfield rather than high target volume, which raises his weekly variance.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.019056+00:00",
       "source_stats": {
         "carry_share": 0.0,
         "target_share": 0.16143497757847533,
@@ -3290,11 +3290,11 @@
       "confidence": "medium",
       "description": "Brock Wright is a secondary receiving option at tight end (9% target share, 61% snap share) -- a real but limited passing-game role.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.019060+00:00",
       "source_stats": {
         "carry_share": 0.0,
         "target_share": 0.08943089430894309,
-        "offense_pct": 0.60625,
+        "offense_pct": 0.6062500000000001,
         "adot": 1.0,
         "games_qualified": 8
       }
@@ -3308,11 +3308,11 @@
       "confidence": "medium",
       "description": "Bam Knight shares his backfield in a committee, at 32% carry share -- a real role, but one that depends on the rest of the room staying the same to keep its value.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.019064+00:00",
       "source_stats": {
         "carry_share": 0.3153846153846154,
         "target_share": 0.0670995670995671,
-        "offense_pct": 0.3308333333333333,
+        "offense_pct": 0.33083333333333337,
         "adot": 1.1935483870967742,
         "games_qualified": 10
       }
@@ -3326,7 +3326,7 @@
       "confidence": "high",
       "description": "Darnell Washington is a secondary receiving option at tight end (11% target share, 61% snap share) -- a real but limited passing-game role.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.019068+00:00",
       "source_stats": {
         "carry_share": 0.0,
         "target_share": 0.10886075949367088,
@@ -3344,7 +3344,7 @@
       "confidence": "medium",
       "description": "Tyrell Shavers played a rotational snap share (42%) last season -- his role depends on beating out other receivers for playing time before target volume is even a question.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.019072+00:00",
       "source_stats": {
         "carry_share": 0.0,
         "target_share": 0.076158940397351,
@@ -3362,7 +3362,7 @@
       "confidence": "medium",
       "description": "Mitchell Tinsley is a field-stretcher, averaging 14.8 air yards per target -- his role is built on getting downfield rather than high target volume, which raises his weekly variance.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.019076+00:00",
       "source_stats": {
         "carry_share": 0.0,
         "target_share": 0.08540925266903915,
@@ -3380,7 +3380,7 @@
       "confidence": "high",
       "description": "Ryan Flournoy played a rotational snap share (48%) last season -- his role depends on beating out other receivers for playing time before target volume is even a question.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.019080+00:00",
       "source_stats": {
         "carry_share": 0.010025062656641603,
         "target_share": 0.10408921933085502,
@@ -3398,7 +3398,7 @@
       "confidence": "medium",
       "description": "Isaiah Williams played a rotational snap share (36%) last season -- his role depends on beating out other receivers for playing time before target volume is even a question.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.019083+00:00",
       "source_stats": {
         "carry_share": 0.007594936708860759,
         "target_share": 0.08845208845208845,
@@ -3416,11 +3416,11 @@
       "confidence": "medium",
       "description": "Roman Wilson is a field-stretcher, averaging 13.2 air yards per target -- his role is built on getting downfield rather than high target volume, which raises his weekly variance.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.019088+00:00",
       "source_stats": {
         "carry_share": 0.0,
         "target_share": 0.07777777777777778,
-        "offense_pct": 0.4166666666666667,
+        "offense_pct": 0.41666666666666663,
         "adot": 13.19047619047619,
         "games_qualified": 9
       }
@@ -3434,7 +3434,7 @@
       "confidence": "high",
       "description": "Pat Bryant played a rotational snap share (53%) last season -- his role depends on beating out other receivers for playing time before target volume is even a question.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.019092+00:00",
       "source_stats": {
         "carry_share": 0.0,
         "target_share": 0.1076923076923077,
@@ -3452,11 +3452,11 @@
       "confidence": "medium",
       "description": "Allen Lazard played a rotational snap share (38%) last season -- his role depends on beating out other receivers for playing time before target volume is even a question.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.019097+00:00",
       "source_stats": {
         "carry_share": 0.0,
         "target_share": 0.06228373702422145,
-        "offense_pct": 0.3811111111111111,
+        "offense_pct": 0.3811111111111112,
         "adot": 7.888888888888889,
         "games_qualified": 9
       }
@@ -3470,11 +3470,11 @@
       "confidence": "medium",
       "description": "Christian Kirk played a rotational snap share (51%) last season -- his role depends on beating out other receivers for playing time before target volume is even a question.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.019100+00:00",
       "source_stats": {
         "carry_share": 0.0,
         "target_share": 0.1440443213296399,
-        "offense_pct": 0.5081818181818182,
+        "offense_pct": 0.5081818181818183,
         "adot": 7.019230769230769,
         "games_qualified": 11
       }
@@ -3488,7 +3488,7 @@
       "confidence": "high",
       "description": "Chris Rodriguez Jr. shares his backfield in a committee, at 32% carry share -- a real role, but one that depends on the rest of the room staying the same to keep its value.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.019105+00:00",
       "source_stats": {
         "carry_share": 0.3209169054441261,
         "target_share": 0.013245033112582781,
@@ -3506,11 +3506,11 @@
       "confidence": "high",
       "description": "Oronde Gadsden II is a secondary receiving option at tight end (14% target share, 63% snap share) -- a real but limited passing-game role.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.019109+00:00",
       "source_stats": {
         "carry_share": 0.0,
         "target_share": 0.14285714285714285,
-        "offense_pct": 0.626,
+        "offense_pct": 0.6260000000000001,
         "adot": 9.043478260869565,
         "games_qualified": 15
       }
@@ -3524,7 +3524,7 @@
       "confidence": "high",
       "description": "Demarcus Robinson is a field-stretcher, averaging 13.5 air yards per target -- his role is built on getting downfield rather than high target volume, which raises his weekly variance.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.019113+00:00",
       "source_stats": {
         "carry_share": 0.002506265664160401,
         "target_share": 0.07954545454545454,
@@ -3542,7 +3542,7 @@
       "confidence": "medium",
       "description": "Chris Godwin Jr. is a possession receiver, working underneath (aDOT 7.1) on a real target share (18%) with a heavy snap role (71%) -- reliable, catch-driven production over big-play upside.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.019118+00:00",
       "source_stats": {
         "carry_share": 0.0,
         "target_share": 0.1827956989247312,
@@ -3560,11 +3560,11 @@
       "confidence": "high",
       "description": "Michael Carter shares his backfield in a committee, at 35% carry share -- a real role, but one that depends on the rest of the room staying the same to keep its value.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.019122+00:00",
       "source_stats": {
         "carry_share": 0.35384615384615387,
         "target_share": 0.09,
-        "offense_pct": 0.4523076923076923,
+        "offense_pct": 0.45230769230769236,
         "adot": 1.6666666666666667,
         "games_qualified": 13
       }
@@ -3578,7 +3578,7 @@
       "confidence": "high",
       "description": "Jordan Addison is a field-stretcher, averaging 13.7 air yards per target -- his role is built on getting downfield rather than high target volume, which raises his weekly variance.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.019126+00:00",
       "source_stats": {
         "carry_share": 0.005988023952095809,
         "target_share": 0.19602977667493796,
@@ -3596,7 +3596,7 @@
       "confidence": "high",
       "description": "Kimani Vidal is an early-down runner, carrying the ball on 42% of his team's rush attempts but drawing few targets (5% target share) -- his fantasy floor depends on rushing volume, not receiving work.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.019130+00:00",
       "source_stats": {
         "carry_share": 0.4246575342465753,
         "target_share": 0.05405405405405406,
@@ -3614,7 +3614,7 @@
       "confidence": "medium",
       "description": "John Bates plays a snap-heavy role (56%) with little receiving usage (6% target share) -- his fantasy floor is thin outside of touchdown-dependent weeks.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.019134+00:00",
       "source_stats": {
         "carry_share": 0.0,
         "target_share": 0.06477732793522267,
@@ -3632,7 +3632,7 @@
       "confidence": "high",
       "description": "Isaiah Likely is a secondary receiving option at tight end (12% target share, 57% snap share) -- a real but limited passing-game role.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.019139+00:00",
       "source_stats": {
         "carry_share": 0.0,
         "target_share": 0.12413793103448276,
@@ -3650,11 +3650,11 @@
       "confidence": "high",
       "description": "Tyjae Spears is a passing-down back: a light rushing role (25% carry share) paired with real receiving usage (12% target share) makes him more valuable in reception-friendly formats than his carry count alone would suggest.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.019147+00:00",
       "source_stats": {
         "carry_share": 0.2482758620689655,
         "target_share": 0.11990407673860912,
-        "offense_pct": 0.4592307692307692,
+        "offense_pct": 0.4592307692307693,
         "adot": -2.3,
         "games_qualified": 13
       }
@@ -3668,11 +3668,11 @@
       "confidence": "high",
       "description": "Malachi Corley played a rotational snap share (27%) last season -- his role depends on beating out other receivers for playing time before target volume is even a question.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.019151+00:00",
       "source_stats": {
         "carry_share": 0.041666666666666664,
         "target_share": 0.04361370716510903,
-        "offense_pct": 0.26833333333333337,
+        "offense_pct": 0.2683333333333333,
         "adot": -0.5,
         "games_qualified": 12
       }
@@ -3686,7 +3686,7 @@
       "confidence": "medium",
       "description": "Jimmy Horn Jr. played a rotational snap share (21%) last season -- his role depends on beating out other receivers for playing time before target volume is even a question.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.019155+00:00",
       "source_stats": {
         "carry_share": 0.02952029520295203,
         "target_share": 0.06,
@@ -3704,11 +3704,11 @@
       "confidence": "high",
       "description": "Gage Larvadain played a rotational snap share (24%) last season -- his role depends on beating out other receivers for playing time before target volume is even a question.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.019158+00:00",
       "source_stats": {
         "carry_share": 0.00303951367781155,
         "target_share": 0.03763440860215054,
-        "offense_pct": 0.23615384615384613,
+        "offense_pct": 0.2361538461538462,
         "adot": 8.928571428571429,
         "games_qualified": 13
       }
@@ -3722,7 +3722,7 @@
       "confidence": "medium",
       "description": "Mason Tipton played a rotational snap share (44%) last season -- his role depends on beating out other receivers for playing time before target volume is even a question.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.019163+00:00",
       "source_stats": {
         "carry_share": 0.020833333333333332,
         "target_share": 0.06028368794326241,
@@ -3740,7 +3740,7 @@
       "confidence": "medium",
       "description": "Efton Chism III played a rotational snap share (18%) last season -- his role depends on beating out other receivers for playing time before target volume is even a question.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.019168+00:00",
       "source_stats": {
         "carry_share": 0.0,
         "target_share": 0.014084507042253521,
@@ -3758,7 +3758,7 @@
       "confidence": "medium",
       "description": "Konata Mumpfield played a rotational snap share (43%) last season -- his role depends on beating out other receivers for playing time before target volume is even a question.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.019172+00:00",
       "source_stats": {
         "carry_share": 0.0,
         "target_share": 0.06686046511627906,
@@ -3776,11 +3776,11 @@
       "confidence": "medium",
       "description": "Rashee Rice is a high-volume target earner, drawing 29% of his team's targets while playing 75% of the offensive snaps -- the receiver a passing offense is built around.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.019177+00:00",
       "source_stats": {
         "carry_share": 0.0228310502283105,
         "target_share": 0.2867647058823529,
-        "offense_pct": 0.74875,
+        "offense_pct": 0.7487499999999999,
         "adot": 4.333333333333333,
         "games_qualified": 8
       }
@@ -3794,11 +3794,11 @@
       "confidence": "medium",
       "description": "Christian Watson is a field-stretcher, averaging 17.8 air yards per target -- his role is built on getting downfield rather than high target volume, which raises his weekly variance.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.019181+00:00",
       "source_stats": {
         "carry_share": 0.0035714285714285713,
         "target_share": 0.19230769230769232,
-        "offense_pct": 0.6769999999999999,
+        "offense_pct": 0.6770000000000002,
         "adot": 17.763636363636362,
         "games_qualified": 10
       }
@@ -3812,7 +3812,7 @@
       "confidence": "medium",
       "description": "Jaylen Wright shares his backfield in a committee, at 26% carry share -- a real role, but one that depends on the rest of the room staying the same to keep its value.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.019185+00:00",
       "source_stats": {
         "carry_share": 0.25735294117647056,
         "target_share": 0.04285714285714286,
@@ -3830,11 +3830,11 @@
       "confidence": "medium",
       "description": "Treylon Burks is a field-stretcher, averaging 13.5 air yards per target -- his role is built on getting downfield rather than high target volume, which raises his weekly variance.",
       "license_tag": "ai_generated",
-      "generated_at": "2026-07-26T15:09:43.328130+00:00",
+      "generated_at": "2026-07-30T16:43:49.019189+00:00",
       "source_stats": {
         "carry_share": 0.0,
         "target_share": 0.11956521739130435,
-        "offense_pct": 0.6012500000000001,
+        "offense_pct": 0.60125,
         "adot": 13.454545454545455,
         "games_qualified": 8
       }
