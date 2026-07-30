@@ -42,6 +42,18 @@ WHAT CHANGED AND WHY
 PAIRED BOOTSTRAP. Arm-vs-baseline deltas resample the same season indices for
 both arms within a replication. Independent resampling would inflate the delta's
 variance and understate real differences.
+
+5. NEVER-PLAYED RANKED PLAYERS SCORE THE REPLACEMENT DEFICIT, NOT ZERO VBD
+   (2026-07-30, strategist finding, docs/adr-drafts/ADR-DRAFT-primary-
+   evaluation-metric.md SS4.1). `vbd.get(pid, 0.0)` used to silently score a
+   ranked player with no weekly row at all (retired, cut, season-ending
+   injury) as exactly replacement level -- a materially better outcome than
+   the wasted premium pick that actually happened. `_slot_value` now scores
+   that player's slot at `0 - replacement_points[pos]`. This is an
+   evaluation-harness fix only: no ranking logic, weight, or export field
+   changed. ADR-025's published board-vs-consensus figures were computed
+   under the defect and have been re-reported alongside the originals, not
+   overwritten -- see ADR-025's correction note in docs/decisions.md.
 """
 
 from __future__ import annotations
@@ -402,13 +414,61 @@ def _season_actuals(
 
 def _vbd_lookup(
     actuals: Dict[str, Tuple[float, Optional[str]]], levels: ReplacementLevels
-) -> Dict[str, float]:
+) -> Tuple[Dict[str, float], Dict[str, float]]:
+    """Returns (vbd, replacement_points).
+
+    `vbd` covers only players present in `actuals` (i.e. with at least one
+    weekly stat row), same as before. `replacement_points` is the per-position
+    POINT VALUE (not a player count) at the replacement baseline, computed
+    from the exact same universe and the exact same index arithmetic
+    `scoring.compute_vbd` uses internally -- duplicated here (not imported)
+    because `compute_vbd` does not expose it. It is what a ranked player who
+    resolves a position but has NO row in `actuals` must be scored against:
+    his true contribution is `0 - replacement_points[pos]`, never `0.0`. See
+    docs/adr-drafts/ADR-DRAFT-primary-evaluation-metric.md SS4.1.
+    """
     by_position: Dict[str, List[Tuple[str, float]]] = {}
     for pid, (points, pos) in actuals.items():
         if pos is None:
             continue
         by_position.setdefault(pos, []).append((pid, points))
-    return compute_vbd(by_position, levels)
+    vbd = compute_vbd(by_position, levels)
+    baselines = levels.baselines()
+    replacement_points: Dict[str, float] = {}
+    for pos, players in by_position.items():
+        ranked = sorted((pts for _, pts in players), reverse=True)
+        if not ranked:
+            continue
+        idx = min(baselines.get(pos, len(ranked)) - 1, len(ranked) - 1)
+        replacement_points[pos] = ranked[idx]
+    return vbd, replacement_points
+
+
+def _slot_value(
+    pid: str,
+    pos: str,
+    vbd: Dict[str, float],
+    replacement_points: Dict[str, float],
+) -> float:
+    """Value contributed by a player who consumes a starting slot.
+
+    If `pid` has a realized `vbd` entry (i.e. he appears in that season's
+    `_season_actuals`, including a genuine zero-point season that actually
+    happened), that value is exact and used as-is.
+
+    If `pid` has NO entry at all -- retired, cut, a season-ending injury,
+    suspended for the year, anything with zero weekly rows -- he still
+    consumed a starting slot the ranking chose to spend on him. His true
+    contribution is `0 - replacement_points[pos]`: exactly as bad as drafting
+    the worst startable player at that position and getting nothing back for
+    the pick, which is what actually happened. `vbd.get(pid, 0.0)` used to
+    silently return `0.0` here -- "as good as the waiver wire" -- which is a
+    materially better outcome than a wasted premium pick and is the defect
+    this function exists to fix (ADR-DRAFT-primary-evaluation-metric.md SS4.1).
+    """
+    if pid in vbd:
+        return vbd[pid]
+    return -replacement_points.get(pos, 0.0)
 
 
 def _vbd_sum_for_ranking(
@@ -417,6 +477,7 @@ def _vbd_sum_for_ranking(
     vbd: Dict[str, float],
     levels: ReplacementLevels,
     positions: Optional[Dict[str, str]] = None,
+    replacement_points: Optional[Dict[str, float]] = None,
 ) -> float:
     """Actual value-over-replacement of the top-N ranked players per position,
     N = that position's replacement baseline.
@@ -428,6 +489,7 @@ def _vbd_sum_for_ranking(
     it".
     """
     positions = positions or {}
+    replacement_points = replacement_points or {}
     baselines = levels.baselines()
     by_position: Dict[str, List[Tuple[int, str]]] = {}
     for pid, rank in ranking.items():
@@ -440,7 +502,7 @@ def _vbd_sum_for_ranking(
     for pos, entries in by_position.items():
         entries.sort()
         for _, pid in entries[: baselines[pos]]:
-            total += vbd.get(pid, 0.0)
+            total += _slot_value(pid, pos, vbd, replacement_points)
     return total
 
 
@@ -458,6 +520,7 @@ def top_k_starter_vbd(
     vbd: Dict[str, float],
     positions: Dict[str, str],
     k: int = ROSTER_PICKS,
+    replacement_points: Optional[Dict[str, float]] = None,
 ) -> float:
     """Actual VBD of the best starting lineup fillable from the ranking's top-K.
 
@@ -468,10 +531,16 @@ def top_k_starter_vbd(
     ranking order makes cross-position ordering matter: spend early picks on a
     position you did not need and the lineup is worse.
 
+    A ranked player who consumes a slot but has no realized production at all
+    (no row in `actuals`) is scored via `_slot_value` against
+    `replacement_points`, not at a silent `0.0` -- see `_slot_value`'s
+    docstring and ADR-DRAFT-primary-evaluation-metric.md SS4.1.
+
     LIMITATION: no opponents. This assumes you receive your top-K uncontested,
     so it measures ordering quality, not draft-day scarcity. A real draft
     simulation (test-registry.md #44) is still the missing piece.
     """
+    replacement_points = replacement_points or {}
     ordered = sorted(ranking.items(), key=lambda kv: kv[1])[:k]
     open_slots = dict(STARTER_SLOTS)
     flex_left = FLEX_SLOTS
@@ -482,10 +551,10 @@ def top_k_starter_vbd(
             continue
         if open_slots.get(pos, 0) > 0:
             open_slots[pos] -= 1
-            total += vbd.get(pid, 0.0)
+            total += _slot_value(pid, pos, vbd, replacement_points)
         elif flex_left > 0 and pos in FLEX_ELIGIBLE:
             flex_left -= 1
-            total += vbd.get(pid, 0.0)
+            total += _slot_value(pid, pos, vbd, replacement_points)
     return total
 
 
@@ -499,14 +568,18 @@ def compute_season_metrics(
 ) -> SeasonMetrics:
     actuals = _season_actuals(conn, season)
     positions = build_position_lookup(conn, season)
-    vbd = _vbd_lookup(actuals, levels)
+    vbd, replacement_points = _vbd_lookup(actuals, levels)
     return SeasonMetrics(
         season=season,
         per_position_correlation=_rank_correlation_by_position(
             ranking, actuals, positions, seed=seed + season, n_permutation=n_permutation
         ),
-        vbd_sum=_vbd_sum_for_ranking(ranking, actuals, vbd, levels, positions),
-        starter_vbd=top_k_starter_vbd(ranking, actuals, vbd, positions),
+        vbd_sum=_vbd_sum_for_ranking(
+            ranking, actuals, vbd, levels, positions, replacement_points
+        ),
+        starter_vbd=top_k_starter_vbd(
+            ranking, actuals, vbd, positions, replacement_points=replacement_points
+        ),
     )
 
 
