@@ -52,7 +52,7 @@ tests passing (was 59 files / 459 tests), 3 new test files. `npx tsc -b --noEmit
 directly (18 total): `frontend/e2e/artifacts/item2-arrangement{A,B}-{dark,light}-*.png` (both
 arrangements, both themes, all four archetype states), `item2-reading-level-*.png` (default vs.
 trace mode), `item2-absence-states-side-by-side.png` (the three absences compared directly).
-Commit `<pending>`.
+Commit `cacca25`.
 
 **Last verified:** 2026-07-30, frontend session (worktree `agent-a08e75a2b222a2f66`, FR-114) shipping
 the global "show data sources" switch. Founder, refined mid-thread: *"I like the idea about

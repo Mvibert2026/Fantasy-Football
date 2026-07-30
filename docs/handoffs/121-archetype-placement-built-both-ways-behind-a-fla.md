@@ -71,7 +71,10 @@ Order/Density gap is this item's responsibility or item 8's, and opens a thread 
 
 ---
 ### frontend · 2026-07-30
-Built, tests added, screenshots captured and looked at directly (not just passing suite) — see the
-session's commit for the hash and final test count. Both arrangements verified from the same build
-via the flag; no rebuild needed to switch. Awaiting the founder's ruling before anyone deletes
-either branch.
+Built, tests added, screenshots captured and looked at directly (not just a passing suite). Commit
+`cacca25`. 61 test files / 478 tests passing (was 59/459), `npx tsc -b --noEmit` clean. 18
+screenshots in `frontend/e2e/artifacts/item2-*.png` — both arrangements verified from the same
+build via the flag, no rebuild needed to switch between them; confirmed by eye, not just by test
+count, that Arrangement A always shows a chip beside the name and Arrangement B shows one there
+only for a real label, with the three absences visually distinguished by border style in both.
+Awaiting the founder's ruling before anyone deletes either branch.
