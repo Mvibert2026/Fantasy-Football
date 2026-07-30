@@ -73,18 +73,31 @@ changes the availability sub-model, the bonus machinery, the universe or the sco
 
 ## 3. Endpoints, fixed now — and one deliberate change from batch 1
 
-**E1b — THE GATE. Out-of-sample MAE of the one declared component, restricted to players on the
-consensus ADP board.** Arm − primary, paired by season, 11 seasons, season-block bootstrap.
-Negative = better. **This is the FDR family.**
+> **CORRECTION, 2026-07-30, made BEFORE any arm was fitted.** The first version of this section made
+> E1b (ADP-board MAE) the FDR family and stated it at **11 seasons**. That is wrong. The consensus
+> board only exists **2018–2024** (`data/adp-snapshots-ffc/*_half_ppr_12team_period*.csv`, seven
+> files), so E1b is a **7-season** paired test — the same n that
+> `component-model-rb-qb-te-pass-1.md` §1 already measured as unable to resolve anything at WR or
+> TE. A 15-arm BH family on 7 seasons returns all-NULL regardless of the truth: a design that cannot
+> answer its own question. Corrected below **before fitting**, rather than discovered afterwards and
+> offered as a caveat. Flagged to `strategist` on the open thread as an amendment to point 1 of that
+> ask.
 
-*Why this and not batch 1's endpoint.* Batch 1's own §1(3) found the gate it had committed was blind
-to **where** a gain sits: two arms cleared it on movement among players nobody drafts. The fix that
-report demanded — "any future E1-style gate should require the gain to hold on the decision-relevant
-subset, not merely on average" — is adopted here, in advance, as the primary endpoint. The metric is
-new (`adpsub_mae_*`, added to `pos_eval._season_metrics` this session, purely additive).
+**E1a — THE FDR FAMILY. Out-of-sample MAE of the one declared component, full universe.**
+Arm − primary, paired by season, **11 seasons**, season-block bootstrap, 4,000 reps.
+Negative = better. Same endpoint as batch 1, so every batch-2 number is directly comparable to the
+batch-1 table.
 
-**E1a — reported, not the gate. The same MAE on the full universe**, so every batch-2 number stays
-directly comparable to the batch-1 table.
+**E1b — A REQUIRED DIRECTION CHECK, NOT THE SIGNIFICANCE TEST. The same MAE restricted to players on
+the consensus ADP board**, 7 seasons (2018–2024). New metric `adpsub_mae_*`, added to
+`pos_eval._season_metrics` this session, purely additive.
+
+*Why it is in the rules at all.* Batch 1's own §1(3) found the gate it had committed was blind to
+**where** a gain sits: two arms cleared it on movement among players nobody drafts. The fix that
+report demanded — "the gain must hold on the decision-relevant subset, not merely on average" — is
+adopted here as a **necessary condition**: an arm significant on E1a but *not* also better on E1b is
+graded **BOARD-NEUTRAL** and is explicitly not an edge. Naming that outcome is the point. Batch 1's
+two false passes had no name for what they were, and so read as wins.
 
 **E2 — the bar that matters, NOT in the FDR family. ADP-board Spearman, arm − primary.** 7 seasons.
 `CLAUDE.md` §6.5. **Known underpowered before it is run** at WR and TE
@@ -106,7 +119,7 @@ cell would be selection on the outcome, which is what this document exists to st
 | M1 | #28 | **this player moved clubs (player level)** | `moved_club`, `move_known` | WR, TE, RB | same |
 | C1 | #29 | **this player's club has a new OC (player level)** | `new_oc`, `oc_known` | WR, TE, RB | same |
 
-**m = 15. Benjamini–Hochberg at q = 0.10 across all 15 E1b p-values, and the denominator is 15
+**m = 15. Benjamini–Hochberg at q = 0.10 across all 15 E1a p-values, and the denominator is 15
 regardless of how many arms turn out to be computable.** Also reported at q = 0.05.
 
 Feature definitions are in `experiments/bottomup/factors/factor_features2.py` and were written
@@ -141,10 +154,11 @@ fifteenth-plus-one test and no new claim may be attached to it.
 
 | grade | rule |
 |---|---|
-| **SURVIVES** | BH-significant on **E1b** at q=0.10, direction better, **and** E2 > 0 |
-| **PROJECTION-ONLY** | BH-significant better on E1b, E2 ≤ 0 |
-| **HARMFUL** | BH-significant on E1b, direction worse |
-| **MARGINAL / MARGINAL-HARMFUL** | E1b 95% CI excludes zero but not BH-significant |
+| **SURVIVES** | BH-significant on **E1a** at q=0.10, direction better, **and** E1b < 0, **and** E2 > 0 |
+| **PROJECTION-ONLY** | BH-significant better on E1a, **and** E1b < 0, but E2 ≤ 0 |
+| **BOARD-NEUTRAL** | BH-significant better on E1a, but **E1b ≥ 0** — the gain does not exist among the players a draft chooses between. **This is batch 1 §1(3)'s failure mode, given a name in advance so it cannot read as a win.** |
+| **HARMFUL** | BH-significant on E1a, direction worse |
+| **MARGINAL / MARGINAL-HARMFUL** | E1a 95% CI excludes zero but not BH-significant |
 | **NULL** | otherwise |
 
 **Stopping condition.** All 15 arms run **once**. No arm is re-specified, re-parameterised or
@@ -157,7 +171,7 @@ is reported as a **data finding, not a test**, its cell is marked NO DATA, and i
 m = 15 (the conservative direction).
 
 **Look-ahead escape hatch, committed now.** If any arm's result is large enough to look surprising —
-concretely, an E1b improvement exceeding **2% of the primary's own error** — it is treated as a
+concretely, an E1a improvement exceeding **2% of the primary's own error** — it is treated as a
 suspected leak and escalated before it is written up, per `CLAUDE.md` §8. A result that looks too
 good is a finding to escalate, not to celebrate.
 
@@ -205,7 +219,9 @@ caught telling him a reason the code did not implement. **That must not be repea
 
 **A sentence for a factor may render only when BOTH hold:**
 
-1. the factor graded **SURVIVES or PROJECTION-ONLY** on E1b in this campaign, **and**
+1. the factor graded **SURVIVES or PROJECTION-ONLY** in this campaign (BOARD-NEUTRAL does **not**
+   qualify — a gain that does not exist among draftable players cannot justify a sentence on a
+   draft board), **and**
 2. the underlying feature is **measured and non-null for that specific player** (`oc_known == 1`,
    `move_known == 1`, `vac_club_known == 1` respectively).
 
@@ -230,7 +246,7 @@ own projection delta already says.
 | **Survivorship** (§6.2) | universe frozen pre-season; busts retained at 0 |
 | **Multiple comparisons** (§6.3) | BH across all m = 15, q = 0.10 and 0.05, denominator fixed regardless of outcome |
 | **Holdout** (§6.3) | 2025 sealed at the SQL gate. Not opened |
-| **Effect size** | every E1b reported as a % of the primary's own error |
+| **Effect size** | every E1a reported as a % of the primary's own error, and every candidate re-checked on the ADP board via E1b |
 | **Autocorrelation** | seasons are the bootstrap unit and the t-test's n, never player-seasons |
 | **Reproduction** | batch 1 must reproduce **bit-for-bit** under the extended feature builder; asserted, not assumed |
 

@@ -4,9 +4,17 @@
     .venv/bin/python -m experiments.bottomup.factors.run_factors2
 
 Design: `docs/ranking/factor-batch-2-precommit.md`, committed BEFORE any arm was
-fitted. 15 registered tests, BH at q=0.10 on E1b (ADP-board component MAE).
-E1a (full universe) is reported for comparability with batch 1 and is NOT the
-gate. E2 (ADP-board rho) is the bar and is NOT in the FDR family.
+fitted. 15 registered tests.
+
+  E1a  full-universe component MAE, 11 seasons -- THE FDR FAMILY, BH q=0.10.
+  E1b  the same MAE on the ADP board, 7 seasons -- a REQUIRED DIRECTION CHECK,
+       not the significance test. An arm significant on E1a whose E1b is >= 0 is
+       graded BOARD-NEUTRAL: batch 1 1(3)'s failure mode, named in advance.
+  E2   ADP-board Spearman, 7 seasons, the bar. NOT in the FDR family.
+
+E1b is 7 seasons and not 11 because the consensus board only exists 2018-2024.
+That was corrected in the pre-commitment before fitting, not afterwards -- a
+15-arm BH family on 7 seasons returns all-NULL regardless of the truth.
 
 Plus one REFERENCE arm per position -- batch 1's Week-1 depth-chart V1, re-run
 unchanged so that "was the harm a proxy artifact?" is answered by a direct
@@ -191,23 +199,27 @@ def main() -> None:
         e1b = paired(m, prim[a.position], f"adpsub_mae_{a.e1}")
         e1a = paired(m, prim[a.position], f"mae_{a.e1}")
         e2 = paired(m, prim[a.position], "adpsub_rho_model")
-        base = float(prim[a.position][f"adpsub_mae_{a.e1}"].mean())
+        base = float(prim[a.position][f"mae_{a.e1}"].mean())
+        base_b = float(prim[a.position][f"adpsub_mae_{a.e1}"].mean())
         rows.append(dict(
             idx=i, factor=a.factor, arm=a.arm, position=a.position, e1_comp=a.e1,
             in_family=a.in_family,
             e1b_d=e1b[0], e1b_lo=e1b[1], e1b_hi=e1b[2], e1b_p=e1b[3], e1b_n=e1b[4],
-            e1b_pct=100.0 * e1b[0] / base if base else np.nan,
+            e1b_pct=100.0 * e1b[0] / base_b if base_b else np.nan,
             e1a_d=e1a[0], e1a_lo=e1a[1], e1a_hi=e1a[2], e1a_p=e1a[3],
+            e1a_n=e1a[4], e1a_pct=100.0 * e1a[0] / base if base else np.nan,
             e2_d=e2[0], e2_lo=e2[1], e2_hi=e2[2], e2_n=e2[4],
-            proxy_reads=px, n_players=len(pl), primary_adpsub_mae=base,
-            oc_coverage=cov[a.position]))
+            proxy_reads=px, n_players=len(pl), primary_mae=base,
+            primary_adpsub_mae=base_b, oc_coverage=cov[a.position]))
         tag = "" if a.in_family else "  [REFERENCE]"
         print(f"[{i:2d}/{len(ARMS)}] {a.position:3s} {a.arm:44s} "
-              f"E1b {e1b[0]:+8.4f} ({rows[-1]['e1b_pct']:+5.2f}%) p={e1b[3]:.3f}  "
-              f"E1a {e1a[0]:+8.4f}  E2 {e2[0]:+.4f}  proxy={px}{tag}")
+              f"E1a {e1a[0]:+8.4f} ({rows[-1]['e1a_pct']:+5.2f}%) p={e1a[3]:.3f} "
+              f"n={e1a[4]}  E1b {e1b[0]:+8.4f} n={e1b[4]}  E2 {e2[0]:+.4f}  "
+              f"proxy={px}{tag}")
 
     res = pd.DataFrame(rows)
-    for c in ("grade", "e1b_d", "e1b_lo", "e1b_hi", "e1b_p", "e1a_d", "e2_d"):
+    for c in ("grade", "e1b_d", "e1b_lo", "e1b_hi", "e1b_p",
+              "e1a_d", "e1a_lo", "e1a_hi", "e1a_p", "e2_d"):
         if c not in res.columns:
             res[c] = np.nan
     res["bh_10"] = False
@@ -215,7 +227,7 @@ def main() -> None:
     fam = res["in_family"] & res["grade"].isna()
     # BH denominator is 15 regardless of how many arms were computable (§5)
     m_family = int((res["in_family"]).sum())
-    pv = res.loc[fam, "e1b_p"].fillna(1.0).tolist()
+    pv = res.loc[fam, "e1a_p"].fillna(1.0).tolist()
     pv = pv + [1.0] * (m_family - len(pv))
     for q in (0.10, 0.05):
         keep = benjamini_hochberg(pv, q)[:int(fam.sum())]
@@ -226,25 +238,28 @@ def main() -> None:
             return r.grade
         if not r.in_family:
             return "REFERENCE"
-        if not np.isfinite(r.e1b_d):
+        if not np.isfinite(r.e1a_d):
             return "NO DATA"
-        better = r.e1b_d < 0
+        better = r.e1a_d < 0
         if bool(r.bh_10) and better:
+            # the decision-relevant subset must agree, or it is not an edge
+            if not (np.isfinite(r.e1b_d) and r.e1b_d < 0):
+                return "BOARD-NEUTRAL"
             return "SURVIVES" if (np.isfinite(r.e2_d) and r.e2_d > 0) \
                 else "PROJECTION-ONLY"
         if bool(r.bh_10) and not better:
             return "HARMFUL"
-        if r.e1b_lo < 0 and r.e1b_hi < 0:
+        if r.e1a_lo < 0 and r.e1a_hi < 0:
             return "MARGINAL"
-        if r.e1b_lo > 0 and r.e1b_hi > 0:
+        if r.e1a_lo > 0 and r.e1a_hi > 0:
             return "MARGINAL-HARMFUL"
         return "NULL"
 
     res["grade"] = [grade(r) for r in res.itertuples()]
 
     print("\n" + "=" * 96)
-    print(f"RESULTS -- E1b = ADP-BOARD component MAE (negative = better), "
-          f"family m={m_family}, BH q=0.10")
+    print(f"RESULTS -- E1a = full-universe component MAE (negative = better), "
+          f"family m={m_family}, BH q=0.10; E1b = same on the ADP board")
     print("=" * 96)
     for f_, g in res.groupby("factor", sort=False):
         print(f"\n{f_}")
@@ -253,9 +268,9 @@ def main() -> None:
                 print(f"  {r.position:3s} {r.arm:44s} NO DATA")
                 continue
             print(f"  {r.position:3s} {r.arm:44s} "
-                  f"E1b {r.e1b_d:+8.4f} [{r.e1b_lo:+8.4f},{r.e1b_hi:+8.4f}] "
-                  f"p={r.e1b_p:.4f} bh10={'Y' if r.bh_10 else 'n'}  "
-                  f"E2 {r.e2_d:+.4f}  {r.grade}")
+                  f"E1a {r.e1a_d:+8.4f} [{r.e1a_lo:+8.4f},{r.e1a_hi:+8.4f}] "
+                  f"p={r.e1a_p:.4f} bh10={'Y' if r.bh_10 else 'n'}  "
+                  f"E1b {r.e1b_d:+8.4f}  E2 {r.e2_d:+.4f}  {r.grade}")
 
     # ---- the headline comparison: V2 (real rosters) - V1 (depth chart proxy)
     print("\n" + "=" * 96)
