@@ -1,6 +1,6 @@
 ---
 ID: FR-062
-STATUS: NEW
+STATUS: SCOPING
 PRIORITY: HIGH
 ROUTED-TO: researcher
 SOURCE: chat 2026-07-30, PM session
@@ -66,3 +66,44 @@ is unavailable, which means the first job is establishing whether it actually is
 **Do not attempt to fetch Yahoo hosts.** They block research agents by name and that block is
 recorded and respected. Use documentation, developer portals and secondary sources, and mark
 anything unverifiable as a gap rather than inferring it.
+
+---
+
+## Answered 2026-07-30 (researcher) — the premise did not hold
+
+Full audit: `docs/research/yahoo-espn-league-connection-2026-07-30.md`, thread 095.
+
+**Yahoo's API appears to be open, self-serve, and free.** Five independent third-party SDKs document
+the same path: sign in with the account holding the leagues, create an *Installed Application* at
+`developer.yahoo.com/apps/create/`, redirect URI `https://localhost:<port>`, tick Fantasy Sports →
+Read, Client ID and Secret issued immediately. **What disappeared is Yahoo's documentation, not the
+API** — an unofficial mirror says so in as many words, and that is almost certainly what prompted the
+founder's worry.
+
+**So the password fallback buys nothing** and does not need deciding.
+
+**The biggest payoff has nothing to do with draft day.** `yfpy`'s models carry `stat_modifiers`,
+`roster_positions`, playoff settings, and a `Bonus` class with exactly `points, target` — **the shape
+of a yardage-bonus threshold.** If it populates, all of `CLAUDE.md` §7 becomes readable from Yahoo's
+own source of truth rather than transcribed from a screenshot, and FR-012's two unconfirmed leagues
+close in one call.
+
+**Live draft picks: probably readable, on a single source.** One SDK docstring says a call during a
+draft returns players drafted so far. **n = 1, undated, unconfirmed by the other four**, with latency
+and throttling unknown. The researcher flagged that the "yes" arrived pointing exactly the direction
+that makes the product most interesting — **a free Yahoo mock draft and a 5-second poll settles it in
+twenty minutes.** Writing a pick: no.
+
+**ESPN is a clean no.** Obtaining the auth cookies "cannot be done programmatically"; the only
+mechanism that works is the one Disney's terms forbid by name. That does not improve with effort.
+
+**The clause that actually constrains the build is data retention, not passwords:** Yahoo user data
+must be deleted within 24 hours unless explicitly storable. If that holds, **"sync my league into
+`nfl.db`" is the one design the terms forbid** — fetch-on-demand-and-discard is the compliant shape.
+That is a real architectural constraint and it should be settled before anyone builds a sync.
+
+**Correction the researcher caught in this project's own records:** FR-062 said all three leagues are
+Yahoo/ESPN. FR-052's body carries the founder's own correction that they are not, while **its
+filename still says otherwise.** If the third league is Sleeper, that API is public and needs no auth
+at all. **The founder should say which platform his third league is on** — it changes the work.
+

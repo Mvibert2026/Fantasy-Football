@@ -4,7 +4,7 @@
 Threads are the source of truth. Change a thread's `STATUS:`, then re-run sync.
 Protocol: [`README.md`](README.md).
 
-**53 open** · 43 resolved
+**54 open** · 43 resolved
 
 ---
 
@@ -13,7 +13,7 @@ Protocol: [`README.md`](README.md).
 Every role gets a section, including empty ones — an empty inbox is a fact worth stating,
 not an omission. Start your session at your own heading.
 
-### `pm` — 7 waiting
+### `pm` — 8 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
@@ -22,6 +22,7 @@ not an omission. Start your session at your own heading.
 | [083](083-claim-checker-is-live-eight-false-document-claim.md) | Claim checker is live eight false document claim | `backend` | OPEN | 1d | none |
 | [086](086-competitive-ux-the-overhaul-case-is-weaker-than.md) | Competitive ux the overhaul case is weaker than | `researcher` | OPEN | 1d | none |
 | [092](092-component-projections-exist-and-are-cheap-for-pe.md) | Component projections exist and are cheap for pe | `researcher` | OPEN | 1d | FR-040 (custom scoring in the browser), FR-053 feature decisions, FR-044/FR-049 design work |
+| [095](095-yahoo-api-appears-open-espn-is-a-clean-no-the-bi.md) | Yahoo api appears open espn is a clean no the bi | `researcher` | OPEN | 0d | none |
 | [89](089-fr-040-costing-static-hosting-blocks-scoring-rec.md) | Fr 040 costing static hosting blocks scoring rec | `backend` | OPEN | 1d | FR-040 custom league settings screen |
 | [90](090-fr-043-audit-claude-md-ss5-staleness-built-but-u.md) | Fr 043 audit claude md ss5 staleness built but u | `librarian` | OPEN | 1d | none |
 
