@@ -2479,3 +2479,122 @@ rebuilt with a working database — until then, the live site's Methodology page
 the stale sentence in the "What the board does not claim" section even though the new ADP section
 right below it is already correct (it reads a different field, `adp_source_note`, which was already
 populated correctly before this session).
+
+## ADR-062 — Standard scoring for presets and founder-created leagues, not Westwood's (2026-07-29, backend, FR-042)
+
+**The defect.** `generate_config_matrix.py`'s 24 presets and `league_builder.py`'s
+`create_league()` both built every non-primary league's scoring by `copy.deepcopy(scoring.LEAGUE)`
+-- Westwood's verified custom ruleset (stacking yardage bonuses at 100/150/200/300/350/400,
+ADR-052) -- with only the reception value swapped or explicitly overridden. A preset labeled
+"ESPN-default, 12 teams, half scoring" was Westwood with a different name; any founder-created
+custom league that didn't override every single offense/defense field silently inherited
+Westwood's rules too. `generate_config_matrix.py`'s docstring also self-contradicted: it claimed
+the bonus structure "happens to match ESPN's confirmed platform defaults exactly," twelve lines
+after admitting the ESPN fetch was blocked by bot detection and never verified.
+
+**Founder's ruling (FR-042), verbatim:** "All the other presets should be standard scoring (with
+different PPR) not Westwood custom. Only Westwood should have the custom... Almost two separate
+tracks."
+
+**Decision.** New `src/standard_scoring.py::STANDARD_LEAGUE`, a genuinely separate ruleset object
+(not a Westwood derivative):
+- **Offense** -- the founder's own explicit definition, sourced directly to his words: 25 yd/pt
+  passing, 4 pt passing TD, -2 INT, 10 yd/pt rushing/receiving, 6 pt TD, -2 fumble lost, **no
+  yardage bonuses**. Receptions vary 0/0.5/1.0 across the three PPR presets.
+- **Minor offensive categories not named in the ruling** (return-TD, two-point conversion,
+  offensive-fumble-return-TD) kept at the same flat values Westwood uses, labeled a judgment call,
+  not a platform fact -- these are near-universal flat values, not the "bonus structure" the
+  founder was distinguishing Westwood by.
+- **Defense** -- not addressed by the ruling at all, and not verified against any real platform.
+  A conventional, explicitly UNVERIFIED placeholder, deliberately built as a *distinct* dict from
+  Westwood's defense (different `blocked_kicks`, different `points_allowed` tiers) so this file
+  cannot silently reintroduce the exact bug it exists to fix. Confidence level stated in the
+  module docstring and in every export's new `scoring_ruleset_note` field.
+
+`generate_config_matrix.scoring_variant()` and `league_builder.build_scoring()` (the more
+consequential of the two -- every league the founder will ever create through the builder) both
+now delegate to `standard_scoring.standard_scoring_variant()` / deep-copy
+`standard_scoring.STANDARD_LEAGUE`. Only the primary (Westwood) league still uses `scoring.LEAGUE`
+(`league_config.py::_current_league_scoring()`), and neither path can reach it --
+`unique_league_id()`/`create_league()` both reject `league_id="primary"`.
+
+`generate_config_matrix.py`'s docstring contradiction is resolved by removing the false claim
+outright: standard scoring makes no platform-match assertion at all, so there is nothing left to
+contradict the "ESPN fetch blocked, never verified" line, which is kept and clarified.
+
+**Contract 1.14.0 -> 1.15.0 (additive).** `league.json` gains `scoring_ruleset_note: str` on every
+league (primary and non-primary), stating on screen which ruleset that league actually uses --
+the founder's explicit instruction, "state the assumption on the screen." Handoff thread 093
+opened to frontend.
+
+**Also fixed, found in the course of this work, not part of the literal "24 presets" ask.**
+`data/leagues/ethans_expert_league.json` -- a real, previously-created custom league via
+`league_builder.create_league()` (`scripts/rebuild_ethans_expert_league.py`) -- had its offense
+yardage bonuses already zeroed by explicit `scoring_overrides` (whoever built it anticipated this
+exact problem for the three yardage fields), but its **defense** block was still a silent copy of
+Westwood's (`blocked_kicks=1`, Westwood's `points_allowed` tiers) because defense was never in
+its overrides. Re-ran the existing rebuild script post-fix; its defense now correctly comes from
+`STANDARD_LEAGUE`. No projection moved (DEF carries no replacement level/points in this project;
+see `league.json.positions_without_replacement_levels`) -- this is a correctness fix to the stored
+config, not a ranking change.
+
+**Evidence -- before/after regeneration, `espn_10_half` (half-PPR ESPN-shape preset):**
+
+| Player | Before (Westwood-derived) | After (standard) | Delta |
+|---|---|---|---|
+| Bijan Robinson (RB) | 303.16 pts, VBD 162.94 | 296.68 pts, VBD 158.20 | −6.48 pts (rushing-yardage bonus removed) |
+| Ja'Marr Chase (WR) | 276.48 pts, VBD 146.52 | 267.48 pts, VBD 139.41 | −9.00 pts (receiving-yardage bonus removed) |
+| Josh Allen (QB) | 359.01 pts, VBD 113.71 | 351.55 pts, VBD 111.20 | −7.46 pts (passing-yardage bonus removed) |
+
+Every non-primary board's `projected_points`/`vbd`/`overall_rank`/tier moved by a comparable
+amount for players who cross the removed bonus thresholds -- this is the expected, real effect of
+removing stacking yardage bonuses, not noise. **The primary (Westwood) board is verified
+byte-identical**: Bijan Robinson's Westwood-league points (303.16) and VBD (172.17) are unchanged
+before and after this session's regeneration of the primary export -- `scoring.LEAGUE` itself was
+never touched, only `CONTRACT_VERSION` (1.14.0 -> 1.15.0) and the new `scoring_ruleset_note` field
+changed on the primary league's own `league.json`.
+
+**All 24 presets + `ethans_expert_league` regenerated (not edited)**, plus the primary league's
+`board.json`/`availability.json`/`league.json`/`rosters.json` (to pick up the contract-version
+bump and the new note field; `scoring.LEAGUE` values inside are unchanged).
+
+Also regenerated (the version bump makes every existing committed artifact stale, not just the
+scoring-affected ones): `glossary.json`/`nulls.json`/`opponents.json` for the primary league
+(`src/export_static.py`) and `strategies.json` (`src/export_strategies.py`, ~13 min real Monte
+Carlo run, 600 sims x sigma sweep x 6 strategies x 4 seasons -- confirmed by diff to be a pure
+metadata regeneration: every strategy margin (`bpa_consensus`=baseline, `hero_rb`=-13.9,
+`zero_rb`=+26.4, `elite_te_early`=-96.1, `qb_early`=-116.5, `balanced`=+27.5) is byte-identical to
+the pre-session committed file; only `contract_version`/`generated_utc` changed, as expected since
+Westwood's scoring was never touched). Regenerating the primary board also incidentally closed a
+gap ADR-060 had left open: `board.json.consensus_source_note` still carried stale "no ADP source
+is legally obtainable (ADR-018)" prose because that session's `nfl.db` was unavailable; this
+session's worktree has a working DB, so the already-fixed Python source finally reached the
+shipped artifact -- unplanned, not part of this ADR's scope, noted for continuity.
+
+**Real allocator race caught and resolved.** This ADR was first drafted as ADR-061 (the number
+`tools/handoffs.py adr next` returned when this session started). Before committing, a fresh
+`adr next` call returned 62 -- a concurrent session's ADR-061 ("Availability now covers every
+draft slot...", FR-057) had landed on another branch in the meantime. Renumbered this entire
+entry and every cross-reference to it (`docs/CURRENT-STATE.md`, `docs/founder-requests/FR-042-
+...md`, this session's `docs/status/` file) to ADR-062 via the tool's own re-check, not by hand --
+`python tools/handoffs.py check` confirms no ADR-061/062 collision remains. The pre-existing
+ADR-054/055 duplicate-header collision is unrelated, already known, and deliberately left
+unresolved per ADR-056 -- not touched here.
+
+**Evidence.** Backend: `python3 -m pytest tests/ -q` -- final run **763 passed, 6 failed**
+(worktree's copied `data/nfl.db` present, all `requires_db` tests ran for real, not skipped).
+Every failure is pre-existing/unrelated to this change: the ADR-054/055 mailbox collision (above);
+`tests/test_holdout_audit.py::test_no_new_direct_sqlite_connections_in_src` flagging
+`src/ingest_sleeper_projections.py` (last touched in an unrelated, earlier commit `fdd4685`, not
+part of this session's diff); and four tests in `test_ingest_ffc_adp.py`/
+`test_ingest_sleeper_projections.py` that hardcode `as_of_date="2026-07-29"` and compare it
+against `dt.datetime.now(...).date()` -- these started failing only in this session's *second*
+full-suite run because the wall clock crossed into 2026-07-30 mid-session (confirmed: they fail
+identically in isolation, with no DB or code dependency on this change; the first full-suite run,
+before midnight UTC, did not have these failures). Pre-existing date-rollover fragility in those
+two ingestion test files, not something this ADR's scope touches. New/changed test files:
+`tests/test_standard_scoring.py` (new, 7 sanity checks written before the callers were changed to
+use `standard_scoring`, per CLAUDE.md's non-negotiable ordering),
+`tests/test_generate_config_matrix.py::test_scoring_variants_use_standard_ruleset_not_westwood`,
+`tests/test_league_builder.py::test_build_scoring_uses_standard_ruleset_not_westwood`,
+`tests/test_rosters_export.py::test_contract_version_bumped` (updated to assert 1.15.0).

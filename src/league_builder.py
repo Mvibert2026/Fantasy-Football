@@ -42,7 +42,7 @@ from typing import Dict, List, Optional, Tuple
 import export_contract as ec
 import export_static as es
 import league_config as lc
-from scoring import LEAGUE as _BASE_LEAGUE
+from standard_scoring import STANDARD_LEAGUE as _BASE_LEAGUE
 
 _SLUG_DROP_RE = re.compile(r"['’]")  # apostrophes: drop, don't split on them
 _SLUG_STRIP_RE = re.compile(r"[^a-z0-9]+")
@@ -78,11 +78,21 @@ def unique_league_id(name: str, directory: Path = lc.LEAGUES_DIR) -> str:
 
 
 def build_scoring(ppr: float, scoring_overrides: Optional[Dict] = None) -> dict:
-    """This project's existing scoring ruleset (`scoring.LEAGUE`) with the
-    reception value swapped for `ppr` and any explicit `scoring_overrides`
-    shallow-merged into the offense block. Deep-copied -- never mutates the
-    shared `LEAGUE` module constant that every other league (including the
-    primary one) still reads by reference."""
+    """STANDARD scoring (`standard_scoring.STANDARD_LEAGUE`, FR-042), NOT
+    Westwood's `scoring.LEAGUE`, with the reception value swapped for `ppr`
+    and any explicit `scoring_overrides` shallow-merged into the offense
+    block. Deep-copied -- never mutates the shared module constant.
+
+    CHANGED 2026-07-29 (FR-042): this used to start from `scoring.LEAGUE`,
+    Westwood's verified custom ruleset (stacking yardage bonuses, etc.), so
+    every founder-created league silently inherited Westwood's rules unless
+    the founder happened to override every single field. The founder's
+    ruling is explicit: only Westwood (the primary league) carries the
+    custom ruleset; every other league -- including ones built here --
+    gets standard scoring, varying only PPR (and whatever this caller
+    explicitly overrides). create_league()/this function never touch the
+    primary league (unique_league_id() and create_league() both reject the
+    reserved 'primary' id), so this change cannot affect Westwood."""
     cfg = copy.deepcopy(_BASE_LEAGUE)
     cfg["offense"]["receptions"] = ppr
     if scoring_overrides:

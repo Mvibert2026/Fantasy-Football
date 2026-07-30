@@ -37,12 +37,13 @@ import freshness as fr
 import league_config as lc
 import make_board
 import roster_status as rst
+import standard_scoring
 import suspensions as susp
 import team_codes as tc
 from config import DEFAULT_CONFIG
 from scoring import LEAGUE, ReplacementLevels
 
-CONTRACT_VERSION = "1.14.0"
+CONTRACT_VERSION = "1.15.0"
 SEASON = 2026
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 EXPORT_DIR = DATA_DIR / "export"
@@ -765,6 +766,17 @@ def build_league_json(cfg: lc.LeagueConfig = lc.CURRENT_LEAGUE) -> dict:
         },
         "trade_deadline": cfg.trade_deadline,
         "faab_budget": cfg.faab_budget,
+        # FR-042 (2026-07-29): only the primary league carries Westwood's
+        # verified custom ruleset (scoring.LEAGUE, ADR-052). Every other
+        # league (presets and founder-created) uses standard_scoring.
+        # STANDARD_LEAGUE -- state that on screen rather than let a preset
+        # named "ESPN-default" imply platform-verified scoring it doesn't
+        # have. See standard_scoring.SCORING_RULESET_NOTE for what in that
+        # ruleset is founder-specified vs. an unverified placeholder.
+        "scoring_ruleset_note": (
+            "Westwood's verified custom ruleset (stacking yardage bonuses, ADR-052) -- the "
+            "one real, confirmed league this project models."
+        ) if is_primary else standard_scoring.SCORING_RULESET_NOTE,
     }
 
 

@@ -180,6 +180,9 @@ def test_never_infers_a_team_need_beyond_slot_arithmetic():
 
 
 def test_contract_version_bumped():
+    # 1.15.0 (ADR-061, FR-042): league.json gains scoring_ruleset_note, stating on
+    # screen whether a league uses Westwood's verified custom ruleset or the new
+    # standard_scoring.STANDARD_LEAGUE. See src/export_contract.py::build_league_json.
     # 1.14.0 (thread TBD, ADP display export): board.json player rows gained
     # adp/adp_min_pick/adp_max_pick/adp_selected_pct/adp_source, top level
     # gained adp_source/adp_as_of_date/adp_source_note/adp_match_rate_note --
@@ -195,7 +198,7 @@ def test_contract_version_bumped():
     # suspension_adjustment_note (src/suspensions.py wired into
     # build_board_json). 1.11.0 was thread 053/067's rewire onto
     # fantasypros_csv_2026draft plus the top-level scoring_format field.
-    assert ec.CONTRACT_VERSION == "1.14.0"
+    assert ec.CONTRACT_VERSION == "1.15.0"
 
 
 # -- real-DB test: today's actual state must be the empty case ---------------

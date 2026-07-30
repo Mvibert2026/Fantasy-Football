@@ -1,6 +1,6 @@
 {
-  "contract_version": "1.14.0",
-  "generated_utc": "2026-07-29T18:16:03.000876+00:00",
+  "contract_version": "1.15.0",
+  "generated_utc": "2026-07-29T23:33:04.907939+00:00",
   "snapshot_as_of_date": "2026-07-27",
   "snapshot_age_days": 2,
   "snapshot_max_age_days": 3,
@@ -11,7 +11,7 @@
   "board_source": "fantasypros_csv_2026draft re-scored into league positional value structure",
   "consensus_source": "fantasypros_csv_2026draft",
   "consensus_source_count": 1,
-  "consensus_source_note": "Single source. Expert consensus rank, NOT market average draft position, and not a blend of several providers. No ADP source is legally obtainable (ADR-018). Rewired off the old fantasypros_ecr DynastyProcess mirror (thread 053/067): that source was rank-only, format-blind, and effectively capped; this is the founder's own FantasyPros export with a confirmed scoring format (see scoring_format below) and real tier/bye/sos columns. The historical rank->points curve this board's projections/VBD are fitted on (curve_fits above) still trains on fantasypros_ecr's multi-season history (2021-2025) -- fantasypros_csv_2026draft is a single one-off 2026 pull with no season history of its own yet.",
+  "consensus_source_note": "Single source. Expert consensus rank, NOT market average draft position, and not a blend of several providers. A real (if thin and proxy) market ADP is shown separately below (adp_source='mfl_proxy', ADR-035) -- see adp_source_note -- but it is never merged into this consensus figure. Rewired off the old fantasypros_ecr DynastyProcess mirror (thread 053/067): that source was rank-only, format-blind, and effectively capped; this is the founder's own FantasyPros export with a confirmed scoring format (see scoring_format below) and real tier/bye/sos columns. The historical rank->points curve this board's projections/VBD are fitted on (curve_fits above) still trains on fantasypros_ecr's multi-season history (2021-2025) -- fantasypros_csv_2026draft is a single one-off 2026 pull with no season history of its own yet.",
   "scoring_format": "half_ppr",
   "scoring_format_note": "Read from rankings.scoring_format for this board's source, not hardcoded. Null if the source rows don't carry a confirmed scoring format (e.g. the old fantasypros_ecr mirror never populated this column) or carry more than one distinct value.",
   "consensus_state": "preseason_moving",
