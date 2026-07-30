@@ -136,3 +136,19 @@ most likely to be doing something arbitrary that nobody has looked at.
 Owner: `strategist` writes the definitions, since it also owns the pre-registration that tests them;
 `ranker` or `backend` runs the matrix. **Definitions committed before the runs**, or the results
 describe rules nobody agreed to.
+
+---
+
+## Scope narrowed by the founder, 2026-07-30
+
+> "at the beginning I likely just need westwood, ethans league and a to be named espn league, so we
+> can wait on others, but having the math done on those would be good for me to be able to choose."
+
+**Three leagues, not 27.** That turns an uncosted matrix into a tractable job: Westwood (primary),
+Ethan's Expert League, and the ESPN league whose settings are still uncaptured (FR-052 — its point
+values were never supplied, so it cannot be simulated until they are).
+
+So realistically **two now, one when its settings land**. Run those; leave the preset matrix until
+someone asks for it. The purpose is stated plainly in his words — *"good for me to be able to
+choose"* — which is a selector with real numbers beside each option, not a research programme.
+
