@@ -5,7 +5,7 @@ Per-request files in this directory are the source of truth. Edit a request's ow
 `STATUS:` line, then re-run sync. Protocol: [`README.md`](README.md).
 Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests.md).
 
-**58 requests since freeze.**
+**59 requests since freeze.**
 
 ---
 
@@ -103,5 +103,6 @@ _None._
 | [FR-039](FR-039-late-round-te-is-the-draft-strategy-expression-o.md) | Late round te is the draft strategy expression o | `ANSWERED` |
 | [FR-042](FR-042-presets-must-use-standard-scoring-only-westwood.md) | Presets must use standard scoring only westwood | `DONE` |
 | [FR-054](FR-054-the-bottom-up-model-should-output-component-proj.md) | The bottom up model should output component proj | `IN-PROGRESS` |
+| [FR-072](FR-072-extend-the-bottom-up-component-model-to-rb-qb-an.md) | Extend the bottom up component model to rb qb an | `IN-PROGRESS` |
 | [FR-073](FR-073-adp-vs-production-analysis-run-on-12-team-mock-a.md) | Adp vs production analysis run on 12 team mock a | `DONE` |
 
