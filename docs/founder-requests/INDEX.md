@@ -5,7 +5,7 @@ Per-request files in this directory are the source of truth. Edit a request's ow
 `STATUS:` line, then re-run sync. Protocol: [`README.md`](README.md).
 Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests.md).
 
-**87 requests since freeze.**
+**88 requests since freeze.**
 
 ---
 
@@ -133,4 +133,5 @@ _None._
 | [FR-099](FR-099-is-consensus-or-adp-the-better-baseline-and-is-b.md) | Is consensus or adp the better baseline and is b | `ANSWERED` |
 | [FR-100](FR-100-rank-positions-by-volatility-per-roster-slot.md) | Rank positions by volatility per roster slot | `ANSWERED` |
 | [FR-101](FR-101-use-points-distribution-tails-for-volatility-rat.md) | Use points distribution tails for volatility rat | `ANSWERED` |
+| [FR-103](FR-103-do-not-store-assistant-chat-logs-standing-constr.md) | Do not store assistant chat logs standing constr | `DECIDED — DO NOT BUILD` |
 
