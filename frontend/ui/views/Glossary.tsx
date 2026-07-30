@@ -11,11 +11,10 @@ import type { Dataset } from '../data/load';
  * carries no category field; see that module's doc for why grouping real
  * content is an IA decision, not invented data).
  *
- * "Ask the assistant" is visually present but inert, matching this app's
- * existing pattern for features not yet wired end-to-end (Export CSV/PDF,
- * League settings, PlayerDetail's Compare button) -- live-wiring a term straight
- * into the assistant dock's input is cross-cutting work shared with the inline
- * popover version of this same button, not specific to this screen.
+ * Per-term "Ask the assistant" is gone (design/INERT-CONTROLS.md, FR-037): it
+ * was never wired to anything, and the assistant dock -- always reachable,
+ * bottom of the app -- already does this job without a per-term button.
+ * "Absent per term. The dock stays; the per-term button goes."
  */
 export function Glossary({ data }: { data: Dataset }) {
   const [open, setOpen] = useState<string | null>(null);
@@ -75,13 +74,11 @@ export function Glossary({ data }: { data: Dataset }) {
                       {def.long_explanation}
                     </p>
                   ) : null}
-                  <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', gap: 10 }}>
-                    {field ? <span className="num" style={{ fontSize: 9.5, color: 'var(--dim2)' }}>{field}</span> : null}
-                    <span style={{ flex: 1 }} />
-                    <button aria-disabled="true" style={{ padding: '3px 8px', background: 'transparent', border: '1px solid var(--line)', color: 'var(--dim2)', fontSize: 11 }}>
-                      Ask the assistant
-                    </button>
-                  </div>
+                  {field ? (
+                    <div style={{ marginTop: 10 }}>
+                      <span className="num" style={{ fontSize: 9.5, color: 'var(--dim2)' }}>{field}</span>
+                    </div>
+                  ) : null}
                 </div>
               );
             })}

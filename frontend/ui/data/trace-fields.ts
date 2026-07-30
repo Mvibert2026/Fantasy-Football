@@ -33,7 +33,7 @@ export interface TraceField {
 }
 
 /** The contract version the registry below is pinned against. */
-export const TRACE_CONTRACT = '1.14.0';
+export const TRACE_CONTRACT = '1.15.0';
 
 /**
  * Changes to the user-visible trace surface, newest first.
@@ -47,6 +47,22 @@ export const TRACE_CHANGELOG: ReadonlyArray<{
   kind: 'rename' | 'value' | 'added' | 'removed';
   summary: string;
 }> = [
+  {
+    version: '1.15.0',
+    kind: 'added',
+    summary:
+      'Pin moves 1.14.0 -> 1.15.0 (ADR-062, thread 093). league.json gains ' +
+      '`scoring_ruleset_note`, stating plainly which scoring ruleset a league actually runs on -- ' +
+      'Westwood\'s verified custom ruleset for the primary league, or the new ' +
+      '`standard_scoring.STANDARD_LEAGUE` (FR-042: no stacking yardage bonuses, defense unverified) ' +
+      'for every other league, which for the first time genuinely differs from Westwood\'s numbers ' +
+      '(e.g. Bijan Robinson 303.16 pts on the primary board vs. 296.68 on espn_10_half — the same ' +
+      'preset used to silently copy Westwood\'s ruleset before this fix). No board.json player-row ' +
+      'field changed shape, so BOARD_TRACE_FIELDS is unaffected; `scoring_ruleset_note` is a ' +
+      'league.json field and is registered where it is actually rendered instead -- the league ' +
+      'selector\'s track badge (design/TWO-TRACK-EXPRESSION.md) and a new "Scoring ruleset" section ' +
+      'in Methodology.',
+  },
   {
     version: '1.14.0',
     kind: 'added',

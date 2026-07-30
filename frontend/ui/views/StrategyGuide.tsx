@@ -18,13 +18,35 @@ import { decimal, integer } from '../lib/format';
 export function StrategyGuide({ data }: { data: Dataset }) {
   const s = data.strategies;
 
+  // design/TWO-TRACK-EXPRESSION.md: the old single string here ("Not available
+  // for this league") did the work of three different claims at once. Split by
+  // which track this league is on (league.json:league_id === "primary" is the
+  // one real, sourced signal -- never the frontend's own routing id, which is
+  // "default" for every export regardless of what the backend calls it).
+  // strategies.json is missing for 26 of 27 leagues today, all of them
+  // non-primary, so the primary branch below is not reachable against any
+  // current export -- kept so a future primary-league gap still says something
+  // true rather than falsely claiming "generic track."
   if (s === null) {
+    const isPrimary = data.league.league_id === 'primary';
     return (
       <div className="stack">
         <h2>Strategy guide</h2>
         <div className="empty">
-          <strong>Not available for this league.</strong> Strategy simulations have not been run for
-          it yet — strategies.json is not part of this league's export set.
+          {isPrimary ? (
+            <>
+              <strong>Not available.</strong> Strategy simulations have not been run for the primary
+              league yet — strategies.json is missing from an export that should carry it.
+            </>
+          ) : (
+            <>
+              <strong>Generic track — no strategy simulations.</strong> This league runs standard
+              scoring, not Westwood's verified ruleset (league.json:scoring_ruleset_note), and
+              strategy sims are currently run for the primary league only —
+              strategies.json is not part of this league's export set. That is the track this league
+              is on, not a step that was skipped.
+            </>
+          )}
         </div>
       </div>
     );

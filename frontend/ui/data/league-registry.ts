@@ -1,4 +1,4 @@
-import type { LeaguesManifest } from './types';
+import type { LeagueTrack, LeaguesManifest } from './types';
 
 /**
  * Discovers which leagues are available to load, from public/data/_leagues.json.
@@ -19,6 +19,10 @@ export interface SelectableLeague {
   /** league.json's own league_name where the export carries one (contract
    *  1.7.0+, ADR-041); the raw id otherwise -- never an invented display name. */
   label: string;
+  /** design/TWO-TRACK-EXPRESSION.md: which track this league is on, read from
+   *  _leagues.json at sync time so the switcher can show it before the league
+   *  is loaded. Absent on a manifest written before this field existed. */
+  track?: LeagueTrack;
 }
 
 export async function fetchSelectableLeagues(): Promise<SelectableLeague[]> {
@@ -33,9 +37,22 @@ export async function fetchSelectableLeagues(): Promise<SelectableLeague[]> {
   if (!res.ok) return base;
 
   const manifest = (await res.json().catch(() => null)) as LeaguesManifest | null;
-  if (!manifest?.leagues?.length) return base;
+  if (!manifest) return base;
 
-  return [...base, ...manifest.leagues.map((l) => ({ id: l.id, label: l.label ?? l.id }))];
+  // The primary league's own switcher metadata (design/TWO-TRACK-EXPRESSION.md)
+  // travels alongside the additional-league list rather than replacing `base`
+  // outright -- an older manifest without `primary` keeps exactly the static
+  // label this always showed, never a guessed track.
+  const defaultEntry: SelectableLeague = manifest.primary
+    ? { id: DEFAULT_LEAGUE_ID, label: manifest.primary.label, track: manifest.primary.track }
+    : base[0]!;
+
+  if (!manifest.leagues?.length) return [defaultEntry];
+
+  return [
+    defaultEntry,
+    ...manifest.leagues.map((l) => ({ id: l.id, label: l.label ?? l.id, track: l.track })),
+  ];
 }
 
 /** Path prefix under public/data/ for a given league's artifacts. */
