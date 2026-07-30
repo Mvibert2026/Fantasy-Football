@@ -215,9 +215,13 @@ describe('FR-055: draft-room board list carries a header row naming its columns'
     // appears in two different controls.
     const headerRow = screen.getByText('RANK', { exact: true }).parentElement!;
     const withinHeader = within(headerRow);
-    for (const label of ['RANK', 'PLAYER', 'POS', 'TM', 'ADP', 'VBD', 'AVAIL', 'Δ']) {
+    for (const label of ['RANK', 'PLAYER', 'POS', 'TM', 'ADP', 'VBD', 'Δ']) {
       expect(withinHeader.getByText(label, { exact: true })).toBeInTheDocument();
     }
+    // AVAIL now carries the target pick number (thread
+    // 2026-07-30-recommendation-card-states-a-rule-the-code-does-, item 3),
+    // so it is no longer the bare label "AVAIL" -- match the prefix instead.
+    expect(withinHeader.getByText(/^AVAIL( @ \d+)?$/)).toBeInTheDocument();
   });
 
   it('every board row now renders a VBD figure, matching board.json:players[].vbd (FR-050)', () => {

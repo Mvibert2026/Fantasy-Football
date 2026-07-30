@@ -46,7 +46,11 @@ describe('Board column headers hover the glossary short definition', () => {
 describe('DraftRoom board-list headers hover, and keep their own richer wording where they already had one', () => {
   it('AVAIL header keeps its existing, more specific hover text -- but is now visibly hoverable via the dotted underline', () => {
     render(<DraftRoom data={data} rows={rows} league={league} />);
-    const header = screen.getByText('AVAIL');
+    // The visible text now carries the target pick number (thread
+    // 2026-07-30-recommendation-card-states-a-rule-the-code-does-, item 3:
+    // "the header carries the pick number explicitly"), so it is no longer
+    // the bare string "AVAIL" -- match the prefix instead.
+    const header = screen.getByText(/^AVAIL( @ \d+)?$/);
     expect(header).toHaveAttribute('title', expect.stringMatching(/Baseline -> live-adjusted/));
     expect(header.style.borderBottom).toBe(DOTTED);
   });
