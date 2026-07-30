@@ -107,3 +107,46 @@ Yahoo/ESPN. FR-052's body carries the founder's own correction that they are not
 filename still says otherwise.** If the third league is Sleeper, that API is public and needs no auth
 at all. **The founder should say which platform his third league is on** — it changes the work.
 
+---
+
+## Founder's answers, 2026-07-30
+
+> "Third league is espn. May be a manual draft for me. But add the yahoo connection work to our near
+> term work. Would love to have that working sooner than later."
+
+**The third league is ESPN, and ESPN is a clean no.** So that league stays manual — settings typed
+in, picks entered by hand. Recorded as a settled product constraint rather than an open gap: no
+amount of effort improves it, because the only mechanism that works is the one Disney's terms forbid
+by name. **This resolves the contradiction the researcher found** between FR-052's body and its
+filename slug: two Yahoo leagues (Westwood, Ethan's Expert League) and one ESPN.
+
+Consequence worth stating plainly: **the two-track split now has a third shape.** Westwood becomes
+the connected league, Ethan's is connectable, and the ESPN league is manual-only. Any "sync your
+league" affordance must say which of the three a league is, not offer sync everywhere and fail on
+one.
+
+**Yahoo connection promoted to near-term work.**
+
+The sequencing constraint is that **only the founder can do step one** — the app registration is tied
+to the Yahoo account holding the leagues. So the work splits:
+
+| Who | What |
+|---|---|
+| **Founder** | Register the app, obtain Client ID and Secret |
+| **Agent, now** | Build the connector against the documented OAuth2 flow so it is ready the moment credentials exist |
+| **Agent, after** | Pull settings for both Yahoo leagues; confirm whether `Bonus(points, target)` actually populates |
+| **Founder, 20 min** | A free Yahoo mock draft plus a poll, to settle whether live picks are readable |
+
+**Two things to settle before a sync is designed, not after:**
+
+1. **The 24-hour retention clause.** If Yahoo user data must be deleted within 24 hours unless
+   explicitly storable, **persisting a league into `nfl.db` is the design the terms forbid.**
+   Fetch-on-demand-and-discard is the compliant shape and it is a different architecture. Decide
+   first.
+2. **The no-competing-product clause**, which the researcher named as the same fault line already
+   live for FFC and FantasyPros. One ruling should cover all three rather than three separate
+   judgements.
+
+**Credentials go in `.env`, gitignored, never committed** — `CLAUDE.md` §10. The same rule that
+applies to the site password applies here.
+
