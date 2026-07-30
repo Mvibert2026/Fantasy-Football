@@ -4,7 +4,7 @@
 Threads are the source of truth. Change a thread's `STATUS:`, then re-run sync.
 Protocol: [`README.md`](README.md).
 
-**53 open** · 44 resolved
+**54 open** · 44 resolved
 
 ---
 
@@ -88,7 +88,7 @@ not an omission. Start your session at your own heading.
 | [070](070-recurring-injury-suspension-feed.md) | Recurring injury suspension feed | `pm` | OPEN | 3d | T4 (suspensions/roster-status table stakes), E[games_played] per ADR-E Amendment E-A1 |
 | [084](084-deepen-expert-consensus-history-beyond-2021-2025.md) | Deepen expert consensus history beyond 2021 2025 | `ranker` | OPEN | 1d | none |
 
-### `strategist` — 8 waiting
+### `strategist` — 9 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
@@ -100,6 +100,7 @@ not an omission. Start your session at your own heading.
 | [085](085-the-board-rank-curve-slope-confounds-positional.md) | The board rank curve slope confounds positional | `ranker` | OPEN | 1d | none |
 | [093](093-pass-3-the-qb-slope-collapse-is-not-established.md) | Pass 3 the qb slope collapse is not established | `ranker` | OPEN | 1d | the recency-weighting work requested at docs/ideas-inbox.md:229 (ADR-057) |
 | [094](094-register-the-wr-availability-fix-as-the-confirma.md) | Register the wr availability fix as the confirma | `ranker` | OPEN | 1d | none |
+| [096](096-adp-vs-production-methodology-review.md) | Adp vs production methodology review | `backend` | OPEN | 0d | none |
 
 ### `researcher` — 3 waiting
 
