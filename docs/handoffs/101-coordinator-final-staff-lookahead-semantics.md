@@ -1,9 +1,11 @@
+---
+ID: 101
 TO: backend
 FROM: data-ops
 SUBJECT: play_callers now populated from Wikipedia (607 rows, 2015-2024) — but every row is an end-of-season snapshot, and test #29/#30 need a start-of-season one
 
 STATUS: OPEN
-
+OPENED: 2026-07-30
 ---
 
 ## What shipped, 2026-07-30

@@ -1,7 +1,9 @@
 ---
+ID: 104
 FROM: frontend
 TO: backend
 STATUS: OPEN
+OPENED: 2026-07-30
 ---
 
 ## Ask
