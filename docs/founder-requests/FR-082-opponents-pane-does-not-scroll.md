@@ -1,6 +1,6 @@
 ---
 ID: FR-082
-STATUS: NEW
+STATUS: SHIPPED
 SOURCE: chat 2026-07-30, PM session (feedback batch)
 RAISED: 2026-07-30
 ---

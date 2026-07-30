@@ -1,6 +1,6 @@
 ---
 ID: FR-083
-STATUS: NEW
+STATUS: IN PROGRESS
 SOURCE: chat 2026-07-30, PM session (feedback batch)
 RAISED: 2026-07-30
 ---
