@@ -5,7 +5,7 @@ Per-request files in this directory are the source of truth. Edit a request's ow
 `STATUS:` line, then re-run sync. Protocol: [`README.md`](README.md).
 Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests.md).
 
-**111 requests since freeze.**
+**112 requests since freeze.**
 
 ---
 
@@ -157,4 +157,5 @@ _None._
 | [FR-103](FR-103-do-not-store-assistant-chat-logs-standing-constr.md) | Do not store assistant chat logs standing constr | `DECIDED — DO NOT BUILD` |
 | [FR-109](FR-109-the-vbd-arm-in-the-zero-rb-sim-may-be-wrong-and-.md) | The vbd arm in the zero rb sim may be wrong and  | `ANSWERED — RANKER 2026-07-30; TWO FOLLOW-UPS ROUTED TO STRATEGIST (SEE RESPONSE)` |
 | [FR-119](FR-119-record-product-behaviour-explanations-plan-for-a.md) | Record product behaviour explanations plan for a | `PARTIAL` |
+| [FR-127](FR-127-displayed-abbreviations-are-unexplainable-the-as.md) | Displayed abbreviations are unexplainable the as | `IN-BUILD` |
 
