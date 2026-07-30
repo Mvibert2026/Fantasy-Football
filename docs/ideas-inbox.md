@@ -1514,3 +1514,62 @@ and a real environment finding, logged here per the "decide and log" instruction
   mandate's own conditional. `docs/ranking/component-model-vs-incumbent-headtohead.md`,
   `experiments/bottomup/head_to_head.py`. Thread
   `2026-07-30-component-model-vs-incumbent-head-to-head-compon` to `ranker`.
+
+## 2026-07-30 — strategist, FR-136 Q1 five rulings: decided without asking
+
+Thread `2026-07-30-fr-136-q1-the-primary-metric-cannot-see-the-boar`, now `RESOLVED`. Five ADR drafts
+in `docs/adr-drafts/`: `ADR-DRAFT-primary-evaluation-metric.md`, `-market-rank-curve-source.md`,
+`-component-projection-display.md`, `-oracle-ladder-disposition.md`, `-table-stakes-multiplicity.md`.
+Every decision rule pre-committed before the numbers exist. Decided without asking:
+
+- **The metric is a pair, not a replacement** (ranker's own mid-thread amendment, accepted).
+  Cross-position primary `top_k_starter_vbd`, within-position primary τ_b **retained** with a regime
+  rule, projection primary a **skill score** against a frozen constant predictor rather than the raw
+  MAE that was offered — raw MAE is minimised by shrinking to the positional mean, which would have
+  made "beat the bar by shrinking" a winning move. **ADR-B stands unamended**; it pre-authorised this
+  exact exception itself (external, frozen weights; an addition alongside per-position reporting).
+- **Attacked the framing, not just the numbers, as instructed.** The 12-of-12 zeros are **one
+  algebraic identity printed twelve times** (τ_b is invariant under any monotone within-position
+  transform, and the board is one), not twelve measurements — so they are *zero* evidence that τ_b is
+  a poor instrument. Ruled that **the board is wrong, not the metric**: τ_b correctly reported that the
+  board asserts nothing at the player level. The harness defect is narrower — nothing was ever pointed
+  at the board's one real claim.
+- **Found a real defect in the metric being promoted, by reading the code**, and made fixing it
+  blocking: `backtest.py:487`/`:443` score a ranked player who never takes a snap at **0.0 VBD, i.e.
+  exactly replacement level**, instead of `0 − replacement_points`. Retained-at-zero-*points* (what
+  guardrails §2 and ADR-B:57 require) is not retained-at-zero-*VBD*. It systematically
+  under-penalises rankings that take injury risk — the exact channel the oracle ladder calls largest.
+  ADR-025's published +176.0/−34.7/+113.4/+83.8 were computed under it and need restating.
+- **NO to the FFC curve refit as proposed** — it changes the estimand rather than buying power, it is
+  a train/serve mismatch (fit on FFC, served on FantasyPros), and the bias lands on the four slopes
+  that are the board's *entire* proprietary content, worst at QB because in a 1-QB league ADP encodes
+  when people take quarterbacks while ECR encodes what they are worth. Replaced with a cheap
+  exchangeability measurement and a pre-committed rule (≤2.0 induced rank places at every position,
+  derived from the board's own published tilt, or permanent rejection). Registered the prediction that
+  `Δb(QB)` will be the largest of the four, so the ADR can be falsified rather than patched.
+- **Component projections: NO to `projected_points`** (it is load-bearing — `compute_vbd` reads it),
+  **conditional YES to a new non-load-bearing field**. Backend's head-to-head landed the same day and
+  **fails condition (a) at all four positions**, so the answer today is NO everywhere. Named the
+  failure mode being guarded against: *"displayed-only" as a laundering channel.*
+- **Oracle ladder REJECTED as a pre-registration** — neither arm bounds a forecastable quantity, so no
+  outcome changes a decision, and registering twelve inert tests would dilute every real test in the
+  family. **Found the defect in the startling claim that ranker did not catch on itself:**
+  `games = 0 ⟹ points = 0` is an identity, so on a bust-retaining board the games oracle scores a
+  block of pairs correct for free. Claim (b) is substantially "being told the outcome's zero set,"
+  not "durability beats talent." Also: **two unrelated things are both called "availability"** in this
+  project (draft availability vs player durability) and were one careless read from being conflated.
+- **Ratified the PM's table-stakes multiplicity argument** (no selection event ⇒ no denominator
+  contribution) with three amendments, the load-bearing one being that **post-fit removal of any
+  feature converts the block into a selection procedure** and requires a new id with BH recomputed.
+  Resolved the `CLAUDE.md` §11 tension **without amending `CLAUDE.md`**: construction-grounds inclusion
+  is legitimate only where the fit can shrink the feature to zero and no human hand-sets its weight.
+- **Refused to relax the power floor.** Pre-committed, before any number: below 6 usable evaluation
+  seasons, nothing may be published as "beats the market" or any directional claim. These are
+  build-decision gates, not publication instruments — nothing available before 2027 answers whether
+  the board has edge, and choosing a nicer ruler does not change that.
+- Registered two predictions against myself: skill score +0.05 to +0.20 everywhere (possibly negative
+  at QB), and **the Tier 0 table-stakes block fails its single holdout evaluation**.
+- **Could not commit or allocate any id** — no Bash, by design. Backend measurements staged at
+  `docs/handoffs/STAGED-strategist-fr136-q1-measurements.md` for `tools/handoffs.py new`; the
+  `F-DURABILITY` successor registration is drafted inside the oracle ADR rather than hand-numbered
+  into `docs/preregistration/`, because no `PR-0NN` allocator exists (three sessions have hit this).
