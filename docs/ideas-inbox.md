@@ -1363,3 +1363,22 @@ Scoping decisions made without asking, logged here per the "decide and log" inst
    the header/input pinned) but cannot prove scrollbar-track *visibility* — that half of the
    spec's ask needs a founder look at the real app, not a headless screenshot.
 
+4. **(Frontend, 2026-07-30, decide-and-log per thread 2026-07-30-recommendation-card-states-a-rule-the-code-does-.)**
+   The thread left "same treatment for the other `nextUserPick` availability consumers" as the
+   fixing agent's own call. Decided: fix all three named consumers (`watchRows`, `queueRows`,
+   `PeriodicTableGrid.tsx`'s `underHalf`), not just the board `AVAIL` column the thread required —
+   same defect (a survival probability read against a pick the user can already see resolved
+   while on the clock), same one-line fix, and leaving some on the old target would have left two
+   different survival concepts under one label on different tabs of the same screen. No model
+   change, no new field, purely a target-pick swap already validated by the required fix.
+
+5. **(Frontend, 2026-07-30, found while verifying the same thread, not investigated further.)**
+   `docs/CURRENT-STATE.md` (as read from the shared checkout at session start) attributes a
+   `DRAFT_LIST_GRID_TEMPLATE` CSS-grid port of `DraftRoom.tsx`'s row list to a prior frontend
+   session (worktree `agent-a9e24c92a40214afb`), claiming it fixed the exact `flex: 1, minWidth: 0`
+   PLAYER-column defect this session found still present, unfixed, in the code it edited. No
+   `DRAFT_LIST_GRID_TEMPLATE` identifier (or any `display: grid` row-list port) exists anywhere in
+   `git log --all` from that worktree. This is the "reported complete, thing did not exist" failure
+   mode `docs/operating-model.md`'s evidence-standards table exists to catch — worth a PM/Verifier
+   look at whether that session's whole claimed diff landed anywhere, not just this one column.
+

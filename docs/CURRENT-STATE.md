@@ -27,6 +27,33 @@ repo — Cloudflare holds its own deploy token. This closes the last dependency 
 machine: development, tests, the database rebuild, the daily capture and now viewing the app all run
 without it.
 
+**Last verified:** 2026-07-30, frontend session (worktree `agent-a7446873495c871f2`) shipping the
+three recommendation-card honesty fixes strategist ruled need no measurement
+(`docs/handoffs/2026-07-30-recommendation-card-states-a-rule-the-code-does-.md`,
+`docs/adr-drafts/ADR-DRAFT-suggested-pick-opportunity-cost-rule.md` §6). The founder read an
+inverted decision rule off the RECOMMENDED card during a live draft and was right to — the card
+said a QB was recommended *because* it was more likely to still be available later, which is
+backwards, and the ordering (`recommendation.ts:64-97`) cannot even see availability; the card was
+describing reasoning the code does not perform. **1:** `DraftRoom.tsx:1005`'s false-on-every-render
+*"That difference, not the point gap, is the reason for the order"* replaced with *"Neither figure
+is an input to the order above -- the order is value over replacement plus three unbacktested
+constants."* **2:** `:960-961`'s hardcoded `only` (71% rendered as "only 71%," the proximate cause
+of the misreading) is now neutral at every value. **3:** the board `AVAIL` column targeted
+`nextUserPick`, which equals `currentPick` while on the clock — the probability of an event already
+resolved (honest figure 100%) — now `boardAvailTargetPick = userOnClock ? followingUserPick :
+nextUserPick`, with the header naming the pick explicitly (`AVAIL @ 18`) so the board and the
+RECOMMENDED card can never again show two different picks' numbers under one label; same fix
+applied to `watchRows`/`queueRows`/`PeriodicTableGrid`'s `underHalf` (decide-and-log, per the
+thread leaving this as the fixing agent's call). **Self-caught mid-session:** widening the `AVAIL`
+header column to fit the pick number without wrapping shrank `PLAYER`'s flex share and re-truncated
+real names — caught by a before/after screenshot at the same viewport, reverted in favor of letting
+the header text wrap. Did **not** touch the recommendation ordering itself (gated on H1-H3
+measurement, a separate `backend` thread). 7 new tests (`recommendation-card-honesty.test.tsx`), 2
+existing tests updated, 466 passing (was 459), `tsc`/`build` clean. Screenshots (before/after, dark/
+light, card/board — 8 files) in `frontend/e2e/artifacts/rec-card-*.png`, looked at directly; the
+before-dark-card screenshot reproduces the founder's exact bug against real data. Commits `dfb9a78`,
+`7fa7eb9`. Full narrative: `docs/status/2026-07-30-frontend-recommendation-card-honesty-fixes.md`.
+
 **Last verified:** 2026-07-30, frontend session (worktree `agent-a08e75a2b222a2f66`, FR-114) shipping
 the global "show data sources" switch. Founder, refined mid-thread: *"I like the idea about
 traceablity ... I just want to be able to see a version with and without them."* Not a deletion —
