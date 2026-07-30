@@ -3149,3 +3149,89 @@ availability sub-model does not use it. Handed over, not claimed.
 first fit; two amendments dated inside it, both pre-fit), `docs/ranking/factor-batch-2-results.md`,
 commits `70bc893`, `fe3b66a`, `5d3e95e`, `df50e3b`, `da10906`, `dbc52a5`. 10 discipline tests
 including bit-for-bit reproduction of batch 1's feature frame. Sealed 2025 holdout not opened.
+
+## ADR-068 — Four selectable ranking sources: board order runs off any of three built sources, never blended; availability/opponent-model wiring deliberately deferred (2026-07-30, backend, FR-2026-07-30)
+
+**Decision.** `docs/founder-requests/FR-2026-07-30-four-selectable-ranking-sources-driving-every-fe.md`:
+"The draft board should be able to be fully functional off of consensus or my own rankings... App
+should run based on any at user toggle." `ranking_source` (CLAUDE.md §4) already named the four
+values; this wires the board layer onto it.
+
+**`make_board.py`** gains `RANKING_SOURCE_SELECTIONS = ("expert_adjusted", "expert_raw",
+"market_adp", "proprietary")` and a `ranking_source_selection` parameter on `build_board()`,
+default `"expert_adjusted"` — regression-tested byte-identical to the pre-existing default
+(`test_default_selection_is_expert_adjusted_byte_identical_to_old_default`). The value curve
+(`fit_rank_curves`/`bootstrap_vbd_intervals`, fitted once on `TRAINING_SOURCE`) is applied under
+every selection — it is a source-independent valuation lens, not itself a fifth blended source —
+but board **order** is selection-specific and never re-derived from our VBD except under
+`expert_adjusted`:
+
+| Selection | Board order | Rows from |
+|---|---|---|
+| `expert_adjusted` (default) | our VBD, desc | `rankings[fantasypros_csv_2026draft]` |
+| `expert_raw` | the source's own consensus rank, asc | same table, same rows |
+| `market_adp` | FFC half-PPR/10-team ADP, asc by `average_pick` | `ffc_adp_snapshots`, resolved to gsis via the `player_ids` mfl_id↔gsis crosswalk (measured: 158/167 QB/RB/WR/TE rows resolve; unresolved rows dropped, never guessed) |
+| `proprietary` | — | does not exist; `build_board()` raises `RankingSourceNotBuilt`, never falls back |
+
+FFC half-PPR/10-team, not MFL proxy, is the `market_adp` source: it is the only ADP source whose
+*format* matches this league (half-PPR, 10 teams) — see `ingest_ffc_adp.py`'s own docstring. MFL
+proxy stays a display-only per-player field (`board.json:adp`/`adp_source`), unchanged, never
+driving order — CLAUDE.md §4 forbids blending it with FFC into one "ADP" figure.
+
+**Coverage is honestly thin for `market_adp`**: 158-167 rows vs. ~554 on the expert board. Reported,
+not hidden — `describe_ranking_source()`'s `row_count`/`note`, and
+`board.market_adp.json`'s own `ranking_source_row_count`.
+
+**`export_contract.py` (contract 1.17.0 → 1.18.0):** `build_board_json()` gains the same
+`ranking_source_selection` parameter and a `ranking_source_selection`/`_label`/`_built`/
+`_as_of_date`/`_row_count`/`_note` field set on every board artifact — **each source carries its
+own as_of_date and row count**, per the founder's explicit ask ("a user switching sources is
+entitled to know what they switched to"). `_not_built_board_json()` gives `proprietary` an
+explicit, empty, honestly-labeled shape (`ranking_source_built: false`, `players: []`) rather than
+raising past the export boundary or silently substituting another source. New
+`build_ranking_sources_json()` catalogs all four (built or not) in one file so a client can render
+the full picker without probing each variant. `write_all()` now writes `board.json` (unchanged
+name/default, `expert_adjusted`), `board.expert_raw.json`, `board.market_adp.json`, and
+`ranking_sources.json` for the primary league. Non-primary league directories (the 24-config
+matrix) are unchanged by this session — regenerating all of them for the two new sources was out
+of scope; they still carry only the pre-existing `board.json`.
+
+**What still runs off a single hardcoded source, and why that is not fixed here.**
+`simulate_availability` (`src/availability.py`) drives both the opponent model's central tendency
+and the user's own `strategy_bpa` pick off `draft_sim.load_season`'s single `CONSENSUS_RANK_SOURCE
+= "fantasypros_ecr"` — confirmed live in this session, matching the founder's own diagnosis
+(FR-2026-07-30: "the two live sources disagree on 73 of the top 80 players"). This is a **real,
+audited silent-fallback gap**, not an oversight: an **open, unresolved thread**
+(`docs/handoffs/2026-07-30-availability-adp-measurements-m0-m5.md`, strategist → backend) is
+mid-flight on exactly this code path, gates M0-M5, and says explicitly *"Do not implement the
+change yet — M0 is a gate and can stop half of it."* M0 already found FFC's `times_drafted` field
+does not reconcile against its own documented denominator, and M1 found FFC ADP does **not** beat
+the incumbent ECR baseline on MAE in 2 of 3 real mock drafts. Wiring `market_adp` into the
+Monte Carlo's central tendency in this session — even behind an explicit user toggle — would ship
+availability numbers under an "ADP" label with no calibrated dispersion (M2/M3 unmet), exactly the
+"looks plausible while over-dispersing" failure M3 names. **Decided and logged, not escalated**:
+availability/opponent-model wiring stays out of this pass; the board layer (order, VBD, tiers,
+projected_points — everything `export_contract.build_board_json` drives) is fully wired across all
+three built sources, and this gap is reported to the M0-M5 thread and to `docs/CURRENT-STATE.md`
+by name rather than left implicit.
+
+**Recommender fallback value.** `recommendation.ts`'s `g` term (value over the realistic fallback)
+reads its ranking inputs from `board.json` — no server-side recommender code exists in `src/`. Once
+frontend requests the source-matched board file (`board.json` / `board.expert_raw.json` /
+`board.market_adp.json`) per the toggle, the recommender follows automatically; no backend change
+was needed or made here.
+
+**Tests.** `tests/test_make_board.py` +10 (ranking_source_selection enum, byte-identical default,
+raw-order monotonicity, `RankingSourceNotBuilt` never-falls-back, `describe_ranking_source` for all
+three built sources, the founder's own 73-of-80-disagreement measurement reproduced as a >5-player
+floor against live data). `tests/test_export_contract.py` +6 (default selection field, proprietary
+explicit-absence, raw vs. adjusted order differs, market_adp's own as_of/count, unknown-selection
+`ValueError`, `ranking_sources.json` never hides the unbuilt option). Written before the
+implementation (sanity-checks-first), confirmed failing pre-implementation, all pass now.
+
+**Sealed 2025 holdout not touched** — this is export/contract plumbing over the live 2026 board,
+no backtest or historical season read.
+
+**Handoff:** `frontend` thread describing the new fields/files (contract version bump, per
+CLAUDE.md's contract-change rule); reply appended to the M0-M5 availability thread noting the
+interaction and this session's scope decision.
