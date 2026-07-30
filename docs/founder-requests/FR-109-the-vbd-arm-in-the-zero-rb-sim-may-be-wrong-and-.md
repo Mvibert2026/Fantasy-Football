@@ -106,7 +106,7 @@ the round-2 RB-vs-WR call comes out the same way under both curves.
 44.6% of drafts take an RB in round 1; 44.0% wait until round 11–12; **rounds 3–5 together are 0.5%,
 with zero drafts in round 3.** Slot 1 is 100% round 1. It is also the most extreme cell in the run's
 own σ grid — every other (board, σ) cell is between 1.17 and 4.64, and the primary ECR cell is 1.39.
-And 94% of the round-11/12 picks are caused by the **need-penalty amendment**, not by value.
+And 97% of the round-11/12 picks are caused by the **need-penalty amendment**, not by value.
 The founder's "maybe a certain slot" was the correct diagnosis.
 
 **Step 4 — swept all ten slots.** The pooled §5.2 margins already drew slots uniformly, so they did

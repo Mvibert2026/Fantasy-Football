@@ -124,7 +124,7 @@ reported without its distribution and it described a behaviour the model essenti
 Two further things make the original sentence indefensible rather than merely imprecise. **6.33 is
 the most extreme value in the run's own 14-cell sensitivity grid** — every other (board, σ) cell puts
 VBD's first RB between round 1.17 and 4.64, and on the *second* market board (ECR) it is **1.39 at
-the primary σ**. And the round-11/12 mode is not a value judgement at all: **94% of those picks are
+the primary σ**. And the round-11/12 mode is not a value judgement at all: **97% of those picks are
 driven by the positional-need penalty**, the amendment to the pre-commitment, not by the RB being the
 best player available. §5.5.
 
@@ -622,7 +622,8 @@ legal players. **PENALTY** = he did not, and only won once the positional-need p
 | slot 3 | 80.4% | 19.6% | 0.0% |
 | slots 5–10 | 32–39% | 61–68% | 0.0% |
 | first RB in rounds 1–7 | ~100% | ~0% | 0.0% |
-| first RB in rounds 11–12 | 6% | **94%** | 0.0% |
+| first RB in round 11 | 6% | **94%** | 0.0% |
+| first RB in round 12 | 0.2% | **99.8%** | 0.0% |
 
 **The two modes have different causes.** Round 1 is the arm buying the best player on the board.
 Rounds 11–12 are the **need penalty** — 25 rank units per surplus at 6 WR, plus the QB/TE caps of 2 —
