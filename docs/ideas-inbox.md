@@ -1409,3 +1409,26 @@ Scoping decisions made without asking, logged here per the "decide and log" inst
   for ADR-064 — would have caught it sooner if it ran in CI. Low effort to add
   (`tests/test_founder_requests.py` already has the fixture machinery); not fixed this session
   because it's outside this session's actual ask.
+## 2026-07-30 — frontend, item 2 player profile / archetype dual-build (thread 121): decided without asking
+
+- **The visual encoding for the three archetype absence states was not specified by design and had
+  to be invented.** `PLAYER-PROFILE.md` §4 says the three states "must render differently and
+  legibly" and names them, but gives no treatment. Chose border STYLE (solid-filled / dashed / none
+  + italic / dotted) rather than colour, specifically so the distinction survives both themes and
+  colour-blindness — consistent with how the rest of this app avoids colour-only signals (e.g. the
+  weekly-finishes heat-map's redundant bottom rule). Not escalated: this is exactly the kind of
+  presentational judgment call the dispatch authorized deciding-and-logging rather than asking about.
+  If design has a stronger opinion once they see the screenshots, `archetypeChipStyle` in
+  `PlayerDetail.tsx` is one function, easy to swap.
+- **`PLAYER-PROFILE.md` §1 (the "Both values" row) and half of §2 (one anchored Disclosed section
+  behind a *Why that matters* gesture) were left unbuilt, not attempted.** Both require a disclosure
+  gesture that doesn't exist anywhere in this app yet, and both overlap `docs/design/
+  TWO-VALUE-COLUMNS.md` (item 8) plus a **2026-08-01** amendment already sitting in the repo
+  (`TWO-VALUE-COLUMNS-CONTAINER.md`) that further redesigns that exact gesture for the ADP caveat.
+  Building a competing version now risked shipping something design would have to immediately
+  redesign around once that round is released. Logged to thread 121 rather than guessed at.
+- **§3's reading-level rewrite (the PROJECTION caveat) WAS built**, using design's exact specified
+  sentence verbatim as UI copy, with the raw `board.json:curve_caveat` formula moved behind the
+  "show data sources" switch (same pattern as every other trace-mode gate in this file) rather than
+  deleted — Principle #2 still applies to prose, not just numbers.
+

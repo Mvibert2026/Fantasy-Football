@@ -1,4 +1,4 @@
-import { Component, useEffect, useMemo, type ReactNode } from 'react';
+import { Component, useEffect, useMemo, type CSSProperties, type ReactNode } from 'react';
 import { ciTargetFor, type BoardRow } from '../data/board';
 import type { DraftPickRecord } from '../data/draft';
 import { currentOverallPick, nextPickForSlot, pickNumbersForSlot, roundPickLabel } from '../data/draft';
@@ -9,6 +9,7 @@ import {
   archetypeLabel,
   archetypeShareOfPosition,
 } from '../data/archetype';
+import { currentArchetypePlacement } from '../data/archetypePlacement';
 import { computeLiveAvailability, dotsFilled, freqText, type LiveAvailabilityResult } from '../data/liveAvailability';
 import type { Dataset } from '../data/load';
 import type { LeagueConfig } from '../data/league';
@@ -48,6 +49,18 @@ import { decimal, integer, percent, signed } from '../lib/format';
  * than folding into §6's now-real content. Headshot: also a real permanent absence,
  * §6.9's own admission -- no player in any real export has an ESPN id, so every card
  * renders initials on the team colour, always.
+ *
+ * **Archetype chip placement is dual-built behind a flag, on purpose.** Design's
+ * round-1 handoff (`docs/design/PLAYER-PROFILE.md` §4) proposes moving the chip out
+ * of the identity strip into this disclosed section; FR-075's own words put it in the
+ * strip. The founder has not ruled between them and asked to see both first (thread
+ * 117 "Prepared answer 1", thread 121). `ui/data/archetypePlacement.ts` is the flag --
+ * see that file for how to flip it for a screenshot. Whichever arrangement is active,
+ * the three absence states (`unclassified` / `not-applicable` / `not-available`) must
+ * render visibly differently from each other and from a real label -- see
+ * `archetypeChipStyle` below, which encodes that with border style (solid / dashed /
+ * dotted / none), not colour alone, so it survives both themes and isn't lost on
+ * anyone colour-blind.
  *
  * Sections 7 (weekly finishes / consistency heat-map) and 8 (three-season
  * table) are a DIFFERENT claim from sections 6/9 and were deliberately NOT
@@ -138,8 +151,13 @@ export function PlayerDetail({
   // position the taxonomy doesn't cover at all, a league with no
   // player_descriptions.json export, and a covered player the taxonomy
   // measured and could not place. Never collapsed into one "not computed."
-  const archetypeChip: { text: string; title: string; muted: boolean } = archetypeEntry
+  // `kind` drives BOTH the copy above and the visual treatment below
+  // (`archetypeChipStyle`) -- design's finding was that three identically
+  // grey chips can't be told apart, so text alone is not enough; each kind
+  // gets its own border treatment too.
+  const archetypeChip: { kind: ArchetypeChipKind; text: string; title: string } = archetypeEntry
     ? {
+        kind: 'real',
         text: archetypeLabel(archetypeEntry.archetype, row.raw.position).toUpperCase(),
         title:
           // FR-114: the field-path citation clause is gated; the confidence and
@@ -154,30 +172,38 @@ export function PlayerDetail({
               `this export carry this same label right now -- a high share means this describes a role ` +
               `bucket, not a precise type. Computed live, not a cached figure.`
             : ''),
-        muted: false,
       }
     : !archetypeIsCovered
       ? {
+          kind: 'not-applicable',
           text: 'ARCHETYPE N/A',
           title:
             `Archetype not modelled for ${row.raw.position} -- covers RB/WR/TE only.` +
             (showSources ? ' (src/archetypes.py)' : ''),
-          muted: true,
         }
       : data.playerDescriptions === null
         ? {
+            kind: 'not-available',
             text: 'ARCHETYPE —',
             title: 'player_descriptions.json is not exported for this league yet (primary league only today).',
-            muted: true,
           }
         : {
+            kind: 'unclassified',
             text: 'UNCLASSIFIED',
             title:
               'Not classified in player_descriptions.json -- met no defined threshold under the current ' +
               'taxonomy. This project\'s own review found that fall-through rate is common, not an edge ' +
               'case (docs/ranking/archetypes-proposal.md) -- a taxonomy gap, not a data gap.',
-            muted: true,
           };
+  // FR-075 vs docs/design/PLAYER-PROFILE.md §4 -- see the file-top doc comment
+  // and ui/data/archetypePlacement.ts. Arrangement A (identity-strip, DEFAULT)
+  // always shows the chip beside the name, in any state. Arrangement B
+  // (disclosed) shows it beside the name only for a real label; every absence
+  // state is one item shorter in the strip and gets its full treatment in the
+  // disclosed ARCHETYPE section below instead, which renders unconditionally
+  // either way.
+  const archetypePlacement = currentArchetypePlacement();
+  const showArchetypeChipInStrip = archetypePlacement === 'identity-strip' || archetypeChip.kind === 'real';
   const teams = league.teams.kind === 'present' ? league.teams.value : 0;
   const rounds = league.rounds.kind === 'present' ? league.rounds.value : 0;
   const userSlot = league.userSlot.kind === 'present' ? league.userSlot.value : 0;
@@ -259,8 +285,11 @@ export function PlayerDetail({
         }}
       >
         <div style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
-          {/* 1. Identity strip -- sticky at the top of the sheet. */}
+          {/* 1. Identity strip -- sticky at the top of the sheet. Carries a
+              testid so the archetype-placement scaffolding (thread 121) can
+              be tested by location, not just by count. */}
           <div
+            data-testid="player-detail-identity-strip"
             style={{
               position: 'sticky',
               top: 0,
@@ -299,8 +328,11 @@ export function PlayerDetail({
                 {/* FR-075: archetype, "towards the top of the card... next to the
                     name... before position comes into play" -- the founder's own
                     placement request. Hover for the sourced field, confidence and
-                    (where a label exists) the live share stat. */}
-                <ArchetypeChip {...archetypeChip} />
+                    (where a label exists) the live share stat. Gated on the
+                    archetypePlacement flag -- see this file's top doc comment
+                    and ui/data/archetypePlacement.ts; Arrangement A shows this
+                    in every state, Arrangement B only for a real label. */}
+                {showArchetypeChipInStrip ? <ArchetypeChip {...archetypeChip} /> : null}
                 <span style={{ fontSize: 14, fontWeight: 600, letterSpacing: '.045em', color: 'var(--txt)' }}>
                   <Value cell={row.positionalLabel} render={(v) => v} />
                 </span>
@@ -352,8 +384,22 @@ export function PlayerDetail({
                   </span>
                 </div>
                 <ProjectionRange row={row} />
+                {/* docs/design/PLAYER-PROFILE.md §3 (reading level): the backend's
+                    own board.json:curve_caveat is written in statistics
+                    vocabulary ("R-squared is 0.16-0.27") -- correct, but design's
+                    point is that a lower reading level should carry a STRONGER
+                    warning, not a softer one: "don't split two close players" is
+                    an instruction he can act on under a clock; "treat as weak" is
+                    only advice. The formula and the R-squared move to trace mode,
+                    same FR-114 pattern as everywhere else on this card -- the
+                    plain-English meaning is not gated, only the technical
+                    derivation is. This is UI copy design specified verbatim, not
+                    an invented number (Principle #1 is about numbers, not prose). */}
                 <p className="notice" style={{ marginTop: 9, fontSize: 12 }}>
-                  {data.board.curve_caveat}
+                  {showSources
+                    ? data.board.curve_caveat
+                    : 'Projections follow consensus rank, which explains well under half of what ' +
+                      'actually happens. Use them to separate tiers, not to split two players who are close.'}
                 </p>
               </>
             ) : (
@@ -706,15 +752,83 @@ class HistorySectionBoundary extends Component<
   }
 }
 
+/** The three absence states this card can show for archetype, plus the real
+ *  one. Kept as its own type (not just a string) so `archetypeChipStyle`
+ *  below is exhaustively checked -- a new state added to the chip-building
+ *  logic without a matching style is a compile error, not a silent grey box. */
+type ArchetypeChipKind = 'real' | 'unclassified' | 'not-applicable' | 'not-available';
+
+/**
+ * Visual encoding for the three absence cases, per design's finding
+ * (`docs/design/PLAYER-PROFILE.md` §4): "three identically-greyed chips
+ * cannot distinguish [them] ... it looks like three facts about the player
+ * and is none." Text alone (UNCLASSIFIED / ARCHETYPE N/A / ARCHETYPE —)
+ * already differs, but the prior build gave all three the same muted
+ * chip-with-border look, so the distinction only survived a careful read.
+ * Border STYLE carries the distinction now, not colour alone -- it holds in
+ * both themes and for anyone colour-blind:
+ *
+ * - `real`             solid border, filled background -- a fact that holds.
+ * - `unclassified`     dashed border, no fill -- we looked and found no fit.
+ * - `not-available`    dotted border, no fill -- data itself is missing.
+ * - `not-applicable`   no border/box at all, italic -- not even a real
+ *                       question for this position; deliberately the
+ *                       quietest of the four so it doesn't read as a claim.
+ */
+function archetypeChipStyle(kind: ArchetypeChipKind): CSSProperties {
+  // Longhand border-style/-width/-color, not the `border` shorthand: several
+  // browsers' devtools (and jsdom's CSSStyleDeclaration, which this
+  // component's own tests read directly) do not reliably expand a shorthand
+  // that carries a css var() into its longhand parts, which would make
+  // borderStyle unreadable for exactly the property this function exists to
+  // vary. Longhand also renders identically in a real browser.
+  switch (kind) {
+    case 'real':
+      return {
+        padding: '1px 7px',
+        borderStyle: 'solid',
+        borderWidth: 1,
+        borderColor: 'var(--line2)',
+        background: 'var(--panel2)',
+        color: 'var(--txt)',
+      };
+    case 'unclassified':
+      return {
+        padding: '1px 7px',
+        borderStyle: 'dashed',
+        borderWidth: 1,
+        borderColor: 'var(--dim2)',
+        background: 'transparent',
+        color: 'var(--dim2)',
+      };
+    case 'not-available':
+      return {
+        padding: '1px 7px',
+        borderStyle: 'dotted',
+        borderWidth: 1,
+        borderColor: 'var(--dim2)',
+        background: 'transparent',
+        color: 'var(--dim2)',
+      };
+    case 'not-applicable':
+      return {
+        padding: '1px 1px',
+        borderStyle: 'solid',
+        borderWidth: 1,
+        borderColor: 'transparent',
+        background: 'transparent',
+        color: 'var(--dim2)',
+        fontStyle: 'italic',
+      };
+  }
+}
+
 /** FR-075: small identity-strip badge, reused as-is in the fuller §6 section
  *  below -- one presentational component, one set of states, never two
  *  slightly different tellings of the same fact (Principle #2's "collapsing
  *  states loses information" cuts the other way too: the same state must not
- *  render two different ways in two places). `muted` marks every non-labelled
- *  state (not-covered, not-available, unclassified) with the same dim
- *  treatment the rest of this app uses for "real but empty," never the
- *  confident look a positive label gets. */
-function ArchetypeChip({ text, title, muted }: { text: string; title: string; muted: boolean }) {
+ *  render two different ways in two places). */
+function ArchetypeChip({ kind, text, title }: { kind: ArchetypeChipKind; text: string; title: string }) {
   return (
     <span
       title={title}
@@ -723,11 +837,8 @@ function ArchetypeChip({ text, title, muted }: { text: string; title: string; mu
         fontSize: 10.5,
         fontWeight: 600,
         letterSpacing: '.03em',
-        padding: '1px 7px',
-        border: '1px solid var(--line2)',
-        color: muted ? 'var(--dim2)' : 'var(--txt)',
-        background: muted ? 'transparent' : 'var(--panel2)',
         whiteSpace: 'nowrap',
+        ...archetypeChipStyle(kind),
       }}
     >
       {text}

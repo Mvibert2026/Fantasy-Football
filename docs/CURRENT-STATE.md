@@ -27,6 +27,33 @@ repo — Cloudflare holds its own deploy token. This closes the last dependency 
 machine: development, tests, the database rebuild, the daily capture and now viewing the app all run
 without it.
 
+**Last verified:** 2026-07-30, frontend session (worktree `agent-ae11859768ad7e400`) shipping design
+round-1 item 2, the player profile (`docs/design/PLAYER-PROFILE.md`), **built both ways for the
+archetype chip's placement, behind a flag** (thread 121) — the founder has not ruled between his
+own FR-075 placement request (identity strip, beside the name) and design's disclosed-section
+amendment, and asked to see both first. `frontend/ui/data/archetypePlacement.ts` is the flag
+(`'identity-strip'` default = his standing instruction, `'disclosed'` = design's amendment),
+flippable per-screenshot via `?archetypePlacement=disclosed` or a `localStorage` key, no rebuild
+needed. **Design's second-order point — the three archetype absences must be tellable apart, not
+three identically-grey chips — now holds in both arrangements**: `archetypeChipStyle` gives real /
+`UNCLASSIFIED` / `ARCHETYPE N/A` / `ARCHETYPE —` four different border treatments (solid-filled /
+dashed / none+italic / dotted), not colour alone, confirmed against the real data this session (not
+assumed) — `UNCLASSIFIED` is a covered position the classifier measured and placed nowhere,
+`ARCHETYPE N/A` is a position outside the taxonomy (QB/DEF/K), `ARCHETYPE —` is a league with no
+`player_descriptions.json` export at all (true of every non-primary league today, confirmed against
+`espn_10_full`'s real export). Also shipped, self-contained: §3's reading-level rewrite for the
+PROJECTION caveat — design's plain-English sentence by default, the raw `board.json:curve_caveat`
+formula behind the "show data sources" switch (never deleted). **Not built:** §1's "both values" row
+and half of §2's single anchored "Disclosed" section, both of which need a *Why that matters*
+disclosure gesture that doesn't exist anywhere in this app yet and which overlap item 8's own spec
+plus an already-drafted-but-unreleased 2026-08-01 amendment (`TWO-VALUE-COLUMNS-CONTAINER.md`) —
+flagged to thread 121 rather than built twice against two different specs. 61 test files / 478
+tests passing (was 59 files / 459 tests), 3 new test files. `npx tsc -b --noEmit` clean. Screenshots looked at
+directly (18 total): `frontend/e2e/artifacts/item2-arrangement{A,B}-{dark,light}-*.png` (both
+arrangements, both themes, all four archetype states), `item2-reading-level-*.png` (default vs.
+trace mode), `item2-absence-states-side-by-side.png` (the three absences compared directly).
+Commit `cacca25`.
+
 **Last verified:** 2026-07-30, frontend session (worktree `agent-a08e75a2b222a2f66`, FR-114) shipping
 the global "show data sources" switch. Founder, refined mid-thread: *"I like the idea about
 traceablity ... I just want to be able to see a version with and without them."* Not a deletion —

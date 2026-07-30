@@ -4,7 +4,7 @@
 Threads are the source of truth. Change a thread's `STATUS:`, then re-run sync.
 Protocol: [`README.md`](README.md).
 
-**81 open** · 50 resolved
+**82 open** · 50 resolved
 
 ---
 
@@ -13,7 +13,7 @@ Protocol: [`README.md`](README.md).
 Every role gets a section, including empty ones — an empty inbox is a fact worth stating,
 not an omission. Start your session at your own heading.
 
-### `pm` — 14 waiting
+### `pm` — 15 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
@@ -27,6 +27,7 @@ not an omission. Start your session at your own heading.
 | [108](108-injury-prediction-services-buy-nothing.md) | Injury prediction services buy nothing | `researcher` | OPEN | 0d | FR-097 (injury-prediction-service buy decision); raises priority of open item 8 (T6 roster-status ingest) and the Sleeper daily snapshot job |
 | [118](118-fr-114-shipped-plus-a-suspicious-mid-task-messag.md) | Fr 114 shipped plus a suspicious mid task messag | `frontend` | OPEN | 0d | none |
 | [120](120-assistant-window-container-shipped-assistant-win.md) | Assistant window container shipped assistant win | `frontend` | OPEN | 0d | none |
+| [121](121-archetype-placement-built-both-ways-behind-a-fla.md) | Archetype placement built both ways behind a fla | `frontend` | OPEN | 0d | none |
 | [2026-07-30-adr-054-and-adr-055-each-record-two-different-re](2026-07-30-adr-054-and-adr-055-each-record-two-different-re.md) | Adr 054 and adr 055 each record two different re | `backend` | OPEN | 0d | none |
 | [2026-07-30-draft-board-reference-axis-unanimous-snake-never](2026-07-30-draft-board-reference-axis-unanimous-snake-never.md) | Draft board reference axis unanimous snake never | `researcher` | OPEN | 0d | none |
 | [2026-07-30-no-allocator-exists-for-pr-0nn-pre-registration](2026-07-30-no-allocator-exists-for-pr-0nn-pre-registration.md) | No allocator exists for pr 0nn pre registration | `backend` | OPEN | 0d | none |
