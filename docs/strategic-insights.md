@@ -98,11 +98,32 @@ arithmetic is fine; the *operational* claim is currently unsupported by two inde
 
 | Test | Why it matters |
 |---|---|
-| **Does per-player dispersion improve the exceedance curve?** `pos_model.py:300` predicts threshold-clearing from **mean yards per game only** — so a 60/60/60 player and a 20/20/140 player with the same average get identical bonus expectations. Never tested. | If it lifts, volatility is real and monetizable through exactly the channel §7 claims. If not, §7's operational half should be cut from the spec. |
-| **Zero RB / Robust RB / Balanced vs. VBD**, simulated on realised roster points | The only honest way to answer a *strategy* question. Rank correlation compares lists; this compares rosters. |
-| **Positional volatility per roster slot**, not per player | TE volatility passes straight through (one slot); WR volatility partially cancels (three starters + flex). Same number, different meaning. |
-| **Archetype dimension autocorrelation** — which dimensions are stable traits vs. situational roles | Determines whether career history helps or actively misleads, per dimension. |
 | **Bust screen** (FR-096) | Must beat two nulls: regression to the mean, and injury. |
+| **Run crossover + PR-007** (FR-102) | Does the recommendation ever move off a position being run? And do the unvalidated constants (`+8` / `+18` / `−25`) beat plain VBD? |
+| **Age × injury; is the young edge a games-played effect?** (FR-104) | Decides what an existing MARGINAL finding actually *is*. |
+| **Playoff-weeks (16–17) schedule quality** (FR-105) | Season-long SOS averages out over 17 games; two playoff games do not. Never examined. Subject to FR-106 — a tiebreaker only. |
+| **Season-long SOS, run properly** (FR-105) | `test-registry.md` #12 records "~Zero" in the edge column for a test that has **never been run**. That is received wisdom, not a measurement. |
+
+---
+
+## 5b. Tests closed on 2026-07-30 — answered, moved out of §5
+
+| Test | Answer | Grade |
+|---|---|---|
+| **Zero RB vs. VBD**, simulated | P(title) **+0.001** [−0.020, +0.023]. Null on every metric, market, σ, depth and ban length. **The mechanical reason matters more than the number: plain VBD already takes its first RB in round 6.3**, so the comparison was 6.3 vs 10.7, not early vs late. VBD is already most of the way to Zero RB without being told. | **NULL** |
+| **Positional volatility per roster slot** | Per player WR 1.084 / RB 1.047 / TE 1.002 / QB 0.573. **Per slot the ordering inverts: TE 1.002 (worst) / RB 0.600 / QB 0.573 / WR 0.545 (best).** The TE slot is the most volatile thing on the roster — one skill slot with no diversification. Same-position weekly correlation +0.001 to +0.009, so the √k reasoning holds. RB vs WR per player is a clean null. | **SURVIVES** |
+| **Per-player dispersion in the exceedance curve** | Null at every threshold, family and shrinkage, with both arms given the *realised* mean — the most favourable setting available. | **NULL** |
+| **Skewness and kurtosis in the exceedance curve** (the founder's actual hypothesis; PM originally mis-relayed it as dispersion) | **Fails upstream, before any model is fitted.** Shape does not persist year to year: rec skew +0.014, rec kurt −0.004, rush skew +0.049, rush kurt −0.031, pass skew +0.071, pass kurt −0.000 — six of six null, two negative. Empirical-Bayes τ̂² for skewness driven to **exactly zero in all five cells** under g1/g2: the estimator, given every chance, concluding there is no between-player variance in true shape beyond sampling noise. **Oracle arm** using the target season's own shape improves log-loss by ≤0.0024 and makes bonus MAE *worse*. | **NULL** |
+| **Archetype dimension autocorrelation** | **Close to the reverse of what PM predicted.** Snap share r=+0.707, yards per carry r=+0.175 — **role is more persistent than skill.** The recommended treatment survives but for the opposite reason. Player-level volatility must **not** be an archetype label (persists r≈0.10 vs mean PPG's r≈0.72); role-level can. | **SURVIVES** |
+| **Does the RB dead zone still exist / has it moved?** | **Cannot honestly be called moved or vanished.** Era contrast (2018–20 vs 2022–24) on the RB−WR gap: RB13–24 **−2.2 NULL** (pointing the *wrong* way), RB25–36 +11.7 NULL, **RB37+ +48.3 [+21.6, +75.1] SURVIVES**. So "you can wait on RB now" is consistent with the data — but via the **late tier improving**, not the middle tier recovering. Those imply different draft behaviour. One SURVIVES among 151 tests in that module, so: hypothesis. | **MARGINAL** |
+| **Consensus (ECR) vs. market ADP** | Pooled on disagreements ECR wins 54.6% [0.491, 0.600] — **crosses 50%, indistinguishable.** Per season, only 2023 clears (0.652 [0.560, 0.734]); the other three sit at a coin flip, so one season carries the pooled result. **The one interaction worth keeping: early-round disagreements (through round 5) favour ECR 59.5% [0.506, 0.678], effect +15.5 VBD pts vs +3.1 late.** Practical read: when the experts and the room disagree early, lean expert; late it doesn't matter. CI *just* clears 0.5 — worth pre-registering, not confirmed. | **MARGINAL** |
+| **Late-round sleeper screen** | Base rate **24.1%** [19.1, 30.0] train / 24.5% holdout. No feature separated hits from misses — raw p 0.209 / 0.643 / 0.266, none significant *before* correction; rising share **inverted** on holdout. No flag ships. | **NULL** (base rate SURVIVES) |
+
+**`CLAUDE.md` §7's operational clause now has four independent instruments against it** — the WR
+ceiling ablation, the RB stacking-bonus transfer, the dispersion test, and the founder's own
+skew/kurtosis mechanism tested at its most favourable setting. The arithmetic in §7 is fine; the
+claim that bonuses "should influence how variance is valued" is unsupported. **This is a founder
+decision, escalated and not made.**
 
 ---
 
