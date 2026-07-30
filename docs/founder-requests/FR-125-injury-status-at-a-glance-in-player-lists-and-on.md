@@ -71,3 +71,55 @@ it should raise the priority of 097 and give it a consumer, which is what it has
 
 **Sequencing:** ingestion (097) → export field + contract bump → design ruling on the strip →
 frontend. Not a fold-in to current work. Do not build the UI against `roster_status`.
+
+---
+
+## Founder direction on sources, 2026-07-30
+
+His own words, after being told the data does not exist:
+
+> "Find sources for injury. It's gotta be nfl available. Lots of other fantasy sites track it. We
+> probably also should be scraping twitter of reporters etc. Research should figure it out (but
+> let's get all front end and app work to main first)"
+
+**Explicitly sequenced behind the frontend queue.** Do not dispatch `researcher` until the
+2026-07-31 design items are merged to `main`.
+
+### What to hand `researcher` when it is time
+
+The mandate is a **sourcing and licensing audit, not a build**. Four candidate tiers, in the order
+they should be evaluated — cheapest and most defensible first:
+
+| Tier | Candidate | What to establish |
+|---|---|---|
+| 1 | **nflverse weekly roster status** (thread 097) | Already a dependency, free, CC-BY, licensing settled. Which status codes it carries, at what latency, and whether it distinguishes IR / PUP / NFI / suspension from game-day designations. **If this covers the ask, the other three tiers are unnecessary** — say so and stop. |
+| 2 | **The NFL's own injury report** | Clubs are required to publish participation and game status. Establish whether it is retrievable without a commercial licence, and at what cadence. |
+| 3 | **Aggregators** ("lots of other fantasy sites track it") | Establish terms before anything else. Most restate wire copy under terms that forbid redistribution. A source we cannot use is the likeliest outcome and is cheap to rule out. **Do not fetch Yahoo, ESPN or CBS — they block research agents by name.** |
+| 4 | **Reporter feeds on X/Twitter** | See the constraint below. Evaluate last. |
+
+### The X/Twitter constraint, stated plainly
+
+The founder suggested scraping reporters' feeds. Three things make that the weakest option, and he
+should have them before anyone spends time on it:
+
+1. **Scraping X is against its terms**, and the documented API path is a paid subscription. `CLAUDE.md`
+   §5 requires terms be checked before a scraper is built, not after; §10 rules out approaches that
+   create a credential or compliance liability. This is not a "we'll see" — it is the same class of
+   decision as the Yahoo password question, which was already resolved against browser automation.
+2. **Free-text posts have no join key.** A headline resolves to a player only by name matching — the
+   problem that quarantined eight players out of 330 in this session's mock ingestion, on far cleaner
+   input than a reporter's phrasing.
+3. **Reporter feeds carry rumour at the same confidence as fact.** A designation on the official
+   report is a claim the club made. A post saying a player "looked limited" is not, and the app has
+   no way to grade the difference. Under the never-fabricate rule the second cannot render as status.
+
+**Recommend: rule out tier 4 unless tiers 1–3 all fail**, and say so to the founder rather than
+quietly not doing it. If tiers 1–3 do fail, the honest answer may be that this feature does not ship,
+which is a legitimate outcome.
+
+### What "healthy" can honestly mean
+
+Whatever source lands, the render for an uninjured player must be traceable to a source that
+*affirmatively* lists him as available — not inferred from his absence from an injury list. If the
+chosen source only publishes injured players, then "healthy" is not a fact we hold, and the correct
+render is the status's own vocabulary (e.g. "not on this week's report"), not a health claim.
