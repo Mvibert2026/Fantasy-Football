@@ -5,11 +5,11 @@ Per-request files in this directory are the source of truth. Edit a request's ow
 `STATUS:` line, then re-run sync. Protocol: [`README.md`](README.md).
 Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests.md).
 
-**90 requests since freeze.**
+**93 requests since freeze.**
 
 ---
 
-## NEW — 52
+## NEW — 55
 
 | ID | Subject | Raised | Source |
 |---|---|---|---|
@@ -65,6 +65,9 @@ Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests
 | [FR-102](FR-102-should-a-positional-run-flip-to-negative-momentu.md) | Should a positional run flip to negative momentu | 2026-07-30 | chat 2026-07-30, PM session |
 | [FR-104](FR-104-test-age-x-injury-and-whether-the-young-edge-is-.md) | Test age x injury and whether the young edge is  | 2026-07-30 | chat 2026-07-30, PM session |
 | [FR-105](FR-105-schedule-vegas-and-matchup-adjusted-projections.md) | Schedule vegas and matchup adjusted projections | 2026-07-30 | chat 2026-07-30, PM session |
+| [FR-106](FR-106-does-age-matter-more-or-less-by-position-and-doe.md) | Does age matter more or less by position and doe | 2026-07-30 | chat 2026-07-30, PM session |
+| [FR-107](FR-107-has-vegas-been-used-in-the-bottom-up-model-at-al.md) | Has vegas been used in the bottom up model at al | 2026-07-30 | chat 2026-07-30, PM session |
+| [FR-108](FR-108-making-the-playoff-outranks-playoff-week-schedul.md) | Making the playoff outranks playoff week schedul | 2026-07-30 | chat 2026-07-30, PM session |
 
 ## SCOPING — 1
 
