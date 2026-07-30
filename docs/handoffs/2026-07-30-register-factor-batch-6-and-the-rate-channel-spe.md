@@ -11,35 +11,42 @@ OPENED: 2026-07-30
 
 Three things, in order of how much they change the project.
 
-### 1. Review the campaign family and the breaking-m device — this is new and it is load-bearing
+### 1. Two campaign manifests were built for the same problem on the same day — rule on it
 
-Four factor batches were dispatched in parallel on 2026-07-30 against the same harness, the
-same eleven target seasons and the same four primaries. Each correcting inside its own m is
-four independent chances at a false positive with no record of the real denominator —
-`CLAUDE.md` §6.3's exact failure.
+Four factor batches ran in parallel on 2026-07-30. **Two of them independently concluded that BH
+must be applied at the campaign denominator and each built a manifest, without seeing the other.**
 
-Batch 6 created **`docs/preregistration/families/F-FACTOR-CAMPAIGN-2026-07-30.yaml`**, an
-append-only shared manifest where a batch registers its m before fitting, and applied BH at
-the **sum** of every registered m (47 at run time: batch 3 = 24, batch 6 = 23). **Batch 3 had
-already run and graded against its own m = 24**, so its published grades are not
-campaign-corrected. Batches 4 and 5 have not registered at all.
+- Batch 5 opened **campaign C2**, `docs/ranking/factor-campaign-manifest/`, one file per batch,
+  rule `M_campaign = max(Σ_b m_b, FLOOR = 80)`, batches 1–3 explicitly not re-graded.
+- Batch 6 opened `docs/preregistration/families/F-FACTOR-CAMPAIGN-2026-07-30.yaml`, a single
+  shared file, and graded at **47** (its own 23 plus batch 3's 24).
 
-Because a running batch cannot see a concurrent batch's m, batch 6 reports for every
-surviving arm a **breaking m** — the largest campaign denominator at which it would still
-clear BH q=0.10. That lets a later reader re-check a grade against the finished manifest
-without rerunning anything.
+**I resolved this myself rather than leaving two manifests standing, and I want the resolution
+reviewed.** C2 wins on the point that matters under concurrency — one file per batch cannot be
+clobbered by four simultaneous writers, and mine could have been. Batch 6 is now registered at
+`docs/ranking/factor-campaign-manifest/batch-6.md` with m = 23, my yaml is retired to a pointer
+that records what happened, and **every published batch-6 grade is re-stated at M = 80.**
+
+**Nothing was rerun.** The pre-commitment required every surviving arm to carry a **breaking m** —
+the largest denominator at which it would still clear BH q=0.10 — precisely because a running
+batch cannot see a concurrent batch's m. Moving 47 → 80 changed **exactly one arm**, in the
+conservative direction: X3 (xFP luck residual) at RB, breaking m 56, BOARD-NEUTRAL → MARGINAL.
+Every other graded arm has breaking m 140–1721. The CSV carries both `bh_c47_*` and `bh_c80_*`.
 
 **What I need from you, specifically:**
 
-- Is the breaking-m device sound as a substitute for knowing the denominator at run time, or
-  is it a way of appearing rigorous while still choosing the denominator after the fact?
-- **Should batch 3 be re-graded at the campaign denominator?** Its numbers are unchanged;
-  only the BH threshold would move. I did not touch another batch's results.
-- Should batches 4 and 5 be required to register retroactively, and if they do not, what is
-  the correct denominator for a published claim?
-- Only one batch-6 arm is fragile to this: **X3-RB, breaking m = 56**. If batches 4 and 5
-  together add more than 9 tests, its BOARD-NEUTRAL grade lapses to MARGINAL. Everything else
-  that graded is robust to a campaign of 140–1721.
+- **Is the breaking-m device sound**, or is it a way of appearing rigorous while still letting the
+  denominator move after results are known? It just did the job it was registered for, which is
+  the moment to check whether it is legitimate rather than merely convenient.
+- **Is C2's FLOOR = 80 the right instrument?** Registered batches are 4 (m=8), 5 (17), 6 (23),
+  7 (16), Σ = 64 — so the floor binds and the campaign is being corrected at a denominator larger
+  than the tests actually run. That is conservative, but it is also a number chosen a priori
+  rather than counted.
+- **Should batch 3 be re-graded?** C2 says no. Batch 3 ran and published against its own m = 24
+  hours before either manifest existed. Its numbers are unchanged; only the BH threshold moves. I
+  did not touch another batch's results.
+- Batch 7 grades at m = 80 and states "if the total comes in under 80, nothing is relaxed."
+  Batch 6 now matches. Batches 4 and 5 should be checked for the same.
 
 ### 2. Register the rate-channel specification — the thing batch 6 says to build next, and it is not an arm
 
@@ -50,23 +57,34 @@ Spearman negative for both, and passer rating's interval **excludes zero on the 
 (−0.0180 [−0.0350, −0.0005]). So the QB ranking's error is **not in the attempts channel**,
 and five volume arms have now been run at QB (batch 3's A1/A2, batch 6's P1–P4/K1).
 
-**What was never testable.** `pos_model.ShrunkRate` has no covariate mechanism: it fits
-(num + k·prior)/(den + k) then a two-parameter linear recalibration. There is no way to ask
-*"does last season's efficiency predict next season's efficiency beyond the player's own
-shrunk lagged rate"* without changing shared model code. Batch 6 registered that as a
-limitation **before fitting** (`factor-batch-6-precommit.md` §4a) rather than discovering it
-afterwards, and routed every arm through the volume spec instead.
+**What batch 6 could not test, and why that reason turned out to be wrong.**
+`pos_model.ShrunkRate` has no covariate mechanism, so *"does last season's efficiency predict
+next season's efficiency beyond the player's own shrunk lagged rate"* was not askable. Batch 6
+registered that as a limitation **before fitting** (`factor-batch-6-precommit.md` §4a) on the
+grounds that it needed a change to shared model code while three batches were editing those
+modules, and routed every arm through the volume spec instead.
 
-**The specification I want registered, and I want you to write it, not me:**
+**Batch 7 solved it the same day and I did not know.** `factor-batch-7-precommit.md` §2
+registers a **batch-local subclass**: after the ordinary fit, the residual of the realised rate
+against the model's own shrunk prediction is regressed on the centred covariate by weighted
+least squares, weights = the rate's own denominator, veterans only. One extra parameter, an
+overridden `_make_model`, **`pos_model.py` untouched**. It is used on `tdpc` and `ypr` at RB.
 
-- The minimal change is a strict generalisation — `yt ≈ intercept + slope·raw + γ·z`, one
-  extra parameter per rate, fitted on training rows only, reducing exactly to the primary at
-  γ = 0. I have deliberately **not** implemented it: batches 1–3 must keep reproducing
-  bit-for-bit and three batches were editing the shared modules concurrently.
-- Which rate(s) it may attach to, and whether γ counts as one test or one per rate in the
-  family denominator.
-- Whether an efficiency covariate on `ypa` is even the right object, or whether the QB
-  ranking error is in availability or the rushing channel and this is the wrong door.
+**So the QB rate-channel test is not a build.** It is batch 7's subclass pointed at `ypa`,
+`tdpa` and `intpa` with `epa_db_w`, `anya_w`, `pratg_w`, `cpoe_w`, `sackrate_w` — features batch
+6 has already built, validated and shipped in `factor_features6.py`. I am not going to run it
+without a registration, which is the ask.
+
+**What is genuinely yours to decide:**
+
+- Which rate(s) it may attach to. Five metrics × three rates is 15 tests; that is a large slice
+  of a campaign already at 80 and I do not think it should be run as a full cross.
+- Whether γ counts as one test per (metric, rate) cell, and whether a metric that already failed
+  in the volume channel gets a second slice of the denominator at all.
+- **Whether the rate channel is even the right door.** The batch-6 finding is only that the
+  *attempts* channel is not where the QB ranking error is. It does not establish that the rate
+  channel is — availability and the rushing stream are equally live candidates, and batch 3
+  owns the rushing one.
 
 ### 3. Two judgement calls I made alone and would rather have on the record
 
@@ -94,13 +112,14 @@ consensus are QBs and TEs; batch 6 established that the channel those disagreeme
 through is not the one that is broken. Without a registered rate-channel spec the next
 session's default move is a sixth volume arm.
 
-Item 3 will otherwise be re-decided differently by whoever runs batch 7.
+Item 3 will otherwise be re-decided differently by whoever runs batch 8 — batch 7 registers three
+coverage controls of its own and will hit the same magnitude-floor problem.
 
 ## Done looks like
 
-1. A ruling on the campaign denominator: whether batch 3 is re-graded, whether 4 and 5 must
-   register, and what denominator a published claim uses. Written into
-   `F-FACTOR-CAMPAIGN-2026-07-30.yaml` so it is not re-litigated.
+1. A ruling on the campaign denominator: whether the breaking-m device is legitimate, whether
+   FLOOR = 80 is the right instrument now that Σ m_b = 64, and whether batch 3 is re-graded.
+   Written into `docs/ranking/factor-campaign-manifest/README.md` so it is not re-litigated.
 2. A registered pre-registration for the rate-channel specification (or a reasoned refusal
    naming the channel to attack instead).
 3. A yes/no on a magnitude floor in the decision rules, and on the overlap instrument.
@@ -109,5 +128,6 @@ Item 3 will otherwise be re-decided differently by whoever runs batch 7.
 
 - `docs/ranking/factor-batch-6-precommit.md` (`f6e09da`, committed before any arm was fitted)
 - `docs/ranking/factor-batch-6-results.md` (`a185a5a`)
-- `docs/preregistration/families/F-FACTOR-CAMPAIGN-2026-07-30.yaml`
+- `docs/ranking/factor-campaign-manifest/batch-6.md` (C2 registration)
+- `docs/preregistration/families/F-FACTOR-CAMPAIGN-2026-07-30.yaml` (retired, records the correction)
 - `experiments/bottomup/results/factor_batch6_results.csv` and three companions

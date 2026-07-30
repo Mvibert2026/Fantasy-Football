@@ -15,9 +15,11 @@ shared, high-contention documents. Source for every number below is
 `docs/ranking/factor-batch-6-results.md` (`a185a5a`), design pre-committed at `f6e09da` before
 any arm was fitted.
 
-Grades are BH q=0.10 at **campaign m = 47** (`docs/preregistration/families/F-FACTOR-CAMPAIGN-2026-07-30.yaml`).
-Note the open question with `strategist` about whether that denominator is final — if batches 4
-and 5 register more tests, **only one row below is affected** and it is flagged.
+Grades are BH q=0.10 at **campaign m = 80**, campaign C2's denominator
+(`docs/ranking/factor-campaign-manifest/`). Batch 6 initially graded at 47 and was re-stated at 80
+without rerunning, using the breaking-m values its pre-commitment required; exactly one arm moved
+(X3 luck residual at RB, BOARD-NEUTRAL → MARGINAL). Whether 80 is final is an open question with
+`strategist`; no row below changes again unless the denominator exceeds 140.
 
 ### 1. `#18` / ledger `T1-18` — expected fantasy points (xFP)
 
@@ -28,11 +30,12 @@ and 5 register more tests, **only one row below is affected** and it is flagged.
 > model's expected prior points per game is WORSE at all four positions**: WR +0.395 targets MAE
 > (+1.64% of the model's own error) [+0.240,+0.545]; RB +0.768 carries (+1.55%) [+0.564,+0.992];
 > QB +0.776 attempts (+0.69%) [+0.388,+1.141]; TE +0.129 targets (+0.66%) [+0.038,+0.223]. Three
-> of four BH-significant at campaign m=47 (breaking m 1721 / 308 / 140), all four also worse on
+> of four BH-significant at campaign m=80 (breaking m 1721 / 308 / 140), all four also worse on
 > the ADP board, all four with negative board Spearman — RB −0.0141 [−0.0249,−0.0034] and TE
 > −0.0148 [−0.0304,−0.0005] excluding zero. **Adding** xFP alongside is MARGINAL at QB/RB, NULL
 > at WR/TE, and worse on the ADP board at three of four. The **luck residual** (realised minus
-> expected) is BOARD-NEUTRAL at RB, MARGINAL at QB, NULL at WR/TE. A pre-registered directional
+> expected) is MARGINAL at RB and QB and NULL at WR/TE — and at RB the whole gain sat among
+> players nobody drafts (+0.344 worse on the ADP board). A pre-registered directional
 > prediction that the residual would carry a negative coefficient **failed**: positive in 33 of
 > 44 walk-forward fits, unanimous at QB, RB and WR.
 >
@@ -59,14 +62,14 @@ unbuilt opportunity anywhere.
 > QB only, E1 component `attempts`, primary MAE 112.93 full universe / 136.94 on the ADP board.
 > **ANY/A** −1.425 attempts (−1.26%) [−2.054,−0.844], p=0.0013, **and −3.058 attempts (−2.23%)
 > on the ADP board**; **passer rating** −0.960 (−0.85%) [−1.322,−0.548], p=0.0010, **−3.453
-> (−2.52%) on the board**. Both BH-significant at campaign m=47, breaking m **308**. **These are
+> (−2.52%) on the board**. Both BH-significant at campaign m=80, breaking m **308**. **These are
 > the first QB-specific arms in this project to clear both E1a and E1b.** Both are graded
 > **PROJECTION-ONLY**: board Spearman is negative for both, and passer rating's is **−0.0180
 > [−0.0350, −0.0005]**, excluding zero on the wrong side. Under `CLAUDE.md` §6.5 neither is an
 > edge.
 >
 > **EPA per dropback — the sweep's strongest external claim — is the weaker arm here**: −1.218
-> (−1.08%) full universe but **+0.601 worse on the ADP board**, not BH-significant at m=47.
+> (−1.08%) full universe but **+0.601 worse on the ADP board**, not BH-significant at m=80.
 > **CPOE NULL** (+0.090, p=0.75).
 
 ### 3. `N11` — sack-avoidance rate
@@ -74,7 +77,7 @@ unbuilt opportunity anywhere.
 `untested` → **`rejected-with-evidence`**.
 
 > Sacks per dropback, QB, eleven seasons. −0.532 attempts MAE (−0.47%) [−0.945,−0.112], p=0.038
-> — MARGINAL, not BH-significant at campaign m=47 — and **+0.572 worse on the ADP board**. No
+> — MARGINAL, not BH-significant at campaign m=80 — and **+0.572 worse on the ADP board**. No
 > edge. `pfr_advstats_pass` (pressure rate, pressure-to-sack conversion) was deliberately not run:
 > it starts 2018, giving five target seasons, a window already measured as unable to resolve
 > anything at any position.

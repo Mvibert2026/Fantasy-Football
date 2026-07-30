@@ -28,7 +28,27 @@ points at next, and it is not another volume arm.
 | **Season-N reads** | **zero, proven not asserted.** Every arm ran `allow_preseason_proxy=False`; `n_preseason_proxy_reads == 0` on all 23 arms and all 4 primaries, enforced as a `RuntimeError` |
 | Uncertainty | season-block bootstrap, 4,000 reps, seasons the unit |
 | Leak trigger (2% of primary error) | **0 arms fired.** Largest improvement anywhere is 1.26% |
-| Campaign m | **47** at run time (`F-FACTOR-CAMPAIGN-2026-07-30.yaml`: batch 3 = 24, batch 6 = 23). Batches 4 and 5 had not registered — every survivor therefore carries a **breaking m** |
+| Campaign m | **80** — see the correction immediately below. Every survivor carries a **breaking m** |
+
+> ### The denominator was corrected after the run, and the device built to allow that did its job
+>
+> Batch 6 registered **m = 23 before fitting** and graded at a campaign denominator of **47** (its
+> own 23 plus batch 3's 24). It did not know that batch 5 had already opened a campaign manifest,
+> **C2** (`docs/ranking/factor-campaign-manifest/`), whose rule is
+> `M_campaign = max(Σ m_b, FLOOR = 80)` and which excludes batches 1–3 from retroactive re-grading.
+> Two concurrent batches independently built a manifest for the same problem without seeing each
+> other. **C2 wins** — one file per batch, safe under concurrent writers — and batch 6's manifest
+> is retired to a pointer.
+>
+> **The correct denominator was 80, and every grade below is at 80.** Nothing was rerun, because
+> the pre-commitment required every surviving arm to carry a **breaking m** — the largest
+> denominator at which it would still clear BH q=0.10.
+>
+> **Exactly one arm changed, and it moved conservatively: X3 (xFP luck residual) at RB, breaking
+> m = 56 — BOARD-NEUTRAL at 47, MARGINAL at 80.** Every other graded arm has a breaking m of
+> 140–1721 and is untouched. This is the correction working as designed rather than a result
+> surviving a denominator chosen after the fact; the CSV carries both `bh_c47_*` and `bh_c80_*`
+> columns so the change is checkable.
 
 **Coverage, measured on the ADP board (gate 0.80, set before the coverage was known):**
 
@@ -59,7 +79,7 @@ value, −0.0058, which is **1.2%** of its paired treatment arm — far under th
 
 ## 1. The full table — 23 arms, E1a = full-universe component MAE, negative = better
 
-BH at **campaign m = 47, q = 0.10**. `breakM` = the largest campaign denominator at which the arm
+BH at **campaign m = 80, q = 0.10** (campaign C2's floor). `breakM` = the largest campaign denominator at which the arm
 would still clear BH q=0.10, so a later reader can re-check it against the finished manifest.
 
 ### N10 — passing efficiency over volume (QB, E1 component = `attempts`, primary MAE 112.93)
@@ -91,20 +111,22 @@ would still clear BH q=0.10, so a later reader can re-check it against the finis
 | X1 add xFP/g | RB | −0.472 | [−0.879, −0.087] | −0.95% | 0.0468 | +0.376 | +0.0044 | MARGINAL |
 | X1 add xFP/g | WR | −0.008 | [−0.032, +0.021] | −0.03% | 0.5986 | +0.101 | −0.0036 | NULL |
 | X1 add xFP/g | TE | +0.061 | [−0.002, +0.134] | +0.31% | 0.1400 | −0.047 | −0.0034 | NULL |
-| X3 luck residual | RB | −0.459 | [−0.744, −0.182] | −0.93% | 0.0106 | **+0.344** | +0.0036 | **BOARD-NEUTRAL**, breakM **56** |
+| X3 luck residual | RB | −0.459 | [−0.744, −0.182] | −0.93% | 0.0106 | **+0.344** | +0.0036 | **MARGINAL** (BOARD-NEUTRAL at m=47; breakM **56**) |
 | X3 luck residual | QB | −0.686 | [−1.360, −0.074] | −0.61% | 0.0770 | +0.236 | +0.0048 | MARGINAL |
 | X3 luck residual | WR | −0.021 | [−0.054, +0.020] | −0.09% | 0.3131 | +0.009 | −0.0028 | NULL |
 | X3 luck residual | TE | +0.045 | [−0.010, +0.127] | +0.23% | 0.2791 | +0.010 | −0.0017 | NULL |
 | X4c coverage CONTROL | QB/WR/TE | ≈0 (1e−14) | — | — | — | ≈0 | 0.0000 | NULL (WR grader artefact, §0) |
 | X4c coverage CONTROL | RB | −0.006 | [−0.021, +0.003] | −0.01% | 0.4369 | −0.016 | 0.0000 | NULL |
 
-**Counts:** NULL 10 · MARGINAL 6 · HARMFUL 3 · PROJECTION-ONLY 2 · MARGINAL-HARMFUL 1 ·
-BOARD-NEUTRAL 1. **Zero SURVIVES.**
+**Counts at campaign m = 80:** NULL 10 · MARGINAL 7 · HARMFUL 3 · PROJECTION-ONLY 2 ·
+MARGINAL-HARMFUL 1. **Zero SURVIVES.**
 
-**Survivors under the campaign correction, and their fragility.** Only X3-RB (breakM = 56) is close
-to the edge: if batches 4 and 5 together register **more than 9 further tests**, its BH significance
-lapses and it becomes MARGINAL. Everything else that graded is robust to a campaign of 140–1721
-tests. **X3-RB's grade should be re-read against the finished manifest.**
+**Survivors under the campaign correction.** Five arms clear BH at m = 80, with breaking m of 140,
+308, 308, 308 and 1721 — all robust to a campaign several times larger than the registered one. The
+sixth, **X3-RB, did not survive the correction from 47 to 80** (breaking m 56) and is graded
+MARGINAL. **Campaign C2's registered batches are 4 (m=8), 5 (m=17), 6 (m=23) and 7 (m=16), Σ = 64,
+so the floor of 80 binds.** If further batches register, only breaking m matters, and nothing below
+140 remains.
 
 ---
 
@@ -161,8 +183,9 @@ plausibly that a player who outperforms his context is being given better contex
 year. This is the alternative outcome the pre-commitment named ("a different finding, and must be
 reported as one"). It is stated here as a failed prediction, not retro-fitted into a success.
 
-It also does not rescue X3: the arm is BOARD-NEUTRAL at RB (the entire gain sits among players nobody
-drafts — batch 2's named failure mode), MARGINAL at QB, NULL at WR and TE.
+It also does not rescue X3: the arm is MARGINAL at RB and QB, NULL at WR and TE — and at RB, where it was
+significant under the wrong denominator, the entire gain sat among players nobody drafts (E1b
+**+0.344 worse** on the ADP board), which is batch 2's named failure mode.
 
 ---
 
@@ -298,8 +321,23 @@ not improve. So the QB ranking's error is **not in the attempts channel**. It is
 
 **The specification to register next is the one §4a deferred**: a covariate on `ShrunkRate`, so that
 "does last season's efficiency predict next season's efficiency beyond the player's own shrunk lagged
-rate" becomes answerable. That is a change to shared model code and a methodology question, so it
-goes to `strategist` as a specification, not to a factor batch as an arm.
+rate" becomes answerable.
+
+**And the mechanism to do it already exists — built concurrently, by batch 7, for a different
+position.** `factor-batch-7-precommit.md` §2 registers a *batch-local subclass* that adds one linear
+covariate to one declared rate: after the ordinary fit, the residual of the realised rate against the
+model's own shrunk prediction is regressed on the centred covariate by weighted least squares,
+weights = the rate's own denominator, veterans only. **One extra parameter, an overridden
+`_make_model`, and `pos_model.py` untouched.** Batch 7 uses it on `tdpc` (inside-5 conversion) and
+`ypr` (YAC per reception) at RB.
+
+Batch 6 deferred the same construction on the grounds that it required editing shared model code.
+**That premise was wrong, and batch 7 found the way around it on the same day.** So the QB
+rate-channel test is not a build — it is batch 7's subclass pointed at `ypa`, `tdpa` and `intpa`
+with `epa_db_w`, `anya_w`, `pratg_w`, `cpoe_w` and `sackrate_w`, all of which this batch has already
+built and validated. What is still genuinely a `strategist` question is the *design*: which rates it
+may attach to, how many tests that is in the campaign denominator, and whether the QB ranking error
+is even in the rate channel rather than in availability or the rushing stream.
 
 **What must not happen:** a third volume arm at QB. Five have now been run.
 

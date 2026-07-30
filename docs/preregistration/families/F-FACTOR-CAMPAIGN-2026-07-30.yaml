@@ -1,60 +1,50 @@
-# The 2026-07-30 factor campaign — ONE multiple-comparisons family across every
-# concurrent factor batch.
+# SUPERSEDED. Use docs/ranking/factor-campaign-manifest/ (campaign C2).
 #
-# WHY THIS FILE EXISTS. Four factor batches were dispatched in parallel on
-# 2026-07-30 against the same harness, the same eleven target seasons and the
-# same primaries. Correcting inside each batch while ignoring the others is
-# exactly the multiplicity failure CLAUDE.md §6.3 names: four batches each
-# running BH at q=0.10 on their own m is four independent chances to produce a
-# false positive, and the project would have no record of the real denominator.
+# WHAT HAPPENED, recorded rather than deleted. Four factor batches were dispatched
+# simultaneously on 2026-07-30 and two of them independently reached the same
+# conclusion — that Benjamini-Hochberg must be applied at the campaign denominator
+# and not the batch's own m — and each built a manifest for it without seeing the
+# other. Batch 5 opened `docs/ranking/factor-campaign-manifest/` (campaign C2);
+# batch 6 opened this file. Two manifests is the failure both were built to stop,
+# so this one is retired and C2 is the single source of truth.
 #
-# THE RULE. A batch registers its m HERE, before it fits anything. Benjamini–
-# Hochberg is applied at the CAMPAIGN level, denominator = sum of every `m` in
-# this file, fixed regardless of how many arms turn out to be computable.
+# C2's design is better on the point that matters under concurrency: ONE FILE PER
+# BATCH, never a shared file, so four agents on one checkout cannot clobber each
+# other's registration. This file could not have survived four concurrent writers.
 #
-# CONCURRENCY. Batches run at the same time and cannot see each other's m at the
-# moment they compute BH. So every batch additionally reports, per surviving arm,
-# the BREAKING m — the largest campaign denominator at which that arm would still
-# clear BH at q=0.10. An arm whose breaking m is below the final campaign total
-# loses its claim, and the reader can check that from this file alone without
-# rerunning anything.
+# THE CORRECTION THIS COST, stated plainly. Batch 6 registered m = 23 here before
+# fitting and graded at a campaign denominator of 47 (its own 23 plus batch 3's
+# 24). C2's rule is M_campaign = max(sum of registered m_b, FLOOR = 80), and C2
+# explicitly does not retroactively re-grade batches 1-3. The correct denominator
+# was therefore 80, not 47.
 #
-# Append-only. One block per batch. Never renumber, never delete a block: a batch
-# that ran and found nothing still spent its share of the family.
+# Batch 6 was re-graded at 80 WITHOUT RERUNNING ANYTHING, because its
+# pre-commitment required every surviving arm to report a BREAKING M -- the
+# largest denominator at which it would still clear BH q=0.10. Exactly one arm
+# changed grade and it moved conservatively: X3 (xFP luck residual) at RB, breaking
+# m = 56, BOARD-NEUTRAL at 47 -> MARGINAL at 80. Every other graded arm has a
+# breaking m of 140-1721 and is unaffected.
+#
+# All published batch-6 grades are at M = 80. Registration and the full arm list:
+# docs/ranking/factor-campaign-manifest/batch-6.md
 
 id: F-FACTOR-CAMPAIGN-2026-07-30
-status: open
-q: 0.10
-also_reported_at_q: 0.05
-correction: benjamini-hochberg
-unit: one registered E1a/E3 p-value
+status: superseded
+superseded_by: docs/ranking/factor-campaign-manifest/README.md
+superseded_on: 2026-07-30
+superseded_reason: >-
+  Duplicate of campaign C2, which was opened first by batch 5 and uses a
+  one-file-per-batch layout that is safe under concurrent writers. Retained as the
+  record of batch 6's original m=23 registration and of the denominator correction
+  from 47 to 80 that followed.
 
 batches:
-
-  - batch: 3
-    owner: ranker
-    m: 24
-    precommit: docs/ranking/factor-batch-3-precommit.md
-    registered: 2026-07-30
-    scope: >-
-      QB rushing volume (A1, A2); NGS average separation (S1, S1c); explosive
-      rush rate (X1, X2, X1c); OC tenure (T1, T1c, C1Q); baseline
-      respecification family F2 (B2r, B2ra).
-    status: run
-    note: >-
-      Ran and graded against a batch-local m = 24 before this manifest existed.
-      Its numbers are unchanged; the campaign denominator below is what any
-      cross-batch claim must be re-checked against.
-
   - batch: 6
     owner: ranker
     m: 23
-    precommit: docs/ranking/factor-batch-6-precommit.md
     registered: 2026-07-30
-    scope: >-
-      QB passing efficiency over volume, N10 (P1 EPA/dropback, P2 ANY/A, P3
-      passer rating, P4 CPOE, P4c and Pc coverage controls); sack-avoidance
-      rate, N11 (K1); expected fantasy points, registry #18, at all four
-      positions (X1 add, X2 replace ppg_w, X3 luck residual, X4c coverage
-      control).
-    status: registered
+    registered_before_fitting: true
+    graded_at_campaign_m: 80
+    precommit: docs/ranking/factor-batch-6-precommit.md
+    results: docs/ranking/factor-batch-6-results.md
+    now_registered_in: docs/ranking/factor-campaign-manifest/batch-6.md
