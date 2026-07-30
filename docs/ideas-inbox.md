@@ -1160,3 +1160,63 @@ have been the single most useful number in the report. Nothing committed.
   so **no allocator access and nothing could be committed.** The handoff body is staged unallocated at
   `docs/research/HANDOFF-BODY-unallocated-component-projections-2026-07-29.md` with the exact command,
   following thread 086's precedent. Hand-typing an ID was refused (043/049/053, ADR-048).
+- 2026-07-30 · (researcher, FR-062 Yahoo/ESPN league connection) **Decided, not escalated — five
+  calls.** Artifact: `docs/research/yahoo-espn-league-connection-2026-07-30.md`.
+  (a) **Tested the premise inside the question first, as instructed, and it did not hold.** The
+  founder asked what happens *if* he cannot get a Yahoo API; five independent third-party SDKs (one
+  released 2025-09-14) all document an open self-serve registration at
+  `developer.yahoo.com/apps/create/`. Reported the answer as "probably open, and here is the
+  five-minute test" rather than researching the fallback he asked about as though it were needed.
+  (b) **Honoured the dispatch's blanket "do not fetch Yahoo or ESPN hosts" even where it cost the
+  headline deliverable.** The brief also asked me to *quote* Yahoo's ToS clause on automated access.
+  Those two instructions conflict, because the clause lives on `legal.yahoo.com` — which, per the
+  prior audit, returns HTTP 404 for `robots.txt` and is therefore **not** robots-blocked, and which a
+  prior session did fetch and mark `[VERIFIED]`. I chose the host restriction and reported the clause
+  as `[SNIPPET]` with the exact URL for the founder to confirm in a browser, rather than quietly
+  fetching it or quietly dropping the requirement. **Flagging the conflict rather than resolving it
+  alone: a future session explicitly authorised to fetch `legal.yahoo.com` closes gaps 5, 6, 7 and 8
+  of that document in about ten minutes.**
+  (c) **Did not route around three refusals.** `web.archive.org` was refused outright by the fetch
+  tool (so the obvious ToS mirror is closed), `reddit.com` and `stackoverflow.com` were refused by
+  the search tool by name (so there is **zero** dated first-hand evidence that a *newly registered*
+  app still works in 2026 — recorded as the largest hole in the report), and
+  `support.fantasypros.com` returned HTTP 403 on two articles. With no Bash tool I could not run the
+  proxy status check, so the 403s are recorded as **unretrieved, not blocked** — same disposition
+  the prior audit reached.
+  (d) **Left the decisive question as an explicit `[GAP]` rather than answering it with my prior.**
+  `sports.yahoo.com/developer` describes a review-and-approval flow; every SDK describes no review.
+  Three readings fit the evidence and I could not distinguish them. My prior favours "the portal is
+  a partner tier, self-serve is unchanged" — that prior is in the document labelled as a prior, and
+  **is not stated anywhere as a finding.**
+  (e) **Flagged the strongest pro-API findings as single-artifact, precisely because they point the
+  way we wanted.** Live-draft reads rest on **one** undated docstring in `spilchen/yahoo_fantasy_api`
+  ("If this is called during the draft this includes the players that have been drafted thus far");
+  yardage-bonus exposure rests on **one** class in `yfpy/models.py` (`Bonus`: `points, target`).
+  Both are code, not observations. Both are one API call from `[VERIFIED]`.
+  **The finding most likely to change planned work, and it is not about drafting:** if the API path
+  is open, `league/{key}/settings` exposes `stat_modifiers`, `roster_positions`,
+  `uses_playoff_reseeding` and per-stat `bonuses` — i.e. **the whole of `CLAUDE.md` §7, plus FR-012's
+  two unconfirmed leagues, from Yahoo's own source of truth instead of a transcribed screenshot.**
+  Sequence that before anything draft-day; it carries none of the live-draft uncertainty.
+  **The constraint that should shape any build, and it is not the password question:** `[VERIFIED —
+  prior audit]` Yahoo requires deletion of user data "not explicitly identified as being storable
+  indefinitely" within 24 hours, and `[SNIPPET]` that set is reported to be **GUID and authenticated
+  token value only**. If that reads true, "sync my league into `nfl.db`" is the single design the
+  terms forbid, and fetch-on-demand-and-discard is the only compliant shape.
+  **Escalating, not deciding — the public-hosting exposure now has a third source.** Yahoo's
+  no-competing-product clause plus a publicly-reachable draft assistant is the same fault line
+  already open for FFC and FantasyPros in this file and in thread 092 item 2. **One ruling should
+  cover all three.** Founder call, arguably a lawyer's.
+  **Escalating — a repo contradiction I did not resolve.** FR-062 states "All three of his leagues
+  are on Yahoo or ESPN." `FR-052`'s body carries the founder's own same-day correction: "**Not all
+  three leagues are Yahoo**… **His third league remains uncaptured**" — while FR-052's *filename
+  slug* still says "third-league-identified-as-yahoo". Two documents disagree and one disagrees with
+  itself. It matters: if the third league is on **Sleeper**, its API is public, documented and needs
+  no auth at all, which is a strictly easier problem than either platform in my report.
+  **No shell in this session**, so: no allocator access — the handoff body is staged unallocated at
+  `docs/research/HANDOFF-BODY-unallocated-yahoo-league-connection-2026-07-30.md` with the exact
+  command; hand-typing an ID was refused (043/049/053, ADR-048). **And `FR-062` does not exist inside
+  this worktree** (it is in the shared checkout only), so I could not move its `STATUS: NEW` →
+  `SCOPING` or add a `## Update` section pointing at the artifact. Whoever owns that file should do
+  both and then run `python tools/founder_requests.py sync` — otherwise a future session re-dispatches
+  research this project has now bought once and nearly bought twice.
