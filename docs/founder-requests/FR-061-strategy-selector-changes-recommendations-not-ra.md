@@ -66,3 +66,28 @@ independent view — which is the point of building it — without claiming prim
 
 Behind design's current specs, which are in build. Depends on FR-058's explanation object already
 being built (it is), and on the strategies being available per league, which they are not.
+
+---
+
+## Addition, 2026-07-30: robust RB
+
+> "we should test robust rb strategy too"
+
+**Add robust-RB to the tested set**, alongside the strategies already simulated in PR-003
+(`bpa_consensus`, `balanced`, `hero_rb`, `zero_rb`, `elite_te_early`). It is a named, conventional
+strategy and it is not currently among them — so the selector would either omit it or offer it
+unpriced, and unpriced is the failure mode this ticket exists to prevent.
+
+**Define it before simulating it.** "Robust RB" is used loosely in the category — commonly, taking
+running backs with the first two or three picks rather than one (hero) or none (zero). The exact
+definition changes the result, so it must be committed in writing before the arm runs, not chosen
+afterwards to suit the outcome. `strategist` owns that wording.
+
+**It also fills a real gap in the existing set.** `hero_rb` and `zero_rb` sit at the extremes with
+`balanced` in the middle; robust-RB is the heavy end and nothing currently occupies it. A selector
+offering only the extremes would misrepresent the space of choices.
+
+**The founder's message was truncated mid-sentence** — *"and those tests need t..."* — by what appears
+to be an input glitch. **The remainder is unknown and has not been guessed at.** Whatever condition he
+was about to place on these tests is not recorded here and should be asked for rather than inferred.
+
