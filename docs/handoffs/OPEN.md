@@ -4,7 +4,7 @@
 Threads are the source of truth. Change a thread's `STATUS:`, then re-run sync.
 Protocol: [`README.md`](README.md).
 
-**91 open** · 54 resolved
+**96 open** · 54 resolved
 
 ---
 
@@ -98,7 +98,7 @@ not an omission. Start your session at your own heading.
 | [2026-07-30-four-selectable-ranking-sources-board-contract-s](2026-07-30-four-selectable-ranking-sources-board-contract-s.md) | Four selectable ranking sources board contract s | `backend` | OPEN | 0d | none |
 | [2026-07-30-wire-assistant-retrieval-to-docs-assistant-conte](2026-07-30-wire-assistant-retrieval-to-docs-assistant-conte.md) | Wire assistant retrieval to docs assistant conte | `librarian` | OPEN | 0d | none |
 
-### `data-ops` — 10 waiting
+### `data-ops` — 11 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
@@ -111,9 +111,10 @@ not an omission. Start your session at your own heading.
 | [084](084-deepen-expert-consensus-history-beyond-2021-2025.md) | Deepen expert consensus history beyond 2021 2025 | `ranker` | OPEN | 1d | none |
 | [097](097-ingest-nflverse-weekly-roster-status-the-only-so.md) | Ingest nflverse weekly roster status the only so | `ranker` | OPEN | 0d | the season-ending-IR and suspension error classes in the bottom-up component model (docs/ranking/component-model-rb-qb-te-pass-1.md §5.2). Nothing shipped. |
 | [113](113-rosters-weekly-blocks-vacated-opportunity.md) | Rosters weekly blocks vacated opportunity | `ranker` | OPEN | 0d | test-registry #28 (vacated targets & carries) |
+| [2026-07-30-pbp-and-ngs-receiving-are-now-model-inputs-and-a](2026-07-30-pbp-and-ngs-receiving-are-now-model-inputs-and-a.md) | Pbp and ngs receiving are now model inputs and a | `ranker` | OPEN | 0d | none |
 | [2026-07-30-play-callers-is-not-in-nfl-db-and-end-of-season](2026-07-30-play-callers-is-not-in-nfl-db-and-end-of-season.md) | Play callers is not in nfl db and end of season | `ranker` | OPEN | 0d | none |
 
-### `strategist` — 16 waiting
+### `strategist` — 17 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
@@ -133,6 +134,7 @@ not an omission. Start your session at your own heading.
 | [112](114-founder-mock-scoring-format-inference-needs-sepa.md) | Founder mock scoring format inference needs sepa | `data-ops` | OPEN | 0d | none |
 | [2026-07-30-backtest-vbd-deficit-fix-landed-adr-025-confirme](2026-07-30-backtest-vbd-deficit-fix-landed-adr-025-confirme.md) | Backtest vbd deficit fix landed adr 025 confirme | `backend` | OPEN | 0d | none |
 | [2026-07-30-register-factor-batch-2-28-vacated-opportunity-o](2026-07-30-register-factor-batch-2-28-vacated-opportunity-o.md) | Register factor batch 2 28 vacated opportunity o | `ranker` | OPEN | 0d | none |
+| [2026-07-30-register-factor-batch-3-campaign-family-m-24-the](2026-07-30-register-factor-batch-3-campaign-family-m-24-the.md) | Register factor batch 3 campaign family m 24 the | `ranker` | OPEN | 0d | none |
 
 ### `researcher` — 4 waiting
 
@@ -143,11 +145,12 @@ not an omission. Start your session at your own heading.
 | [070](070-recurring-injury-suspension-feed.md) | Recurring injury suspension feed | `pm` | OPEN | 3d | T4 (suspensions/roster-status table stakes), E[games_played] per ADR-E Amendment E-A1 |
 | [100](100-archetype-volatility-dimension-and-stability.md) | Archetype volatility dimension and stability | `ranker` | OPEN | 0d | the volatility dimension and the history-weighting rule in the archetype proposal |
 
-### `librarian` — 1 waiting
+### `librarian` — 2 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
 | [062](062-backlog-reconciliation.md) | Backlog reconciliation | `pm` | OPEN | 3d | none |
+| [2026-07-30-factor-ledger-batch-3-dispositions-9-rows-and-cl](2026-07-30-factor-ledger-batch-3-dispositions-9-rows-and-cl.md) | Factor ledger batch 3 dispositions 9 rows and cl | `ranker` | OPEN | 0d | none |
 
 ### `design` — 4 waiting  ⚠️ *cannot read this repo — needs a human hop via pm*
 
@@ -164,16 +167,19 @@ not an omission. Start your session at your own heading.
 |---|---|---|---|---|---|
 | [035](035-frontend-catchup-runbook.md) | Frontend catchup runbook | `pm` | OPEN | 4d | 003, 027, 028, 029, 030, 031, and every future frontend thread |
 
-### `fable` — 0 waiting
+### `fable` — 1 waiting
 
-_Nothing waiting on you._
+| ID | Subject | From | Status | Age | Blocks |
+|---|---|---|---|---|---|
+| [2026-07-30-attack-factor-batch-3-24-registered-tests-one-vo](2026-07-30-attack-factor-batch-3-24-registered-tests-one-vo.md) | Attack factor batch 3 24 registered tests one vo | `ranker` | OPEN | 0d | none |
 
-### `ranker` — 3 waiting
+### `ranker` — 4 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
 | [093](093-run-pr-007-recommendation-constants-vs-plain-vbd.md) | Run pr 007 recommendation constants vs plain vbd | `strategist` | OPEN | 1d | FR-059; FR-058's panel copy; the chatbot half of FR-059 |
 | [099](099-archetype-taxonomy-derivability-review-fr-075.md) | Archetype taxonomy derivability review fr 075 | `researcher` | OPEN | 0d | FR-075 (archetype on the player card), FR-086 (volatility as an archetype dimension) |
+| [2026-07-30-batch-4-blocked-on-you-before-it-runs-the-founde](2026-07-30-batch-4-blocked-on-you-before-it-runs-the-founde.md) | Batch 4 blocked on you before it runs the founde | `ranker` | BLOCKED-ON-YOU | 0d | factor batch 4 |
 | [2026-07-30-component-model-vs-incumbent-head-to-head-compon](2026-07-30-component-model-vs-incumbent-head-to-head-compon.md) | Component model vs incumbent head to head compon | `backend` | OPEN | 0d | none |
 
 ### `operator` — 0 waiting
