@@ -69,3 +69,27 @@ easiest thing to lose while building two implementations of one model.
   Making it recompute faster does not make it right. **Fitting sigma is the research; re-hosting the
   computation is the engineering.** FR-047 already routes the fitting question to `strategist`.
 - Whatever ships must state which assumption produced the number, the same way Predictions does.
+
+---
+
+## Paused 2026-07-30, founder's call
+
+> "Maybe pause the availability work for a minute to conserve tokens to prioritize the other work."
+
+**Part 1 (export every slot) is stopped mid-sweep.** The simulation had been running for several
+hours on 3,000 simulated drafts per slot and had not finished. It is killed, not merely abandoned —
+it was also contending for CPU with the frontend test suites and is the most likely cause of the
+intermittent vitest timeouts seen tonight.
+
+**What survives:** the agent's committed work on branch `worktree-agent-af64727a6079cca5e`, including
+ADR-061 and the session narrative. Nothing is lost; the sweep simply has no results.
+
+**The pause is itself a finding, and it argues for part 2.** The founder's stated preference was
+always browser-side recomputation, with the all-slots export as a floor. **That floor turns out to be
+expensive enough to be a poor thing to depend on** — if a full sweep takes hours, it has to re-run
+every time the board changes, and the board changes often. Client-side computation costs once and
+then covers any slot, any team count, any roster shape.
+
+**When this resumes, reconsider the order.** Doing part 2 first may be cheaper overall than finishing
+part 1, which is the opposite of what was originally specified.
+
