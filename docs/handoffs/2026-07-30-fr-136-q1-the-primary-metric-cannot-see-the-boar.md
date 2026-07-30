@@ -119,3 +119,54 @@ wrong ranking does not stay contained.
 3. Yes/no/route-to-PM on shipping component projections as displayed projections.
 4. The oracle ladder either registered as a pre-registration under `docs/preregistration/`, or
    rejected with the reason — either outcome closes it.
+
+### ranker · 2026-07-30
+
+**Amending ask 1 before you rule on it, and adding a fifth.** Founder direction landed after I
+opened this thread (`FR-2026-07-30-bottom-up-must-include-all-tier-0-table-stakes-n`: *"Our bottoms
+up needs to include all the table stakes"*), and working it changed my own question.
+
+**Ask 1 was wrong in shape. It is a pair, not a replacement.**
+
+Per-position τ_b returns exactly 0.000000 **because** the board has one player-level input — the
+consensus rank. The moment any table stake is wired, within-position ordering stops being identical
+to consensus and **τ_b becomes informative for the first time.** The metric is not wrong in general;
+it is blind *specifically to the current object*.
+
+But τ_b still cannot see the cross-positional channel, which is the board's **entire** present
+content and does not disappear when table stakes land. So what I need named is:
+
+- a **within-position** metric — τ_b is a live candidate again, not a dead one; and
+- a **cross-position** metric — `top_k_starter_vbd` or `src/draft_sim.py`; and
+- **whether ADR-B's no-aggregate rule survives**, since the reason it exists (a pooled correlation
+  mostly measures whether the ranking sorted positions by scale) is unchanged.
+
+Projected-points MAE (§6.1's bar: QB 74.0 · RB 62.0 · WR 48.0 · TE 35.8) is orthogonal to both and
+may sit alongside either.
+
+**New ask 5 — a `CLAUDE.md` §11 tension I will not resolve myself.**
+
+The PM's argument, which I think is **right on multiplicity**: table stakes are included on
+construction grounds, never tested individually, so they contribute **zero** to the FDR denominator,
+and the budget is spent on Tier 1/2. I would have got that wrong and I am adopting it.
+
+Two things I am **not** willing to let it carry, and I need you to rule rather than me:
+
+1. **It must not become "table stakes are free."** Multiplicity is avoided entirely; **estimation
+   variance and leakage surface are not.** `CLAUDE.md` §6.3's "every added parameter must earn its
+   place against a holdout" is about parameter count, not selection — twelve features against ~13
+   usable seasons is real. My proposed operational form: include by construction, do **not** test each
+   factor, but the Tier 0 block takes **one** holdout evaluation *as a block* (denominator +1), and
+   every feature passes the existing `SeasonPanel` access-log audit. **Ratify or replace.**
+2. **§11 says** *"'Everyone knows X' is a hypothesis to test."* Construction-grounds inclusion is in
+   tension with that sentence as written. My reading — §11 governs *claims*, and "this is an input"
+   is not a claim — is convenient for me, which is why it is yours to make. If it needs a `CLAUDE.md`
+   change, that escalates past both of us.
+
+**Evidence that bears on it, and it cuts against the intuition:** #5 depth-chart role and #6 injury
+status are **already implemented** in `experiments/bottomup/components/pos_features.py` (arms B/D/E)
+and both measured **NULL on ranking at all four positions**. Two of the twelve are built, are
+unarguably table stakes, and produce nothing. I have recorded in `fr136-q1-bottom-up-assessment.md`
+§6a.3 — **before anything is wired** — that I expect at most four of the twelve to carry non-zero
+weight, so that "we added the table stakes and nothing moved" is a prediction rather than a
+retrofit.

@@ -100,6 +100,9 @@ EXPECTED_MOCK_PICKS = 145
 EXPECTED_MOCK_QUARANTINE = 15
 MIN_RANKINGS_2021_2025_ROWS = 2540  # re-pull may exceed this if the mirror gains rows; never less
 MIN_ADP_SNAPSHOT_DATES = 2  # at least the two pre-existing committed CSVs, growing daily
+MIN_PBP_ROWS = 800_000  # 2009-2025 measured at 816,856 rows 2026-07-30; grows each season
+MIN_ROSTERS_WEEKLY_ROWS = 850_000  # 2002-2025 measured at 888,786 rows 2026-07-30
+MIN_SCHEDULES_ROWS = 7_500  # 1999-2026 measured at 7,548 rows 2026-07-30
 
 
 class RebuildFailure(RuntimeError):
@@ -149,23 +152,27 @@ def _print_counts(db_path: Path) -> dict[str, int]:
 def run_public_ingestion(db_path: Path, python_exe: str) -> None:
     _run(
         [python_exe, str(SRC_DIR / "ingest_weekly_stats.py"), "--db", str(db_path)],
-        "1/8 ingest_weekly_stats.py",
+        "1/9 ingest_weekly_stats.py",
+    )
+    _run(
+        [python_exe, str(SRC_DIR / "ingest_pbp.py"), "--db", str(db_path)],
+        "1b/9 ingest_pbp.py",
     )
     _run(
         [python_exe, str(SRC_DIR / "ingest_reference.py"), "--db", str(db_path)],
-        "2/8 ingest_reference.py",
+        "2/9 ingest_reference.py",
     )
     _run(
         [python_exe, str(SRC_DIR / "ingest_league_metrics.py"), "--db", str(db_path)],
-        "3/8 ingest_league_metrics.py",
+        "3/9 ingest_league_metrics.py",
     )
     _run(
         [python_exe, str(SRC_DIR / "ingest_rankings.py"), "--db", str(db_path)],
-        "4/8 ingest_rankings.py",
+        "4/9 ingest_rankings.py",
     )
     _run(
         [python_exe, str(SRC_DIR / "ingest_fantasypros_csv.py"), "--db", str(db_path)],
-        "5/8 ingest_fantasypros_csv.py",
+        "5/9 ingest_fantasypros_csv.py",
     )
 
 
@@ -263,6 +270,21 @@ def assert_restored(db_path: Path) -> None:
             "adp_snapshots (distinct captured dates)",
             scalar("SELECT COUNT(DISTINCT substr(retrieved_at, 1, 10)) FROM adp_snapshots"),
             MIN_ADP_SNAPSHOT_DATES, ">=",
+        ))
+        checks.append((
+            "pbp (2009-present)",
+            scalar("SELECT COUNT(*) FROM pbp"),
+            MIN_PBP_ROWS, ">=",
+        ))
+        checks.append((
+            "rosters_weekly (2002-present)",
+            scalar("SELECT COUNT(*) FROM rosters_weekly"),
+            MIN_ROSTERS_WEEKLY_ROWS, ">=",
+        ))
+        checks.append((
+            "schedules (1999-present)",
+            scalar("SELECT COUNT(*) FROM schedules"),
+            MIN_SCHEDULES_ROWS, ">=",
         ))
     finally:
         conn.close()
