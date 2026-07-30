@@ -498,6 +498,13 @@ def f3(panel) -> pd.DataFrame:
         for key, label, needs_routes, is_proxy in _PREDICTORS:
             for pop in ("S", "U"):
                 per = _f3_pairs(panel, pos_d, d, position, key, needs_routes, pop)
+                # A season pair where the predictor is constant across the whole
+                # population has no correlation to report -- that is what the
+                # 2003-2008 targets hole and the pre-2006 ff_opportunity floor
+                # produce. Dropped, and the surviving pair count is what gets
+                # printed, so a thin cell cannot pass for a thick one.
+                per = [p for p in per
+                       if np.isfinite(p["r_s"]) and np.isfinite(p["base_s"])]
                 if not per:
                     continue
                 arr = np.array([p["r_s"] for p in per], dtype=float)
@@ -571,14 +578,15 @@ def _f3_pairs(panel, pos_d: pd.DataFrame, all_d: pd.DataFrame, position: str,
             y_col = "fpg_n"
         else:
             u = universe_for(panel, y + 1, position)
-            nxt = all_d[all_d["season"] == y + 1][["player_id", "fp_per_sched"]]
+            nxt = (all_d[all_d["season"] == y + 1][["player_id", "fp_per_sched"]]
+                   .rename(columns={"fp_per_sched": "outcome"}))
             j = (u[["player_id"]]
-                 .merge(cur, on="player_id", how="left")
+                 .merge(cur.drop(columns=["fp_per_sched"]), on="player_id", how="left")
                  .merge(nxt, on="player_id", how="left"))
-            j["fp_per_sched"] = j["fp_per_sched"].fillna(0.0)   # busts retained
+            j["outcome"] = j["outcome"].fillna(0.0)             # busts retained
             j[key] = j[key].fillna(0.0)
             j["fpg"] = j["fpg"].fillna(0.0)
-            y_col = "fp_per_sched"
+            y_col = "outcome"
         if len(j) < 25:
             continue
         x = j[key].to_numpy(dtype=float)
@@ -592,4 +600,10 @@ def _f3_pairs(panel, pos_d: pd.DataFrame, all_d: pd.DataFrame, position: str,
 
 
 if __name__ == "__main__":
-    main()
+    if "--f3-only" in sys.argv:
+        # F3 refits nothing and grades nothing. Re-running it alone cannot
+        # change an F1 number, which is why it is allowed a separate entry
+        # point; F1 itself is run ONCE, per the pre-commitment's stopping rule.
+        f3(build_panel())
+    else:
+        main()
