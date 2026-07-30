@@ -604,3 +604,25 @@ file (ADR-057). Full evidence `docs/ranking/bottom-up-research-pass-3.md`, threa
 8. **Flagged, not claimed:** mean attenuation ratio is 0.686 / 0.702 / 0.693 / 0.691 across
    QB/RB/WR/TE. Four positions agreeing to 0.016. Too neat; escalated in thread 093, not
    celebrated.
+## 2026-07-29 — frontend, FR-048 retrieval rebuild: decided without asking
+
+1. **"When should I take a tight end" does not come back empty**, contrary to the ticket's own
+   prediction. Real lexical retrieval finds `nulls.json:findings[2]` (PR-003-elite-te, "reaching for
+   a top tight end in the first three rounds cost roughly 3-5%") and a few `player_descriptions.json`
+   TE archetype blurbs. This is honest, sourced, already-shipped content genuinely responsive to the
+   question — suppressing it to match the ticket's guess would be the exact "confidence must be
+   honest" failure the ticket itself warns against. The founder's *new* TE finding (picks 75-113,
+   `findings.json`) is still correctly absent — that corpus doesn't exist yet, out of scope per the
+   ticket.
+2. **`player_descriptions.json` is now added to `Dataset`** (`ui/data/types.ts`, `ui/data/load.ts`)
+   so retrieval can reach it — it wasn't loaded at all before. `frontend/scripts/build-standalone-
+   data.mjs`'s comment ("Excludes player_descriptions.json too: grepped, nothing in ui/ reads it
+   yet") is now stale; not fixed this pass (out of `ui/assistant/` scope, and the standalone build
+   already degrades gracefully — `data.playerDescriptions` is `undefined` there, treated the same as
+   `null`). Whoever next touches the standalone build pipeline should re-grep before trusting that
+   comment.
+3. Templated per-archetype prose in `player_descriptions.json` (~40 tight ends all sharing the
+   sentence "...secondary receiving option at tight end...") crowds out more substantive matches
+   under plain BM25 — added a per-artifact diversity cap (`MAX_PER_KIND = 3`) in
+   `ui/assistant/retrieval.ts` to fix it. Worth knowing if a future corpus addition has the same
+   templated-boilerplate shape.
