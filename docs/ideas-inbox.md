@@ -1507,3 +1507,10 @@ and a real environment finding, logged here per the "decide and log" instruction
 - **2026-07-30, ranker.** Oracle ladder (exploratory, unregistered): perfect foresight of games
   played alone, with zero knowledge of talent, beats expert consensus at all four positions. Logged
   as a hypothesis about where to look; sent to `strategist` to register or reject, not acted on.
+- **2026-07-30, backend.** Ran fr136 §6.2 step 1: component models vs incumbent `projected_points`
+  on projection error (MAE, season points), same universe (FFC ADP 2018-24), same units
+  (`pos_model.score_components()`), 6 walk-forward seasons, 2025 untouched. Component model loses
+  at all four positions (significant at RB, TE). Decided without asking: do not wire, per the
+  mandate's own conditional. `docs/ranking/component-model-vs-incumbent-headtohead.md`,
+  `experiments/bottomup/head_to_head.py`. Thread
+  `2026-07-30-component-model-vs-incumbent-head-to-head-compon` to `ranker`.

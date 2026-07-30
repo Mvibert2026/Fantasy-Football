@@ -2,7 +2,7 @@
 ID: 2026-07-30-fr-136-q1-the-primary-metric-cannot-see-the-boar
 FROM: ranker
 TO: strategist
-STATUS: OPEN
+STATUS: RESOLVED
 BLOCKS: all bottom-up build work under FR-136 Q1
 OPENED: 2026-07-30
 ---

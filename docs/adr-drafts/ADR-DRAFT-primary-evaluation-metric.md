@@ -15,9 +15,17 @@
 |---|---|---|
 | **The ordering the board publishes** — rank, VBD, tiers, and everything `availability` and the recommender consume | **`backtest.top_k_starter_vbd`**, paired per season against the incumbent shipped board and against `fantasypros_ecr_raw`, season-level bootstrap CI, seed recorded | **PROMOTED to primary, conditional on §4's two preconditions** |
 | **The number displayed as a projection** | **Per-position MAE skill score against a frozen constant-predictor floor** (§3) | **NEW. Primary for projection work only** |
-| Player-level ordering content | Per-position Kendall τ_b (the incumbent primary) | **RETAINED, DEMOTED to mandatory reported diagnostic. Never a gate. Never deleted.** |
+| **Player-level ordering content** — the within-position channel | Per-position Kendall τ_b (the incumbent primary) | **RETAINED as the within-position primary.** Never a standalone pass route; a **conjunctive gate** whose stringency depends on what the candidate claims (§5.2) |
 
 **ADR-B stands, unamended.** See §2.
+
+**On the ranker's amendment (thread reply, 2026-07-30): accepted, and it improves the ruling.** The
+ask is a *pair* — a within-position metric and a cross-position metric — not a replacement. That is
+right, and it is right for a reason worth stating plainly: **τ_b is not blind in general, it is blind
+to a board whose only player-level input is the consensus rank.** The moment any table stake is
+wired, within-position ordering stops being identical to consensus and τ_b becomes informative for
+the first time. This ADR names both halves of the pair and §5.2 specifies how τ_b's role changes the
+moment a candidate makes an independent within-position claim.
 
 ---
 
@@ -256,17 +264,35 @@ Per position, evaluated once per candidate. Written before any candidate exists.
 |---|---|---|
 | (a) | paired mean `Δ top_k_starter_vbd` vs the incumbent shipped board **> 0**, season-level bootstrap 95% CI reported | P1 |
 | (b) | `SS(p)` **strictly greater** than the incumbent's `SS(p)`, **and both > 0** | P2 |
-| (c) | per-position τ_b **not degraded by more than 0.02** vs the incumbent | diagnostic |
+| (c) | per-position τ_b clears §5.2's regime rule vs the incumbent | within-position primary |
 
-**(c) is the anti-tilt guard and its threshold is not fitted.** PR-004 §4 established +0.04 Δτ_b as
-the materiality floor from decision-relevance arithmetic — over a ~48-player draft-relevant universe
-(1,128 pairs), Δτ = 0.04 corrects ~23 pairwise inversions, about one improved pick per draft. Half of
-that, 0.02, is roughly half a pick: the largest player-level degradation that can be called "did no
-harm." Same arithmetic, same universe, no new free parameter.
+**(c)'s threshold is not fitted.** PR-004 §4 established +0.04 Δτ_b as the materiality floor from
+decision-relevance arithmetic — over a ~48-player draft-relevant universe (1,128 pairs), Δτ = 0.04
+corrects ~23 pairwise inversions, about one improved pick per draft. Half of that, 0.02, is roughly
+half a pick: the largest player-level degradation that can be called "did no harm." Same arithmetic,
+same universe, no new free parameter.
 
 (a), (b) and (c) are a **conjunction**, so they do not enter the FDR denominator — a conjunction can
 only reduce rejections. The denominator is the count of *positions × candidates* declared before the
 campaign, fixed in a family manifest under `docs/preregistration/families/`.
+
+### 5.2 τ_b's regime rule — what the within-position primary requires depends on what is claimed
+
+| Regime | What (c) requires | Why |
+|---|---|---|
+| **A. The candidate is a monotone re-scoring of its own rank input** (today's board; any curve-only change) | **Automatically satisfied.** Δτ_b = 0 exactly, by §1.1's invariance. Report it and move on | There is nothing to test. Demanding a τ_b improvement from an object with no within-position content would be demanding the impossible, and pretending the zero is a measurement is §1.1's error |
+| **B. The candidate makes any independent within-position claim** — one table stake wired, one component projection, anything that reorders players inside a position | **mean Δτ_b > 0 across evaluation seasons, AND Δτ_b ≥ −0.02 at every individual position** | A candidate that claims player-level knowledge must demonstrate player-level knowledge. "Help on average, do no material harm anywhere" |
+
+**Regime A is the only route by which a candidate can be adopted without demonstrating player-level
+content — and it is exactly where today's board sits.** That is not a loophole; it is the honest
+statement of what the board is. It is written into the rule so that the fact stays visible instead of
+being retired the moment a more flattering instrument arrives.
+
+No CI is demanded on Δτ_b in regime B, deliberately: at n ≤ 6 seasons a CI requirement would be
+unmeetable at any true effect size and would function as a permanent veto rather than a test. The
+mean-plus-floor form is the strictest rule this sample supports. **§5.1's publication freeze applies
+to it in full** — clearing (c) is a build-decision, never a claim of demonstrated within-position
+edge.
 
 ### 5.1 Power, pre-committed and not relaxable
 
