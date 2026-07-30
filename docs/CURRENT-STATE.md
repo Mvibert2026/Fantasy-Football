@@ -17,14 +17,35 @@ learn *what is true*.
 **THE APP IS LIVE ON THE INTERNET, 2026-07-29** — `https://fantasy-football.soft-water-e755.workers.dev`,
 a Cloudflare Worker serving the static Vite build from `main` and rebuilding on every push
 (`wrangler.jsonc` at the repo root). Founder confirmed it working in his own browser; independently
-verified that `/data/board.json` serves `contract_version 1.14.0`, so it is the current build.
+verified (2026-07-29, before this session's ADR-062 bump) that `/data/board.json`'s
+`contract_version` field matched `src/export_contract.py` at the time, confirming it was the
+current build then; the deployed worker has not been redeployed since, so it now lags this
+repo's bumped value (see this file's contract-version line under Build state) until the next push.
 `maplerock.net` moved to Cloudflare nameservers and the custom domain is added, pending certificate.
 **Public by explicit founder choice**, with the exposure trade stated to him. No credential in this
 repo — Cloudflare holds its own deploy token. This closes the last dependency on the founder's
 machine: development, tests, the database rebuild, the daily capture and now viewing the app all run
 without it.
 
-**Last verified:** 2026-07-29, backend session (PM-dispatched, worktree
+**Last verified:** 2026-07-29, backend session (worktree `agent-a03895ae72315d84c`, ADR-062,
+FR-042) fixing a real defect: all 24 `generate_config_matrix.py` presets and every league built
+through `league_builder.create_league()` (including the real, previously-created
+`ethans_expert_league`) were silently copying Westwood's verified custom scoring ruleset
+(`scoring.LEAGUE` — stacking yardage bonuses, ADR-052) with only reception value changed/overridden,
+so a preset labeled "ESPN-default" or a founder-created custom league carried Westwood's bonuses/
+TD values/defense while claiming to be something else. New `src/standard_scoring.py::
+STANDARD_LEAGUE` (25 yd/pt passing, 4 pt passing TD, −2 INT, 10 yd/pt rushing/receiving, 6 pt TD,
+−2 fumble lost, **no yardage bonuses** — the founder's own explicit FR-042 definition) is now what
+every non-primary league builds on; only the primary (Westwood) league still uses `scoring.LEAGUE`,
+unreachable through either preset-matrix or custom-builder path. **Contract 1.14.0 → 1.15.0
+(additive):** `league.json` gains `scoring_ruleset_note`, stating on screen which ruleset a league
+actually uses. All 24 presets + `ethans_expert_league` regenerated (not edited); Westwood's own
+board verified byte-identical (Bijan Robinson 303.16 pts / VBD 172.17, unchanged) — only its
+`league.json`'s contract version and new note field changed. Non-primary boards moved for real:
+e.g. `espn_10_half` Bijan Robinson 303.16 → 296.68 pts (rushing-yardage bonus removed). Handoff
+thread 093 opened to frontend for the contract bump. See ADR-062 for full before/after evidence.
+
+**Prior verification:** 2026-07-29, backend session (PM-dispatched, worktree
 `agent-a2a7e52225b3a7db0`, ADR-060) closing a real gap: contract 1.14.0 (thread 082) put real ADP
 fields on the board but defined the term nowhere reachable — 13-term glossary, zero mentions in
 Methodology. Added an `ADP` glossary term (`src/export_static.py`, folding
@@ -67,8 +88,8 @@ PHASE 1/PHASE 2 closeout session (main @ `9d8e09b`, merge of `integration-2026-0
 — build-state table below is
 measured directly from `git rev-parse HEAD`, real backend/frontend full-suite runs,
 `CONTRACT_VERSION` in `src/export_contract.py`, and `tools/handoffs.py check`. `CONTRACT_VERSION`
-is **1.14.0** (measured from `src/export_contract.py`, 2026-07-29 — this line said 1.13.0 until
-the claim checker caught the drift; the Build state table below had been right all along).
+is **1.15.0** (measured from `src/export_contract.py`, 2026-07-29, this session's ADR-062 bump —
+was 1.14.0; this line previously said 1.13.0 until an earlier claim checker caught that drift).
 The 1.13.0 bump, from the Phase 3 Chain 1 backend session (worktree
 `phase3-chain1-adp-and-exports`, thread 074 closed), added: `board.json` top level gained
 `snapshot_as_of_date`/`snapshot_age_days`/`snapshot_max_age_days`/`snapshot_stale`/

@@ -105,5 +105,5 @@ and clarified.
 whether it's Westwood's verified ruleset or the standard one -- see `docs/handoffs/` thread to
 frontend for the bump.
 
-All 24 presets regenerated (not edited). See ADR-061 and `docs/data-contract.md` 1.15.0 entry for
+All 24 presets regenerated (not edited). See ADR-062 and `docs/data-contract.md` 1.15.0 entry for
 before/after evidence and test counts.
