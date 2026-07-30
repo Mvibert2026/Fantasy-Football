@@ -5,11 +5,11 @@ Per-request files in this directory are the source of truth. Edit a request's ow
 `STATUS:` line, then re-run sync. Protocol: [`README.md`](README.md).
 Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests.md).
 
-**56 requests since freeze.**
+**57 requests since freeze.**
 
 ---
 
-## NEW — 33
+## NEW — 34
 
 | ID | Subject | Raised | Source |
 |---|---|---|---|
@@ -46,6 +46,7 @@ Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests
 | [FR-069](FR-069-kill-the-24-preset-matrix-the-league-dropdown-is.md) | Kill the 24 preset matrix the league dropdown is | 2026-07-30 | chat 2026-07-30, PM session |
 | [FR-070](FR-070-calibration-mocks-cannot-use-my-real-league-sett.md) | Calibration mocks cannot use my real league sett | 2026-07-30 | chat 2026-07-30, PM session |
 | [FR-071](FR-071-a-simulate-feature-real-autopick-from-adp-with-w.md) | A simulate feature real autopick from adp with w | 2026-07-30 | chat 2026-07-30, PM session |
+| [FR-072](FR-072-thread-hygiene-process-is-failing-24-of-38-threa.md) | Thread hygiene process is failing 24 of 38 threa | 2026-07-30 | chat 2026-07-30, PM session |
 
 ## SCOPING — 1
 
