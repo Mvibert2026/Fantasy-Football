@@ -83,3 +83,21 @@ Westwood), `inert-04b-topbar-wide.png` (same bar at 2200px, unabbreviated, provi
 reasoning), `inert-05-league-switch-generic-track-topbar.png` (GENERIC badge after switching to
 an ESPN preset). 261 tests passing (251 baseline + 10 new in
 `ui/__tests__/inert-controls-and-two-track.test.tsx`), `npx tsc -b --noEmit` clean.
+### frontend · 2026-07-30
+
+No UI change this session. Bumped `frontend/ui/data/contract.ts::EXPECTED_CONTRACT` and
+`frontend/ui/data/trace-fields.ts::TRACE_CONTRACT` from `1.14.0` to `1.15.0`, and added a
+`TRACE_CHANGELOG` entry describing the value-vs-added distinction (the field itself is `added`,
+but the real on-screen consequence is that non-primary boards' `projected_points`/`vbd`/
+`overall_rank`/`tier` moved, hence `kind: 'value'`). This closes the one pre-existing red test in
+the frontend suite (`ui/__tests__/trace-fields.test.ts`, "is pinned to the contract version the
+exports actually carry" -- confirmed pre-existing via `git stash`, not caused by this session's
+other work).
+
+Picked this up opportunistically because it was already in my inbox and already causing that red
+test in a session where "suite green" was a stated requirement -- not because it was one of this
+session's two assigned specs (docs/design/DRAFT-MIDDLE-PANE.md, SUPPLIED-VALUES.md).
+
+Surfacing `scoring_ruleset_note` near the league switcher or a settings/methodology panel is a
+reasonable follow-up, left open for whoever picks up league-settings/methodology work next
+(possibly overlapping `docs/design/LEAGUE-SETTINGS-BOUNDARY.md`, not read this session).

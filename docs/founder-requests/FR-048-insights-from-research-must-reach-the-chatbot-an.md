@@ -224,3 +224,14 @@ harness, see session report for full transcripts):
 `docs/ideas-inbox.md` 2026-07-29 entry "frontend, FR-048 retrieval rebuild: decided without
 asking".
 
+## Update (2026-07-30, frontend) — the shell exists now, honestly empty
+
+`docs/design/DRAFT-MIDDLE-PANE.md` gave FR-048 a real seat: an "Insights" tab in the draft middle
+pane, "scoped to players on screen and to this pick." Built the tab (it's reachable, part of the
+FR-049 tab set), but it renders an explicit not-built state rather than approximating from
+`nulls.json`'s general findings (which carry no `pick_range`/`applies_to` attribution, so showing
+them under a "this pick" heading would misrepresent them as scoped when they aren't) or from the
+assistant's keyword-retrieval corpus (same scoping gap). Still blocked on the same thing this
+ticket already named: a real `findings.json` artifact with `status`/`applies_to.pick_range`. No
+change to this ticket's STATUS — the substantive ask is still open.
+

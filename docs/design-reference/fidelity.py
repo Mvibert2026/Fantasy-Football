@@ -82,7 +82,7 @@ except ImportError as exc:  # pragma: no cover - environment problem, not logic
 # Constants
 # --------------------------------------------------------------------------- #
 
-REPO_ROOT: Path = Path(__file__).resolve().parent.parent
+REPO_ROOT: Path = Path(__file__).resolve().parent.parent.parent
 REFERENCE_DIR: Path = REPO_ROOT / "docs" / "design-reference"
 SCREENS_JSON: Path = REFERENCE_DIR / "screens.json"
 BASELINE_DIR: Path = REFERENCE_DIR / "baselines"

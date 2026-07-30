@@ -1,6 +1,6 @@
 ---
 ID: FR-045
-STATUS: NEW
+STATUS: SHIPPED
 PRIORITY: MEDIUM-LOW
 SOURCE: chat 2026-07-29, PM session
 RAISED: 2026-07-29
@@ -89,3 +89,23 @@ whether such a log is usable for λ calibration.** The measured `DEFAULT_LAMBDA 
 practical way to self-serve mocks, and mocks gate the core claim (0 of ~30 logged). If
 placeholder-heavy logs are inadmissible he needs to know *before* running a batch, not after —
 regardless of this ticket's priority.
+
+## Resolution (2026-07-30, frontend)
+
+**Option 1 shipped** (the recommended immediate fix), per `docs/design/DRAFT-MIDDLE-PANE.md`'s own
+explicit ruling on the same option. `frontend/ui/data/scarcity.ts::positionScarcity` gained a
+`hasAutoFillPlaceholders` parameter; when true, `pace` is `null` and a new `paceSuppressedReason`
+field carries the honest reason, both computed together (never independently, so they cannot
+disagree). `paceLabel()` now renders that reason in place of the direction phrase whenever it's
+set. `frontend/ui/views/DraftRoom.tsx` passes `hasAutoFillPlaceholders = draft.picks.some(p =>
+p.playerName === AUTO_FILL_PLACEHOLDER)`. `under50ByNext`/`depletionWarning`/`tierDepletionLine`
+were left untouched — confirmed (per this ticket's own suggestion) that they key off
+`nextUserPick`, not `currentPick`, so they don't inherit the same skew. Tests: `ui/__tests__/
+formulas.test.ts` (direct `positionScarcity`/`paceLabel` unit coverage) and `ui/__tests__/
+draft-room-middle-pane-tabs.test.tsx` (real Auto-fill click, confirms the suppression text renders
+for every position and no stale "ahead/behind of pace" phrase survives). Screenshot:
+`frontend/e2e/artifacts/middle-pane-4-scarcity-pace-suppressed.png`.
+
+Option 2 (scale `expected` by the share of real picks) was not built — option 1 was the ticket's own
+recommendation and the one design specified. The separate λ-calibration admissibility question
+(backend/strategist) was not addressed this session.

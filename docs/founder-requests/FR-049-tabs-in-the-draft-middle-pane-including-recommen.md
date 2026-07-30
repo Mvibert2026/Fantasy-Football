@@ -1,6 +1,6 @@
 ---
 ID: FR-049
-STATUS: NEW
+STATUS: SHIPPED
 SOURCE: chat 2026-07-29, PM session
 RAISED: 2026-07-29
 ---
@@ -44,3 +44,27 @@ or label the model before promoting it**, not after.
 
 **Design owns the layout.** This is the fourth request today that lands in the same pane, which is
 exactly the case for specifying the whole pane once rather than adding one control at a time.
+
+## Resolution (2026-07-30, frontend)
+
+Built per `docs/design/DRAFT-MIDDLE-PANE.md`'s ruling: **one tab set, in the pane, four tabs —
+Recommend / Scarcity / Queue / Insights** (not a second level under the pre-existing Board/
+Opponents/Predictions hub tabs; the grid stays out per that doc's §1.1, tracked separately as
+FR-044). NEXT DECISION is a persistent footer under the tab content, never behind a tab.
+Recommend is the default tab.
+
+**"Recommendations before my pick," the specific ask, is the look-ahead toggle inside Recommend.**
+Off the clock, Recommend now shows a real recommendation computed as if it were the user's next
+turn (round-appropriate — e.g. the early-QB penalty relaxes once round 6 is reached), rather than
+nothing. On the clock, a toggle switches between "this pick" and a look-ahead to the turn after
+this one. Labelled honestly every time it renders: "computed on today's board — does not account
+for players taken between now and then," since this build has no model for which currently-
+available players will still be there by the look-ahead pick.
+
+**The standing label survived the promotion**, per this ticket's own instruction: "RECOMMENDED
+(unvalidated stopgap score, not a backtested model)" renders in both this-pick and look-ahead
+content, unchanged text.
+
+Tests: `frontend/ui/__tests__/draft-room-middle-pane-tabs.test.tsx` (8 new), plus updates to
+`draft-room-scarcity-and-sort.test.tsx` for the new tab structure. Screenshots:
+`frontend/e2e/artifacts/middle-pane-{1,2}-recommend-*.png`.

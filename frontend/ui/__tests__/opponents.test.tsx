@@ -181,7 +181,30 @@ describe('Opponents', () => {
 
       expect(within(card).getByText('The Testers')).toBeInTheDocument();
       expect(within(card).queryByText(/no team name supplied/i)).not.toBeInTheDocument();
-      expect(within(card).getByText('TYPED')).toBeInTheDocument();
+      expect(within(card).getByText('typed')).toBeInTheDocument();
+    });
+
+    it('SUPPLIED-VALUES.md: marks the typed name with a dotted underline and a lowercase marker, never the --acc delta colour', async () => {
+      render(<Opponents data={data} />);
+      const unnamed = data.opponents.opponents.find((o) => o.team_name === null);
+      if (!unnamed) throw new Error('fixture guard: expected at least one unnamed opponent');
+      const card = cardFor(unnamed);
+
+      await userEvent.click(within(card).getByRole('button', { name: /edit team name/i }));
+      await userEvent.type(within(card).getByRole('textbox', { name: /team name for slot/i }), 'The Testers{Enter}');
+
+      const nameEl = within(card).getByText('The Testers');
+      // Green already means "good, positive, better than baseline" (the
+      // board's delta colour) -- a typed name is not that, so it must never
+      // borrow the accent, on the name or on the marker beside it. Reading
+      // `.style` directly rather than jest-dom's `toHaveStyle` (its CSS
+      // parser did not match this shorthand reliably against a raw `var()`
+      // value in this environment).
+      expect(nameEl.style.color).not.toBe('var(--acc)');
+      expect(nameEl.style.borderBottom).toBe('1px dotted var(--line2)');
+      const marker = within(card).getByText('typed');
+      expect(marker.style.color).not.toBe('var(--acc)');
+      expect(marker.style.border).not.toContain('var(--acc)');
     });
 
     it('a typed name overrides a real sourced name, and marks itself TYPED -- never presented as the same kind of value', async () => {
@@ -197,7 +220,7 @@ describe('Opponents', () => {
 
       expect(within(card).getByText('Renamed Locally')).toBeInTheDocument();
       expect(within(card).queryByText(named.team_name!)).not.toBeInTheDocument();
-      expect(within(card).getByText('TYPED')).toBeInTheDocument();
+      expect(within(card).getByText('typed')).toBeInTheDocument();
     });
 
     it('persists the typed name to per-league storage, matching the shape of the draft-state store', async () => {
@@ -229,7 +252,7 @@ describe('Opponents', () => {
 
       expect(within(card).getByText(named.team_name!)).toBeInTheDocument();
       expect(within(card).queryByText('Temp Override')).not.toBeInTheDocument();
-      expect(within(card).queryByText('TYPED')).not.toBeInTheDocument();
+      expect(within(card).queryByText('typed')).not.toBeInTheDocument();
     });
 
     it('clearing a typed override for a slot with no sourced name falls back to the honest "no team name supplied" placeholder, not blank', async () => {

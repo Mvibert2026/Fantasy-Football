@@ -683,3 +683,58 @@ file (ADR-057). Full evidence `docs/ranking/bottom-up-research-pass-3.md`, threa
    per that item's own standing rule ("renumbering belongs to whoever merges that branch,
    knowingly"). Flagging so whoever eventually reconciles the unmerged branches treats this as one
    collision class, not two.
+## 2026-07-30 — frontend, DRAFT-MIDDLE-PANE.md + SUPPLIED-VALUES.md: decided without asking
+
+1. **`docs/design-reference/fidelity.py` had a real, pre-existing off-by-one path bug**, unrelated
+   to my two specs: it lives at `docs/design-reference/fidelity.py` (two directories deep) but
+   computed `REPO_ROOT` with only `Path(__file__).resolve().parent.parent` (one `.parent` short),
+   landing on `<repo>/docs` and then failing every run looking for
+   `<repo>/docs/docs/design-reference`. Fixed (added a third `.parent`) since it was a one-line,
+   high-confidence, low-risk fix and running the harness is called for by both my task brief and
+   `docs/design-fidelity.md`. **Even fixed, the harness cannot check today's build**: `screens.json`
+   names screens (`board`, `opponents`, `predictions`) that resolve to routes
+   (`/draft/board` etc.) the app does not have — there is no router in `ui/App.tsx`, tab switching
+   is component state, not a URL. And no per-screen reference HTML exists (only
+   `prototype.dc.html`, a single old monolith, plus PNG screenshots under `reference/` that are not
+   wired as harness input at all). This is a second, larger gap than the path bug — the harness was
+   never fully wired to the app's actual navigation model. Did not attempt to fix this second part
+   (real design/architecture decision: does this app get real routes, or does the harness get
+   redesigned around state-based tabs; not mine to decide unilaterally). Used direct Playwright
+   screenshots instead (`frontend/e2e/verify-draft-middle-pane-tabs.mjs`), matching
+   `design-fidelity.md`'s own fallback ("founder screenshot review") and the task's explicit
+   screenshot requirement.
+2. **Predictions.tsx's own "predicting under" line** (a *third* place besides the two named
+   controls) rendered the overridden draft slot in `--acc` green with the same "sourced N"
+   disclosure pattern SUPPLIED-VALUES.md targets. Not named in the spec (which scoped to "both new
+   controls," FR-034/036), but it is the identical value, the identical defect class, and leaving it
+   green after fixing the other two would be an inconsistency the spec's own stated purpose (stop
+   the *next* supplied control from being decided by accident) exists to prevent. Fixed the colour
+   and added the dotted underline; left the existing wording ("overridden, sourced N") unchanged
+   since design didn't specify new copy for this spot and a `predictions.test.tsx` assertion already
+   pins that exact phrase.
+3. **FR-051's "range across the sigma settings"** could not be built as a VBD range (the design
+   mock's illustrative "VBD 54.1 · 48.9-58.2" appears to be placeholder numbers, not a real,
+   reproducible computation — VBD is a static per-player board value, not sigma-dependent). Built
+   instead as a survival-probability range (sigma 5/10/20 spread) for the selected "likely there"
+   player, reusing the exact idiom `Predictions.tsx`'s own `RangeCell` already ships. Real, sourced,
+   traceable; a documented divergence from the mock's literal numbers, not a refusal to build the
+   feature.
+4. **FR-051's reference point and FR-049's look-ahead toggle are both scoped to the base on-clock
+   "this pick" state only** — not generalised into the look-ahead branch (nested
+   "who's likely there after my hypothetical future pick" was judged to compound one hypothetical on
+   another for no clear benefit this session). Documented as a deliberate, not exhaustive, scope
+   limit in code comments and the session's status writeup.
+6. **`docs/CURRENT-STATE.md` was missing its `<!-- BUILD-STATE:END -->` marker entirely** (only
+   `BUILD-STATE:START` existed), so `python tools/state.py --apply` hard-failed for every session
+   that tried it, silently, with no CURRENT-STATE.md edit to explain why the table stayed stale.
+   Added the missing marker (one line, immediately before "## Top open items", where the empty
+   table already sat) and ran `--apply` — it now writes a real measured table (commit hash,
+   contract version, module/artifact counts). Did not pass `--tests` (no `data/nfl.db` in this
+   container per `docs/frontend-cloud-runbook.md`, and backend tests need it).
+5. **Thread 093 (contract 1.15.0, `scoring_ruleset_note`) was closed opportunistically**: it was
+   already in my inbox, already causing the one pre-existing red test in the 251-test baseline
+   (`trace-fields.test.ts`), and the fix was mechanical (bump `TRACE_CONTRACT`/`EXPECTED_CONTRACT`,
+   add a changelog entry). No UI surfacing added this session — replied to the thread with "no UI
+   change, version check updated," per its own stated alternative, since a settings/methodology
+   surface for `scoring_ruleset_note` is a reasonable follow-up but wasn't one of today's two
+   assigned specs.

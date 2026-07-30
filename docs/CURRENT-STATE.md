@@ -27,7 +27,40 @@ repo — Cloudflare holds its own deploy token. This closes the last dependency 
 machine: development, tests, the database rebuild, the daily capture and now viewing the app all run
 without it.
 
-**Last verified:** 2026-07-29, data-ops session (PM-dispatched, worktree
+**Last verified:** 2026-07-30, frontend session (worktree `agent-a160788e8e9ccc925`) porting two
+design specs in order, both in `docs/design/`: `DRAFT-MIDDLE-PANE.md` and `SUPPLIED-VALUES.md`. The
+Draft screen's middle pane (`frontend/ui/views/DraftRoom.tsx`) is now one tab set — **Recommend ·
+Scarcity · Queue · Insights** — replacing the old fixed stack (RECOMMENDED-when-on-clock, else
+Position Scarcity + Queue/Watch + NEXT DECISION all in one column); NEXT DECISION is now a
+persistent footer, never behind a tab. Recommend gained FR-049's look-ahead toggle (recommendations
+computed at the user's next real turn, not just the current pick) and FR-051's next-pick reference
+point (CONSIDERING / LIKELY THERE AT `<pick>`, display-only, no arithmetic — a documented divergence
+from the design mock's illustrative VBD-range numbers: built as a real sigma 5/10/20
+survival-probability spread instead, since VBD itself is not sigma-dependent). Scarcity gained
+FR-045's pace-suppression rule (`positionScarcity`'s new `hasAutoFillPlaceholders` param nulls
+`pace` and states why once Auto-fill has logged placeholder picks, rather than showing every
+position as "behind pace" simultaneously, which is arithmetic noise from mixing real and
+placeholder pick populations). Insights (FR-048) is an honest not-yet-built state, not an
+approximation — no `findings.json` artifact exists to scope research to a specific pick. FR-044
+(the periodic-table grid) stays explicitly out of scope, per design's own manifest: its position
+colours are unpicked. Separately, both places the founder supplies a value rather than the app
+deriving one — the typed opponent name and the TopBar draft-slot override — no longer render in
+`--acc` (the board's delta/"good" colour); both now carry a dotted underline plus a lowercase
+marker (`typed` / `set by you`), per `SUPPLIED-VALUES.md`'s rule that a supplied value's channel
+must never be a semantic accent. A third instance of the same defect, not named in the spec
+(`Predictions.tsx`'s own overridden-slot readout), was found and fixed for consistency.
+**Opportunistically closed thread 093** (contract 1.15.0 pin, already the one pre-existing red test
+in the 251-test baseline) — bumped `EXPECTED_CONTRACT`/`TRACE_CONTRACT`, no UI change. **Found and
+fixed a real path bug in `docs/design-reference/fidelity.py`** (off-by-one `REPO_ROOT`); even fixed,
+the harness cannot check this build — `screens.json` names routes the app doesn't have (no router)
+and no per-screen reference HTML exists, a separate, larger gap not fixed this session (see
+`docs/ideas-inbox.md`). Screenshots looked at directly:
+`frontend/e2e/artifacts/middle-pane-*.png` (6), `supplied-*.png` (2). `npx tsc -b --noEmit` clean;
+**265 passed, 0 failed** (251 baseline + 14 new tests across `draft-room-middle-pane-tabs.test.tsx`,
+`topbar-supplied-slot.test.tsx`, `formulas.test.ts`, `opponents.test.tsx`, `predictions.test.tsx`).
+Full writeup: `docs/status/2026-07-30-frontend-draft-middle-pane-supplied-values.md`.
+
+**Prior verification:** 2026-07-29, data-ops session (PM-dispatched, worktree
 `agent-a1bcc65cbaf0f88d7`), closing thread 055: historical FFC ADP is no longer absent from
 `nfl.db`. Backfilled 2,467 rows across 19 season-formats into new `adp_source` values
 `ffc_half_ppr_12team` (2018-2024, 7 seasons — the ranker's stated priority format) and
@@ -193,6 +226,15 @@ by the session whose work changed them, per the agent operating rules.
 
 | | Value | Notes |
 |---|---|---|
+| Backend branch / commit | `worktree-agent-a160788e8e9ccc925`, `b04ac45785338fc0c655851173c69a25b321b369` | `git rev-parse --abbrev-ref HEAD` / `HEAD` |
+| Data contract | `1.15.0` | `CONTRACT_VERSION` in `src/export_contract.py` |
+| Python modules | 44 | `src/*.py`, counted |
+| Export artifacts | 11 | top-level files in `data/export/` |
+| Config matrix | 26 | dirs under `data/export/` |
+| Backend tests | (skipped — pass --tests to run the suite) |  |
+| Frontend tests | (skipped — pass --tests to run the suite) |  |
+
+<!-- BUILD-STATE:END -->
 
 ## Top open items
 

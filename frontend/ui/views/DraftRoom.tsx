@@ -17,6 +17,7 @@ import {
   type EntryMode,
 } from '../data/draft';
 import { computeLiveAvailability, dotsFilled, freqText, type LiveAvailabilityResult } from '../data/liveAvailability';
+import { playerAvailabilityAtPick } from '../data/availability';
 import type { Dataset } from '../data/load';
 import type { LeagueConfig } from '../data/league';
 import { findVbdOverride, rankByRecommendation } from '../data/recommendation';
@@ -96,6 +97,64 @@ function pointsRangeFromVbdInterval(row: BoardRow): { low: number; high: number 
   }
   const offset = row.projectedPoints.value - row.vbd.value;
   return { low: row.interval.value.low + offset, high: row.interval.value.high + offset };
+}
+
+/**
+ * FR-049 look-ahead reason text: the same tier/VBD logic
+ * `recommendationDetail` uses for its top pick, minus the survival-percentage
+ * fragment (that requires a "pick after the pick being viewed" concept this
+ * function's caller does not have -- see recommendationDetailLookAhead's
+ * comment). Deliberately says "today's board," never implying the named
+ * player is predicted to survive to the look-ahead pick.
+ */
+function buildLookAheadReason(top: BoardRow, available: BoardRow[]): string {
+  if (top.projectedPoints.kind !== 'present') {
+    return `Best available on our board at rank ${top.overallRank.kind === 'present' ? integer(top.overallRank.value) : '—'}. ${top.projectedPoints.reason}`;
+  }
+  const topTier = top.tierLabel;
+  const tierLeft =
+    topTier.kind === 'present'
+      ? available.filter((r) => r.raw.position === top.raw.position && r.tierLabel.kind === 'present' && r.tierLabel.value === topTier.value)
+          .length
+      : null;
+  if (tierLeft !== null && tierLeft <= 2 && top.raw.tier <= 2) {
+    return `Only ${tierLeft} tier-${top.raw.tier} ${top.raw.position} left on today's board.`;
+  }
+  return `Best value by VBD on today's board — ${integer(top.vbd.kind === 'present' ? top.vbd.value : 0)} points over replacement in your format.`;
+}
+
+/**
+ * FR-051 / DRAFT-MIDDLE-PANE.md §1.2, "the next-pick reference point": the
+ * single highest-VBD available player (excluding the one already being
+ * considered) with at least even odds of surviving to `pick`, live-adjusted
+ * the same way every other availability read on this screen is
+ * (computeLiveAvailability -- baseline unless a live-adjusted figure exists).
+ * Real data, a real cutoff (matching scarcity.ts's own `under50ByNext`
+ * convention), never a fabricated "who'll probably be there."
+ *
+ * Null when no available player clears 50% -- an honest gap, not a forced
+ * pick at whatever odds happen to be highest. Display only, per the design
+ * doc's explicit instruction not to feed this into the recommendation.
+ */
+function findLikelyThereCandidate(
+  pick: number,
+  excludeId: number,
+  pool: BoardRow[],
+  data: Dataset,
+  league: LeagueConfig,
+  picks: DraftPickRecord[],
+  rowsById: Map<number, BoardRow>,
+): { row: BoardRow; avail: LiveAvailabilityResult } | null {
+  const sorted = pool
+    .filter((r) => r.id !== excludeId && r.vbd.kind === 'present')
+    .slice()
+    .sort((a, b) => (b.vbd as { kind: 'present'; value: number }).value - (a.vbd as { kind: 'present'; value: number }).value);
+  for (const row of sorted) {
+    const avail = computeLiveAvailability({ data, league, row, targetPick: pick, picks, rowsById });
+    const pct = avail.live ?? (avail.baseline.kind === 'present' ? avail.baseline.value : null);
+    if (pct !== null && pct >= 0.5) return { row, avail };
+  }
+  return null;
 }
 
 /**
@@ -276,6 +335,18 @@ export function DraftRoom({
   const [detailRow, setDetailRow] = useState<BoardRow | null>(null);
   const [expandedRowId, setExpandedRowId] = useState<number | null>(null);
   const [railTab, setRailTab] = useState<'queue' | 'watch'>('watch');
+  // DRAFT-MIDDLE-PANE.md §"the decision": one tab set in the middle pane --
+  // Recommend / Scarcity / Queue / Insights -- replacing the old fixed stack
+  // (RECOMMENDED-when-on-clock, else POSITION SCARCITY + Queue/Watch + NEXT
+  // DECISION all in one column). Recommend is the spec's stated default.
+  const [paneTab, setPaneTab] = useState<'recommend' | 'scarcity' | 'queue' | 'insights'>('recommend');
+  // FR-049's "look-ahead is a toggle inside [Recommend], not a second tab --
+  // same content computed at your pick instead of this one." Only meaningful
+  // while on the clock (off-clock, look-ahead is the only content there is to
+  // show, so it's forced on with no toggle rendered -- see lookAheadActive
+  // below). Reset to false whenever the user's turn starts, so a stale
+  // "looking ahead" choice from a prior turn never survives into the next.
+  const [lookAheadToggle, setLookAheadToggle] = useState(false);
   // Thread 049 item 1 / the founder's direct ask ("when can we hook opponents
   // and predictions up to draft?"): the Board/Opponents/Predictions tab shell.
   // Board is this file's existing three-pane content, unchanged. Opponents
@@ -481,6 +552,19 @@ export function DraftRoom({
   const nextUserPick = teams > 0 ? nextPickForSlot(draft.picks, teams, userSlot, rounds) : null;
   const picksUntilYou = userOnClock ? 0 : nextUserPick !== null ? nextUserPick - currentPick : null;
   const draftComplete = teams > 0 && rounds > 0 && currentPick > teams * rounds;
+
+  useEffect(() => {
+    if (userOnClock) setLookAheadToggle(false);
+  }, [userOnClock]);
+
+  // FR-045: whether this draft log contains any auto-filled placeholder picks
+  // (see AUTO_FILL_PLACEHOLDER above) -- passed into positionScarcity so the
+  // pace line can be withheld rather than showing arithmetic drawn from two
+  // different populations (see scarcity.ts's own comment for the mechanism).
+  const hasAutoFillPlaceholders = useMemo(
+    () => draft.picks.some((p) => p.playerName === AUTO_FILL_PLACEHOLDER),
+    [draft.picks],
+  );
 
   // Thread 058 section C4: report the live pick number up to App.tsx for the
   // assistant dock's context line ("Draft · pick 24"). Null once the draft is
@@ -824,8 +908,74 @@ export function DraftRoom({
     return { top, alt, reason, pointsRange, giveUp, vbdOverride };
   }, [userOnClock, recommended, followingUserPick, data, league, draft.picks, rowsById, available, currentRound, unfilledPositions]);
 
+  // FR-049 / DRAFT-MIDDLE-PANE.md §1: "having the ability to see
+  // recommendations before my pick." `lookAheadPick` is always "the next turn
+  // that is not this exact moment" -- off the clock that's `nextUserPick`
+  // itself; on the clock (where `nextUserPick` degenerately equals
+  // `currentPick`) it's `followingUserPick`, the turn after this one, which is
+  // the only "ahead" there is to look toward.
+  const lookAheadPick = userOnClock ? followingUserPick : nextUserPick;
+  // Off the clock, look-ahead is the only content there is (there is no
+  // "this pick" to show); on the clock it's the founder's own toggle.
+  const lookAheadActive = !userOnClock || lookAheadToggle;
+
+  // Same formula as `recommended` above (rankByRecommendation over the real,
+  // currently-available pool), just evaluated at the round `lookAheadPick`
+  // falls in rather than the current round -- e.g. the early-QB penalty
+  // relaxes once round 6 is reached. Deliberately does NOT attempt to guess
+  // which of today's available players will still be on the board by
+  // `lookAheadPick` -- there is no model for that in this codebase (that
+  // would be the availability-adjusted pool, a materially bigger claim), so
+  // this is honestly labelled on screen as "today's board," not a forecast.
+  const recommendedLookAhead = useMemo(() => {
+    if (lookAheadPick === null) return [];
+    const round = teams > 0 ? roundOfPick(lookAheadPick, teams) : 0;
+    return rankByRecommendation(available, round, unfilledPositions).slice(0, 6);
+  }, [lookAheadPick, teams, available, unfilledPositions]);
+
+  /**
+   * A deliberately smaller sibling of `recommendationDetail` above: the same
+   * top-pick reason logic (VBD/tier-based), but no "WHAT YOU GIVE UP" survival
+   * comparison and no "WHY NOT HIGHEST VBD" panel. Both of those are built on
+   * `followingUserPick` availability *relative to the pick being viewed* --
+   * generalising them to an arbitrary look-ahead pick is a real, separate
+   * piece of work (what does "survives to your pick after this hypothetical
+   * one" even mean two turns out), not attempted here. This is a documented
+   * scope limit, not an oversight -- see the reply to DRAFT-MIDDLE-PANE.md.
+   */
+  const recommendationDetailLookAhead = useMemo(() => {
+    if (lookAheadPick === null || recommendedLookAhead.length === 0) return null;
+    const round = teams > 0 ? roundOfPick(lookAheadPick, teams) : 0;
+    const top = recommendedLookAhead[0]!;
+    const reason = buildLookAheadReason(top.row, available);
+    const pointsRange = pointsRangeFromVbdInterval(top.row);
+    return { top, round, reason, pointsRange };
+  }, [lookAheadPick, teams, recommendedLookAhead, available]);
+
+  /**
+   * FR-051 / §1.2: "show the reference point, do not do the arithmetic."
+   * Scoped to the base on-the-clock state only (`userOnClock && !lookAheadToggle`)
+   * -- "who's likely there at my next turn" is only a coherent question while
+   * actually on the clock considering a real pick; the look-ahead tab is
+   * itself already a hypothetical future pick, and asking "who's likely there
+   * at the pick after THAT" would compound one hypothetical on another. A
+   * deliberate, documented scope limit, not an oversight.
+   */
+  const referencePoint = useMemo(() => {
+    if (!userOnClock || lookAheadToggle || !recommendationDetail || followingUserPick === null) return null;
+    const considering = recommendationDetail.top.row;
+    const likelyThere = findLikelyThereCandidate(followingUserPick, considering.id, available, data, league, draft.picks, rowsById);
+    return { considering, pick: followingUserPick, likelyThere };
+  }, [userOnClock, lookAheadToggle, recommendationDetail, followingUserPick, available, data, league, draft.picks, rowsById]);
+
+  // DRAFT-MIDDLE-PANE.md: Queue is now its own tab, reachable whether or not
+  // the user is on the clock (previously this whole block was hidden while
+  // userOnClock, back when Position Scarcity/Queue/Watch was the only
+  // off-clock view). `nextUserPick` already equals `currentPick` while on
+  // the clock (nextPickForSlot's own definition), so this honestly degrades
+  // to "availability right now" rather than needing a second target pick.
   const watchRows = useMemo(() => {
-    if (userOnClock || nextUserPick === null) return [];
+    if (nextUserPick === null) return [];
     return watchlist
       .map((name) => available.find((r) => r.name.kind === 'present' && r.name.value === name))
       .filter((r): r is BoardRow => !!r)
@@ -833,10 +983,10 @@ export function DraftRoom({
         row,
         avail: computeLiveAvailability({ data, league, row, targetPick: nextUserPick, picks: draft.picks, rowsById }),
       }));
-  }, [userOnClock, nextUserPick, watchlist, available, data, league, draft.picks, rowsById]);
+  }, [nextUserPick, watchlist, available, data, league, draft.picks, rowsById]);
 
   const queueRows = useMemo(() => {
-    if (userOnClock || nextUserPick === null) return [];
+    if (nextUserPick === null) return [];
     return draft.queue
       .map((id) => rowsById.get(id))
       .filter((r): r is BoardRow => !!r && !taken.has(r.id))
@@ -844,7 +994,7 @@ export function DraftRoom({
         row,
         avail: computeLiveAvailability({ data, league, row, targetPick: nextUserPick, picks: draft.picks, rowsById }),
       }));
-  }, [userOnClock, nextUserPick, draft.queue, taken, data, league, draft.picks, rowsById]);
+  }, [nextUserPick, draft.queue, taken, data, league, draft.picks, rowsById]);
 
   const scarcityList = useMemo(
     () =>
@@ -864,9 +1014,10 @@ export function DraftRoom({
             league.thresholds.map((t) => [t.position, t.starters.kind === 'present' ? t.starters.value : 0]),
           ),
           teams,
+          hasAutoFillPlaceholders,
         ),
       ),
-    [data, rows, draft.picks, currentPick, nextUserPick, league.thresholds, teams],
+    [data, rows, draft.picks, currentPick, nextUserPick, league.thresholds, teams, hasAutoFillPlaceholders],
   );
 
   if (teams === 0 || rounds === 0 || userSlot === 0) {
@@ -892,6 +1043,21 @@ export function DraftRoom({
     { key: 'board', label: 'Board' },
     { key: 'opponents', label: 'Opponents' },
     { key: 'predictions', label: 'Predictions' },
+  ];
+
+  // DRAFT-MIDDLE-PANE.md's "one tab set, in the pane, four tabs" -- same
+  // sentence-case boxed treatment as HUB_TABS above (design's own dtabs
+  // pattern), one level lower in the screen. Deliberately does NOT reuse
+  // hubTab's styling constants directly (a shared helper would be a fine
+  // follow-up) -- kept separate for now since the two tab rows sit in visually
+  // distinct rows (hub tabs above the whole screen, pane tabs inside one
+  // column) and conflating them risked a subtle shared-state bug under time
+  // pressure.
+  const PANE_TABS: Array<{ key: typeof paneTab; label: string }> = [
+    { key: 'recommend', label: 'Recommend' },
+    { key: 'scarcity', label: 'Scarcity' },
+    { key: 'queue', label: 'Queue' },
+    { key: 'insights', label: 'Insights' },
   ];
 
   return (
@@ -1465,357 +1631,671 @@ export function DraftRoom({
           </div>
         </div>
 
-        <div style={{ minHeight: 0, overflowY: 'auto', borderRight: '1px solid var(--line)', background: 'var(--panel)' }}>
-          {draftComplete ? (
-            <div style={{ padding: 14, color: 'var(--dim)' }}>Draft complete.</div>
-          ) : userOnClock ? (
-            <div style={{ padding: 14 }}>
-              <div
+        <div style={{ minHeight: 0, display: 'flex', flexDirection: 'column', borderRight: '1px solid var(--line)', background: 'var(--panel)' }}>
+          <div style={{ flex: 'none', display: 'flex', gap: 3, padding: '8px 10px 0', background: 'var(--panel2)' }}>
+            {PANE_TABS.map((t) => (
+              <button
+                key={t.key}
+                aria-pressed={paneTab === t.key}
+                onClick={() => setPaneTab(t.key)}
                 style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 10,
-                  padding: '9px 12px',
-                  background: 'var(--live)',
-                  color: '#0a0d12',
-                  fontWeight: 700,
-                  letterSpacing: '.06em',
-                  fontSize: 15,
+                  padding: '6px 13px',
+                  background: paneTab === t.key ? 'var(--panel)' : 'transparent',
+                  borderTop: `1px solid ${paneTab === t.key ? 'var(--line2)' : 'transparent'}`,
+                  borderLeft: `1px solid ${paneTab === t.key ? 'var(--line2)' : 'transparent'}`,
+                  borderRight: `1px solid ${paneTab === t.key ? 'var(--line2)' : 'transparent'}`,
+                  borderBottom: 0,
+                  borderRadius: 'var(--r-c) var(--r-c) 0 0',
+                  color: paneTab === t.key ? 'var(--txt)' : 'var(--dim2)',
+                  fontSize: 12,
+                  fontWeight: paneTab === t.key ? 600 : 400,
                 }}
               >
-                YOU'RE ON THE CLOCK — PICK {currentPick}
-              </div>
-              <div style={{ marginTop: 12, fontFamily: 'var(--font-num)', fontSize: 10, letterSpacing: '.12em', color: 'var(--dim2)' }}>
-                RECOMMENDED (unvalidated stopgap score, not a backtested model)
-              </div>
-              {recommendationDetail ? (
-                <div style={{ marginTop: 8, border: '1px solid var(--acc)', background: 'var(--panel2)' }}>
-                  <div style={{ padding: 14 }}>
-                    <div style={{ display: 'flex', alignItems: 'baseline', gap: 9 }}>
-                      <span
-                        onClick={() => openDetail(recommendationDetail.top.row)}
-                        style={{ fontWeight: 700, fontSize: 22, cursor: 'pointer' }}
-                      >
-                        {recommendationDetail.top.row.name.kind === 'present' ? recommendationDetail.top.row.name.value : ''}
-                      </span>
-                      <span style={{ fontFamily: 'var(--font-num)', fontSize: 13, fontWeight: 600, color: POSITION_COLOR[recommendationDetail.top.row.raw.position] }}>
-                        {recommendationDetail.top.row.positionalLabel.kind === 'present'
-                          ? recommendationDetail.top.row.positionalLabel.value
-                          : recommendationDetail.top.row.raw.position}
-                      </span>
-                      <span style={{ fontFamily: 'var(--font-num)', fontSize: 11, color: 'var(--dim2)' }}>
-                        {recommendationDetail.top.row.raw.team} · BYE{' '}
-                        <span className="num">
-                          <Value cell={recommendationDetail.top.row.byeWeek} render={integer} />
-                        </span>
-                      </span>
-                    </div>
-                    {recommendationDetail.top.row.projectedPoints.kind === 'present' ? (
-                      <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginTop: 8 }}>
-                        <span className="num" style={{ fontSize: 20, fontWeight: 600 }}>
-                          {decimal(recommendationDetail.top.row.projectedPoints.value)}
-                        </span>
-                        <span style={{ fontSize: 11, color: 'var(--dim)' }}>projected pts</span>
-                        <span className="num" style={{ fontSize: 11, color: 'var(--dim2)' }}>
-                          {recommendationDetail.pointsRange
-                            ? `honest range ${intervalText(recommendationDetail.pointsRange.low, recommendationDetail.pointsRange.high)}`
-                            : 'range not available for this player'}
-                        </span>
-                      </div>
-                    ) : (
-                      <p className="notice" style={{ marginTop: 8, fontSize: 12 }}>
-                        {recommendationDetail.top.row.projectedPoints.reason}
-                      </p>
-                    )}
-                    <div style={{ marginTop: 4, fontFamily: 'var(--font-num)', fontSize: 11, color: 'var(--dim2)' }}>
-                      VBD <Value cell={recommendationDetail.top.row.vbd} render={decimal} />
-                      {unfilledPositions.has(recommendationDetail.top.row.raw.position) ? ' · fills an open starting slot' : ''}
-                    </div>
-                    <div style={{ marginTop: 10, fontSize: 13, lineHeight: 1.5, color: 'var(--txt)' }}>
-                      {recommendationDetail.reason}
-                    </div>
-                    <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
-                      <button
-                        onClick={() =>
-                          recordPick(
-                            recommendationDetail.top.row.id,
-                            recommendationDetail.top.row.name.kind === 'present' ? recommendationDetail.top.row.name.value : '',
-                            'shortcut',
-                          )
-                        }
-                        style={{ padding: '6px 14px', background: 'var(--acc)', border: 0, color: '#08120c', fontWeight: 700, fontSize: 12 }}
-                      >
-                        Draft {recommendationDetail.top.row.name.kind === 'present' ? recommendationDetail.top.row.name.value : ''}
-                      </button>
-                      <button
-                        onClick={() => openDetail(recommendationDetail.top.row)}
-                        style={{ padding: '6px 12px', background: 'transparent', border: '1px solid var(--line2)', color: 'var(--txt)', fontSize: 12 }}
-                      >
-                        Why this rank
-                      </button>
-                    </div>
-                  </div>
-                  {recommendationDetail.giveUp ? (
-                    <div style={{ borderTop: '1px solid var(--line)', padding: '11px 14px', background: 'var(--bg)' }}>
-                      <div style={{ fontFamily: 'var(--font-num)', fontSize: 10, letterSpacing: '.12em', color: 'var(--dim2)' }}>
-                        WHAT YOU GIVE UP
-                      </div>
-                      <div style={{ marginTop: 6, fontSize: 12.5, lineHeight: 1.5, color: 'var(--dim)' }}>
-                        {recommendationDetail.giveUp}
-                      </div>
-                    </div>
-                  ) : null}
-                  {/* FR-058: "if the recommendation strays from VBD ... the
-                      panel needs to provide an explanation" -- renders only
-                      when recommendationDetail.vbdOverride is non-null, i.e.
-                      only when the #1 pick is NOT the highest-VBD player still
-                      available. Two hard limits from the request, both
-                      enforced here: (1) this states which named constant
-                      fired and what it cost -- it does not argue the pick is
-                      good, so there is no "so this is the right call" clause
-                      anywhere in this block; (2) every rule cited is labelled
-                      untested, verbatim, every time -- recommendation.ts's own
-                      module doc calls the formula "a stopgap, not a validated
-                      model," and this panel repeats that rather than letting
-                      a cited constant read as a finding. */}
-                  {recommendationDetail.vbdOverride ? (
-                    <div style={{ borderTop: '1px solid var(--line)', padding: '11px 14px', background: 'var(--bg)' }}>
-                      <div style={{ fontFamily: 'var(--font-num)', fontSize: 10, letterSpacing: '.12em', color: 'var(--dim2)' }}>
-                        WHY NOT HIGHEST VBD
-                      </div>
-                      <div style={{ marginTop: 6, fontSize: 12.5, lineHeight: 1.5, color: 'var(--dim)' }}>
-                        {recommendationDetail.vbdOverride.displaced.name.kind === 'present'
-                          ? recommendationDetail.vbdOverride.displaced.name.value
-                          : 'The next player'}{' '}
-                        ({recommendationDetail.vbdOverride.displaced.raw.position}) has{' '}
-                        <span className="num">{integer(Math.round(recommendationDetail.vbdOverride.vbdGap))}</span> more VBD (
-                        <span className="num">
-                          {decimal(
-                            recommendationDetail.vbdOverride.displaced.vbd.kind === 'present'
-                              ? recommendationDetail.vbdOverride.displaced.vbd.value
-                              : 0,
-                          )}
-                        </span>{' '}
-                        vs{' '}
-                        <span className="num">
-                          {recommendationDetail.top.row.vbd.kind === 'present' ? decimal(recommendationDetail.top.row.vbd.value) : '—'}
-                        </span>
-                        ) and was ranked below this pick because:
-                      </div>
-                      <ul style={{ margin: '6px 0 0', paddingLeft: 18, display: 'flex', flexDirection: 'column', gap: 3 }}>
-                        {recommendationDetail.vbdOverride.firing.map(({ term, appliesTo }, i) => (
-                          <li key={i} style={{ fontSize: 12.5, lineHeight: 1.5, color: 'var(--dim)' }}>
-                            <span className="num" style={{ color: term.points > 0 ? 'var(--up)' : 'var(--down)' }}>
-                              {signed(term.points)}
-                            </span>{' '}
-                            {appliesTo === 'top'
-                              ? `for the recommended pick, because ${term.reason}`
-                              : `against ${
-                                  recommendationDetail.vbdOverride!.displaced.name.kind === 'present'
-                                    ? recommendationDetail.vbdOverride!.displaced.name.value
-                                    : 'the higher-VBD player'
-                                }, because ${term.reason}`}
-                            {' — '}
-                            <span style={{ color: 'var(--dim2)' }}>an unbacktested stopgap constant, not a finding</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  ) : null}
-                </div>
+                {t.label}
+              </button>
+            ))}
+          </div>
+          <div style={{ flex: 'none', height: 1, background: 'var(--line)' }} />
+          <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: 14 }}>
+            {paneTab === 'recommend' ? (
+              draftComplete ? (
+                <div style={{ color: 'var(--dim)' }}>Draft complete.</div>
               ) : (
-                <div style={{ marginTop: 8, fontSize: 12.5, color: 'var(--dim2)' }}>Nothing left with a projection to score.</div>
-              )}
-
-              {recommended.length > 1 ? (
                 <>
-                  <div style={{ marginTop: 16, fontFamily: 'var(--font-num)', fontSize: 10, letterSpacing: '.12em', color: 'var(--dim2)' }}>
-                    ALTERNATIVES
+                  {userOnClock ? (
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 10,
+                        padding: '9px 12px',
+                        background: lookAheadToggle ? 'var(--panel2)' : 'var(--live)',
+                        border: lookAheadToggle ? '1px solid var(--line2)' : 'none',
+                        color: lookAheadToggle ? 'var(--txt)' : '#0a0d12',
+                        fontWeight: 700,
+                        letterSpacing: '.06em',
+                        fontSize: 15,
+                      }}
+                    >
+                      {lookAheadToggle
+                        ? lookAheadPick !== null
+                          ? `LOOKING AHEAD — PICK ${lookAheadPick} (ROUND ${roundOfPick(lookAheadPick, teams)})`
+                          : 'LOOKING AHEAD — NO FURTHER PICK'
+                        : `YOU'RE ON THE CLOCK — PICK ${currentPick}`}
+                    </div>
+                  ) : (
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 10,
+                        padding: '9px 12px',
+                        background: 'var(--panel2)',
+                        border: '1px solid var(--line2)',
+                        color: 'var(--txt)',
+                        fontWeight: 700,
+                        letterSpacing: '.06em',
+                        fontSize: 15,
+                      }}
+                    >
+                      {lookAheadPick !== null
+                        ? `NOT ON THE CLOCK — LOOKING AHEAD TO PICK ${lookAheadPick} (ROUND ${roundOfPick(lookAheadPick, teams)})`
+                        : 'NOT ON THE CLOCK — NO FURTHER PICK TO LOOK AHEAD TO'}
+                    </div>
+                  )}
+
+                  {/* FR-049: "look-ahead is a toggle inside [Recommend]." Only
+                      rendered while on the clock and there's a further pick to
+                      look ahead to -- off the clock, look-ahead is the only
+                      content there is (no toggle needed); with no further pick
+                      there's nothing to switch to. */}
+                  {userOnClock && followingUserPick !== null ? (
+                    <div style={{ display: 'flex', gap: 4, marginTop: 10 }}>
+                      <button
+                        aria-pressed={!lookAheadToggle}
+                        onClick={() => setLookAheadToggle(false)}
+                        style={{
+                          padding: '4px 10px',
+                          background: !lookAheadToggle ? 'var(--panel2)' : 'transparent',
+                          border: `1px solid ${!lookAheadToggle ? 'var(--line2)' : 'var(--line)'}`,
+                          color: !lookAheadToggle ? 'var(--txt)' : 'var(--dim2)',
+                          fontSize: 11,
+                          fontWeight: 600,
+                        }}
+                      >
+                        This pick
+                      </button>
+                      <button
+                        aria-pressed={lookAheadToggle}
+                        onClick={() => setLookAheadToggle(true)}
+                        style={{
+                          padding: '4px 10px',
+                          background: lookAheadToggle ? 'var(--panel2)' : 'transparent',
+                          border: `1px solid ${lookAheadToggle ? 'var(--line2)' : 'var(--line)'}`,
+                          color: lookAheadToggle ? 'var(--txt)' : 'var(--dim2)',
+                          fontSize: 11,
+                          fontWeight: 600,
+                        }}
+                      >
+                        Look ahead → pick {followingUserPick} (round {roundOfPick(followingUserPick, teams)})
+                      </button>
+                    </div>
+                  ) : null}
+
+                  <div style={{ marginTop: 12, fontFamily: 'var(--font-num)', fontSize: 10, letterSpacing: '.12em', color: 'var(--dim2)' }}>
+                    RECOMMENDED (unvalidated stopgap score, not a backtested model)
                   </div>
-                  <div style={{ marginTop: 8, display: 'flex', flexDirection: 'column', gap: 8 }}>
-                    {recommended.slice(1).map(({ row, score }) => (
-                      <div key={row.id} style={{ padding: '10px 12px', border: '1px solid var(--line)', background: 'var(--panel2)' }}>
-                        <div style={{ display: 'flex', alignItems: 'baseline', gap: 9 }}>
-                          <span onClick={() => openDetail(row)} style={{ fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>
-                            {row.name.kind === 'present' ? row.name.value : ''}
-                          </span>
-                          <span style={{ fontSize: 12, letterSpacing: '.045em', color: POSITION_COLOR[row.raw.position] }}>
-                            {row.raw.position}
-                          </span>
-                          <span style={{ fontSize: 11, letterSpacing: '.045em', color: 'var(--dim2)' }}>
-                            {row.raw.team} · BYE{' '}
-                            <span className="num">
-                              <Value cell={row.byeWeek} render={integer} />
-                            </span>
-                          </span>
-                          <span style={{ flex: 1 }} />
-                          <span style={{ fontFamily: 'var(--font-num)', fontSize: 11, color: 'var(--dim2)' }}>
-                            score {decimal(score)}
-                          </span>
-                          <button
-                            onClick={() => recordPick(row.id, row.name.kind === 'present' ? row.name.value : '', 'shortcut')}
-                            style={{ padding: '4px 10px', background: 'var(--acc)', border: 0, color: '#08120c', fontWeight: 700, fontSize: 12 }}
-                          >
-                            Draft
-                          </button>
-                        </div>
-                        <div style={{ marginTop: 6, fontSize: 12, color: 'var(--dim)' }}>
-                          <Value cell={row.projectedPoints} render={decimal} /> proj pts · VBD{' '}
-                          <Value cell={row.vbd} render={decimal} />
-                          {unfilledPositions.has(row.raw.position) ? ' · fills an open starting slot' : ''}
-                        </div>
+
+                  {lookAheadActive ? (
+                    lookAheadPick === null ? (
+                      <div style={{ marginTop: 8, fontSize: 12.5, color: 'var(--dim2)' }}>
+                        No further pick of yours remains this draft to look ahead to.
                       </div>
-                    ))}
-                  </div>
-                </>
-              ) : null}
-            </div>
-          ) : (
-            <div style={{ padding: 14 }} data-testid="position-scarcity">
-              <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
-                <span style={{ fontSize: 10, letterSpacing: '.12em', color: 'var(--dim2)' }}>POSITION SCARCITY</span>
-                <span style={{ flex: 1, height: 1, background: 'var(--line)' }} />
-                <span className="num" style={{ fontSize: 10, color: 'var(--dim2)' }}>
-                  vs. expected by pick {integer(currentPick)}
-                </span>
-              </div>
-              <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 9 }}>
-                {scarcityList.map((s) => {
-                  const pct = s.total > 0 ? s.remaining / s.total : 0;
-                  const warning = depletionWarning(s, nextUserPick);
-                  const tierLine = tierDepletionLine(s);
-                  const under50 = under50Line(s, nextUserPick);
-                  return (
-                    <div key={s.pos} data-testid={`scarcity-row-${s.pos}`}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                        <span style={{ fontSize: 12, fontWeight: 600, letterSpacing: '.045em', color: POSITION_COLOR[s.pos], width: 30 }}>
-                          {s.pos}
-                        </span>
-                        <span style={{ flex: 1, height: 10, background: 'var(--line)', position: 'relative' }}>
-                          {s.dataAvailable ? (
-                            <span
-                              style={{
-                                position: 'absolute',
-                                inset: 0,
-                                width: `${Math.round(pct * 100)}%`,
-                                background: POSITION_COLOR[s.pos],
-                                opacity: 0.85,
-                              }}
-                            />
-                          ) : null}
-                        </span>
-                        <span className="num" style={{ fontSize: 11, color: 'var(--dim)', width: 74, textAlign: 'right' }}>
-                          {s.dataAvailable ? `${s.remaining} / ${s.total} left` : 'no board data'}
-                        </span>
-                      </div>
-                      {s.dataAvailable ? (
-                        <>
-                          {/* Thread 058 section A item 1: the sign is now a
-                              full phrase ("2 ahead of pace" / "on pace" / "1
-                              behind pace"), not a bare +2/±0/-1 -- see
-                              paceLabel's doc comment in scarcity.ts for why
-                              the design reference itself doesn't demonstrate
-                              a fix here (it renders the same bare digit). */}
-                          <div
-                            style={{ marginTop: 3, marginLeft: 40, fontSize: 11, color: (s.pace ?? 0) > 0 ? 'var(--down)' : 'var(--dim2)' }}
-                            title={`gone ${s.gone} vs expected ${s.expected ?? '—'} by pick ${integer(currentPick)} (board.position_remaining · pace vs board.consensus_rank)`}
-                          >
-                            {paceLabel(s.pace)}
+                    ) : recommendationDetailLookAhead ? (
+                      <>
+                        <div style={{ marginTop: 8, border: '1px solid var(--line2)', background: 'var(--panel2)' }}>
+                          <div style={{ padding: 14 }}>
+                            <div style={{ display: 'flex', alignItems: 'baseline', gap: 9 }}>
+                              <span
+                                onClick={() => openDetail(recommendationDetailLookAhead.top.row)}
+                                style={{ fontWeight: 700, fontSize: 22, cursor: 'pointer' }}
+                              >
+                                {recommendationDetailLookAhead.top.row.name.kind === 'present'
+                                  ? recommendationDetailLookAhead.top.row.name.value
+                                  : ''}
+                              </span>
+                              <span
+                                style={{
+                                  fontFamily: 'var(--font-num)',
+                                  fontSize: 13,
+                                  fontWeight: 600,
+                                  color: POSITION_COLOR[recommendationDetailLookAhead.top.row.raw.position],
+                                }}
+                              >
+                                {recommendationDetailLookAhead.top.row.positionalLabel.kind === 'present'
+                                  ? recommendationDetailLookAhead.top.row.positionalLabel.value
+                                  : recommendationDetailLookAhead.top.row.raw.position}
+                              </span>
+                              <span style={{ fontFamily: 'var(--font-num)', fontSize: 11, color: 'var(--dim2)' }}>
+                                {recommendationDetailLookAhead.top.row.raw.team} · BYE{' '}
+                                <span className="num">
+                                  <Value cell={recommendationDetailLookAhead.top.row.byeWeek} render={integer} />
+                                </span>
+                              </span>
+                            </div>
+                            {recommendationDetailLookAhead.top.row.projectedPoints.kind === 'present' ? (
+                              <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginTop: 8 }}>
+                                <span className="num" style={{ fontSize: 20, fontWeight: 600 }}>
+                                  {decimal(recommendationDetailLookAhead.top.row.projectedPoints.value)}
+                                </span>
+                                <span style={{ fontSize: 11, color: 'var(--dim)' }}>projected pts</span>
+                                <span className="num" style={{ fontSize: 11, color: 'var(--dim2)' }}>
+                                  {recommendationDetailLookAhead.pointsRange
+                                    ? `honest range ${intervalText(recommendationDetailLookAhead.pointsRange.low, recommendationDetailLookAhead.pointsRange.high)}`
+                                    : 'range not available for this player'}
+                                </span>
+                              </div>
+                            ) : (
+                              <p className="notice" style={{ marginTop: 8, fontSize: 12 }}>
+                                {recommendationDetailLookAhead.top.row.projectedPoints.reason}
+                              </p>
+                            )}
+                            <div style={{ marginTop: 4, fontFamily: 'var(--font-num)', fontSize: 11, color: 'var(--dim2)' }}>
+                              VBD <Value cell={recommendationDetailLookAhead.top.row.vbd} render={decimal} />
+                              {unfilledPositions.has(recommendationDetailLookAhead.top.row.raw.position) ? ' · fills an open starting slot' : ''}
+                            </div>
+                            <div style={{ marginTop: 10, fontSize: 13, lineHeight: 1.5, color: 'var(--txt)' }}>
+                              {recommendationDetailLookAhead.reason}
+                            </div>
+                            <div style={{ marginTop: 8, fontSize: 11, lineHeight: 1.5, color: 'var(--dim2)' }}>
+                              As if it were pick {lookAheadPick} (round {recommendationDetailLookAhead.round}), computed on
+                              today's board — this does not account for players taken between now and then.
+                            </div>
+                            <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+                              <button
+                                onClick={() => openDetail(recommendationDetailLookAhead.top.row)}
+                                style={{ padding: '6px 12px', background: 'transparent', border: '1px solid var(--line2)', color: 'var(--txt)', fontSize: 12 }}
+                              >
+                                Why this rank
+                              </button>
+                            </div>
                           </div>
-                          {tierLine ? (
-                            <div style={{ marginTop: 2, marginLeft: 40, fontSize: 11.5, color: 'var(--down)' }}>{tierLine}</div>
-                          ) : null}
-                          {under50 ? (
-                            <div style={{ marginTop: 2, marginLeft: 40, fontSize: 11, color: 'var(--dim2)' }}>{under50}</div>
-                          ) : null}
-                        </>
-                      ) : (
-                        // Thread 058 section A item 4 + honest-null discipline:
-                        // DEF has zero board rows (ADR-039, no DST data
-                        // ingested) -- one collapsed line naming that, quoting
-                        // board.json's own def_note, rather than three empty
-                        // sub-lines or a fabricated ±0/tier/under-50 claim.
-                        <div style={{ marginTop: 3, marginLeft: 40, fontSize: 11, color: 'var(--dim2)', lineHeight: 1.45 }}>
-                          {data.board.def_note}
                         </div>
+                        {recommendedLookAhead.length > 1 ? (
+                          <>
+                            <div style={{ marginTop: 16, fontFamily: 'var(--font-num)', fontSize: 10, letterSpacing: '.12em', color: 'var(--dim2)' }}>
+                              ALTERNATIVES
+                            </div>
+                            <div style={{ marginTop: 8, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                              {recommendedLookAhead.slice(1).map(({ row, score }) => (
+                                <div key={row.id} style={{ padding: '10px 12px', border: '1px solid var(--line)', background: 'var(--panel2)' }}>
+                                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 9 }}>
+                                    <span onClick={() => openDetail(row)} style={{ fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>
+                                      {row.name.kind === 'present' ? row.name.value : ''}
+                                    </span>
+                                    <span style={{ fontSize: 12, letterSpacing: '.045em', color: POSITION_COLOR[row.raw.position] }}>
+                                      {row.raw.position}
+                                    </span>
+                                    <span style={{ flex: 1 }} />
+                                    <span style={{ fontFamily: 'var(--font-num)', fontSize: 11, color: 'var(--dim2)' }}>
+                                      score {decimal(score)}
+                                    </span>
+                                  </div>
+                                  <div style={{ marginTop: 6, fontSize: 12, color: 'var(--dim)' }}>
+                                    <Value cell={row.projectedPoints} render={decimal} /> proj pts · VBD{' '}
+                                    <Value cell={row.vbd} render={decimal} />
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </>
+                        ) : null}
+                      </>
+                    ) : (
+                      <div style={{ marginTop: 8, fontSize: 12.5, color: 'var(--dim2)' }}>Nothing left with a projection to score.</div>
+                    )
+                  ) : (
+                    <>
+                      {recommendationDetail ? (
+                        <div style={{ marginTop: 8, border: '1px solid var(--acc)', background: 'var(--panel2)' }}>
+                          <div style={{ padding: 14 }}>
+                            <div style={{ display: 'flex', alignItems: 'baseline', gap: 9 }}>
+                              <span
+                                onClick={() => openDetail(recommendationDetail.top.row)}
+                                style={{ fontWeight: 700, fontSize: 22, cursor: 'pointer' }}
+                              >
+                                {recommendationDetail.top.row.name.kind === 'present' ? recommendationDetail.top.row.name.value : ''}
+                              </span>
+                              <span style={{ fontFamily: 'var(--font-num)', fontSize: 13, fontWeight: 600, color: POSITION_COLOR[recommendationDetail.top.row.raw.position] }}>
+                                {recommendationDetail.top.row.positionalLabel.kind === 'present'
+                                  ? recommendationDetail.top.row.positionalLabel.value
+                                  : recommendationDetail.top.row.raw.position}
+                              </span>
+                              <span style={{ fontFamily: 'var(--font-num)', fontSize: 11, color: 'var(--dim2)' }}>
+                                {recommendationDetail.top.row.raw.team} · BYE{' '}
+                                <span className="num">
+                                  <Value cell={recommendationDetail.top.row.byeWeek} render={integer} />
+                                </span>
+                              </span>
+                            </div>
+                            {recommendationDetail.top.row.projectedPoints.kind === 'present' ? (
+                              <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginTop: 8 }}>
+                                <span className="num" style={{ fontSize: 20, fontWeight: 600 }}>
+                                  {decimal(recommendationDetail.top.row.projectedPoints.value)}
+                                </span>
+                                <span style={{ fontSize: 11, color: 'var(--dim)' }}>projected pts</span>
+                                <span className="num" style={{ fontSize: 11, color: 'var(--dim2)' }}>
+                                  {recommendationDetail.pointsRange
+                                    ? `honest range ${intervalText(recommendationDetail.pointsRange.low, recommendationDetail.pointsRange.high)}`
+                                    : 'range not available for this player'}
+                                </span>
+                              </div>
+                            ) : (
+                              <p className="notice" style={{ marginTop: 8, fontSize: 12 }}>
+                                {recommendationDetail.top.row.projectedPoints.reason}
+                              </p>
+                            )}
+                            <div style={{ marginTop: 4, fontFamily: 'var(--font-num)', fontSize: 11, color: 'var(--dim2)' }}>
+                              VBD <Value cell={recommendationDetail.top.row.vbd} render={decimal} />
+                              {unfilledPositions.has(recommendationDetail.top.row.raw.position) ? ' · fills an open starting slot' : ''}
+                            </div>
+                            <div style={{ marginTop: 10, fontSize: 13, lineHeight: 1.5, color: 'var(--txt)' }}>
+                              {recommendationDetail.reason}
+                            </div>
+                            <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+                              <button
+                                onClick={() =>
+                                  recordPick(
+                                    recommendationDetail.top.row.id,
+                                    recommendationDetail.top.row.name.kind === 'present' ? recommendationDetail.top.row.name.value : '',
+                                    'shortcut',
+                                  )
+                                }
+                                style={{ padding: '6px 14px', background: 'var(--acc)', border: 0, color: '#08120c', fontWeight: 700, fontSize: 12 }}
+                              >
+                                Draft {recommendationDetail.top.row.name.kind === 'present' ? recommendationDetail.top.row.name.value : ''}
+                              </button>
+                              <button
+                                onClick={() => openDetail(recommendationDetail.top.row)}
+                                style={{ padding: '6px 12px', background: 'transparent', border: '1px solid var(--line2)', color: 'var(--txt)', fontSize: 12 }}
+                              >
+                                Why this rank
+                              </button>
+                            </div>
+                          </div>
+                          {recommendationDetail.giveUp ? (
+                            <div style={{ borderTop: '1px solid var(--line)', padding: '11px 14px', background: 'var(--bg)' }}>
+                              <div style={{ fontFamily: 'var(--font-num)', fontSize: 10, letterSpacing: '.12em', color: 'var(--dim2)' }}>
+                                WHAT YOU GIVE UP
+                              </div>
+                              <div style={{ marginTop: 6, fontSize: 12.5, lineHeight: 1.5, color: 'var(--dim)' }}>
+                                {recommendationDetail.giveUp}
+                              </div>
+                            </div>
+                          ) : null}
+                          {/* FR-058: "if the recommendation strays from VBD ... the
+                              panel needs to provide an explanation" -- renders only
+                              when recommendationDetail.vbdOverride is non-null, i.e.
+                              only when the #1 pick is NOT the highest-VBD player still
+                              available. Two hard limits from the request, both
+                              enforced here: (1) this states which named constant
+                              fired and what it cost -- it does not argue the pick is
+                              good, so there is no "so this is the right call" clause
+                              anywhere in this block; (2) every rule cited is labelled
+                              untested, verbatim, every time -- recommendation.ts's own
+                              module doc calls the formula "a stopgap, not a validated
+                              model," and this panel repeats that rather than letting
+                              a cited constant read as a finding. */}
+                          {recommendationDetail.vbdOverride ? (
+                            <div style={{ borderTop: '1px solid var(--line)', padding: '11px 14px', background: 'var(--bg)' }}>
+                              <div style={{ fontFamily: 'var(--font-num)', fontSize: 10, letterSpacing: '.12em', color: 'var(--dim2)' }}>
+                                WHY NOT HIGHEST VBD
+                              </div>
+                              <div style={{ marginTop: 6, fontSize: 12.5, lineHeight: 1.5, color: 'var(--dim)' }}>
+                                {recommendationDetail.vbdOverride.displaced.name.kind === 'present'
+                                  ? recommendationDetail.vbdOverride.displaced.name.value
+                                  : 'The next player'}{' '}
+                                ({recommendationDetail.vbdOverride.displaced.raw.position}) has{' '}
+                                <span className="num">{integer(Math.round(recommendationDetail.vbdOverride.vbdGap))}</span> more VBD (
+                                <span className="num">
+                                  {decimal(
+                                    recommendationDetail.vbdOverride.displaced.vbd.kind === 'present'
+                                      ? recommendationDetail.vbdOverride.displaced.vbd.value
+                                      : 0,
+                                  )}
+                                </span>{' '}
+                                vs{' '}
+                                <span className="num">
+                                  {recommendationDetail.top.row.vbd.kind === 'present' ? decimal(recommendationDetail.top.row.vbd.value) : '—'}
+                                </span>
+                                ) and was ranked below this pick because:
+                              </div>
+                              <ul style={{ margin: '6px 0 0', paddingLeft: 18, display: 'flex', flexDirection: 'column', gap: 3 }}>
+                                {recommendationDetail.vbdOverride.firing.map(({ term, appliesTo }, i) => (
+                                  <li key={i} style={{ fontSize: 12.5, lineHeight: 1.5, color: 'var(--dim)' }}>
+                                    <span className="num" style={{ color: term.points > 0 ? 'var(--up)' : 'var(--down)' }}>
+                                      {signed(term.points)}
+                                    </span>{' '}
+                                    {appliesTo === 'top'
+                                      ? `for the recommended pick, because ${term.reason}`
+                                      : `against ${
+                                          recommendationDetail.vbdOverride!.displaced.name.kind === 'present'
+                                            ? recommendationDetail.vbdOverride!.displaced.name.value
+                                            : 'the higher-VBD player'
+                                        }, because ${term.reason}`}
+                                    {' — '}
+                                    <span style={{ color: 'var(--dim2)' }}>an unbacktested stopgap constant, not a finding</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          ) : null}
+                        </div>
+                      ) : (
+                        <div style={{ marginTop: 8, fontSize: 12.5, color: 'var(--dim2)' }}>Nothing left with a projection to score.</div>
                       )}
-                      {warning ? (
-                        <div style={{ marginTop: 4, marginLeft: 40, padding: '6px 9px', borderLeft: '2px solid var(--down)', background: 'var(--panel2)', fontSize: 11.5, color: 'var(--dim)' }}>
-                          {warning}
+
+                      {/* FR-051 / DRAFT-MIDDLE-PANE.md §1.2: the next-pick
+                          reference point -- "show the reference point, do not
+                          do the arithmetic." Two plain figures, no subtraction.
+                          Only rendered in this exact state (on the clock, "this
+                          pick" -- see referencePoint's own comment for why it
+                          doesn't generalise to the look-ahead branch). */}
+                      {referencePoint ? (
+                        <div style={{ marginTop: 14, padding: '12px 13px', border: '1px solid var(--line2)', background: 'var(--panel2)' }}>
+                          <div style={{ fontFamily: 'var(--font-num)', fontSize: 9, letterSpacing: '.11em', color: 'var(--dim2)' }}>
+                            LIKELY BEST AVAILABLE AT YOUR PICK {referencePoint.pick}
+                          </div>
+                          <div style={{ marginTop: 8, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+                            <div>
+                              <div style={{ fontSize: 9, letterSpacing: '.1em', color: 'var(--dim2)' }}>CONSIDERING</div>
+                              <div style={{ marginTop: 4, fontSize: 14, color: 'var(--txt)' }}>
+                                {referencePoint.considering.name.kind === 'present' ? referencePoint.considering.name.value : ''}{' '}
+                                <span style={{ fontSize: 11, color: POSITION_COLOR[referencePoint.considering.raw.position] }}>
+                                  {referencePoint.considering.positionalLabel.kind === 'present'
+                                    ? referencePoint.considering.positionalLabel.value
+                                    : referencePoint.considering.raw.position}
+                                </span>
+                              </div>
+                              <div style={{ marginTop: 3, fontFamily: 'var(--font-num)', fontSize: 12, color: 'var(--txt)' }}>
+                                VBD <Value cell={referencePoint.considering.vbd} render={decimal} />
+                              </div>
+                            </div>
+                            <div style={{ borderLeft: '1px solid var(--line2)', paddingLeft: 14 }}>
+                              <div style={{ fontSize: 9, letterSpacing: '.1em', color: 'var(--dim2)' }}>
+                                LIKELY THERE AT {referencePoint.pick}
+                              </div>
+                              {referencePoint.likelyThere ? (
+                                <>
+                                  <div style={{ marginTop: 4, fontSize: 14, color: 'var(--txt)' }}>
+                                    {referencePoint.likelyThere.row.name.kind === 'present' ? referencePoint.likelyThere.row.name.value : ''}{' '}
+                                    <span style={{ fontSize: 11, color: POSITION_COLOR[referencePoint.likelyThere.row.raw.position] }}>
+                                      {referencePoint.likelyThere.row.positionalLabel.kind === 'present'
+                                        ? referencePoint.likelyThere.row.positionalLabel.value
+                                        : referencePoint.likelyThere.row.raw.position}
+                                    </span>
+                                  </div>
+                                  <div style={{ marginTop: 3, fontFamily: 'var(--font-num)', fontSize: 12, color: 'var(--txt)' }}>
+                                    VBD <Value cell={referencePoint.likelyThere.row.vbd} render={decimal} />
+                                    <span style={{ color: 'var(--dim2)' }}>
+                                      {' '}
+                                      · <ReferenceSurvivalRange data={data} row={referencePoint.likelyThere.row} pick={referencePoint.pick} />
+                                    </span>
+                                  </div>
+                                </>
+                              ) : (
+                                <div style={{ marginTop: 4, fontSize: 12.5, color: 'var(--dim2)', lineHeight: 1.5 }}>
+                                  No available player has even odds of reaching pick {referencePoint.pick}.
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                          <div style={{ marginTop: 10, fontFamily: 'var(--font-num)', fontSize: 9, color: 'var(--dim2)', lineHeight: 1.5 }}>
+                            availability.json:by_player · board.json:players[].vbd · sigma 5/10/20 spread. Display only -- not fed into the
+                            recommendation above.
+                          </div>
                         </div>
                       ) : null}
-                    </div>
-                  );
-                })}
-              </div>
-              {/* Thread 058 section A item 6: traceability footer -- the
-                  panel names the exact fields feeding it, per docs/handoffs/
-                  058's requested `board.position_remaining · board.position_tier
-                  · pace vs board.consensus_rank`. This is also what makes the
-                  pace phrase interpretable without opening the code. */}
-              <div style={{ marginTop: 8, fontFamily: 'var(--font-num)', fontSize: 9.5, color: 'var(--dim2)' }}>
-                board.position_remaining · board.position_tier · pace vs board.consensus_rank
-              </div>
 
-              <div style={{ marginTop: 20, display: 'flex', gap: 4 }}>
-                <button
-                  aria-pressed={railTab === 'queue'}
-                  onClick={() => setRailTab('queue')}
-                  style={{ flex: 1, padding: '5px 0', background: railTab === 'queue' ? 'var(--panel2)' : 'transparent', border: `1px solid ${railTab === 'queue' ? 'var(--line2)' : 'var(--line)'}`, fontSize: 11.5, fontWeight: 600, color: railTab === 'queue' ? 'var(--txt)' : 'var(--dim2)' }}
-                >
-                  Queue ({draft.queue.length})
-                </button>
-                <button
-                  aria-pressed={railTab === 'watch'}
-                  onClick={() => setRailTab('watch')}
-                  style={{ flex: 1, padding: '5px 0', background: railTab === 'watch' ? 'var(--panel2)' : 'transparent', border: `1px solid ${railTab === 'watch' ? 'var(--line2)' : 'var(--line)'}`, fontSize: 11.5, fontWeight: 600, color: railTab === 'watch' ? 'var(--txt)' : 'var(--dim2)' }}
-                >
-                  Watchlist ({watchlist.length})
-                </button>
-              </div>
-              <div style={{ marginTop: 4, fontSize: 10, color: 'var(--dim2)' }}>
-                {railTab === 'queue'
-                  ? 'Draft-scoped, self-pruning: a queued player drops off the moment anyone drafts him.'
-                  : 'Account-wide: persists across leagues and seasons.'}
-              </div>
-
-              <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {(railTab === 'queue' ? queueRows : watchRows).length === 0 ? (
-                  <div style={{ fontSize: 12.5, color: 'var(--dim2)' }}>
-                    {railTab === 'queue'
-                      ? 'Nothing queued. Add a player from the available list or their detail panel.'
-                      : 'No players starred. Star a player from the available list to track them here.'}
-                  </div>
-                ) : (
-                  (railTab === 'queue' ? queueRows : watchRows).map(({ row, avail }) => (
-                    <AvailabilityRow key={row.id} row={row} avail={avail} />
-                  ))
-                )}
-              </div>
-              {/* Thread 058 section E4/F: traceability footer, matching the
-                  Position Scarcity panel's pattern and the design's own
-                  footer for this panel. Rendered whenever the panel has real
-                  rows to trace -- an empty queue/watchlist has nothing to
-                  attribute yet. */}
-              {(railTab === 'queue' ? queueRows : watchRows).length > 0 ? (
+                      {recommended.length > 1 ? (
+                        <>
+                          <div style={{ marginTop: 16, fontFamily: 'var(--font-num)', fontSize: 10, letterSpacing: '.12em', color: 'var(--dim2)' }}>
+                            ALTERNATIVES
+                          </div>
+                          <div style={{ marginTop: 8, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                            {recommended.slice(1).map(({ row, score }) => (
+                              <div key={row.id} style={{ padding: '10px 12px', border: '1px solid var(--line)', background: 'var(--panel2)' }}>
+                                <div style={{ display: 'flex', alignItems: 'baseline', gap: 9 }}>
+                                  <span onClick={() => openDetail(row)} style={{ fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>
+                                    {row.name.kind === 'present' ? row.name.value : ''}
+                                  </span>
+                                  <span style={{ fontSize: 12, letterSpacing: '.045em', color: POSITION_COLOR[row.raw.position] }}>
+                                    {row.raw.position}
+                                  </span>
+                                  <span style={{ fontSize: 11, letterSpacing: '.045em', color: 'var(--dim2)' }}>
+                                    {row.raw.team} · BYE{' '}
+                                    <span className="num">
+                                      <Value cell={row.byeWeek} render={integer} />
+                                    </span>
+                                  </span>
+                                  <span style={{ flex: 1 }} />
+                                  <span style={{ fontFamily: 'var(--font-num)', fontSize: 11, color: 'var(--dim2)' }}>
+                                    score {decimal(score)}
+                                  </span>
+                                  <button
+                                    onClick={() => recordPick(row.id, row.name.kind === 'present' ? row.name.value : '', 'shortcut')}
+                                    style={{ padding: '4px 10px', background: 'var(--acc)', border: 0, color: '#08120c', fontWeight: 700, fontSize: 12 }}
+                                  >
+                                    Draft
+                                  </button>
+                                </div>
+                                <div style={{ marginTop: 6, fontSize: 12, color: 'var(--dim)' }}>
+                                  <Value cell={row.projectedPoints} render={decimal} /> proj pts · VBD{' '}
+                                  <Value cell={row.vbd} render={decimal} />
+                                  {unfilledPositions.has(row.raw.position) ? ' · fills an open starting slot' : ''}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </>
+                      ) : null}
+                    </>
+                  )}
+                </>
+              )
+            ) : paneTab === 'scarcity' ? (
+              <div data-testid="position-scarcity">
+                <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
+                  <span style={{ fontSize: 10, letterSpacing: '.12em', color: 'var(--dim2)' }}>POSITION SCARCITY</span>
+                  <span style={{ flex: 1, height: 1, background: 'var(--line)' }} />
+                  <span className="num" style={{ fontSize: 10, color: 'var(--dim2)' }}>
+                    vs. expected by pick {integer(currentPick)}
+                  </span>
+                </div>
+                <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 9 }}>
+                  {scarcityList.map((s) => {
+                    const pct = s.total > 0 ? s.remaining / s.total : 0;
+                    const warning = depletionWarning(s, nextUserPick);
+                    const tierLine = tierDepletionLine(s);
+                    const under50 = under50Line(s, nextUserPick);
+                    return (
+                      <div key={s.pos} data-testid={`scarcity-row-${s.pos}`}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                          <span style={{ fontSize: 12, fontWeight: 600, letterSpacing: '.045em', color: POSITION_COLOR[s.pos], width: 30 }}>
+                            {s.pos}
+                          </span>
+                          <span style={{ flex: 1, height: 10, background: 'var(--line)', position: 'relative' }}>
+                            {s.dataAvailable ? (
+                              <span
+                                style={{
+                                  position: 'absolute',
+                                  inset: 0,
+                                  width: `${Math.round(pct * 100)}%`,
+                                  background: POSITION_COLOR[s.pos],
+                                  opacity: 0.85,
+                                }}
+                              />
+                            ) : null}
+                          </span>
+                          <span className="num" style={{ fontSize: 11, color: 'var(--dim)', width: 74, textAlign: 'right' }}>
+                            {s.dataAvailable ? `${s.remaining} / ${s.total} left` : 'no board data'}
+                          </span>
+                        </div>
+                        {s.dataAvailable ? (
+                          <>
+                            {/* Thread 058 section A item 1: the sign is now a
+                                full phrase ("2 ahead of pace" / "on pace" / "1
+                                behind pace"), not a bare +2/±0/-1 -- see
+                                paceLabel's doc comment in scarcity.ts for why
+                                the design reference itself doesn't demonstrate
+                                a fix here (it renders the same bare digit).
+                                FR-045: `s.paceSuppressedReason` takes over
+                                whenever auto-fill placeholders are in this
+                                draft's log -- see scarcity.ts's own comment for
+                                why the raw number is arithmetic noise then. */}
+                            <div
+                              style={{
+                                marginTop: 3,
+                                marginLeft: 40,
+                                fontSize: 11,
+                                color: s.paceSuppressedReason ? 'var(--dim2)' : (s.pace ?? 0) > 0 ? 'var(--down)' : 'var(--dim2)',
+                              }}
+                              title={
+                                s.paceSuppressedReason ??
+                                `gone ${s.gone} vs expected ${s.expected ?? '—'} by pick ${integer(currentPick)} (board.position_remaining · pace vs board.consensus_rank)`
+                              }
+                            >
+                              {paceLabel(s.pace, s.paceSuppressedReason)}
+                            </div>
+                            {tierLine ? (
+                              <div style={{ marginTop: 2, marginLeft: 40, fontSize: 11.5, color: 'var(--down)' }}>{tierLine}</div>
+                            ) : null}
+                            {under50 ? (
+                              <div style={{ marginTop: 2, marginLeft: 40, fontSize: 11, color: 'var(--dim2)' }}>{under50}</div>
+                            ) : null}
+                          </>
+                        ) : (
+                          // Thread 058 section A item 4 + honest-null discipline:
+                          // DEF has zero board rows (ADR-039, no DST data
+                          // ingested) -- one collapsed line naming that, quoting
+                          // board.json's own def_note, rather than three empty
+                          // sub-lines or a fabricated ±0/tier/under-50 claim.
+                          <div style={{ marginTop: 3, marginLeft: 40, fontSize: 11, color: 'var(--dim2)', lineHeight: 1.45 }}>
+                            {data.board.def_note}
+                          </div>
+                        )}
+                        {warning ? (
+                          <div style={{ marginTop: 4, marginLeft: 40, padding: '6px 9px', borderLeft: '2px solid var(--down)', background: 'var(--panel2)', fontSize: 11.5, color: 'var(--dim)' }}>
+                            {warning}
+                          </div>
+                        ) : null}
+                      </div>
+                    );
+                  })}
+                </div>
+                {/* Thread 058 section A item 6: traceability footer -- the
+                    panel names the exact fields feeding it, per docs/handoffs/
+                    058's requested `board.position_remaining · board.position_tier
+                    · pace vs board.consensus_rank`. This is also what makes the
+                    pace phrase interpretable without opening the code. */}
                 <div style={{ marginTop: 8, fontFamily: 'var(--font-num)', fontSize: 9.5, color: 'var(--dim2)' }}>
-                  availability.baseline_p → availability.live_p · adjustment.need + adjustment.run
-                </div>
-              ) : null}
-
-              <div style={{ marginTop: 20, padding: '11px 12px', border: '1px solid var(--line)', background: 'var(--panel2)' }}>
-                <div style={{ fontSize: 10, letterSpacing: '.12em', color: 'var(--dim2)' }}>NEXT DECISION</div>
-                <div style={{ marginTop: 7, fontSize: 13, lineHeight: 1.55, color: 'var(--dim)' }}>
-                  {nextUserPick
-                    ? `You pick at ${nextUserPick} (round ${roundOfPick(nextUserPick, teams)}), ${
-                        picksUntilYou ?? 0
-                      } picks from now.`
-                    : 'No further picks left in this draft.'}
+                  board.position_remaining · board.position_tier · pace vs board.consensus_rank
                 </div>
               </div>
+            ) : paneTab === 'queue' ? (
+              <div>
+                <div style={{ display: 'flex', gap: 4 }}>
+                  <button
+                    aria-pressed={railTab === 'queue'}
+                    onClick={() => setRailTab('queue')}
+                    style={{ flex: 1, padding: '5px 0', background: railTab === 'queue' ? 'var(--panel2)' : 'transparent', border: `1px solid ${railTab === 'queue' ? 'var(--line2)' : 'var(--line)'}`, fontSize: 11.5, fontWeight: 600, color: railTab === 'queue' ? 'var(--txt)' : 'var(--dim2)' }}
+                  >
+                    Queue ({draft.queue.length})
+                  </button>
+                  <button
+                    aria-pressed={railTab === 'watch'}
+                    onClick={() => setRailTab('watch')}
+                    style={{ flex: 1, padding: '5px 0', background: railTab === 'watch' ? 'var(--panel2)' : 'transparent', border: `1px solid ${railTab === 'watch' ? 'var(--line2)' : 'var(--line)'}`, fontSize: 11.5, fontWeight: 600, color: railTab === 'watch' ? 'var(--txt)' : 'var(--dim2)' }}
+                  >
+                    Watchlist ({watchlist.length})
+                  </button>
+                </div>
+                <div style={{ marginTop: 4, fontSize: 10, color: 'var(--dim2)' }}>
+                  {railTab === 'queue'
+                    ? 'Draft-scoped, self-pruning: a queued player drops off the moment anyone drafts him.'
+                    : 'Account-wide: persists across leagues and seasons.'}
+                </div>
+
+                <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {(railTab === 'queue' ? queueRows : watchRows).length === 0 ? (
+                    <div style={{ fontSize: 12.5, color: 'var(--dim2)' }}>
+                      {railTab === 'queue'
+                        ? 'Nothing queued. Add a player from the available list or their detail panel.'
+                        : 'No players starred. Star a player from the available list to track them here.'}
+                    </div>
+                  ) : (
+                    (railTab === 'queue' ? queueRows : watchRows).map(({ row, avail }) => (
+                      <AvailabilityRow key={row.id} row={row} avail={avail} />
+                    ))
+                  )}
+                </div>
+                {/* Thread 058 section E4/F: traceability footer, matching the
+                    Position Scarcity panel's pattern and the design's own
+                    footer for this panel. Rendered whenever the panel has real
+                    rows to trace -- an empty queue/watchlist has nothing to
+                    attribute yet. */}
+                {(railTab === 'queue' ? queueRows : watchRows).length > 0 ? (
+                  <div style={{ marginTop: 8, fontFamily: 'var(--font-num)', fontSize: 9.5, color: 'var(--dim2)' }}>
+                    availability.baseline_p → availability.live_p · adjustment.need + adjustment.run
+                  </div>
+                ) : null}
+              </div>
+            ) : (
+              // Insights tab, FR-048. DRAFT-MIDDLE-PANE.md scopes this to
+              // "players on screen and to this pick" -- a real per-pick
+              // findings corpus (`findings.json`, `status: confirmed`) does not
+              // exist in the export contract yet (measured against
+              // ui/data/types.ts and frontend/public/data/ before writing this
+              // -- see the reply to this spec's thread). Fabricating pick-scoped
+              // content from `nulls.json` (general research findings with no
+              // pick-range attribution) would misrepresent them as tied to this
+              // pick when they are not, which is exactly the kind of invented
+              // derived value Principle #1 forbids. So: an honest not-yet-built
+              // state naming the gap, per design-fidelity.md's instruction to
+              // report a data mismatch rather than approximate it.
+              <div>
+                <div style={{ fontSize: 10, letterSpacing: '.12em', color: 'var(--dim2)' }}>INSIGHTS</div>
+                <div className="empty" style={{ marginTop: 10 }}>
+                  <strong>Not built yet.</strong> FR-048 asks for research findings scoped to the players on
+                  screen and to this pick. That needs a per-pick findings artifact (`findings.json`, with a
+                  `status` field so nothing below <code>confirmed</code> reaches this screen) that does not
+                  exist in the export contract today -- only general research prose in{' '}
+                  <code>docs/ranking/</code> and <code>docs/research/</code>, and the assistant's own
+                  keyword-retrieval corpus (<code>ui/assistant/retrieval.ts</code>), neither of which is
+                  scoped by pick range. Building this tab against either would mean presenting an unscoped or
+                  unconfirmed claim as if it were tied to the pick in front of you.
+                </div>
+              </div>
+            )}
+          </div>
+          {/* DRAFT-MIDDLE-PANE.md: "NEXT DECISION is a persistent footer, never
+              behind a tab." Same content every prior version of this screen
+              showed at the bottom of the off-clock view -- now visible
+              regardless of which pane tab is active. */}
+          <div style={{ flex: 'none', padding: '10px 14px', borderTop: '1px solid var(--line2)', background: 'var(--panel2)' }}>
+            <div style={{ fontFamily: 'var(--font-num)', fontSize: 9, letterSpacing: '.11em', color: 'var(--dim2)' }}>
+              NEXT DECISION — persistent, never behind a tab
             </div>
-          )}
+            <div style={{ marginTop: 5, fontSize: 12.5, lineHeight: 1.5, color: 'var(--txt)' }}>
+              {draftComplete
+                ? 'Draft complete.'
+                : nextUserPick
+                  ? `You pick at ${nextUserPick} (round ${roundOfPick(nextUserPick, teams)}), ${picksUntilYou ?? 0} picks from now.`
+                  : 'No further picks left in this draft.'}
+            </div>
+          </div>
         </div>
+
 
         <div style={{ minHeight: 0, overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
           <div style={{ padding: '10px 12px', borderBottom: '1px solid var(--line)' }}>
@@ -2065,6 +2545,31 @@ function AvailabilityRow({ row, avail }: { row: BoardRow; avail: LiveAvailabilit
         {avail.live !== null ? <span style={{ color: 'var(--acc)' }}> → {percent(avail.live)}</span> : null}
       </span>
     </div>
+  );
+}
+
+/**
+ * FR-051 / DRAFT-MIDDLE-PANE.md §1.2: "the uncertainty is the range across the
+ * sigma settings ... never a single confident number." Same idiom as
+ * Predictions.tsx's own `RangeCell` (sigma 5/10/20 spread, lo-hi%) -- not
+ * imported from there since that component is scoped to that screen's own
+ * props shape; duplicated here in miniature rather than sharing a module,
+ * same call this codebase already made once for the same pattern.
+ */
+function ReferenceSurvivalRange({ data, row, pick }: { data: Dataset; row: BoardRow; pick: number }) {
+  if (row.name.kind !== 'present') return <span>survival range unavailable</span>;
+  const cell = playerAvailabilityAtPick(data, row.name.value, pick);
+  const vals = [cell.sigma5, cell.sigma10, cell.sigma20].filter((c) => c.kind === 'present') as Array<{
+    kind: 'present';
+    value: number;
+  }>;
+  if (vals.length === 0) return <span title="No sigma sweep recorded for this player at this pick.">survival range not computed</span>;
+  const lo = Math.min(...vals.map((v) => v.value));
+  const hi = Math.max(...vals.map((v) => v.value));
+  return (
+    <span title="Range across sigma 5, 10 and 20">
+      {percent(lo)}–{percent(hi)} to survive
+    </span>
   );
 }
 

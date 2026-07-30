@@ -237,6 +237,15 @@ describe('Predictions', () => {
       );
     });
 
+    it('SUPPLIED-VALUES.md: the overridden slot value carries a dotted underline, never the --acc accent', () => {
+      const target = league.userSlot.kind === 'present' && league.userSlot.value === 1 ? 2 : 1;
+      const overridden = applyUserSlotOverride(league, target);
+      render(<Predictions data={data} rows={rows} league={overridden} />);
+      const valueEl = within(screen.getByTestId('predicting-under')).getByText(String(target));
+      expect(valueEl.style.color).not.toBe('var(--acc)');
+      expect(valueEl.style.borderBottom).toBe('1px dotted var(--line2)');
+    });
+
     it('falls back to the raw league_id when league.json:league_name is absent, never a blank or invented name', () => {
       const noName = { ...data, league: { ...data.league, league_name: undefined } };
       render(<Predictions data={noName} rows={rows} league={league} />);
