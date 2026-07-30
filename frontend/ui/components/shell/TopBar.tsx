@@ -1,8 +1,9 @@
-import type { ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { randomSlot } from '../../data/draftSlot';
 import type { LeagueConfig } from '../../data/league';
 import type { SelectableLeague } from '../../data/league-registry';
 import type { LeagueTrack } from '../../data/types';
+import { SettingsPanel } from './SettingsPanel';
 import type { Theme } from './useTheme';
 
 /**
@@ -268,26 +269,21 @@ export function TopBar({
 
       {onSelectSlot && onClearSlot ? <DraftSlotControl league={league} onSelectSlot={onSelectSlot} onClearSlot={onClearSlot} /> : null}
 
-      {/* design/INERT-CONTROLS.md: "A control that cannot act is not a control.
-          Render the fact instead of the dead affordance" -- not itemised by name
-          in that spec's own six-row table (which predates this control being
-          identified as inert; see docs/design/LEAGUE-SETTINGS-BOUNDARY.md for the
-          separate, fuller editable/read-only split design has speced for this
-          control specifically, priority 5, not built this pass), but the general
-          rule it states applies here the same way: remove the button, state the
-          fact. No border, no hover, no click target -- it is text, not an
-          affordance that merely looks disabled. */}
-      <span
-        title="Not built yet -- see docs/design/LEAGUE-SETTINGS-BOUNDARY.md for the planned design."
-        style={{
-          padding: '4px 2px',
-          whiteSpace: 'nowrap',
-          color: 'var(--dim2)',
-          fontSize: 12,
-        }}
-      >
-        Settings — not built
-      </span>
+      {/* FR-069 / FR-040 / LEAGUE-SETTINGS-BOUNDARY.md: this used to render
+          "Settings — not built" per design/INERT-CONTROLS.md's rule for a
+          control that cannot act. It can act now -- see SettingsPanel.tsx for
+          the editable/read-only boundary it enforces, and its own doc comment
+          for where it deliberately departs from the written spec and why. */}
+      {onSelectSlot && onClearSlot ? (
+        <SettingsButton league={league} onSelectSlot={onSelectSlot} onClearSlot={onClearSlot} />
+      ) : (
+        <span
+          title="Settings needs a draft-slot override handler, which the standalone build does not wire up."
+          style={{ padding: '4px 2px', whiteSpace: 'nowrap', color: 'var(--dim2)', fontSize: 12 }}
+        >
+          Settings — not available in this build
+        </span>
+      )}
 
       <button
         onClick={onToggleTheme}
@@ -479,5 +475,60 @@ function DraftSlotControl({
         rand
       </button>
     </div>
+  );
+}
+
+/**
+ * FR-069 / FR-040 / LEAGUE-SETTINGS-BOUNDARY.md: opens SettingsPanel.tsx.
+ * Escape and a click on the transparent backdrop both close it, same dismiss
+ * pattern as PlayerDetail's side sheet (`ui/components/PlayerDetail.tsx`) --
+ * one convention for "how a floating panel closes" in this app, not a second one.
+ */
+function SettingsButton({
+  league,
+  onSelectSlot,
+  onClearSlot,
+}: {
+  league: LeagueConfig | null;
+  onSelectSlot: (slot: number) => void;
+  onClearSlot: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    if (!open) return;
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') setOpen(false);
+    }
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, [open]);
+
+  return (
+    <>
+      <button
+        onClick={() => setOpen((o) => !o)}
+        aria-pressed={open}
+        aria-label="Settings"
+        title="League settings -- what's editable here and what isn't (LEAGUE-SETTINGS-BOUNDARY.md)"
+        style={{
+          padding: '4px 10px',
+          whiteSpace: 'nowrap',
+          background: open ? 'var(--panel2)' : 'transparent',
+          border: `1px solid ${open ? 'var(--line2)' : 'transparent'}`,
+          color: 'var(--dim)',
+          fontSize: 12,
+        }}
+      >
+        Settings
+      </button>
+      {open ? (
+        <SettingsPanel
+          league={league}
+          onClose={() => setOpen(false)}
+          DraftSlotControl={() => <DraftSlotControl league={league} onSelectSlot={onSelectSlot} onClearSlot={onClearSlot} />}
+        />
+      ) : null}
+    </>
   );
 }
