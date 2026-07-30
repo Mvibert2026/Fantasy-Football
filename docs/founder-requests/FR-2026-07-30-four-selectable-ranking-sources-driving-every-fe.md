@@ -1,11 +1,31 @@
 ---
 ID: FR-2026-07-30-four-selectable-ranking-sources
-STATUS: NEW
+STATUS: IN-PROGRESS
 SOURCE: PM session 2026-07-30, founder chat
 RAISED: 2026-07-30
 PRIORITY: HIGHEST — an architecture requirement, not a feature
-NEEDS: backend (contract), then frontend (toggle), then librarian (assistant)
+NEEDS: backend (contract) DONE for the board layer; frontend (toggle) NEXT; librarian (assistant) after that
 ---
+
+## Backend progress, 2026-07-30
+
+**Board layer wired across all three built sources.** `make_board.build_board`/
+`export_contract.build_board_json` take `ranking_source_selection` (`expert_adjusted` default,
+`expert_raw`, `market_adp`, `proprietary`). Board order, VBD, tiers, projected_points all run off
+the selection — never re-derived from our VBD under `expert_raw`/`market_adp` (never-blend, CLAUDE.md
+§4). `proprietary` returns an explicit not-built shape, never a silent fallback. Contract
+1.17.0 → 1.18.0: `board.expert_raw.json`, `board.market_adp.json`, `ranking_sources.json` (new).
+Full detail: ADR-068 (`docs/decisions.md`), `docs/CURRENT-STATE.md`.
+
+**Explicitly not done, and why:** `simulate_availability` (opponent model + the user's own BPA
+pick) still runs off one hardcoded source, unaffected by the toggle — gated on an open, unresolved
+`strategist`→`backend` thread already mid-flight on that exact code path
+(`docs/handoffs/2026-07-30-availability-adp-measurements-m0-m5.md`), which says explicitly not to
+implement the change yet. Reported, not silently skipped.
+
+**Handoff to frontend:**
+`docs/handoffs/2026-07-30-four-selectable-ranking-sources-board-contract-s.md` — contract shape,
+exact fields, exact files, what's wired and what isn't.
 
 ## Request
 

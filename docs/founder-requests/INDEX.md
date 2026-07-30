@@ -9,7 +9,7 @@ Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests
 
 ---
 
-## NEW — 84
+## NEW — 83
 
 | ID | Subject | Raised | Source |
 |---|---|---|---|
@@ -89,8 +89,7 @@ Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests
 | [FR-2026-07-30-bottom-up-causal-insights](FR-2026-07-30-bottom-up-must-produce-causal-insights-new-oc-de.md) | Bottom up must produce causal insights new oc de | 2026-07-30 | PM session 2026-07-30, founder chat |
 | [FR-2026-07-30-bottom-up-first](FR-2026-07-30-bottom-up-first-availability-is-adp-plus-draft-s.md) | Bottom up first availability is adp plus draft s | 2026-07-30 | PM session 2026-07-30, founder chat |
 | [FR-2026-07-30-bottom-up-must-include-table-stakes](FR-2026-07-30-bottom-up-must-include-all-tier-0-table-stakes-n.md) | Bottom up must include all tier 0 table stakes n | 2026-07-30 | PM session 2026-07-30, founder chat |
-| [FR-2026-07-30-coordinator-continuity-as-tenure-not-new-oc-bina](FR-2026-07-30-coordinator-continuity-as-tenure-not-new-oc-bina.md) | Coordinator continuity as tenure not new oc bina | 2026-07-30 | PM session 2026-07-30, founder chat |
-| [FR-2026-07-30-four-selectable-ranking-sources](FR-2026-07-30-four-selectable-ranking-sources-driving-every-fe.md) | Four selectable ranking sources driving every fe | 2026-07-30 | PM session 2026-07-30, founder chat |
+| [FR-2026-07-30-coordinator-continuity-tenure-and-qb](FR-2026-07-30-coordinator-continuity-as-tenure-not-new-oc-bina.md) | Coordinator continuity as tenure not new oc bina | 2026-07-30 | PM session 2026-07-30, founder chat |
 | [FR-2026-07-30-lots-of-components-in-the-rankings-proprietary-a](FR-2026-07-30-lots-of-components-in-the-rankings-proprietary-a.md) | Lots of components in the rankings proprietary a | 2026-07-30 | ranker session 2026-07-30, relayed in PM brief for FR-136 Q1 |
 | [FR-2026-07-30-price-the-fantasypros-paid-api-tier](FR-2026-07-30-price-the-fantasypros-paid-api-tier-terms-were-n.md) | Price the fantasypros paid api tier terms were n | 2026-07-30 | PM session 2026-07-30, founder chat |
 | [FR-2026-07-30-recommendation-logic-is-inverted](FR-2026-07-30-recommendation-logic-is-inverted-it-prefers-the.md) | Recommendation logic is inverted it prefers the | 2026-07-30 | PM session 2026-07-30, founder chat, live Draft-mode screenshot |
@@ -180,4 +179,5 @@ _None._
 | [FR-119](FR-119-record-product-behaviour-explanations-plan-for-a.md) | Record product behaviour explanations plan for a | `PARTIAL` |
 | [FR-127](FR-127-displayed-abbreviations-are-unexplainable-the-as.md) | Displayed abbreviations are unexplainable the as | `IN-BUILD` |
 | [FR-132](FR-132-archetype-placement-show-both-arrangements-befor.md) | Archetype placement show both arrangements befor | `IN-PROGRESS` |
+| [FR-2026-07-30-four-selectable-ranking-sources](FR-2026-07-30-four-selectable-ranking-sources-driving-every-fe.md) | Four selectable ranking sources driving every fe | `IN-PROGRESS` |
 

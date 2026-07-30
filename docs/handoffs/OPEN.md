@@ -4,7 +4,7 @@
 Threads are the source of truth. Change a thread's `STATUS:`, then re-run sync.
 Protocol: [`README.md`](README.md).
 
-**88 open** · 54 resolved
+**89 open** · 54 resolved
 
 ---
 
@@ -68,7 +68,7 @@ not an omission. Start your session at your own heading.
 | [2026-07-30-suggested-pick-rule-measure-qg-against-plain-vbd](2026-07-30-suggested-pick-rule-measure-qg-against-plain-vbd.md) | Suggested pick rule measure qg against plain vbd | `strategist` | OPEN | 0d | FR-2026-07-30-recommendation-logic-is-inverted (question 3 of the founder's bar), FR-051, FR-115 |
 | [88](088-pr-004-f-bottomup-core-run-the-confirmatory-bott.md) | Pr 004 f bottomup core run the confirmatory bott | `strategist` | OPEN | 1d | none |
 
-### `frontend` — 22 waiting
+### `frontend` — 23 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
@@ -93,6 +93,7 @@ not an omission. Start your session at your own heading.
 | [116](116-vs-your-options-contract-answer-client-computati.md) | Vs your options contract answer client computati | `backend` | OPEN | 0d | none |
 | [2026-07-30-availability-json-1-17-0-adp-central-tendency-pr](2026-07-30-availability-json-1-17-0-adp-central-tendency-pr.md) | Availability json 1 17 0 adp central tendency pr | `backend` | OPEN | 0d | none |
 | [2026-07-30-draft-board-reference-axis-unanimous-snake-never](2026-07-30-draft-board-reference-axis-unanimous-snake-never.md) | Draft board reference axis unanimous snake never | `researcher` | OPEN | 0d | none |
+| [2026-07-30-four-selectable-ranking-sources-board-contract-s](2026-07-30-four-selectable-ranking-sources-board-contract-s.md) | Four selectable ranking sources board contract s | `backend` | OPEN | 0d | none |
 | [2026-07-30-wire-assistant-retrieval-to-docs-assistant-conte](2026-07-30-wire-assistant-retrieval-to-docs-assistant-conte.md) | Wire assistant retrieval to docs assistant conte | `librarian` | OPEN | 0d | none |
 
 ### `data-ops` — 10 waiting

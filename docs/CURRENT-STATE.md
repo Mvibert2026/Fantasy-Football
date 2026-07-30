@@ -39,6 +39,34 @@ recommendation-card honesty fixes) that likely just need the markers stripped an
 kept, but that call belongs to whoever owns this merge, not to a session that arrived afterward
 for an unrelated reason. Flagged to `pm` (see `docs/ideas-inbox.md`, 2026-07-30 backend entry).
 
+**Last verified:** 2026-07-30, backend session — **four selectable ranking sources, board layer
+(ADR-068, FR-2026-07-30).** `make_board.build_board`/`export_contract.build_board_json` now take
+`ranking_source_selection` (`expert_adjusted` default/unchanged-byte-identical, `expert_raw`,
+`market_adp`, `proprietary`). Board order runs off whichever is selected — never re-derived from
+our VBD except for `expert_adjusted` — VBD/projected_points/tiers still computed under every
+selection. `market_adp` = FFC half-PPR/10-team ADP (format-matched to this league; MFL proxy stays
+display-only, unchanged), resolved via the `player_ids` mfl_id↔gsis crosswalk, honestly thin
+(158/167 QB/RB/WR/TE rows resolve vs. ~554 on the expert board). `proprietary` raises
+`RankingSourceNotBuilt` from `make_board`/returns an explicit `ranking_source_built: false, players:
+[]` shape from `export_contract` — never a silent fallback. **Contract 1.17.0 → 1.18.0**: new files
+`board.expert_raw.json`, `board.market_adp.json`, `ranking_sources.json` (the four-way catalog);
+`board.json` itself unchanged in name/default. Handoff thread to `frontend`:
+`docs/handoffs/2026-07-30-four-selectable-ranking-sources-board-contract-s.md`.
+**Deliberately NOT wired: `simulate_availability`/`draft_sim.load_season`.** Both the opponent
+model and the user's own `strategy_bpa` pick still run off the single hardcoded
+`fantasypros_ecr` regardless of the board's selected source — confirmed live, matches the
+founder's own diagnosis (73/80 top players disagree). Left unfixed on purpose: an open,
+unresolved thread (`docs/handoffs/2026-07-30-availability-adp-measurements-m0-m5.md`) is
+mid-flight on exactly this code path and says explicitly not to implement the change yet (M0
+already found FFC's `times_drafted` field doesn't reconcile; M1 found ADP does not beat the ECR
+incumbent on MAE in 2 of 3 real mocks). Every `board*.json`'s per-player `availability` block and
+the standalone `availability.json` therefore describe the SAME simulation regardless of which
+ranking source is selected — a real, audited gap, reported to that thread and to frontend, not
+silently left. The recommender's fallback value needs no backend change (it reads whichever board
+file frontend requests; no server-side recommender exists). Tests: `tests/test_make_board.py`
++10, `tests/test_export_contract.py` +6, written before the implementation, all passing (32/32
+and 62/62 respectively). Full reasoning: ADR-068 (`docs/decisions.md`).
+
 **Last verified:** 2026-07-30, ranker session — **factor batch 2 (ADR-067): registry #28 is NULL not
 HARMFUL, registry #29 is no longer gated and is also NULL, and neither earns an insight sentence.**
 Batch 1's #28 HARMFUL grade was a **data artifact**, confirmed by direct head-to-head on one harness:

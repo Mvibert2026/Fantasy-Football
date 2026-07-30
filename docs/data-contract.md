@@ -1,6 +1,6 @@
 # Front-End Data Contract
 
-**Version 1.17.0** · generated into `data/export/` · authored 2026-07-30
+**Version 1.18.0** · generated into `data/export/` · authored 2026-07-30
 
 The UI reads these files and **never** touches `data/nfl.db`. Every artifact carries
 `contract_version` and `generated_utc`. Breaking changes bump the major version and are
@@ -88,6 +88,12 @@ either, for the same reason DEF has never had one (no scoring data ingested).
 | Field | Type | Notes |
 |---|---|---|
 | `contract_version`, `generated_utc`, `season` | str | |
+| `ranking_source_selection` | str | **New in 1.18.0.** One of `"expert_adjusted"` \| `"expert_raw"` \| `"market_adp"` \| `"proprietary"` (CLAUDE.md §4's `ranking_source` enum, FR-2026-07-30). Which of the four founder-facing sources drove THIS file. `board.json` itself is always `"expert_adjusted"` — the historical default, unchanged in name/shape. `board.expert_raw.json` and `board.market_adp.json` are the same shape with this field (and player order) different. See `ranking_sources.json` for the catalog of all four, including the unbuilt `proprietary` |
+| `ranking_source_label` | str | Human label: "Consensus adjusted" / "Consensus" / "ADP" / "Proprietary bottom-up" |
+| `ranking_source_built` | bool | `true` on every board file that exists. A request for `proprietary`'s (absent) board via `build_board_json(ranking_source_selection="proprietary")` returns this as `false` with `players: []` rather than raising — see `ranking_sources.json` |
+| `ranking_source_as_of_date` | str\|null | This SOURCE's own as_of_date — never shared across sources. For `market_adp` this is `ffc_adp_snapshots`' own date, not `rankings`' |
+| `ranking_source_row_count` | int | `len(players)` for this specific file. `market_adp` is honestly thinner (~160-170 vs ~554) — FFC's own sampled depth, not a bug |
+| `ranking_source_note` | str | Explains whether board order is our VBD (`expert_adjusted`) or the source's own unmodified rank (`expert_raw`/`market_adp` — never re-derived from VBD, CLAUDE.md §4 never-blend) |
 | `snapshot_as_of_date` | str\|null | **New in 1.13.0.** The rankings snapshot's `as_of_date` (`FreshnessResult`, `src/freshness.py`), NOT when this file was written — see `generated_utc` for that. `null` only if the source/season has no rows at all |
 | `snapshot_age_days` | int\|null | **New in 1.13.0.** Days between build time and `snapshot_as_of_date`. `null` iff `snapshot_as_of_date` is `null` |
 | `snapshot_max_age_days` | int | **New in 1.13.0.** The threshold this league's config (`freshness_max_age_days`) was checked against |
@@ -142,6 +148,32 @@ component-level projections (test-registry #2), which no accessible source provi
 **UI implication:** do not build a "we disagree with the experts about this player" view. The
 board does not currently support that claim. It supports "this player is worth more *in this
 league's format*", which is a different and better-founded statement.
+
+---
+
+## `ranking_sources.json` (new, 1.18.0)
+
+The picker's catalog. **Not `league_id`-scoped** — one file, shared across every board variant.
+
+```
+{
+  "contract_version", "generated_utc", "season",
+  "sources": [
+    {"ranking_source_selection", "label", "built", "source_table", "as_of_date", "row_count", "note"},
+    ... one entry per RANKING_SOURCE_SELECTIONS value, including "proprietary" with built=false ...
+  ],
+  "board_files": {
+    "expert_adjusted": "board.json",
+    "expert_raw": "board.expert_raw.json",
+    "market_adp": "board.market_adp.json",
+    "proprietary": null
+  }
+}
+```
+
+Render the disabled/unavailable `proprietary` entry using its `note` — do not hide it from the
+picker. This file is the only place a client needs to look to render the full four-way toggle;
+each `board*.json` file only knows about itself.
 
 ---
 
@@ -443,6 +475,8 @@ as QB10). It is still withheld, because publishing a rank invites a downstream V
 ---
 
 ## Changelog
+
+| 1.18.0 | 2026-07-30 | **Additive (FR-2026-07-30, ADR-068).** Four selectable ranking sources. Every `board*.json` gains `ranking_source_selection`/`_label`/`_built`/`_as_of_date`/`_row_count`/`_note`. Two new per-league files, same shape as `board.json`, different source and (for `expert_raw`/`market_adp`) different player order — never re-derived from our VBD: `board.expert_raw.json` (unmodified expert consensus order), `board.market_adp.json` (FFC half-PPR/10-team ADP order, ~160-170 players, honestly thinner than the ~554-row expert boards). New non-`league_id`-scoped catalog file `ranking_sources.json` listing all four (including the unbuilt `proprietary`, which returns an explicit `ranking_source_built: false` shape rather than a missing file or a silent fallback). `simulate_availability`/`availability.json` NOT wired to this selection yet — deliberately, gated on the open M0-M5 availability-opponent-model thread; every board file's per-player `availability` block still describes the same single-source simulation regardless of which board it's embedded in. |
 
 | 1.17.0 | 2026-07-30 | **Additive (thread 104, FR-066 unblock).** `availability.json:client_simulation_parameters` gains `player_ranks` (`{player_name: rank}`, keyed to `by_player`'s existing keys) and `ranking_sources[].as_of_date`. Both are read from `ds.load_season`'s own return value at export time (`src/export_contract.py:build_availability_json`, now takes `conn`) — never hardcoded — so a future repoint of `draft_sim.CONSENSUS_RANK_SOURCE` (thread 119, e.g. to ADP) updates both automatically with zero export-side edits. This is the rank `simulate_availability` actually runs its opponent model and the user's own `strategy_bpa` pick against; it is a **different ranking from `board.json:consensus_rank`** (73/80 top players differ in order — confirmed, not assumed). Unblocks a real browser-side Monte Carlo recompute for an overridden draft slot without approximating on the wrong source. Also corrects `algorithm_note`'s prior claim that the user's own pick runs off `board.json` (it does not, and never did) — see `docs/handoffs/104-fr066-availability-ranking-source-export.md`. |
 | Version | Date | Change |

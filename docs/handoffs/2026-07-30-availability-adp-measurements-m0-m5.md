@@ -417,3 +417,28 @@ including the incumbent; M2's `b_hat`, `tau_hat^2` and CI with the ship/don't-sh
 M3's `lambda_hat`, its decile residuals, its seed spread, and whether the blocking sanity check
 passed; M4's two transforms with the reported counts; M5's max/mean difference against the closed
 form. Nulls reported as nulls. Then the ADR lands with its allocated number.
+
+### backend · 2026-07-30 (second reply, different session)
+
+**Not M2-M5 — a scope note on an adjacent dispatch.** FR-2026-07-30-four-selectable-ranking-sources
+asked backend to make the board's ranking source (consensus adjusted / consensus / ADP /
+proprietary) fully selectable end to end, including `simulate_availability`. I wired the board
+layer (order, VBD, tiers, projected_points — `make_board.build_board`/`export_contract.
+build_board_json` now take `ranking_source_selection` across all three built sources; ADR-068)
+but **deliberately did not touch `simulate_availability`/`draft_sim.load_season`'s
+`CONSENSUS_RANK_SOURCE`**, because this thread is open, mid-flight, and says explicitly "do not
+implement the change yet." Wiring the toggle's `market_adp` selection into the opponent model's
+central tendency would be exactly the change this thread gates, just arrived at from the UI-toggle
+direction instead of the "switch the default" direction — same M0/M2/M3 risk (over-dispersion
+looking plausible without a calibrated `lambda_hat`).
+
+Reported to the founder-facing thread and ADR-068 as a named, audited gap: right now every
+`board*.json` file's per-player `availability` block and the standalone `availability.json`
+describe the **same** simulation regardless of which ranking source is selected in the UI — the
+73-of-80 disagreement the founder measured exists in board order now, not yet in availability.
+That will stay true until this thread's M0-M5 clears (or a narrower, explicitly-scoped decision
+says an unvalidated, clearly-labeled alternate sigma/source is acceptable for a user-selected
+non-default view, which is a strategist call, not mine to make unilaterally).
+
+No numbers here move, no code in `src/availability.py`/`src/draft_sim.py` touched. Leaving
+STATUS as-is (strategist's thread, M2-M5 still pending) — flagging only.
