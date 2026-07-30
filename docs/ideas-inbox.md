@@ -1220,3 +1220,29 @@ have been the single most useful number in the report. Nothing committed.
   `SCOPING` or add a `## Update` section pointing at the artifact. Whoever owns that file should do
   both and then run `python tools/founder_requests.py sync` — otherwise a future session re-dispatches
   research this project has now bought once and nearly bought twice.
+
+## 2026-07-30 — ranker, out of the FR-109 VBD-arm audit
+
+- **Replacement level is the highest-leverage untested parameter in the strategy work, and probably
+  in the board too.** Under the current teams×starters baselines (QB10/RB30/WR40/TE10) the round-2
+  RB-vs-WR call is WR by 25.3 VBD points; under a "last rostered" baseline read off the board's own
+  top 150 (QB24/RB54/WR57/TE15) it is RB by 2.8. **The sign flips.** Every late-RB conclusion in
+  `fr085-zero-rb.md` rests on this one choice and no version of the document tested it. Not
+  test-registry #35 (that replaced all four with a single global flex baseline and closed NULL);
+  this is per-position. Needs a `strategist` pre-registration — deliberately not run here, because
+  choosing a baseline after seeing which way it moves the answer is the exact failure this
+  structure exists to prevent.
+- **Report distributions, not means, for anything a strategy rule can make bimodal.** "VBD takes its
+  first RB in round 6.3" was a mean over a distribution with 45% of its mass in round 1, 44% in
+  rounds 11–12, and zero drafts in round 3. The mean described a behaviour the model never exhibits.
+  Cheap general fix: any first-*X* / mean-round statistic in the strategy harness should print its
+  histogram and its per-slot split alongside the mean, or not print at all.
+- **Sanity-check any summary statistic against the sensitivity grid it already sits in before
+  quoting it.** 6.33 was the most extreme of 14 (board, σ) cells — the other 13 run 1.17 to 4.64.
+  That check costs nothing and would have caught it before it reached the founder.
+- **A "no positional rules whatsoever" arm that carries a 25-rank positional-need penalty is
+  mislabelled.** 46% of the VBD arm's first-RB picks are caused by that penalty rather than by
+  value. Whatever `strategist` rules on the amendment, the arm needs a name that says what it is.
+- **Cross-check: does the shipped board have the same finish-vs-consensus curve confusion?** The
+  simulator reads finish-rank curves at consensus ranks, which ADR-016 explicitly settled against.
+  `src/make_board.py` does it correctly. Worth grepping for other consumers that do not.
