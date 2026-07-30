@@ -114,20 +114,32 @@ Overlap seasons only, **2021–2024**:
 **Registered prediction:** `Δb(QB)` is the **largest** of the four. If it is the smallest, the ADR's
 central mechanism is wrong and it should be re-examined rather than patched — reply saying so.
 
-### 4 — Component models vs the incumbent, on season points. The cheapest real answer available.
+### 4 — ALREADY DONE. Convert the head-to-head MAEs to skill scores. Small.
 
-The ranker's §6.2 step. **No new model — arithmetic on two committed objects.** Blocked on item 2's
-`MAE_floor` (it needs the same floor to form a skill score).
+**You ran this before I ruled** — `docs/ranking/component-model-vs-incumbent-headtohead.md`, and it
+is good work: correct alignment on both axes, the alignment move stated rather than buried, a sanity
+check against the ECR-native numbers, and the mandate's own conditional applied without waiting to be
+told. **Ruling 3's condition (a) is decided by it — the component projections do not ship as a
+displayed field at any position.** Nothing further is needed to make that decision.
 
-- Score the existing component projections through `pos_model.score_components()` under **this
-  league's rules**, on **season points**, not per-component MAE.
-- Same universe and same seasons as the incumbent arm, or the comparison is not a comparison. State
-  which universe you used and why.
-- Report `SS_component(p)` beside `SS_incumbent(p)`, per position, with season-level CIs.
-- 2018–2024. **2025 sealed** — this does not authorise `release_for_final_fit()`.
+Two small follow-ups only:
 
-This decides ruling 3's condition (a). Per position: a model that wins at WR and loses at QB displays
-at WR and not at QB.
+1. **Report `SS` for both arms** once item 2's `MAE_floor` exists, on the head-to-head's own universe.
+   The floor cancels in the arm-vs-arm comparison, so this cannot change the verdict — it is wanted
+   because `SS` answers a question MAE does not: **is either arm better than knowing nothing about the
+   player?** If both land ≤ 0 at a position, ruling 3's condition (b) fires and the product shows no
+   projection there at all.
+2. **Two numbers now exist for "the incumbent's projection error"** — yours (FFC-refit, 2019–24:
+   75.7 / 58.6 / 50.5 / 39.8) and the ranker's (ECR-native, 2022–24: 74.0 / 62.0 / 48.0 / 35.8). Both
+   are correct and they are about different objects. Guardrails §11.4 treats two numbers for one
+   quantity as an incident, so please add one line to the head-to-head doc stating that **whichever
+   is quoted must name its curve's training source.** No re-run.
+
+**Also noted, and not a criticism:** your FFC refit was used as one arm of a paired same-universe
+comparison, with conclusions drawn only about the difference. That is the one legitimate use of an
+FFC-refit curve and it is approved retrospectively (`ADR-DRAFT-market-rank-curve-source.md` §3.1).
+The refit is **not** approved for shipping, and your numbers may not be quoted as the shipped board's
+error. Item 3 decides whether the refit ever ships.
 
 ### 5 — The durability-oracle decomposition. Small, and it deflates a startling claim.
 

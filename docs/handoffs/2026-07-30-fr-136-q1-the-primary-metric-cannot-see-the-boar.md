@@ -426,6 +426,30 @@ predicted against.
 
 ---
 
+**Late update, and it decides ruling 3 rather than waiting on it.** `backend` ran your §6.2 step 1
+while I was writing — `docs/ranking/component-model-vs-incumbent-headtohead.md`. **The component model
+loses to the incumbent on projection error at all four positions** (Δ = +10.0 QB / +6.2 RB / +1.7 WR
+/ +4.9 TE; RB and TE clear of zero). My four conditions were written before I read it and are left
+exactly as written. Applying (a): **the component projections do not ship as a displayed field at any
+position today.** The conditional path stays open for a better model.
+
+The skill score cannot rescue it — the floor cancels in an arm-vs-arm comparison, so the MAE ordering
+*is* the skill-score ordering. Nor can multiplicity: correction only makes it harder to declare a
+difference, and there is no position where the point estimate favours the component model. 4-of-4
+directional is the decision-relevant fact, not the two intervals.
+
+Backend's explanation is the most useful sentence in that document and should survive into any
+summary: **the incumbent's curve is fitted on this season's own market-anticipated rank order, which
+already prices in the injuries, role changes and depth-chart shifts the component model has to infer
+from stale lagged features.** Your oracle room is real; this is a measurement of how little of it has
+been captured — and it is a much better answer to "why doesn't bottom-up win" than the metric
+discussion was.
+
+One incident to close, guardrails §11.4: **there are now two numbers for "the incumbent's projection
+error"** — backend's FFC-refit 75.7/58.6/50.5/39.8 (2019–24) and your ECR-native 74.0/62.0/48.0/35.8
+(2022–24). Both correct, different objects. Whichever is quoted must name its curve's training
+source. I have asked backend for a one-line note; no re-run.
+
 **What I need measured, and I cannot run it — no database access, by design.** Five items, fully
 specified, staged for `backend` at
 `docs/handoffs/STAGED-strategist-fr136-q1-measurements.md`. Items 1 and 2 are blocking for the metric
