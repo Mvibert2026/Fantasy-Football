@@ -33,7 +33,7 @@ export interface TraceField {
 }
 
 /** The contract version the registry below is pinned against. */
-export const TRACE_CONTRACT = '1.14.0';
+export const TRACE_CONTRACT = '1.15.0';
 
 /**
  * Changes to the user-visible trace surface, newest first.
@@ -47,6 +47,24 @@ export const TRACE_CHANGELOG: ReadonlyArray<{
   kind: 'rename' | 'value' | 'added' | 'removed';
   summary: string;
 }> = [
+  {
+    version: '1.15.0',
+    kind: 'value',
+    summary:
+      'Thread 093 (FR-042, backend ADR-062). league.json gains one new field, ' +
+      '`scoring_ruleset_note` (a plain-language statement of which ruleset a league actually ' +
+      'uses -- not rendered anywhere in this UI yet, so not added to BOARD_TRACE_FIELDS below, ' +
+      'which only tracks fields this app displays). Registered here as `value` rather than ' +
+      '`added` because the real, on-screen consequence is elsewhere: `src/generate_config_matrix.py` ' +
+      'was silently building all 24 presets, and every founder-created custom league, on ' +
+      "Westwood's own scoring ruleset (stacking yardage bonuses) instead of a genuine standard " +
+      'one. Every non-primary league now builds on a real `STANDARD_LEAGUE` (no yardage bonuses), ' +
+      'so `projected_points`/`vbd`/`overall_rank`/`tier` moved for every player on every ' +
+      "non-primary board. Primary (Westwood)'s own board is untouched -- confirmed against " +
+      'ADR-062, byte-identical before/after. No UI change made this session (frontend reply to ' +
+      'thread 093): surfacing `scoring_ruleset_note` near the league switcher is a reasonable ' +
+      'follow-up, out of this session\'s two assigned specs.',
+  },
   {
     version: '1.14.0',
     kind: 'added',

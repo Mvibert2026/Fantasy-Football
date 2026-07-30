@@ -71,10 +71,19 @@ beforeEach(() => {
   localStorage.clear();
 });
 
+/** DRAFT-MIDDLE-PANE.md: Position Scarcity/Queue moved from the whole
+ *  off-clock middle pane to their own tabs, alongside the new default
+ *  Recommend tab. Every test that inspects their content now switches to the
+ *  tab first, matching a real user clicking it. */
+function switchPaneTab(label: 'Recommend' | 'Scarcity' | 'Queue' | 'Insights') {
+  fireEvent.click(screen.getByRole('button', { name: label }));
+}
+
 describe('thread 058 section A: Position Scarcity legibility and honest nulls', () => {
   it('renders a labelled pace phrase, never a bare signed integer, for a position with real board data', () => {
     seedRealPicksThroughOverall(3);
     renderDraftRoom();
+    switchPaneTab('Scarcity');
     // "on pace" / "N ahead of pace" / "N behind of pace" -- whichever the real
     // data produces, it must be a phrase, not a bare +N/-N/±0.
     const paceMatches = screen.getAllByText(/on pace|ahead of pace|behind of pace|behind pace/);
@@ -86,6 +95,7 @@ describe('thread 058 section A: Position Scarcity legibility and honest nulls', 
   it('renders DEF as a fifth scarcity row with an honest null, quoting board.json:def_note -- never a fabricated 0 or ±0', () => {
     seedRealPicksThroughOverall(3);
     renderDraftRoom();
+    switchPaneTab('Scarcity');
     const defRow = screen.getByTestId('scarcity-row-DEF');
     expect(within(defRow).getByText('DEF')).toBeInTheDocument();
     expect(within(defRow).getByText('no board data')).toBeInTheDocument();
@@ -95,6 +105,7 @@ describe('thread 058 section A: Position Scarcity legibility and honest nulls', 
   it('sinks DEF to the bottom of the urgency-ordered panel', () => {
     seedRealPicksThroughOverall(3);
     renderDraftRoom();
+    switchPaneTab('Scarcity');
     const panel = screen.getByTestId('position-scarcity');
     const rows = ['QB', 'RB', 'WR', 'TE', 'DEF'].map((pos) => within(panel).getByTestId(`scarcity-row-${pos}`));
     const order = rows.map((r) => panel.compareDocumentPosition(r));
@@ -113,6 +124,7 @@ describe('thread 058 section A: Position Scarcity legibility and honest nulls', 
   it('carries the traceability footer naming the real fields behind the panel', () => {
     seedRealPicksThroughOverall(3);
     renderDraftRoom();
+    switchPaneTab('Scarcity');
     expect(screen.getByText('board.position_remaining · board.position_tier · pace vs board.consensus_rank')).toBeInTheDocument();
   });
 
@@ -126,6 +138,7 @@ describe('thread 058 section A: Position Scarcity legibility and honest nulls', 
     }));
     seedRealPicksThroughOverall(Math.max(3, extra.length), extra);
     renderDraftRoom();
+    switchPaneTab('Scarcity');
     expect(screen.getByText(/tier 1 gone · tier 2: \d+ left/)).toBeInTheDocument();
   });
 });
@@ -163,6 +176,12 @@ describe('thread 058 section B: board row positional label and SORT controls', (
   it('FR-050: adds a fifth SORT control, VBD, and reorders rows descending by it on click', () => {
     seedRealPicksThroughOverall(3);
     renderDraftRoom();
+    // DRAFT-MIDDLE-PANE.md: off the clock, the default Recommend tab now
+    // shows a real look-ahead recommendation (FR-049), which can legitimately
+    // name the same top-VBD player already at the top of the board list --
+    // switch to Scarcity so the assertions below see one Bijan Robinson, not
+    // two, without weakening what they check.
+    switchPaneTab('Scarcity');
     const vbdButton = screen.getByRole('button', { name: 'VBD' });
     expect(vbdButton).toBeInTheDocument();
     fireEvent.click(vbdButton);
@@ -231,12 +250,14 @@ describe('thread 058 section E4/F: queue and watchlist traceability footer', () 
     localStorage.setItem('prep.watchlist', JSON.stringify([starred!.name.kind === 'present' ? starred!.name.value : '']));
     seedRealPicksThroughOverall(3);
     renderDraftRoom();
+    switchPaneTab('Queue');
     expect(screen.getByText('availability.baseline_p → availability.live_p · adjustment.need + adjustment.run')).toBeInTheDocument();
   });
 
   it('does not render the footer for an empty queue/watchlist -- nothing to trace yet', () => {
     seedRealPicksThroughOverall(3);
     renderDraftRoom();
+    switchPaneTab('Queue');
     expect(screen.queryByText('availability.baseline_p → availability.live_p · adjustment.need + adjustment.run')).not.toBeInTheDocument();
   });
 });

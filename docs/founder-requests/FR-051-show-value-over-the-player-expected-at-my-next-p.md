@@ -1,6 +1,6 @@
 ---
 ID: FR-051
-STATUS: NEW
+STATUS: SHIPPED
 SOURCE: chat 2026-07-29, PM session
 RAISED: 2026-07-29
 ---
@@ -62,3 +62,32 @@ The current recommendation runs on four hand-picked constants that have never be
 (`frontend/ui/data/recommendation.ts`). Adding a genuinely measured input to it is an improvement in
 principle and a model change in practice: **it must be registered with `strategist` before it ships**,
 not tuned until the output looks sensible. Display first, model second.
+
+## Resolution (2026-07-30, frontend)
+
+Built per `docs/design/DRAFT-MIDDLE-PANE.md` §1.2, "show the reference point, do not do the
+arithmetic" — no subtraction, two plain figures side by side (CONSIDERING / LIKELY THERE AT
+&lt;pick&gt;), each with a real name, position and VBD. Renders only in the base on-the-clock "this
+pick" state (see the code comment on `referencePoint` in `DraftRoom.tsx` for why it isn't
+generalised into the look-ahead branch — a deliberate scope limit, not an oversight).
+
+**One divergence from the mock, disclosed rather than silently matched:** the design mock's
+illustrative "VBD 54.1 · 48.9–58.2 across σ" range appears to be placeholder numbers — VBD is a
+static per-player `board.json` field, not sigma-dependent, so a real sigma-swept VBD range isn't a
+computation this data supports. Built instead as a **survival-probability range** (sigma 5/10/20
+spread) for the same selected player, reusing the exact idiom `Predictions.tsx`'s own `RangeCell`
+already ships (`ReferenceSurvivalRange` in `DraftRoom.tsx`). Real, sourced, traceable — the
+uncertainty travels with the figure, per the ticket's own instruction, just expressed on the
+quantity this build can actually measure.
+
+**"Likely there" selection rule:** the highest-VBD available player (excluding the one already
+being considered) with at least 50% live-adjusted odds of surviving to the pick in question —
+`findLikelyThereCandidate`, matching `scarcity.ts`'s own `under50ByNext` convention. Null (an honest
+"no available player has even odds") when nothing clears that bar, never a forced pick at whatever
+odds happen to be highest.
+
+**Display only, not fed into the recommendation** — the ticket's own instruction, unbuilt
+deliberately; would need `strategist` registration first.
+
+Tests: `frontend/ui/__tests__/draft-room-middle-pane-tabs.test.tsx`. Screenshot:
+`frontend/e2e/artifacts/middle-pane-1-recommend-this-pick.png`.

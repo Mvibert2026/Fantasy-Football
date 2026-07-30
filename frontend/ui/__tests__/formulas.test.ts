@@ -212,10 +212,35 @@ describe('positionScarcity and depletionWarning (§5.5)', () => {
     expect(under50Line(rb, null)).toBe('not yet — no further pick of yours this draft');
   });
 
+  it('FR-045: hasAutoFillPlaceholders=true nulls out pace and sets paceSuppressedReason, for a position with real board data', () => {
+    const starters: Record<string, number> = {};
+    for (const t of league.thresholds) {
+      starters[t.position] = t.starters.kind === 'present' ? t.starters.value : 0;
+    }
+    const withoutPlaceholders = positionScarcity(data, rows, [], 20, 10, ['RB', 'DEF'], starters, teams, false);
+    const rbBefore = withoutPlaceholders.find((s) => s.pos === 'RB')!;
+    expect(rbBefore.dataAvailable).toBe(true);
+    expect(rbBefore.pace).not.toBeNull();
+    expect(rbBefore.paceSuppressedReason).toBeNull();
+
+    const withPlaceholders = positionScarcity(data, rows, [], 20, 10, ['RB', 'DEF'], starters, teams, true);
+    const rbAfter = withPlaceholders.find((s) => s.pos === 'RB')!;
+    expect(rbAfter.pace).toBeNull();
+    expect(rbAfter.paceSuppressedReason).not.toBeNull();
+    expect(paceLabel(rbAfter.pace, rbAfter.paceSuppressedReason)).toBe(rbAfter.paceSuppressedReason);
+
+    // A position with no board data at all stays a "no data" null, never
+    // reports the placeholder-suppression reason -- the two nulls have
+    // different causes and must stay distinguishable.
+    const def = withPlaceholders.find((s) => s.pos === 'DEF')!;
+    expect(def.dataAvailable).toBe(false);
+    expect(def.paceSuppressedReason).toBeNull();
+  });
+
   it('fires the depletion warning only when every remaining tier-1 player is under 50% by the next pick', () => {
     const scarce = {
       pos: 'TE', total: 10, remaining: 1, gone: 9, dataAvailable: true, expected: 8,
-      pace: 1, tier1Remaining: 1, tier2Remaining: 0, under50ByNext: 1, startablePool: 12,
+      pace: 1, paceSuppressedReason: null, tier1Remaining: 1, tier2Remaining: 0, under50ByNext: 1, startablePool: 12,
     };
     expect(depletionWarning(scarce, 23)).toMatch(/All 1 remaining tier-1 TE sit under 50%/);
 
@@ -232,10 +257,18 @@ describe('positionScarcity and depletionWarning (§5.5)', () => {
     expect(paceLabel(-1)).toBe('1 behind pace');
   });
 
+  it('FR-045: paceLabel renders the suppression reason instead of the number when one is given, even if pace is non-null', () => {
+    // Belt-and-braces case: positionScarcity never produces both a non-null
+    // pace and a non-null reason together, but paceLabel itself must not
+    // silently prefer the number if a caller ever passes both.
+    expect(paceLabel(2, 'not yet -- reason')).toBe('not yet -- reason');
+    expect(paceLabel(null, null)).toBe('pace not yet computed');
+  });
+
   it('tierDepletionLine renders the design\'s three phrasings from real tier counts', () => {
     const base = {
       pos: 'TE', total: 10, remaining: 3, gone: 7, dataAvailable: true, expected: 6,
-      pace: 1, under50ByNext: 1, startablePool: 12,
+      pace: 1, paceSuppressedReason: null, under50ByNext: 1, startablePool: 12,
     };
     expect(tierDepletionLine({ ...base, tier1Remaining: 2, tier2Remaining: 1 })).toBe('tier 1: 2 left');
     expect(tierDepletionLine({ ...base, tier1Remaining: 0, tier2Remaining: 1 })).toBe('tier 1 gone · tier 2: 1 left');
