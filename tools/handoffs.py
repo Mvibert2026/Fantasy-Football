@@ -18,7 +18,7 @@ rather than quietly rotting.
 """
 
 from __future__ import annotations
-import argparse, datetime, itertools, pathlib, re, subprocess, sys
+import argparse, datetime, itertools, os, pathlib, re, subprocess, sys
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 HANDOFFS = ROOT / "docs" / "handoffs"
