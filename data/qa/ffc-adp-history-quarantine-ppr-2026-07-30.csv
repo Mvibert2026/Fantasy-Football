@@ -1,0 +1,205 @@
+adp_source,player_name_raw,position,team,reason,retrieved_at,quarantined_at
+ffc_ppr_12team,Arizona Defense,DEF,ARI,no_name_match,2026-07-30T04:11:03.662695+00:00,2026-07-30T04:11:03.662695+00:00
+ffc_ppr_12team,Arizona Defense,DEF,ARI,no_name_match,2026-07-30T04:11:06.426320+00:00,2026-07-30T04:11:06.426320+00:00
+ffc_ppr_12team,Arizona Defense,DEF,ARI,no_name_match,2026-07-30T04:11:09.220453+00:00,2026-07-30T04:11:09.220453+00:00
+ffc_ppr_12team,Arizona Defense,DEF,ARI,no_name_match,2026-07-30T04:11:12.555584+00:00,2026-07-30T04:11:12.555584+00:00
+ffc_ppr_12team,Arizona Defense,DEF,ARI,no_name_match,2026-07-30T04:11:16.024656+00:00,2026-07-30T04:11:16.024656+00:00
+ffc_ppr_12team,Arizona Defense,DEF,ARI,no_name_match,2026-07-30T04:11:20.378805+00:00,2026-07-30T04:11:20.378805+00:00
+ffc_ppr_12team,Atlanta Defense,DEF,ATL,no_name_match,2026-07-30T04:11:16.024656+00:00,2026-07-30T04:11:16.024656+00:00
+ffc_ppr_12team,Atlanta Defense,DEF,ATL,no_name_match,2026-07-30T04:11:20.378805+00:00,2026-07-30T04:11:20.378805+00:00
+ffc_ppr_12team,Baltimore Defense,DEF,BAL,no_name_match,2026-07-30T04:11:03.662695+00:00,2026-07-30T04:11:03.662695+00:00
+ffc_ppr_12team,Baltimore Defense,DEF,BAL,no_name_match,2026-07-30T04:11:09.220453+00:00,2026-07-30T04:11:09.220453+00:00
+ffc_ppr_12team,Baltimore Defense,DEF,BAL,no_name_match,2026-07-30T04:11:16.024656+00:00,2026-07-30T04:11:16.024656+00:00
+ffc_ppr_12team,Baltimore Defense,DEF,BAL,no_name_match,2026-07-30T04:11:20.378805+00:00,2026-07-30T04:11:20.378805+00:00
+ffc_ppr_12team,Baltimore Defense,DEF,BAL,no_name_match,2026-07-30T04:11:25.193776+00:00,2026-07-30T04:11:25.193776+00:00
+ffc_ppr_12team,Baltimore Defense,DEF,BAL,no_name_match,2026-07-30T04:11:30.548589+00:00,2026-07-30T04:11:30.548589+00:00
+ffc_ppr_12team,Baltimore Defense,DEF,BAL,no_name_match,2026-07-30T04:11:36.302112+00:00,2026-07-30T04:11:36.302112+00:00
+ffc_ppr_12team,Baltimore Defense,DEF,BAL,no_name_match,2026-07-30T04:11:47.969500+00:00,2026-07-30T04:11:47.969500+00:00
+ffc_ppr_12team,Baltimore Defense,DEF,BAL,no_name_match,2026-07-30T04:11:54.283870+00:00,2026-07-30T04:11:54.283870+00:00
+ffc_ppr_12team,Buffalo Defense,DEF,BUF,no_name_match,2026-07-30T04:11:09.220453+00:00,2026-07-30T04:11:09.220453+00:00
+ffc_ppr_12team,Buffalo Defense,DEF,BUF,no_name_match,2026-07-30T04:11:25.193776+00:00,2026-07-30T04:11:25.193776+00:00
+ffc_ppr_12team,Buffalo Defense,DEF,BUF,no_name_match,2026-07-30T04:11:30.548589+00:00,2026-07-30T04:11:30.548589+00:00
+ffc_ppr_12team,Buffalo Defense,DEF,BUF,no_name_match,2026-07-30T04:11:36.302112+00:00,2026-07-30T04:11:36.302112+00:00
+ffc_ppr_12team,Buffalo Defense,DEF,BUF,no_name_match,2026-07-30T04:11:42.658642+00:00,2026-07-30T04:11:42.658642+00:00
+ffc_ppr_12team,Buffalo Defense,DEF,BUF,no_name_match,2026-07-30T04:11:47.969500+00:00,2026-07-30T04:11:47.969500+00:00
+ffc_ppr_12team,Buffalo Defense,DEF,BUF,no_name_match,2026-07-30T04:11:54.283870+00:00,2026-07-30T04:11:54.283870+00:00
+ffc_ppr_12team,Carolina Defense,DEF,CAR,no_name_match,2026-07-30T04:11:06.426320+00:00,2026-07-30T04:11:06.426320+00:00
+ffc_ppr_12team,Carolina Defense,DEF,CAR,no_name_match,2026-07-30T04:11:09.220453+00:00,2026-07-30T04:11:09.220453+00:00
+ffc_ppr_12team,Carolina Defense,DEF,CAR,no_name_match,2026-07-30T04:11:12.555584+00:00,2026-07-30T04:11:12.555584+00:00
+ffc_ppr_12team,Carolina Defense,DEF,CAR,no_name_match,2026-07-30T04:11:16.024656+00:00,2026-07-30T04:11:16.024656+00:00
+ffc_ppr_12team,Carolina Defense,DEF,CAR,no_name_match,2026-07-30T04:11:20.378805+00:00,2026-07-30T04:11:20.378805+00:00
+ffc_ppr_12team,Chicago Defense,DEF,CHI,no_name_match,2026-07-30T04:11:03.662695+00:00,2026-07-30T04:11:03.662695+00:00
+ffc_ppr_12team,Chicago Defense,DEF,CHI,no_name_match,2026-07-30T04:11:20.378805+00:00,2026-07-30T04:11:20.378805+00:00
+ffc_ppr_12team,Chicago Defense,DEF,CHI,no_name_match,2026-07-30T04:11:25.193776+00:00,2026-07-30T04:11:25.193776+00:00
+ffc_ppr_12team,Chicago Defense,DEF,CHI,no_name_match,2026-07-30T04:11:30.548589+00:00,2026-07-30T04:11:30.548589+00:00
+ffc_ppr_12team,Chicago Defense,DEF,CHI,no_name_match,2026-07-30T04:11:54.283870+00:00,2026-07-30T04:11:54.283870+00:00
+ffc_ppr_12team,Chig Okonkwo,TE,WAS,no_name_match,2026-07-30T04:11:47.969500+00:00,2026-07-30T04:11:47.969500+00:00
+ffc_ppr_12team,Cincinnati Defense,DEF,CIN,no_name_match,2026-07-30T04:11:03.662695+00:00,2026-07-30T04:11:03.662695+00:00
+ffc_ppr_12team,Cincinnati Defense,DEF,CIN,no_name_match,2026-07-30T04:11:06.426320+00:00,2026-07-30T04:11:06.426320+00:00
+ffc_ppr_12team,Cincinnati Defense,DEF,CIN,no_name_match,2026-07-30T04:11:12.555584+00:00,2026-07-30T04:11:12.555584+00:00
+ffc_ppr_12team,Cincinnati Defense,DEF,CIN,no_name_match,2026-07-30T04:11:54.283870+00:00,2026-07-30T04:11:54.283870+00:00
+ffc_ppr_12team,Cleveland Defense,DEF,CLE,no_name_match,2026-07-30T04:11:03.662695+00:00,2026-07-30T04:11:03.662695+00:00
+ffc_ppr_12team,Cleveland Defense,DEF,CLE,no_name_match,2026-07-30T04:11:06.426320+00:00,2026-07-30T04:11:06.426320+00:00
+ffc_ppr_12team,Cleveland Defense,DEF,CLE,no_name_match,2026-07-30T04:11:25.193776+00:00,2026-07-30T04:11:25.193776+00:00
+ffc_ppr_12team,Cleveland Defense,DEF,CLE,no_name_match,2026-07-30T04:11:36.302112+00:00,2026-07-30T04:11:36.302112+00:00
+ffc_ppr_12team,Cleveland Defense,DEF,CLE,no_name_match,2026-07-30T04:11:54.283870+00:00,2026-07-30T04:11:54.283870+00:00
+ffc_ppr_12team,Dallas Defense,DEF,DAL,no_name_match,2026-07-30T04:11:03.662695+00:00,2026-07-30T04:11:03.662695+00:00
+ffc_ppr_12team,Dallas Defense,DEF,DAL,no_name_match,2026-07-30T04:11:25.193776+00:00,2026-07-30T04:11:25.193776+00:00
+ffc_ppr_12team,Dallas Defense,DEF,DAL,no_name_match,2026-07-30T04:11:30.548589+00:00,2026-07-30T04:11:30.548589+00:00
+ffc_ppr_12team,Dallas Defense,DEF,DAL,no_name_match,2026-07-30T04:11:47.969500+00:00,2026-07-30T04:11:47.969500+00:00
+ffc_ppr_12team,Dallas Defense,DEF,DAL,no_name_match,2026-07-30T04:11:54.283870+00:00,2026-07-30T04:11:54.283870+00:00
+ffc_ppr_12team,Denver Defense,DEF,DEN,no_name_match,2026-07-30T04:11:03.662695+00:00,2026-07-30T04:11:03.662695+00:00
+ffc_ppr_12team,Denver Defense,DEF,DEN,no_name_match,2026-07-30T04:11:06.426320+00:00,2026-07-30T04:11:06.426320+00:00
+ffc_ppr_12team,Denver Defense,DEF,DEN,no_name_match,2026-07-30T04:11:09.220453+00:00,2026-07-30T04:11:09.220453+00:00
+ffc_ppr_12team,Denver Defense,DEF,DEN,no_name_match,2026-07-30T04:11:12.555584+00:00,2026-07-30T04:11:12.555584+00:00
+ffc_ppr_12team,Denver Defense,DEF,DEN,no_name_match,2026-07-30T04:11:16.024656+00:00,2026-07-30T04:11:16.024656+00:00
+ffc_ppr_12team,Denver Defense,DEF,DEN,no_name_match,2026-07-30T04:11:20.378805+00:00,2026-07-30T04:11:20.378805+00:00
+ffc_ppr_12team,Denver Defense,DEF,DEN,no_name_match,2026-07-30T04:11:25.193776+00:00,2026-07-30T04:11:25.193776+00:00
+ffc_ppr_12team,Denver Defense,DEF,DEN,no_name_match,2026-07-30T04:11:36.302112+00:00,2026-07-30T04:11:36.302112+00:00
+ffc_ppr_12team,Denver Defense,DEF,DEN,no_name_match,2026-07-30T04:11:47.969500+00:00,2026-07-30T04:11:47.969500+00:00
+ffc_ppr_12team,Detroit Defense,DEF,DET,no_name_match,2026-07-30T04:11:54.283870+00:00,2026-07-30T04:11:54.283870+00:00
+ffc_ppr_12team,Gabe Davis,WR,FA,no_name_match,2026-07-30T04:11:36.302112+00:00,2026-07-30T04:11:36.302112+00:00
+ffc_ppr_12team,Gabe Davis,WR,FA,no_name_match,2026-07-30T04:11:42.658642+00:00,2026-07-30T04:11:42.658642+00:00
+ffc_ppr_12team,Gabe Davis,WR,FA,no_name_match,2026-07-30T04:11:47.969500+00:00,2026-07-30T04:11:47.969500+00:00
+ffc_ppr_12team,Gabe Davis,WR,FA,no_name_match,2026-07-30T04:11:54.283870+00:00,2026-07-30T04:11:54.283870+00:00
+ffc_ppr_12team,Green Bay Defense,DEF,GB,no_name_match,2026-07-30T04:11:03.662695+00:00,2026-07-30T04:11:03.662695+00:00
+ffc_ppr_12team,Green Bay Defense,DEF,GB,no_name_match,2026-07-30T04:11:12.555584+00:00,2026-07-30T04:11:12.555584+00:00
+ffc_ppr_12team,Hollywood Brown,WR,PHI,no_name_match,2026-07-30T04:11:30.548589+00:00,2026-07-30T04:11:30.548589+00:00
+ffc_ppr_12team,Hollywood Brown,WR,PHI,no_name_match,2026-07-30T04:11:36.302112+00:00,2026-07-30T04:11:36.302112+00:00
+ffc_ppr_12team,Hollywood Brown,WR,PHI,no_name_match,2026-07-30T04:11:42.658642+00:00,2026-07-30T04:11:42.658642+00:00
+ffc_ppr_12team,Hollywood Brown,WR,PHI,no_name_match,2026-07-30T04:11:47.969500+00:00,2026-07-30T04:11:47.969500+00:00
+ffc_ppr_12team,Hollywood Brown,WR,PHI,no_name_match,2026-07-30T04:11:54.283870+00:00,2026-07-30T04:11:54.283870+00:00
+ffc_ppr_12team,Houston Defense,DEF,HOU,no_name_match,2026-07-30T04:11:03.662695+00:00,2026-07-30T04:11:03.662695+00:00
+ffc_ppr_12team,Houston Defense,DEF,HOU,no_name_match,2026-07-30T04:11:06.426320+00:00,2026-07-30T04:11:06.426320+00:00
+ffc_ppr_12team,Houston Defense,DEF,HOU,no_name_match,2026-07-30T04:11:09.220453+00:00,2026-07-30T04:11:09.220453+00:00
+ffc_ppr_12team,Houston Defense,DEF,HOU,no_name_match,2026-07-30T04:11:12.555584+00:00,2026-07-30T04:11:12.555584+00:00
+ffc_ppr_12team,Houston Defense,DEF,HOU,no_name_match,2026-07-30T04:11:16.024656+00:00,2026-07-30T04:11:16.024656+00:00
+ffc_ppr_12team,Houston Defense,DEF,HOU,no_name_match,2026-07-30T04:11:20.378805+00:00,2026-07-30T04:11:20.378805+00:00
+ffc_ppr_12team,Houston Defense,DEF,HOU,no_name_match,2026-07-30T04:11:25.193776+00:00,2026-07-30T04:11:25.193776+00:00
+ffc_ppr_12team,Indianapolis Defense,DEF,IND,no_name_match,2026-07-30T04:11:09.220453+00:00,2026-07-30T04:11:09.220453+00:00
+ffc_ppr_12team,Indianapolis Defense,DEF,IND,no_name_match,2026-07-30T04:11:30.548589+00:00,2026-07-30T04:11:30.548589+00:00
+ffc_ppr_12team,Indianapolis Defense,DEF,IND,no_name_match,2026-07-30T04:11:36.302112+00:00,2026-07-30T04:11:36.302112+00:00
+ffc_ppr_12team,Indianapolis Defense,DEF,IND,no_name_match,2026-07-30T04:11:42.658642+00:00,2026-07-30T04:11:42.658642+00:00
+ffc_ppr_12team,Irv Smith Jr.,TE,FA,ambiguous_name_match:3_candidates,2026-07-30T04:11:36.302112+00:00,2026-07-30T04:11:36.302112+00:00
+ffc_ppr_12team,Irv Smith Jr.,TE,FA,ambiguous_name_match:3_candidates,2026-07-30T04:11:42.658642+00:00,2026-07-30T04:11:42.658642+00:00
+ffc_ppr_12team,Jacksonville Defense,DEF,JAX,no_name_match,2026-07-30T04:11:20.378805+00:00,2026-07-30T04:11:20.378805+00:00
+ffc_ppr_12team,Jacksonville Defense,DEF,JAX,no_name_match,2026-07-30T04:11:25.193776+00:00,2026-07-30T04:11:25.193776+00:00
+ffc_ppr_12team,Jeff Wilson Jr.,RB,FA,no_name_match,2026-07-30T04:11:47.969500+00:00,2026-07-30T04:11:47.969500+00:00
+ffc_ppr_12team,Kansas City Defense,DEF,KC,no_name_match,2026-07-30T04:11:06.426320+00:00,2026-07-30T04:11:06.426320+00:00
+ffc_ppr_12team,Kansas City Defense,DEF,KC,no_name_match,2026-07-30T04:11:09.220453+00:00,2026-07-30T04:11:09.220453+00:00
+ffc_ppr_12team,Kansas City Defense,DEF,KC,no_name_match,2026-07-30T04:11:12.555584+00:00,2026-07-30T04:11:12.555584+00:00
+ffc_ppr_12team,Kansas City Defense,DEF,KC,no_name_match,2026-07-30T04:11:16.024656+00:00,2026-07-30T04:11:16.024656+00:00
+ffc_ppr_12team,Kansas City Defense,DEF,KC,no_name_match,2026-07-30T04:11:30.548589+00:00,2026-07-30T04:11:30.548589+00:00
+ffc_ppr_12team,Kansas City Defense,DEF,KC,no_name_match,2026-07-30T04:11:36.302112+00:00,2026-07-30T04:11:36.302112+00:00
+ffc_ppr_12team,Kansas City Defense,DEF,KC,no_name_match,2026-07-30T04:11:54.283870+00:00,2026-07-30T04:11:54.283870+00:00
+ffc_ppr_12team,Kenny Gainwell,RB,TB,no_name_match,2026-07-30T04:11:36.302112+00:00,2026-07-30T04:11:36.302112+00:00
+ffc_ppr_12team,Kenny Gainwell,RB,TB,no_name_match,2026-07-30T04:11:42.658642+00:00,2026-07-30T04:11:42.658642+00:00
+ffc_ppr_12team,Kenny Gainwell,RB,TB,no_name_match,2026-07-30T04:11:47.969500+00:00,2026-07-30T04:11:47.969500+00:00
+ffc_ppr_12team,LA Chargers Defense,DEF,LAC,no_name_match,2026-07-30T04:11:20.378805+00:00,2026-07-30T04:11:20.378805+00:00
+ffc_ppr_12team,LA Chargers Defense,DEF,LAC,no_name_match,2026-07-30T04:11:25.193776+00:00,2026-07-30T04:11:25.193776+00:00
+ffc_ppr_12team,LA Chargers Defense,DEF,LAC,no_name_match,2026-07-30T04:11:30.548589+00:00,2026-07-30T04:11:30.548589+00:00
+ffc_ppr_12team,LA Chargers Defense,DEF,LAC,no_name_match,2026-07-30T04:11:42.658642+00:00,2026-07-30T04:11:42.658642+00:00
+ffc_ppr_12team,LA Rams Defense,DEF,LAR,no_name_match,2026-07-30T04:11:03.662695+00:00,2026-07-30T04:11:03.662695+00:00
+ffc_ppr_12team,LA Rams Defense,DEF,LAR,no_name_match,2026-07-30T04:11:06.426320+00:00,2026-07-30T04:11:06.426320+00:00
+ffc_ppr_12team,LA Rams Defense,DEF,LAR,no_name_match,2026-07-30T04:11:09.220453+00:00,2026-07-30T04:11:09.220453+00:00
+ffc_ppr_12team,LA Rams Defense,DEF,LAR,no_name_match,2026-07-30T04:11:12.555584+00:00,2026-07-30T04:11:12.555584+00:00
+ffc_ppr_12team,LA Rams Defense,DEF,LAR,no_name_match,2026-07-30T04:11:20.378805+00:00,2026-07-30T04:11:20.378805+00:00
+ffc_ppr_12team,LA Rams Defense,DEF,LAR,no_name_match,2026-07-30T04:11:25.193776+00:00,2026-07-30T04:11:25.193776+00:00
+ffc_ppr_12team,LA Rams Defense,DEF,LAR,no_name_match,2026-07-30T04:11:36.302112+00:00,2026-07-30T04:11:36.302112+00:00
+ffc_ppr_12team,LA Rams Defense,DEF,LAR,no_name_match,2026-07-30T04:11:42.658642+00:00,2026-07-30T04:11:42.658642+00:00
+ffc_ppr_12team,Las Vegas Defense,DEF,LV,no_name_match,2026-07-30T04:11:12.555584+00:00,2026-07-30T04:11:12.555584+00:00
+ffc_ppr_12team,Marvin Harrison Jr.,WR,ARI,ambiguous_name_match:3_candidates,2026-07-30T04:11:54.283870+00:00,2026-07-30T04:11:54.283870+00:00
+ffc_ppr_12team,Miami Defense,DEF,MIA,no_name_match,2026-07-30T04:11:09.220453+00:00,2026-07-30T04:11:09.220453+00:00
+ffc_ppr_12team,Miami Defense,DEF,MIA,no_name_match,2026-07-30T04:11:36.302112+00:00,2026-07-30T04:11:36.302112+00:00
+ffc_ppr_12team,Miami Defense,DEF,MIA,no_name_match,2026-07-30T04:11:47.969500+00:00,2026-07-30T04:11:47.969500+00:00
+ffc_ppr_12team,Michael Badgley,PK,FA,no_name_match,2026-07-30T04:11:25.193776+00:00,2026-07-30T04:11:25.193776+00:00
+ffc_ppr_12team,Michael Badgley,PK,FA,no_name_match,2026-07-30T04:11:54.283870+00:00,2026-07-30T04:11:54.283870+00:00
+ffc_ppr_12team,Mike Williams,WR,FA,ambiguous_name_match:3_candidates,2026-07-30T04:11:20.378805+00:00,2026-07-30T04:11:20.378805+00:00
+ffc_ppr_12team,Mike Williams,WR,FA,ambiguous_name_match:3_candidates,2026-07-30T04:11:25.193776+00:00,2026-07-30T04:11:25.193776+00:00
+ffc_ppr_12team,Mike Williams,WR,FA,ambiguous_name_match:3_candidates,2026-07-30T04:11:30.548589+00:00,2026-07-30T04:11:30.548589+00:00
+ffc_ppr_12team,Mike Williams,WR,FA,ambiguous_name_match:3_candidates,2026-07-30T04:11:36.302112+00:00,2026-07-30T04:11:36.302112+00:00
+ffc_ppr_12team,Mike Williams,WR,FA,ambiguous_name_match:3_candidates,2026-07-30T04:11:42.658642+00:00,2026-07-30T04:11:42.658642+00:00
+ffc_ppr_12team,Mike Williams,WR,FA,ambiguous_name_match:3_candidates,2026-07-30T04:11:47.969500+00:00,2026-07-30T04:11:47.969500+00:00
+ffc_ppr_12team,Mike Williams,WR,FA,ambiguous_name_match:3_candidates,2026-07-30T04:11:54.283870+00:00,2026-07-30T04:11:54.283870+00:00
+ffc_ppr_12team,Minnesota Defense,DEF,MIN,no_name_match,2026-07-30T04:11:09.220453+00:00,2026-07-30T04:11:09.220453+00:00
+ffc_ppr_12team,Minnesota Defense,DEF,MIN,no_name_match,2026-07-30T04:11:12.555584+00:00,2026-07-30T04:11:12.555584+00:00
+ffc_ppr_12team,Minnesota Defense,DEF,MIN,no_name_match,2026-07-30T04:11:16.024656+00:00,2026-07-30T04:11:16.024656+00:00
+ffc_ppr_12team,Minnesota Defense,DEF,MIN,no_name_match,2026-07-30T04:11:20.378805+00:00,2026-07-30T04:11:20.378805+00:00
+ffc_ppr_12team,Minnesota Defense,DEF,MIN,no_name_match,2026-07-30T04:11:25.193776+00:00,2026-07-30T04:11:25.193776+00:00
+ffc_ppr_12team,Minnesota Defense,DEF,MIN,no_name_match,2026-07-30T04:11:30.548589+00:00,2026-07-30T04:11:30.548589+00:00
+ffc_ppr_12team,NY Giants Defense,DEF,NYG,no_name_match,2026-07-30T04:11:16.024656+00:00,2026-07-30T04:11:16.024656+00:00
+ffc_ppr_12team,NY Jets Defense,DEF,NYJ,no_name_match,2026-07-30T04:11:06.426320+00:00,2026-07-30T04:11:06.426320+00:00
+ffc_ppr_12team,NY Jets Defense,DEF,NYJ,no_name_match,2026-07-30T04:11:09.220453+00:00,2026-07-30T04:11:09.220453+00:00
+ffc_ppr_12team,NY Jets Defense,DEF,NYJ,no_name_match,2026-07-30T04:11:12.555584+00:00,2026-07-30T04:11:12.555584+00:00
+ffc_ppr_12team,NY Jets Defense,DEF,NYJ,no_name_match,2026-07-30T04:11:47.969500+00:00,2026-07-30T04:11:47.969500+00:00
+ffc_ppr_12team,NY Jets Defense,DEF,NYJ,no_name_match,2026-07-30T04:11:54.283870+00:00,2026-07-30T04:11:54.283870+00:00
+ffc_ppr_12team,New England Defense,DEF,NE,no_name_match,2026-07-30T04:11:03.662695+00:00,2026-07-30T04:11:03.662695+00:00
+ffc_ppr_12team,New England Defense,DEF,NE,no_name_match,2026-07-30T04:11:06.426320+00:00,2026-07-30T04:11:06.426320+00:00
+ffc_ppr_12team,New England Defense,DEF,NE,no_name_match,2026-07-30T04:11:09.220453+00:00,2026-07-30T04:11:09.220453+00:00
+ffc_ppr_12team,New England Defense,DEF,NE,no_name_match,2026-07-30T04:11:12.555584+00:00,2026-07-30T04:11:12.555584+00:00
+ffc_ppr_12team,New England Defense,DEF,NE,no_name_match,2026-07-30T04:11:16.024656+00:00,2026-07-30T04:11:16.024656+00:00
+ffc_ppr_12team,New England Defense,DEF,NE,no_name_match,2026-07-30T04:11:20.378805+00:00,2026-07-30T04:11:20.378805+00:00
+ffc_ppr_12team,New England Defense,DEF,NE,no_name_match,2026-07-30T04:11:25.193776+00:00,2026-07-30T04:11:25.193776+00:00
+ffc_ppr_12team,New England Defense,DEF,NE,no_name_match,2026-07-30T04:11:30.548589+00:00,2026-07-30T04:11:30.548589+00:00
+ffc_ppr_12team,New England Defense,DEF,NE,no_name_match,2026-07-30T04:11:36.302112+00:00,2026-07-30T04:11:36.302112+00:00
+ffc_ppr_12team,New England Defense,DEF,NE,no_name_match,2026-07-30T04:11:47.969500+00:00,2026-07-30T04:11:47.969500+00:00
+ffc_ppr_12team,New Orleans Defense,DEF,NO,no_name_match,2026-07-30T04:11:06.426320+00:00,2026-07-30T04:11:06.426320+00:00
+ffc_ppr_12team,New Orleans Defense,DEF,NO,no_name_match,2026-07-30T04:11:20.378805+00:00,2026-07-30T04:11:20.378805+00:00
+ffc_ppr_12team,New Orleans Defense,DEF,NO,no_name_match,2026-07-30T04:11:25.193776+00:00,2026-07-30T04:11:25.193776+00:00
+ffc_ppr_12team,New Orleans Defense,DEF,NO,no_name_match,2026-07-30T04:11:30.548589+00:00,2026-07-30T04:11:30.548589+00:00
+ffc_ppr_12team,New Orleans Defense,DEF,NO,no_name_match,2026-07-30T04:11:47.969500+00:00,2026-07-30T04:11:47.969500+00:00
+ffc_ppr_12team,New Orleans Defense,DEF,NO,no_name_match,2026-07-30T04:11:54.283870+00:00,2026-07-30T04:11:54.283870+00:00
+ffc_ppr_12team,Philadelphia Defense,DEF,PHI,no_name_match,2026-07-30T04:11:09.220453+00:00,2026-07-30T04:11:09.220453+00:00
+ffc_ppr_12team,Philadelphia Defense,DEF,PHI,no_name_match,2026-07-30T04:11:12.555584+00:00,2026-07-30T04:11:12.555584+00:00
+ffc_ppr_12team,Philadelphia Defense,DEF,PHI,no_name_match,2026-07-30T04:11:16.024656+00:00,2026-07-30T04:11:16.024656+00:00
+ffc_ppr_12team,Philadelphia Defense,DEF,PHI,no_name_match,2026-07-30T04:11:20.378805+00:00,2026-07-30T04:11:20.378805+00:00
+ffc_ppr_12team,Philadelphia Defense,DEF,PHI,no_name_match,2026-07-30T04:11:25.193776+00:00,2026-07-30T04:11:25.193776+00:00
+ffc_ppr_12team,Philadelphia Defense,DEF,PHI,no_name_match,2026-07-30T04:11:30.548589+00:00,2026-07-30T04:11:30.548589+00:00
+ffc_ppr_12team,Philadelphia Defense,DEF,PHI,no_name_match,2026-07-30T04:11:47.969500+00:00,2026-07-30T04:11:47.969500+00:00
+ffc_ppr_12team,Pittsburgh Defense,DEF,PIT,no_name_match,2026-07-30T04:11:03.662695+00:00,2026-07-30T04:11:03.662695+00:00
+ffc_ppr_12team,Pittsburgh Defense,DEF,PIT,no_name_match,2026-07-30T04:11:16.024656+00:00,2026-07-30T04:11:16.024656+00:00
+ffc_ppr_12team,Pittsburgh Defense,DEF,PIT,no_name_match,2026-07-30T04:11:20.378805+00:00,2026-07-30T04:11:20.378805+00:00
+ffc_ppr_12team,Pittsburgh Defense,DEF,PIT,no_name_match,2026-07-30T04:11:25.193776+00:00,2026-07-30T04:11:25.193776+00:00
+ffc_ppr_12team,Pittsburgh Defense,DEF,PIT,no_name_match,2026-07-30T04:11:30.548589+00:00,2026-07-30T04:11:30.548589+00:00
+ffc_ppr_12team,Pittsburgh Defense,DEF,PIT,no_name_match,2026-07-30T04:11:36.302112+00:00,2026-07-30T04:11:36.302112+00:00
+ffc_ppr_12team,Pittsburgh Defense,DEF,PIT,no_name_match,2026-07-30T04:11:47.969500+00:00,2026-07-30T04:11:47.969500+00:00
+ffc_ppr_12team,Pittsburgh Defense,DEF,PIT,no_name_match,2026-07-30T04:11:54.283870+00:00,2026-07-30T04:11:54.283870+00:00
+ffc_ppr_12team,Rondale Moore,WR,FA,no_name_match,2026-07-30T04:11:36.302112+00:00,2026-07-30T04:11:36.302112+00:00
+ffc_ppr_12team,Rondale Moore,WR,FA,no_name_match,2026-07-30T04:11:42.658642+00:00,2026-07-30T04:11:42.658642+00:00
+ffc_ppr_12team,Rondale Moore,WR,FA,no_name_match,2026-07-30T04:11:47.969500+00:00,2026-07-30T04:11:47.969500+00:00
+ffc_ppr_12team,San Francisco Defense,DEF,SF,no_name_match,2026-07-30T04:11:03.662695+00:00,2026-07-30T04:11:03.662695+00:00
+ffc_ppr_12team,San Francisco Defense,DEF,SF,no_name_match,2026-07-30T04:11:06.426320+00:00,2026-07-30T04:11:06.426320+00:00
+ffc_ppr_12team,San Francisco Defense,DEF,SF,no_name_match,2026-07-30T04:11:30.548589+00:00,2026-07-30T04:11:30.548589+00:00
+ffc_ppr_12team,San Francisco Defense,DEF,SF,no_name_match,2026-07-30T04:11:36.302112+00:00,2026-07-30T04:11:36.302112+00:00
+ffc_ppr_12team,San Francisco Defense,DEF,SF,no_name_match,2026-07-30T04:11:42.658642+00:00,2026-07-30T04:11:42.658642+00:00
+ffc_ppr_12team,San Francisco Defense,DEF,SF,no_name_match,2026-07-30T04:11:47.969500+00:00,2026-07-30T04:11:47.969500+00:00
+ffc_ppr_12team,San Francisco Defense,DEF,SF,no_name_match,2026-07-30T04:11:54.283870+00:00,2026-07-30T04:11:54.283870+00:00
+ffc_ppr_12team,Seattle Defense,DEF,SEA,no_name_match,2026-07-30T04:11:03.662695+00:00,2026-07-30T04:11:03.662695+00:00
+ffc_ppr_12team,Seattle Defense,DEF,SEA,no_name_match,2026-07-30T04:11:06.426320+00:00,2026-07-30T04:11:06.426320+00:00
+ffc_ppr_12team,Seattle Defense,DEF,SEA,no_name_match,2026-07-30T04:11:09.220453+00:00,2026-07-30T04:11:09.220453+00:00
+ffc_ppr_12team,Seattle Defense,DEF,SEA,no_name_match,2026-07-30T04:11:12.555584+00:00,2026-07-30T04:11:12.555584+00:00
+ffc_ppr_12team,Seattle Defense,DEF,SEA,no_name_match,2026-07-30T04:11:16.024656+00:00,2026-07-30T04:11:16.024656+00:00
+ffc_ppr_12team,Seattle Defense,DEF,SEA,no_name_match,2026-07-30T04:11:25.193776+00:00,2026-07-30T04:11:25.193776+00:00
+ffc_ppr_12team,Seattle Defense,DEF,SEA,no_name_match,2026-07-30T04:11:30.548589+00:00,2026-07-30T04:11:30.548589+00:00
+ffc_ppr_12team,Tampa Bay Defense,DEF,TB,no_name_match,2026-07-30T04:11:03.662695+00:00,2026-07-30T04:11:03.662695+00:00
+ffc_ppr_12team,Tampa Bay Defense,DEF,TB,no_name_match,2026-07-30T04:11:06.426320+00:00,2026-07-30T04:11:06.426320+00:00
+ffc_ppr_12team,Tampa Bay Defense,DEF,TB,no_name_match,2026-07-30T04:11:30.548589+00:00,2026-07-30T04:11:30.548589+00:00
+ffc_ppr_12team,Tampa Bay Defense,DEF,TB,no_name_match,2026-07-30T04:11:36.302112+00:00,2026-07-30T04:11:36.302112+00:00
+ffc_ppr_12team,Tampa Bay Defense,DEF,TB,no_name_match,2026-07-30T04:11:42.658642+00:00,2026-07-30T04:11:42.658642+00:00
+ffc_ppr_12team,Taysom Hill,QB,FA,no_name_match,2026-07-30T04:11:54.283870+00:00,2026-07-30T04:11:54.283870+00:00
+ffc_ppr_12team,Tom Brady,QB,FA,ambiguous_name_match:2_candidates,2026-07-30T04:11:03.662695+00:00,2026-07-30T04:11:03.662695+00:00
+ffc_ppr_12team,Tom Brady,QB,FA,ambiguous_name_match:2_candidates,2026-07-30T04:11:06.426320+00:00,2026-07-30T04:11:06.426320+00:00
+ffc_ppr_12team,Tom Brady,QB,FA,ambiguous_name_match:2_candidates,2026-07-30T04:11:09.220453+00:00,2026-07-30T04:11:09.220453+00:00
+ffc_ppr_12team,Tom Brady,QB,FA,ambiguous_name_match:2_candidates,2026-07-30T04:11:12.555584+00:00,2026-07-30T04:11:12.555584+00:00
+ffc_ppr_12team,Tom Brady,QB,FA,ambiguous_name_match:2_candidates,2026-07-30T04:11:16.024656+00:00,2026-07-30T04:11:16.024656+00:00
+ffc_ppr_12team,Tom Brady,QB,FA,ambiguous_name_match:2_candidates,2026-07-30T04:11:20.378805+00:00,2026-07-30T04:11:20.378805+00:00
+ffc_ppr_12team,Tom Brady,QB,FA,ambiguous_name_match:2_candidates,2026-07-30T04:11:25.193776+00:00,2026-07-30T04:11:25.193776+00:00
+ffc_ppr_12team,Tom Brady,QB,FA,ambiguous_name_match:2_candidates,2026-07-30T04:11:30.548589+00:00,2026-07-30T04:11:30.548589+00:00
+ffc_ppr_12team,Tom Brady,QB,FA,ambiguous_name_match:2_candidates,2026-07-30T04:11:36.302112+00:00,2026-07-30T04:11:36.302112+00:00
+ffc_ppr_12team,Tom Brady,QB,FA,ambiguous_name_match:2_candidates,2026-07-30T04:11:42.658642+00:00,2026-07-30T04:11:42.658642+00:00
+ffc_ppr_12team,Ty Montgomery II,WR,FA,no_name_match,2026-07-30T04:11:09.220453+00:00,2026-07-30T04:11:09.220453+00:00
+ffc_ppr_12team,Ty Montgomery II,WR,FA,no_name_match,2026-07-30T04:11:16.024656+00:00,2026-07-30T04:11:16.024656+00:00
+ffc_ppr_12team,Ty Montgomery II,WR,FA,no_name_match,2026-07-30T04:11:20.378805+00:00,2026-07-30T04:11:20.378805+00:00
+ffc_ppr_12team,Ty Montgomery II,WR,FA,no_name_match,2026-07-30T04:11:25.193776+00:00,2026-07-30T04:11:25.193776+00:00
+ffc_ppr_12team,Washington Defense,DEF,WAS,no_name_match,2026-07-30T04:11:36.302112+00:00,2026-07-30T04:11:36.302112+00:00
+ffc_ppr_12team,Washington Defense,DEF,WAS,no_name_match,2026-07-30T04:11:47.969500+00:00,2026-07-30T04:11:47.969500+00:00

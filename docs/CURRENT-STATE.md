@@ -27,6 +27,28 @@ repo — Cloudflare holds its own deploy token. This closes the last dependency 
 machine: development, tests, the database rebuild, the daily capture and now viewing the app all run
 without it.
 
+**Last verified:** 2026-07-30, data-ops session (worktree `agent-a842fa0c3f68c30be`, FR-072,
+FR-073) closing two founder-named gaps. **FR-072 SHIPPED:** the third FFC historical ADP format
+(PPR, 12-team) was backfilled the same way thread 055 did non-PPR/half-PPR —
+`tools/backfill_ffc_adp_history.py` gained a `ppr` format key, 1,370 rows stored across 2013-2024
+(204 quarantined), new `adp_source=ffc_ppr_12team`. Re-confirmed no 10-team or 14-team historical
+archive exists anywhere (FFC silently serves the 12-team page for any historical team-count
+request) — this is a structural source limit, not a gap left unaddressed. **FR-073 IN PROGRESS:**
+`play_callers` (zero rows since inception, deliberately PARKED per its own docstring pending an
+August ESPN roundup) got a second, working source — PFR re-verified blocked (403 on both
+`robots.txt` and `sports-reference.com/data_use.html`); built `src/ingest_coordinators_wikipedia.py`
+against Wikipedia's `Template:NFL final staff` (CC BY-SA 4.0, licence-cleared in prior research).
+607 rows (300 OC, 307 DC) stored, 32 quarantined, all 32 teams, 2015-2024; `play_callers`' primary
+key widened to `(team, season, start_week, title)` so OC and DC no longer overwrite each other (a
+real defect found and fixed this session). **Known limitation, not resolved:** the Wikipedia
+template names end-of-season staff, not who was hired going into the season, so it answers a
+different question than test-registry #29/#30 need for a team with a mid-year coordinator change
+— every row is honestly flagged `is_final_season_snapshot=1` rather than silently passed off as a
+preseason value, and the semantics question was handed to Backend
+(`docs/handoffs/NEW-coordinator-final-staff-lookahead-semantics.md`, unallocated) rather than
+resolved by data-ops, per this project's judgment-call routing. Full detail:
+`docs/status/2026-07-30-data-ops-adp-and-coordinators.md`.
+
 **Last verified:** 2026-07-30, frontend session (worktree `agent-a160788e8e9ccc925`) porting two
 design specs in order, both in `docs/design/`: `DRAFT-MIDDLE-PANE.md` and `SUPPLIED-VALUES.md`. The
 Draft screen's middle pane (`frontend/ui/views/DraftRoom.tsx`) is now one tab set — **Recommend ·

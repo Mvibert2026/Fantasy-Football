@@ -5,7 +5,7 @@ Per-request files in this directory are the source of truth. Edit a request's ow
 `STATUS:` line, then re-run sync. Protocol: [`README.md`](README.md).
 Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests.md).
 
-**56 requests since freeze.**
+**58 requests since freeze.**
 
 ---
 
@@ -57,7 +57,7 @@ Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests
 
 _None._
 
-## IN PROGRESS — 6
+## IN PROGRESS — 7
 
 | ID | Subject | Raised | Source |
 |---|---|---|---|
@@ -67,8 +67,9 @@ _None._
 | [FR-043](FR-043-audit-for-capability-already-built-and-sitting-u.md) | Audit for capability already built and sitting u | 2026-07-29 | chat 2026-07-29, PM session |
 | [FR-048](FR-048-insights-from-research-must-reach-the-chatbot-an.md) | Insights from research must reach the chatbot an | 2026-07-29 | chat 2026-07-29, PM session |
 | [FR-062](FR-062-yahoo-league-connection-if-no-api-access-what-ar.md) | Yahoo league connection if no api access what ar | 2026-07-30 | chat 2026-07-30, PM session |
+| [FR-073](FR-073-figure-out-the-coordinator-table-play-callers-is.md) | Figure out the coordinator table play callers is | 2026-07-30 | PM dispatch, data-ops session 2026-07-30 |
 
-## SHIPPED — 12
+## SHIPPED — 13
 
 | ID | Subject | Raised | Source |
 |---|---|---|---|
@@ -84,6 +85,7 @@ _None._
 | [FR-055](FR-055-draft-mode-board-needs-column-headers.md) | Draft mode board needs column headers | 2026-07-29 | chat 2026-07-29, PM session |
 | [FR-056](FR-056-personal-use-confirmed-get-the-component-project.md) | Personal use confirmed get the component project | 2026-07-29 | chat 2026-07-29, PM session |
 | [FR-058](FR-058-the-recommendation-must-explain-itself-whenever.md) | The recommendation must explain itself whenever | 2026-07-29 | chat 2026-07-29, PM session |
+| [FR-072](FR-072-historical-adp-get-the-rest-of-it-ffc-has-differ.md) | Historical adp get the rest of it ffc has differ | 2026-07-30 | PM dispatch, data-ops session 2026-07-30 |
 
 ## DECLINED — 0
 
