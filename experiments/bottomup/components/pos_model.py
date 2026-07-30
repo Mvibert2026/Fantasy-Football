@@ -141,12 +141,26 @@ class ShrunkRate:
     intercept: float = 0.0
     k_grid: Tuple[float, ...] = (5, 10, 20, 40, 80, 160, 320)
     recalibrate: bool = True
+    # ---- factor-batch-1 arms. Both default OFF, so an unmodified model is
+    # bit-for-bit the primary that `component-model-rb-qb-te-pass-1.md` reports.
+    #: T1 -- shrink toward a VOLUME-CONDITIONAL mean instead of one pooled
+    #: constant: prior_i = a + b*log(1+den_i). The mechanism is that goal-line
+    #: role scales with volume, so a 300-carry back and a 40-carry back should
+    #: not be pulled toward the same TD/carry.
+    volume_prior: bool = False
+    vp_beta: Tuple[float, float] = (0.0, 0.0)
+
+    def _prior_vec(self, den: np.ndarray) -> np.ndarray:
+        if not self.volume_prior:
+            return np.full(len(den), self.prior, dtype=float)
+        a, b = self.vp_beta
+        return np.clip(a + b * np.log1p(np.clip(den, 0, None)), 0.0, None)
 
     def raw(self, f: pd.DataFrame, k: Optional[float] = None) -> np.ndarray:
         k = self.k if k is None else k
         num = f[self.num_col].to_numpy(dtype=float)
         den = f[self.den_col].to_numpy(dtype=float)
-        return (num + k * self.prior) / (den + k)
+        return (num + k * self._prior_vec(den)) / (den + k)
 
     def fit(self, f: pd.DataFrame, y_num: np.ndarray, y_den: np.ndarray,
             pool: Optional[Tuple[pd.DataFrame, np.ndarray, np.ndarray]] = None
@@ -173,6 +187,15 @@ class ShrunkRate:
             f_all, n_all, d_all = f, y_num, y_den
         ok_all = d_all > 0
         self.prior = float(np.sum(n_all[ok_all]) / np.sum(d_all[ok_all]))
+        if self.volume_prior:
+            # WLS of the realised rate on log volume, weighted by volume, on
+            # TRAINING rows only. Two parameters, fitted the same way and on the
+            # same rows as the pooled constant it replaces.
+            dv = d_all[ok_all]
+            yv = n_all[ok_all] / dv
+            Xv = np.column_stack([np.ones(len(dv)), np.log1p(dv)])
+            bv = ols(Xv, yv, w=dv)
+            self.vp_beta = (float(bv[0]), float(bv[1]))
         best, best_mse = self.k_grid[0], np.inf
         yt_all = n_all[ok_all] / d_all[ok_all]
         for k in self.k_grid:
@@ -185,9 +208,20 @@ class ShrunkRate:
         if self.recalibrate:
             # one linear recalibration so a systematic level shift (ageing, a
             # rule change) is corrected rather than baked in
-            X = np.column_stack([np.ones(int(ok.sum())), self.raw(f, best)[ok]])
-            beta = ols(X, yt, w=y_den[ok])
-            self.intercept, self.slope = float(beta[0]), float(beta[1])
+            r = self.raw(f, best)[ok]
+            if float(np.std(r)) < 1e-12:
+                # T2 (k -> infinity) makes every player's raw rate identical, so
+                # the recalibration regressor has no variance and least squares
+                # is rank deficient. Collapse to the weighted mean rather than
+                # letting lstsq return an arbitrary minimum-norm slope: the LEVEL
+                # calibration is kept, which is what keeps T2 one change away
+                # from the primary instead of two.
+                self.intercept = float(np.average(yt, weights=y_den[ok]))
+                self.slope = 0.0
+            else:
+                X = np.column_stack([np.ones(int(ok.sum())), r])
+                beta = ols(X, yt, w=y_den[ok])
+                self.intercept, self.slope = float(beta[0]), float(beta[1])
         return self
 
     def predict(self, f: pd.DataFrame) -> np.ndarray:
@@ -226,6 +260,27 @@ class BaseComponentModel:
     RATE_SPECS: List[Tuple[str, str, str, str, str]] = field(default_factory=list)
     #: which bonus families this position can earn
     BONUS_FAMILIES: Tuple[str, ...] = ()
+
+    # ---- factor-batch-1 arm hooks. Both default empty; an unmodified model is
+    # the primary reported in `component-model-rb-qb-te-pass-1.md`.
+    #: {volume spec name: replacement feature column list} -- factors #20/#28/#13
+    volume_cols: Dict[str, List[str]] = field(default_factory=dict)
+    #: {rate name: kwargs handed to ShrunkRate} -- factor #19
+    rate_overrides: Dict[str, Dict] = field(default_factory=dict)
+
+    def _apply_arm(self) -> None:
+        """Swap in an arm's designs. Called at the END of each subclass's
+        __post_init__, so an arm is a change to a declared spec rather than a
+        parallel code path that could drift from the primary."""
+        for name, cols in self.volume_cols.items():
+            if name not in self.VOLUME_SPECS:
+                raise KeyError(f"{self.position}: no volume spec {name!r} to override")
+            _, ynum, yden = self.VOLUME_SPECS[name]
+            self.VOLUME_SPECS[name] = (list(cols), ynum, yden)
+        known = {r[0] for r in self.RATE_SPECS}
+        for name in self.rate_overrides:
+            if name not in known:
+                raise KeyError(f"{self.position}: no rate {name!r} to override")
 
     # family -> (season yards column, per-game count columns by threshold)
     _FAMILY = {
@@ -276,7 +331,7 @@ class BaseComponentModel:
 
         # --- efficiency rates
         for name, nc, dc, ynum, yden in self.RATE_SPECS:
-            sr = ShrunkRate(name, nc, dc)
+            sr = ShrunkRate(name, nc, dc, **self.rate_overrides.get(name, {}))
             pool = None
             if pool_vet is not None and ynum in pool_vet.columns:
                 pool = (pool_vet, pool_vet[ynum].to_numpy(dtype=float),
@@ -461,6 +516,7 @@ class ReceiverComponentModel(BaseComponentModel):
             ("fum_pg", "fumpg_num", "fumpg_den", "fumbles_lost", "games"),
         ]
         self.BONUS_FAMILIES = ("rec",)
+        self._apply_arm()
 
     def predict(self, feats: pd.DataFrame) -> pd.DataFrame:
         f = self._prep(feats)
@@ -542,6 +598,7 @@ class RBComponentModel(BaseComponentModel):
             ("fum_pg", "fumpg_num", "fumpg_den", "fumbles_lost", "games"),
         ]
         self.BONUS_FAMILIES = ("rush", "rec")
+        self._apply_arm()
 
     def fit(self, feats: pd.DataFrame, outs: pd.DataFrame,
             rate_pool: Optional[Tuple[pd.DataFrame, pd.DataFrame]] = None
@@ -624,6 +681,7 @@ class QBComponentModel(BaseComponentModel):
             ("fum_pg", "fumpg_num", "fumpg_den", "fumbles_lost", "games"),
         ]
         self.BONUS_FAMILIES = ("pass", "rush")
+        self._apply_arm()
 
     def predict(self, feats: pd.DataFrame) -> pd.DataFrame:
         f = self._prep(feats)

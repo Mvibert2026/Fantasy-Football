@@ -72,6 +72,9 @@ consensus. That is why the app does not show our rankings.
 | Ceiling / stacking-bonus effect at RB (transfer from WR null) | **NULL** | Worth 0.57%–2.39% of realised points; moves **three players by three or more rank positions across 4,792 player-seasons.** |
 | "Spike-week players" as an identifiable category (PR-002) | **NULL** | Zero of 36 correlations survived BH correction. |
 | QB rushing-regime lag | **NULL** | +0.176 pct-pts/season [−0.105, +0.456]. Expected the model to lag here; it does not. |
+| **TD-rate regression** as an unexploited signal (registry #19) | **NULL — and the strong form is HARMFUL** | Discarding a player's own TD rate for the pooled positional mean is **worse at all four positions** (QB +0.230 pass-TD MAE, +4.0%). Past TD rate carries real signal and the model's existing shrinkage already extracts it. Conditioning the shrinkage target on volume adds 0.8% full-universe and **nothing on the ADP board**. |
+| **Opportunity share at RB** (registry #20, "single best RB metric") | **NULL** | Deleting carry share from the model costs −0.017 carries MAE [−0.050, +0.003]; the share×pace reparameterisation is −0.086 [−0.272, +0.068]. Two instruments, neither finds it doing anything **at RB**. It does earn its place **at WR**: removing target share costs +0.196 targets MAE on the ADP board (+0.6%). |
+| **Target-share stability YoY** (registry #13) | **NULL** | A stability term buys −0.035 targets MAE full universe and **0.02% on the ADP board**. Persistence measured for the first time: WR target share **+0.652** [+0.624, +0.680], TE +0.632, RB +0.548, RB carry share +0.575 — *role*-tier, just below snap share +0.707, far above yards per carry +0.175. Usage share is as persistent as the role features already in the model, which is why adding it changes nothing. |
 
 **The stacking-bonus null matters for the spec.** `CLAUDE.md` §7 asserts the yardage bonuses "reward
 ceiling outcomes over floor, which should influence how variance is valued in rankings." The
@@ -91,6 +94,7 @@ arithmetic is fine; the *operational* claim is currently unsupported by two inde
 | **No 10-team historical ADP exists anywhere.** All ADP analysis runs on FFC's 12-team archive. A structural source limit, not a gap to chase. |
 | **Three industry sources define "bell cow" three incompatible ways**, and our code is a fourth. Only Footballguys and Sharp Football publish checkable numbers at all. |
 | **Route participation is genuinely unavailable** in every ingested table. |
+| **There is no pre-season roster table anywhere in `nfl.db`.** `depth_charts_weekly` starts at REG week 1, `depth_charts_snapshots` is a single 2026-03-14 snapshot, there is no `rosters` table. This blocks **vacated opportunity (#28)** outright — "who left this team" cannot be answered from stored data at a legal cutoff. `nflreadpy.load_rosters_weekly()` fixes it, is free, goes back to ~2002, and is **already commissioned from `data-ops` for a second, independent reason** (it is the only source that marks season-ending IR and suspension). Two consumers, one ingestion. |
 
 ---
 
@@ -120,6 +124,25 @@ arithmetic is fine; the *operational* claim is currently unsupported by two inde
 | **Late-round sleeper screen** | Base rate **24.1%** [19.1, 30.0] train / 24.5% holdout. No feature separated hits from misses — raw p 0.209 / 0.643 / 0.266, none significant *before* correction; rising share **inverted** on holdout. No flag ships. | **NULL** (base rate SURVIVES) |
 | **Global flex-eligible replacement baseline** (test-registry #35) vs. current per-position (RB30/WR40/TE10, ADR-029) | Season-paired realised-points margin +1.7 [-67.6,+74.8] (σ=10), -6.7 [-51.2,+37.8] (σ=20) — sign flips between σ, well under the measured simulation noise floor (~8.5 pts/300 sims; the n=4-season bootstrap, not sim count, is what's binding). **Compared on decisions/realised outcomes through `draft_sim.py`, never on VBD magnitude** — a shifted replacement level moves every VBD number by construction. No change to `scoring.ReplacementLevels`. | **NULL** |
 | **VONA with pick-gap awareness** (test-registry #36): real alternating gap (14 vs. 4 picks, `USER_SLOT=3`) vs. a gap-blind constant | Realised-points margin -37.2 [-118.8,+36.0] (σ=10), -2.8 [-48.0,+37.1] (σ=20) — NULL, CIs include zero. **But the two arms pick a different full roster in 100% of paired simulated drafts, all 8 season×σ cells** — gap-awareness changes *which player*, essentially always, without reliably changing whether the roster ends up better at n=4 seasons. Secondary, uncorrected caution: this VONA formulation underperforms plain BPA-by-VBD by ~110-125 pts both σ (CIs exclude zero, but n=4 floors the sign test and neither survives BH) — not evidence to ship VONA reaching under this scarcity estimate. | **NULL** (decision-divergence itself: confirmed, not a graded finding) |
+| **Factor batch 1** — registry #19 TD-rate regression, #20 opportunity share, #13 target-share stability (rows in §3), plus **#28 vacated opportunity** | **23 pre-registered tests, zero wins.** 10 NULL, 7 HARMFUL, 2 projection-only, 2 nominal survivors — and **both survivors are undone by a post-hoc check showing their entire gain sits among players nobody drafts.** No arm moves the ranking against consensus at any position; every full-universe rank-correlation change lies between −0.0032 and +0.0007. #28 is **BLOCKED not NULL** — it ran on a Week-1 depth-chart proxy and the harm is concentrated in exactly the bucket that proxy contaminates. | **NULL ×3, BLOCKED ×1** |
+
+### 5c. A grading rule this ledger now requires — added 2026-07-30
+
+**A factor must earn its place where the decision is made, not on average across the universe.**
+
+Factor batch 1 pre-registered its gate as out-of-sample MAE across the whole pre-season universe.
+Two arms cleared it — and a post-hoc split showed both gains lived almost entirely in the bottom
+tercile of projected volume, i.e. among players who are never drafted. On the ADP board the QB arm
+was **worse** (+0.0045) and the WR arm was worth **0.02%** of the model's own error. Under the
+committed rule they are graded SURVIVES and PROJECTION-ONLY; under any rule anyone would actually
+want, they are nothing.
+
+**Rule going forward: any confirmatory gate on projection error states its decision-relevant subset
+in advance, and a full-universe gain that does not hold there is not a finding.** This is a defect
+found in a rule this project wrote, reported rather than quietly corrected, and it applies to every
+future pre-registration. *Source: `docs/ranking/factor-batch-1-results.md` §1(3).*
+
+---
 
 **`CLAUDE.md` §7's operational clause now has four independent instruments against it** — the WR
 ceiling ablation, the RB stacking-bonus transfer, the dispersion test, and the founder's own

@@ -292,6 +292,7 @@ class SeasonPanel:
     _depth: pd.DataFrame
     birthdates: pd.DataFrame
     draft: pd.DataFrame
+    _wk1: pd.DataFrame = field(default_factory=pd.DataFrame)
     access_log: List[tuple] = field(default_factory=list)
 
     def _gate(self, cutoff: int) -> None:
@@ -327,6 +328,31 @@ class SeasonPanel:
         self.access_log.append(("feature", cutoff))
         return out
 
+    def week1_roster(self, season: int) -> pd.DataFrame:
+        """PROXY ONLY. Who was on each club's season-N Week-1 depth chart.
+
+        THIS IS NOT A `before()` READ AND IT IS NOT PRETENDING TO BE ONE. It is
+        season-N information, dated at Week 1 -- roughly a week AFTER a real
+        draft and therefore later than CLAUDE.md 6.1's "preseason N" bound. It
+        exists because `nfl.db` contains no pre-season roster table at all
+        (`depth_charts_snapshots` is a single 2026-03-14 snapshot; there is no
+        `rosters` table), and the only alternative for "who left this team" --
+        inferring departure from who appears in season-N box scores -- is
+        outright survivorship contamination.
+
+        It carries NO season-N production, so it cannot inflate an outcome. Its
+        one known leak channel is that a player injured in Week 1 may be off the
+        chart and be miscounted as departed.
+
+        Reads are logged under their own `proxy` tag so the audit can assert that
+        an arm which did not declare the proxy never touched it.
+        """
+        self._gate(season)
+        self.access_log.append(("proxy", season))
+        if not len(self._wk1):
+            return pd.DataFrame(columns=["player_id", "season", "team"])
+        return self._wk1[self._wk1["season"] == season].copy()
+
     def outcomes(self, season: int) -> pd.DataFrame:
         """Realised season-N results. ONLY for evaluation and for training on
         seasons strictly earlier than the one being projected."""
@@ -338,10 +364,13 @@ class SeasonPanel:
     def audit(self, target_season: int) -> Dict[str, int]:
         feat = [s for kind, s in self.access_log if kind == "feature"]
         outc = [s for kind, s in self.access_log if kind == "outcome"]
+        prox = [s for kind, s in self.access_log if kind == "proxy"]
         return {
             "max_feature_cutoff": max(feat) if feat else -1,
             "max_outcome_season": max(outc) if outc else -1,
             "n_outcome_reads_at_target": sum(1 for s in outc if s == target_season),
+            "n_preseason_proxy_reads": len(prox),
+            "max_proxy_season": max(prox) if prox else -1,
         }
 
     def reset_audit(self) -> None:
@@ -379,11 +408,50 @@ def load_draft(db_path: Path = DEFAULT_DB) -> pd.DataFrame:
     return d.drop_duplicates("player_id")
 
 
+# Franchise relocations. `player_weekly_stats` is already normalised to the
+# current code; `depth_charts_weekly.club_code` is not.
+_CLUB_ALIAS = {"OAK": "LV", "SD": "LAC", "STL": "LA"}
+
+_WK1_SQL = """
+SELECT season, club_code, gsis_id AS player_id, week
+FROM depth_charts_weekly
+WHERE game_type = 'REG' AND week IS NOT NULL AND week <= 3
+  AND gsis_id IS NOT NULL AND gsis_id <> '' AND season < ?
+"""
+
+
+def load_week1_rosters(db_path: Path = DEFAULT_DB) -> pd.DataFrame:
+    """Season-N Week-1 club membership, from the depth chart. PROXY -- see
+    `SeasonPanel.week1_roster` for exactly what it is and is not.
+
+    Week 1 where the club has one, else the earliest REG week it does have up to
+    week 3. Two clubs are missing a Week-1 chart in 2017; without the fallback
+    their entire roster would read as departed, which is a far larger error than
+    the two extra weeks of staleness the fallback costs.
+    """
+    conn = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True)
+    try:
+        dc = pd.read_sql_query(_WK1_SQL, conn, params=(HOLDOUT_SEASON,))
+    finally:
+        conn.close()
+    if not len(dc):
+        return pd.DataFrame(columns=["player_id", "season", "team"])
+    if (dc["season"] >= HOLDOUT_SEASON).any():
+        raise HoldoutViolation("week-1 roster holdout rows leaked past the SQL gate")
+    dc["team"] = dc["club_code"].astype(str).replace(_CLUB_ALIAS)
+    first = dc.groupby(["season", "team"], sort=False)["week"].transform("min")
+    dc = dc[dc["week"] == first]
+    out = dc[["player_id", "season", "team"]].drop_duplicates()
+    out["proxy_week"] = dc.loc[out.index, "week"].to_numpy()
+    return out.reset_index(drop=True)
+
+
 def build_panel(db_path: Path = DEFAULT_DB) -> SeasonPanel:
     wk = load_weekly(db_path)
     return SeasonPanel(
         aggregate_seasons(wk), team_context(wk), load_injury_seasons(db_path),
-        load_depth_seasons(db_path), load_birthdates(db_path), load_draft(db_path))
+        load_depth_seasons(db_path), load_birthdates(db_path), load_draft(db_path),
+        load_week1_rosters(db_path))
 
 
 # ---------------------------------------------------------------- universe
