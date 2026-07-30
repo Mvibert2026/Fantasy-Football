@@ -1,11 +1,20 @@
 ---
 ID: FR-2026-07-30-assistant-access-to-factor-tests
-STATUS: NEW
+STATUS: IN PROGRESS
 SOURCE: PM session 2026-07-30, founder chat
 RAISED: 2026-07-30
 PRIORITY: HIGH
-NEEDS: librarian (content shape), then frontend (retrieval wiring)
+NEEDS: frontend (retrieval wiring)
 ---
+
+**Content shape done 2026-07-30 (librarian).** `docs/assistant-context.md`'s "Factor test results"
+section replaced in place with 11 curated entries, each carrying a number-with-interval, effective
+n (season count, not cell count), and explicit scope — including both named scope traps (registry
+#13 stability-vs-target-share, #28 proxy-artifact-vs-vacated-opportunity). Fixes the same-day
+paraphrase failure named in this FR (PR-003's −115.4 mislabeled a "worst case" instead of a point
+estimate with interval [−176.3, −54.4]; "12 scenarios" restated as effective n = 4). **Still
+open:** wiring the assistant's retrieval layer to actually read this section — that is `frontend`,
+not `librarian`.
 
 ## Request
 

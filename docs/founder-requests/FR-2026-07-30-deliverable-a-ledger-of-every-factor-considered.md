@@ -1,11 +1,19 @@
 ---
 ID: FR-2026-07-30-factor-ledger
-STATUS: NEW
+STATUS: SHIPPED
 SOURCE: PM session 2026-07-30, founder chat
 RAISED: 2026-07-30
 PRIORITY: HIGH — a named end-state deliverable
 NEEDS: librarian
 ---
+
+**Shipped 2026-07-30 (librarian).** `docs/factor-ledger.md`, 92 rows (not padded to the suggested
+100+ — see the note at the top of that document). Sourced from `test-registry.md` Tiers 0/1/2/5,
+`docs/research/analyst-factor-sweep-2026-07-30.md` (N1–N34 + 8 definition-only), `factor-batch-1-
+results.md`, `experiments/bottomup/components/pos_features.py`, `fr136-q1-bottom-up-assessment.md`,
+and `CLAUDE.md` §7. Four registry cost/source corrections applied to `docs/test-registry.md` in the
+same pass, cited to the sweep. One gap flagged, not resolved: row T1-25's "eliminated as an edge
+channel" claim for rookie draft capital has no located quantified source this session.
 
 ## Request
 

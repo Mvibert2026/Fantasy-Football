@@ -9,7 +9,7 @@ Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests
 
 ---
 
-## NEW — 84
+## NEW — 82
 
 | ID | Subject | Raised | Source |
 |---|---|---|---|
@@ -89,13 +89,11 @@ Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests
 | [FR-2026-07-30-bottom-up-causal-insights](FR-2026-07-30-bottom-up-must-produce-causal-insights-new-oc-de.md) | Bottom up must produce causal insights new oc de | 2026-07-30 | PM session 2026-07-30, founder chat |
 | [FR-2026-07-30-bottom-up-first](FR-2026-07-30-bottom-up-first-availability-is-adp-plus-draft-s.md) | Bottom up first availability is adp plus draft s | 2026-07-30 | PM session 2026-07-30, founder chat |
 | [FR-2026-07-30-bottom-up-must-include-table-stakes](FR-2026-07-30-bottom-up-must-include-all-tier-0-table-stakes-n.md) | Bottom up must include all tier 0 table stakes n | 2026-07-30 | PM session 2026-07-30, founder chat |
-| [FR-2026-07-30-factor-ledger](FR-2026-07-30-deliverable-a-ledger-of-every-factor-considered.md) | Deliverable a ledger of every factor considered | 2026-07-30 | PM session 2026-07-30, founder chat |
 | [FR-2026-07-30-lots-of-components-in-the-rankings-proprietary-a](FR-2026-07-30-lots-of-components-in-the-rankings-proprietary-a.md) | Lots of components in the rankings proprietary a | 2026-07-30 | ranker session 2026-07-30, relayed in PM brief for FR-136 Q1 |
 | [FR-2026-07-30-price-the-fantasypros-paid-api-tier](FR-2026-07-30-price-the-fantasypros-paid-api-tier-terms-were-n.md) | Price the fantasypros paid api tier terms were n | 2026-07-30 | PM session 2026-07-30, founder chat |
 | [FR-2026-07-30-recommendation-logic-is-inverted](FR-2026-07-30-recommendation-logic-is-inverted-it-prefers-the.md) | Recommendation logic is inverted it prefers the | 2026-07-30 | PM session 2026-07-30, founder chat, live Draft-mode screenshot |
 | [FR-2026-07-30-recommender-contradicts-own-findings](FR-2026-07-30-the-recommender-contradicts-the-project-s-own-me.md) | The recommender contradicts the project s own me | 2026-07-30 | PM session 2026-07-30, founder chat |
 | [FR-2026-07-30-target-share-adot-route-participation](FR-2026-07-30-target-share-adot-route-participation-named-as-i.md) | Target share adot route participation named as i | 2026-07-30 | PM session 2026-07-30, founder chat |
-| [FR-2026-07-30-the-assistant-should-have-access-to-the-factor-t](FR-2026-07-30-the-assistant-should-have-access-to-the-factor-t.md) | The assistant should have access to the factor t | 2026-07-30 | PM session 2026-07-30, founder chat |
 | [FR-2026-07-30-widen-the-ranking-input-list](FR-2026-07-30-widen-the-ranking-input-list-research-what-leadi.md) | Widen the ranking input list research what leadi | 2026-07-30 | PM session 2026-07-30, founder chat |
 
 ## SCOPING — 1
@@ -108,7 +106,7 @@ Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests
 
 _None._
 
-## IN PROGRESS — 13
+## IN PROGRESS — 14
 
 | ID | Subject | Raised | Source |
 |---|---|---|---|
@@ -125,8 +123,9 @@ _None._
 | [FR-079](FR-079-last-few-seasons-must-render-in-the-selected-sco.md) | Last few seasons must render in the selected sco | 2026-07-30 | chat 2026-07-30, PM session (feedback batch) |
 | [FR-092](FR-092-figure-out-the-coordinator-table-play-callers-is.md) | Figure out the coordinator table play callers is | 2026-07-30 | PM dispatch, data-ops session 2026-07-30 |
 | [FR-114](FR-114-remove-code-and-sourcing-clutter-across-the-site.md) | Remove code and sourcing clutter across the site | 2026-07-30 | chat 2026-07-30, PM session (screenshot feedback) |
+| [FR-2026-07-30-assistant-access-to-factor-tests](FR-2026-07-30-the-assistant-should-have-access-to-the-factor-t.md) | The assistant should have access to the factor t | 2026-07-30 | PM session 2026-07-30, founder chat |
 
-## SHIPPED — 20
+## SHIPPED — 21
 
 | ID | Subject | Raised | Source |
 |---|---|---|---|
@@ -150,6 +149,7 @@ _None._
 | [FR-087](FR-087-show-draft-position-in-rounds-not-only-pick-numb.md) | Show draft position in rounds not only pick numb | 2026-07-30 | chat 2026-07-30, PM session (feedback batch) |
 | [FR-093](FR-093-historical-adp-get-the-rest-of-it-ffc-has-differ.md) | Historical adp get the rest of it ffc has differ | 2026-07-30 | PM dispatch, data-ops session 2026-07-30 |
 | [FR-122](FR-122-typing-a-player-name-should-filter-the-list-sear.md) | Typing a player name should filter the list sear | 2026-07-30 | PM session 2026-07-30, founder chat |
+| [FR-2026-07-30-factor-ledger](FR-2026-07-30-deliverable-a-ledger-of-every-factor-considered.md) | Deliverable a ledger of every factor considered | 2026-07-30 | PM session 2026-07-30, founder chat |
 
 ## DECLINED — 0
 
