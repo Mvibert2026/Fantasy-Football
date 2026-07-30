@@ -5,11 +5,11 @@ Per-request files in this directory are the source of truth. Edit a request's ow
 `STATUS:` line, then re-run sync. Protocol: [`README.md`](README.md).
 Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests.md).
 
-**93 requests since freeze.**
+**94 requests since freeze.**
 
 ---
 
-## NEW — 54
+## NEW — 55
 
 | ID | Subject | Raised | Source |
 |---|---|---|---|
@@ -67,6 +67,7 @@ Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests
 | [FR-106](FR-106-does-age-matter-more-or-less-by-position-and-doe.md) | Does age matter more or less by position and doe | 2026-07-30 | chat 2026-07-30, PM session |
 | [FR-107](FR-107-has-vegas-been-used-in-the-bottom-up-model-at-al.md) | Has vegas been used in the bottom up model at al | 2026-07-30 | chat 2026-07-30, PM session |
 | [FR-108](FR-108-making-the-playoff-outranks-playoff-week-schedul.md) | Making the playoff outranks playoff week schedul | 2026-07-30 | chat 2026-07-30, PM session |
+| [FR-109](FR-109-the-vbd-arm-in-the-zero-rb-sim-may-be-wrong-and-.md) | The vbd arm in the zero rb sim may be wrong and  | 2026-07-30 | chat 2026-07-30, PM session |
 
 ## SCOPING — 1
 
@@ -78,7 +79,7 @@ Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests
 
 _None._
 
-## IN PROGRESS — 10
+## IN PROGRESS — 9
 
 | ID | Subject | Raised | Source |
 |---|---|---|---|
@@ -90,10 +91,9 @@ _None._
 | [FR-062](FR-062-yahoo-league-connection-if-no-api-access-what-ar.md) | Yahoo league connection if no api access what ar | 2026-07-30 | chat 2026-07-30, PM session |
 | [FR-066](FR-066-availability-picks-do-not-change-when-the-draft.md) | Availability picks do not change when the draft | 2026-07-30 | chat 2026-07-30, PM session |
 | [FR-079](FR-079-last-few-seasons-must-render-in-the-selected-sco.md) | Last few seasons must render in the selected sco | 2026-07-30 | chat 2026-07-30, PM session (feedback batch) |
-| [FR-083](FR-083-player-card-adp-shows-wrong-format-for-selected-.md) | Player card adp shows wrong format for selected  | 2026-07-30 | chat 2026-07-30, PM session (feedback batch) |
 | [FR-092](FR-092-figure-out-the-coordinator-table-play-callers-is.md) | Figure out the coordinator table play callers is | 2026-07-30 | PM dispatch, data-ops session 2026-07-30 |
 
-## SHIPPED — 18
+## SHIPPED — 19
 
 | ID | Subject | Raised | Source |
 |---|---|---|---|
@@ -113,6 +113,7 @@ _None._
 | [FR-076](FR-076-chatbot-must-see-what-the-front-end-already-disp.md) | Chatbot must see what the front end already disp | 2026-07-30 | chat 2026-07-30, PM session (feedback batch) |
 | [FR-077](FR-077-chatbot-needs-standing-chat-box-and-answer-area.md) | Chatbot needs standing chat box and answer area | 2026-07-30 | chat 2026-07-30, PM session (feedback batch) |
 | [FR-082](FR-082-opponents-pane-does-not-scroll.md) | Opponents pane does not scroll | 2026-07-30 | chat 2026-07-30, PM session (feedback batch) |
+| [FR-083](FR-083-player-card-adp-shows-wrong-format-for-selected-.md) | Player card adp shows wrong format for selected  | 2026-07-30 | chat 2026-07-30, PM session (feedback batch) |
 | [FR-087](FR-087-show-draft-position-in-rounds-not-only-pick-numb.md) | Show draft position in rounds not only pick numb | 2026-07-30 | chat 2026-07-30, PM session (feedback batch) |
 | [FR-093](FR-093-historical-adp-get-the-rest-of-it-ffc-has-differ.md) | Historical adp get the rest of it ffc has differ | 2026-07-30 | PM dispatch, data-ops session 2026-07-30 |
 
