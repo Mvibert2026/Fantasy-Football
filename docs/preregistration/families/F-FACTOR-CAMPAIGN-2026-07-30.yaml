@@ -1,0 +1,60 @@
+# The 2026-07-30 factor campaign — ONE multiple-comparisons family across every
+# concurrent factor batch.
+#
+# WHY THIS FILE EXISTS. Four factor batches were dispatched in parallel on
+# 2026-07-30 against the same harness, the same eleven target seasons and the
+# same primaries. Correcting inside each batch while ignoring the others is
+# exactly the multiplicity failure CLAUDE.md §6.3 names: four batches each
+# running BH at q=0.10 on their own m is four independent chances to produce a
+# false positive, and the project would have no record of the real denominator.
+#
+# THE RULE. A batch registers its m HERE, before it fits anything. Benjamini–
+# Hochberg is applied at the CAMPAIGN level, denominator = sum of every `m` in
+# this file, fixed regardless of how many arms turn out to be computable.
+#
+# CONCURRENCY. Batches run at the same time and cannot see each other's m at the
+# moment they compute BH. So every batch additionally reports, per surviving arm,
+# the BREAKING m — the largest campaign denominator at which that arm would still
+# clear BH at q=0.10. An arm whose breaking m is below the final campaign total
+# loses its claim, and the reader can check that from this file alone without
+# rerunning anything.
+#
+# Append-only. One block per batch. Never renumber, never delete a block: a batch
+# that ran and found nothing still spent its share of the family.
+
+id: F-FACTOR-CAMPAIGN-2026-07-30
+status: open
+q: 0.10
+also_reported_at_q: 0.05
+correction: benjamini-hochberg
+unit: one registered E1a/E3 p-value
+
+batches:
+
+  - batch: 3
+    owner: ranker
+    m: 24
+    precommit: docs/ranking/factor-batch-3-precommit.md
+    registered: 2026-07-30
+    scope: >-
+      QB rushing volume (A1, A2); NGS average separation (S1, S1c); explosive
+      rush rate (X1, X2, X1c); OC tenure (T1, T1c, C1Q); baseline
+      respecification family F2 (B2r, B2ra).
+    status: run
+    note: >-
+      Ran and graded against a batch-local m = 24 before this manifest existed.
+      Its numbers are unchanged; the campaign denominator below is what any
+      cross-batch claim must be re-checked against.
+
+  - batch: 6
+    owner: ranker
+    m: 23
+    precommit: docs/ranking/factor-batch-6-precommit.md
+    registered: 2026-07-30
+    scope: >-
+      QB passing efficiency over volume, N10 (P1 EPA/dropback, P2 ANY/A, P3
+      passer rating, P4 CPOE, P4c and Pc coverage controls); sack-avoidance
+      rate, N11 (K1); expected fantasy points, registry #18, at all four
+      positions (X1 add, X2 replace ppg_w, X3 luck residual, X4c coverage
+      control).
+    status: registered
