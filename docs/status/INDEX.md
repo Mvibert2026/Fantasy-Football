@@ -4,7 +4,7 @@
 Session files in this directory are the source of truth. Add a new dated file, then
 re-run sync. Protocol: [`README.md`](README.md).
 
-**45 sessions recorded.**
+**49 sessions recorded.**
 
 ---
 
@@ -174,6 +174,113 @@ automatically the next time `board.json` is rebuilt with a working database.
 - `docs/ideas-inbox.md` — session entry
 - `docs/CURRENT-STATE.md` — in-place update
 - `frontend/e2e/verify-adp-glossary-methodology.mjs` (new) — screenshot verification script
+
+---
+
+<!-- 2026-07-29-backend-fr-057-availability-multi-slot.md -->
+
+# 2026-07-29 — backend — fr-057-availability-multi-slot
+
+Dispatched to execute FR-057 part 1: the draft-slot selector (FR-034) already changes the pick
+sequence everywhere in the app, but `data/export/availability.json`'s `by_player`/`by_tier` were
+keyed by the founder's own slot's pick numbers only, computed by a single Monte Carlo run in
+`run_availability.py`. Switching the selector to any other slot found no matching keys — numbers
+went absent, not wrong. Part 2 (browser-side recomputation, the founder's stated preference) was
+explicitly out of scope, per the dispatch.
+
+## What shipped
+
+- `src/run_availability.py`: sweeps every slot 1..`teams` (was one), merges into the EXISTING
+  `by_player`/`by_tier` shape. No new nesting level: for a fixed team/round count, a pick number
+  belongs to exactly one slot, so the merge is a disjoint union — proved structurally
+  (`tests/test_run_availability_multi_slot.py`) before the merge code was written, per the
+  project's sanity-check-first rule.
+- `src/export_contract.py`: `CONTRACT_VERSION` 1.14.0 → 1.15.0. New `metadata.multi_slot_coverage`
+  and `metadata.picks_by_slot` (canonical pick sequence per slot — one source of truth instead of
+  a second, independently-written snake-order implementation on the frontend that could drift).
+- `docs/data-contract.md` documents the new fields and states the measured payload/runtime numbers
+  plainly, including the recommendation these numbers support.
+- Handoff thread 093 opened to `frontend` with the exact field-level contract and the required
+  change (read `picks_by_slot[str(slot)]` instead of assuming the founder's own).
+- ADR-061 in `docs/decisions.md` — full writeup, measured numbers, both bugs below.
+
+## Two real regressions caught before this shipped, not after
+
+Both were found by diffing actual output against the pre-session committed artifacts — not by
+review — and both are now regression-tested so they can't silently recur:
+
+1. **The founder's own slot's numbers moved.** The first version of the sweep added a
+   slot-dependent RNG seed offset to every slot, including the founder's own — so even though that
+   slot kept the exact pre-existing algorithm path (`engine=None` for the primary league), the
+   different seed changed the sampled noise draws. 671 of 1280 checked cells at the founder's own
+   pick numbers differed from the pre-session committed `availability.json` by 0.1–2.5 percentage
+   points. Fixed: the seed offset is now `0` specifically for `cfg.user_draft_slot`, non-zero only
+   for the nine new slots. `test_own_slot_numbers_unaffected_by_sweeping_other_slots`.
+2. **`board.json` inherited the multi-slot growth by accident.** It embeds
+   `by_player[player]` per row too (a separate consumer of the same CSV, `build_board_json`), and
+   left un-filtered that meant `board.json` — loaded on every page view, not just an
+   availability-specific screen — grew from 1,020,368 to 2,276,988 bytes (2.2x) for a feature
+   FR-057 never asked it to carry. Fixed: `build_board_json` now filters its `by_player` read down
+   to `cfg`'s own pick numbers only, the exact slice it carried before 1.15.0.
+   `test_board_json_availability_embed_stays_own_slot_only`.
+
+Refactored the sweep out of `run_availability.py`'s `main()` into a standalone `sweep_slots()`
+function specifically so both bugs above could be regression-tested directly instead of only
+through a full CLI run (which takes ~10.5 minutes and can't run per-test).
+
+## Measured, not assumed (the task's explicit ask)
+
+| | Before (1 slot) | After (10 slots, primary league) |
+|---|---|---|
+| `availability.json` | 161,100 bytes | 1,554,817 bytes (**9.65x**) |
+| Sweep runtime (3000 sims × 3 sigmas) | ~45-60s (prior doc estimate, 1 slot) | **628.8s (~10.5 min) measured directly, ~63s/slot average** |
+| `board.json` | 1,020,368 bytes | unchanged (bug #2 above, caught and fixed) |
+
+**Recommendation, stated plainly per the dispatch's instruction:** ~10.5 minutes and a 9.65x
+`availability.json` (to 1.55 MB) is workable as a one-time floor for one 10-team league. It does
+NOT extend cheaply — a 14-team league scales roughly linearly with team count at the measured
+~63s/slot rate, and sweeping all 27 league exports (25 of which have no Monte Carlo data at all
+today, per ADR-047's pre-existing cost scope) would be on the order of hours. This is exactly what
+client-side recomputation (FR-057 part 2) sidesteps — it computes one slot's answer on demand
+instead of precomputing all of them, and its inputs (`client_simulation_parameters`) already ship,
+predating this session.
+
+## Scope decisions logged, not escalated (`docs/ideas-inbox.md`)
+
+1. No `by_slot` nesting needed — pick number alone disambiguates, kept the contract change
+   additive.
+2. Only the primary league (Westwood, real founder data) got a real sweep. The 24 preset configs
+   and `ethans_expert_league` have never had a real Monte Carlo run at all (ADR-047, unrelated to
+   this session) — the code path works for any league the moment one IS run.
+   `yahoo_standard_mock`'s existing single-slot CSV (a labelled test fixture, not a founder league)
+   was left un-swept for the same reason.
+3. The founder's own slot stays on its exact pre-existing code path rather than unifying every
+   slot onto `ds.DraftEngine` — a scratchpad comparison found the two paths diverge by up to ~0.02
+   absolute probability at late picks even though they should be numerically identical (not
+   root-caused, logged, does not affect the founder's own slot).
+
+## Also fixed as a side effect
+
+`board.json`'s `consensus_source_note` field still carried ADR-060's stale "no ADP source
+(ADR-018)" text as of that session's own "known limitation, not fixed here" note — that session's
+worktree had no working `nfl.db`. This session's worktree did, so regenerating `board.json` here
+picked up the already-corrected source text with no code change needed. Confirmed by reading the
+regenerated file directly.
+
+## Evidence
+
+- `python3 -m pytest tests/test_run_availability_multi_slot.py -q` — 9 passed.
+- `data/nfl.db` copied into the worktree from the shared checkout per `docs/environment.md` §4
+  (worktrees don't inherit it; a fresh `sqlite3.connect` would otherwise create a silent empty
+  stub).
+- Full sweep run twice: once with the seed bug present (caught by diffing, not committed as data),
+  once after the fix (committed). `export_strategies.py` also re-run (13-minute regeneration) so
+  its `contract_version` stamp matches 1.15.0 — `test_strategies_json_contract_version_matches_export_contract`
+  otherwise fails unconditionally (a real inconsistency with the OTHER contract-version test's
+  comment claiming strategies.json is allowed to lag; not resolved here, just worked around by
+  regenerating rather than leaving a known-red test).
+
+Commit hashes and final test count: see the session's final report / next `git log`.
 
 ---
 
@@ -3571,6 +3678,110 @@ downstream summary; and the refusal to authorise a 2025 unseal.
 
 ---
 
+<!-- 2026-07-30-backend-adp-history-league-scoring-fix.md -->
+
+# 2026-07-30 — backend — ADP note + season history made league-scoring-aware (FR-079/FR-083)
+
+**Dispatch:** fix the root cause behind the founder's player-card complaint
+("Why do player notes cards not show adp for the correct format for the league selected?" /
+"Last few seasons should be in correct fomat as well"), traced by frontend to
+`docs/handoffs/NEW-adp-and-history-not-league-scoring-aware.md`. Explicitly told not to allocate
+a thread or ADR number this session.
+
+## What shipped
+
+Two real defects, both making the app assert something false about a league's scoring.
+
+**1. `board.json:adp_source_note` was hardcoded Westwood prose for every league.**
+New `export_contract._adp_source_note(cfg, adp_snapshot)` (plus `_ppr_format_description`)
+derives the claim fresh from `cfg.scoring` on every call: which PPR value this league scores,
+whether it matches MFL's binary `IS_PPR` flag (states a real match when one exists, not just a
+mismatch warning), and whether the capture's `fcount` actually equals `cfg.teams` (previously
+hardcoded `"(10-team, matching this league)"` unconditionally — wrong for any non-10-team
+preset). Verified live against `espn_10_standard` (the exact league frontend's diagnosis used):
+note now reads "...while THIS league ('espn_10_standard') scores standard (0-PPR, no points per
+reception)..." — no "half-PPR" anywhere. Westwood's own board is unchanged in substance (still
+correctly says half-PPR, now derived rather than hand-written).
+
+**2. `season_stats.json`/`weekly_finishes.json` were never league-scoring-aware at all.**
+Root cause was worse than "missing a `scoring_cfg` param": both files summed/ranked
+`player_weekly_stats.fantasy_points_ppr`, a column nflreadpy ships as-is under its own fixed
+full-PPR convention — never this project's scoring engine, never tunable. This was wrong for
+**every** league including Westwood, not just presets. Fix: `export_history.py` now recomputes
+every player-week's fantasy points from raw counting stats
+(`db.player_week_scoring_inputs`/`db.SCORING_STAT_COLUMNS`, the same view make_board/backtesting
+already read) through `scoring.score_offensive_game(stats, cfg.scoring)`, summed to a season total
+**after** per-game scoring (yardage bonuses are game-level thresholds — summing raw yards first
+and then scoring would fabricate or drop a bonus no single game actually earned). Ranking in
+`weekly_finishes.json` moved from a SQL `RANK() OVER (...)` on the stored column to a Python
+`_rank_desc` helper over the newly-scored points (same tie semantics), since the ranking basis is
+now cfg-dependent and SQL can't see `cfg.scoring`.
+
+**Shape decision, stated and justified per the dispatch:** per-league export artifacts, not
+read-time application. `export_contract.write_all` now calls `export_history.write_all`
+internally, landing `weekly_finishes.json`/`season_stats.json` under
+`export_dir_for(cfg.league_id)` — the exact pattern `board.json`/`league.json` already
+established — rather than inventing a new one. Rejected exporting raw per-week components for the
+reader to score: the whole reason this thread exists is that scoring must never happen outside
+this project's engine, and a raw-components artifact would hand the browser exactly that
+temptation. Landing every artifact pre-scored keeps "frontend never computes scoring" true
+structurally, the same guarantee `make_board.build_board` already gives by taking `scoring_cfg`
+directly.
+
+**Verified on two leagues, live (not just unit tests):** same real player, same 2022 season —
+283.2 fantasy points under Westwood's ruleset vs 271.7 under a standard 0-PPR preset. Different
+leagues, same underlying games, genuinely different numbers.
+
+**Shared derivation, no more drift risk.** `league_config.scoring_ruleset_note_for(cfg)` is now
+the single source of truth for "which ruleset does this league use," called by both
+`export_contract.build_league_json` (`league.json:scoring_ruleset_note`, unchanged content) and
+the new `export_history.py` envelope fields — the three artifacts describing a league's scoring
+can no longer independently drift the way `board.json`'s `adp_source_note` and
+`league.json`'s note already had.
+
+## Contract bump
+
+`CONTRACT_VERSION` **1.15.0 → 1.16.0** (`src/export_contract.py`). `docs/data-contract.md`
+updated in place (version banner, regenerating commands, the `weekly_finishes.json`/
+`season_stats.json` section rewritten, changelog entry added). Breaking for frontend:
+`season_stats.json`'s `fantasy_points_ppr` field is **renamed** `fantasy_points` (not aliased —
+old key gone) plus a new `fantasy_points_available` bool; both history files' envelopes gain
+`league_id`/`scoring_note`/`scoring_ruleset_note`; both now exist per-league under
+`data/export/<league_id>/`, not just the unprefixed top level. Handoff to frontend: appended a
+reply to the same thread frontend opened (`docs/handoffs/NEW-adp-and-history-not-league-scoring-
+aware.md`), `STATUS: RESOLVED` — same subject as the ask, not a new thread.
+
+## Left undone, logged not decided away
+
+Sub-ask 1b from frontend's diagnosis — whether `ffc_half_ppr_10team` (already ingested) should
+replace `mfl_proxy` as Westwood's own ADP display source — is untouched. Real methodology call
+(which leagues get which ADP source, if any) that needs strategist input, and per this project's
+"a source swap is not a substitution" rule, `ffc_half_ppr_10team`'s actual coverage would need
+verifying before treating it as a drop-in. Logged in the handoff reply for a future thread.
+
+## Verification
+
+- New sanity tests written before/alongside the implementation (per operating rules): 9 new cases
+  in `tests/test_export_contract.py` (`_ppr_format_description`, `_adp_source_note` derivation —
+  standard-0PPR-never-claims-half-PPR, Westwood-still-claims-half-PPR-honestly, two-leagues-get-
+  two-different-notes, a real-match case, fcount-mismatch and fcount-match cases, league_id
+  appears in its own note). `tests/test_export_history.py` fixture rewritten with full raw
+  scoring-stat columns (matching `db.player_week_scoring_inputs`'s source shape); 6 new cases
+  proving the identical raw stat lines score AND rank differently under two real league configs,
+  and that the envelope names the league it was built for.
+- `tests/test_rosters_export.py::test_contract_version_bumped` updated to assert `1.16.0`.
+- Regenerated the primary league's committed `data/export/*.json` (all 6 artifacts,
+  `export_contract.py` + `export_static.py`) against a real `data/nfl.db` copied into this
+  worktree (gitignored, does not survive across worktrees per `docs/environment.md` §4).
+- Ran `generate_config_matrix.py` to regenerate all 24 presets' `board.json`/`league.json`/
+  `availability.json`/`rosters.json`/`weekly_finishes.json`/`season_stats.json` so the committed
+  `data/export/<preset>/` directories don't ship the pre-fix bug. (See test count/commit below for
+  whether this completed within the session or is a documented follow-up.)
+
+Test count and commit hash: see final report.
+
+---
+
 <!-- 2026-07-30-backend-adp-vs-production.md -->
 
 # 2026-07-30 — backend — ADP vs production analysis (FR-072, thread 096)
@@ -3742,6 +3953,113 @@ No `src/` or `tests/` code touched this session (analysis-only, per the dispatch
 `src/`, `tests/`, export contract, ADR log were not in play here beyond the DB rebuild, which
 used existing ingestion scripts unmodified). Ran the full pytest suite for a sanity check after
 the DB rebuild; see commit message / final report for count.
+
+---
+
+<!-- 2026-07-30-backend-valuation-tests-35-36.md -->
+
+# 2026-07-30 — backend — test-registry #35/#36 (global flex baseline, VONA pick-gap awareness)
+
+**Dispatch:** run the two remaining untested HIGH-edge valuation items from `docs/test-registry.md`
+(founder asked for the remaining bottom-up tests to start). Worktree `agent-a299a75833b30b593`.
+
+## What was done
+
+1. Merged `origin/claude/pm-agent-setup-gobxa0` (already up to date, no-op).
+2. Read `docs/statistical-guardrails.md`, `docs/strategic-insights.md`, `docs/environment.md`,
+   `docs/CURRENT-STATE.md`, `docs/operating-model.md` per session protocol.
+3. Rebuilt `data/nfl.db` for this worktree (`docs/environment.md` §4 — worktrees never inherit
+   it). `scripts/rebuild_database.py` step 4 hit the documented DynastyProcess 403 (Claude-session
+   proxy restriction, `docs/can-we-rebuild-the-database.md`); restored via the committed rescue
+   path (`experiments/restore_rankings_from_committed_csv.py`) then completed the remaining steps
+   (`ingest_fantasypros_csv.py`, `--skip-network` for identity/mock-draft/ADP restore). Verified
+   row counts against the rebuild script's own assertions.
+4. Wrote the design **before any code ran**: `docs/ranking/valuation-tests-35-36-precommit.md`
+   (narrative), then `docs/preregistration/PR-006-global-flex-baseline.md` and
+   `docs/preregistration/PR-008-vona-pick-gap-awareness.md` (the project's real
+   `src/preregistration.py` mechanism — `require_preregistration`/FDR-over-the-persistent-log,
+   not just the narrative doc). Both committed at `status: REGISTERED` before running.
+5. Wrote sanity checks (`tests/test_valuation_experiments_sanity.py`, 10 tests) **before** the
+   module they check, per the project's non-negotiable rule — arithmetic invariants (the 80-pick
+   derivation, the renormalised position share summing to `N_ROUNDS-1`, the real 14/4 gap
+   alternation for `USER_SLOT=3`, seed stability via `zlib.crc32` not builtin `hash()`, the
+   structural look-ahead guard via `db.CutoffEnforcedStore`). Committed, then implemented
+   `experiments/valuation/replacement_and_vona.py` to satisfy them (all 10 pass).
+6. Wrote and ran `experiments/valuation/run.py`, driving `src/draft_sim.py` **unmodified** — new
+   board arrays / `Strategy` callables only, no change to the simulator itself. 2021-2024 (2025
+   sealed holdout untouched), σ ∈ {10, 20}, 300 sims/cell. Full output:
+   `data/qa/valuation-tests-35-36-run-2026-07-30.log`.
+7. Updated `docs/test-registry.md` #35/#36 and `docs/strategic-insights.md` §5b in place with
+   verdicts. Opened `docs/handoffs/NEW-valuation-tests-35-36-results.md` to `strategist` for
+   methodology sign-off (not a blocker — nothing was wired into anything live).
+
+## Results
+
+**#35 (PR-006), global flex-eligible replacement baseline: NULL.** Season-paired points margin
+(global minus current) +1.7 [-67.6,+74.8] σ=10, -6.7 [-51.2,+37.8] σ=20 — sign flips, both CIs
+wide around zero, well under the measured simulation noise floor (~8.5 pts/300 sims — confirmed
+directly; more simulated drafts would not narrow this, the n=4-season bootstrap is what's
+binding, matching `run_draft_sim.py`'s own established separation of the two noise sources). No
+change to `scoring.ReplacementLevels` — current per-position scheme (ADR-029) stays in
+production. Both VBD arms lose to market ADP by ≈-270 pts (expected — season S-1 persistence is
+a known-weak projection stand-in, no player-level projection exists yet per ADR-017; this
+reconfirms strategic-insights.md §1's existing headline, not a new finding).
+
+**#36 (PR-008), VONA pick-gap awareness: NULL on realised outcome, decision-divergence
+CONFIRMED.** Real alternating gap (14 vs. 4 intervening picks, `USER_SLOT=3`, ~3.5x) vs. a
+gap-blind constant (`N_TEAMS-1=9`). Realised-points margin -37.2 [-118.8,+36.0] σ=10, -2.8
+[-48.0,+37.1] σ=20 — NULL. **Decision divergence measured directly (identical opponent-noise
+seed feeding both arms): the two arms pick a different full roster in 100% of paired simulated
+drafts, all 8 season x σ cells.** Gap-awareness changes WHICH player almost every time without
+reliably changing whether the resulting roster is better, at n=4 seasons. Secondary, uncorrected
+caution: this VONA formulation (either gap variant) underperforms plain best-available-by-VBD by
+~-110 to -126 pts both σ (CIs exclude zero, but the n=4 sign test floors at p=0.125 and neither
+survives BH) — a caution against shipping VONA reaching under this share-based scarcity estimate
+(a flat, round-averaged position share, coarser than the real round-varying demand), not a
+confirmed loss.
+
+**Multiple comparisons:** 12 comparisons (3 per σ per test x 2 σ), Benjamini-Hochberg against the
+persistent run log (`n_total=63`). Zero survived — expected at n=4 seasons, where the exact sign
+test floors at p=0.125 below the 0.05 threshold regardless of effect size.
+
+**Power check (per the coordinator's explicit ask):** measured simulation SE directly for one
+cell (`vbd_current`/`vona_gap_aware`, 2024, σ=10): 8.5/9.3 pts at 300 sims. Both are small
+relative to the reported CI widths (70-150 pts) and to the observed margins (37-126 pts) — the
+imprecision in every NULL verdict above is the n=4-season bootstrap, not an under-powered
+simulation count. More sims per cell would not have changed any verdict here.
+
+## A note on process
+
+The first full run (`--sims 300 --record`, ~4-6 CPU-minutes given the VONA strategy's O(candidates
+x pool) per-pick cost) was launched as a background Bash task and monitored via the `Monitor`
+tool. The monitor's completion notification did not arrive promptly and this session paused
+waiting on it rather than checking the process directly — flagged by the coordinator mid-session
+("the notification you are waiting on is not coming, and you were not stopped for cause"). Fixed
+by checking `ps`/log line counts directly with short (<=20s) `sleep` calls between checks instead
+of relying solely on the notification, and by committing/pushing `experiments/valuation/run.py`
+and the run log as WIP rather than holding them uncommitted until the run finished. The run did
+complete correctly in the end (both notifications eventually arrived, one very late) — no data was
+lost, but the pattern is worth remembering: check background work directly, do not block turns on
+a notification alone.
+
+## Commits (this session, in order)
+
+1. `60d5b31` — pre-register design (precommit doc)
+2. `544cf7f` — sanity checks + harness implementation
+3. `e48ff1f` — PR-006/PR-008 registered via the real preregistration mechanism
+4. `0685af8` — runner script (WIP, committed before the run finished)
+5. `ed36c2b` — run results, PR-006/PR-008 updated to `status: RUN` with results, run log
+6. (this commit) — test-registry.md / strategic-insights.md / CURRENT-STATE.md / status log /
+   handoff
+
+All pushed to `origin/worktree-agent-a299a75833b30b593` after each step, not held to the end.
+
+## Test count
+
+See final report for the full-suite number (a run was in progress at write time). Sanity suite:
+`tests/test_valuation_experiments_sanity.py`, 10/10 passing. Pre-existing, unrelated red test
+confirmed unaffected: `tests/test_holdout_audit.py::test_no_new_direct_sqlite_connections_in_src`
+(the known `ingest_sleeper_projections.py` finding from thread 094 — not touched this session).
 
 ---
 
@@ -4580,6 +4898,22 @@ files were `git checkout --`-restored to HEAD before committing. No `src/` file 
 point — stayed in `frontend/` per this session's dispatch instruction, as intended; the Python runs
 were read-only validation, not backend work.
 
+## Second housekeeping note — accidental `handoffs.py sync` run, reverted
+
+Near the end of the session, ran `python tools/handoffs.py sync` out of habit despite this
+session's explicit dispatch instruction not to allocate thread numbers. It errored
+("file has no frontmatter block, refusing to stamp it") on some other pending `NEW-*.md` file, but
+not before it had already renamed three unrelated `NEW-*.md` files left by other sessions
+(`NEW-adp-and-history-not-league-scoring-aware.md`,
+`NEW-archetype-taxonomy-derivability-review-fr-075.md`,
+`NEW-archetype-volatility-dimension-and-stability.md`) to `098`/`099`/`100`. This session's own
+`NEW-fr066-availability-ranking-source-export.md` was not touched (alphabetically after whichever
+file the run choked on). Reverted immediately (`git checkout --` the three deleted files, removed
+the three newly-created numbered ones) rather than leave a self-allocated state that could collide
+with a concurrent agent's own numbering — the exact risk this session was told to avoid. Left as
+found: three unallocated `NEW-*.md` files still pending `sync` from whoever runs it next, plus this
+session's own fourth.
+
 ## Files
 
 - `frontend/ui/views/Availability.tsx` — the fix
@@ -4835,6 +5169,65 @@ o-line quality (absent in any form) · goal-line share (needs play-by-play, no p
 participation (`snap_counts` used as a labelled `[PROXY]` throughout) · in-line vs slot · pace/PROE ·
 `play_callers` empty · **pre-2018 pre-draft ADP, which is the binding constraint on the dead-zone
 trend question and is a data problem, not a method problem**.
+
+---
+
+<!-- 2026-07-30-researcher-injury-prediction-services.md -->
+
+# 2026-07-30 — researcher — injury-prediction services: buy nothing
+
+**Task:** answer the founder's question, relayed as FR-097 — *"how accurate are the injury sites at
+predicting injuries, is that worthwhile?"* Deliverable framed as a buy decision with a cost.
+
+**Verdict: buy nothing.** ~$100–190/year avoided. Three independent reasons in
+`docs/research/injury-prediction-services-2026-07-30.md`; handoff staged unallocated at
+`docs/handoffs/NEW-injury-prediction-services-buy-nothing.md`.
+
+## What was actually established
+
+- **Falsifiability is the decisive column, and five of six services fail it.** Four emit tiers or
+  narrative; one 404'd. Only Draft Sharks (which acquired Sports Injury Predictor) emits per-player
+  numbers, and those are paywalled with no as-of stamp and no public archive of prior seasons'
+  predictions. Nobody outside the vendor can score any of them, before or after purchase.
+- **The one documented validation targets the wrong event.** Draft Sharks classifies "misses at
+  least two quarters of a game" — the short-absence category our own data already sees. ROC-AUC
+  0.626 → 0.809 and R² 0.026 → 0.401, MAE 1.610 games, tested on **385 player-seasons from 2016**,
+  reported on a page last updated **2020-09-28**, never revalidated, never independently replicated.
+- **Tail performance on 9+ game absences — the only thing we needed — is `[GAP]` from every source.**
+  Not estimated.
+- **Effective sample is n=1, not n=6.** Draft Sharks *is* SIP; three editorial products are one
+  methodological unit; three B2B platforms are another.
+- **Peer-reviewed backdrop:** Bullock 2022 (Sports Med, 204 models) — 98% high/unclear risk of bias,
+  **zero externally validated**, "No models could be recommended for use in practice." Leckey 2024
+  (BJSM) — AUC 0.57–0.95, a third in the poor band, clinical utility questioned.
+- **Base rates recovered so no accuracy figure floats free:** 38% of 1,794 NFL players missed ≥1 game
+  (2015); 64% of absences cost ≤2 games; per-game injury rate 2.5% (QB) to 5.2% (RB). Two vendor
+  figures (PlayerProfiler 50%, Zone7 72.4%) marked **unusable** for lacking denominators.
+- **Licensing blocks it regardless:** `draftsharks.com`'s Terms of Use footer link is a dead `#`
+  placeholder — no terms document reachable. `CLAUDE.md` §5 cannot be satisfied, and the app is
+  public.
+
+## What this argues for instead — no new scope
+
+The gap is *current status*, not *forecast*. Sleeper `/v1/players/nfl` (`status`, `injury_status`,
+`injury_start_date`, `practice_participation`; once-daily pull explicitly invited) plus open item 8's
+`load_rosters()` ingest close the IR-invisibility hole for free. Both already queued; this raises
+their priority. Sleeper has zero history — every un-snapshotted day is permanently lost.
+
+## Constraints and unresolved items
+
+- **No Bash tool.** No allocator access (handoff filed as `NEW-`, no ID hand-typed per ADR-048), no
+  `tools/founder_requests.py`, no commit, and **no `nfl.db` query** — so our own fantasy-relevant
+  injury base rate, the most useful number available, was not computed. Fourth researcher session on
+  record to hit this.
+- **`tools/status_log.py sync` could not be run**, so `docs/status/INDEX.md` is stale until someone
+  with a shell regenerates it.
+- **Escalated, not resolved:** `docs/founder-requests/FR-097-*.md` and
+  `docs/analysis/adp-vs-production-2026-07-30.md` — both named in the dispatch — **do not exist in
+  this worktree** (highest FR present is FR-071; `docs/analysis/` is absent). Either this worktree is
+  behind `main` or FR-097 was never allocated. Claims sourced to those files are tagged `[GAP]`.
+- `docs/CURRENT-STATE.md` not edited — this work closes an option rather than changing build state,
+  and the reprioritisation is carried in the handoff to `pm`.
 
 ---
 

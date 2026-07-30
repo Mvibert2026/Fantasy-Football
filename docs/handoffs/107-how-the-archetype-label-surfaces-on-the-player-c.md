@@ -1,8 +1,10 @@
 ---
+ID: 107
 FROM: researcher
 TO: design
 STATUS: OPEN
 BLOCKS: FR-075 (archetype on the player card)
+OPENED: 2026-07-30
 ---
 
 ## Ask
