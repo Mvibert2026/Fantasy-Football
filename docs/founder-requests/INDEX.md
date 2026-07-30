@@ -5,11 +5,11 @@ Per-request files in this directory are the source of truth. Edit a request's ow
 `STATUS:` line, then re-run sync. Protocol: [`README.md`](README.md).
 Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests.md).
 
-**121 requests since freeze.**
+**122 requests since freeze.**
 
 ---
 
-## NEW — 74
+## NEW — 75
 
 | ID | Subject | Raised | Source |
 |---|---|---|---|
@@ -87,6 +87,7 @@ Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests
 | [FR-134](FR-134-test-campaign-prove-the-bottom-up-ranking-and-av.md) | Test campaign prove the bottom up ranking and av | 2026-07-30 | PM session 2026-07-30, founder chat |
 | [FR-135](FR-135-traditional-draft-board-teams-across-the-top-fil.md) | Traditional draft board teams across the top fil | 2026-07-30 | PM session 2026-07-30, founder chat |
 | [FR-136](FR-136-pivot-all-energy-to-the-three-model-questions-on.md) | Pivot all energy to the three model questions on | 2026-07-30 | PM session 2026-07-30, founder chat |
+| [FR-2026-07-30-price-the-fantasypros-paid-api-tier-terms-were-n](FR-2026-07-30-price-the-fantasypros-paid-api-tier-terms-were-n.md) | Price the fantasypros paid api tier terms were n | 2026-07-30 | PM session 2026-07-30, founder chat |
 
 ## SCOPING — 1
 
