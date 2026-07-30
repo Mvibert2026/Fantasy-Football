@@ -257,7 +257,17 @@ def test_default_selection_is_expert_adjusted_byte_identical_to_old_default(seed
         seeded_conn, 2025, n_bootstrap=0, source=make_board.TRAINING_SOURCE,
         ranking_source_selection="expert_adjusted",
     )
-    assert [dataclasses.asdict(r) for r in old] == [dataclasses.asdict(r) for r in new]
+    def _norm(rows):
+        out = []
+        for r in rows:
+            d = dataclasses.asdict(r)
+            for k in ("vbd_lo", "vbd_hi"):
+                if isinstance(d[k], float) and math.isnan(d[k]):
+                    d[k] = "NAN"
+            out.append(d)
+        return out
+
+    assert _norm(old) == _norm(new)
 
 
 def test_expert_raw_board_order_is_the_sources_own_rank_not_our_vbd(seeded_conn):

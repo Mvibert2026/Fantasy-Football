@@ -521,12 +521,46 @@ def build_board(
     seed: int = DEFAULT_CONFIG.random_seed,
     scoring_cfg: Optional[dict] = None,
     source: str = SOURCE,
+    ranking_source_selection: str = "expert_adjusted",
 ) -> tuple[List[BoardRow], Dict[str, RankCurve]]:
     """`source` is the CURRENT-SEASON consensus board being ranked (default:
     SOURCE, the live fantasypros_csv_2026draft board). It is independent of
     the historical rank->points curve fit, which always trains on
     TRAINING_SOURCE via fit_rank_curves/bootstrap_vbd_intervals regardless of
-    this argument -- see the SOURCE/TRAINING_SOURCE split note above."""
+    this argument -- see the SOURCE/TRAINING_SOURCE split note above.
+
+    `ranking_source_selection` (FR-2026-07-30, default "expert_adjusted")
+    picks which of the four founder-facing sources drives BOARD ORDER --
+    see RANKING_SOURCE_SELECTIONS above. The default reproduces this
+    function's pre-existing behavior byte-for-byte (regression-tested,
+    test_default_selection_is_expert_adjusted_byte_identical_to_old_default):
+    board order = our VBD, computed by re-scoring `source`'s positional ranks
+    through the historical rank->points curve.
+
+    "expert_raw" and "market_adp" NEVER re-derive board order from VBD --
+    doing so would blend our opinion into what is supposed to be an
+    independent, separately-labeled source (CLAUDE.md sec4). projected_points
+    and vbd are still computed and returned for every player under every
+    selection (the value curve is source-independent -- it is fitted once on
+    TRAINING_SOURCE regardless of which board you are looking at), so a
+    caller can still show "our valuation of this player" as context even
+    when the ORDER on screen is someone else's.
+
+    "proprietary" raises RankingSourceNotBuilt. There is no fallback path --
+    a caller that wants a graceful "not available" response must catch this
+    explicitly, not let it propagate into a different source's board."""
+    if ranking_source_selection not in RANKING_SOURCE_SELECTIONS:
+        raise ValueError(
+            f"unknown ranking_source_selection {ranking_source_selection!r}; "
+            f"must be one of {RANKING_SOURCE_SELECTIONS}"
+        )
+    if ranking_source_selection == "proprietary":
+        raise RankingSourceNotBuilt(
+            "ranking_source_selection='proprietary' has no implementation. Component models "
+            "measured worse than the incumbent board at all four positions (2026-07-30). Do "
+            "not catch this and substitute another source -- report it as absent."
+        )
+
     levels = levels or ReplacementLevels()
     baselines = levels.baselines()
     curves = fit_rank_curves(conn, season, training_seasons, scoring_cfg=scoring_cfg)
@@ -534,7 +568,11 @@ def build_board(
         conn, season, levels, training_seasons, n_bootstrap=n_bootstrap, seed=seed,
         scoring_cfg=scoring_cfg,
     )
-    by_pos = _positional_ranks(_consensus_board(conn, season, source=source))
+    if ranking_source_selection == "market_adp":
+        adp_rows, _as_of, _n_resolved, _n_total = _consensus_board_market_adp(conn, season)
+        by_pos = _positional_ranks(adp_rows)
+    else:
+        by_pos = _positional_ranks(_consensus_board(conn, season, source=source))
 
     # Replacement points per position = the curve's value at that position's
     # replacement rank (QB10/RB30/WR40/TE10 for this 10-team league; ADR-029).
@@ -554,7 +592,12 @@ def build_board(
             vbd = proj - replacement.get(pos, 0.0)
             scored.append((vbd, proj, r, pos, i))
 
-    scored.sort(key=lambda t: -t[0])
+    if ranking_source_selection == "expert_adjusted":
+        scored.sort(key=lambda t: -t[0])
+    else:
+        # expert_raw / market_adp: board order is the SOURCE's own rank,
+        # never re-derived from our VBD (CLAUDE.md sec4 never-blend).
+        scored.sort(key=lambda t: t[2]["adp_rank"])
     board: List[BoardRow] = []
     for overall, (vbd, proj, r, pos, pos_rank) in enumerate(scored, start=1):
         lo, hi = intervals.get(pos, {}).get(pos_rank, (float("nan"), float("nan")))
