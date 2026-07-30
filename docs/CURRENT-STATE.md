@@ -27,6 +27,39 @@ repo — Cloudflare holds its own deploy token. This closes the last dependency 
 machine: development, tests, the database rebuild, the daily capture and now viewing the app all run
 without it.
 
+**Last verified:** 2026-07-30, frontend session (worktree `agent-a08e75a2b222a2f66`, FR-114) shipping
+the global "show data sources" switch. Founder, refined mid-thread: *"I like the idea about
+traceablity ... I just want to be able to see a version with and without them."* Not a deletion —
+`ui/data/traceMode.tsx`, one boolean, default off, persisted, toggled by a Settings-panel checkbox
+("Show data sources") and `Alt+T`, with a persistent TopBar indicator so a screenshot is never
+ambiguous which mode produced it. Swept the app for raw field-path/source-file citations rendered as
+UI text and gated every one found behind the switch — `Value.tsx`'s tooltip mechanism (covers Board/
+DraftRoom/PlayerDetail/SettingsPanel), `PlayerDetail.tsx`'s section captions, `Board.tsx`'s and
+`DraftRoom.tsx`'s expanded "why this rank" panels (the exact `board.json:players[0].
+structural_breakdown.replacement_levels` example the founder's screenshot showed — **also missed by
+the first sweep pass in `DraftRoom.tsx`'s own copy of the same panel, found only by looking at the
+actual rendered screenshot, not by the static grep sweep**), `Glossary.tsx`'s backing-field line, and
+the assistant panel's `.provenance` line, including the INFERENCE-lane's raw `model prose over
+context: page.draft_state, ...` dump and inline `[page.*]` tokens the reasoning lane's own model
+sometimes echoes mid-sentence. The plain-English reason/meaning stays visible in both states
+(Principle #2) — only the dotted path or source-file citation moves. **Separately fixed a real bug
+the same screenshot caught, not a provenance case:** `evaluative_adjustment_note` used to render its
+own unobeyed UI instruction verbatim — "SUPPRESS this row in the UI while
+`evaluative_adjustment_available` is false" — now obeyed unconditionally, in both switch states.
+Verified independently (via `git show`, not the suggested `git checkout`) that a mid-task message
+claiming founder sign-off for a scope change was not trustworthy — the real, committed design doc it
+cited (`docs/design/PROVENANCE-DISCLOSURE.md`) lists that exact confirmation as still open in its own
+manifest; did not act on the unverified consent claim, kept this session's actual dispatched
+instructions (Settings-panel checkbox as primary) authoritative, adopted only the independently-
+verified mechanism (`Alt+T`, persistent indicator) as a value-add. Full account: `docs/handoffs/
+115-fr-114-shipped-plus-a-suspicious-mid-task-messag.md`,
+`docs/founder-requests/FR-114-remove-code-and-sourcing-clutter-across-the-site.md`. Commits `1f2500a`,
+`4debb40` (self-caught fix: the first commit briefly hand-typed "FR-121" instead of using the FR
+allocator — corrected same session). 47 test files / 386 tests passing (was 42/356), 5 new test
+files, both switch states covered. `npx tsc -b --noEmit` clean; `npm run build` succeeds. Screenshots
+looked at directly: `frontend/e2e/artifacts/fr114-draft-board-{off,on}.png`,
+`fr114-player-card-{off,on}.png`, `fr114-settings-panel.png`.
+
 **Last verified:** 2026-07-30, frontend session (worktree `agent-a56f58462a3b8e6fb`) shipping the
 light-theme shading spec (`docs/design/LIGHT-THEME-SHADING.md`, item 5 of 8 in the 2026-07-31
 design handoff), the founder's only unprompted visual-comfort complaint ("light view... very

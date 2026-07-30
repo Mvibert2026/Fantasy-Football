@@ -3,6 +3,7 @@ import { randomSlot } from '../../data/draftSlot';
 import type { LeagueConfig } from '../../data/league';
 import type { SelectableLeague } from '../../data/league-registry';
 import type { LeagueTrack } from '../../data/types';
+import { useTraceMode } from '../../data/traceMode';
 import { SettingsPanel } from './SettingsPanel';
 import type { Theme } from './useTheme';
 
@@ -71,8 +72,11 @@ function trackMarker(track: LeagueTrack | undefined): string {
 }
 
 /** Full text for the badge's title attribute -- the sourced field and its
- *  verbatim value, never just the compact label with nothing behind it. */
-function trackTitle(track: LeagueTrack): string {
+ *  verbatim value, never just the compact label with nothing behind it. The
+ *  field-path lines are gated by the "show data sources" switch; the plain
+ *  descriptor sentence is not sourcing text and stays either way. */
+function trackTitle(track: LeagueTrack, showSources: boolean): string {
+  if (!showSources) return trackFullDescriptor(track);
   const idNote = track.isPrimary ? 'league.json:league_id === "primary"' : 'league.json:league_id !== "primary"';
   const noteText = track.scoringRulesetNote ?? '(this export predates league.json:scoring_ruleset_note)';
   return `${trackFullDescriptor(track)}\n${idNote}\nleague.json:scoring_ruleset_note: ${noteText}`;
@@ -139,6 +143,12 @@ export function TopBar({
   // the badge simply doesn't render then, exactly today's UI.
   const activeTrack = leagues.find((l) => l.id === leagueId)?.track;
 
+  // FR-114 (docs/design/PROVENANCE-DISCLOSURE.md): the "show data sources" switch's
+  // persistent on-screen indicator -- so a screenshot is never ambiguous about which
+  // mode produced it -- plus the value this bar's own field-path tooltip (trackTitle)
+  // is gated on.
+  const { on: showSources } = useTraceMode();
+
   return (
     <div
       style={{
@@ -185,6 +195,33 @@ export function TopBar({
         >
           <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--live)', animation: 'ffpulse 1.6s infinite' }} />
           DRAFT LIVE
+        </div>
+      ) : null}
+
+      {/* FR-114: persistent indicator, shown only while the switch is on, so a
+          screenshot (the founder's own primary review method, per
+          docs/operating-model.md) is never ambiguous about which view produced it.
+          Deliberately not `--acc`/`--live` -- this is a mode, not a "good" signal or
+          a live-data state, so it gets its own neutral, unmissable-but-quiet treatment. */}
+      {showSources ? (
+        <div
+          data-testid="show-data-sources-indicator"
+          title="Field paths and export citations are visible. Alt+T or Settings to turn off."
+          style={{
+            display: 'flex',
+            flex: 'none',
+            whiteSpace: 'nowrap',
+            alignItems: 'center',
+            gap: 6,
+            padding: '3px 9px',
+            border: '1px solid var(--dim)',
+            color: 'var(--dim)',
+            fontSize: 10.5,
+            fontWeight: 600,
+            letterSpacing: '.08em',
+          }}
+        >
+          DATA SOURCES SHOWN
         </div>
       ) : null}
 
@@ -252,7 +289,7 @@ export function TopBar({
           <span
             className="num"
             data-testid="league-track"
-            title={trackTitle(activeTrack)}
+            title={trackTitle(activeTrack, showSources)}
             style={{
               flex: 'none',
               letterSpacing: '.06em',

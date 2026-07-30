@@ -6,7 +6,7 @@ import { buildLeagueConfig } from '../data/league';
 import type { Dataset } from '../data/load';
 import type { RawBoardPlayer } from '../data/types';
 import { Board } from '../views/Board';
-import { loadDatasetFromDisk } from './helpers';
+import { loadDatasetFromDisk, withTraceOn } from './helpers';
 
 /**
  * Threads 069 and 073 (contract 1.11.0/1.12.0 display work).
@@ -50,6 +50,26 @@ function renderDetail(dataset: Dataset) {
       onToggleWatch={() => {}}
       onClose={vi.fn()}
     />,
+  );
+}
+
+function renderDetailWithSourcesShown(dataset: Dataset) {
+  const detailRows = buildRows(dataset);
+  const first = detailRows[0];
+  if (!first) throw new Error('Real board export has zero players -- fixture assumption broken.');
+  return render(
+    withTraceOn(
+      <PlayerDetail
+        row={first}
+        rows={detailRows}
+        data={dataset}
+        league={league}
+        picks={[]}
+        watchlist={[]}
+        onToggleWatch={() => {}}
+        onClose={vi.fn()}
+      />,
+    ),
   );
 }
 
@@ -111,6 +131,22 @@ describe('suspension display (thread 073)', () => {
     expect(note).toHaveTextContent('SUSPENSION ON FILE');
     expect(note).toHaveTextContent('Suspended 6 games');
     expect(note).toHaveTextContent('180.4');
+    // FR-114: the field-path caption is behind the "show data sources" switch,
+    // default off -- this default-state render must not carry it.
+    expect(note).not.toHaveTextContent('board.json:suspension_flag');
+  });
+
+  it('detail sheet shows the field-path caption once the switch is on', () => {
+    renderDetailWithSourcesShown(
+      withSuspendedFirstPlayer({
+        suspension_flag: true,
+        suspension_games: 6,
+        projected_points_suspension_adjusted: 180.4,
+        suspension_adjustment_note: 'games_adjusted',
+      }),
+    );
+
+    const note = screen.getByTestId('suspension-note');
     expect(note).toHaveTextContent('board.json:suspension_flag');
   });
 

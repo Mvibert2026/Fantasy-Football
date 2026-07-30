@@ -1,6 +1,8 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { createElement, type ReactElement, type ReactNode } from 'react';
 import type { Dataset } from '../data/load';
+import { TraceModeContext } from '../data/traceMode';
 
 /**
  * Loads the real exports from public/data/ for tests.
@@ -35,4 +37,20 @@ export function loadDatasetFromDisk(): Dataset {
     // Primary league only (see Dataset.playerDescriptions).
     playerDescriptions: existsSync(playerDescriptionsPath) ? read('player_descriptions') : null,
   } as Dataset;
+}
+
+/**
+ * FR-114 (the "show data sources" switch, `ui/data/traceMode.tsx`) -- wraps a
+ * tree with the switch forced on, so a test can assert the ON state without a
+ * real Settings-panel/`Alt+T` interaction. Tests that render a component
+ * without this wrapper get the switch's real default (off), which is the
+ * behaviour most tests should exercise; use this only for the tests that
+ * specifically cover the ON state.
+ */
+export function withTraceOn(children: ReactNode): ReactElement {
+  return createElement(
+    TraceModeContext.Provider,
+    { value: { on: true, setOn: () => {}, toggle: () => {} } },
+    children,
+  );
 }

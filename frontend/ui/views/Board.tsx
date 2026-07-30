@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import type { BoardRow } from '../data/board';
 import { isStartable, type LeagueConfig } from '../data/league';
 import type { Dataset } from '../data/load';
+import { useTraceMode } from '../data/traceMode';
 import { useWatchlist } from '../data/useWatchlist';
 import { Value } from '../components/Value';
 import { PlayerDetail } from '../components/PlayerDetail';
@@ -533,6 +534,7 @@ function BoardRowLine({
   // hairline itself falls back the same way via --row-line.
   const rowBg = selected ? 'var(--panel2)' : alt ? 'var(--row-alt, transparent)' : 'transparent';
   const rowBorder = expanded ? 'none' : '1px solid var(--row-line, var(--line))';
+  const { on: showSources } = useTraceMode();
   return (
     <div>
       <div
@@ -611,17 +613,21 @@ function BoardRowLine({
           {row.replacementLevelsComponent.kind === 'present' ? (
             <div style={{ fontSize: 12, color: 'var(--dim)' }}>
               Replacement levels: <span className="num">{signed(row.replacementLevelsComponent.value)}</span>{' '}
-              <span className="num" style={{ color: 'var(--dim2)' }}>
-                ({row.replacementLevelsComponent.path})
-              </span>
+              {showSources ? (
+                <span className="num" style={{ color: 'var(--dim2)' }}>
+                  ({row.replacementLevelsComponent.path})
+                </span>
+              ) : null}
             </div>
           ) : null}
           {row.scoringAndVbdComponent.kind === 'present' ? (
             <div style={{ fontSize: 12, color: 'var(--dim)' }}>
               Scoring and VBD method: <span className="num">{signed(row.scoringAndVbdComponent.value)}</span>{' '}
-              <span className="num" style={{ color: 'var(--dim2)' }}>
-                ({row.scoringAndVbdComponent.path})
-              </span>
+              {showSources ? (
+                <span className="num" style={{ color: 'var(--dim2)' }}>
+                  ({row.scoringAndVbdComponent.path})
+                </span>
+              ) : null}
             </div>
           ) : null}
         </div>
@@ -639,14 +645,16 @@ function BoardRowLine({
  * correct current state, not a dead branch.
  */
 function SuspBadge({ row }: { row: BoardRow }) {
+  const { on: showSources } = useTraceMode();
   const note = row.raw.suspension_adjustment_note;
   const games = row.raw.suspension_games;
-  const title =
+  const reason =
     note === 'not_adjusted_pending_appeal'
-      ? 'Suspension on file — appeal pending, projection deliberately not adjusted · board.json:suspension_flag'
+      ? 'Suspension on file — appeal pending, projection deliberately not adjusted'
       : note === 'games_adjusted' && games != null
-        ? `Suspended ${games} games — projection adjusted · board.json:suspension_flag`
-        : 'Suspension on file · board.json:suspension_flag';
+        ? `Suspended ${games} games — projection adjusted`
+        : 'Suspension on file';
+  const title = showSources ? `${reason} · board.json:suspension_flag` : reason;
   return (
     <span
       title={title}
@@ -701,6 +709,7 @@ function ProjCell({ row }: { row: BoardRow }) {
  * the title -- a real null, never a fabricated 0.
  */
 function AdpCell({ row }: { row: BoardRow }) {
+  const { on: showSources } = useTraceMode();
   if (row.adp.kind === 'absent') {
     return (
       <span className="val-absent" title={row.adp.reason} aria-label={row.adp.reason}>
@@ -718,7 +727,7 @@ function AdpCell({ row }: { row: BoardRow }) {
     row.adpSelectedPct.kind === 'present'
       ? ` · taken in ${row.adpSelectedPct.value > 0 && row.adpSelectedPct.value < 1 ? '<1' : integer(row.adpSelectedPct.value)}% of sampled drafts`
       : '';
-  const title = `${source}${range}${selected}\nboard.json:players[].adp`;
+  const title = `${source}${range}${selected}${showSources ? '\nboard.json:players[].adp' : ''}`;
   return (
     <span className="num" style={{ color: 'var(--dim2)' }} title={title}>
       {decimal(row.adp.value)}

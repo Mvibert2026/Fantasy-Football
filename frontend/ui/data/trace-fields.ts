@@ -450,8 +450,17 @@ export function boardFieldOf(displayedPath: string): TraceField | undefined {
 /**
  * The tooltip a traced value shows: the field's user-facing meaning followed by the
  * path itself, because the path is the thing a user can go and check.
+ *
+ * `showPath` gates the path half only (`ui/data/traceMode.ts`'s global switch, default
+ * off) -- the meaning half is a plain-English sentence, not developer-facing sourcing
+ * text, so it stays in the tooltip either way. When the path is unknown to this
+ * registry and the switch is off, there is nothing left to show (an empty tooltip
+ * renders as no native title at all, which is correct -- an unregistered path is
+ * exactly the case `ui/__tests__/trace-fields.test.ts` is meant to catch, not a case
+ * to leak into the tooltip regardless of the switch).
  */
-export function traceTooltip(displayedPath: string): string {
+export function traceTooltip(displayedPath: string, showPath: boolean = true): string {
   const field = boardFieldOf(displayedPath);
-  return field ? `${field.label}\n${displayedPath}` : displayedPath;
+  if (!field) return showPath ? displayedPath : '';
+  return showPath ? `${field.label}\n${displayedPath}` : field.label;
 }

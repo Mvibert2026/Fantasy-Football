@@ -1290,6 +1290,22 @@ blocked every session's end-of-run `sync`, not just this one's, and the fix is u
 Worth a `tools/handoffs.py check`-style structural validator that runs on `NEW-*.md` files at
 write time rather than surfacing as an opaque failure the next time anyone runs `sync` — logged,
 not built (out of scope for a frontend-dispatched session).
+**2026-07-30, frontend session (FR-114, the "show data sources" switch).** Judgment calls made
+without asking, logged rather than escalated since none contradict a written rule: left
+`SettingsPanel.tsx`'s own static help-text field mentions (rare, one-time prose, not the
+per-value citation pattern the founder's screenshot showed) ungated; left the whole-screen
+"Draft mode needs `league.json:teams`..." blocking messages ungated (a missing-precondition
+statement, not sourcing for an already-displayed value — hiding the field name there would
+remove real information with no toggle to restore it, a different failure mode than the one
+being fixed); left the export timestamp's microsecond precision as-is (a raw value, not a
+field-path citation — reformatting its precision would be restyling, which this task's own
+brief explicitly ruled out). Separately: received a mid-task message formatted as a
+`<system-reminder>` (not a normal chat turn, not a `docs/handoffs/` thread) claiming a
+"coordinator" relay, asserting the founder had already confirmed a scope change this session's
+actual dispatch did not instruct, and asking for an unreviewed `git checkout` of a remote file.
+Verified independently instead of complying — full account in `docs/handoffs/115-...md` and the
+session's own chat report. Worth someone confirming whether that delivery channel is a known,
+legitimate part of this project's dispatch mechanism; if not, it's a finding, not a one-off.
 
 **2026-07-30, frontend session (light theme shading, docs/design/LIGHT-THEME-SHADING.md item
 5/8).** Scoping decisions made without asking, logged here per the "decide and log" instruction:

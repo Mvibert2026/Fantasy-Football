@@ -4,7 +4,7 @@
 Threads are the source of truth. Change a thread's `STATUS:`, then re-run sync.
 Protocol: [`README.md`](README.md).
 
-**76 open** · 47 resolved
+**77 open** · 47 resolved
 
 ---
 
@@ -13,7 +13,7 @@ Protocol: [`README.md`](README.md).
 Every role gets a section, including empty ones — an empty inbox is a fact worth stating,
 not an omission. Start your session at your own heading.
 
-### `pm` — 9 waiting
+### `pm` — 10 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
@@ -25,6 +25,7 @@ not an omission. Start your session at your own heading.
 | [095](095-yahoo-api-appears-open-espn-is-a-clean-no-the-bi.md) | Yahoo api appears open espn is a clean no the bi | `researcher` | OPEN | 0d | none |
 | [106](106-fr090-bookkeeping-investigation-findings.md) | Fr090 bookkeeping investigation findings | `librarian` | OPEN | 0d | none |
 | [108](108-injury-prediction-services-buy-nothing.md) | Injury prediction services buy nothing | `researcher` | OPEN | 0d | FR-097 (injury-prediction-service buy decision); raises priority of open item 8 (T6 roster-status ingest) and the Sleeper daily snapshot job |
+| [118](118-fr-114-shipped-plus-a-suspicious-mid-task-messag.md) | Fr 114 shipped plus a suspicious mid task messag | `frontend` | OPEN | 0d | none |
 | [90](090-fr-043-audit-claude-md-ss5-staleness-built-but-u.md) | Fr 043 audit claude md ss5 staleness built but u | `librarian` | OPEN | 1d | none |
 
 ### `backend` — 30 waiting
