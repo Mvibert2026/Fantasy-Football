@@ -5,11 +5,11 @@ Per-request files in this directory are the source of truth. Edit a request's ow
 `STATUS:` line, then re-run sync. Protocol: [`README.md`](README.md).
 Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests.md).
 
-**117 requests since freeze.**
+**119 requests since freeze.**
 
 ---
 
-## NEW — 71
+## NEW — 72
 
 | ID | Subject | Raised | Source |
 |---|---|---|---|
@@ -83,7 +83,8 @@ Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests
 | [FR-129](FR-129-the-league-dropdown-is-messy-and-the-slot-select.md) | The league dropdown is messy and the slot select | 2026-07-30 | PM session 2026-07-30, founder chat with screenshots |
 | [FR-130](FR-130-data-freshness-is-unmonitored-the-site-can-silen.md) | Data freshness is unmonitored the site can silen | 2026-07-30 | PM session 2026-07-30, founder chat |
 | [FR-131](FR-131-availability-should-model-adp-not-expert-consens.md) | Availability should model adp not expert consens | 2026-07-30 | PM session 2026-07-30, founder chat |
-| [FR-132](FR-132-archetype-placement-show-both-arrangements-befor.md) | Archetype placement show both arrangements befor | 2026-07-30 | PM session 2026-07-30, founder chat |
+| [FR-133](FR-133-leagues-are-hardcoded-and-availability-is-comput.md) | Leagues are hardcoded and availability is comput | 2026-07-30 | PM session 2026-07-30, founder chat |
+| [FR-134](FR-134-test-campaign-prove-the-bottom-up-ranking-and-av.md) | Test campaign prove the bottom up ranking and av | 2026-07-30 | PM session 2026-07-30, founder chat |
 
 ## SCOPING — 1
 
@@ -163,4 +164,5 @@ _None._
 | [FR-109](FR-109-the-vbd-arm-in-the-zero-rb-sim-may-be-wrong-and-.md) | The vbd arm in the zero rb sim may be wrong and  | `ANSWERED — RANKER 2026-07-30; TWO FOLLOW-UPS ROUTED TO STRATEGIST (SEE RESPONSE)` |
 | [FR-119](FR-119-record-product-behaviour-explanations-plan-for-a.md) | Record product behaviour explanations plan for a | `PARTIAL` |
 | [FR-127](FR-127-displayed-abbreviations-are-unexplainable-the-as.md) | Displayed abbreviations are unexplainable the as | `IN-BUILD` |
+| [FR-132](FR-132-archetype-placement-show-both-arrangements-befor.md) | Archetype placement show both arrangements befor | `IN-PROGRESS` |
 
