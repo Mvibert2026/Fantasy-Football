@@ -5,11 +5,11 @@ Per-request files in this directory are the source of truth. Edit a request's ow
 `STATUS:` line, then re-run sync. Protocol: [`README.md`](README.md).
 Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests.md).
 
-**116 requests since freeze.**
+**117 requests since freeze.**
 
 ---
 
-## NEW — 70
+## NEW — 71
 
 | ID | Subject | Raised | Source |
 |---|---|---|---|
@@ -83,6 +83,7 @@ Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests
 | [FR-129](FR-129-the-league-dropdown-is-messy-and-the-slot-select.md) | The league dropdown is messy and the slot select | 2026-07-30 | PM session 2026-07-30, founder chat with screenshots |
 | [FR-130](FR-130-data-freshness-is-unmonitored-the-site-can-silen.md) | Data freshness is unmonitored the site can silen | 2026-07-30 | PM session 2026-07-30, founder chat |
 | [FR-131](FR-131-availability-should-model-adp-not-expert-consens.md) | Availability should model adp not expert consens | 2026-07-30 | PM session 2026-07-30, founder chat |
+| [FR-132](FR-132-archetype-placement-show-both-arrangements-befor.md) | Archetype placement show both arrangements befor | 2026-07-30 | PM session 2026-07-30, founder chat |
 
 ## SCOPING — 1
 
