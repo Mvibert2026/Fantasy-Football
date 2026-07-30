@@ -4,7 +4,7 @@
 Threads are the source of truth. Change a thread's `STATUS:`, then re-run sync.
 Protocol: [`README.md`](README.md).
 
-**74 open** · 46 resolved
+**75 open** · 46 resolved
 
 ---
 
@@ -97,7 +97,7 @@ not an omission. Start your session at your own heading.
 | [070](070-recurring-injury-suspension-feed.md) | Recurring injury suspension feed | `pm` | OPEN | 3d | T4 (suspensions/roster-status table stakes), E[games_played] per ADR-E Amendment E-A1 |
 | [084](084-deepen-expert-consensus-history-beyond-2021-2025.md) | Deepen expert consensus history beyond 2021 2025 | `ranker` | OPEN | 1d | none |
 | [097](097-ingest-nflverse-weekly-roster-status-the-only-so.md) | Ingest nflverse weekly roster status the only so | `ranker` | OPEN | 0d | the season-ending-IR and suspension error classes in the bottom-up component model (docs/ranking/component-model-rb-qb-te-pass-1.md §5.2). Nothing shipped. |
-| [114](113-rosters-weekly-blocks-vacated-opportunity.md) | Rosters weekly blocks vacated opportunity | `ranker` | OPEN | 0d | test-registry #28 (vacated targets & carries) |
+| [113](113-rosters-weekly-blocks-vacated-opportunity.md) | Rosters weekly blocks vacated opportunity | `ranker` | OPEN | 0d | test-registry #28 (vacated targets & carries) |
 
 ### `strategist` — 14 waiting
 
@@ -115,8 +115,8 @@ not an omission. Start your session at your own heading.
 | [102](102-fr-094-sleeper-screen-methodology-review.md) | Fr 094 sleeper screen methodology review | `backend` | OPEN | 0d |  |
 | [105](105-fr085-fr086-methodology-review.md) | Fr085 fr086 methodology review | `ranker` | OPEN | 0d | whether anything from FR-085/FR-086 is registered; whether CLAUDE.md §7's ceiling claim stands |
 | [111](111-valuation-tests-35-36-results.md) | Valuation tests 35 36 results | `backend` | OPEN | 0d | none |
+| [112](112-preregistration-gates-need-a-decision-subset.md) | Preregistration gates need a decision subset | `ranker` | OPEN | 0d | every future pre-registration that gates on projection error |
 | [112](114-founder-mock-scoring-format-inference-needs-sepa.md) | Founder mock scoring format inference needs sepa | `data-ops` | OPEN | 0d | none |
-| [113](112-preregistration-gates-need-a-decision-subset.md) | Preregistration gates need a decision subset | `ranker` | OPEN | 0d | every future pre-registration that gates on projection error |
 
 ### `researcher` — 4 waiting
 
@@ -133,12 +133,13 @@ not an omission. Start your session at your own heading.
 |---|---|---|---|---|---|
 | [062](062-backlog-reconciliation.md) | Backlog reconciliation | `pm` | OPEN | 3d | none |
 
-### `design` — 2 waiting  ⚠️ *cannot read this repo — needs a human hop via pm*
+### `design` — 3 waiting  ⚠️ *cannot read this repo — needs a human hop via pm*
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
 | [092](092-component-projections-exist-and-are-cheap-for-pe.md) | Component projections exist and are cheap for pe | `researcher` | OPEN | 1d | FR-040 (custom scoring in the browser), FR-053 feature decisions, FR-044/FR-049 design work |
 | [107](107-how-the-archetype-label-surfaces-on-the-player-c.md) | How the archetype label surfaces on the player c | `researcher` | OPEN | 0d | FR-075 (archetype on the player card) |
+| [115](115-answers-to-the-four-open-questions-in-the-2026-0.md) | Answers to the four open questions in the 2026 0 | `pm` | OPEN | 0d | none |
 
 ### `founder` — 1 waiting
 
