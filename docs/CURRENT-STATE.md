@@ -472,8 +472,15 @@ pass or is marked as unverified.
    (FR-023). MFL cannot serve it (`TYPE=adp` is final figures with no pick sequence). Standing
    conditions: private single-user use, one fetch per day per format, and `adp_source` values are
    never blended into one consensus figure.
-3. **Mock drafts toward n=30.** Gates the pre-registered availability decision rule. Still 0 of ~30
-   usable; the one logged draft was placeholder data.
+3. **Mock drafts toward n=30.** Gates the pre-registered availability decision rule. Now 3 of ~30
+   logged (330 more picks added 2026-07-30: `yahoo-10team-slot4-2026-07-30`,
+   `yahoo-12team-slot2-2026-07-30`, alongside the original `founder-mock-2026-07-29`), but **none
+   are usable for the format-gate yet** — all three fail `format_conforms()` (kicker + non-Westwood
+   flex/roster shape; the two new ones also carry unconfirmed scoring, see
+   `docs/analysis/founder-mocks-2026-07-30.md`). Real per-pick sequence data (team_slot/round/
+   overall_pick, snake order verified programmatically) does unblock `live_availability.py`'s
+   run-detection prior for the first time, independent of the format gate. Handoff open to
+   `strategist` re: scoring-format separability, `docs/handoffs/112-founder-mock-scoring-format-inference-needs-sepa.md`.
 
 **Correctness — the app states something that is not so**
 

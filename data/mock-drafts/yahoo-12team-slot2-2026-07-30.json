@@ -1,0 +1,1454 @@
+{
+  "mock_id": "yahoo-12team-slot2-2026-07-30",
+  "league_config_id": "yahoo_12_half",
+  "platform": "yahoo",
+  "drafted_at": "2026-07-30",
+  "teams": 12,
+  "rounds_captured": 15,
+  "user_team_slot": 2,
+  "source": "founder paste, chat 2026-07-30, transcribed from Yahoo mock draft results (yahoo-12team-slot2-2026-07-30.tsv)",
+  "capture_note": "Roster shape includes K and DEF, unlike the Westwood league (no kicker). Scoring format not confirmed by the founder; league_config_id is a best-guess half-PPR placeholder for ingestion purposes only, not a verified claim about this mock's actual scoring rules.",
+  "not_for_calibration_yet": "See docs/analysis/founder-mocks-2026-07-30.md for admissible uses.",
+  "picks": [
+    {
+      "overall_pick": 1,
+      "round": 1,
+      "pick_in_round": 1,
+      "team_slot": 1,
+      "manager": "Joel",
+      "player_name_raw": "Jahmyr Gibbs"
+    },
+    {
+      "overall_pick": 2,
+      "round": 1,
+      "pick_in_round": 2,
+      "team_slot": 2,
+      "manager": "Matthew Vibert",
+      "player_name_raw": "Bijan Robinson"
+    },
+    {
+      "overall_pick": 3,
+      "round": 1,
+      "pick_in_round": 3,
+      "team_slot": 3,
+      "manager": "Brandon",
+      "player_name_raw": "Christian McCaffrey"
+    },
+    {
+      "overall_pick": 4,
+      "round": 1,
+      "pick_in_round": 4,
+      "team_slot": 4,
+      "manager": "Roshaun",
+      "player_name_raw": "Jaxon Smith-Njigba"
+    },
+    {
+      "overall_pick": 5,
+      "round": 1,
+      "pick_in_round": 5,
+      "team_slot": 5,
+      "manager": "Matt",
+      "player_name_raw": "Ja'Marr Chase"
+    },
+    {
+      "overall_pick": 6,
+      "round": 1,
+      "pick_in_round": 6,
+      "team_slot": 6,
+      "manager": "John",
+      "player_name_raw": "Jonathan Taylor"
+    },
+    {
+      "overall_pick": 7,
+      "round": 1,
+      "pick_in_round": 7,
+      "team_slot": 7,
+      "manager": "josh",
+      "player_name_raw": "Puka Nacua"
+    },
+    {
+      "overall_pick": 8,
+      "round": 1,
+      "pick_in_round": 8,
+      "team_slot": 8,
+      "manager": "jason",
+      "player_name_raw": "Amon-Ra St. Brown"
+    },
+    {
+      "overall_pick": 9,
+      "round": 1,
+      "pick_in_round": 9,
+      "team_slot": 9,
+      "manager": "Rob",
+      "player_name_raw": "James Cook III"
+    },
+    {
+      "overall_pick": 10,
+      "round": 1,
+      "pick_in_round": 10,
+      "team_slot": 10,
+      "manager": "Manny",
+      "player_name_raw": "Justin Jefferson"
+    },
+    {
+      "overall_pick": 11,
+      "round": 1,
+      "pick_in_round": 11,
+      "team_slot": 11,
+      "manager": "Robert",
+      "player_name_raw": "Saquon Barkley"
+    },
+    {
+      "overall_pick": 12,
+      "round": 1,
+      "pick_in_round": 12,
+      "team_slot": 12,
+      "manager": "Jordan",
+      "player_name_raw": "CeeDee Lamb"
+    },
+    {
+      "overall_pick": 13,
+      "round": 2,
+      "pick_in_round": 1,
+      "team_slot": 12,
+      "manager": "Jordan",
+      "player_name_raw": "Ashton Jeanty"
+    },
+    {
+      "overall_pick": 14,
+      "round": 2,
+      "pick_in_round": 2,
+      "team_slot": 11,
+      "manager": "Robert",
+      "player_name_raw": "Drake London"
+    },
+    {
+      "overall_pick": 15,
+      "round": 2,
+      "pick_in_round": 3,
+      "team_slot": 10,
+      "manager": "Manny",
+      "player_name_raw": "Brock Bowers"
+    },
+    {
+      "overall_pick": 16,
+      "round": 2,
+      "pick_in_round": 4,
+      "team_slot": 9,
+      "manager": "Rob",
+      "player_name_raw": "George Pickens"
+    },
+    {
+      "overall_pick": 17,
+      "round": 2,
+      "pick_in_round": 5,
+      "team_slot": 8,
+      "manager": "jason",
+      "player_name_raw": "Omarion Hampton"
+    },
+    {
+      "overall_pick": 18,
+      "round": 2,
+      "pick_in_round": 6,
+      "team_slot": 7,
+      "manager": "josh",
+      "player_name_raw": "Kenneth Walker III"
+    },
+    {
+      "overall_pick": 19,
+      "round": 2,
+      "pick_in_round": 7,
+      "team_slot": 6,
+      "manager": "John",
+      "player_name_raw": "Chase Brown"
+    },
+    {
+      "overall_pick": 20,
+      "round": 2,
+      "pick_in_round": 8,
+      "team_slot": 5,
+      "manager": "Matt",
+      "player_name_raw": "Trey McBride"
+    },
+    {
+      "overall_pick": 21,
+      "round": 2,
+      "pick_in_round": 9,
+      "team_slot": 4,
+      "manager": "Roshaun",
+      "player_name_raw": "A.J. Brown"
+    },
+    {
+      "overall_pick": 22,
+      "round": 2,
+      "pick_in_round": 10,
+      "team_slot": 3,
+      "manager": "Brandon",
+      "player_name_raw": "Malik Nabers"
+    },
+    {
+      "overall_pick": 23,
+      "round": 2,
+      "pick_in_round": 11,
+      "team_slot": 2,
+      "manager": "Matthew Vibert",
+      "player_name_raw": "Nico Collins"
+    },
+    {
+      "overall_pick": 24,
+      "round": 2,
+      "pick_in_round": 12,
+      "team_slot": 1,
+      "manager": "Joel",
+      "player_name_raw": "Derrick Henry"
+    },
+    {
+      "overall_pick": 25,
+      "round": 3,
+      "pick_in_round": 1,
+      "team_slot": 1,
+      "manager": "Joel",
+      "player_name_raw": "Rashee Rice"
+    },
+    {
+      "overall_pick": 26,
+      "round": 3,
+      "pick_in_round": 2,
+      "team_slot": 2,
+      "manager": "Matthew Vibert",
+      "player_name_raw": "De'Von Achane"
+    },
+    {
+      "overall_pick": 27,
+      "round": 3,
+      "pick_in_round": 3,
+      "team_slot": 3,
+      "manager": "Brandon",
+      "player_name_raw": "Kyren Williams"
+    },
+    {
+      "overall_pick": 28,
+      "round": 3,
+      "pick_in_round": 4,
+      "team_slot": 4,
+      "manager": "Roshaun",
+      "player_name_raw": "Jeremiyah Love"
+    },
+    {
+      "overall_pick": 29,
+      "round": 3,
+      "pick_in_round": 5,
+      "team_slot": 5,
+      "manager": "Matt",
+      "player_name_raw": "Josh Jacobs"
+    },
+    {
+      "overall_pick": 30,
+      "round": 3,
+      "pick_in_round": 6,
+      "team_slot": 6,
+      "manager": "John",
+      "player_name_raw": "DeVonta Smith"
+    },
+    {
+      "overall_pick": 31,
+      "round": 3,
+      "pick_in_round": 7,
+      "team_slot": 7,
+      "manager": "josh",
+      "player_name_raw": "Josh Allen"
+    },
+    {
+      "overall_pick": 32,
+      "round": 3,
+      "pick_in_round": 8,
+      "team_slot": 8,
+      "manager": "jason",
+      "player_name_raw": "Jaylen Waddle"
+    },
+    {
+      "overall_pick": 33,
+      "round": 3,
+      "pick_in_round": 9,
+      "team_slot": 9,
+      "manager": "Rob",
+      "player_name_raw": "Emeka Egbuka"
+    },
+    {
+      "overall_pick": 34,
+      "round": 3,
+      "pick_in_round": 10,
+      "team_slot": 10,
+      "manager": "Manny",
+      "player_name_raw": "Javonte Williams"
+    },
+    {
+      "overall_pick": 35,
+      "round": 3,
+      "pick_in_round": 11,
+      "team_slot": 11,
+      "manager": "Robert",
+      "player_name_raw": "Tee Higgins"
+    },
+    {
+      "overall_pick": 36,
+      "round": 3,
+      "pick_in_round": 12,
+      "team_slot": 12,
+      "manager": "Jordan",
+      "player_name_raw": "Breece Hall"
+    },
+    {
+      "overall_pick": 37,
+      "round": 4,
+      "pick_in_round": 1,
+      "team_slot": 12,
+      "manager": "Jordan",
+      "player_name_raw": "Chris Olave"
+    },
+    {
+      "overall_pick": 38,
+      "round": 4,
+      "pick_in_round": 2,
+      "team_slot": 11,
+      "manager": "Robert",
+      "player_name_raw": "Zay Flowers"
+    },
+    {
+      "overall_pick": 39,
+      "round": 4,
+      "pick_in_round": 3,
+      "team_slot": 10,
+      "manager": "Manny",
+      "player_name_raw": "Cam Skattebo"
+    },
+    {
+      "overall_pick": 40,
+      "round": 4,
+      "pick_in_round": 4,
+      "team_slot": 9,
+      "manager": "Rob",
+      "player_name_raw": "David Montgomery"
+    },
+    {
+      "overall_pick": 41,
+      "round": 4,
+      "pick_in_round": 5,
+      "team_slot": 8,
+      "manager": "jason",
+      "player_name_raw": "Ladd McConkey"
+    },
+    {
+      "overall_pick": 42,
+      "round": 4,
+      "pick_in_round": 6,
+      "team_slot": 7,
+      "manager": "josh",
+      "player_name_raw": "Colston Loveland"
+    },
+    {
+      "overall_pick": 43,
+      "round": 4,
+      "pick_in_round": 7,
+      "team_slot": 6,
+      "manager": "John",
+      "player_name_raw": "Travis Etienne Jr."
+    },
+    {
+      "overall_pick": 44,
+      "round": 4,
+      "pick_in_round": 8,
+      "team_slot": 5,
+      "manager": "Matt",
+      "player_name_raw": "DJ Moore"
+    },
+    {
+      "overall_pick": 45,
+      "round": 4,
+      "pick_in_round": 9,
+      "team_slot": 4,
+      "manager": "Roshaun",
+      "player_name_raw": "Quinshon Judkins"
+    },
+    {
+      "overall_pick": 46,
+      "round": 4,
+      "pick_in_round": 10,
+      "team_slot": 3,
+      "manager": "Brandon",
+      "player_name_raw": "Bucky Irving"
+    },
+    {
+      "overall_pick": 47,
+      "round": 4,
+      "pick_in_round": 11,
+      "team_slot": 2,
+      "manager": "Matthew Vibert",
+      "player_name_raw": "Tetairoa McMillan"
+    },
+    {
+      "overall_pick": 48,
+      "round": 4,
+      "pick_in_round": 12,
+      "team_slot": 1,
+      "manager": "Joel",
+      "player_name_raw": "Terry McLaurin"
+    },
+    {
+      "overall_pick": 49,
+      "round": 5,
+      "pick_in_round": 1,
+      "team_slot": 1,
+      "manager": "Joel",
+      "player_name_raw": "Davante Adams"
+    },
+    {
+      "overall_pick": 50,
+      "round": 5,
+      "pick_in_round": 2,
+      "team_slot": 2,
+      "manager": "Matthew Vibert",
+      "player_name_raw": "Lamar Jackson"
+    },
+    {
+      "overall_pick": 51,
+      "round": 5,
+      "pick_in_round": 3,
+      "team_slot": 3,
+      "manager": "Brandon",
+      "player_name_raw": "Brian Thomas Jr."
+    },
+    {
+      "overall_pick": 52,
+      "round": 5,
+      "pick_in_round": 4,
+      "team_slot": 4,
+      "manager": "Roshaun",
+      "player_name_raw": "Garrett Wilson"
+    },
+    {
+      "overall_pick": 53,
+      "round": 5,
+      "pick_in_round": 5,
+      "team_slot": 5,
+      "manager": "Matt",
+      "player_name_raw": "Jadarian Price"
+    },
+    {
+      "overall_pick": 54,
+      "round": 5,
+      "pick_in_round": 6,
+      "team_slot": 6,
+      "manager": "John",
+      "player_name_raw": "D'Andre Swift"
+    },
+    {
+      "overall_pick": 55,
+      "round": 5,
+      "pick_in_round": 7,
+      "team_slot": 7,
+      "manager": "josh",
+      "player_name_raw": "Mike Evans"
+    },
+    {
+      "overall_pick": 56,
+      "round": 5,
+      "pick_in_round": 8,
+      "team_slot": 8,
+      "manager": "jason",
+      "player_name_raw": "Joe Burrow"
+    },
+    {
+      "overall_pick": 57,
+      "round": 5,
+      "pick_in_round": 9,
+      "team_slot": 9,
+      "manager": "Rob",
+      "player_name_raw": "TreVeyon Henderson"
+    },
+    {
+      "overall_pick": 58,
+      "round": 5,
+      "pick_in_round": 10,
+      "team_slot": 10,
+      "manager": "Manny",
+      "player_name_raw": "Luther Burden III"
+    },
+    {
+      "overall_pick": 59,
+      "round": 5,
+      "pick_in_round": 11,
+      "team_slot": 11,
+      "manager": "Robert",
+      "player_name_raw": "Jayden Daniels"
+    },
+    {
+      "overall_pick": 60,
+      "round": 5,
+      "pick_in_round": 12,
+      "team_slot": 12,
+      "manager": "Jordan",
+      "player_name_raw": "Tyler Warren"
+    },
+    {
+      "overall_pick": 61,
+      "round": 6,
+      "pick_in_round": 1,
+      "team_slot": 12,
+      "manager": "Jordan",
+      "player_name_raw": "Drake Maye"
+    },
+    {
+      "overall_pick": 62,
+      "round": 6,
+      "pick_in_round": 2,
+      "team_slot": 11,
+      "manager": "Robert",
+      "player_name_raw": "Bhayshul Tuten"
+    },
+    {
+      "overall_pick": 63,
+      "round": 6,
+      "pick_in_round": 3,
+      "team_slot": 10,
+      "manager": "Manny",
+      "player_name_raw": "Jalen Hurts"
+    },
+    {
+      "overall_pick": 64,
+      "round": 6,
+      "pick_in_round": 4,
+      "team_slot": 9,
+      "manager": "Rob",
+      "player_name_raw": "Christian Watson"
+    },
+    {
+      "overall_pick": 65,
+      "round": 6,
+      "pick_in_round": 5,
+      "team_slot": 8,
+      "manager": "jason",
+      "player_name_raw": "Chuba Hubbard"
+    },
+    {
+      "overall_pick": 66,
+      "round": 6,
+      "pick_in_round": 6,
+      "team_slot": 7,
+      "manager": "josh",
+      "player_name_raw": "Jameson Williams"
+    },
+    {
+      "overall_pick": 67,
+      "round": 6,
+      "pick_in_round": 7,
+      "team_slot": 6,
+      "manager": "John",
+      "player_name_raw": "Rome Odunze"
+    },
+    {
+      "overall_pick": 68,
+      "round": 6,
+      "pick_in_round": 8,
+      "team_slot": 5,
+      "manager": "Matt",
+      "player_name_raw": "Marvin Harrison Jr."
+    },
+    {
+      "overall_pick": 69,
+      "round": 6,
+      "pick_in_round": 9,
+      "team_slot": 4,
+      "manager": "Roshaun",
+      "player_name_raw": "Tony Pollard"
+    },
+    {
+      "overall_pick": 70,
+      "round": 6,
+      "pick_in_round": 10,
+      "team_slot": 3,
+      "manager": "Brandon",
+      "player_name_raw": "Carnell Tate"
+    },
+    {
+      "overall_pick": 71,
+      "round": 6,
+      "pick_in_round": 11,
+      "team_slot": 2,
+      "manager": "Matthew Vibert",
+      "player_name_raw": "Tucker Kraft"
+    },
+    {
+      "overall_pick": 72,
+      "round": 6,
+      "pick_in_round": 12,
+      "team_slot": 1,
+      "manager": "Joel",
+      "player_name_raw": "Alec Pierce"
+    },
+    {
+      "overall_pick": 73,
+      "round": 7,
+      "pick_in_round": 1,
+      "team_slot": 1,
+      "manager": "Joel",
+      "player_name_raw": "Sam LaPorta"
+    },
+    {
+      "overall_pick": 74,
+      "round": 7,
+      "pick_in_round": 2,
+      "team_slot": 2,
+      "manager": "Matthew Vibert",
+      "player_name_raw": "Jaylen Warren"
+    },
+    {
+      "overall_pick": 75,
+      "round": 7,
+      "pick_in_round": 3,
+      "team_slot": 3,
+      "manager": "Brandon",
+      "player_name_raw": "Chris Godwin Jr."
+    },
+    {
+      "overall_pick": 76,
+      "round": 7,
+      "pick_in_round": 4,
+      "team_slot": 4,
+      "manager": "Roshaun",
+      "player_name_raw": "Justin Herbert"
+    },
+    {
+      "overall_pick": 77,
+      "round": 7,
+      "pick_in_round": 5,
+      "team_slot": 5,
+      "manager": "Matt",
+      "player_name_raw": "Parker Washington"
+    },
+    {
+      "overall_pick": 78,
+      "round": 7,
+      "pick_in_round": 6,
+      "team_slot": 6,
+      "manager": "John",
+      "player_name_raw": "Jaxson Dart"
+    },
+    {
+      "overall_pick": 79,
+      "round": 7,
+      "pick_in_round": 7,
+      "team_slot": 7,
+      "manager": "josh",
+      "player_name_raw": "DK Metcalf"
+    },
+    {
+      "overall_pick": 80,
+      "round": 7,
+      "pick_in_round": 8,
+      "team_slot": 8,
+      "manager": "jason",
+      "player_name_raw": "Kyle Pitts Sr."
+    },
+    {
+      "overall_pick": 81,
+      "round": 7,
+      "pick_in_round": 9,
+      "team_slot": 9,
+      "manager": "Rob",
+      "player_name_raw": "Harold Fannin Jr."
+    },
+    {
+      "overall_pick": 82,
+      "round": 7,
+      "pick_in_round": 10,
+      "team_slot": 10,
+      "manager": "Manny",
+      "player_name_raw": "Rhamondre Stevenson"
+    },
+    {
+      "overall_pick": 83,
+      "round": 7,
+      "pick_in_round": 11,
+      "team_slot": 11,
+      "manager": "Robert",
+      "player_name_raw": "George Kittle"
+    },
+    {
+      "overall_pick": 84,
+      "round": 7,
+      "pick_in_round": 12,
+      "team_slot": 12,
+      "manager": "Jordan",
+      "player_name_raw": "Rico Dowdle"
+    },
+    {
+      "overall_pick": 85,
+      "round": 8,
+      "pick_in_round": 1,
+      "team_slot": 12,
+      "manager": "Jordan",
+      "player_name_raw": "Caleb Williams"
+    },
+    {
+      "overall_pick": 86,
+      "round": 8,
+      "pick_in_round": 2,
+      "team_slot": 11,
+      "manager": "Robert",
+      "player_name_raw": "Trevor Lawrence"
+    },
+    {
+      "overall_pick": 87,
+      "round": 8,
+      "pick_in_round": 3,
+      "team_slot": 10,
+      "manager": "Manny",
+      "player_name_raw": "Makai Lemon"
+    },
+    {
+      "overall_pick": 88,
+      "round": 8,
+      "pick_in_round": 4,
+      "team_slot": 9,
+      "manager": "Rob",
+      "player_name_raw": "Dak Prescott"
+    },
+    {
+      "overall_pick": 89,
+      "round": 8,
+      "pick_in_round": 5,
+      "team_slot": 8,
+      "manager": "jason",
+      "player_name_raw": "Jordyn Tyson"
+    },
+    {
+      "overall_pick": 90,
+      "round": 8,
+      "pick_in_round": 6,
+      "team_slot": 7,
+      "manager": "josh",
+      "player_name_raw": "J.K. Dobbins"
+    },
+    {
+      "overall_pick": 91,
+      "round": 8,
+      "pick_in_round": 7,
+      "team_slot": 6,
+      "manager": "John",
+      "player_name_raw": "Quentin Johnston"
+    },
+    {
+      "overall_pick": 92,
+      "round": 8,
+      "pick_in_round": 8,
+      "team_slot": 5,
+      "manager": "Matt",
+      "player_name_raw": "Josh Downs"
+    },
+    {
+      "overall_pick": 93,
+      "round": 8,
+      "pick_in_round": 9,
+      "team_slot": 4,
+      "manager": "Roshaun",
+      "player_name_raw": "RJ Harvey"
+    },
+    {
+      "overall_pick": 94,
+      "round": 8,
+      "pick_in_round": 10,
+      "team_slot": 3,
+      "manager": "Brandon",
+      "player_name_raw": "Kyler Murray"
+    },
+    {
+      "overall_pick": 95,
+      "round": 8,
+      "pick_in_round": 11,
+      "team_slot": 2,
+      "manager": "Matthew Vibert",
+      "player_name_raw": "Ricky Pearsall"
+    },
+    {
+      "overall_pick": 96,
+      "round": 8,
+      "pick_in_round": 12,
+      "team_slot": 1,
+      "manager": "Joel",
+      "player_name_raw": "Blake Corum"
+    },
+    {
+      "overall_pick": 97,
+      "round": 9,
+      "pick_in_round": 1,
+      "team_slot": 1,
+      "manager": "Joel",
+      "player_name_raw": "Brock Purdy"
+    },
+    {
+      "overall_pick": 98,
+      "round": 9,
+      "pick_in_round": 2,
+      "team_slot": 2,
+      "manager": "Matthew Vibert",
+      "player_name_raw": "Courtland Sutton"
+    },
+    {
+      "overall_pick": 99,
+      "round": 9,
+      "pick_in_round": 3,
+      "team_slot": 3,
+      "manager": "Brandon",
+      "player_name_raw": "Jordan Addison"
+    },
+    {
+      "overall_pick": 100,
+      "round": 9,
+      "pick_in_round": 4,
+      "team_slot": 4,
+      "manager": "Roshaun",
+      "player_name_raw": "Michael Wilson"
+    },
+    {
+      "overall_pick": 101,
+      "round": 9,
+      "pick_in_round": 5,
+      "team_slot": 5,
+      "manager": "Matt",
+      "player_name_raw": "Michael Pittman Jr."
+    },
+    {
+      "overall_pick": 102,
+      "round": 9,
+      "pick_in_round": 6,
+      "team_slot": 6,
+      "manager": "John",
+      "player_name_raw": "Jakobi Meyers"
+    },
+    {
+      "overall_pick": 103,
+      "round": 9,
+      "pick_in_round": 7,
+      "team_slot": 7,
+      "manager": "josh",
+      "player_name_raw": "Jordan Mason"
+    },
+    {
+      "overall_pick": 104,
+      "round": 9,
+      "pick_in_round": 8,
+      "team_slot": 8,
+      "manager": "jason",
+      "player_name_raw": "Kyle Monangai"
+    },
+    {
+      "overall_pick": 105,
+      "round": 9,
+      "pick_in_round": 9,
+      "team_slot": 9,
+      "manager": "Rob",
+      "player_name_raw": "Isaiah Likely"
+    },
+    {
+      "overall_pick": 106,
+      "round": 9,
+      "pick_in_round": 10,
+      "team_slot": 10,
+      "manager": "Manny",
+      "player_name_raw": "Jayden Reed"
+    },
+    {
+      "overall_pick": 107,
+      "round": 9,
+      "pick_in_round": 11,
+      "team_slot": 11,
+      "manager": "Robert",
+      "player_name_raw": "Jonathon Brooks"
+    },
+    {
+      "overall_pick": 108,
+      "round": 9,
+      "pick_in_round": 12,
+      "team_slot": 12,
+      "manager": "Jordan",
+      "player_name_raw": "Rachaad White"
+    },
+    {
+      "overall_pick": 109,
+      "round": 10,
+      "pick_in_round": 1,
+      "team_slot": 12,
+      "manager": "Jordan",
+      "player_name_raw": "Dalton Kincaid"
+    },
+    {
+      "overall_pick": 110,
+      "round": 10,
+      "pick_in_round": 2,
+      "team_slot": 11,
+      "manager": "Robert",
+      "player_name_raw": "Xavier Worthy"
+    },
+    {
+      "overall_pick": 111,
+      "round": 10,
+      "pick_in_round": 3,
+      "team_slot": 10,
+      "manager": "Manny",
+      "player_name_raw": "Bo Nix"
+    },
+    {
+      "overall_pick": 112,
+      "round": 10,
+      "pick_in_round": 4,
+      "team_slot": 9,
+      "manager": "Rob",
+      "player_name_raw": "Jacory Croskey-Merritt"
+    },
+    {
+      "overall_pick": 113,
+      "round": 10,
+      "pick_in_round": 5,
+      "team_slot": 8,
+      "manager": "jason",
+      "player_name_raw": "Patrick Mahomes"
+    },
+    {
+      "overall_pick": 114,
+      "round": 10,
+      "pick_in_round": 6,
+      "team_slot": 7,
+      "manager": "josh",
+      "player_name_raw": "Chris Rodriguez Jr."
+    },
+    {
+      "overall_pick": 115,
+      "round": 10,
+      "pick_in_round": 7,
+      "team_slot": 6,
+      "manager": "John",
+      "player_name_raw": "Tyrone Tracy Jr."
+    },
+    {
+      "overall_pick": 116,
+      "round": 10,
+      "pick_in_round": 8,
+      "team_slot": 5,
+      "manager": "Matt",
+      "player_name_raw": "Matthew Stafford"
+    },
+    {
+      "overall_pick": 117,
+      "round": 10,
+      "pick_in_round": 9,
+      "team_slot": 4,
+      "manager": "Roshaun",
+      "player_name_raw": "Kenny Gainwell"
+    },
+    {
+      "overall_pick": 118,
+      "round": 10,
+      "pick_in_round": 10,
+      "team_slot": 3,
+      "manager": "Brandon",
+      "player_name_raw": "Keaton Mitchell"
+    },
+    {
+      "overall_pick": 119,
+      "round": 10,
+      "pick_in_round": 11,
+      "team_slot": 2,
+      "manager": "Matthew Vibert",
+      "player_name_raw": "Dallas Goedert"
+    },
+    {
+      "overall_pick": 120,
+      "round": 10,
+      "pick_in_round": 12,
+      "team_slot": 1,
+      "manager": "Joel",
+      "player_name_raw": "Travis Kelce"
+    },
+    {
+      "overall_pick": 121,
+      "round": 11,
+      "pick_in_round": 1,
+      "team_slot": 1,
+      "manager": "Joel",
+      "player_name_raw": "Jared Goff"
+    },
+    {
+      "overall_pick": 122,
+      "round": 11,
+      "pick_in_round": 2,
+      "team_slot": 2,
+      "manager": "Matthew Vibert",
+      "player_name_raw": "Aaron Jones Sr."
+    },
+    {
+      "overall_pick": 123,
+      "round": 11,
+      "pick_in_round": 3,
+      "team_slot": 3,
+      "manager": "Brandon",
+      "player_name_raw": "Oronde Gadsden"
+    },
+    {
+      "overall_pick": 124,
+      "round": 11,
+      "pick_in_round": 4,
+      "team_slot": 4,
+      "manager": "Roshaun",
+      "player_name_raw": "Woody Marks"
+    },
+    {
+      "overall_pick": 125,
+      "round": 11,
+      "pick_in_round": 5,
+      "team_slot": 5,
+      "manager": "Matt",
+      "player_name_raw": "Matthew Golden"
+    },
+    {
+      "overall_pick": 126,
+      "round": 11,
+      "pick_in_round": 6,
+      "team_slot": 6,
+      "manager": "John",
+      "player_name_raw": "Jake Ferguson"
+    },
+    {
+      "overall_pick": 127,
+      "round": 11,
+      "pick_in_round": 7,
+      "team_slot": 7,
+      "manager": "josh",
+      "player_name_raw": "Tyler Allgeier"
+    },
+    {
+      "overall_pick": 128,
+      "round": 11,
+      "pick_in_round": 8,
+      "team_slot": 8,
+      "manager": "jason",
+      "player_name_raw": "Mark Andrews"
+    },
+    {
+      "overall_pick": 129,
+      "round": 11,
+      "pick_in_round": 9,
+      "team_slot": 9,
+      "manager": "Rob",
+      "player_name_raw": "Romeo Doubs"
+    },
+    {
+      "overall_pick": 130,
+      "round": 11,
+      "pick_in_round": 10,
+      "team_slot": 10,
+      "manager": "Manny",
+      "player_name_raw": "Chig Okonkwo"
+    },
+    {
+      "overall_pick": 131,
+      "round": 11,
+      "pick_in_round": 11,
+      "team_slot": 11,
+      "manager": "Robert",
+      "player_name_raw": "Tyjae Spears"
+    },
+    {
+      "overall_pick": 132,
+      "round": 11,
+      "pick_in_round": 12,
+      "team_slot": 12,
+      "manager": "Jordan",
+      "player_name_raw": "Jayden Higgins"
+    },
+    {
+      "overall_pick": 133,
+      "round": 12,
+      "pick_in_round": 1,
+      "team_slot": 12,
+      "manager": "Jordan",
+      "player_name_raw": "Jonah Coleman"
+    },
+    {
+      "overall_pick": 134,
+      "round": 12,
+      "pick_in_round": 2,
+      "team_slot": 11,
+      "manager": "Robert",
+      "player_name_raw": "Brenton Strange"
+    },
+    {
+      "overall_pick": 135,
+      "round": 12,
+      "pick_in_round": 3,
+      "team_slot": 10,
+      "manager": "Manny",
+      "player_name_raw": "Tank Bigsby"
+    },
+    {
+      "overall_pick": 136,
+      "round": 12,
+      "pick_in_round": 4,
+      "team_slot": 9,
+      "manager": "Rob",
+      "player_name_raw": "Jordan Love"
+    },
+    {
+      "overall_pick": 137,
+      "round": 12,
+      "pick_in_round": 5,
+      "team_slot": 8,
+      "manager": "jason",
+      "player_name_raw": "KC Concepcion"
+    },
+    {
+      "overall_pick": 138,
+      "round": 12,
+      "pick_in_round": 6,
+      "team_slot": 7,
+      "manager": "josh",
+      "player_name_raw": "Zach Charbonnet"
+    },
+    {
+      "overall_pick": 139,
+      "round": 12,
+      "pick_in_round": 7,
+      "team_slot": 6,
+      "manager": "John",
+      "player_name_raw": "Malik Willis"
+    },
+    {
+      "overall_pick": 140,
+      "round": 12,
+      "pick_in_round": 8,
+      "team_slot": 5,
+      "manager": "Matt",
+      "player_name_raw": "Alvin Kamara"
+    },
+    {
+      "overall_pick": 141,
+      "round": 12,
+      "pick_in_round": 9,
+      "team_slot": 4,
+      "manager": "Roshaun",
+      "player_name_raw": "Juwan Johnson"
+    },
+    {
+      "overall_pick": 142,
+      "round": 12,
+      "pick_in_round": 10,
+      "team_slot": 3,
+      "manager": "Brandon",
+      "player_name_raw": "Baker Mayfield"
+    },
+    {
+      "overall_pick": 143,
+      "round": 12,
+      "pick_in_round": 11,
+      "team_slot": 2,
+      "manager": "Matthew Vibert",
+      "player_name_raw": "Tyler Shough"
+    },
+    {
+      "overall_pick": 144,
+      "round": 12,
+      "pick_in_round": 12,
+      "team_slot": 1,
+      "manager": "Joel",
+      "player_name_raw": "Isiah Pacheco"
+    },
+    {
+      "overall_pick": 145,
+      "round": 13,
+      "pick_in_round": 1,
+      "team_slot": 1,
+      "manager": "Joel",
+      "player_name_raw": "Stefon Diggs"
+    },
+    {
+      "overall_pick": 146,
+      "round": 13,
+      "pick_in_round": 2,
+      "team_slot": 2,
+      "manager": "Matthew Vibert",
+      "player_name_raw": "Jalen Coker"
+    },
+    {
+      "overall_pick": 147,
+      "round": 13,
+      "pick_in_round": 3,
+      "team_slot": 3,
+      "manager": "Brandon",
+      "player_name_raw": "Hunter Henry"
+    },
+    {
+      "overall_pick": 148,
+      "round": 13,
+      "pick_in_round": 4,
+      "team_slot": 4,
+      "manager": "Roshaun",
+      "player_name_raw": "Wan'Dale Robinson"
+    },
+    {
+      "overall_pick": 149,
+      "round": 13,
+      "pick_in_round": 5,
+      "team_slot": 5,
+      "manager": "Matt",
+      "player_name_raw": "Dylan Sampson"
+    },
+    {
+      "overall_pick": 150,
+      "round": 13,
+      "pick_in_round": 6,
+      "team_slot": 6,
+      "manager": "John",
+      "player_name_raw": "Greg Dulcich"
+    },
+    {
+      "overall_pick": 151,
+      "round": 13,
+      "pick_in_round": 7,
+      "team_slot": 7,
+      "manager": "josh",
+      "player_name_raw": "Khalil Shakir"
+    },
+    {
+      "overall_pick": 152,
+      "round": 13,
+      "pick_in_round": 8,
+      "team_slot": 8,
+      "manager": "jason",
+      "player_name_raw": "Rashid Shaheed"
+    },
+    {
+      "overall_pick": 153,
+      "round": 13,
+      "pick_in_round": 9,
+      "team_slot": 9,
+      "manager": "Rob",
+      "player_name_raw": "Brian Robinson"
+    },
+    {
+      "overall_pick": 154,
+      "round": 13,
+      "pick_in_round": 10,
+      "team_slot": 10,
+      "manager": "Manny",
+      "player_name_raw": "Travis Hunter"
+    },
+    {
+      "overall_pick": 155,
+      "round": 13,
+      "pick_in_round": 11,
+      "team_slot": 11,
+      "manager": "Robert",
+      "player_name_raw": "Adonai Mitchell"
+    },
+    {
+      "overall_pick": 156,
+      "round": 13,
+      "pick_in_round": 12,
+      "team_slot": 12,
+      "manager": "Jordan",
+      "player_name_raw": "Jalen Nailor"
+    },
+    {
+      "overall_pick": 157,
+      "round": 14,
+      "pick_in_round": 1,
+      "team_slot": 12,
+      "manager": "Jordan",
+      "player_name_raw": "Texans"
+    },
+    {
+      "overall_pick": 158,
+      "round": 14,
+      "pick_in_round": 2,
+      "team_slot": 11,
+      "manager": "Robert",
+      "player_name_raw": "Broncos"
+    },
+    {
+      "overall_pick": 159,
+      "round": 14,
+      "pick_in_round": 3,
+      "team_slot": 10,
+      "manager": "Manny",
+      "player_name_raw": "Seahawks"
+    },
+    {
+      "overall_pick": 160,
+      "round": 14,
+      "pick_in_round": 4,
+      "team_slot": 9,
+      "manager": "Rob",
+      "player_name_raw": "Rams"
+    },
+    {
+      "overall_pick": 161,
+      "round": 14,
+      "pick_in_round": 5,
+      "team_slot": 8,
+      "manager": "jason",
+      "player_name_raw": "Brandon Aubrey"
+    },
+    {
+      "overall_pick": 162,
+      "round": 14,
+      "pick_in_round": 6,
+      "team_slot": 7,
+      "manager": "josh",
+      "player_name_raw": "Jason Myers"
+    },
+    {
+      "overall_pick": 163,
+      "round": 14,
+      "pick_in_round": 7,
+      "team_slot": 6,
+      "manager": "John",
+      "player_name_raw": "Patriots"
+    },
+    {
+      "overall_pick": 164,
+      "round": 14,
+      "pick_in_round": 8,
+      "team_slot": 5,
+      "manager": "Matt",
+      "player_name_raw": "Jerry Jeudy"
+    },
+    {
+      "overall_pick": 165,
+      "round": 14,
+      "pick_in_round": 9,
+      "team_slot": 4,
+      "manager": "Roshaun",
+      "player_name_raw": "Eagles"
+    },
+    {
+      "overall_pick": 166,
+      "round": 14,
+      "pick_in_round": 10,
+      "team_slot": 3,
+      "manager": "Brandon",
+      "player_name_raw": "Vikings"
+    },
+    {
+      "overall_pick": 167,
+      "round": 14,
+      "pick_in_round": 11,
+      "team_slot": 2,
+      "manager": "Matthew Vibert",
+      "player_name_raw": "Steelers"
+    },
+    {
+      "overall_pick": 168,
+      "round": 14,
+      "pick_in_round": 12,
+      "team_slot": 1,
+      "manager": "Joel",
+      "player_name_raw": "Cameron Dicker"
+    },
+    {
+      "overall_pick": 169,
+      "round": 15,
+      "pick_in_round": 1,
+      "team_slot": 1,
+      "manager": "Joel",
+      "player_name_raw": "Jaguars"
+    },
+    {
+      "overall_pick": 170,
+      "round": 15,
+      "pick_in_round": 2,
+      "team_slot": 2,
+      "manager": "Matthew Vibert",
+      "player_name_raw": "Cam Little"
+    },
+    {
+      "overall_pick": 171,
+      "round": 15,
+      "pick_in_round": 3,
+      "team_slot": 3,
+      "manager": "Brandon",
+      "player_name_raw": "Ka'imi Fairbairn"
+    },
+    {
+      "overall_pick": 172,
+      "round": 15,
+      "pick_in_round": 4,
+      "team_slot": 4,
+      "manager": "Roshaun",
+      "player_name_raw": "Tyler Loop"
+    },
+    {
+      "overall_pick": 173,
+      "round": 15,
+      "pick_in_round": 5,
+      "team_slot": 5,
+      "manager": "Matt",
+      "player_name_raw": "Jacoby Brissett"
+    },
+    {
+      "overall_pick": 174,
+      "round": 15,
+      "pick_in_round": 6,
+      "team_slot": 6,
+      "manager": "John",
+      "player_name_raw": "Cairo Santos"
+    },
+    {
+      "overall_pick": 175,
+      "round": 15,
+      "pick_in_round": 7,
+      "team_slot": 7,
+      "manager": "josh",
+      "player_name_raw": "Ravens"
+    },
+    {
+      "overall_pick": 176,
+      "round": 15,
+      "pick_in_round": 8,
+      "team_slot": 8,
+      "manager": "jason",
+      "player_name_raw": "Chargers"
+    },
+    {
+      "overall_pick": 177,
+      "round": 15,
+      "pick_in_round": 9,
+      "team_slot": 9,
+      "manager": "Rob",
+      "player_name_raw": "Andy Borregales"
+    },
+    {
+      "overall_pick": 178,
+      "round": 15,
+      "pick_in_round": 10,
+      "team_slot": 10,
+      "manager": "Manny",
+      "player_name_raw": "Eddy Pineiro"
+    },
+    {
+      "overall_pick": 179,
+      "round": 15,
+      "pick_in_round": 11,
+      "team_slot": 11,
+      "manager": "Robert",
+      "player_name_raw": "Evan McPherson"
+    },
+    {
+      "overall_pick": 180,
+      "round": 15,
+      "pick_in_round": 12,
+      "team_slot": 12,
+      "manager": "Jordan",
+      "player_name_raw": "Jake Bates"
+    }
+  ]
+}
