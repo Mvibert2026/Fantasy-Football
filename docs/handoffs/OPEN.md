@@ -4,7 +4,7 @@
 Threads are the source of truth. Change a thread's `STATUS:`, then re-run sync.
 Protocol: [`README.md`](README.md).
 
-**76 open** · 46 resolved
+**76 open** · 47 resolved
 
 ---
 
@@ -210,5 +210,6 @@ _Nothing waiting on you._
 | [087](087-fr-039-pass-2-register-the-confirmatory-te-windo.md) | Fr 039 pass 2 register the confirmatory te windo | `ranker` → `strategist` |
 | [093](093-contract-1-15-0-scoring-ruleset-note-on-league-j.md) | Contract 1 15 0 scoring ruleset note on league j | `backend` → `frontend` |
 | [098](098-adp-and-history-not-league-scoring-aware.md) | Adp and history not league scoring aware | `frontend` → `backend` |
+| [117](117-prepared-answers-to-the-2026-08-01-handoff-held.md) | Prepared answers to the 2026 08 01 handoff held | `pm` → `design` |
 | [89](089-fr-040-costing-static-hosting-blocks-scoring-rec.md) | Fr 040 costing static hosting blocks scoring rec | `backend` → `frontend, pm` |
 
