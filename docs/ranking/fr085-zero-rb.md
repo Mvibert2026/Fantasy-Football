@@ -577,8 +577,18 @@ And the same draft from **slot 10**, which is where the "waits until round 6" im
 **This is the mechanism, and it is legible.** At pick 10 the best available RB is the model's 5th-best
 player, 21 VBD points behind the best WR — a close call, not a dismissal. Ten picks later the best
 available RB has dropped from 107 to 61 while the best available WR has only dropped from 128 to 111.
-The room takes 10 RBs in the first 20 picks and 15 by pick 25, so by the user's second pick the RB
-pool is picked over and the WR pool is not. After that the RB curve never recovers.
+
+The reason is that the market itself front-loads running backs. Mean composition of the consensus
+top 20 and top 25 over 2018–2024: **RB 11.6 / WR 7.4** in the top 20, RB 13.0 / WR 9.7 in the top 25.
+**Roughly 58% of the first two rounds of the room are spent on backs.** So by the user's second pick
+the RB pool has been stripped to its 12th-best member while the WR pool is still on its 8th, and the
+RB curve is far steeper than the WR curve in exactly that range. After that the RB curve never
+recovers.
+
+Note what that implies about the founder's original question. A strategy that takes an elite back at
+pick 1 and then no back for ten rounds is not a rejection of running backs — **it is the model saying
+the room is already paying full price for RB2 through RB12, so buy the one player whose price is
+right and let the room have the rest.**
 
 ### 5.5.2 The distribution behind the 6.33 mean
 
