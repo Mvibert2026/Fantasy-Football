@@ -376,22 +376,34 @@ pass or is marked as unverified.
     −26.6 MARGINAL, RB−TE −28.1 NULL, RB−QB −34.9 SURVIVES) and it vanishes on the expert-consensus
     board over the same seasons (−4.9 NULL); it **is** WR-specific in rounds 4-8 (−27.5 SURVIVES).
     The classic dead zone **RB13-24 is NULL** once matched against the WR band at the same draft
-    cost; **RB25-36 is −26.0 [−39.1, −12.5] SURVIVES** and is the best-controlled cell. Whether the
-    dead zone has moved is **not answerable at seven seasons** — every per-season trend is NULL with
-    intervals of ±8 to ±25 VBD points per year. 337 interval tests; grades are the correction.
-14. **The stacking-bonus ceiling channel is now closed by a third, lower-noise instrument, and
-    `CLAUDE.md` §7's operational clause is the open question** (2026-07-30, `ranker`, FR-086,
-    `docs/ranking/fr086-volatility.md` §3). The exceedance curve at
-    `experiments/bottomup/components/pos_model.py:300` predicts threshold clearance from **mean
-    yards per game alone**. Adding the player's own prior-season measured yardage dispersion is
-    **NULL at every threshold, in every family, at every shrinkage from k=0 to k=16** — expected
-    bonus-points MAE moves +0.002 / +0.004 / −0.003 per player-season on errors of 0.81 / 0.97 /
-    1.77 — in the **most favourable setting that exists** (both arms given the realised mean; in
-    production the mean is a projection and noisier). This is a different question from PR-002
-    (categorical) and pass-1 §6.1 (clearance-count instrument) and agrees with both. The league
-    **does** pay for ceiling and the amount is **+0.94 bonus points a season** for a high-volatility
-    WR over a low-volatility one at the same scoring level (SURVIVES). Whether §7's second clause
-    should be amended is escalated to `strategist`, not decided.
+    cost; **RB25-36 is −26.0 [−39.1, −12.5] SURVIVES** and is the best-controlled cell. **The
+    founder's recollection that the dead zone "used to be a thing but now is not" is not supported
+    and the finding he is remembering is not in this repo** — `docs/test-registry.md:210` test 43 has
+    never been run, and the direct 2018-20 vs 2022-24 contrast gives RB13-24 −13.4 NULL (pointing the
+    *wrong* way) and RB25-36 +7.5 NULL. What did move is the far end: **RB37+ improved by +48.3
+    [+21.6, +75.1] SURVIVES against the WR band drafted alongside it.** So "late-round RB got better
+    relative to late-round WR" is supportable; "the dead zone went away" is not, and they imply
+    different draft behaviour. 347 interval tests; grades are the correction.
+14. **The stacking-bonus ceiling channel is now closed by FOUR independent instruments, including
+    the founder's own proposed mechanism, and `CLAUDE.md` §7's operational clause is the open
+    question** (2026-07-30, `ranker`, FR-086, `docs/ranking/fr086-volatility.md` §3). The exceedance
+    curve at `experiments/bottomup/components/pos_model.py:300` predicts threshold clearance from
+    **mean yards per game alone**, so tail shape is inferred from the average and never measured.
+    Adding the player's own prior-season **dispersion** (2nd moment) is NULL at every threshold,
+    family and shrinkage. Adding **skewness and excess kurtosis** (3rd/4th moments — what the
+    founder actually meant by "the curve has a shape with tails"; the first relay of that as
+    *dispersion* was a mis-translation and both were tested) is **NULL everywhere and fails twice
+    over**: a player's shape residual does not persist year to year (six of six NULL, r = −0.004 to
+    +0.071, *weaker* than the 2nd moment's r ≈ 0.08–0.11), and the empirical-Bayes shrinkage
+    independently estimates the between-player variance in true skewness at **exactly zero** in 2 of
+    5 cells (all 5 under the alternative estimator), collapsing the arm onto the baseline. **Bounded,
+    not merely unfound:** with the *target season's own* shape — impossible foresight — log-loss
+    improves by at most 0.0024/game-trial and bonus-point MAE gets **worse** at every family.
+    Estimator: G1/G2 adjusted Fisher–Pearson, excess kurtosis Fisher convention. Both tests gave
+    both arms the **realised** mean, the most favourable setting that exists. The league **does** pay
+    for ceiling and the amount is **+0.94 bonus points a season** for a high-volatility WR over a
+    low-volatility one at the same scoring level (SURVIVES). Whether §7's second clause should be
+    amended is escalated to `strategist`, not decided.
 15. **Volatility ranks differently per player than per roster slot, and the per-slot ordering is the
     decision-relevant one** (2026-07-30, `ranker`, FR-086 §1). Per player: WR 1.084 CV, RB 1.047,
     TE 1.002, QB 0.573 — **RB vs WR is a clean NULL**, and the only robust position-level statement

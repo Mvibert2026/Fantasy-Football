@@ -784,3 +784,30 @@ file (ADR-057). Full evidence `docs/ranking/bottom-up-research-pass-3.md`, threa
    coefficient is +0.135 [+0.108, +0.162], which reads as a strong SURVIVES. The interval bootstraps
    across walk-forward seasons with near-identical training sets, so effective n ~ 1. Reported as
    invalid, not as a finding.
+
+## 2026-07-30 — ranker, mid-task correction (skewness/kurtosis, dead-zone recall)
+
+8. **Tested the third and fourth moments as a SEPARATE test, not a re-run.** The founder's "the curve
+   has a shape with tails" had been relayed to me as dispersion; he meant skewness and kurtosis. Two
+   players can share a mean AND an SD while one carries a long right tail, and a threshold bonus is
+   paid on that tail — so it is a different covariate and got its own arms (skew alone, kurtosis
+   alone, both). `experiments/volatility/exceedance_shape.py`. Also null, and bounded by an oracle
+   arm rather than merely unfound.
+9. **Named the estimator rather than leaving it implicit.** G1/G2 adjusted Fisher-Pearson, excess
+   kurtosis on the Fisher convention (Gaussian = 0), with sample g1/g2 as a declared sensitivity.
+   At n ~ 17 the bias in g1/g2 scales with n, which would have made the covariate partly a
+   games-played proxy.
+10. **Used empirical-Bayes shrinkage with tau^2 estimated from the data instead of a hand-picked
+    constant.** It concluded the between-player variance in true skewness is exactly zero in 2 of 5
+    (family, position) cells — the covariate becomes identically zero and the arm collapses onto
+    base. That is the answer arriving from an estimator that had every chance to find something.
+11. **Flagged that my own shrinkage is too weak, in the direction that hurts my conclusion.** The
+    normal-theory sampling variances assume normality; yardage is heavy-tailed, so true variance is
+    larger, tau^2 is over-estimated, and I under-shrink — biasing the test TOWARD finding an effect.
+    It still finds none, which strengthens the null. Asked `strategist` to check the reasoning.
+12. **Refused to characterise the dead zone as having "moved".** The founder recalls it "used to be
+    a thing but now is not." `docs/test-registry.md:210` test 43 has never been run, so there is no
+    internal measurement he could be recalling, and the direct era contrast does not support it
+    (RB13-24 late-early −13.4 NULL, pointing the wrong way). RB37+ did improve (+48.3 SURVIVES vs
+    matched WRs) — reported as "late-round RB got better relative to late-round WR", which is a
+    different claim implying different draft behaviour. Did not supply a mechanism to fit it.

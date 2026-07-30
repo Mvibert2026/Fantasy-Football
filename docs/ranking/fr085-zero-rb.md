@@ -23,7 +23,7 @@ Code: `experiments/strategy/`. Reproduce with
 
 ## 0. Read this before any number below
 
-**337 interval tests were run across this document** (141 in the residual module, 196 in the
+**347 interval tests were run across this document** (151 in the residual module, 196 in the
 simulation). At the 5% level that is **about 17 false "clears zero" results by chance alone.** Every
 result is graded on pass-1 §0's scale, unchanged:
 
@@ -57,10 +57,13 @@ comparing each RB band against the matching WR band, the classic dead-zone band 
 controlled, see §3) and **RB25–36** (−26.0 [−39.1, −12.5], SURVIVES, and *well* controlled: mean
 overall pick 76.8 vs 73.5). §3.
 
-**(4) Nothing has measurably changed over time, and the design cannot see a change if there were
-one.** Every per-season trend in every band is NULL, with intervals spanning ±15 to ±25 VBD points
-per year against effects of order 30. "The dead zone no longer exists" is **not testable at this
-sample size** and I am not going to pretend otherwise. §3.1.
+**(4) The founder's recollection that the dead zone "used to be a thing but now is not" is not
+supported, and the finding he is remembering is not in this repo** — `docs/test-registry.md` test 43
+has never been run. Measured directly, 2018–20 against 2022–24: **RB13–24 is NULL and points the
+wrong way (−13.4), RB25–36 is NULL (+7.5).** What *did* move is the far end of the board — **RB37+
+improved by +48.3 [+21.6, +75.1] SURVIVES against the WRs drafted alongside them.** So the
+supportable statement is "late-round RB got better relative to late-round WR", **not** "the dead
+zone went away". One SURVIVES among 151 tests, so a hypothesis. §3.2.
 
 **(5) And the strategy question, which is the one that actually matters: Zero RB is not
 distinguishable from VBD in this league. On any metric. On either market. At any opponent noise
@@ -204,6 +207,50 @@ more exist.
 What it can say is that the sign has been stable across all three eras in every band except RB25–36,
 and that 2024 was the one clearly contrary season. Closing this properly needs more ADP history —
 named as a gap in §7 rather than proxied.
+
+### 3.2 "It used to be a thing and now is not" — the direct test, and what it actually shows
+
+The founder recalls a finding that the RB dead zone **used to be a thing but now is not, and a
+reason why**. Before measuring anything: **that finding is not in this repo.** `docs/test-registry.md`
+line 210, test 43 — *"RB dead zone by round, our scoring"* — is still `SPEC` and has never been run.
+So either he is recalling outside commentary, or a measurement exists that never reached a durable
+document. **"We never measured this" is the honest help**, and it is the first half of the answer.
+
+The second half is that a slope over seven noisy seasons has almost no power (§3.1), so here is the
+more direct instrument: a straight early-era vs late-era contrast, per band, with an interval — and
+the same contrast run on the **RB minus matched-WR gap**, which holds draft cost roughly constant.
+
+**2018–2020 against 2022–2024. Positive = the band got better (less underpriced).**
+
+| band | late − early | 95% CI | grade | same, on the RB − WR gap | grade |
+|---|---|---|---|---|---|
+| RB1–6 | +20.1 | [−16.7, +58.6] | NULL | +29.4 [−8.9, +67.7] | NULL |
+| RB7–12 | −2.0 | [−44.0, +38.4] | NULL | −5.4 [−74.1, +63.3] | NULL |
+| **RB13–24** | **−13.4** | [−45.7, +21.6] | **NULL** | −2.2 [−61.0, +68.6] | NULL |
+| **RB25–36** | **+7.5** | [−19.2, +31.2] | **NULL** | +11.7 [−9.9, +33.3] | NULL |
+| **RB37+** | **+40.1** | **[+7.1, +87.3]** | **MARGINAL** | **+48.3 [+21.6, +75.1]** | **SURVIVES** |
+
+**The dead zone has not measurably weakened, and I am not going to characterise it as having
+moved.** Both dead-zone bands are NULL, and RB13–24 — the classic definition — has a point estimate
+pointing the *wrong* way (−13.4, i.e. slightly worse in the recent era, not better). There is no
+honest reading of this table in which the mid-round RB penalty went away.
+
+**What did change is at the other end of the board.** RB37+ improved by +40.1 VBD points, and
+against the WRs drafted alongside them by **+48.3 [+21.6, +75.1], SURVIVES** — the best-controlled
+cell in the contrast, since those bands sit at mean overall picks 123.0 and 119.9. Late-round backs
+have become materially better value relative to late-round receivers.
+
+**That is one SURVIVES among the 151 interval tests in this module and it is a hypothesis, not a
+finding** — but it is worth stating precisely, because it is close enough to what the founder
+remembers to be mistaken for it. The supportable statement is:
+
+> *Not* "the dead zone stopped being a thing." What is measurable is that **late-round RB got better
+> relative to late-round WR** between 2018–20 and 2022–24. The mid-round penalty is unchanged.
+
+If the recollection is really "you can wait on RB now", the data is consistent with that — but via
+the *late* tier improving, not via the *middle* tier recovering, and those imply different draft
+behaviour. A mechanism for it (higher RB committee turnover, more in-season role change reaching
+waivers) is **not** tested here and I am not going to supply one to fit the shape of the result.
 
 ---
 

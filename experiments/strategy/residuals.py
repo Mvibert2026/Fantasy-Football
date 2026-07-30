@@ -233,6 +233,37 @@ def season_bootstrap_diff(a: Dict[int, List[float]], b: Dict[int, List[float]],
             diffs[min(len(diffs) - 1, int(0.975 * len(diffs)))], len(fa) + len(fb), len(seasons))
 
 
+def era_bootstrap_diff(late: Dict[int, List[float]], early: Dict[int, List[float]],
+                       n_boot: int = 4000, seed: int = RNG_SEED
+                       ) -> Tuple[float, float, float, int, int]:
+    """mean(late) - mean(early) for DISJOINT season sets.
+
+    `season_bootstrap_diff` pairs on shared seasons, which is right for two groups
+    inside the same season and gives an empty intersection here. This resamples
+    seasons WITHIN each era independently. With 3 seasons per era the bootstrap
+    distribution is extremely lumpy -- there are only a handful of attainable
+    means -- so the interval is wide and honest rather than precise."""
+    ls, es = sorted(late), sorted(early)
+    if not ls or not es:
+        return float("nan"), float("nan"), float("nan"), 0, 0
+    fl = [v for s in ls for v in late[s]]
+    fe = [v for s in es for v in early[s]]
+    if not fl or not fe:
+        return float("nan"), float("nan"), float("nan"), 0, 0
+    point = statistics.fmean(fl) - statistics.fmean(fe)
+    rng = random.Random(seed)
+    diffs = []
+    for _ in range(n_boot):
+        a = [v for s in [rng.choice(ls) for _ in ls] for v in late[s]]
+        b = [v for s in [rng.choice(es) for _ in es] for v in early[s]]
+        if a and b:
+            diffs.append(statistics.fmean(a) - statistics.fmean(b))
+    diffs.sort()
+    return (point, diffs[int(0.025 * len(diffs))],
+            diffs[min(len(diffs) - 1, int(0.975 * len(diffs)))],
+            len(fl) + len(fe), len(ls) + len(es))
+
+
 def grade(point: float, lo: float, hi: float) -> str:
     """Pass-1 SS0 grading, applied unchanged.
 
@@ -420,6 +451,45 @@ def run(source: str, out: Dict) -> int:
         print(f"  {rb_label:8s} - {wr_label:8s} {pt:+8.1f} [{lo:+8.1f},{hi:+8.1f}] "
               f"{grade(pt, lo, hi):9s} mean overall pick RB {mean_rb_ovr:6.1f} vs WR {mean_wr_ovr:6.1f}")
     res["q2a2_rb_minus_wr_by_band"] = band_diff
+
+    # ---- Q2a3: DIRECT test of the founder's recollection that the dead zone
+    # "used to be a thing but now is not". Early era vs late era, per band, with
+    # an interval -- and the same contrast on the RB-minus-WR difference, which
+    # holds draft cost roughly constant. A slope over seven noisy seasons has
+    # almost no power (see Q2a); a two-era contrast is the more direct instrument,
+    # though it is not a more powerful one and the intervals say so.
+    if source == "ffc":
+        early, late = (2018, 2019, 2020), (2022, 2023, 2024)
+        print(f"\n--- Q2a3: has the dead zone WEAKENED? {early} vs {late} ---")
+        era_shift: Dict = {}
+        for (rb_label, rb_lo, rb_hi), (wr_label, wr_lo, wr_hi) in zip(RB_BANDS, WR_BANDS):
+            rb_e = by_season([r for r in recs if r.position == "RB"
+                              and rb_lo <= r.pos_rank <= rb_hi and r.season in early])
+            rb_l = by_season([r for r in recs if r.position == "RB"
+                              and rb_lo <= r.pos_rank <= rb_hi and r.season in late])
+            pt, lo, hi, n, ns = era_bootstrap_diff(rb_l, rb_e)
+            n_tests += 1
+            # and the same thing on the RB-minus-WR gap, per era
+            def gap(seasons_):
+                out_ = {}
+                for s in seasons_:
+                    a = [r.residual for r in recs if r.position == "RB"
+                         and rb_lo <= r.pos_rank <= rb_hi and r.season == s]
+                    b = [r.residual for r in recs if r.position == "WR"
+                         and wr_lo <= r.pos_rank <= wr_hi and r.season == s]
+                    if a and b:
+                        out_[s] = [statistics.fmean(a) - statistics.fmean(b)]
+                return out_
+            gpt, glo, ghi, _gn, _gns = era_bootstrap_diff(gap(late), gap(early))
+            n_tests += 1
+            era_shift[rb_label] = dict(
+                late_minus_early=dict(mean=pt, lo=lo, hi=hi, grade=grade(pt, lo, hi)),
+                rb_minus_wr_gap_late_minus_early=dict(mean=gpt, lo=glo, hi=ghi,
+                                                      grade=grade(gpt, glo, ghi)))
+            print(f"  {rb_label:8s} late-early {pt:+8.1f} [{lo:+8.1f},{hi:+8.1f}] "
+                  f"{grade(pt, lo, hi):9s} | on RB-WR gap {gpt:+8.1f} "
+                  f"[{glo:+8.1f},{ghi:+8.1f}] {grade(gpt, glo, ghi)}")
+        res["q2a3_era_shift"] = era_shift
 
     # ---- Q2b: is the EARLY-round RB penalty itself shrinking?
     print("\n--- Q2b: early-round (1-3) RB minus WR gap, per season and its trend ---")
