@@ -5,11 +5,11 @@ Per-request files in this directory are the source of truth. Edit a request's ow
 `STATUS:` line, then re-run sync. Protocol: [`README.md`](README.md).
 Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests.md).
 
-**88 requests since freeze.**
+**89 requests since freeze.**
 
 ---
 
-## NEW — 50
+## NEW — 51
 
 | ID | Subject | Raised | Source |
 |---|---|---|---|
@@ -63,6 +63,7 @@ Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests
 | [FR-097](FR-097-are-injury-prediction-services-accurate-enough-t.md) | Are injury prediction services accurate enough t | 2026-07-30 | chat 2026-07-30, PM session |
 | [FR-098](FR-098-draft-guide-personalised-plus-full-factor-verdic.md) | Draft guide personalised plus full factor verdic | 2026-07-30 | chat 2026-07-30, PM session |
 | [FR-102](FR-102-should-a-positional-run-flip-to-negative-momentu.md) | Should a positional run flip to negative momentu | 2026-07-30 | chat 2026-07-30, PM session |
+| [FR-104](FR-104-test-age-x-injury-and-whether-the-young-edge-is-.md) | Test age x injury and whether the young edge is  | 2026-07-30 | chat 2026-07-30, PM session |
 
 ## SCOPING — 1
 
