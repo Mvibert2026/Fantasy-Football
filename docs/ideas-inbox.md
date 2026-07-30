@@ -626,3 +626,18 @@ file (ADR-057). Full evidence `docs/ranking/bottom-up-research-pass-3.md`, threa
    under plain BM25 — added a per-artifact diversity cap (`MAX_PER_KIND = 3`) in
    `ui/assistant/retrieval.ts` to fix it. Worth knowing if a future corpus addition has the same
    templated-boilerplate shape.
+## 2026-07-30 — backend, Yahoo connector (FR-062, ADR-063): decided without asking
+
+1. **yfpy is not a runtime dependency** — pip install fails here (unmaintained yahoo-oauth/myql/
+   rauth sub-deps don't build under current setuptools, verified by running it). Talked to
+   Yahoo's OAuth2 + REST v2 endpoints directly via requests instead, replicating yfpy's
+   documented field shapes as this project's own dataclasses.
+2. **Fetch-on-demand only, nothing persists to nfl.db** — the 24-hour retention clause reading
+   is [SNIPPET]-tagged, never verified against Yahoo's actual Fantasy Sports APIs Terms of Use,
+   and treated as binding anyway since the downside of guessing wrong is a compliance problem.
+3. **Yahoo joins the same public-hosting question already open for FFC and FantasyPros**
+   (item 2 above, and thread 092): the app is now live on the open internet, and Yahoo's terms
+   reportedly forbid competing products and deriving income without permission. Recorded here
+   rather than resolved — one ruling should cover all three sources, not three separate ones.
+   See ADR-063 and the research doc's SS6 for the full clause reasoning.
+

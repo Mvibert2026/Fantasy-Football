@@ -4,3 +4,9 @@ pytest==9.1.1
 scipy==1.18.0
 pandas==3.0.5
 numpy==2.5.1
+# Yahoo Fantasy Sports OAuth2 + REST client (src/providers/yahoo*.py, FR-062).
+# `yfpy` itself is not used at runtime: its OAuth dependency chain
+# (yahoo-oauth -> myql, rauth) fails to build under current setuptools --
+# see src/providers/yahoo_oauth.py's module docstring for the verified
+# error. requests is a clean, maintained, already-satisfied dependency.
+requests==2.32.5

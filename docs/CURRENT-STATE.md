@@ -27,6 +27,39 @@ repo — Cloudflare holds its own deploy token. This closes the last dependency 
 machine: development, tests, the database rebuild, the daily capture and now viewing the app all run
 without it.
 
+**Last verified:** 2026-07-30, backend session (worktree `agent-ab49d060d089f26a1`, ADR-063,
+FR-062) building the Yahoo Fantasy Sports connector the founder promoted to near-term work
+("add the yahoo connection work... sooner than later"). No real Yahoo credential exists yet
+(registration is the founder's own account, undone at build time), so this is built against
+documented shapes and tested against constructed fixtures — never a live response — per the
+dispatch's explicit constraint. New `src/providers/` package: `base.py` (the `LeagueProvider`
+adapter interface CLAUDE.md SS4 calls for — `Bonus(points, target)`, `StatModifier`,
+`RosterPositionSpec`, `LeagueSettings`, `DraftResult`, `ProviderUnavailable`), `yahoo_oauth.py`
+(OAuth2 Installed-Application flow — authorization URL, code exchange, refresh, a file-backed
+`TokenStore`), `mapping.py` (signature-key-based, defensive JSON extraction — never asserts an
+exact response shape, since none has ever been read), `yahoo.py` (`YahooProvider`: settings,
+draft results, a best-effort caveated live-draft-picks read, league discovery), `espn.py`
+(`ESPNProvider` — always raises `ProviderUnavailable`, citing Disney ToU SS2.B.x/SS2.A/SS3.H by
+section; ESPN remains a clean, permanent no). **Real finding, not assumed:** `pip install yfpy`
+fails in this environment — its `yahoo-oauth` dependency drags in unmaintained legacy YQL
+packages (`myql`, `rauth`) that don't build under current `setuptools` — so the connector talks
+to Yahoo's OAuth2 + REST v2 endpoints directly via `requests` instead of vendoring `yfpy`,
+replicating its verified field shapes as this project's own dataclasses. **Fetch-on-demand only:
+nothing persists to `nfl.db`** — the research doc's [SNIPPET]-tagged reading of Yahoo's 24-hour
+retention clause is treated as binding pending verification; the only Yahoo-derived data
+persisted anywhere is the OAuth token itself (`data/.yahoo_token.json`, gitignored). Two new
+scripts: `scripts/yahoo_connect.py` (one-time interactive authorize) and
+`scripts/yahoo_pull_league_settings.py` (fetch, print, diff against CLAUDE.md SS7's Westwood
+table; `--out` opt-in only). 58 new tests, all passing without network/credentials
+(`tests/test_providers_{base,mapping,yahoo_oauth,yahoo,espn}.py`); full suite otherwise shows
+only pre-existing failures (missing `data/nfl.db` in this worktree; the already-known
+`ingest_sleeper_projections.py` sqlite-allowlist finding from thread 094) — none touch
+`src/providers/`. Full reasoning and the founder's exact next steps: ADR-063
+(`docs/decisions.md`). No contract-version bump (this doesn't touch the frontend export). FR-062
+still `TO: pm` per unallocated thread 095 — not resolved by this session, since it isn't backend's
+thread to resolve; this entry documents what backend built in response to the founder's own
+promotion of the work, dispatched directly rather than via that thread.
+
 **Last verified:** 2026-07-29, data-ops session (PM-dispatched, worktree
 `agent-a1bcc65cbaf0f88d7`), closing thread 055: historical FFC ADP is no longer absent from
 `nfl.db`. Backfilled 2,467 rows across 19 season-formats into new `adp_source` values
