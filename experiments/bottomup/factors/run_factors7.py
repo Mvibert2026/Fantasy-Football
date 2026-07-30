@@ -358,6 +358,10 @@ def main() -> None:
             frames = frames if frames is not None else _board_frames(panel, a)
             if frames:
                 big = pd.concat(frames, ignore_index=True)
+                # `age2` is created by the model's own `_prep`, not by the
+                # feature builder, so the gate has to construct it the same way
+                big["age"] = big["age"].fillna(big["age"].median())
+                big["age2"] = big["age"] ** 2
                 y = big[a.col].to_numpy(dtype=float)
                 ind[a.col] = (_r2(y, big[INDEP_COLS].to_numpy(dtype=float)),
                               _r2(y, big[AGE_COLS].to_numpy(dtype=float)))
