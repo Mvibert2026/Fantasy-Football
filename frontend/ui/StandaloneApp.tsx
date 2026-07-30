@@ -114,7 +114,7 @@ export function StandaloneApp() {
     if (screen === 'board') {
       screenBody = <Board data={data} rows={rows} league={league} />;
     } else if (screen === 'availability') {
-      screenBody = <Availability data={data} rows={rows} />;
+      screenBody = <Availability data={data} rows={rows} league={league} />;
     } else if (screen === 'opponents') {
       screenBody = (
         <div className="view" style={{ flex: 1, minHeight: 0 }}>

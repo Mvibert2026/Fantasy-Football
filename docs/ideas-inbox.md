@@ -1010,3 +1010,24 @@ follow-on for `ranker` rather than attempted here.
    coverage/format-awareness needs verifying before treating it as drop-in for `mfl_proxy`, the
    same lesson the DynastyProcess-mirror incident (`src/ingest_rankings.py`) already cost this
    project once.
+## 2026-07-30 — frontend, FR-066 availability slot override: decided without asking
+
+1. **Did not build the founder-approved browser-side Monte Carlo recompute this session, despite
+   his explicit "yeah we probably should implement that."** Prototyped it, benchmarked it (fast
+   enough), then found a real parity break while validating the prototype against the shipped
+   export: `board.json:consensus_rank` and the rank `src/availability.py:simulate_availability`
+   actually runs on are two different, both-live ranking sources (`fantasypros_csv_2026draft` vs
+   `fantasypros_ecr`), 73 of the top 80 players reordered between them. A client-side port built on
+   the only rank the frontend has would run a categorically different opponent model, not an
+   approximation of the real one — shipped the honest interim fix (a banner + the pick selector
+   actually tracking the override) instead, and opened
+   `docs/handoffs/NEW-fr066-availability-ranking-source-export.md` asking backend for the missing
+   export field. Full reasoning in the FR-066 file's Resolution section; not re-litigating it here.
+2. **Ran `src/run_availability.py` directly, read-only, to validate the prototype against the real
+   model rather than trusting the exported JSON alone.** Necessary to root-cause the parity break
+   (see above) rather than report "the numbers don't match" without knowing why. Accidentally ran
+   the first pass against the shared checkout instead of this worktree before catching the mistake
+   (see the FR-066 file's housekeeping note and the session's status entry for the full account and
+   the restoration steps taken) — flagging here too since it's a decided-without-asking judgment
+   call (restore-and-continue rather than stop-and-escalate for a gitignored, generated artifact
+   with no git-trackable diff) rather than a pure mechanical fix.

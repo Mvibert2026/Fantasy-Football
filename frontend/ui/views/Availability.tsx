@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { BoardRow } from '../data/board';
 import { POSITIONS } from '../data/board';
 import {
@@ -12,6 +12,7 @@ import {
 } from '../data/availability';
 import { dotsFilled, freqText } from '../data/liveAvailability';
 import type { Dataset } from '../data/load';
+import type { LeagueConfig } from '../data/league';
 import { Value } from '../components/Value';
 import { percent } from '../lib/format';
 
@@ -42,6 +43,47 @@ import { percent } from '../lib/format';
  * carries: by_player/by_tier are unconditional marginals (averaged over every
  * possible draft), not conditioned on picks actually made. It is surfaced as a
  * standing banner, not a tooltip, the same treatment Board.tsx gives curve_caveat.
+ *
+ * FR-066 ("When slot selection happens on the availability, it doesn't change the
+ * picks shown"): `availability.json:by_player`/`by_tier` are keyed to ONE slot's
+ * pick numbers -- whichever slot the Python Monte Carlo simulation ran against
+ * (`metadata.user_draft_slot`). Before this fix, the "YOUR PICKS" row here read
+ * `meta.userPicks` (that export field, straight) -- so overriding the slot
+ * elsewhere in the app (FR-034, `applyUserSlotOverride`) silently left this one
+ * screen showing the *old* slot's pick numbers and real-looking data for them,
+ * with nothing on screen saying so. That is exactly the "confidently wrong
+ * number" failure this project treats as worst.
+ *
+ * The fix goes through the SAME seam every other overridden screen uses --
+ * `league.pickSequence` (already recomputed by `applyUserSlotOverride` for
+ * whatever slot is active) drives the pick selector here now, not
+ * `meta.userPicks`. No second override path was added.
+ *
+ * This is deliberately NOT a browser-side re-simulation, even though that was
+ * the founder-approved direction ("is the browser side fix faster... yeah we
+ * probably should implement that"). Investigated and shelved this session --
+ * see the FR-066 file's Resolution section for the full writeup, but the short
+ * version: `simulate_availability`'s opponent AND user-strategy ranks
+ * (`client_simulation_parameters.ranking_sources: [{name: "fantasypros_ecr"}]`)
+ * come from a DIFFERENT, older ranking source than `board.json:consensus_rank`
+ * (which is `fantasypros_csv_2026draft`, per `board.json:consensus_source_note`
+ * -- the source that superseded fantasypros_ecr at thread 053/067). Measured
+ * directly: 73 of the top 80 players are in a different order between the two
+ * sources. The frontend has no honest access to the ranking the simulation
+ * actually runs on, so a client-side re-simulation built on `board.json`'s
+ * consensus_rank would silently produce a DIFFERENT, wrong opponent model --
+ * not an approximation of the real one, a categorically different one. That is
+ * the exact failure mode this fix exists to prevent, so it was not built.
+ *
+ * Instead: once the pick selector shows the overridden slot's real pick
+ * numbers, `playerAvailabilityAtPick`/`tierAvailabilityAtPick` ALREADY return
+ * an honest `absent` Cell for a pick number outside `by_player`'s keys (see
+ * availability.ts) -- no new absence-handling code was needed there. This
+ * screen adds one thing: a standing banner, active only while a slot override
+ * is in effect, naming which slot the numbers below were actually simulated
+ * for and that they have not been recomputed for the active selection. That
+ * is the interim fix the FR itself proposed as correct-today-and-cheap while
+ * the real recompute is blocked on a backend export change (see the FR file).
  */
 
 const POSITION_COLOR: Record<string, string> = {
@@ -58,9 +100,32 @@ const SIGMA_KEYS: Array<{ key: SigmaKey; value: number }> = [
   { key: 'sigma20', value: 20 },
 ];
 
-export function Availability({ data, rows }: { data: Dataset; rows: BoardRow[] }) {
+export function Availability({ data, rows, league }: { data: Dataset; rows: BoardRow[]; league: LeagueConfig }) {
   const meta = useMemo(() => buildAvailabilityMeta(data), [data]);
-  const [pick, setPick] = useState<number>(meta.userPicks[0] ?? 0);
+
+  // FR-066: the pick selector reads league.pickSequence (already recomputed by
+  // applyUserSlotOverride for whatever slot is active), never meta.userPicks
+  // directly -- meta.userPicks is availability.json:metadata.user_picks, which
+  // is fixed to whichever slot the Python simulation ran against and does not
+  // move when the user overrides the slot elsewhere in the app. Falls back to
+  // meta.userPicks only if pickSequence itself is absent (no teams Cell to
+  // build a sequence from -- applyUserSlotOverride's own no-op condition).
+  const overridden = league.userSlotOverridden;
+  const sourcedSlot = league.userSlotSourced.kind === 'present' ? league.userSlotSourced.value : null;
+  const activeSlot = league.userSlot.kind === 'present' ? league.userSlot.value : null;
+  const effectivePicks = league.pickSequence.kind === 'present' ? league.pickSequence.value : meta.userPicks;
+
+  const [pick, setPick] = useState<number>(effectivePicks[0] ?? 0);
+  // Atomic swap, not a partial one (Principle #3): when the active slot changes,
+  // every affected piece of state on this screen -- the pick buttons AND the
+  // selected pick they drive -- moves together in one render, driven by the
+  // same `league` prop every other overridden screen reacts to. There is no
+  // async recompute here to tear across renders.
+  useEffect(() => {
+    setPick(effectivePicks[0] ?? 0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [effectivePicks.join(',')]);
+
   const [sigma, setSigma] = useState<SigmaKey>('sigma10');
 
   const positions = useMemo(() => tierPositions(data), [data]);
@@ -90,7 +155,11 @@ export function Availability({ data, rows }: { data: Dataset; rows: BoardRow[] }
           <div style={{ fontSize: 13, color: 'var(--dim2)' }}>Who is still on the board when your turn comes</div>
         </div>
 
-        <div style={{ marginTop: 13, display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+        <div
+          role="group"
+          aria-label="Your picks"
+          style={{ marginTop: 13, display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}
+        >
           <span
             style={{
               fontFamily: 'var(--font-num)',
@@ -101,7 +170,7 @@ export function Availability({ data, rows }: { data: Dataset; rows: BoardRow[] }
           >
             YOUR PICKS
           </span>
-          {meta.userPicks.map((p) => {
+          {effectivePicks.map((p) => {
             const active = p === pick;
             return (
               <button
@@ -164,6 +233,31 @@ export function Availability({ data, rows }: { data: Dataset; rows: BoardRow[] }
       >
         {meta.marginalsNote}
       </div>
+
+      {overridden ? (
+        <div
+          style={{
+            flex: 'none',
+            margin: '10px 18px 0',
+            padding: '14px 18px',
+            border: '1px solid var(--acc)',
+            background: 'var(--panel2)',
+            color: 'var(--txt)',
+            fontSize: 13.5,
+            lineHeight: 1.55,
+          }}
+        >
+          <strong>
+            Showing slot {sourcedSlot ?? '?'}&apos;s simulation, not slot {activeSlot ?? '?'}&apos;s.
+          </strong>{' '}
+          You set draft slot {activeSlot ?? '?'} in the top bar (FR-034). availability.json was
+          generated for slot {sourcedSlot ?? '?'} only and has not been recomputed for your
+          selection -- every figure below reads &quot;no availability figure recorded for pick N&quot;
+          for a pick number that belongs to slot {activeSlot ?? '?'} rather than a real probability
+          (FR-066). Clear the slot override, or wait for a browser-side recompute -- see the FR-066
+          file's Resolution section for why that isn't built yet.
+        </div>
+      ) : null}
 
       <div style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
         <div style={{ padding: '20px 23px', display: 'grid', gridTemplateColumns: 'minmax(0,1fr) 330px', gap: 18 }}>
