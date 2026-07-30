@@ -5,7 +5,7 @@ Per-request files in this directory are the source of truth. Edit a request's ow
 `STATUS:` line, then re-run sync. Protocol: [`README.md`](README.md).
 Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests.md).
 
-**45 requests since freeze.**
+**46 requests since freeze.**
 
 ---
 
@@ -29,7 +29,6 @@ Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests
 | [FR-038](FR-038-look-at-other-apps-ux-before-committing-to-an-ov.md) | Look at other apps ux before committing to an ov | 2026-07-29 | chat session 2026-07-29, relayed via researcher dispatch |
 | [FR-040](FR-040-custom-league-option-in-league-settings-two-hard.md) | Custom league option in league settings two hard | 2026-07-29 | chat 2026-07-29, PM session |
 | [FR-041](FR-041-prose-design-and-relevance-review-of-strategy-gu.md) | Prose design and relevance review of strategy gu | 2026-07-29 | chat 2026-07-29, PM session |
-| [FR-042](FR-042-presets-must-use-standard-scoring-only-westwood.md) | Presets must use standard scoring only westwood | 2026-07-29 | chat 2026-07-29, PM session |
 | [FR-044](FR-044-periodic-table-grid-view-in-draft-colour-coded-p.md) | Periodic table grid view in draft colour coded p | 2026-07-29 | chat 2026-07-29, PM session |
 | [FR-045](FR-045-position-scarcity-reads-every-position-as-behind.md) | Position scarcity reads every position as behind | 2026-07-29 | chat 2026-07-29, PM session |
 | [FR-046](FR-046-make-auto-fill-actually-draft-players-wire-up-th.md) | Make auto fill actually draft players wire up th | 2026-07-29 | chat 2026-07-29, PM session |
@@ -41,6 +40,7 @@ Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests
 | [FR-057](FR-057-availability-must-recompute-for-any-draft-slot-b.md) | Availability must recompute for any draft slot b | 2026-07-29 | chat 2026-07-29, PM session |
 | [FR-059](FR-059-test-the-recommendation-s-four-constants-against.md) | Test the recommendation s four constants against | 2026-07-29 | chat 2026-07-29, PM session |
 | [FR-060](FR-060-adp-versus-production-find-where-the-market-is-s.md) | Adp versus production find where the market is s | 2026-07-29 | chat 2026-07-29, PM session |
+| [FR-061](FR-061-strategy-selector-changes-recommendations-not-ra.md) | Strategy selector changes recommendations not ra | 2026-07-30 | chat 2026-07-30, PM session |
 
 ## SCOPING — 1
 
@@ -90,5 +90,6 @@ _None._
 | ID | Subject | Status |
 |---|---|---|
 | [FR-039](FR-039-late-round-te-is-the-draft-strategy-expression-o.md) | Late round te is the draft strategy expression o | `ANSWERED` |
+| [FR-042](FR-042-presets-must-use-standard-scoring-only-westwood.md) | Presets must use standard scoring only westwood | `DONE` |
 | [FR-054](FR-054-the-bottom-up-model-should-output-component-proj.md) | The bottom up model should output component proj | `IN-PROGRESS` |
 
