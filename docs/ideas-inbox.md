@@ -1645,3 +1645,20 @@ Every decision rule pre-committed before the numbers exist. Decided without aski
    `DRAFT_LIST_GRID_TEMPLATE` diff may not actually exist in that worktree's history. Whoever
    resolves this conflict should check item 5's finding first, not assume both sides are equally
    real. Needs a `pm`/`verifier` look, not a mechanical marker-strip.
+
+**2026-07-30, ranker — two pre-existing repo defects seen in passing, neither mine, neither fixed here.**
+
+- `tests/test_state_claims.py` fails on `docs/CURRENT-STATE.md`'s Availability Explorer line, which
+  says the view "is not built" while `frontend/ui/views/Availability.tsx` exists. The line predates
+  this session (it was at :653 before this session's edits pushed it to :752). Doc fix, not a code
+  fix — belongs to whoever owns that paragraph.
+- `tests/test_team_codes.py` fails on `adp_snapshots.team = 'SDC'` having no crosswalk entry. That
+  is an ADP-ingest row, not a ranking one; `src/team_codes.py` needs the mapping rather than the
+  caller special-casing it, which is what the test already says.
+
+Full-suite state at the end of this session: **904 passed, 11 failed, 8 skipped.** All 11 failures
+are from other concurrent sessions in this shared container (export-contract version bump, FFC ADP
+ingest, Sleeper projections, Yahoo credentials, the `test_no_new_direct_sqlite_connections_in_src`
+list already documented as pre-existing in ADR-066). **None touch `experiments/bottomup/`,
+`docs/ranking/`, or anything this session wrote** — `tests/test_factor_batch2_features.py` is
+10/10 green and `tests/test_bottomup_prototype.py` is unaffected.

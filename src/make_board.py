@@ -108,6 +108,50 @@ TRAINING_SOURCE = "fantasypros_ecr"
 DEFAULT_OUTPUT_DIR = Path(__file__).resolve().parent.parent / "data"
 DEFAULT_N_BOOTSTRAP = 2000
 
+# FR-2026-07-30 (docs/founder-requests/FR-2026-07-30-four-selectable-ranking-
+# sources-driving-every-fe.md): the founder's four board sources, mapped onto
+# CLAUDE.md sec4's `ranking_source` enum. "expert_adjusted" is what shipped before
+# this feature existed and stays byte-identical when a caller does not pass
+# ranking_source_selection at all -- see build_board's docstring.
+#
+#   expert_adjusted -> `expert`, re-scored by OUR VBD curve (board order = our
+#                       value judgement). This is what build_board() has
+#                       always produced.
+#   expert_raw      -> `expert`, board order = the source's own consensus
+#                       rank, never re-derived from VBD.
+#   market_adp      -> `market_adp`, board order = FFC half-PPR/10-team ADP.
+#   proprietary     -> does not exist. Component models measured worse than
+#                       the incumbent at all four positions (2026-07-30).
+#                       Deliberately raises RankingSourceNotBuilt rather than
+#                       silently falling back to another source -- "a named
+#                       source that returns 'not built' is honest" (the
+#                       founder's own words, dispatch 2026-07-30).
+RANKING_SOURCE_SELECTIONS = ("expert_adjusted", "expert_raw", "market_adp", "proprietary")
+
+RANKING_SOURCE_LABELS = {
+    "expert_adjusted": "Consensus adjusted",
+    "expert_raw": "Consensus",
+    "market_adp": "ADP",
+    "proprietary": "Proprietary bottom-up",
+}
+
+# FFC half-PPR/10-team is the only ADP source whose FORMAT matches this
+# league (half-PPR, 10 teams) -- see src/ingest_ffc_adp.py's docstring. The
+# MFL proxy (adp_snapshots, source='mfl_proxy') stays a display-only
+# per-player field (board.json's `adp`/`adp_source`) and is never used to
+# drive a board's order -- it is full-PPR, a format mismatch for this
+# league, and CLAUDE.md sec4 forbids blending it with FFC into one "ADP" figure.
+MARKET_ADP_SOURCE = "ffc_half_ppr_10team"
+
+
+class RankingSourceNotBuilt(Exception):
+    """Raised by build_board() for a real, catalogued ranking_source_selection
+    that has no implementation yet (today: only 'proprietary'). Distinct from
+    ValueError, which means the caller passed something not in
+    RANKING_SOURCE_SELECTIONS at all -- this means the name is real but the
+    thing behind it does not exist, and callers must not catch this and fall
+    back to a different source silently."""
+
 # Draft-relevant depth per position in a 10-team league (3WR/2RB/1TE/2FLEX/1QB,
 # 6 bench). Beyond these ranks players go undrafted, and including the long tail
 # of never-played zeros would bend the curve in the range we actually draft
@@ -180,6 +224,133 @@ def _consensus_board(
         "ORDER BY adp_rank",
         (source, season, source, season),
     ).fetchall()
+
+
+def _consensus_board_market_adp(
+    conn: sqlite3.Connection, season: int, adp_source: str = MARKET_ADP_SOURCE,
+) -> tuple[List[dict], Optional[str], int, int]:
+    """FFC ADP rows shaped like _consensus_board's (player_id/player_name/
+    position/adp_rank), resolved to gsis ids via the mfl_id crosswalk
+    (player_ids, source='gsis') -- the same join export_contract's
+    _load_ffc_skill_adp already uses for the display-only ADP field.
+
+    `adp_rank` here is a freshly assigned 1..N overall rank by ascending
+    average_pick -- FFC's own draft-order opinion, analogous to the `RK`
+    column _consensus_board reads from the expert sources.
+
+    A row whose mfl_id has no gsis match is DROPPED, never guessed (this
+    project's standing identity-resolution rule) -- reflected in the
+    n_resolved/n_total gap this function returns so callers can report the
+    coverage honestly rather than silently thinning the board.
+
+    Returns (rows, as_of_date, n_resolved, n_total). `season` is accepted for
+    interface symmetry with _consensus_board but is not used to filter --
+    ffc_adp_snapshots has no season column; the daily-current snapshot is the
+    only one queried (retrospective-aggregate rows for other seasons are a
+    different, historical-only path, see ingest_ffc_adp.py)."""
+    del season  # not a filter column on this table; see docstring
+    latest = conn.execute(
+        "SELECT MAX(retrieved_at) FROM ffc_adp_snapshots WHERE adp_source=?", (adp_source,)
+    ).fetchone()
+    latest = latest[0] if latest else None
+    if not latest:
+        return [], None, 0, 0
+    rows = conn.execute(
+        "SELECT f.player_name, f.position, f.average_pick, f.as_of_date, "
+        "p.source_id AS gsis "
+        "FROM ffc_adp_snapshots f LEFT JOIN player_ids p "
+        "  ON p.mfl_id = f.mfl_id AND p.source = 'gsis' "
+        "WHERE f.adp_source = ? AND f.retrieved_at = ? "
+        "  AND f.position IN ('QB','RB','WR','TE') AND f.average_pick IS NOT NULL "
+        "ORDER BY f.average_pick",
+        (adp_source, latest),
+    ).fetchall()
+    n_total = len(rows)
+    resolved = [r for r in rows if r["gsis"]]
+    out = [
+        {
+            "player_id": r["gsis"],
+            "player_name": r["player_name"],
+            "position": r["position"],
+            "adp_rank": i,
+        }
+        for i, r in enumerate(resolved, start=1)
+    ]
+    as_of = resolved[0]["as_of_date"] if resolved else None
+    return out, as_of, len(resolved), n_total
+
+
+def describe_ranking_source(
+    conn: sqlite3.Connection, season: int, selection: str, source: str = SOURCE,
+) -> dict:
+    """Metadata for one ranking_source_selection: label, whether it is
+    actually built, its own as_of_date and row count. FR-2026-07-30: "a user
+    switching sources is entitled to know what they switched to" -- each
+    source carries its OWN as_of_date/count, never a shared/blended one."""
+    if selection not in RANKING_SOURCE_SELECTIONS:
+        raise ValueError(
+            f"unknown ranking_source_selection {selection!r}; "
+            f"must be one of {RANKING_SOURCE_SELECTIONS}"
+        )
+    label = RANKING_SOURCE_LABELS[selection]
+
+    if selection == "proprietary":
+        return {
+            "ranking_source_selection": selection,
+            "label": label,
+            "built": False,
+            "source_table": None,
+            "as_of_date": None,
+            "row_count": None,
+            "note": (
+                "Not built. Component models measured worse than the incumbent board at all "
+                "four positions (2026-07-30). This slot is named and catalogued so a client "
+                "can show it as explicitly unavailable, never silently fall back to another "
+                "source under this label -- see docs/founder-requests/"
+                "FR-2026-07-30-four-selectable-ranking-sources-driving-every-fe.md."
+            ),
+        }
+
+    if selection == "market_adp":
+        _rows, as_of, n_resolved, n_total = _consensus_board_market_adp(conn, season)
+        return {
+            "ranking_source_selection": selection,
+            "label": label,
+            "built": True,
+            "source_table": f"ffc_adp_snapshots[{MARKET_ADP_SOURCE}]",
+            "as_of_date": as_of,
+            "row_count": n_resolved,
+            "note": (
+                f"{n_resolved} of {n_total} FFC half-PPR/10-team ADP rows (QB/RB/WR/TE) "
+                "resolved to a gsis player id via the mfl_id crosswalk; unresolved rows are "
+                "dropped, never guessed. Coverage is much thinner than the expert sources -- "
+                "beyond FFC's sampled depth this source has no opinion at all, and the board "
+                "built from it will be shorter."
+            ),
+        }
+
+    # expert_adjusted / expert_raw both read the same rankings-table rows.
+    meta = conn.execute(
+        "SELECT COUNT(*) n, MAX(as_of_date) d FROM rankings WHERE source=? AND season=? "
+        "AND as_of_date = (SELECT MAX(as_of_date) FROM rankings WHERE source=? AND season=?)",
+        (source, season, source, season),
+    ).fetchone()
+    return {
+        "ranking_source_selection": selection,
+        "label": label,
+        "built": True,
+        "source_table": f"rankings[{source}]",
+        "as_of_date": meta["d"],
+        "row_count": meta["n"],
+        "note": (
+            "Board order is our VBD curve applied to this source's positional ranks -- our "
+            "value judgement, re-scored into this league's structure."
+            if selection == "expert_adjusted" else
+            "Board order is this source's own unmodified consensus rank, never re-derived "
+            "from VBD. projected_points/vbd are still shown (our value curve applied to this "
+            "order) for comparison, but never change which player is ranked where."
+        ),
+    }
 
 
 def _positional_ranks(rows: Sequence[sqlite3.Row]) -> Dict[str, List[sqlite3.Row]]:
