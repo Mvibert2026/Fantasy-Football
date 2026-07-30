@@ -1573,3 +1573,41 @@ Every decision rule pre-committed before the numbers exist. Decided without aski
   `docs/handoffs/STAGED-strategist-fr136-q1-measurements.md` for `tools/handoffs.py new`; the
   `F-DURABILITY` successor registration is drafted inside the oracle ADR rather than hand-numbered
   into `docs/preregistration/`, because no `PR-0NN` allocator exists (three sessions have hit this).
+
+---
+
+## 2026-07-30 — ranker, factor batch 2 side-findings
+
+**Untested ideas generated while building #28/#29. None of these is a finding; each is a candidate.**
+
+- **"Who left" may be worth more than "how much left."** Batch 1 §4 saw the team-change *flag*
+  helping while the vacancy *magnitude* hurt. Batch 2 registers the flag (M1) but only at the level
+  of "this player moved." The untested version is the other direction: *which* departed player
+  vacated the opportunity — a 250-touch back leaving is not the same event as three 30-touch backs
+  leaving, and the share feature cannot tell them apart. A concentration measure (HHI of the
+  departed opportunity) is cheap and nobody has run it.
+
+- **Vacated opportunity has a competitor term the model never sees: arrivals.** Every vacancy
+  feature in this project counts who *left*. None counts who *came in* — a club that loses 200
+  carries and signs a 250-carry back has vacated nothing in practice. `rosters_weekly` plus prior
+  production supports "incoming prior-season volume" as directly as it supports departures. This
+  may be why every vacancy arm so far reads as noise.
+
+- **The head coach is a play-caller and the schema treats him as a missing value.** 17 of 416
+  team-seasons in the preseason navbox data have no OC line because the HC called plays. That is a
+  *regime*, not a gap, and "HC calls plays" plausibly behaves differently from "OC calls plays"
+  independent of continuity. Registry #30 (first-time play-callers) is adjacent and still gated.
+
+- **Coordinator tenure length, not just change.** #29 asks whether the OC changed. It does not ask
+  how long the incumbent has been there. `play_callers_preseason` supports run-length directly, and
+  year-2-of-a-system is a different claim from year-1.
+
+- **The navbox data carries DC as well as OC, and nothing in this project uses defence at all.**
+  Team defence is a roster slot in this league (1 DEF). No DEF projection exists anywhere in the
+  model. Continuity of the *defensive* coordinator is the obvious first input for one, and the data
+  is already sitting there at zero marginal cost.
+
+- **`days_before_kickoff` is an unexploited honesty signal.** Every preseason coordinator row knows
+  how stale it is (median 31–129 days depending on season). A row dated 130 days before Week 1 is
+  strictly better evidence for a draft-time feature than one dated 3 days before. Nothing uses it;
+  it could weight or filter.

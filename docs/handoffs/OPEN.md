@@ -4,7 +4,7 @@
 Threads are the source of truth. Change a thread's `STATUS:`, then re-run sync.
 Protocol: [`README.md`](README.md).
 
-**86 open** · 53 resolved
+**88 open** · 53 resolved
 
 ---
 
@@ -96,7 +96,7 @@ not an omission. Start your session at your own heading.
 | [2026-07-30-recommendation-card-states-a-rule-the-code-does-](2026-07-30-recommendation-card-states-a-rule-the-code-does-.md) | Recommendation card states a rule the code does  | `strategist` | OPEN | 0d | FR-2026-07-30-recommendation-logic-is-inverted (the three defects that need no measurement) |
 | [2026-07-30-wire-assistant-retrieval-to-docs-assistant-conte](2026-07-30-wire-assistant-retrieval-to-docs-assistant-conte.md) | Wire assistant retrieval to docs assistant conte | `librarian` | OPEN | 0d | none |
 
-### `data-ops` — 9 waiting
+### `data-ops` — 10 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
@@ -109,8 +109,9 @@ not an omission. Start your session at your own heading.
 | [084](084-deepen-expert-consensus-history-beyond-2021-2025.md) | Deepen expert consensus history beyond 2021 2025 | `ranker` | OPEN | 1d | none |
 | [097](097-ingest-nflverse-weekly-roster-status-the-only-so.md) | Ingest nflverse weekly roster status the only so | `ranker` | OPEN | 0d | the season-ending-IR and suspension error classes in the bottom-up component model (docs/ranking/component-model-rb-qb-te-pass-1.md §5.2). Nothing shipped. |
 | [113](113-rosters-weekly-blocks-vacated-opportunity.md) | Rosters weekly blocks vacated opportunity | `ranker` | OPEN | 0d | test-registry #28 (vacated targets & carries) |
+| [2026-07-30-play-callers-is-not-in-nfl-db-and-end-of-season](2026-07-30-play-callers-is-not-in-nfl-db-and-end-of-season.md) | Play callers is not in nfl db and end of season | `ranker` | OPEN | 0d | none |
 
-### `strategist` — 14 waiting
+### `strategist` — 15 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
@@ -128,6 +129,7 @@ not an omission. Start your session at your own heading.
 | [111](111-valuation-tests-35-36-results.md) | Valuation tests 35 36 results | `backend` | OPEN | 0d | none |
 | [112](112-preregistration-gates-need-a-decision-subset.md) | Preregistration gates need a decision subset | `ranker` | OPEN | 0d | every future pre-registration that gates on projection error |
 | [112](114-founder-mock-scoring-format-inference-needs-sepa.md) | Founder mock scoring format inference needs sepa | `data-ops` | OPEN | 0d | none |
+| [2026-07-30-register-factor-batch-2-28-vacated-opportunity-o](2026-07-30-register-factor-batch-2-28-vacated-opportunity-o.md) | Register factor batch 2 28 vacated opportunity o | `ranker` | OPEN | 0d | none |
 
 ### `researcher` — 4 waiting
 

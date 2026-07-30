@@ -128,14 +128,23 @@ def _revision_before(title: str, kickoff: str, refresh: bool = False
     the day before Week 1". Returns None if the page does not exist, and a dict
     with `wikitext=None` if it exists but had no revision that early.
     """
-    path = _cache_path(f"{title}@{kickoff}")
+    # `redirects=1` matters and is not cosmetic. Four franchises renamed inside
+    # the covered window (Redskins, Oakland Raiders, San Diego Chargers, St.
+    # Louis Rams). Their season articles point at the PERIOD-CORRECT navbox
+    # title, but that page was later MOVED, so the old title is now a redirect
+    # with no revision before that season's kickoff -- 28 team-seasons came back
+    # empty for exactly four clubs, which is a non-random hole, not noise.
+    # Following the redirect reaches the moved page, whose history travelled with
+    # it. Version-tagged in the cache key so the pre-redirect responses are not
+    # silently reused.
+    path = _cache_path(f"r2:{title}@{kickoff}")
     if path.exists() and not refresh:
         payload = json.loads(path.read_text(encoding="utf-8"))
     else:
         params = urllib.parse.urlencode({
             "action": "query", "titles": title, "prop": "revisions",
             "rvprop": "content|timestamp|ids", "rvslots": "main",
-            "rvlimit": 1, "rvdir": "older",
+            "rvlimit": 1, "rvdir": "older", "redirects": 1,
             "rvstart": f"{kickoff}T00:00:00Z",
             "format": "json", "formatversion": "2",
         })

@@ -148,14 +148,26 @@ def main() -> None:
             raise RuntimeError(f"primary {pos} touched a season-N proxy read")
 
     # ---- C1 coverage gate, evaluated BEFORE C1's result is looked at
-    cov = {}
+    cov, cov_adp = {}, {}
     for pos in ("WR", "TE", "RB"):
-        vals = []
+        vals, vals_adp = [], []
         for s in range(FIRST, LAST + 1):
-            u = E.universe_for(panel, s, pos)
+            # same universe construction the arms use, board extras included, so
+            # the gate is measured on the population it gates
+            board = E.adp.load_adp(s, position=pos)
+            extra = (board.loc[~board["unmatched"], "player_id"].tolist()
+                     if len(board) else None)
+            u = E.universe_for(panel, s, pos, extra_ids=extra)
             f = FEAT_B2(panel, u, s)
             vals.append(float(f["oc_known"].mean()))
+            if extra:
+                on_board = f["player_id"].isin(extra)
+                if on_board.any():
+                    vals_adp.append(float(f.loc[on_board, "oc_known"].mean()))
         cov[pos] = float(np.mean(vals))
+        cov_adp[pos] = float(np.mean(vals_adp)) if vals_adp else float("nan")
+    print("C1 coverage on the ADP board only: "
+          + ", ".join(f"{k} {v:.3f}" for k, v in cov_adp.items()))
     print("\nC1 coverage (mean oc_known across 11 seasons): "
           + ", ".join(f"{k} {v:.3f}" for k, v in cov.items())
           + f"   gate = {OC_COVERAGE_GATE}")

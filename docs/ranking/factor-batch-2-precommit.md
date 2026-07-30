@@ -120,6 +120,15 @@ tested is team-level — every player on a club gets the same number, which is e
 that makes a ranking unable to hold a player-level opinion. V4 gives two players on the same club
 different values by counting only the departed opportunity that sat **above** them.
 
+> **Amendment, 2026-07-30, made BEFORE any arm was fitted and recorded rather than quietly applied.**
+> The V4 definition above is ambiguous for a player who **moved clubs**: "ahead of me" would be
+> computed on the club he left, which says nothing about his season-N opportunity. Resolved as
+> follows, on the football rather than on any result: a player arriving at a new club has no prior
+> claim on its touches, so **every** departed team-mate is ahead of him — his value is that club's
+> full vacated share (numerically V2 for his new club). Stayers get the ahead-of-me quantity;
+> movers and players with no N−1 club get the new club's total. This was decided while the
+> coordinator ingest was still running and before `run_factors2` had been executed once.
+
 ### Reference arm, outside the family and NOT re-graded
 
 **V1 — batch 1's Week-1 depth-chart proxy**, re-run unchanged at WR, TE, RB. Its only purpose is the

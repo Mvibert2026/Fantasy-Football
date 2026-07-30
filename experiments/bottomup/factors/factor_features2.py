@@ -154,15 +154,25 @@ def _batch2(panel: SeasonPanel, f: pd.DataFrame, target_season: int
         for c in tbl.columns:
             out[c] = _fill_median(club.map(tbl[c]), c)
 
-    # V4 -- player level, keyed on the player himself, not on his club
+    # V4 -- player level, keyed on the player himself, not on his club.
+    #
+    # AMBIGUITY RESOLVED BEFORE ANY ARM WAS FITTED, and recorded rather than
+    # quietly chosen: `_ahead_of_me` is computed on each player's N-1 club, which
+    # is the wrong club for a player who MOVED. Vacancy above him on the team he
+    # left says nothing about his season-N opportunity. A player arriving at a
+    # new club has no prior claim on its touches, so every departed team-mate is
+    # ahead of him -- i.e. the club's FULL vacated share, which is exactly V2 for
+    # his new club. So: stayers get the ahead-of-me quantity, movers and players
+    # with no N-1 club get the new club's total.
     ah_t = _ahead_of_me(prev, tt, stays_c.to_numpy(), "targets", "team_targets")
     ah_c = _ahead_of_me(prev, tt, stays_c.to_numpy(), "carries", "team_carries")
-    # a player with no N-1 production has nobody above him on a club he was not
-    # on: 0.0 is the correct value here, not the median.
-    out["vac_ahead_t"] = np.nan_to_num(np.asarray(f["player_id"].map(ah_t),
-                                                  dtype=float), nan=0.0)
-    out["vac_ahead_c"] = np.nan_to_num(np.asarray(f["player_id"].map(ah_c),
-                                                  dtype=float), nan=0.0)
+    stayed = (t_now.notna() & t_prev.notna() & (t_now == t_prev)).to_numpy()
+    for col, src, fallback in (("vac_ahead_t", ah_t, "vac2_tshare"),
+                               ("vac_ahead_c", ah_c, "vac2_cshare")):
+        own = np.asarray(f["player_id"].map(src), dtype=float)
+        club_total = out[fallback].to_numpy(dtype=float)
+        v = np.where(stayed & np.isfinite(own), own, club_total)
+        out[col] = np.nan_to_num(v, nan=0.0)
 
     # M1 -- moved clubs
     out["moved_club"] = (t_now.notna() & t_prev.notna()
