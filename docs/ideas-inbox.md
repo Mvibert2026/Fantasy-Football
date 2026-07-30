@@ -1111,7 +1111,6 @@ thread ID and no `tools/founder_requests.py` run; hand-typing an ID refused (043
 ADR-048). Also could not query `nfl.db` for our own fantasy-relevant injury base rate, which would
 have been the single most useful number in the report. Nothing committed.
 
-<<<<<<< HEAD
 - 2026-07-29 · (researcher, component projections + FR-053) **Decided, not escalated — five calls.**
   Artifact: `docs/research/component-projections-and-fr-053-features-2026-07-29.md`.
   (a) **Proceeded despite the dispatch naming a file this worktree does not have.**
@@ -1221,7 +1220,6 @@ have been the single most useful number in the report. Nothing committed.
   `SCOPING` or add a `## Update` section pointing at the artifact. Whoever owns that file should do
   both and then run `python tools/founder_requests.py sync` — otherwise a future session re-dispatches
   research this project has now bought once and nearly bought twice.
-=======
 
 ## 2026-07-30 — ranker, factor batch 1 (registry #19 / #20 / #28 / #13): decided without asking
 
@@ -1254,4 +1252,3 @@ have been the single most useful number in the report. Nothing committed.
    against a naive baseline. #19's result shows the model's existing shrinkage already does part of
    what xFP is meant to do, so a naive-baseline comparison would look like a win and mean nothing.
    Noted in the registry beside #18.
->>>>>>> worktree-agent-a6dad8fc40be4a3b3
