@@ -106,7 +106,42 @@ three that is a genuinely independent re-ranking, not just a re-scoring of the s
 No code changed this session — `simulate_availability`'s source stays gated on thread
 `2026-07-30-availability-adp-measurements-m0-m5` per this file's instruction not to fix it here.
 
-**Last verified:** 2026-07-30, ranker session — **factor batch 3: 24 registered tests, nothing
+**Last verified:** 2026-07-30, ranker session — **factor batch 5 (pass-catcher opportunity): 17
+registered tests, 0 survive, and a bare coverage flag beats every route feature built on top of
+it.** Design `docs/ranking/factor-batch-5-precommit.md` committed `c857c67` **before any arm was
+fitted**; results `0c727a4`. BH at the **campaign** denominator, `M_campaign = max(Σ_b m_b, 80) =
+80` — and nothing is significant at the batch-local m = 17 either, so the denominator changes no
+grade. **Sealed 2025 holdout not opened; every arm made zero season-N reads, proven structurally.**
+11 NULL, 5 MARGINAL, 1 MARGINAL-HARMFUL; largest effect anywhere **0.90%** of the primary's own
+error, so the too-good trigger did not fire. **The result is the control arm:** `routes_known`, a
+0/1 "we have evidence he ran routes" flag, beats TPRR, routes-per-game and 1D-per-route at every
+position by **1.06× to 19.7×**, so **8 of 8 route treatment cells are VOID — COVERAGE ARTIFACT**.
+An independent instrument agrees — E1b on the ADP board is *worse* for every route arm at WR and TE
+(TE routes-per-game **+1.59** targets MAE) while E1a is neutral, the signature of a feature that
+sorts a 200-player universe and hurts among the ~50 a draft chooses between. **Registry #16/#17 are
+measured-and-dead on the corrected `participation` source** (ten seasons of source, seven usable
+target seasons) and must not be re-specified on sample-length grounds. **The contested 0.79-vs-0.68
+result is settled and it goes to Hoopes:** prior FPG measures **+0.668** on our data against his
+published 0.68 and is the ceiling — all ten alternatives below it — while Heath's first-read target
+share reaches **+0.637** (proxy, survivor-filtered) and does not reproduce 0.79; his *direction*
+holds at **+0.006** over ordinary target share. 4for4's YPRR > 1D/RR > TPRR ordering replicates
+exactly on two supports, and Fantasy Points' own **+0.004** catchable-vs-raw gap reproduces at
+**+0.003**. **The public literature's survivorship premium is measured at 0.06–0.09 of
+correlation.** **Two dispatched arms were declared UNGRADEABLE rather than run** — FTN starts 2022,
+the walk-forward needs a training pair carrying the feature, and with 2025 sealed that leaves
+**n_seasons = 1**. **Named data gaps:** FTN charting is **in no table in `nfl.db`** (fetched ad hoc
+for 2022–2024, cached, nothing written to the shared DB; `data-ops` thread open, and the FTN subset
+is **CC-BY-SA**), and **`pbp.first_down_pass` does not exist here** (nor `ydstogo`) — the working
+source is `ff_opportunity.rec_first_down`, coverage 1.0000. **Nothing ships**, so the founder's "new
+OC, expect routes to increase" stays unlicensed: routes are now measurable and measuring them did
+not produce a factor that earns a place. Also opened
+`docs/ranking/factor-campaign-manifest/` — the shared campaign family manifest, **one file per
+batch** so four concurrent agents cannot clobber each other's registration; batch 6 built a second
+one independently and migrated into this one, retiring its own in place. Full account:
+`docs/ranking/factor-batch-5-results.md`,
+`docs/status/2026-07-30-ranker-factor-batch-5-pass-catcher-opportunity.md`.
+
+**Superseded, retained for the batch-3 record:** 2026-07-30, ranker session — **factor batch 3: 24 registered tests, nothing
 grades SURVIVES, registry #29 is now DEAD on both specifications, and the most valuable result in the
 batch is post-hoc and has not been shipped.** Design `docs/ranking/factor-batch-3-precommit.md`
 committed `1c452a1` **before any arm was fitted**; results `c7161ce`; post-hoc `bda27ea`. BH at the
