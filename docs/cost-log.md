@@ -55,9 +55,11 @@ red-teaming → Opus. So `librarian`, `backend`, `frontend`, `data-ops` bill at 
 
 **Reported so far: 3,411,346 tokens across 14 agents.** Three more died or were stopped without reporting; their spend is real and missing here.
 
-At Sonnet rates that is **$10.23 if entirely input, $51.17 if entirely output** — the true figure sits between.
-between. A plausible mid-case (80% input) is roughly **$3**. Treat single-digit dollars as the right
-order of magnitude for a session of this size, and do not report a tighter number than that.
+At Sonnet rates that is **$10.23 if entirely input, $51.17 if entirely output** — the true figure sits
+between, and the split is not reported. A plausible mid-case (80% input / 20% output) is roughly
+**$18**. Treat **tens of dollars** as the right order of magnitude for a session of this size, and do
+not report a tighter number than that. Three agents died or were stopped without reporting at all, so
+even the range is a floor.
 
 ## Where the effort actually went
 
