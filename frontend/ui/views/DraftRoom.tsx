@@ -957,8 +957,16 @@ export function DraftRoom({
     const topAvail = availAt(top.row);
     const topPct = pctOf(topAvail);
 
+    // Thread 2026-07-30-recommendation-card-states-a-rule-the-code-does- item 2
+    // / ADR-DRAFT-suggested-pick-opportunity-cost-rule.md D-3: `only` used to
+    // be unconditional, so a 71% survival chance rendered as "only 71%" --
+    // scarcity rhetoric attached to a number that, most of the time, means the
+    // opposite. Wording is now neutral at every value rather than keyed to a
+    // threshold, since the ordering below does not read this number at all
+    // (see the causal-claim fix a few lines down) -- a qualifier here would
+    // imply a decision weight the code does not give it.
     const survivalFragment = (pct: number | null) =>
-      pct !== null && followingUserPick !== null ? `, and only ${percent(pct)} likely to survive to your pick at ${followingUserPick}.` : '.';
+      pct !== null && followingUserPick !== null ? `, and ${percent(pct)} likely to still be there at your pick at ${followingUserPick}.` : '.';
 
     let reason: string;
     if (top.row.projectedPoints.kind !== 'present') {
@@ -1002,7 +1010,18 @@ export function DraftRoom({
       if (followingUserPick === null) {
         survivalClause = ' No further pick of yours remains this draft to compare survival odds against.';
       } else if (topPct !== null && altPct !== null) {
-        survivalClause = ` ${topName} is ${percent(topPct)} to still be there at ${followingUserPick} and ${altName} is ${percent(altPct)}. That difference, not the point gap, is the reason for the order.`;
+        // Thread 2026-07-30-recommendation-card-states-a-rule-the-code-does-
+        // item 1 / ADR-DRAFT-suggested-pick-opportunity-cost-rule.md D-2: this
+        // used to end "That difference, not the point gap, is the reason for
+        // the order" -- false on every render. rankByRecommendation
+        // (ui/data/recommendation.ts:82-97) takes (row, round,
+        // unfilledPositions); it cannot reach availability.json at all, so
+        // these two percentages -- computed here, after the order already
+        // exists -- have never influenced it. Same "display only, not an
+        // input" idiom findLikelyThereCandidate's own panel already uses
+        // above (see its doc comment) and pageContext.ts's reference-point
+        // text ships to the assistant.
+        survivalClause = ` ${topName} is ${percent(topPct)} to still be there at ${followingUserPick} and ${altName} is ${percent(altPct)}. Neither figure is an input to the order above -- the order is value over replacement plus three unbacktested constants.`;
       } else {
         survivalClause = ' Survival odds at your next pick are not yet computed for one or both players (see the availability cell on their rows for why).';
       }
