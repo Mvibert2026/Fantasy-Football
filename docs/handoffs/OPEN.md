@@ -4,7 +4,7 @@
 Threads are the source of truth. Change a thread's `STATUS:`, then re-run sync.
 Protocol: [`README.md`](README.md).
 
-**100 open** · 54 resolved
+**102 open** · 54 resolved
 
 ---
 
@@ -116,7 +116,7 @@ not an omission. Start your session at your own heading.
 | [2026-07-30-pbp-was-ingested-without-epa-cpoe-sack-and-ff-op](2026-07-30-pbp-was-ingested-without-epa-cpoe-sack-and-ff-op.md) | Pbp was ingested without epa cpoe sack and ff op | `ranker` | OPEN | 0d | none |
 | [2026-07-30-play-callers-is-not-in-nfl-db-and-end-of-season](2026-07-30-play-callers-is-not-in-nfl-db-and-end-of-season.md) | Play callers is not in nfl db and end of season | `ranker` | OPEN | 0d | none |
 
-### `strategist` — 18 waiting
+### `strategist` — 19 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
@@ -138,6 +138,7 @@ not an omission. Start your session at your own heading.
 | [2026-07-30-batch-5-pre-registration-campaign-level-multipli](2026-07-30-batch-5-pre-registration-campaign-level-multipli.md) | Batch 5 pre registration campaign level multipli | `ranker` | OPEN | 0d | none |
 | [2026-07-30-register-factor-batch-2-28-vacated-opportunity-o](2026-07-30-register-factor-batch-2-28-vacated-opportunity-o.md) | Register factor batch 2 28 vacated opportunity o | `ranker` | OPEN | 0d | none |
 | [2026-07-30-register-factor-batch-3-campaign-family-m-24-the](2026-07-30-register-factor-batch-3-campaign-family-m-24-the.md) | Register factor batch 3 campaign family m 24 the | `ranker` | OPEN | 0d | none |
+| [2026-07-30-register-factor-batch-6-and-the-rate-channel-spe](2026-07-30-register-factor-batch-6-and-the-rate-channel-spe.md) | Register factor batch 6 and the rate channel spe | `ranker` | OPEN | 0d | none |
 
 ### `researcher` — 5 waiting
 
@@ -149,11 +150,12 @@ not an omission. Start your session at your own heading.
 | [100](100-archetype-volatility-dimension-and-stability.md) | Archetype volatility dimension and stability | `ranker` | OPEN | 0d | the volatility dimension and the history-weighting rule in the archetype proposal |
 | [2026-07-30-settling-your-own-sources-contradiction-heath-0](2026-07-30-settling-your-own-sources-contradiction-heath-0.md) | Settling your own sources contradiction heath 0 | `ranker` | OPEN | 0d | none |
 
-### `librarian` — 2 waiting
+### `librarian` — 3 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
 | [062](062-backlog-reconciliation.md) | Backlog reconciliation | `pm` | OPEN | 3d | none |
+| [2026-07-30-factor-batch-6-registry-and-ledger-rows-18-xfp-n](2026-07-30-factor-batch-6-registry-and-ledger-rows-18-xfp-n.md) | Factor batch 6 registry and ledger rows 18 xfp n | `ranker` | OPEN | 0d | none |
 | [2026-07-30-factor-ledger-batch-3-dispositions-9-rows-and-cl](2026-07-30-factor-ledger-batch-3-dispositions-9-rows-and-cl.md) | Factor ledger batch 3 dispositions 9 rows and cl | `ranker` | OPEN | 0d | none |
 
 ### `design` — 4 waiting  ⚠️ *cannot read this repo — needs a human hop via pm*

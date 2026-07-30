@@ -555,6 +555,55 @@ def f3(panel) -> pd.DataFrame:
     return out
 
 
+def f3_matched(panel) -> pd.DataFrame:
+    """The SAME comparison restricted to the FTN season pairs, so every
+    predictor is measured on identical rows.
+
+    The pre-commitment §6 says the reported quantity is
+    `r(predictor) - r(prior FPG)` **on the same population and the same season
+    pairs**. The main F3 table gives each predictor its own maximum support,
+    which is right for reading a predictor's own strength and WRONG for reading
+    the contradiction: comparing a 2-pair number against an 18-pair number is
+    comparing two different experiments. This restricts everything to
+    2022->2023 and 2023->2024, which is what the registered design asked for.
+    """
+    print("\n" + "=" * 112)
+    print("F3-MATCHED -- every predictor on the FTN season pairs ONLY "
+          "(2022->2023, 2023->2024). Identical rows, identical n.")
+    print("=" * 112)
+    d = _season_table(panel)
+    rows: List[Dict] = []
+    for position in ("WR", "TE", "RB"):
+        pos_d = d[d["position"] == position]
+        for pop, popname in (("S", "SURVIVOR-FILTERED"), ("U", "FROZEN UNIVERSE")):
+            print(f"\n{position} -- {popname}, FTN pairs only")
+            print(f"  {'predictor':42s} {'2022->23':>9s} {'2023->24':>9s} "
+                  f"{'mean':>7s} {'vs prior FPG':>13s}")
+            for key, label, needs_routes, is_proxy in _PREDICTORS:
+                per = [p for p in _f3_pairs(panel, pos_d, d, position, key,
+                                            needs_routes, pop)
+                       if p["y"] in (2022, 2023)
+                       and np.isfinite(p["r_s"]) and np.isfinite(p["base_s"])]
+                if len(per) != 2:
+                    print(f"  {label:42s} {'--':>9s} {'--':>9s} "
+                          f"{'--':>7s} {'insufficient':>13s}")
+                    continue
+                a, b = per[0]["r_s"], per[1]["r_s"]
+                base = float(np.mean([p["base_s"] for p in per]))
+                rows.append(dict(position=position, population=pop, predictor=key,
+                                 label=label, proxy=is_proxy,
+                                 r_2022=a, r_2023=b, r_mean=float(np.mean([a, b])),
+                                 base_mean=base,
+                                 delta=float(np.mean([a, b])) - base,
+                                 n_2022=per[0]["n"], n_2023=per[1]["n"]))
+                print(f"  {label:42s} {a:+9.3f} {b:+9.3f} "
+                      f"{np.mean([a, b]):+7.3f} {rows[-1]['delta']:+13.3f}")
+    out = pd.DataFrame(rows)
+    out.to_csv(OUT / "factor_batch5_f3_matched.csv", index=False)
+    print(f"\nwrote {OUT/'factor_batch5_f3_matched.csv'}")
+    return out
+
+
 def _f3_pairs(panel, pos_d: pd.DataFrame, all_d: pd.DataFrame, position: str,
               key: str, needs_routes: bool, pop: str) -> List[Dict]:
     """One (Y -> Y+1) correlation per season pair, for `key` and for the
@@ -604,6 +653,8 @@ if __name__ == "__main__":
         # F3 refits nothing and grades nothing. Re-running it alone cannot
         # change an F1 number, which is why it is allowed a separate entry
         # point; F1 itself is run ONCE, per the pre-commitment's stopping rule.
-        f3(build_panel())
+        p = build_panel()
+        f3(p)
+        f3_matched(p)
     else:
         main()

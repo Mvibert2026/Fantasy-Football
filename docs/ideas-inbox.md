@@ -1690,3 +1690,58 @@ list already documented as pre-existing in ADR-066). **None touch `experiments/b
   `score_differential`, `half_seconds_remaining` and `yardline_100` are all present and all unused —
   neutral-situation pass rate (N20), red-zone usage (#10) and PROE (#22) are each now one query away,
   and the registry still records the last two as blocked on "there is no PBP table."
+## 2026-07-30 — frontend, FR-135 traditional draft board: worktree behind main + a pre-existing
+   rosterSlots.ts gap surfaced, neither fixed here
+
+1. **This worktree (`agent-aaac1fbaf22827f67`) branched from `main` at commit `5e82225`, which
+   predates several sessions' merged work still visible on the shared/outer checkout at
+   `/home/user/Fantasy-Football`** — confirmed directly: `docs/founder-requests/FR-135-*.md`,
+   `docs/design/research/draft-board/FINDINGS.md`, and the researcher's own handoff thread
+   (`docs/handoffs/2026-07-30-draft-board-reference-axis-unanimous-snake-never.md`) all exist on
+   the outer checkout (read from there, successfully, at session start) but do **not** exist
+   anywhere in this worktree's own git history. Most consequentially, **the outer checkout's
+   `DraftRoom.tsx` carries a RANKINGS-PANE session's changes (a `DRAFT_LIST_GRID_TEMPLATE`,
+   `rankings-pane-header-row` testid, etc.) that this worktree's copy of the same file does not
+   have** — and this session also edits `DraftRoom.tsx` (the new Draft Board hub tab). PM should
+   expect a real merge to reconcile at merge time, not a fast-forward; not resolved unilaterally
+   here per the standing rule that a merge conflict is escalated, not resolved by whichever
+   session hits it. This session built entirely from its own worktree's actual file contents
+   (re-verified after the mismatch was caught, not assumed from the outer checkout's docs) and
+   never touched the outer checkout's files.
+2. **`ui/data/rosterSlots.ts`'s `buildRosterSlots` silently skips any pick with `playerId ===
+   null`** (typed/off-board picks, and the auto-fill placeholder) — its own fill loop's first line
+   is `if (pick.playerId === null) continue;`, so such a pick never occupies a roster slot at all,
+   on **every** screen that already calls this function (`LiveOpponents.tsx`'s MY ROSTER and
+   opponent cards, now also this session's new roster-slot draft-board view). A team that spent a
+   real pick on an off-board player therefore shows one fewer filled slot than picks actually
+   made — not a fabrication (nothing false is shown), but an understatement, found by screenshot
+   inspection during this session (a "Local Waiver Pickup" pick vanished entirely from the
+   roster-slot view instead of landing on a bench row the way the function's own dead
+   `target.slot = "BN (name)"` rename branch implies it should). Not fixed here — out of scope for
+   a board-layout dispatch, and a fix to a function three existing screens depend on deserves its
+   own verification pass, not a side-effect patch. This session's own new view renders the honest
+   current behaviour (a plain dash, never a guess) and has a regression test pinning it
+   (`ui/__tests__/traditional-draft-board.test.tsx`, "an off-board pick occupies no slot").
+
+
+**2026-07-30, ranker — factor batch 6, four decisions made and logged rather than escalated.**
+
+1. **A shared campaign family manifest now exists** (`docs/preregistration/families/F-FACTOR-CAMPAIGN-2026-07-30.yaml`).
+   Four factor batches ran concurrently against the same harness on the same day; each correcting
+   inside its own m is four independent chances at a false positive with no record of the real
+   denominator. Batches register m there before fitting and BH is applied at the sum. **Batch 3
+   graded against its own m=24 before this existed and is not campaign-corrected** — flagged to
+   `strategist`, not silently re-graded by me.
+2. **The breaking-m device.** A batch cannot see a concurrent batch's m at run time, so every
+   surviving arm reports the largest campaign denominator at which it would still clear BH q=0.10.
+   Only one batch-6 arm is fragile (X3-RB, breaking m 56).
+3. **The dispatch's data premise was wrong and I corrected it before fitting rather than working
+   around it.** `passing_cpoe` is 99.9% populated on QB rows with ≥10 attempts (the "11%" figure
+   counted wide receivers), `passing_epa` is 100% populated 1999–2025, and `pbp` as ingested has no
+   `epa`/`cpoe`/`sack` column at all. EPA/dropback moved from "blocked, derive from pbp" to a
+   deep-sample arm.
+4. **A grading-rule defect worth fixing before batch 7.** Three coverage controls returned |E1a| ≈
+   2×10⁻¹⁴ (perfect collinearity with `present_1`/`evidence`, so least squares returns an identical
+   fit), and one of them **graded MARGINAL** because the bootstrap interval excluded zero. The
+   decision rules have **no magnitude floor**. Reported as an artefact; asked `strategist` whether
+   to add one. It will recur in every future batch that registers a coverage control.

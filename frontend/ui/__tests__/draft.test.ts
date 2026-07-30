@@ -3,6 +3,7 @@ import {
   currentOverallPick,
   isSlotOnClock,
   nextPickForSlot,
+  overallPickForRoundSlot,
   pickNumbersForSlot,
   pickWithinRound,
   roundOfPick,
@@ -105,6 +106,45 @@ describe('snake-order math', () => {
     // 10 picks made -> pick 11 is on the clock -> round 2, slot 10 (reversed).
     expect(isSlotOnClock(picks, teams, 10)).toBe(true);
     expect(isSlotOnClock(picks, teams, 1)).toBe(false);
+  });
+});
+
+/**
+ * FR-135 (traditional draft board): `overallPickForRoundSlot` is the address
+ * formula every cell in the board grid is keyed by, before any pick exists to
+ * look up -- checked against the same independently-copied `forwardPick`
+ * reference formula the snake-order suite above already uses, and against
+ * `pickNumbersForSlot` (now defined in terms of it) so the refactor changed
+ * no observable behaviour.
+ */
+describe('overallPickForRoundSlot (FR-135 board addressing)', () => {
+  it('matches the independent forwardPick reference for every (round, slot) in a 10-team, 16-round league', () => {
+    const teams = 10;
+    for (let round = 1; round <= 16; round++) {
+      for (let slot = 1; slot <= teams; slot++) {
+        expect(overallPickForRoundSlot(round, slot, teams)).toBe(forwardPick(round, slot, teams));
+      }
+    }
+  });
+
+  it('round 2 runs backwards across the row -- the snake a board cell must number, not draw', () => {
+    const teams = 10;
+    // Sleeper's own verified convention (FINDINGS §2.3): round 2, leftmost
+    // column (slot 1) carries the LAST pick of that round; rightmost column
+    // (slot 10) carries the FIRST.
+    expect(overallPickForRoundSlot(2, 1, teams)).toBe(20); // slot 1 -> pick 20 (2.10)
+    expect(overallPickForRoundSlot(2, 10, teams)).toBe(11); // slot 10 -> pick 11 (2.1)
+  });
+
+  it('pickNumbersForSlot (unchanged public behaviour) still matches, one round at a time', () => {
+    const teams = 10;
+    const rounds = 16;
+    for (let slot = 1; slot <= teams; slot++) {
+      const list = pickNumbersForSlot(teams, slot, rounds);
+      for (let round = 1; round <= rounds; round++) {
+        expect(list[round - 1]).toBe(overallPickForRoundSlot(round, slot, teams));
+      }
+    }
   });
 });
 
