@@ -1,8 +1,10 @@
 ---
+ID: 106
 FROM: librarian
 TO: pm
 STATUS: OPEN
 SUBJECT: FR-090 bookkeeping investigation delivered — two action items and one escalation
+OPENED: 2026-07-30
 ---
 
 ## What this is

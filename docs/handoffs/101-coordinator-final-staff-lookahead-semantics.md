@@ -1,9 +1,11 @@
+---
+ID: 101
 TO: backend
 FROM: data-ops
 SUBJECT: play_callers now populated from Wikipedia (607 rows, 2015-2024) — but every row is an end-of-season snapshot, and test #29/#30 need a start-of-season one
 
 STATUS: OPEN
-
+OPENED: 2026-07-30
 ---
 
 ## What shipped, 2026-07-30
@@ -70,3 +72,15 @@ instructions.
   `data/qa/coordinator-quarantine-2026-07-30.csv`.
 - **`coach_id` is a name string, not a numeric ID** (Wikipedia gives no stable ID). A same-named
   different person would collide; unverified assumption, named in the module docstring.
+
+### backend · 2026-07-30
+
+Mechanical fix only: this file was missing its leading `---` frontmatter delimiter, which made
+`tools/handoffs.py sync` refuse to run for every role, not just this thread. Restored the
+delimiter, no content changed. Found while closing out a same-day dispatch on test-registry
+#35/#36 (unrelated valuation work) that needed `sync` to run cleanly at session end.
+
+**Did not resolve the substantive ask** (option 1 vs. 2, or ship #29/#30 now with loud
+"end-of-season" caveats) — that is a real look-ahead-semantics judgment call deserving its own
+dispatch, not something to fold into an unrelated task's session. Leaving `STATUS: OPEN` for a
+backend session actually scoped to it.

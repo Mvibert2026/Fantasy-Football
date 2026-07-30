@@ -1,8 +1,10 @@
 ---
+ID: 102
 FROM: backend
 TO: strategist
 STATUS: OPEN
 BLOCKS:
+OPENED: 2026-07-30
 ---
 
 ## Ask

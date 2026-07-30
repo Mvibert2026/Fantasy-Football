@@ -27,6 +27,33 @@ repo — Cloudflare holds its own deploy token. This closes the last dependency 
 machine: development, tests, the database rebuild, the daily capture and now viewing the app all run
 without it.
 
+**Last verified:** 2026-07-30, backend session (worktree `agent-a299a75833b30b593`) running
+test-registry #35 (global flex baseline) and #36 (VONA pick-gap awareness) — the last two
+untested HIGH-edge bottom-up valuation items, per the founder's ask to start the remaining tests.
+Both **NULL** on the win condition; design pre-registered before either ran
+(`docs/ranking/valuation-tests-35-36-precommit.md`, `docs/preregistration/PR-006-*.md`/
+`PR-008-*.md`), driven through `src/draft_sim.py` **unmodified**, decisions/realised outcomes
+compared, never VBD magnitude (a shifted replacement level moves every VBD number at once).
+**#35:** a single global flex-eligible (RB/WR/TE) replacement figure at the 80th-ranked player
+(derived, not assumed — same 80-pick total the current per-position scheme already sums to)
+vs. the current per-position scheme (RB30/WR40/TE10/QB10, ADR-029) — season-paired points margin
++1.7 [−67.6,+74.8] σ=10, −6.7 [−51.2,+37.8] σ=20, sign flips, both under the measured simulation
+noise floor (~8.5 pts/300 sims — the n=4-season bootstrap, not sim count, is what's binding).
+**No change to `scoring.ReplacementLevels`.** **#36:** the real, alternating pick-gap
+(14 vs. 4 intervening picks, `USER_SLOT=3`, ~3.5×) vs. a gap-blind constant in a VONA
+(value-over-next-available) selection rule — realised-outcome margin −37.2/−2.8 pts (σ=10/20),
+CIs include zero, NULL. **But decision divergence is a clean, decisive YES**: the two arms pick a
+different full roster in 100% of paired simulated drafts, all 8 season×σ cells — gap-awareness
+changes *which* player almost every time without reliably changing whether the roster ends up
+better at this sample size. Secondary, uncorrected caution: this VONA formulation underperforms
+plain best-available-by-VBD by ≈−110 to −126 pts both σ (CIs exclude zero but n=4 floors the
+sign test at p=0.125 and neither survives BH, n_total=63). **Nothing wired into the live board,
+strategy, or any export — no contract change.** Sanity checks
+(`tests/test_valuation_experiments_sanity.py`, 10 tests) written and committed before the
+implementation they check, per the project's non-negotiable rule. Handoff opened to `strategist`
+for methodology sign-off: `docs/handoffs/NEW-valuation-tests-35-36-results.md`. Both registry
+entries (`docs/test-registry.md` #35/#36) and the corresponding rows in
+`docs/strategic-insights.md` §5b updated in place.
 **Last verified:** 2026-07-30, backend session (worktree `agent-a3257055537f1be4e`) fixing the root
 cause behind FR-079/FR-083 (`docs/handoffs/NEW-adp-and-history-not-league-scoring-aware.md`,
 frontend's diagnosis). Two real defects, both making the app state something false about a
