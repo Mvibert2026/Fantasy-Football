@@ -44,3 +44,61 @@ it is the standard his eye will judge our screens against.
 **One caution carried from thread 086.** "A competitor ships it" is evidence of convention, not of
 value. That pass found a Yahoo-style feature users explicitly asked to have *removed*. Use these as
 evidence of what people already know how to read, not as a specification.
+
+---
+
+## FantasyPros, second capture set — 2026-07-30
+
+**Not saved as images.** These arrived inline and could not be written to disk. Recorded here in
+detail instead, because the detail is what design needs and it is what survives.
+
+### Draft Configuration — the screen FR-040 is about to specify, already built
+
+**Sync Your League Settings From: [Yahoo ▾] [Sync Your League]** — one control, and it is the whole
+of FR-040's ambition. Free tier allows one sync.
+
+| Group | Options |
+|---|---|
+| League Type | 2026 Season · Dynasty |
+| Scoring | Standard · PPR · Half PPR · **Custom (locked, paid)** |
+| Draft Type | Snake · Linear · Salary Cap (locked) · Custom (locked) |
+| **Opponent Pick Logic** | **Basic · Advanced (locked)** |
+| Then | # of Teams `10` · Draft Position `7th` **[Randomize]** · Pick Clock `None` |
+
+**Roster Positions** as separate steppers: QB 1 · RB 2 · WR 3 · TE 1 · **Flex 2** · **K 0** ·
+DST 1 · Bench 6, plus "Show More Positions". **That is Westwood's exact shape** — the founder had
+configured it. Note `K 0` is expressible; our own preset matrix cannot say that.
+
+**Draft Against** — two columns, explicitly *chosen* rather than blended: Expert Rankings (All
+Experts · FantasyPros Experts) against ADP (Composite ADP, plus six Best Ball ADPs — DraftKings,
+Drafters, RTSports, Underdog, BB10 — and Yahoo/ESPN Pre-Draft Rankings, each with a VIEW link).
+
+**Position Values** — QB/RB/WR/TE/DST/K/Rookies each a `Normal ▾` dropdown, all locked behind
+payment. **This is FR-047's per-position opponent bias, shipped as seven dropdowns.**
+
+### The live simulator
+
+Left rail Rankings / Teams / Queue · centre **Suggestions / Cheat Sheets / Draft Board** · right rail
+Picks with real manager names and *"Next turn in 7 Picks"*. Header: "You're on the clock! Pick 1.07
+(7 Overall)". Suggestion cards carry a **"76% Experts"** share, an **Upside Mode** toggle, and a
+locked **Draft Strategy** button.
+
+### The one that matters most: their chatbot
+
+A "Coach" panel, LLM-backed, **10 free messages**. Its four suggested prompts:
+
+- *"Should I draft Jaxon Smith-Njigba or Amon-Ra St. Brown?"*
+- *"Who's the backup RB for the Seahawks?"*
+- *"What position should I draft next?"*
+- **"Will Jaxon Smith-Njigba be available at my next pick?"**
+
+**That fourth prompt is this project's signature claim, offered by a competitor as a chatbot
+question.** The distinction is everything and it is the product argument in one line: theirs is an
+LLM answering from general knowledge; ours is a Monte Carlo simulation with three sigma readings per
+pick — **which is also uncalibrated, on zero of ~30 drafts, and must not be overclaimed either.**
+
+Their own footer: *"Coach can make mistakes. Double check important info."* A blanket disclaimer
+under every answer. `docs/assistant-persona.md` takes the opposite approach — uncertainty attached to
+the specific claim, in the same sentence, rather than a standing caveat the reader learns to ignore.
+**Worth keeping that contrast deliberately.**
+
