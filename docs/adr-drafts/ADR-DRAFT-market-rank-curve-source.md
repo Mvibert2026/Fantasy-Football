@@ -117,6 +117,50 @@ only two possibilities and neither is what §6.2 describes:
 **Stated as a standing rule:** *you cannot buy evaluation power by evaluating a different object than
 the one you ship.* This applies to any future proposal of the same shape, not just this one.
 
+### 3.1 One legitimate exception, and it has already been used correctly
+
+The rule above is about **claims made from the number**, not about arithmetic. There is exactly one
+shape in which an FFC-refit curve is legitimate without clearing anything:
+
+> **As one arm of a paired comparison in which both arms share the same universe and the same units,
+> where the quantity of interest is the *difference* and no claim is made about either arm's absolute
+> level.**
+
+`docs/ranking/component-model-vs-incumbent-headtohead.md` (backend, 2026-07-30) is exactly this, and
+it did it correctly: it refit the incumbent curve on FFC ADP rank purely to put both arms on the same
+universe, stated the move, sanity-checked it against the ECR-native numbers, and drew a conclusion
+only about the paired difference. **That is approved retrospectively and is not affected by this
+ruling's NO.**
+
+What that document's numbers may **not** be used for: quoting `incumbent MAE = 58.6 at RB` as the
+shipped board's error. It is not — the shipped board's curve is fitted on `fantasypros_ecr`, and its
+own walk-forward error is the ranker's QB 74.0 / RB 62.0 / WR 48.0 / TE 35.8. Two numbers for the
+same-sounding quantity is exactly the condition guardrails §11.4 calls an incident. **Both numbers are
+correct and they are about different objects; whichever is quoted must name its curve's training
+source.**
+
+### 3.2 Weak evidence for exchangeability now exists, and it is not enough
+
+The same document reports the two curves' walk-forward MAEs side by side:
+
+| | QB | RB | WR | TE |
+|---|---|---|---|---|
+| curve fitted on `fantasypros_ecr` (2022–24, ranker) | 74.0 | 62.0 | 48.0 | 35.8 |
+| curve fitted on FFC ADP (2019–24, backend) | 75.7 | 58.6 | 50.5 | 39.8 |
+
+Backend reads this as "same order of magnitude at every position, as expected." That reading is fair
+and it is mild evidence *for* exchangeability.
+
+**It does not discharge §4.1, and the reason is specific rather than pedantic.** MAE is a property of
+the fit's *accuracy*; the board's content is a property of the four *slopes* and specifically of their
+ratios across positions. Two curves can post near-identical MAE while differing materially in slope —
+MAE is dominated by the large irreducible residual (residual SD 46–91 points), which swamps a slope
+difference big enough to move the positional tilt by several rank places. **Similar MAE is close to
+uninformative about the quantity that matters here.** Note also that the two rows are on different
+universes and different season sets, so they are not a paired comparison of slopes at all.
+
+§4.1 measures the slopes and the induced tilt directly. It stands.
+
 ---
 
 ## 4. The narrower path, and its pre-committed decision rule

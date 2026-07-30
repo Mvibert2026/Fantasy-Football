@@ -16,10 +16,16 @@ materially different acts and the ranker's framing merges them.
 | Act | Ruling |
 |---|---|
 | Component projections **replace `board.json:projected_points`** | **NO.** Blocked until the model clears the primary-metric gate. Not negotiable by relabelling |
-| Component projections ship as a **new, separately-named, non-load-bearing field** displayed beside a consensus-derived rank | **YES, conditionally** — four conditions in §3, all pre-committed, all cheap, none yet met |
+| Component projections ship as a **new, separately-named, non-load-bearing field** displayed beside a consensus-derived rank | **YES, conditionally** — four conditions in §3, all pre-committed. **Condition (a) has since been measured and FAILS at all four positions (§2.1), so today's answer is NO everywhere.** The conditional path stays open for a future model |
 
 **This is a methodology question with a product consequence, and it has a methodology answer. Not
 routed to PM.** One genuinely-founder-level question is left open in §5 and it is not this one.
+
+> **Landed while this ruling was being written, and it decides it.** `backend` ran the head-to-head
+> the ranker's §6.2 asked for — `docs/ranking/component-model-vs-incumbent-headtohead.md`, 2026-07-30.
+> **The component model loses to the incumbent on projection error at all four positions.** The
+> conditions below were written before that result was read; they are left exactly as written, and
+> §2.1 applies them. Nothing here was reverse-engineered to fit the answer.
 
 ---
 
@@ -62,8 +68,50 @@ Three facts make the display case genuinely defensible rather than a consolation
 But note the asymmetry that makes conditions necessary: fact (2) is a comparison against *naive
 persistence*, which is not one of `CLAUDE.md` §6.5's baselines in the form that matters here. Beating
 persistence on component MAE says nothing about beating a consensus-rank curve on **season points**.
-Nobody has measured that. The ranker says so explicitly (§6.2: *"they were never measured against the
-thing actually shipped"*).
+
+**That asymmetry is no longer hypothetical. It has been measured, and it is the whole answer.**
+
+## 2.1 Condition (a), applied to the measurement that landed the same day
+
+`docs/ranking/component-model-vs-incumbent-headtohead.md` (backend, 2026-07-30) — same universe (FFC
+half-PPR 12-team ADP, 2018–2024), same units (season points via `pos_model.score_components()` under
+this league's ruleset), walk-forward, busts retained, 2025 never read, six evaluation seasons,
+season-block bootstrap 4,000 reps:
+
+| position | incumbent MAE | component MAE | Δ (component − incumbent) | 95% CI |
+|---|---|---|---|---|
+| QB | **75.7** | 85.7 | +10.04 | [−3.84, +20.70] |
+| RB | **58.6** | 64.8 | +6.18 | **[+0.92, +11.07]** |
+| WR | **50.5** | 52.2 | +1.65 | [−0.87, +4.04] |
+| TE | **39.8** | 44.7 | +4.86 | **[+3.77, +6.47]** |
+
+**Condition (a) fails at all four positions.** Every point estimate favours the incumbent; two losses
+(RB, TE) have intervals clear of zero; the other two are directionally worse and underpowered at n=6.
+There is no position at which `SS_component > SS_incumbent` can hold, because the skill score is a
+monotone decreasing function of MAE against a **shared** floor — the floor cancels in the comparison,
+so the MAE ordering *is* the skill-score ordering. No further computation is required to apply the
+condition.
+
+> **Ruling, applied: the component projections do not ship as a displayed field at any position
+> today.**
+
+**Multiplicity cannot rescue this, and it is worth saying why so nobody tries.** Backend correctly
+flags the comparison as four uncorrected tests. Correction only ever makes it *harder* to declare a
+difference — so BH would, if anything, weaken the two "significant loss" verdicts at RB and TE. It
+cannot move any point estimate, and **there is no position where the point estimate favours the
+component model.** The decision-relevant fact is 4-of-4 directional, not the two p-values.
+
+**What this does not settle**, restated from backend's own §"What this does and does not settle" so it
+is not lost: it is one non-pre-registered comparison, six seasons, walk-forward but not the
+embargoed-LOSO design of PR-004/PR-005, and it says nothing about the deeper rank-correlation
+question those registrations answer separately. It answers exactly the question condition (a) asks,
+and that is enough to apply condition (a).
+
+**Backend's explanation of the loss is the most useful sentence in the document and should survive
+into any summary:** the incumbent's curve is fitted on *this season's own market-anticipated rank
+order*, which already prices in the injuries, role changes and depth-chart shifts the component model
+must infer bottom-up from stale lagged features. The oracle-ladder room is real; the project has not
+captured enough of it to clear a curve fitted to the market's own forward-looking read.
 
 ---
 
