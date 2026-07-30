@@ -20,8 +20,12 @@ import { RoundGrid } from './RoundGrid';
  * row-click detail panel were added on top, per explicit instruction.
  *
  * Departures from the source, each intentional and noted rather than silent:
- *   - Export CSV / Export PDF are visually present but inert. Nothing in this app
- *     generates either file yet.
+ *   - Export CSV / Export PDF: the prototype's buttons are gone (design/
+ *     INERT-CONTROLS.md, FR-037 -- "a control that cannot act is not a
+ *     control"). Nothing in this app generates either file yet, so there is no
+ *     affordance to click and discover that; the fact is folded into the
+ *     provenance line above the table instead ("· export not built"), one line
+ *     for both rather than two dead buttons.
  *   - "Round grade grid" switches to this app's own snake-order draft grid, not
  *     the prototype's VBD-tier-band grid grouped by round and position -- that is
  *     a content rebuild, not a shell/interaction change.
@@ -200,10 +204,15 @@ export function Board({
     data.board.scoring_format != null
       ? data.board.scoring_format.replace(/_/g, ' ')
       : 'scoring format unconfirmed';
+  // design/INERT-CONTROLS.md: Export CSV and Export PDF were both dead buttons
+  // ("not built" -- nothing in this app generates either file yet). One rule
+  // covers both: remove the buttons, put the fact where they were -- one line,
+  // folded into the provenance line that already sits here, since "two dead
+  // buttons is not twice the information."
   const provenance =
     `${data.board.consensus_source} · ${scoringFormat} · ` +
     `${data.board.consensus_state.replace(/_/g, ' ')} · ` +
-    `generated ${data.board.generated_utc} · ${rows.length} players loaded`;
+    `generated ${data.board.generated_utc} · ${rows.length} players loaded · export not built`;
 
   return (
     <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
@@ -221,30 +230,6 @@ export function Board({
         <h2 style={{ fontSize: 16, fontWeight: 600 }}>Board</h2>
         <div style={{ fontFamily: 'var(--font-num)', fontSize: 12, color: 'var(--dim2)' }}>{provenance}</div>
         <div style={{ flex: 1 }} />
-        <button
-          aria-disabled="true"
-          style={{
-            padding: '5px 13px',
-            background: 'transparent',
-            border: '1px solid var(--line2)',
-            color: 'var(--dim)',
-            fontSize: 12,
-          }}
-        >
-          Export CSV
-        </button>
-        <button
-          aria-disabled="true"
-          style={{
-            padding: '5px 13px',
-            background: 'transparent',
-            border: '1px solid var(--line2)',
-            color: 'var(--dim)',
-            fontSize: 12,
-          }}
-        >
-          Export PDF
-        </button>
       </div>
 
       <div

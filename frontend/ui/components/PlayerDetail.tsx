@@ -506,12 +506,12 @@ export function PlayerDetail({
           >
             {inWatchlist ? '★ Watching' : '☆ Watchlist'}
           </button>
-          <button aria-disabled="true" style={{ padding: '8px 12px', background: 'transparent', border: '1px solid var(--line)', color: 'var(--dim2)', fontSize: 12.5 }}>
-            Compare
-          </button>
-          <button aria-disabled="true" style={{ padding: '8px 12px', background: 'transparent', border: '1px solid var(--line)', color: 'var(--dim2)', fontSize: 12.5 }}>
-            Ask
-          </button>
+          {/* design/INERT-CONTROLS.md (FR-037): Compare and Ask were both dead
+              buttons -- neither is built, and the assistant dock (always
+              reachable, bottom of the app) already does Ask's job. "Absent from
+              the action row. The row shrinks; it does not hold a gap." -- removed
+              outright, not replaced with a statement, since a statement is only
+              for cases where an action was expected right here specifically. */}
         </div>
       </div>
     </>
