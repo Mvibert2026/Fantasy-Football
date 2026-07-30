@@ -4,7 +4,7 @@
 Threads are the source of truth. Change a thread's `STATUS:`, then re-run sync.
 Protocol: [`README.md`](README.md).
 
-**86 open** · 51 resolved
+**85 open** · 53 resolved
 
 ---
 
@@ -95,7 +95,7 @@ not an omission. Start your session at your own heading.
 | [2026-07-30-draft-board-reference-axis-unanimous-snake-never](2026-07-30-draft-board-reference-axis-unanimous-snake-never.md) | Draft board reference axis unanimous snake never | `researcher` | OPEN | 0d | none |
 | [2026-07-30-recommendation-card-states-a-rule-the-code-does-](2026-07-30-recommendation-card-states-a-rule-the-code-does-.md) | Recommendation card states a rule the code does  | `strategist` | OPEN | 0d | FR-2026-07-30-recommendation-logic-is-inverted (the three defects that need no measurement) |
 
-### `data-ops` — 10 waiting
+### `data-ops` — 9 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
@@ -108,9 +108,8 @@ not an omission. Start your session at your own heading.
 | [084](084-deepen-expert-consensus-history-beyond-2021-2025.md) | Deepen expert consensus history beyond 2021 2025 | `ranker` | OPEN | 1d | none |
 | [097](097-ingest-nflverse-weekly-roster-status-the-only-so.md) | Ingest nflverse weekly roster status the only so | `ranker` | OPEN | 0d | the season-ending-IR and suspension error classes in the bottom-up component model (docs/ranking/component-model-rb-qb-te-pass-1.md §5.2). Nothing shipped. |
 | [113](113-rosters-weekly-blocks-vacated-opportunity.md) | Rosters weekly blocks vacated opportunity | `ranker` | OPEN | 0d | test-registry #28 (vacated targets & carries) |
-| [2026-07-30-five-datasets-30-seconds-total-all-measured-toda](2026-07-30-five-datasets-30-seconds-total-all-measured-toda.md) | Five datasets 30 seconds total all measured toda | `ranker` | OPEN | 0d | test-registry #10, #18, #21, #22; the availability re-test; any 2026 N-1 injury/depth feature |
 
-### `strategist` — 15 waiting
+### `strategist` — 14 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
@@ -128,7 +127,6 @@ not an omission. Start your session at your own heading.
 | [111](111-valuation-tests-35-36-results.md) | Valuation tests 35 36 results | `backend` | OPEN | 0d | none |
 | [112](112-preregistration-gates-need-a-decision-subset.md) | Preregistration gates need a decision subset | `ranker` | OPEN | 0d | every future pre-registration that gates on projection error |
 | [112](114-founder-mock-scoring-format-inference-needs-sepa.md) | Founder mock scoring format inference needs sepa | `data-ops` | OPEN | 0d | none |
-| [2026-07-30-fr-136-q1-the-primary-metric-cannot-see-the-boar](2026-07-30-fr-136-q1-the-primary-metric-cannot-see-the-boar.md) | Fr 136 q1 the primary metric cannot see the boar | `ranker` | OPEN | 0d | all bottom-up build work under FR-136 Q1 |
 
 ### `researcher` — 4 waiting
 
@@ -164,12 +162,13 @@ not an omission. Start your session at your own heading.
 
 _Nothing waiting on you._
 
-### `ranker` — 2 waiting
+### `ranker` — 3 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
 | [093](093-run-pr-007-recommendation-constants-vs-plain-vbd.md) | Run pr 007 recommendation constants vs plain vbd | `strategist` | OPEN | 1d | FR-059; FR-058's panel copy; the chatbot half of FR-059 |
 | [099](099-archetype-taxonomy-derivability-review-fr-075.md) | Archetype taxonomy derivability review fr 075 | `researcher` | OPEN | 0d | FR-075 (archetype on the player card), FR-086 (volatility as an archetype dimension) |
+| [2026-07-30-component-model-vs-incumbent-head-to-head-compon](2026-07-30-component-model-vs-incumbent-head-to-head-compon.md) | Component model vs incumbent head to head compon | `backend` | OPEN | 0d | none |
 
 ---
 
@@ -226,6 +225,8 @@ _Nothing waiting on you._
 | [104](104-fr066-availability-ranking-source-export.md) | Fr066 availability ranking source export | `frontend` → `backend` |
 | [117](117-prepared-answers-to-the-2026-08-01-handoff-held.md) | Prepared answers to the 2026 08 01 handoff held | `pm` → `design` |
 | [119](119-availability-opponent-model-adp-as-the-central-t.md) | Availability opponent model adp as the central t | `pm` → `strategist` |
+| [2026-07-30-five-datasets-30-seconds-total-all-measured-toda](2026-07-30-five-datasets-30-seconds-total-all-measured-toda.md) | Five datasets 30 seconds total all measured toda | `ranker` → `data-ops` |
+| [2026-07-30-fr-136-q1-the-primary-metric-cannot-see-the-boar](2026-07-30-fr-136-q1-the-primary-metric-cannot-see-the-boar.md) | Fr 136 q1 the primary metric cannot see the boar | `ranker` → `strategist` |
 | [2026-07-30-pick-18-recommendation-defect-traced-reproduced](2026-07-30-pick-18-recommendation-defect-traced-reproduced.md) | Pick 18 recommendation defect traced reproduced | `ranker` → `strategist` |
 | [89](089-fr-040-costing-static-hosting-blocks-scoring-rec.md) | Fr 040 costing static hosting blocks scoring rec | `backend` → `frontend, pm` |
 

@@ -669,21 +669,28 @@ pass or is marked as unverified.
 8. **T6 full roster-status ingest.** `board.json:roster_status` is a proxy derived from
    `contracts.is_active` (ADR-050), not a real active/IR/practice-squad feed. Needs a
    `roster_status_weekly`-shaped table from `nflreadpy.load_rosters()`.
-9. **T7 depth-chart contradiction — measured 2026-07-30 (`ranker`).** `depth_charts_weekly` **stops
-   at 2024** (zero 2025 rows) and so does `injuries` (79,816 rows, max season 2024). Consequence:
-   **no N−1 availability feature can be built for a 2026 projection today.** Both are a sub-second
-   fetch (`load_depth_charts([2025])` 554,215 rows in 0.7 s; `load_injuries([2025])` 6,068 rows in
-   0.5 s) — commissioned to `data-ops`, thread
-   `2026-07-30-five-datasets-30-seconds-total-all-measured-toda`.
-9a. **There is no play-by-play table in `nfl.db` at all** (`ranker` 2026-07-30, measured). `CLAUDE.md`
-   §5 says most Tier 0/Tier 1 factors derive from PBP; test-registry **#10 red-zone/goal-line** (edge
-   Low), **#18 xFP** (**High**), **#21 team pace** (Med) and **#22 PROE** (Med) all carry a `Source`
-   of `nflverse`/`derived` implying the data is on hand, and none of them can be built from `nfl.db`.
-   **Cost measured, not estimated: `load_pbp(2009…2025)` is 816,856 rows in 20.4 s, slimming to
-   15.2 MB of parquet for the 24 columns those four factors need, `xpass` included.** Four High-edge
-   factors are gated behind half a minute of downloading that nobody ran. Same thread as item 9.
-   Also missing entirely: any `teams`/`team_weekly_stats`/schedules table, coaching staff (so
-   `coach_id` is a first-class schema dimension with nothing behind it), odds, and DEF/DST.
+9. **RESOLVED 2026-07-30 (`data-ops`), partially.** `depth_charts_weekly` (season/week-labelled
+   format) genuinely has no 2025 rows because nflverse has not published that format for 2025 --
+   NOT an ingestion gap. The dt-timestamped replacement, `depth_charts_snapshots`, already covered
+   2025-08-03 through 2026-07-25 before this session and is now refreshed through 2026-07-30
+   (939,035 rows). `injuries` still has **zero 2025 rows by design, not by bug**: `load_injuries`
+   does return 2025 rows (6,068 of them), but every one has a NULL `date_modified` upstream, and
+   `ingest_reference.py` correctly refuses to default the as_of column (`CLAUDE.md` §6.1). **No
+   N−1 injury-status feature can be built for a 2026 projection from `injuries` today** — this
+   needs a methodology call (season/week as a substitute as_of key?) from backend/statistician,
+   not an ingestion fix. `rosters_weekly` was added instead (888,786 rows, 2002-2025, `status`
+   includes `RES`/IR and `EXE`/suspended) as the IR/suspension source `component-model-rb-qb-te-
+   pass-1.md` §5.2 commissioned — verified earliest valid season is 2002, not 1999 as claimed
+   there (nflreadpy raises for 2001 and earlier).
+9a. **RESOLVED 2026-07-30 (`data-ops`).** `pbp` table now exists in `nfl.db`: 816,856 rows,
+   2009-2025, slimmed to the 24 columns test-registry #10/#18/#21/#22 need (`xpass` included),
+   keyed on `(game_id, play_id)`, indexed on `(season, week)`. Measured this session: 36.3 s cold
+   fetch (vs ranker's 20.4 s — likely network variance, not a discrepancy in row count or
+   columns), ~9.5 s warm (filesystem cache). No `as_of_date` column exists in the source;
+   season/week is the real granularity, and a downstream reader must filter on that directly.
+   `schedules` also added (7,548 rows, 1999-2026; 2026 has 272 rows, unplayed, `home_score`/
+   `away_score`/`result` honestly NULL). Coaching staff and odds are still not ingested — separate,
+   unstarted work (§5 sources table, coach identity vs coordinator duty distinction).
 10. **Three nflverse pulls worth making**, from the 13 of 23 loaders this repo never calls
     (`docs/research/nflverse-unused-data-audit-2026-07-29.md`): `load_schedules()` head-coach
     columns (1999-2026, closes coach *identity* but not coordinator duty), `load_participation()`
@@ -722,6 +729,17 @@ pass or is marked as unverified.
     at p = 0.25. The shipped `projected_points`' own error is now measured for the first time:
     walk-forward mean MAE **QB 74.0 · RB 62.0 · WR 48.0 · TE 35.8** points, 0.30–0.40 of what the
     average board player scores. That is the bar any bottom-up projection must beat.
+10c. **The component models were measured against that bar, same universe, same units — and lose
+    at all four positions** (`backend` 2026-07-30, `docs/ranking/component-model-vs-incumbent-headtohead.md`,
+    `experiments/bottomup/head_to_head.py`, fr136 §6.2 step 1). Incumbent curve refit onto FFC ADP
+    rank (moving it, not the component model, per §6.2) to align universes, 6 walk-forward seasons
+    2019–2024, busts retained, 2025 untouched: incumbent MAE QB 75.7 · RB 58.6 · WR 50.5 · TE 39.8
+    vs. component MAE QB 85.7 · RB 64.8 · WR 52.2 · TE 44.7 — component worse everywhere. Season-
+    block bootstrap: **RB and TE clear 0 in the incumbent's favour** (significant loss); QB and WR
+    directionally worse but underpowered at n=6. **Not wired** — `projected_points` is unchanged,
+    still `a + b·ln(consensus positional rank)`. Per the mandate's own conditional this is the
+    correct action: "a null here is a real result and saves the whole downstream build." Thread
+    `2026-07-30-component-model-vs-incumbent-head-to-head-compon` to `ranker`.
 11. **Where the TE mispricing sits in the draft is unanswered.** 33.6% of a tight end's stable
     quality is unpriced by consensus versus 15.1% RB/WR and 6.3% QB, but that is pooled across all
     tight ends. If it concentrates in the top few, the founder's late-round strategy is wrong and
