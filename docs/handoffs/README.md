@@ -44,20 +44,37 @@ own authority.
 
 ## File format
 
-Filename: `NNN-short-slug.md`, zero-padded, monotonically increasing. Never reuse a number.
+**Filename: `YYYY-MM-DD-short-slug.md` (W3, ADR-064, 2026-07-30).** Older threads keep their
+original `NNN-short-slug.md` filenames and `ID:` fields forever — **never renamed, never
+renumbered**, because they're cited by number throughout the repo (prose, commits, `CLAUDE.md`,
+other threads). Both shapes load, sort, and resolve identically; `tools/handoffs.py`'s `inbox`/
+`sync`/`check` handle either transparently, so `docs/handoffs/119-*.md` still works exactly as
+before.
 
-**Nobody types the number.** (W1, superseding the old "read the directory, add one" scheme,
-which collided four times in ~24 hours across threads 043/049/053 and ADR-048 — see
-`docs/reviews/fable-workflow-2026-07-27.md`.) To open a thread:
+**Why the scheme changed.** The old `NNN` counter (`max(existing) + 1`, later widened to scan every
+git ref — still just narrowing the race, not closing it) let two worktrees each compute a
+locally-valid "next free" number in the same window. Because the two colliding files had
+*different filenames*, git merged them cleanly with no conflict — the collision was silent, only
+found by someone reading the `ID:` field later. It collided six times on 2026-07-30 alone
+(threads 043/049/053, ADR-048, and several more found retroactively — see
+`docs/known-id-collisions.md`). Full reasoning: ADR-064, `docs/decisions.md`.
+
+**Nobody types the date or the slug's disambiguation.** To open a thread:
 
 - Agents: `python tools/handoffs.py new --from <you> --to <role> --subject "..."` — this writes
-  `NEW-<slug>.md` with no `ID:` field, then runs `sync`, which allocates the real ID immediately.
+  `NEW-<slug>.md` with no `ID:` field, then runs `sync`, which allocates
+  `docs/handoffs/{today}-{slug}.md` (or `-2`/`-3`/... if this same working tree already has a
+  thread with that exact date+slug) via an atomic filesystem claim — no counter, no git scan.
 - The PM: drop a file (same frontmatter shape, no `ID:`) into `docs/pm-outbox/` — its only write
-  surface into this directory now. `sync` ingests it the same way agents' `NEW-*.md` files are
-  ingested: next free ID scanned from filenames on disk, `ID:`/`OPENED:` stamped, renamed into
-  `docs/handoffs/`, hard-fails rather than overwrite an existing path. The PM no longer writes
-  numbered files directly into `docs/handoffs/`.
+  surface into this directory now. `sync` ingests it the same way, into `docs/handoffs/`.
+- Two *separate* worktrees independently choosing the identical subject on the identical day is
+  the one case a single tree can't locally disambiguate — it surfaces as an ordinary git same-path
+  merge conflict at merge time (loud, blocks the merge) rather than the old scheme's silent
+  duplicate `ID:`.
 - A `NEW-*.md` file left unallocated for more than a day (nobody ran `sync`) is a `check` failure.
+
+**ADR numbers are unaffected by this change** — `tools/handoffs.py adr next` keeps its existing
+counter-plus-ref-scan design; ADR-064 did not touch it (a much smaller, less concurrent space).
 
 ```
 ---

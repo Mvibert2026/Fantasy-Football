@@ -4,7 +4,7 @@
 Threads are the source of truth. Change a thread's `STATUS:`, then re-run sync.
 Protocol: [`README.md`](README.md).
 
-**79 open** · 48 resolved
+**81 open** · 48 resolved
 
 ---
 
@@ -13,7 +13,7 @@ Protocol: [`README.md`](README.md).
 Every role gets a section, including empty ones — an empty inbox is a fact worth stating,
 not an omission. Start your session at your own heading.
 
-### `pm` — 11 waiting
+### `pm` — 13 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
@@ -27,6 +27,8 @@ not an omission. Start your session at your own heading.
 | [108](108-injury-prediction-services-buy-nothing.md) | Injury prediction services buy nothing | `researcher` | OPEN | 0d | FR-097 (injury-prediction-service buy decision); raises priority of open item 8 (T6 roster-status ingest) and the Sleeper daily snapshot job |
 | [118](118-fr-114-shipped-plus-a-suspicious-mid-task-messag.md) | Fr 114 shipped plus a suspicious mid task messag | `frontend` | OPEN | 0d | none |
 | [120](120-assistant-window-container-shipped-assistant-win.md) | Assistant window container shipped assistant win | `frontend` | OPEN | 0d | none |
+| [2026-07-30-adr-054-and-adr-055-each-record-two-different-re](2026-07-30-adr-054-and-adr-055-each-record-two-different-re.md) | Adr 054 and adr 055 each record two different re | `backend` | OPEN | 0d | none |
+| [2026-07-30-draft-board-reference-axis-unanimous-snake-never](2026-07-30-draft-board-reference-axis-unanimous-snake-never.md) | Draft board reference axis unanimous snake never | `researcher` | OPEN | 0d | none |
 | [90](090-fr-043-audit-claude-md-ss5-staleness-built-but-u.md) | Fr 043 audit claude md ss5 staleness built but u | `librarian` | OPEN | 1d | none |
 
 ### `backend` — 31 waiting
@@ -65,7 +67,7 @@ not an omission. Start your session at your own heading.
 | [2026-07-30-availability-adp-measurements-m0-m5](2026-07-30-availability-adp-measurements-m0-m5.md) | Availability adp measurements m0 m5 | `strategist` | OPEN | 0d | FR-131, FR-066, thread 104, FR-128, thread 114 (partially) |
 | [88](088-pr-004-f-bottomup-core-run-the-confirmatory-bott.md) | Pr 004 f bottomup core run the confirmatory bott | `strategist` | OPEN | 1d | none |
 
-### `frontend` — 19 waiting
+### `frontend` — 20 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
@@ -88,6 +90,7 @@ not an omission. Start your session at your own heading.
 | [110](109-opponents-and-liveopponents-have-diverged.md) | Opponents and liveopponents have diverged | `frontend` | OPEN | 0d | none |
 | [110](110-opponents-and-liveopponents-have-diverged.md) | Opponents and liveopponents have diverged | `frontend` | OPEN | 0d | none |
 | [116](116-vs-your-options-contract-answer-client-computati.md) | Vs your options contract answer client computati | `backend` | OPEN | 0d | none |
+| [2026-07-30-draft-board-reference-axis-unanimous-snake-never](2026-07-30-draft-board-reference-axis-unanimous-snake-never.md) | Draft board reference axis unanimous snake never | `researcher` | OPEN | 0d | none |
 
 ### `data-ops` — 9 waiting
 
@@ -137,13 +140,14 @@ not an omission. Start your session at your own heading.
 |---|---|---|---|---|---|
 | [062](062-backlog-reconciliation.md) | Backlog reconciliation | `pm` | OPEN | 3d | none |
 
-### `design` — 3 waiting  ⚠️ *cannot read this repo — needs a human hop via pm*
+### `design` — 4 waiting  ⚠️ *cannot read this repo — needs a human hop via pm*
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
 | [092](092-component-projections-exist-and-are-cheap-for-pe.md) | Component projections exist and are cheap for pe | `researcher` | OPEN | 1d | FR-040 (custom scoring in the browser), FR-053 feature decisions, FR-044/FR-049 design work |
 | [107](107-how-the-archetype-label-surfaces-on-the-player-c.md) | How the archetype label surfaces on the player c | `researcher` | OPEN | 0d | FR-075 (archetype on the player card) |
 | [115](115-answers-to-the-four-open-questions-in-the-2026-0.md) | Answers to the four open questions in the 2026 0 | `pm` | OPEN | 0d | none |
+| [2026-07-30-draft-board-reference-axis-unanimous-snake-never](2026-07-30-draft-board-reference-axis-unanimous-snake-never.md) | Draft board reference axis unanimous snake never | `researcher` | OPEN | 0d | none |
 
 ### `founder` — 1 waiting
 

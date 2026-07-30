@@ -50,8 +50,13 @@ reviewed.
 these three questions, it carries the founder's correction of the PM's framing verbatim, and no
 M1/M2/M3 output exists anywhere in the repo.
 
-Fable is on a **separate weekly budget** and has not been used this week. There is no cheaper way to
-find out whether the three are as good as this project believes they are.
+Fable has not been used this week.
+
+**Correction, founder 2026-07-30 — this PM had it wrong twice and was told to stop:** Fable is
+*accounted* separately, but it **draws on the main pool and counts against the weekly total.** It is
+not free capacity and running it is not costless. It is dispatched at the end of the week because that
+is when the founder chooses to spend that budget, not because the budget is separate from everything
+else. Any sentence implying "Fable costs nothing from the main budget" is wrong.
 
 ## Honest state of the three, 2026-07-30
 

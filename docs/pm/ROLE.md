@@ -183,7 +183,7 @@ is now judging — that goes to Fable.
 | **researcher** | External facts — sources, terms, competitor behaviour |
 | **librarian** | The mailbox, documents, cleanup, reconciliation |
 | **design** | The design system and visual parity; reads the repo, relays through the founder |
-| **Fable** | Adversarial review on a separate budget. **The best value per token in this project** |
+| **Fable** | Adversarial review, **separately accounted but drawing on the main pool and counting against the weekly total** — not free capacity (founder correction, 2026-07-30). **The best value per token in this project** |
 
 ---
 
