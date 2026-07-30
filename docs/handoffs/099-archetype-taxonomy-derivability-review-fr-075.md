@@ -1,8 +1,10 @@
 ---
+ID: 099
 FROM: researcher
 TO: ranker
 STATUS: OPEN
 BLOCKS: FR-075 (archetype on the player card), FR-086 (volatility as an archetype dimension)
+OPENED: 2026-07-30
 ---
 
 ## Ask

@@ -1,8 +1,10 @@
 ---
+ID: 098
 FROM: frontend
 TO: backend
 STATUS: RESOLVED
 BLOCKS: none
+OPENED: 2026-07-30
 ---
 
 ## Ask

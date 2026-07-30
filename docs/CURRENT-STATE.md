@@ -262,6 +262,25 @@ board verified byte-identical (Bijan Robinson 303.16 pts / VBD 172.17, unchanged
 `league.json`'s contract version and new note field changed. Non-primary boards moved for real:
 e.g. `espn_10_half` Bijan Robinson 303.16 → 296.68 pts (rushing-yardage bonus removed). Handoff
 thread 093 opened to frontend for the contract bump. See ADR-062 for full before/after evidence.
+**Last verified:** 2026-07-29, backend session (worktree `agent-af64727a6079cca5e`, ADR-061,
+FR-057 part 1) — the draft-slot selector (FR-034) already changed the pick sequence everywhere in
+the app, but `availability.json` only ever had rows for the founder's own slot's pick numbers;
+switching the selector to any other slot found no matching keys. `run_availability.py` now sweeps
+every slot 1..teams (was one) and merges into the existing `by_player`/`by_tier` shape — no new
+nesting, since a pick number belongs to exactly one slot for a fixed team/round count (proved
+before the merge code was written, `tests/test_run_availability_multi_slot.py`, 9 tests).
+`CONTRACT_VERSION` is now **1.15.0** (was 1.14.0); handoff thread 093 opened to frontend.
+**Measured, not assumed:** `availability.json` 161,100 → 1,554,817 bytes (9.65x); sweep runtime
+628.8s (~10.5 min) for the primary league's 10 slots, ~63s/slot. Two real regressions caught and
+fixed before this shipped, both now regression-tested: (1) an early version moved the founder's
+own slot's numbers by 0.1-2.5pp via a stray RNG-seed offset that should only have applied to the
+nine new slots; (2) `board.json` (a separate consumer of the same data) inherited the full
+multi-slot growth by accident (1,020,368 → 2,276,988 bytes, 2.2x) before being filtered back down
+to its pre-existing, unchanged size. Only the primary league got a real sweep — the 24 preset
+configs and `ethans_expert_league` still have no Monte Carlo data at all (ADR-047's pre-existing,
+deliberate cost scope, unrelated to this session); the code path is slot-aware for any league the
+moment one IS run. Client-side recomputation (FR-057 part 2, the founder's stated preference) is
+explicitly out of scope here — a separate, larger build. Full writeup: ADR-061.
 
 **Prior verification:** 2026-07-29, backend session (PM-dispatched, worktree
 `agent-a2a7e52225b3a7db0`, ADR-060) closing a real gap: contract 1.14.0 (thread 082) put real ADP
@@ -309,6 +328,9 @@ measured directly from `git rev-parse HEAD`, real backend/frontend full-suite ru
 is **1.16.0** (measured from `src/export_contract.py`, 2026-07-30, this session's FR-079/FR-083
 league-scoring-aware ADP note + history export fix — was 1.15.0, ADR-062's bump; this line
 previously said 1.13.0 until an earlier claim checker caught that drift).
+was **1.14.0** at that session's measurement (2026-07-29 — this line said 1.13.0 until
+the claim checker caught the drift; the Build state table below had been right all along; now
+1.15.0, see this doc's "Last verified" paragraph above, ADR-061).
 The 1.13.0 bump, from the Phase 3 Chain 1 backend session (worktree
 `phase3-chain1-adp-and-exports`, thread 074 closed), added: `board.json` top level gained
 `snapshot_as_of_date`/`snapshot_age_days`/`snapshot_max_age_days`/`snapshot_stale`/

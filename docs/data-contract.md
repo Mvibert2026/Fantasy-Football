@@ -151,11 +151,78 @@ league's format*", which is a different and better-founded statement.
 |---|---|
 | `by_player` | `{player: {pick: {sigma_5, sigma_10, sigma_20}}}` |
 | `by_tier` | `{position: {tier: {pick: {sigma_5, sigma_10, sigma_20}}}}` — P(≥1 of that tier still on the board) |
-| `metadata` | sims run, sigma values, plain-English sigma explanation, user picks, reliability note, marginals note |
+| `metadata` | sims run, sigma values, plain-English sigma explanation, user picks, reliability note, marginals note, **multi-slot fields (below)** |
 | `client_simulation_parameters` | Everything needed to re-run the opponent model client-side, conditioned on live draft state — see below |
 
 **These are the most reliable numbers in the project** — they never pass through the projection
 curve. Surface `metadata.reliability_note`.
+
+### Multi-slot coverage (contract 1.15.0, FR-057 part 1)
+
+Before 1.15.0, `by_player`/`by_tier` only had rows for the ~16 overall pick numbers belonging to
+`metadata.user_draft_slot` — the founder's own slot. Changing the draft-slot selector elsewhere in
+the app (FR-034) produced a DIFFERENT set of pick numbers with no rows in this file, so the numbers
+went **absent, not wrong**.
+
+As of 1.15.0, `run_availability.py` runs the same simulation once per slot (1..`league.json:teams`)
+instead of once total, and merges every slot's result into `by_player`/`by_tier`. This is safe
+without any new nesting: for a fixed team/round count, an overall pick number belongs to exactly
+one slot, so the merge is a disjoint union, never an overwrite (proved in
+`tests/test_run_availability_multi_slot.py`).
+
+**What changed in the shape:** nothing structural. `by_player`/`by_tier` are still keyed by overall
+pick number exactly as before — they simply now have far more pick numbers populated (every slot's,
+not just one). Two new `metadata` fields:
+
+| Field | Notes |
+|---|---|
+| `multi_slot_coverage` | `true` |
+| `multi_slot_note` | Explains the above in the export itself |
+| `picks_by_slot` | `{"1": [pick,...], "2": [...], ..., str(teams): [...]}` — the canonical pick-number sequence for every slot. Use this instead of re-deriving snake order client-side, so there is exactly one implementation of "which picks belong to slot N" (backend's), not two that can drift apart |
+
+**Frontend usage:** when the draft-slot selector is set to slot N, read `picks_by_slot[str(N)]` for
+that slot's pick sequence, then look those pick numbers up in `by_player`/`by_tier` as before —
+they now resolve. `metadata.user_draft_slot`/`user_picks` are UNCHANGED (still the founder's own
+slot; nothing that read them before needs to change).
+
+**Known, measured deviation:** every slot except the founder's own uses a generalized draft engine
+(`ds.DraftEngine`) rather than the original hand-tuned primary-league code path. A scratchpad
+comparison at slot 3 (the founder's own slot, 200 sims, sigma 10, same seed) found the two paths
+differ by up to ~0.02 absolute probability at late picks — not yet root-caused, logged in
+`docs/ideas-inbox.md`. The founder's own slot is unaffected (still `engine=None`, byte-identical to
+pre-1.15.0 output).
+
+**Payload size and runtime measured 2026-07-29** (primary league, 3000 sims × 3 sigmas):
+
+| | Before (1 slot) | After (all 10 slots) |
+|---|---|---|
+| `availability.json` | 161,100 bytes | 1,554,817 bytes (**9.65x**) |
+| Sweep runtime | ~45-60s (1 slot, docs estimate) | **628.8s (~10.5 min) measured, 10 slots, ~63s/slot average** |
+
+**`board.json` deliberately did NOT grow.** It embeds `by_player[player]` per row too, and an
+early version of this change let that inherit the full multi-slot growth by accident — measured
+1,020,368 → 2,276,988 bytes (2.2x) before it was caught and fixed. `board.json` is loaded on every
+page view, not just an availability-specific screen, and FR-057 never asked it to carry multi-slot
+data — `build_board_json` now filters its `by_player` read down to `cfg`'s own pick numbers only,
+exactly the slice it carried before 1.15.0. `board.json`'s size is otherwise unaffected by this
+contract bump (regression-tested in
+`tests/test_run_availability_multi_slot.py::test_board_json_availability_embed_stays_own_slot_only`).
+
+**Recommendation given the numbers above:** ~10.5 minutes and a ~9.65x `availability.json` (to
+1.55 MB) is workable as a floor for the primary league specifically — not free, but not the "hours"
+threshold that would force a different call. It does NOT extend cheaply to every league: a 14-team
+league's sweep would take roughly 14/10 as long per the measured ~63s/slot rate, and running it for
+all 27 league exports (most currently un-swept at all, by design, ADR-047) would be on the order of
+hours, not minutes. This is exactly the shape of problem the founder's stated preference (part 2,
+browser-side recomputation conditioned on live draft state) sidesteps entirely — it does not scale
+with team count or slot count because it computes ONE slot's answer on demand instead of
+precomputing all of them.
+
+**Not in this pass (FR-057 part 2, founder's stated preference):** true browser-side
+recomputation conditioned on picks actually made mid-draft. This pass is the floor — real numbers
+for any slot pre-draft — not the ceiling. See `client_simulation_parameters` above, which already
+carries everything a client-side simulator needs and predates this change; FR-057 part 2 is a
+separate, larger build.
 
 ### `te_scenarios` is REMOVED (ADR-033, ADR-034) — do not reintroduce it
 

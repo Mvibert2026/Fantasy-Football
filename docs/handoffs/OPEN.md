@@ -5,6 +5,7 @@ Threads are the source of truth. Change a thread's `STATUS:`, then re-run sync.
 Protocol: [`README.md`](README.md).
 
 **55 open** · 44 resolved
+**51 open** · 41 resolved
 
 ---
 
@@ -55,7 +56,7 @@ not an omission. Start your session at your own heading.
 | [094](094-sleeper-projection-ingest-landed-red-against-the.md) | Sleeper projection ingest landed red against the | `ranker` | OPEN | 1d | a clean suite; the "known-red is exactly one test" claim in CURRENT-STATE item 15 |
 | [88](088-pr-004-f-bottomup-core-run-the-confirmatory-bott.md) | Pr 004 f bottomup core run the confirmatory bott | `strategist` | OPEN | 1d | none |
 
-### `frontend` — 16 waiting
+### `frontend` — 17 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
@@ -75,6 +76,23 @@ not an omission. Start your session at your own heading.
 | [066](066-contract-1-10-0-board-json-rows-gained-roster-st.md) | Contract 1 10 0 board json rows gained roster st | `backend` | OPEN | 3d | none |
 | [086](086-competitive-ux-the-overhaul-case-is-weaker-than.md) | Competitive ux the overhaul case is weaker than | `researcher` | OPEN | 1d | none |
 | [89](089-fr-040-costing-static-hosting-blocks-scoring-rec.md) | Fr 040 costing static hosting blocks scoring rec | `backend` | OPEN | 1d | FR-040 custom league settings screen |
+| [003](003-frontend-reconnect.md) | Frontend reconnect | `pm` | OPEN | 3d | none |
+| [006](006-design-sync-pilot.md) | Design sync pilot | `pm` | OPEN | 3d | none |
+| [007](007-design-fidelity-harness.md) | Design fidelity harness | `pm` | OPEN | 3d | none |
+| [030](030-inline-why-rank-differs.md) | Inline why rank differs | `pm` | OPEN | 3d | none |
+| [031](031-frontend-spec-audit-and-wiring.md) | Frontend spec audit and wiring | `pm` | OPEN | 3d | 027, 028, Settings build |
+| [035](035-frontend-catchup-runbook.md) | Frontend catchup runbook | `pm` | OPEN | 3d | 003, 027, 028, 029, 030, 031, and every future frontend thread |
+| [036](036-mocklab-staleness-retrofit.md) | Mocklab staleness retrofit | `pm` | OPEN | 3d | Mock Lab build |
+| [037](037-audit-followups.md) | Audit followups | `pm` | OPEN | 3d | none |
+| [040](040-multi-league-slot-and-undo.md) | Multi league slot and undo | `pm` | OPEN | 2d | Mock Lab build, Settings build |
+| [043](043-weekly-finishes-json-season-stats-json-ready-con.md) | Weekly finishes json season stats json ready con | `backend` | OPEN | 3d | none |
+| [047](047-manual-draft-setup-entry.md) | Manual draft setup entry | `pm` | OPEN | 2d | usable mock drafting |
+| [049](049-draft-mode-gap-list.md) | Draft mode gap list | `pm` | OPEN | 2d | none |
+| [059](059-on-deck-recommendations.md) | On deck recommendations | `pm` | OPEN | 2d | FR-006 (draft chatbot), calm-preparation use case |
+| [066](066-contract-1-10-0-board-json-rows-gained-roster-st.md) | Contract 1 10 0 board json rows gained roster st | `backend` | OPEN | 2d | none |
+| [086](086-competitive-ux-the-overhaul-case-is-weaker-than.md) | Competitive ux the overhaul case is weaker than | `researcher` | OPEN | 0d | none |
+| [093](093-fr-057-part-1-availability-json-now-covers-every.md) | Fr 057 part 1 availability json now covers every | `backend` | OPEN | 0d | none |
+| [89](089-fr-040-costing-static-hosting-blocks-scoring-rec.md) | Fr 040 costing static hosting blocks scoring rec | `backend` | OPEN | 0d | FR-040 custom league settings screen |
 
 ### `data-ops` — 8 waiting
 

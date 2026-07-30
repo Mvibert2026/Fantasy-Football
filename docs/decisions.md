@@ -2712,3 +2712,101 @@ thread 094) -- none touch `src/providers/` or its tests.
    Yahoo displays after clicking Allow, saves the token.
 5. `python scripts/yahoo_pull_league_settings.py --discover` to find league keys, then
    `--league-key <key>` to pull settings and see the diff against CLAUDE.md SS7's Westwood table.
+## ADR-061 — Availability now covers every draft slot, not just the founder's own (2026-07-29, backend, FR-057 part 1)
+
+**Problem.** The draft-slot selector (FR-034) already changes the pick sequence everywhere in the
+app — board, round grid, Predictions, draft room. Availability could not follow: `data/export/
+availability.json`'s `by_player`/`by_tier` only carried rows for the founder's own slot's pick
+numbers (`3, 18, 23, 38, 43, 58, ...`), computed by a single Monte Carlo run in `run_availability.py`.
+Switching the selector to any other slot produced a DIFFERENT set of pick numbers with no matching
+rows — the numbers went absent, not wrong, which is a worse failure mode because it looks like a
+UI bug rather than a missing computation.
+
+**Fix — the floor, not the browser recompute.** The founder asked for both ("the browser needs to
+find a way to recompute them, python needs to run against all slots as well … I'd prefer the
+browser can calculate, but we need good data too") and was right that they are not alternatives.
+This ADR is the floor only: run the existing simulation for every slot and ship the lot. Client-side
+recomputation conditioned on live picks (FR-057 part 2, his stated preference) is a separate, larger
+build and is explicitly out of scope here.
+
+**No new nesting level.** `pick_order()` — which team owns which overall pick number — does not
+depend on which team is "the user" for a fixed team/round count; only the ROLE that team plays
+(best-player-available vs. need-driven opponent) changes with slot. Consequently a given overall
+pick number is tracked by exactly one slot's simulation, so sweeping every slot 1..`teams` and
+merging the results into the EXISTING `by_player`/`by_tier` shape is a disjoint union, never an
+overwrite. Verified structurally before any merge code was written
+(`tests/test_run_availability_multi_slot.py`, 9 tests) — this is what keeps the contract change
+additive (two new `metadata` fields) instead of a breaking restructure of an artifact `board.json`
+and `narrate.py` also read.
+
+**New in `availability.json.metadata` (contract 1.15.0, was 1.14.0):**
+- `multi_slot_coverage: true`
+- `picks_by_slot`: `{"1": [...], ..., "10": [...]}` — the canonical pick sequence per slot,
+  computed by the same `pick_order()`/`DraftEngine` code the backend already uses. Shipped so the
+  frontend has one source of truth instead of a second, independently-written snake-order
+  implementation that could drift from this one (FR-057's own "two implementations must agree").
+
+**Founder's own slot is unaffected.** `_engine_for_slot` keeps the exact pre-existing code path
+for `cfg.user_draft_slot` (module-level free functions, `engine=None`, for the primary league) —
+every other slot uses a `ds.DraftEngine` built from a copy of `cfg` with only `user_draft_slot`
+swapped.
+
+**Two real bugs found and fixed before this shipped, not after:**
+1. The first version of the sweep added a slot-dependent seed offset to EVERY slot including the
+   founder's own. Even though the algorithm path for that slot was unchanged, the different RNG
+   stream moved 671 of 1280 checked cells at the founder's own pick numbers by 0.1–2.5 percentage
+   points versus the pre-session committed `availability.json` — caught by diffing before/after,
+   not by review. Fixed: the seed offset is `0` for `cfg.user_draft_slot`, non-zero only for the
+   nine new slots. Regression-tested (`test_own_slot_numbers_unaffected_by_sweeping_other_slots`).
+2. `board.json` embeds `by_player[player]` per row too (a separate consumer of the same CSV,
+   `build_board_json`). Left un-filtered, it inherited the full multi-slot growth — measured
+   1,020,368 → 2,276,988 bytes (2.2x) for an artifact loaded on every page view, for a feature
+   FR-057 never asked `board.json` to carry. Fixed: `build_board_json` now filters its
+   `by_player` read down to `cfg`'s own pick numbers only, the exact slice it carried before
+   1.15.0. Regression-tested (`test_board_json_availability_embed_stays_own_slot_only`).
+
+**Measured, not assumed:**
+
+| | Before (1 slot) | After (10 slots) |
+|---|---|---|
+| `availability.json` | 161,100 bytes | 1,554,817 bytes (**9.65x**) |
+| Sweep runtime (3000 sims × 3 sigmas) | ~45-60s (1 slot, prior doc estimate) | **628.8s (~10.5 min), ~63s/slot average, measured directly** |
+| `board.json` | 1,020,368 bytes | **unchanged** (fix #2 above) |
+
+**Scope: only the primary league (Westwood) got a real sweep this pass.** The 24 preset configs
+and `ethans_expert_league` have never had a real Monte Carlo run at all — that is ADR-047's
+deliberate cost-scoping, unrelated to this change, not something this session reopened. The CODE
+PATH (`run_availability.py`, `export_contract.build_availability_json`/`_all_slot_pick_numbers`)
+works identically for any `LeagueConfig` regardless of team count, so whenever a real sim IS run
+for another league, it is multi-slot from day one with no follow-up fix needed.
+`data/leagues/yahoo_standard_mock/availability.csv` (a labelled "mock, approximate" test fixture,
+not one of the founder's real leagues) was left un-swept for the same reason. Recorded in
+`docs/ideas-inbox.md`, 2026-07-29 backend entry.
+
+**Known, measured, not root-caused:** every slot but the founder's own uses `ds.DraftEngine`
+instead of the original hand-tuned primary-league free functions. A scratchpad comparison (200
+sims, sigma 10, same seed, primary league at slot 3) found the two paths differ by up to ~0.02
+absolute probability at late picks even though they SHOULD be numerically identical — almost
+certainly a `legal_mask`/`picks_left` off-by-one between the two parallel implementations. Not
+chased down here (contained, separate investigation); logged in `docs/ideas-inbox.md` rather than
+shipped silently. Does not affect the founder's own slot's numbers.
+
+**Recommendation given the measured numbers.** ~10.5 minutes and a 9.65x `availability.json` (to
+1.55 MB) is workable as a floor for one 10-team league. It does not extend cheaply to every league
+— a 14-team league scales roughly linearly with team count at the measured ~63s/slot rate, and
+sweeping all 27 league exports (25 of which have no Monte Carlo data at all today) would be on the
+order of hours. This is exactly the case client-side recomputation (FR-057 part 2) sidesteps: it
+computes one slot's answer on demand instead of precomputing all of them, and already has its
+inputs shipped (`client_simulation_parameters`, predates this ADR).
+
+**Also fixed as a side effect, not the point of this session:** `board.json`'s
+`consensus_source_note` field still carried ADR-060's stale "no ADP source (ADR-018)" text as of
+that ADR's own "known limitation, not fixed here" note, because that session's `nfl.db` was
+unreachable. This session's worktree had a real `nfl.db` copy, so regenerating `board.json` here
+picked up the already-corrected source text automatically — `consensus_source_note` now reads
+correctly in the committed artifact. No code change; confirmed by reading the regenerated file.
+
+**Evidence.** Backend: `python3 -m pytest tests/test_run_availability_multi_slot.py -q` — 9 passed.
+Full suite and commit hash in this session's `docs/status/` entry. Contract version 1.15.0 (was
+1.14.0) — handoff thread 093 opened to frontend with the field-level contract and required
+frontend-side change (read `picks_by_slot[str(slot)]` instead of assuming the founder's own).
