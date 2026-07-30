@@ -17,6 +17,18 @@ with continuity and fired its OC in November -- and that firing is caused by the
 season going badly, which is exactly the direction that manufactures fake signal.
 Reading the pre-Week-1 revision removes that channel entirely.
 
+WHERE THE PRESEASON NAME ACTUALLY LIVES -- measured, not assumed. The obvious
+version of this (fetch the season article's pre-Week-1 revision and re-run the
+`{{NFL final staff}}` parser) returns NOTHING: 32/32 team-seasons in a 2018 probe
+had no such template, because "final staff" is a static block editors substitute
+in AFTER the season. What the in-season article carries instead is a
+`==Staff==` section transcluding the team's LIVE navbox, e.g.
+`{{Chicago Bears staff}}` -- whose content is whatever it is today, not what it
+was in 2018. So this module makes TWO dated reads: the article revision before
+kickoff (to learn which navbox that season's article pointed at) and then that
+NAVBOX PAGE's own revision before the same kickoff. Verified to work back to at
+least 2013 (`Template:Kansas City Chiefs staff` @2013-08-05 -> Doug Pederson OC).
+
 WHAT IS STILL A PROXY, NAMED. The revision timestamp is the honest `as_of`, and
 it is a few days before Week 1 -- i.e. after a late-August fantasy draft, not
 before it. Coordinator hires are January-March events, so the practical risk is
@@ -63,12 +75,18 @@ CREATE TABLE IF NOT EXISTS "{TABLE}" (
     team TEXT NOT NULL,
     season INTEGER NOT NULL,
     title TEXT NOT NULL,              -- OC | DC
-    coach_id TEXT,                    -- the coordinator's name; see docstring
+    coach_id TEXT,                    -- the coordinator's name; NULL if the
+                                      -- navbox listed no such role. NEVER a
+                                      -- guess: "no OC line" usually means the
+                                      -- head coach called plays, but that
+                                      -- inference is left to the feature layer
+                                      -- where it is visible and testable.
     head_coach TEXT,
     is_hc_calling INTEGER,
-    as_of_date TEXT NOT NULL,         -- timestamp of the Wikipedia revision read
+    as_of_date TEXT NOT NULL,         -- timestamp of the navbox revision read
     revid INTEGER,
     days_before_kickoff REAL,
+    navbox TEXT,
     source TEXT NOT NULL,
     confidence TEXT NOT NULL,
     retrieved_at TEXT NOT NULL,
