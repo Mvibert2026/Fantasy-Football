@@ -5,11 +5,11 @@ Per-request files in this directory are the source of truth. Edit a request's ow
 `STATUS:` line, then re-run sync. Protocol: [`README.md`](README.md).
 Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests.md).
 
-**127 requests since freeze.**
+**128 requests since freeze.**
 
 ---
 
-## NEW — 79
+## NEW — 80
 
 | ID | Subject | Raised | Source |
 |---|---|---|---|
@@ -87,11 +87,12 @@ Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests
 | [FR-135](FR-135-traditional-draft-board-teams-across-the-top-fil.md) | Traditional draft board teams across the top fil | 2026-07-30 | PM session 2026-07-30, founder chat |
 | [FR-136](FR-136-pivot-all-energy-to-the-three-model-questions-on.md) | Pivot all energy to the three model questions on | 2026-07-30 | PM session 2026-07-30, founder chat |
 | [FR-2026-07-30-bottom-up-first](FR-2026-07-30-bottom-up-first-availability-is-adp-plus-draft-s.md) | Bottom up first availability is adp plus draft s | 2026-07-30 | PM session 2026-07-30, founder chat |
+| [FR-2026-07-30-bottom-up-must-include-all-tier-0-table-stakes-n](FR-2026-07-30-bottom-up-must-include-all-tier-0-table-stakes-n.md) | Bottom up must include all tier 0 table stakes n | 2026-07-30 | PM session 2026-07-30, founder chat |
 | [FR-2026-07-30-lots-of-components-in-the-rankings-proprietary-a](FR-2026-07-30-lots-of-components-in-the-rankings-proprietary-a.md) | Lots of components in the rankings proprietary a | 2026-07-30 | ranker session 2026-07-30, relayed in PM brief for FR-136 Q1 |
 | [FR-2026-07-30-price-the-fantasypros-paid-api-tier](FR-2026-07-30-price-the-fantasypros-paid-api-tier-terms-were-n.md) | Price the fantasypros paid api tier terms were n | 2026-07-30 | PM session 2026-07-30, founder chat |
 | [FR-2026-07-30-recommendation-logic-is-inverted](FR-2026-07-30-recommendation-logic-is-inverted-it-prefers-the.md) | Recommendation logic is inverted it prefers the | 2026-07-30 | PM session 2026-07-30, founder chat, live Draft-mode screenshot |
 | [FR-2026-07-30-recommender-contradicts-own-findings](FR-2026-07-30-the-recommender-contradicts-the-project-s-own-me.md) | The recommender contradicts the project s own me | 2026-07-30 | PM session 2026-07-30, founder chat |
-| [FR-2026-07-30-widen-the-ranking-input-list-research-what-leadi](FR-2026-07-30-widen-the-ranking-input-list-research-what-leadi.md) | Widen the ranking input list research what leadi | 2026-07-30 | PM session 2026-07-30, founder chat |
+| [FR-2026-07-30-widen-the-ranking-input-list](FR-2026-07-30-widen-the-ranking-input-list-research-what-leadi.md) | Widen the ranking input list research what leadi | 2026-07-30 | PM session 2026-07-30, founder chat |
 
 ## SCOPING — 1
 
