@@ -75,15 +75,19 @@ import { decimal, integer, percent, signed } from '../lib/format';
  * `stale` is always false: FR-069's Settings panel (`ui/components/shell/
  * SettingsPanel.tsx`) exists now, but the ONE field it can actually edit --
  * draft slot -- is a local, display-only override (FR-034) that doesn't touch
- * league config the simulations run against; team count, roster shape and
- * scoring stay read-only there precisely because this app cannot recompute
- * VBD/replacement levels/availability from an edited value client-side (see
- * that file's own doc comment). So there is still no settings-hash system that
- * could mark a league's simulation stale (§5.1 needs live, editable league
- * settings that feed the simulation to compare hashes against; none do).
- * Threaded as a real prop rather than deleted, so wiring it up later (if a
- * setting that DOES feed simulations becomes editable) is additive, not a
- * rewrite.
+ * league config the simulations run against. Team count and roster shape stay
+ * read-only there not because VBD is unreachable client-side (a replacement-
+ * level recompute is arithmetic on `projected_points` the board already
+ * ships), but because `league.json:flex_split_note`'s measured flex-slot
+ * allocation (26-season simulation, ADR-029) is tied to this league's own
+ * roster shape and would need re-measuring, not guessing, for a different one
+ * -- see that file's own doc comment. Scoring stays read-only for the
+ * genuinely-unreachable reason (no component stats shipped to re-score from).
+ * So there is still no settings-hash system that could mark a league's
+ * simulation stale (§5.1 needs live, editable league settings that feed the
+ * simulation to compare hashes against; none do). Threaded as a real prop
+ * rather than deleted, so wiring it up later (if a setting that DOES feed
+ * simulations becomes editable) is additive, not a rewrite.
  */
 
 export function PlayerDetail({

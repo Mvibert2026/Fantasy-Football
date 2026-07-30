@@ -16,18 +16,29 @@ import { integer } from '../../lib/format';
  *
  * The spec's "applies immediately" class names THREE fields as editable and
  * "recomputable in the browser from what the board already ships": roster shape,
- * team count, draft slot. That is true of draft slot alone. `board.json`'s VBD and
- * `league.json`'s replacement levels are computed server-side against this league's
- * real season data (`src/scoring.py`, `src/replacement_levels` -- see
- * `league.replacementLevelsNote`) -- they are NOT pure arithmetic over team count, so
- * there is nothing for a changed team count or roster shape to recompute against in
- * the browser. Accepting an edit to either would be exactly the failure this spec's
- * absolute rule exists to prevent: a setting that looks live but cannot actually
- * apply. So both render read-only here too, next to the genuinely-editable draft
- * slot, not as disabled form fields (a disabled field still says "this is a thing you
- * set here" -- the spec's own reasoning for why scoring gets a statement, not a
- * greyed-out form). Flagged to design/backend via a handoff thread rather than
- * silently deviating from the written spec.
+ * team count, draft slot. That is unambiguously true of draft slot. It is NOT simply
+ * true or false of team count/roster shape -- and an earlier draft of this file
+ * claimed it was flatly impossible ("VBD needs server-side season data"), which
+ * FR-040's own analysis already refutes: replacement level for a different team
+ * count is just reading a different rank off the SAME per-player `projected_points`
+ * the board already ships, and VBD from there is arithmetic. That correction is
+ * recorded here, not silently fixed, because getting it wrong once already cost a
+ * false claim in this exact file.
+ *
+ * The REAL blocker is narrower and specific: `league.json:flex_split_assumption` /
+ * `flex_split_note` -- how many of this league's flex slots each position actually
+ * wins -- is a MEASURED quantity (26-season simulation, ADR-029), tied to THIS
+ * league's exact roster shape (2 flex slots among RB/WR/TE). A different team count
+ * or flex count needs that measurement re-run, not a formula; a naive recompute that
+ * just moves the replacement-level cutoff would silently drop the measured
+ * assumption and produce a number that reads as this league's methodology while not
+ * being it. Building this honestly needs either a written, labelled approximation
+ * rule or a real re-simulation -- neither exists yet, so neither field is editable
+ * here. Both render read-only next to the genuinely-editable draft slot, not as
+ * disabled form fields (a disabled field still says "this is a thing you set here"
+ * -- the spec's own reasoning for why scoring gets a statement, not a greyed-out
+ * form). Flagged to design/backend via a handoff thread rather than silently
+ * deviating from the written spec.
  *
  * FR-069's own further ask -- collapsing the league dropdown to "my three leagues
  * plus Custom" and retiring the 24-preset matrix -- is a separate, larger,
@@ -135,10 +146,13 @@ export function SettingsPanel({
               </div>
             </div>
             <p className="notice" style={{ marginTop: 8, fontSize: 10.5, lineHeight: 1.5 }}>
-              Team count and roster shape are not editable here. Changing them would require rebuilding
-              the board's VBD and replacement levels against real season data -- both are computed
-              server-side, not arithmetic over team count alone -- so nothing here could actually apply a
-              change. Draft slot above is the one field this build can genuinely recompute client-side.
+              Team count and roster shape are not editable here. Not because VBD itself is unreachable
+              client-side -- it isn't, a different replacement-level cutoff is arithmetic on the
+              projected points already shipped -- but because how many flex slots each position wins
+              (league.json:flex_split_note) was MEASURED for this league's own shape (26 seasons, ADR-029),
+              not derived from a formula. A different roster shape needs that measurement re-run, not
+              guessed, so nothing here changes it yet. Draft slot above is the one field this build can
+              genuinely recompute client-side today.
             </p>
 
             {/* Cannot apply when hosted -- a statement, not a form. No inputs. */}
