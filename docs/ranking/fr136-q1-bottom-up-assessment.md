@@ -294,7 +294,70 @@ about.
 
 ---
 
-## 5. Status of this document
+## 5. Q4 — the gap list, ordered by what it buys
+
+**39 days to 7 September.** Costs below are **measured, not estimated** — every acquisition time in
+this section was timed in this container against the live source today.
+
+### 5.0 The finding that reorders the whole list
+
+Four of the named "expensive" gaps are not expensive. They are unnoticed.
+
+| dataset | measured today | what it unblocks |
+|---|---|---|
+| `nflreadpy.load_pbp(2009…2025)` | **816,856 rows in 20.4 s**; the 24 columns needed slim to **15.2 MB** parquet, `xpass` included | registry **#10 red-zone/goal-line**, **#18 xFP**, **#21 team pace**, **#22 PROE** — all four currently marked unbuildable, three of them High edge |
+| `load_rosters_weekly(2025)` | **46,849 rows in 1.0 s**, `status` includes `RES` (IR) and `EXE` | the IR/suspension signal `component-model-rb-qb-te-pass-1.md` §5.2 commissioned from `data-ops` and which is still not in the DB |
+| `load_injuries(2025)` | **6,068 rows in 0.5 s** | closes the `injuries` table's 2025 hole (it stops at 2024) |
+| `load_depth_charts(2025)` | **554,215 rows in 0.7 s** | closes the `depth_charts_weekly` 2025 hole (stops at 2024) |
+| `load_schedules([2025, 2026])` | **557 rows in 1.3 s**, 2026 present | byes and opponent structure from source rather than derived |
+
+**Total acquisition: under half a minute of wall clock.** The reason four Tier-1 factors are
+untested is not that the data is hard to get. Nobody fetched it. That is a finding in its own right
+and it should be reported as one.
+
+**Acquisition is not validation.** Testing four factors properly, with §6.3's multiplicity exposure
+handled at the campaign level rather than per test, is the expensive half — and it is the half that
+does not fit comfortably in 39 days.
+
+### 5.1 The ordered list
+
+| # | Gap | What it buys | Cost | Validatable before 7 Sep? |
+|---|---|---|---|---|
+| **1** | **Re-enable the `consensus_adp` baseline arm** (`backtest.py:standard_arms`, `available=False` on ADR-018's now-stale reasoning) | `CLAUDE.md` §6.5 **baseline #1**, which the shipped board has never been measured against. Buys no accuracy — buys knowing whether the board is worth anything | hours; FFC ADP already ingested | **Yes.** Cheapest item on the list and it is a compliance gap, not a model gap |
+| **2** | **A primary metric that can see the board** | §1.2: per-position τ_b returns exactly 0.000000 between board and consensus. `top_k_starter_vbd` and `src/draft_sim.py` already exist and are cross-position sensitive | days | **Yes** — but **`strategist` must choose it, not me.** A ranker picking the metric that scores the ranker is the failure this structure exists to prevent |
+| **3** | **Ship real component projections as `projected_points`** (FR-054/FR-056 and today's founder request) | The founder's actual ask. Replaces a curve fit to consensus rank with a projection from player inputs that beats naive persistence at all four positions | model exists; needs `release_for_final_fit`, a 2026 run, and a `backend` handoff on the export contract | **Acquisition yes, justification no.** The component model is *measured* not to beat consensus on rank. Shipping it as the ranking would ship a thing known not to beat the market. Shipping it as *displayed projections beside* a consensus-derived rank is defensible and different — **that is a PM/strategist call, not mine** |
+| **4** | **Ingest PBP + the four factors it unblocks** (#10, #18, #21, #22) | The only untouched High-edge block in the registry | 20 s to acquire; **weeks to test honestly** | **Partly.** Ingest and one pre-registered factor: yes. All four with campaign-level multiplicity control: **no** |
+| **5** | **Availability, re-approached** | The oracle says perfect games-played foresight alone beats consensus at all four positions (§4). The channel is the largest single one after rate | `load_rosters_weekly` is 1 s; the modelling is not | **Test yes, expect null.** Every availability arm already tried measured null on ranking (`component-model-rb-qb-te-pass-1.md` §5.1). The channel is huge and our features for it are empty — those are both true and the second one is the binding constraint |
+| **6** | **The rate channel — better projection of the same variables** | §4: **+0.35 to +0.44 ρ** of room at every position, against a component model delivering +0.051 at WR and negative at RB. Largest measurable gap in the project | open-ended | **No, and this is the "cannot be earned in time" item.** A bounded slice can be: `snap_counts` (2013+) and NGS (2016+) are both in the DB and **untouched by any model**. That is a real, testable, pre-registerable factor batch that fits in 39 days. The channel itself does not |
+| **7** | **DEF / DST** | A **starting slot** in this league with literally zero coverage (`board.json:def_supported = false`). On 7 September he will draft one and the tool will say nothing | low-moderate: scoring rules + ingest | **Coverage yes, edge no.** DST is close to unpredictable; a "best DEF ranking" claim is not earnable by September. A *number where a blank currently sits* is |
+| **8** | **Vegas odds / implied team totals** (`CLAUDE.md` §5 gap) | Offensive environment | sourcing + licensing; **historical odds need a paid source** — `researcher` thread | **No — and it should not be attempted.** `bottom-up-research-pass-1` bounded the entire team-environment channel at **≤ +0.055 τ_b by oracle**. It cannot be validated in time *and* its own ceiling says it is small. Both reasons, and the second is the better one |
+| **9** | **Coaching / coordinator history** (`coach_id`, §4/§5) | Registry #29/#30, tagged High edge | PFR returns HTTP 403; `src/ingest_coordinators_wikipedia.py` and `ingest_play_callers.py` exist and **have landed no table in `nfl.db`** | **No. Cannot be earned in time.** Sourcing is unresolved, the factor is untested, and the calibration prior in the mandate applies directly — this is a situation story, which is the project's most reliable way to be wrong |
+| **10** | **Rookies** | 6 of the top 150 have no stat history (highest: Jeremiyah Love, consensus #33) | — | **No, and it should not be tried.** Rookie draft capital is already cleanly eliminated as an edge channel. The correct action is to **fall back to consensus for rookies and label it on screen**, not to model them |
+
+### 5.2 What "not earnable in time" means here, stated plainly
+
+Items **8, 9, 10** cannot be earned by 7 September, and for each the reason is stronger than "hard":
+odds have a measured oracle ceiling of ≤ +0.055 τ_b, coaching has no obtainable source and an
+untested premise, rookies are an eliminated channel. Item **6** is the one that is genuinely
+*valuable and out of reach* — the room is real and large, and 39 days is not how long it takes.
+
+Items **1 and 2 are the only two that change what the founder can trust on draft day**, and neither
+of them makes a single ranking better. They make it possible to know whether it is.
+
+### 5.3 The independent checks — named, not asserted
+
+Per the mandate, nothing here is validated by me:
+
+| claim | who checks it, and how |
+|---|---|
+| §1.2, the primary metric is structurally blind | `strategist` — this is a methodology defect in `backtest.py`, and the replacement metric must be chosen by someone who did not build the thing it scores |
+| §4, the oracle ladder | `strategist` to register before anyone acts; `fable` to attack. It is 12 uncorrected tests on 7 seasons of a 12-team board against a 10-team league |
+| §5.0, the acquisition costs | reproducible in 30 seconds by anyone; `data-ops` owns the ingest and will discover if I am wrong |
+| whether any of this is good enough to draft on | **not mine.** `strategist` for methodology, `fable` for adversarial review, `backend` for anything that ships |
+
+---
+
+## 6. Status of this document
 
 **Settled:** §0 preconditions and the two extra precondition findings; §1.1–§1.3; §2 (the board is
 consensus at ρ 0.972 in the top 100, and its whole opinion is a QB/TE positional tilt); §3.1 (the
