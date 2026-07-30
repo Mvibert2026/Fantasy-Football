@@ -146,9 +146,53 @@ def _explosive(panel: SeasonPanel, f: pd.DataFrame, target_season: int
     known = den > 0
     expl = (num + EXPL_K0 * prior) / (den + EXPL_K0)
     mate = np.where(mden > 0, (mnum + EXPL_K0 * prior) / (mden + EXPL_K0), prior)
-    return {"expl_w": np.where(known, expl, prior),
-            "expl_rel_w": np.where(known, expl - mate, 0.0),
-            "expl_known": known.astype(float)}
+    out = {"expl_w": np.where(known, expl, prior),
+           "expl_rel_w": np.where(known, expl - mate, 0.0),
+           "expl_known": known.astype(float)}
+
+    # ---- POST-HOC, added after X1/X2 graded. Not in the pre-commitment and
+    # carrying a lower evidential standard, exactly as batch 1 §4 required.
+    #
+    # THE OBJECTION X1 HAS TO ANSWER: an empirical-Bayes shrunk rate is pulled
+    # toward the prior in proportion to its DENOMINATOR, so |expl_w - prior| is a
+    # monotone function of lagged carries. A linear model handed that column may
+    # be improving because it re-encodes prior VOLUME in a shape the existing
+    # columns cannot express, not because explosiveness predicts anything.
+    #
+    # Two instruments, both fitted the same way as X1:
+    #   expl_placebo_w -- identical shrinkage geometry, numerator replaced by a
+    #       Binomial(den, prior) draw. Same volume-dependent dispersion, ZERO
+    #       player-specific signal. If this also helps, X1 is the geometry.
+    #   expl_raw_w     -- the unshrunk rate num/den, prior where den = 0. Same
+    #       player signal, NO volume-dependent dispersion. If this also helps,
+    #       X1 is the football.
+    rng = np.random.default_rng(20260730 + target_season)
+    den_i = np.rint(np.clip(den, 0, None)).astype(int)
+    pl_num = rng.binomial(np.clip(den_i, 0, None), prior).astype(float)
+    out["expl_placebo_w"] = np.where(
+        known, (pl_num + EXPL_K0 * prior) / (den + EXPL_K0), prior)
+    out["expl_raw_w"] = np.where(known & (den > 0),
+                                 np.divide(num, np.where(den > 0, den, 1.0)), prior)
+
+    # THE SECOND OBJECTION, also post-hoc: explosive rate is an efficiency stat,
+    # and the model ALREADY holds an efficiency stat -- yards per carry, as a
+    # shrunk rate. It uses it for the yards channel and never offers it to the
+    # VOLUME channel. If plain lagged YPC bought the same thing, "explosive rate"
+    # would be a repackaging rather than a new input, and saying so is the
+    # difference between a finding and a press release.
+    ypc_num = np.zeros(n)
+    ypc_den = np.zeros(n)
+    hist = panel.before(cutoff)
+    for k in range(1, N_LAGS + 1):
+        lag = hist[hist["season"] == target_season - k].set_index("player_id")
+        if not len(lag):
+            continue
+        w = LAG_WEIGHTS[k - 1]
+        ypc_num += w * np.asarray(pid.map(lag["rush_yards"]).astype(float).fillna(0.0))
+        ypc_den += w * np.asarray(pid.map(lag["carries"]).astype(float).fillna(0.0))
+    ypc_prior = float(np.sum(ypc_num) / max(np.sum(ypc_den), 1.0))
+    out["ypc_lag_w"] = (ypc_num + EXPL_K0 * ypc_prior) / (ypc_den + EXPL_K0)
+    return out
 
 
 # --------------------------------------------------------- T: coordinator tenure
