@@ -1,0 +1,185 @@
+# Yahoo mock, 12 teams, 15 rounds, founder = "Matthew Vibert" at slot 2.
+# Scoring format NOT confirmed by founder ("I think they are for half PPR, but not sure").
+# Kickers and DEF present, so NOT the Westwood roster shape (Westwood has no kicker).
+# Source: founder paste, chat 2026-07-30. Snake order.
+round	pick_in_round	manager	player	team	pos
+1	1	Joel	Jahmyr Gibbs	Det	RB
+1	2	Matthew Vibert	Bijan Robinson	Atl	RB
+1	3	Brandon	Christian McCaffrey	SF	RB
+1	4	Roshaun	Jaxon Smith-Njigba	Sea	WR
+1	5	Matt	Ja'Marr Chase	Cin	WR
+1	6	John	Jonathan Taylor	Ind	RB
+1	7	josh	Puka Nacua	LAR	WR
+1	8	jason	Amon-Ra St. Brown	Det	WR
+1	9	Rob	James Cook III	Buf	RB
+1	10	Manny	Justin Jefferson	Min	WR
+1	11	Robert	Saquon Barkley	Phi	RB
+1	12	Jordan	CeeDee Lamb	Dal	WR
+2	1	Jordan	Ashton Jeanty	LV	RB
+2	2	Robert	Drake London	Atl	WR
+2	3	Manny	Brock Bowers	LV	TE
+2	4	Rob	George Pickens	Dal	WR
+2	5	jason	Omarion Hampton	LAC	RB
+2	6	josh	Kenneth Walker III	KC	RB
+2	7	John	Chase Brown	Cin	RB
+2	8	Matt	Trey McBride	Ari	TE
+2	9	Roshaun	A.J. Brown	NE	WR
+2	10	Brandon	Malik Nabers	NYG	WR
+2	11	Matthew Vibert	Nico Collins	Hou	WR
+2	12	Joel	Derrick Henry	Bal	RB
+3	1	Joel	Rashee Rice	KC	WR
+3	2	Matthew Vibert	De'Von Achane	Mia	RB
+3	3	Brandon	Kyren Williams	LAR	RB
+3	4	Roshaun	Jeremiyah Love	Ari	RB
+3	5	Matt	Josh Jacobs	GB	RB
+3	6	John	DeVonta Smith	Phi	WR
+3	7	josh	Josh Allen	Buf	QB
+3	8	jason	Jaylen Waddle	Den	WR
+3	9	Rob	Emeka Egbuka	TB	WR
+3	10	Manny	Javonte Williams	Dal	RB
+3	11	Robert	Tee Higgins	Cin	WR
+3	12	Jordan	Breece Hall	NYJ	RB
+4	1	Jordan	Chris Olave	NO	WR
+4	2	Robert	Zay Flowers	Bal	WR
+4	3	Manny	Cam Skattebo	NYG	RB
+4	4	Rob	David Montgomery	Hou	RB
+4	5	jason	Ladd McConkey	LAC	WR
+4	6	josh	Colston Loveland	Chi	TE
+4	7	John	Travis Etienne Jr.	NO	RB
+4	8	Matt	DJ Moore	Buf	WR
+4	9	Roshaun	Quinshon Judkins	Cle	RB
+4	10	Brandon	Bucky Irving	TB	RB
+4	11	Matthew Vibert	Tetairoa McMillan	Car	WR
+4	12	Joel	Terry McLaurin	Was	WR
+5	1	Joel	Davante Adams	LAR	WR
+5	2	Matthew Vibert	Lamar Jackson	Bal	QB
+5	3	Brandon	Brian Thomas Jr.	Jax	WR
+5	4	Roshaun	Garrett Wilson	NYJ	WR
+5	5	Matt	Jadarian Price	Sea	RB
+5	6	John	D'Andre Swift	Chi	RB
+5	7	josh	Mike Evans	SF	WR
+5	8	jason	Joe Burrow	Cin	QB
+5	9	Rob	TreVeyon Henderson	NE	RB
+5	10	Manny	Luther Burden III	Chi	WR
+5	11	Robert	Jayden Daniels	Was	QB
+5	12	Jordan	Tyler Warren	Ind	TE
+6	1	Jordan	Drake Maye	NE	QB
+6	2	Robert	Bhayshul Tuten	Jax	RB
+6	3	Manny	Jalen Hurts	Phi	QB
+6	4	Rob	Christian Watson	GB	WR
+6	5	jason	Chuba Hubbard	Car	RB
+6	6	josh	Jameson Williams	Det	WR
+6	7	John	Rome Odunze	Chi	WR
+6	8	Matt	Marvin Harrison Jr.	Ari	WR
+6	9	Roshaun	Tony Pollard	Ten	RB
+6	10	Brandon	Carnell Tate	Ten	WR
+6	11	Matthew Vibert	Tucker Kraft	GB	TE
+6	12	Joel	Alec Pierce	Ind	WR
+7	1	Joel	Sam LaPorta	Det	TE
+7	2	Matthew Vibert	Jaylen Warren	Pit	RB
+7	3	Brandon	Chris Godwin Jr.	TB	WR
+7	4	Roshaun	Justin Herbert	LAC	QB
+7	5	Matt	Parker Washington	Jax	WR
+7	6	John	Jaxson Dart	NYG	QB
+7	7	josh	DK Metcalf	Pit	WR
+7	8	jason	Kyle Pitts Sr.	Atl	TE
+7	9	Rob	Harold Fannin Jr.	Cle	TE
+7	10	Manny	Rhamondre Stevenson	NE	RB
+7	11	Robert	George Kittle	SF	TE
+7	12	Jordan	Rico Dowdle	Pit	RB
+8	1	Jordan	Caleb Williams	Chi	QB
+8	2	Robert	Trevor Lawrence	Jax	QB
+8	3	Manny	Makai Lemon	Phi	WR
+8	4	Rob	Dak Prescott	Dal	QB
+8	5	jason	Jordyn Tyson	NO	WR
+8	6	josh	J.K. Dobbins	Den	RB
+8	7	John	Quentin Johnston	LAC	WR
+8	8	Matt	Josh Downs	Ind	WR
+8	9	Roshaun	RJ Harvey	Den	RB
+8	10	Brandon	Kyler Murray	Min	QB
+8	11	Matthew Vibert	Ricky Pearsall	SF	WR
+8	12	Joel	Blake Corum	LAR	RB
+9	1	Joel	Brock Purdy	SF	QB
+9	2	Matthew Vibert	Courtland Sutton	Den	WR
+9	3	Brandon	Jordan Addison	Min	WR
+9	4	Roshaun	Michael Wilson	Ari	WR
+9	5	Matt	Michael Pittman Jr.	Pit	WR
+9	6	John	Jakobi Meyers	Jax	WR
+9	7	josh	Jordan Mason	Min	RB
+9	8	jason	Kyle Monangai	Chi	RB
+9	9	Rob	Isaiah Likely	NYG	TE
+9	10	Manny	Jayden Reed	GB	WR
+9	11	Robert	Jonathon Brooks	Car	RB
+9	12	Jordan	Rachaad White	Was	RB
+10	1	Jordan	Dalton Kincaid	Buf	TE
+10	2	Robert	Xavier Worthy	KC	WR
+10	3	Manny	Bo Nix	Den	QB
+10	4	Rob	Jacory Croskey-Merritt	Was	RB
+10	5	jason	Patrick Mahomes	KC	QB
+10	6	josh	Chris Rodriguez Jr.	Jax	RB
+10	7	John	Tyrone Tracy Jr.	NYG	RB
+10	8	Matt	Matthew Stafford	LAR	QB
+10	9	Roshaun	Kenny Gainwell	TB	RB
+10	10	Brandon	Keaton Mitchell	LAC	RB
+10	11	Matthew Vibert	Dallas Goedert	Phi	TE
+10	12	Joel	Travis Kelce	KC	TE
+11	1	Joel	Jared Goff	Det	QB
+11	2	Matthew Vibert	Aaron Jones Sr.	Min	RB
+11	3	Brandon	Oronde Gadsden	LAC	TE
+11	4	Roshaun	Woody Marks	Hou	RB
+11	5	Matt	Matthew Golden	GB	WR
+11	6	John	Jake Ferguson	Dal	TE
+11	7	josh	Tyler Allgeier	Ari	RB
+11	8	jason	Mark Andrews	Bal	TE
+11	9	Rob	Romeo Doubs	NE	WR
+11	10	Manny	Chig Okonkwo	Was	TE
+11	11	Robert	Tyjae Spears	Ten	RB
+11	12	Jordan	Jayden Higgins	Hou	WR
+12	1	Jordan	Jonah Coleman	Den	RB
+12	2	Robert	Brenton Strange	Jax	TE
+12	3	Manny	Tank Bigsby	Phi	RB
+12	4	Rob	Jordan Love	GB	QB
+12	5	jason	KC Concepcion	Cle	WR
+12	6	josh	Zach Charbonnet	Sea	RB
+12	7	John	Malik Willis	Mia	QB
+12	8	Matt	Alvin Kamara	NO	RB
+12	9	Roshaun	Juwan Johnson	NO	TE
+12	10	Brandon	Baker Mayfield	TB	QB
+12	11	Matthew Vibert	Tyler Shough	NO	QB
+12	12	Joel	Isiah Pacheco	Det	RB
+13	1	Joel	Stefon Diggs	NE	WR
+13	2	Matthew Vibert	Jalen Coker	Car	WR
+13	3	Brandon	Hunter Henry	NE	TE
+13	4	Roshaun	Wan'Dale Robinson	Ten	WR
+13	5	Matt	Dylan Sampson	Cle	RB
+13	6	John	Greg Dulcich	Mia	TE
+13	7	josh	Khalil Shakir	Buf	WR
+13	8	jason	Rashid Shaheed	Sea	WR
+13	9	Rob	Brian Robinson	Atl	RB
+13	10	Manny	Travis Hunter	Jax	WR
+13	11	Robert	Adonai Mitchell	NYJ	WR
+13	12	Jordan	Jalen Nailor	LV	WR
+14	1	Jordan	Texans	Hou	DEF
+14	2	Robert	Broncos	Den	DEF
+14	3	Manny	Seahawks	Sea	DEF
+14	4	Rob	Rams	LAR	DEF
+14	5	jason	Brandon Aubrey	Dal	K
+14	6	josh	Jason Myers	Sea	K
+14	7	John	Patriots	NE	DEF
+14	8	Matt	Jerry Jeudy	Cle	WR
+14	9	Roshaun	Eagles	Phi	DEF
+14	10	Brandon	Vikings	Min	DEF
+14	11	Matthew Vibert	Steelers	Pit	DEF
+14	12	Joel	Cameron Dicker	LAC	K
+15	1	Joel	Jaguars	Jax	DEF
+15	2	Matthew Vibert	Cam Little	Jax	K
+15	3	Brandon	Ka'imi Fairbairn	Hou	K
+15	4	Roshaun	Tyler Loop	Bal	K
+15	5	Matt	Jacoby Brissett	Ari	QB
+15	6	John	Cairo Santos	Chi	K
+15	7	josh	Ravens	Bal	DEF
+15	8	jason	Chargers	LAC	DEF
+15	9	Rob	Andy Borregales	NE	K
+15	10	Manny	Eddy Pineiro	SF	K
+15	11	Robert	Evan McPherson	Cin	K
+15	12	Jordan	Jake Bates	Det	K
