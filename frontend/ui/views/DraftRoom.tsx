@@ -248,6 +248,15 @@ const DRAFT_LIST_COLS = {
   adp: 34,
   delta: 30,
   vbd: 40,
+  // Unchanged at 58 (thread 2026-07-30-recommendation-card-states-a-rule-the-
+  // code-does-, item 3): the header now renders "AVAIL @ 123" instead of the
+  // bare label, but widening this column steals from PLAYER's flex:1 share
+  // (every fixed-width sibling grows at PLAYER's expense -- the exact
+  // mechanism FR-067's own comment above describes) -- caught by comparing
+  // a before/after screenshot at this same viewport, where PLAYER visibly
+  // truncated further ("PLAYER" -> "PLA..."). The header text wraps onto a
+  // second line instead (no whiteSpace:nowrap), which costs header-row
+  // height, not another column's width.
   avail: 58,
   // 10 dots x 4px + 9 gaps x 1.5px (RowDots' own sizing) = 53.5, rounded up.
   dots: 54,
@@ -635,6 +644,45 @@ export function DraftRoom({
   const picksUntilYou = userOnClock ? 0 : nextUserPick !== null ? nextUserPick - currentPick : null;
   const draftComplete = teams > 0 && rounds > 0 && currentPick > teams * rounds;
 
+  // The overall pick number strictly after the current one where this user's
+  // slot is next on the clock -- distinct from `nextUserPick` above, which
+  // equals `currentPick` itself while the user is on the clock right now.
+  // Needed for "WHAT YOU GIVE UP" (thread 049 item 2): the survival
+  // probability that matters for a pick being made *right now* is at the
+  // user's *following* turn, not this one. Declared here (moved up from
+  // beside the recommendation logic below) so `gridCells` and the board list
+  // below can both see it -- see `boardAvailTargetPick` immediately after.
+  const followingUserPick = useMemo(
+    () => (teams > 0 ? (pickNumbersForSlot(teams, userSlot, rounds).find((p) => p > currentPick) ?? null) : null),
+    [teams, userSlot, rounds, currentPick],
+  );
+
+  // Thread 2026-07-30-recommendation-card-states-a-rule-the-code-does- item 3
+  // / ADR-DRAFT-suggested-pick-opportunity-cost-rule.md §6, D-4: while
+  // `userOnClock`, `nextUserPick` equals `currentPick` itself, so a
+  // probability computed against it describes an event every player on
+  // screen has already survived -- the honest figure is 100%, and
+  // computeLiveAvailability can't even adjust it (teamSlotsBetween is empty
+  // with zero intervening picks, liveAvailability.ts:141-151). The
+  // decision-relevant target while on the clock is the user's *following*
+  // turn -- the same `followingUserPick` the RECOMMENDED card already uses
+  // for its own survival numbers, so the board and the card can never again
+  // show two different quantities under one word. Off the clock,
+  // `nextUserPick` is already correct and unchanged (ADR §6's own
+  // disposition: "Off the clock, `nextUserPick` is already correct — do not
+  // change that branch.").
+  //
+  // Applied to every `nextUserPick`-driven availability consumer on this
+  // screen, not just the board AVAIL column the thread named explicitly
+  // (watchRows, queueRows, the periodic-table grid's `underHalf`) -- the ADR
+  // left this "your call": all three have the identical defect (a
+  // probability read against a pick the user can already see resolved), the
+  // fix is the same one-line target swap, and leaving some of them on the old
+  // target would mean the app still shows two different survival concepts
+  // labeled the same way, just on different tabs of the same screen instead
+  // of the same one.
+  const boardAvailTargetPick = userOnClock ? followingUserPick : nextUserPick;
+
   // PERIODIC-TABLE-GRID.md: gated on whether the grid tab/sheet is actually
   // showing (the preview or the expanded sheet), not computed unconditionally
   // on every render -- `buildGridCellData` runs live-availability arithmetic
@@ -643,8 +691,8 @@ export function DraftRoom({
   const gridActive = paneTab === 'grid' || gridExpanded;
   const gridCells = useMemo(() => {
     if (!gridActive) return [];
-    return buildGridCellData({ rows, taken, data, league, picks: draft.picks, rowsById, nextUserPick });
-  }, [gridActive, rows, taken, data, league, draft.picks, rowsById, nextUserPick]);
+    return buildGridCellData({ rows, taken, data, league, picks: draft.picks, rowsById, nextUserPick: boardAvailTargetPick });
+  }, [gridActive, rows, taken, data, league, draft.picks, rowsById, boardAvailTargetPick]);
 
   useEffect(() => {
     if (userOnClock) setLookAheadToggle(false);
@@ -893,17 +941,6 @@ export function DraftRoom({
     return order.filter((k) => counts.has(k)).map((k) => ({ label: k, ...counts.get(k)! }));
   }, [rosterSlots]);
 
-  // The overall pick number strictly after the current one where this user's
-  // slot is next on the clock -- distinct from `nextUserPick` above, which
-  // equals `currentPick` itself while the user is on the clock right now.
-  // Needed for "WHAT YOU GIVE UP" (thread 049 item 2): the survival
-  // probability that matters for a pick being made *right now* is at the
-  // user's *following* turn, not this one.
-  const followingUserPick = useMemo(
-    () => (teams > 0 ? (pickNumbersForSlot(teams, userSlot, rounds).find((p) => p > currentPick) ?? null) : null),
-    [teams, userSlot, rounds, currentPick],
-  );
-
   // FR-061: the VBD-only order (unchanged formula) kept separate from the
   // strategy-adjusted one below, so the strategy panel can name exactly what
   // moved -- comparing the two tells the difference apart from FR-058's own
@@ -1109,30 +1146,37 @@ export function DraftRoom({
   // DRAFT-MIDDLE-PANE.md: Queue is now its own tab, reachable whether or not
   // the user is on the clock (previously this whole block was hidden while
   // userOnClock, back when Position Scarcity/Queue/Watch was the only
-  // off-clock view). `nextUserPick` already equals `currentPick` while on
-  // the clock (nextPickForSlot's own definition), so this honestly degrades
-  // to "availability right now" rather than needing a second target pick.
+  // off-clock view). This used to target `nextUserPick` directly, which
+  // "honestly degrades to availability right now" while on the clock
+  // (nextPickForSlot's own definition equates it to `currentPick`) --
+  // uninformative rather than wrong, since every undrafted row genuinely is
+  // ~100% available at a pick that hasn't happened yet. But it is the same
+  // shape of defect the board AVAIL column had (thread
+  // 2026-07-30-recommendation-card-states-a-rule-the-code-does-, item 3):
+  // a number computed against an event already resolved, one tab over from a
+  // column now showing the decision-relevant pick for the same players. Uses
+  // `boardAvailTargetPick` for consistency across the whole screen.
   const watchRows = useMemo(() => {
-    if (nextUserPick === null) return [];
+    if (boardAvailTargetPick === null) return [];
     return watchlist
       .map((name) => available.find((r) => r.name.kind === 'present' && r.name.value === name))
       .filter((r): r is BoardRow => !!r)
       .map((row) => ({
         row,
-        avail: computeLiveAvailability({ data, league, row, targetPick: nextUserPick, picks: draft.picks, rowsById }),
+        avail: computeLiveAvailability({ data, league, row, targetPick: boardAvailTargetPick, picks: draft.picks, rowsById }),
       }));
-  }, [nextUserPick, watchlist, available, data, league, draft.picks, rowsById]);
+  }, [boardAvailTargetPick, watchlist, available, data, league, draft.picks, rowsById]);
 
   const queueRows = useMemo(() => {
-    if (nextUserPick === null) return [];
+    if (boardAvailTargetPick === null) return [];
     return draft.queue
       .map((id) => rowsById.get(id))
       .filter((r): r is BoardRow => !!r && !taken.has(r.id))
       .map((row) => ({
         row,
-        avail: computeLiveAvailability({ data, league, row, targetPick: nextUserPick, picks: draft.picks, rowsById }),
+        avail: computeLiveAvailability({ data, league, row, targetPick: boardAvailTargetPick, picks: draft.picks, rowsById }),
       }));
-  }, [nextUserPick, draft.queue, taken, data, league, draft.picks, rowsById]);
+  }, [boardAvailTargetPick, draft.queue, taken, data, league, draft.picks, rowsById]);
 
   const scarcityList = useMemo(
     () =>
@@ -1881,12 +1925,38 @@ export function DraftRoom({
                 overrideTitle={`Value over positional replacement -- what the board is actually ranked on${showSources ? ' (board.json:players[].vbd)' : ''}`}
               />
             </span>
-            <span className="num" style={{ fontSize: 9, letterSpacing: '.02em', color: 'var(--dim2)', width: DRAFT_LIST_COLS.avail, textAlign: 'right' }}>
+            {/* Thread 2026-07-30-recommendation-card-states-a-rule-the-code-does-
+                item 3 / ADR-DRAFT-suggested-pick-opportunity-cost-rule.md §6:
+                the header used to say "your next pick" with no number while the
+                RECOMMENDED card, one panel over, showed a different pick's
+                figure for the same players -- two unlabeled availability
+                numbers for one player on one screen. Now names
+                `boardAvailTargetPick` explicitly, so the column and the card
+                can never again disagree silently.
+
+                No `whiteSpace: 'nowrap'` and no width change from before --
+                widening this fixed column would shrink PLAYER's flex:1 share
+                (every sibling column's width comes out of PLAYER, per FR-067's
+                comment above), which a before/after screenshot at this same
+                viewport caught happening the first time this was tried (real
+                player names in the header/rows truncated further). Letting
+                "AVAIL @ 18" wrap onto a second line inside the existing 58px
+                costs header-row height, never another column's width. */}
+            <span
+              className="num"
+              style={{ fontSize: 9, letterSpacing: '.02em', color: 'var(--dim2)', width: DRAFT_LIST_COLS.avail, textAlign: 'right', lineHeight: 1.3 }}
+            >
               <GlossaryHeaderLabel
                 data={data}
                 abbreviation="AVAIL"
-                text="AVAIL"
-                overrideTitle="Baseline -> live-adjusted availability at your next pick, then the same number as ten dots"
+                text={boardAvailTargetPick !== null ? `AVAIL @ ${boardAvailTargetPick}` : 'AVAIL'}
+                overrideTitle={
+                  boardAvailTargetPick !== null
+                    ? `Baseline -> live-adjusted availability at pick ${boardAvailTargetPick}${
+                        userOnClock ? ' (your next turn after this pick)' : ' (your next pick)'
+                      }, then the same number as ten dots`
+                    : 'No further picks for you in this league\'s format -- nothing to show.'
+                }
               />
             </span>
             {/* Unlabeled, width-only: the dots repeat AVAIL's own number, and
@@ -1930,8 +2000,8 @@ export function DraftRoom({
               const delta = r.deltaVsConsensus.kind === 'present' ? r.deltaVsConsensus.value : null;
               const deltaColor = delta === null ? 'var(--dim2)' : delta > 2 ? 'var(--up)' : delta < -2 ? 'var(--down)' : 'var(--dim2)';
               const avail =
-                nextUserPick !== null
-                  ? computeLiveAvailability({ data, league, row: r, targetPick: nextUserPick, picks: draft.picks, rowsById })
+                boardAvailTargetPick !== null
+                  ? computeLiveAvailability({ data, league, row: r, targetPick: boardAvailTargetPick, picks: draft.picks, rowsById })
                   : null;
               // Same honesty rule as PlayerDetail's HON-02: only plot the dot array
               // when there is a real number behind it (live or baseline) -- a
