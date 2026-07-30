@@ -15,6 +15,15 @@ Two new founder mocks were ingested this session (`data-ops`, 2026-07-30):
 could not confirm their scoring format ("I think they are for half PPR, but not sure"). Full
 writeup: `docs/analysis/founder-mocks-2026-07-30.md`.
 
+**Context correction, 2026-07-30, from the founder directly.** The analysis writeup originally
+read his "same roster constraints as the first" as a claim that these mocks matched his league,
+and reported the failed `format_conforms()` check as contradicting him. It did not. His meaning:
+*"they had the same settings as eachother, they are all yahoo - not the same as my leagues."*
+These are **Yahoo mock-lobby defaults** — internally consistent, deliberately not Westwood-shaped.
+That changes what this thread is asking you: the scoring format is a property of Yahoo's default
+lobby, not of his league, so identifying it tells us what population this sample is drawn from —
+it does not tell us anything about Westwood's settings, which are already confirmed (ADR-052).
+
 I computed Spearman rank correlation of each mock's realized pick order against FFC ADP
 (`ffc_adp_snapshots`, joined on `mfl_id`) at the matching team count, all available formats:
 

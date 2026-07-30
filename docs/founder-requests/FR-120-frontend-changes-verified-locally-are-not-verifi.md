@@ -49,24 +49,39 @@ looks like, and nothing in the repo distinguishes the two.
 | Archetype code on `main` | Yes — `e668c57`, pushed 2026-07-30 14:35Z |
 | Production build succeeds from a clean tree | Yes — `tsc -b && vite build`, no errors, bundle `index-BDGFp0ip.js` 361.77 kB (the pre-archetype bundle was 322.90 kB, so the change is genuinely in it) |
 | Archetype data present in the built output | Yes — 213 players in `player_descriptions.json`, eight distinct labels |
-| The live site serves that bundle | **Not verifiable by any agent.** `https://fantasy-football.soft-water-e755.workers.dev` returns 401 to the password held by this session. Confirmed live by the founder in his own browser instead |
+| The live site serves that bundle | **Yes — verified.** The founder supplied the current password (it had been rotated, which is why the session's held value 401'd). `GET /` returns 200 and its `<script src>` is `assets/index-BDGFp0ip.js`, the identical hash to the local build of `main` |
 
-**The blocker is access.** No agent can reach the deployed site, which means no agent can honestly
-say "this is live" — only "this is on `main` and it builds." Confirmation currently depends on the
-founder looking, which is exactly the dependency the hosted deploy was meant to remove.
+**Access was the blocker, and it is now unblocked — but the rotation is the point.** No agent could
+reach the deployed site for an unknown period, and nothing surfaced that fact until the founder was
+asked. Every "shipped" claim made in that window rested on a local screenshot. A rotated password
+is normal and correct; an agent silently losing the ability to verify, and not noticing, is not.
 
-Two ways out, not equivalent:
+**The verification method, now established and cheap.** Vite writes a content-hashed bundle name
+into `index.html`. Comparing the deployed `index.html`'s script hash against a local build of the
+same commit answers "is the site current" in one request, with no browser, no Playwright, and no
+screenshot:
 
-- **Founder supplies the current site password per dispatch** (the existing pattern — passed in the
-  prompt, never written to a file, since the repo is public). Restores full verification, costs
-  nothing, but keeps a password moving through prompts. Note the password this session held no
-  longer works, so it has changed or a `SITE_USERNAME` was added.
+```
+curl -sS -u ":$PASSWORD" https://fantasy-football.soft-water-e755.workers.dev/ \
+  | grep -o -E 'assets/index-[A-Za-z0-9_-]+\.js'
+# compare against: grep -o -E 'assets/index-[A-Za-z0-9_-]+\.js' frontend/dist/index.html
+```
+
+Identical hash → the site is serving this commit. Different hash → the build is lagging or failed,
+and the two are distinguishable by whether the local build succeeds. **The password goes in the
+shell invocation, never into a file** — the repo is public.
+
+**Still worth building, because the above needs a secret:**
+
 - **A build-status signal that needs no auth.** Cloudflare Workers Builds can report to GitHub; a
-  failed or still-running build would then be visible in the repo. Catches failure point 2 only —
-  it says nothing about what the site serves — but that is the point most likely to produce this
-  exact complaint, and it needs no secret.
+  failed or still-running build would then be visible in the repo to any agent, with no credential
+  in the loop. It catches only the "build failed" case — it says nothing about what the site
+  serves — but that is the case most likely to produce this exact complaint, and it degrades
+  gracefully when the password next rotates.
 
-Recommend both: the build signal as the standing fix, the password for spot verification.
+**Reporting standard from here.** A frontend change is "on `main`, builds clean" until the bundle
+hash matches, and "live" only after. Do not report frontend work as live on the strength of a local
+screenshot.
 
 **Until one exists, the honest phrasing changes.** "Shipped" becomes "on `main`, builds clean,
 deploy unverified." Do not report frontend work as live on the strength of a local screenshot.

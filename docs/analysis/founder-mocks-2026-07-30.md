@@ -110,12 +110,20 @@ on the TE-early anomaly.
 
 **Both mocks contain K and DEF rounds; Westwood has neither a kicker slot nor these flex/roster
 shapes.** Confirmed programmatically via `format_conforms()`: both fail on `flex_slots=1` (need 2)
-and "rosters a kicker" (need none); the 12-team additionally fails on `teams=12` (need 10). This
-directly contradicts the founder's statement that these have "the same roster constraints as the
-first I sent you" — the first (`founder-mock-2026-07-29.json`, FantasyPros) was **also**
-non-conforming (standard scoring, one flex, with a kicker, per its own `capture_note`), so the
-founder's mental model of "same as the first" is consistent internally but the first one was never
-Westwood-shaped either. **Two K/DEF rounds out of fifteen (13.3% of every roster) is not a rounding
+and "rosters a kicker" (need none); the 12-team additionally fails on `teams=12` (need 10). **CORRECTED 2026-07-30 by the founder, and this section originally got him wrong.** It read his
+"same roster constraints as the first I sent you" as a claim that the mocks matched Westwood, and
+called the mismatch a contradiction. That was a misreading. His actual meaning:
+
+> "on mock format, I meant they had the same settings as eachother, they are all yahoo - not the
+> same as my leagues."
+
+So there is no contradiction to resolve. The mocks are **Yahoo mock-lobby defaults** — internally
+consistent with one another, and deliberately not Westwood-shaped. The founder knew that. What the
+`format_conforms()` result measures is the distance between Yahoo's default lobby and his league,
+which is a *property of the data source*, not an error in his description of it.
+
+That distance still matters and the rest of this section stands on its own terms.
+**Two K/DEF rounds out of fifteen (13.3% of every roster) is not a rounding
 error** — it changes the effective non-K/DEF player pool available in rounds 13-15 and shifts late-
 round ADP/run behavior versus a 13-round, no-K/DEF Westwood draft. Not resolved by assumption here;
 reported plainly per the task instruction.
