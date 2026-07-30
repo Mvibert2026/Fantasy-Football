@@ -28,7 +28,7 @@ would shrink every interval by roughly the square root of that autocorrelation.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Sequence, Tuple
+from typing import Callable, Dict, List, Optional, Sequence, Tuple
 
 import numpy as np
 import pandas as pd
@@ -138,6 +138,14 @@ class WalkForward:
     model_kwargs: Dict = field(default_factory=dict)
     first_feature_season: int = FIRST_FEATURE_SEASON
     pool_position: Optional[str] = None       # TE secondary: borrow WR rate rows
+    #: factor batch 1: swap the feature builder. Same signature as
+    #: `build_features`; the default IS `build_features`, so an unmodified
+    #: WalkForward reproduces pass 1 exactly.
+    feature_fn: Callable = field(default_factory=lambda: build_features)
+    #: factor batch 1 #28 only. When False the audit ASSERTS that zero
+    #: preseason-proxy reads happened, so an arm that did not declare the proxy
+    #: is provably clean rather than merely believed to be.
+    allow_preseason_proxy: bool = False
     audit: List[Dict] = field(default_factory=list)
     _cache: Dict = field(default_factory=dict, repr=False)
 
@@ -158,12 +166,13 @@ class WalkForward:
         hit = self._cache.get(key)
         if hit is None:
             u = universe_for(self.panel, s, position)
-            hit = (build_features(self.panel, u, s),
+            hit = (self.feature_fn(self.panel, u, s),
                    outcome_components(self.panel, u, s))
             self._cache[key] = hit
         else:
             self.panel.access_log.extend(
-                [("feature", s - 1)] * 4 + [("outcome", s)])
+                [("feature", s - 1)] * 4 + [("outcome", s)]
+                + ([("proxy", s)] if self.allow_preseason_proxy else []))
         return hit
 
     def _pairs(self, position: str, upto: int) -> Tuple[pd.DataFrame, pd.DataFrame]:
@@ -208,7 +217,7 @@ class WalkForward:
             extra = (board.loc[~board["unmatched"], "player_id"].tolist()
                      if len(board) else None)
             u = universe_for(self.panel, target, self.position, extra_ids=extra)
-            f = build_features(self.panel, u, target)
+            f = self.feature_fn(self.panel, u, target)
 
             model = self._make_model()
             model.fit(tf, to, rate_pool=pool)
@@ -223,6 +232,9 @@ class WalkForward:
             self.audit.append(a)
             if a["max_feature_cutoff"] >= target or a["max_outcome_season"] >= target:
                 raise RuntimeError(f"look-ahead: target {target} saw {a}")
+            if not self.allow_preseason_proxy and a["n_preseason_proxy_reads"]:
+                raise RuntimeError(
+                    f"undeclared preseason proxy read at target {target}: {a}")
 
             proj = model.predict(f)
             o = outcome_components(self.panel, u, target)   # evaluation only

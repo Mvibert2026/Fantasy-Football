@@ -1111,3 +1111,35 @@ thread ID and no `tools/founder_requests.py` run; hand-typing an ID refused (043
 ADR-048). Also could not query `nfl.db` for our own fantasy-relevant injury base rate, which would
 have been the single most useful number in the report. Nothing committed.
 
+
+## 2026-07-30 — ranker, factor batch 1 (registry #19 / #20 / #28 / #13): decided without asking
+
+1. **Ran registry #28 on a declared PROXY rather than skipping it, and graded the result BLOCKED
+   rather than NULL.** `nfl.db` has no pre-season roster table at all — verified against
+   `depth_charts_weekly` (REG week 1 onward, no PRE game_type), `depth_charts_snapshots` (one
+   2026-03-14 snapshot) and the absence of any `rosters` table. Used the season-N Week-1 depth chart
+   as the departure signal, labelled PROXY everywhere, and ran a free control arm that reads no
+   season-N data at all so the vacancy term stays attributable. The harm then landed exactly in the
+   bucket the proxy contaminates. `docs/ranking/factor-batch-1-results.md` §4. Thread opened to
+   `data-ops`.
+2. **Reported my own pre-registered grading rule as defective instead of quietly fixing it.** Two
+   arms cleared the committed E1 gate on gains concentrated among undrafted players; on the ADP
+   board one is worse and the other is worth 0.02%. The grades stand as recorded and the defect is
+   written up. Regrading my own test against a rule I rewrote after seeing the numbers is the thing
+   the pre-commitment exists to stop, so I asked `strategist` to rule on it. §1(3).
+3. **Added a `Measured verdict` column to `docs/test-registry.md`'s Tier 1 table.** It recorded build
+   status only; the `Edge` column beside it is a prior written before any measurement and was being
+   read as knowledge. `IN FORMULA` is reserved for something actually wired into the shipped model —
+   nothing in Tier 1 carries it.
+4. **Did not promote anything, including the two nominal survivors.** No arm moves the ranking
+   against consensus at any position. Every full-universe rank-correlation change lies between
+   −0.0032 and +0.0007.
+5. **Did not touch the sealed 2025 holdout and did not ask to.** Nothing in this batch is worth a
+   confirmatory registration. `holdout_access_log.jsonl` unchanged.
+6. **New untested hypothesis, logged not acted on:** the proxy's "this player changed clubs" flag is
+   *helpful* (RB −0.46 carries MAE, WR −0.15) while the vacancy *magnitude* is harmful. **"He moved"
+   may be worth more than "how much opened."** Same blocked data dependency; not a finding.
+7. **Registry #18 (xFP) should be specified as an increment over the current component model**, not
+   against a naive baseline. #19's result shows the model's existing shrinkage already does part of
+   what xFP is meant to do, so a naive-baseline comparison would look like a win and mean nothing.
+   Noted in the registry beside #18.

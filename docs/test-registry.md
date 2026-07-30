@@ -70,33 +70,51 @@ tiers, and league-ADP simultaneously.
 
 What a serious, well-read opponent has. Table stakes among the sharpest 2–3 managers in the league.
 
-| # | Test | Why | Source | Effort | Edge | Status |
-|---|---|---|---|---|---|---|
-| 13 | Target share **stability** YoY | Separates real role from one-year noise | `nflverse` | M | Med | SPEC |
-| 14 | Air yards, aDOT | Big-play vs. volume profile | `nflverse` | M | Med | NEW |
-| 15 | WOPR | Best single opportunity metric for WR | `derived` | M | Med | NEW |
-| 16 | Yards per route run | Efficiency independent of volume | `nflverse:FTN` | M | Med | NEW — check FTN columns first |
-| 17 | Route participation rate | Distinguishes starters from rotational | `nflverse:FTN` | M | High | NEW — check FTN columns first |
-| 18 | **Expected fantasy points (xFP) vs. actual** | Isolates luck from skill | `derived` | H | **High** | NEW |
-| 19 | TD-rate regression | Best-known regression signal | `derived` | M | **High** | SPEC |
-| 20 | Opportunity share (carries+targets / team total) | Single best RB metric | `nflverse` | M | High | SPEC |
-| 21 | Team pace / plays per game | Volume multiplier | `nflverse` | M | Med | NEW |
-| 22 | Pass rate over expectation (PROE) | Scheme tilt | `nflverse` | M | Med | NEW |
-| 23 | O-line run-block & pass-block rankings | RB efficiency, QB time | external | L | Med | SPEC |
-| 24 | QB quality for pass catchers | Ceiling constraint | `derived` | L | Med | SPEC |
-| 25 | NFL draft capital (rookies) | Best rookie predictor | `nflverse` | L | Med | SPEC |
-| 26 | Breakout age / college dominator | Rookie projection | external | M | Med | NEW |
-| 27 | Contract year / free-agency status | Motivation & usage | `nflverse` (contracts) | L | Low | NEW |
-| 28 | Vacated targets & carries | Where opportunity actually opened | `derived` | M | High | NEW |
-| 29 | Coordinator continuity | High OC turnover league-wide | `pfr` | L | **High** | **GATED on coordinator data** — PFR returns HTTP 403; head coach is NOT a substitute, see note |
-| 30 | First-time play-callers | Week-to-week volatility | `pfr` | L | Med | **GATED on coordinator data** — same |
-| 29b | Head-coach continuity (separate, weaker candidate) | Cheap proxy, but not what #29/#30 test | `nflverse` (schedules) | L | Low-Med | **NEW** — data available 1999-2026, 100% populated |
-| 31 | Personnel package trends | Structural WR3 headwind | `nflverse:FTN` | L | Med | SPEC |
-| 32 | Pre-snap motion rates | Largely arbitraged league-wide | `nflverse:FTN` | L | **Low** | SPEC |
+| # | Test | Why | Source | Effort | Edge | Status | **Measured verdict** |
+|---|---|---|---|---|---|---|---|
+| 13 | Target share **stability** YoY | Separates real role from one-year noise | `nflverse` | M | Med | SPEC | **NULL** — S1 stability arm: −0.035 targets MAE full universe (BH-sig at WR only), **0.02% on the ADP board**, no ranking effect anywhere. YoY persistence of target share measured: WR +0.652 [+0.624,+0.680], TE +0.632, RB +0.548 — role-tier, just below snap share +0.707. `factor-batch-1-results.md` |
+| 14 | Air yards, aDOT | Big-play vs. volume profile | `nflverse` | M | Med | NEW | — (not run) |
+| 15 | WOPR | Best single opportunity metric for WR | `derived` | M | Med | NEW | — (not run) |
+| 16 | Yards per route run | Efficiency independent of volume | `nflverse:FTN` | M | Med | NEW — check FTN columns first | — (not run) |
+| 17 | Route participation rate | Distinguishes starters from rotational | `nflverse:FTN` | M | High | NEW — check FTN columns first | — (not run) |
+| 18 | **Expected fantasy points (xFP) vs. actual** | Isolates luck from skill | `derived` | H | **High** | NEW | — (not run) |
+| 19 | TD-rate regression | Best-known regression signal | `derived` | M | **High** | SPEC | **HARMFUL as framed / already solved** — discarding own TD rate for the pooled mean (arm T2) is worse at **all four positions**: WR +0.0251, TE +0.0180, RB +0.0182, **QB +0.2295 pass TDs MAE**. Existing empirical-Bayes shrinkage already extracts the signal; a volume-conditional prior adds 0.8% full-universe and **nothing on the ADP board**. `factor-batch-1-results.md` |
+| 20 | Opportunity share (carries+targets / team total) | Single best RB metric | `nflverse` | M | High | SPEC | **NULL at RB** — the position the row names. Ablating carry share costs −0.017 carries MAE [−0.050,+0.003]; share×pace reparameterisation −0.086 [−0.272,+0.068]. **At WR share does earn its place**: removing it costs +0.196 targets MAE on the ADP board (+0.6%). `factor-batch-1-results.md` |
+| 21 | Team pace / plays per game | Volume multiplier | `nflverse` | M | Med | NEW | — (not run) |
+| 22 | Pass rate over expectation (PROE) | Scheme tilt | `nflverse` | M | Med | NEW | — (not run) |
+| 23 | O-line run-block & pass-block rankings | RB efficiency, QB time | external | L | Med | SPEC | — (not run) |
+| 24 | QB quality for pass catchers | Ceiling constraint | `derived` | L | Med | SPEC | — (not run) |
+| 25 | NFL draft capital (rookies) | Best rookie predictor | `nflverse` | L | Med | SPEC | — (not run) |
+| 26 | Breakout age / college dominator | Rookie projection | external | M | Med | NEW | — (not run) |
+| 27 | Contract year / free-agency status | Motivation & usage | `nflverse` (contracts) | L | Low | NEW | — (not run) |
+| 28 | Vacated targets & carries | Where opportunity actually opened | `derived` | M | High | NEW | **BLOCKED, not measured** — `nfl.db` has **no pre-season roster table**, so this ran on a Week-1 depth-chart PROXY. Vacancy arm HARMFUL at RB (+0.203 carries MAE) and TE, NULL at WR, with the harm concentrated in the high-measured-vacancy bucket the proxy is known to contaminate. Needs `nflreadpy.load_rosters_weekly()`. `factor-batch-1-results.md` |
+| 29 | Coordinator continuity | High OC turnover league-wide | `pfr` | L | **High** | **GATED on coordinator data** — PFR returns HTTP 403; head coach is NOT a substitute, see note | — (not run) |
+| 30 | First-time play-callers | Week-to-week volatility | `pfr` | L | Med | **GATED on coordinator data** — same | — (not run) |
+| 29b | Head-coach continuity (separate, weaker candidate) | Cheap proxy, but not what #29/#30 test | `nflverse` (schedules) | L | Low-Med | **NEW** — data available 1999-2026, 100% populated | — (not run) |
+| 31 | Personnel package trends | Structural WR3 headwind | `nflverse:FTN` | L | Med | SPEC | — (not run) |
+| 32 | Pre-snap motion rates | Largely arbitraged league-wide | `nflverse:FTN` | L | **Low** | SPEC | — (not run) |
+
+**The `Measured verdict` column (added 2026-07-30).** `Status` records whether a factor is *built*.
+It has never recorded what a factor turned out to be *worth*, which is the only thing that should
+decide whether it goes in the model. The `Edge` column beside it is a **prior written before any
+measurement** — where a verdict exists, the verdict supersedes it. Vocabulary:
+
+- **`IN FORMULA`** — measured, positive, **and actually wired into the shipped model.** Nothing in
+  this tier carries it and nothing should until a `strategist` registration and a `backend` handoff
+  have both happened.
+- **SURVIVES / MARGINAL / NULL / HARMFUL / BLOCKED** — as defined in `docs/strategic-insights.md`.
+  **BLOCKED means the test ran and could not answer**, which is different from NULL and must not be
+  collapsed into it.
+- **`— (not run)`** — no measurement exists. Not knowledge. Do not read the `Edge` column as one.
 
 **#18 is the highest-value unbuilt item in this tier.** Expected points from opportunity (target
 volume, aDOT, carries, red-zone looks) vs. what a player actually scored separates luck from skill
-better than any single stat. Above xFP → regression candidate; below → buy candidate.
+better than any single stat. Above xFP → regression candidate; below → buy candidate. **It is now
+the last untested HIGH-edge `derived` item in Tier 1** — #19, #20 and #28 were run on 2026-07-30 and
+none of them survived (`docs/ranking/factor-batch-1-results.md`). Note before building it: #19's
+result suggests the model's existing shrinkage already does part of what xFP is meant to do, so the
+xFP test should be specified as an *increment over the current component model*, not against a naive
+baseline it will beat trivially.
 
 **#29/#30 require the `coach_id` dimension**, not `team_id`. Coordinators change teams; tendency
 signal keyed to franchise breaks the moment someone moves.
