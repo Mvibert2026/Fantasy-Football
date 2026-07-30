@@ -5,11 +5,11 @@ Per-request files in this directory are the source of truth. Edit a request's ow
 `STATUS:` line, then re-run sync. Protocol: [`README.md`](README.md).
 Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests.md).
 
-**123 requests since freeze.**
+**124 requests since freeze.**
 
 ---
 
-## NEW — 76
+## NEW — 77
 
 | ID | Subject | Raised | Source |
 |---|---|---|---|
@@ -88,7 +88,8 @@ Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests
 | [FR-135](FR-135-traditional-draft-board-teams-across-the-top-fil.md) | Traditional draft board teams across the top fil | 2026-07-30 | PM session 2026-07-30, founder chat |
 | [FR-136](FR-136-pivot-all-energy-to-the-three-model-questions-on.md) | Pivot all energy to the three model questions on | 2026-07-30 | PM session 2026-07-30, founder chat |
 | [FR-2026-07-30-price-the-fantasypros-paid-api-tier](FR-2026-07-30-price-the-fantasypros-paid-api-tier-terms-were-n.md) | Price the fantasypros paid api tier terms were n | 2026-07-30 | PM session 2026-07-30, founder chat |
-| [FR-2026-07-30-recommendation-logic-is-inverted-it-prefers-the](FR-2026-07-30-recommendation-logic-is-inverted-it-prefers-the.md) | Recommendation logic is inverted it prefers the | 2026-07-30 | PM session 2026-07-30, founder chat, live draft screenshot |
+| [FR-2026-07-30-recommendation-logic-is-inverted](FR-2026-07-30-recommendation-logic-is-inverted-it-prefers-the.md) | Recommendation logic is inverted it prefers the | 2026-07-30 | PM session 2026-07-30, founder chat, live Draft-mode screenshot |
+| [FR-2026-07-30-the-recommender-contradicts-the-project-s-own-me](FR-2026-07-30-the-recommender-contradicts-the-project-s-own-me.md) | The recommender contradicts the project s own me | 2026-07-30 | PM session 2026-07-30, founder chat |
 
 ## SCOPING — 1
 
