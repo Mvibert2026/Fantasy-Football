@@ -5,11 +5,11 @@ Per-request files in this directory are the source of truth. Edit a request's ow
 `STATUS:` line, then re-run sync. Protocol: [`README.md`](README.md).
 Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests.md).
 
-**75 requests since freeze.**
+**76 requests since freeze.**
 
 ---
 
-## NEW — 50
+## NEW — 51
 
 | ID | Subject | Raised | Source |
 |---|---|---|---|
@@ -63,6 +63,7 @@ Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests
 | [FR-087](FR-087-show-draft-position-in-rounds-not-only-pick-numb.md) | Show draft position in rounds not only pick numb | 2026-07-30 | chat 2026-07-30, PM session (feedback batch) |
 | [FR-088](FR-088-spend-fable-tokens-on-proprietary-rankings.md) | Spend fable tokens on proprietary rankings | 2026-07-30 | chat 2026-07-30, PM session (feedback batch) |
 | [FR-089](FR-089-update-glossary-and-methodology-pages.md) | Update glossary and methodology pages | 2026-07-30 | chat 2026-07-30, PM session (feedback batch) |
+| [FR-090](FR-090-bookkeeping-overhead-must-be-measured-and-cut.md) | Bookkeeping overhead must be measured and cut | 2026-07-30 | chat 2026-07-30, PM session |
 
 ## SCOPING — 1
 
