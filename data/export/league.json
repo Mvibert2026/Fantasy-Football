@@ -1,6 +1,6 @@
 {
-  "contract_version": "1.14.0",
-  "generated_utc": "2026-07-29T16:39:37.746435+00:00",
+  "contract_version": "1.15.0",
+  "generated_utc": "2026-07-29T23:31:48.684854+00:00",
   "league_id": "primary",
   "league_name": "Westwood",
   "platform": "yahoo",
@@ -176,5 +176,6 @@
     "reseeding": false
   },
   "trade_deadline": "2026-11-28",
-  "faab_budget": 100
+  "faab_budget": 100,
+  "scoring_ruleset_note": "Westwood's verified custom ruleset (stacking yardage bonuses, ADR-052) -- the one real, confirmed league this project models."
 }

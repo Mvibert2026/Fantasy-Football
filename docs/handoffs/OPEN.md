@@ -4,7 +4,7 @@
 Threads are the source of truth. Change a thread's `STATUS:`, then re-run sync.
 Protocol: [`README.md`](README.md).
 
-**52 open** · 43 resolved
+**53 open** · 43 resolved
 
 ---
 
@@ -54,7 +54,7 @@ not an omission. Start your session at your own heading.
 | [094](094-sleeper-projection-ingest-landed-red-against-the.md) | Sleeper projection ingest landed red against the | `ranker` | OPEN | 1d | a clean suite; the "known-red is exactly one test" claim in CURRENT-STATE item 15 |
 | [88](088-pr-004-f-bottomup-core-run-the-confirmatory-bott.md) | Pr 004 f bottomup core run the confirmatory bott | `strategist` | OPEN | 1d | none |
 
-### `frontend` — 16 waiting
+### `frontend` — 17 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
@@ -73,6 +73,7 @@ not an omission. Start your session at your own heading.
 | [059](059-on-deck-recommendations.md) | On deck recommendations | `pm` | OPEN | 3d | FR-006 (draft chatbot), calm-preparation use case |
 | [066](066-contract-1-10-0-board-json-rows-gained-roster-st.md) | Contract 1 10 0 board json rows gained roster st | `backend` | OPEN | 3d | none |
 | [086](086-competitive-ux-the-overhaul-case-is-weaker-than.md) | Competitive ux the overhaul case is weaker than | `researcher` | OPEN | 1d | none |
+| [093](093-contract-1-15-0-scoring-ruleset-note-on-league-j.md) | Contract 1 15 0 scoring ruleset note on league j | `backend` | OPEN | 1d |  |
 | [89](089-fr-040-costing-static-hosting-blocks-scoring-rec.md) | Fr 040 costing static hosting blocks scoring rec | `backend` | OPEN | 1d | FR-040 custom league settings screen |
 
 ### `data-ops` — 7 waiting

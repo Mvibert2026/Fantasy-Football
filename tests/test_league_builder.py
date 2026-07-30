@@ -73,6 +73,21 @@ def test_build_scoring_does_not_mutate_shared_league_constant():
     assert LEAGUE["offense"]["passing_td"] == before
 
 
+def test_build_scoring_uses_standard_ruleset_not_westwood():
+    """FR-042: a founder-created league must NOT silently inherit Westwood's
+    custom ruleset (stacking yardage bonuses). This is the regression this
+    thread exists to fix -- build_scoring() previously deep-copied
+    scoring.LEAGUE directly."""
+    from scoring import LEAGUE as WESTWOOD
+
+    scoring_out = lb.build_scoring(ppr=0.5)
+    assert scoring_out["offense"]["passing_yards"]["bonuses"] == []
+    assert scoring_out["offense"]["rushing_yards"]["bonuses"] == []
+    assert scoring_out["offense"]["receiving_yards"]["bonuses"] == []
+    assert WESTWOOD["offense"]["passing_yards"]["bonuses"] != []  # sanity: Westwood keeps them
+    assert scoring_out["defense"] != WESTWOOD["defense"]  # never silently copied from Westwood
+
+
 # ------------------------------------------------------------ create_league
 def _basic_kwargs(**overrides):
     kwargs = dict(

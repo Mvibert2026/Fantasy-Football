@@ -33,32 +33,32 @@
       "fumble_recoveries": 2,
       "touchdowns": 6,
       "safeties": 2,
-      "blocked_kicks": 1,
+      "blocked_kicks": 2,
       "return_tds": 6,
       "extra_point_returned": 2,
       "points_allowed": [
         [
           0,
-          10
+          5
         ],
         [
-          7,
-          7
-        ],
-        [
-          14,
+          6,
           4
         ],
         [
-          21,
+          13,
+          3
+        ],
+        [
+          20,
           1
         ],
         [
-          28,
+          27,
           0
         ],
         [
-          35,
+          34,
           -1
         ],
         [
