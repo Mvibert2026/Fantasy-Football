@@ -753,3 +753,34 @@ file (ADR-057). Full evidence `docs/ranking/bottom-up-research-pass-3.md`, threa
    rather than resolved — one ruling should cover all three sources, not three separate ones.
    See ADR-063 and the research doc's SS6 for the full clause reasoning.
 
+
+## 2026-07-30 — ranker, FR-085 / FR-086: decided without asking
+
+1. **Zero RB is closed as a strategy question unless `strategist` overrules.** The draft simulation
+   returns NULL on all four metrics, on both market sources, at every opponent-noise level, and at
+   both draft depths. Intervals are tight (P(title) +0.001 [-0.020, +0.023]) — this is a real null,
+   not an underpowered one. `docs/ranking/fr085-zero-rb.md` §5. Not spending the sealed 2025 holdout
+   on it; asked `strategist` to confirm.
+2. **Used FFC's `std_dev` column as the opponent-noise calibration.** `src/draft_sim.py` assumption 1
+   says no observed draft-position data exists in this repo; it does — FFC ships per-player pick
+   dispersion over 700-1,300 mock drafts. Adopted as the primary sigma with the old flat sweep kept
+   as sensitivity. That module is untouched (its PR-003 numbers are ADR-028-reproducible); the new
+   simulator is separate, in `experiments/strategy/`.
+3. **Amended the strategy pre-commitment after a 5-sim smoke test, before any outcome comparison.**
+   Unconstrained "always take the highest VBD" drafts 9 WR and 3 QB. Replaced with the project's own
+   existing need penalty rather than a constant invented today. Recorded in the pre-commitment and
+   in the code; asked `strategist` whether that invalidates the pre-registration (I believe not).
+4. **Tightened MAX_AT_POSITION to QB 2 / TE 2** in the new simulator, from `src/draft_sim.py`'s 3/3.
+   Derived, not taste: this league starts one QB and ADR-029 measured the TE share of flex slots at
+   0.00 over 26 seasons, so a third of either is structurally unstartable.
+5. **Volatility will not become a player-level archetype label.** Excess SD persists at r ~ 0.10
+   against mean PPG's r ~ 0.72 on the same players. Told `researcher` to carry it as a property of
+   the type, not the man. `docs/ranking/fr086-volatility.md` §5.
+6. **The exceedance-curve dispersion term is dead and I am not proposing it.** Null at every
+   threshold, every family, every shrinkage level, in the most favourable setting that exists (both
+   arms given the realised mean). Escalated to `strategist` because the consequence is a `CLAUDE.md`
+   §7 amendment, which is not mine to make. §3.
+7. **Flagged rather than reported a result that looked too good.** The passing-family dispersion
+   coefficient is +0.135 [+0.108, +0.162], which reads as a strong SURVIVES. The interval bootstraps
+   across walk-forward seasons with near-identical training sets, so effective n ~ 1. Reported as
+   invalid, not as a finding.
