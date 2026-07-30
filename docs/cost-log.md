@@ -83,3 +83,55 @@ Two things worth watching:
    Fable tokens, that's what I want to spend them on") and it is the right call *now* — but the
    ratio has to invert before the draft, because an un-usable app with a great model behind it is
    worth nothing on draft day.
+
+---
+
+## 2026-07-30, later block — the design build-out
+
+Eight further agents after the table above. All eight completed and reported.
+
+| Agent | Work | Tokens | Outcome |
+|---|---|---:|---|
+| frontend | Trace mode — design item 1 | 513,740 | shipped, live |
+| frontend | CI mislabelling + glossary aliases | 367,431 | shipped |
+| frontend | Periodic grid + layout modes — items 3, 7 | 336,485 | shipped |
+| frontend | Assistant window — item 4 | 263,508 | shipped |
+| frontend | Light theme — item 5 | 230,724 | shipped, live |
+| data-ops | Data freshness pass | 101,197 | **partial — ingest did not land** |
+| backend | `vs your options` contract question | 99,139 | answered, no code needed |
+| data-ops | Founder mock-draft ingestion | 82,450 | shipped |
+
+**Later block: 1,994,674. Day total across 22 reporting agents: 5,406,020.**
+
+| Basis | Cost |
+|---|---|
+| All input, $3/MTok | $16.22 |
+| All output, $15/MTok | $81.09 |
+| 70/30 in/out (illustrative only — the split is not reported) | ~$35.68 |
+
+Still a **floor**: three agents earlier in the day died and reported nothing, and PM's own context is
+not counted by any tool.
+
+### What the split says about where effort went
+
+**Frontend took 86% of the later block** (1,711,888 of 1,994,674). That is the correct shape for a
+day whose stated goal was catching the app up to two design rounds — but it is worth stating plainly
+that it is the *opposite* of the earlier block, where rankings and research took 56%. Effort followed
+the founder's sequencing, which is what should happen.
+
+### The one that cost real money and returned nothing durable
+
+`data-ops · data freshness` spent 101,197 tokens and its ingest **did not land**: it wrote to the
+worktree's copy of `data/nfl.db`, which is gitignored and does not survive a reset. The agent said so
+rather than reporting success, which is the right behaviour and the reason this is recoverable.
+
+**It is also a preventable class of waste, and the dispatch is what failed.** `docs/environment.md`
+§4 tells agents to copy `nfl.db` into the worktree to run tests. Nothing told this agent that writes
+to that copy are discarded. The instruction that existed covered reading; the work required writing.
+Fixed in `environment.md` §4b going forward.
+
+### Cheapest useful work of the day
+
+`backend · vs-your-options contract` — 99,139 tokens to establish that a queued design item needed
+**no backend work at all**, unblocking it immediately. A question answered before it becomes a build
+is the highest-leverage thing this structure does.
