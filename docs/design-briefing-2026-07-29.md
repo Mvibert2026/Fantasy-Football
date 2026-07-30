@@ -288,3 +288,30 @@ founder right now, which is his call and not a design judgement.
 **Why it was ever first is worth keeping, because it is the one thing that would restart it:** it is
 the only item he had personally asked for and been blocked on. If he starts using the app on a phone
 under a draft clock, this returns to the top of the list immediately.
+
+---
+
+# Design paused, 2026-07-30 — founder's call
+
+> "given the front ends havent caught up, ok to assume we don't need more design work for now"
+
+**Yes, and it is the right call.** Design has now delivered nine specs across two rounds. Frontend has
+built two of them and has two more in flight. **Another design round widens a gap that is already
+the constraint.** Let the queue drain.
+
+**Do not dispatch design for new specs until the frontend backlog clears.** The phone layout is
+separately parked (above).
+
+**Two things that are still owed to design and are not new work:**
+
+1. **Draft-room screenshots showing the column headers and VBD.** Design could not review FR-050/055
+   because every artifact in the repo predated them. The build round in flight is capturing these.
+   Sending them back is a *return*, not a dispatch.
+2. **A `strategist` call, not a design one:** does selecting a strategy write into the model, or only
+   reorder its output? Design flagged it correctly as outside its own authority. The founder has
+   already answered it in principle — *"can leave the rankings but need to change recommendations"* —
+   and it needs formalising before the selector is built.
+
+**What restarts design:** the frontend queue clearing, or a new feature the founder wants visible
+before the overhaul. Both are his call, not a standing schedule.
+
