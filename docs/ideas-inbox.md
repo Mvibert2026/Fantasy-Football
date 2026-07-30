@@ -753,3 +753,67 @@ file (ADR-057). Full evidence `docs/ranking/bottom-up-research-pass-3.md`, threa
    rather than resolved — one ruling should cover all three sources, not three separate ones.
    See ADR-063 and the research doc's SS6 for the full clause reasoning.
 
+## 2026-07-30 — researcher, archetype taxonomy (FR-075): decided without asking
+
+Deliverable `docs/ranking/archetypes-proposal.md`; two unallocated threads staged at
+`docs/handoffs/NEW-archetype-taxonomy-derivability-review-fr-075.md` (to `ranker`) and
+`docs/handoffs/NEW-how-the-archetype-label-surfaces-on-the-player-card-fr-075.md` (to `design`).
+No `ID:` field in either, per W1 — this session had **no Bash tool at all**, so no allocator
+access and no commit; hand-typing an ID was refused (043/049/053, ADR-048).
+
+1. **The premise "we need to get archetype built" is partly false, and I did not halt on it.**
+   `src/archetypes.py` + `src/player_descriptions.py` (ADR-044) already assign 15 labels and
+   export them; `frontend/ui/data/load.ts:187,214` already loads the artifact and
+   `ui/assistant/retrieval.ts:507-519` already reads it. **`PlayerDetail.tsx:425-434` renders
+   "Not computed: archetype. No backend field in this build." and calls it "permanently absent,
+   no field in any export, ever."** True of `board.json`, false of the app's own loaded dataset.
+   Reported it as the likely reason the founder believes it was never built, and specified the
+   taxonomy anyway rather than stopping to ask.
+
+2. **Deviated from the existing taxonomy on the one term the industry actually defines.** Adopted
+   Footballguys' published bell-cow cut (`offense_pct >= 0.67`, plus a 0.50 committee-leader
+   boundary) over `src/archetypes.py:204`'s conjunctive `>=0.60 AND carry_share>=0.55 AND
+   target_share>=0.07`. Reason: the conjunction is what manufactures the mid-mass gap ADR-044
+   pinned as a regression test. **Used a 12-game floor, not Footballguys' 15** — 15 imports
+   survivorship, since a bell cow who missed three games was still a bell cow. Both are judgement
+   calls, flagged as such, and both are in the `ranker` thread for measurement.
+
+3. **Refused to invent a "Konami code" threshold.** Every source fetched uses the term with no
+   number — FantasyPros' own 2024 article on the subject offers only "It's become a cheat code of
+   sorts." Specified the QB dual-threat axis as a within-season percentile of rushing share of
+   fantasy points instead, so the rule is measurable without an invented constant. Left the
+   absolute cut as an open R3 question.
+
+4. **`attempts` left as an explicit `[GAP]`.** `docs/data-availability.md` §2 does not name it in
+   the outcome family; the QB volume modifier is specified conditionally and must not be built
+   until someone with a shell confirms the column exists.
+
+**Escalating, not resolving — a live tension between `CLAUDE.md` §7 and a run pre-registration.**
+§7 says the stacking yardage bonuses "reward ceiling outcomes over floor, which should influence
+how variance is valued in rankings." `docs/preregistration/PR-002-spike-week-persistence.md` is
+**RUN, result NULL**: bonus-clearance shape conditional on volume does not persist (WR r=+0.041
+CI [−0.018,+0.099]; RB r=+0.063 CI [−0.001,+0.124]; 36 correlations, zero surviving BH), and its
+own text says "There is no 'spike-week player' to identify." `ranker`'s FR-054 WR component model
+reached the same conclusion independently (this file, 2026-07-29). §7's arithmetic is fine; the
+operational claim underneath it is not supported. **Changing `CLAUDE.md` is not a researcher's
+call** — flagged in the proposal §3.10 and in the `ranker` thread, resolved nowhere. Someone
+should settle it before another chain builds a "high-ceiling" archetype on the §7 wording.
+
+**Also flagging: FR-075 and FR-086 do not exist as files.** `docs/founder-requests/` tops out at
+FR-071 and neither number appears anywhere in the repo. Both were named in my dispatch. Either
+they live on an unmerged branch (the same class as the FR-034/035/036 collision logged
+2026-07-29) or they were never captured. Not hand-allocating a number to fix it. The founder's
+own words on placement — "I'd like to see it towards the top of the card (or inprep there is
+space next to the napes to the right before position comes into play" and "take inspiration from
+the industry, and if there are players who don't fit a mold or you like other descriptors better,
+use them - just help define it" — are quoted verbatim in both the proposal and the `design`
+thread so they survive this session regardless.
+
+**Sources blocked or unreadable, recorded not routed around:** Yahoo/ESPN/CBS not fetched per
+standing block. `dynastyleaguefootball.com` returned HTTP 403 (its slot-rate bands are the only
+quantified WR taxonomy found and are therefore `[SNIPPET]`-grade only). `ftnfantasy.com` 403'd.
+RotoBaller's article bodies returned navigation chrome only. **Whether any consumer draft product
+surfaces a derived archetype label on a player card is left as an explicit `[GAP]`** — search plus
+help-doc reading found none, but that is absence of evidence, and the three blocked hosts are
+exactly the ones most likely to have one.
+

@@ -307,6 +307,19 @@ pass or is marked as unverified.
    league is loaded (`ui/data/playerHistory.ts`), so PlayerDetail's history sections render the
    same on every league; that correction is logged in `docs/ideas-inbox.md` (2026-07-29, frontend,
    item 5) since it revises this line's own earlier "three other screens thin out" framing.
+6. **The player card says archetype does not exist; it does, and the app already loads it.**
+   `PlayerDetail.tsx:425-434` renders "Not computed: archetype. No backend field in this build"
+   and comments that it is "permanently absent, no field in any export, ever." That is true of
+   `board.json` and **false of the app's own loaded dataset**: `data/export/player_descriptions.json`
+   carries a per-player `archetype` field for 213 players (ADR-044), `frontend/ui/data/load.ts:187,214`
+   loads it into `Dataset.playerDescriptions`, and `ui/assistant/retrieval.ts:507-519` reads it.
+   A wiring + wording defect, not a missing capability — and the likely reason FR-075 was raised as
+   "we need to get archetype built." Taxonomy spec and both fixes scoped in
+   `docs/ranking/archetypes-proposal.md` (researcher, 2026-07-30) with unallocated threads staged to
+   `ranker` and `design`. **Surfacing the existing labels unchanged would make a second, quiet defect
+   loud:** measured from the committed artifact, 62.7% of RBs are `RB_COMMITTEE`, 41.4% of WRs are
+   `WR_ROTATIONAL`, 51.0% of TEs are `TE_SECONDARY_RECEIVER`, and `WR_POSSESSION` has four players
+   in the whole file.
 7. **Duplicate founder-request ids.** FR-029 and FR-030 each name two different requests, so a
    status update to one is invisible in the other. `tools/dashboard.py` now flags this on every run.
 
