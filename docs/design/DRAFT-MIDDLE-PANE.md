@@ -138,3 +138,41 @@ capture request so the next pass is a real review:
    screen currently says so.
 4. **VBD needs real width, not a squeeze.** If something must give, the frequency dots are the least
    load-bearing thing in the row; they repeat what the percentage already carries.
+
+---
+
+## Founder override, 2026-07-30 — the periodic table is back on
+
+**This section reverses the decision above. It is the founder's call, recorded verbatim.**
+
+> "we do want to have the periodic table, thought we'd been ok with some set of colors, just get it
+> decided, maybe it needs to pop out because of spacing requirements, don't remove stuff from the
+> middle panel to put it in there, you can add it there, but don't remove the other things."
+
+### The two objections, and where each now stands
+
+**Objection 1 — position hues collide with the good/bad/delta accents.** **Already resolved and the
+override is not needed for it.** `docs/design/POSITION-COLOUR-RESOLUTION.md` is `STATUS: RESOLVED —
+grid is unblocked`, decided 2026-07-30: no position hue changes, the two colour families separated by
+role and shape, and the semantic family **banned from the grid outright**. Its closing line is
+"Engineering can build the periodic table against this." The colour blocker was cleared before the
+founder asked.
+
+**Objection 2 — the pane is ~640px at 1600, so six cells across "is a list with extra steps."** This
+one stands as an observation and the founder has supplied the answer: **let it pop out.** A grid that
+needs width gets width, rather than being crushed into a side pane or cancelled.
+
+### Binding constraints on whoever builds it
+
+1. **Additive only. Nothing currently in the middle pane may be removed to make room** — the four
+   tabs (Recommend · Scarcity · Queue · Insights) all stay. The founder said this explicitly and
+   unprompted, having just praised the pane.
+2. **Pop-out is the expected shape**, because the space objection was real. Design decides the exact
+   mechanism.
+3. **The semantic accent family stays out of the grid**, per `POSITION-COLOUR-RESOLUTION.md`. A cell
+   filled with a hue that elsewhere means "good" or "bad" reads as a verdict on the player.
+
+### What is still design's to decide
+
+The pop-out mechanism, the grid's own information density, what a cell carries beyond identity, and
+how it behaves at the widths a popped-out view actually gets.
