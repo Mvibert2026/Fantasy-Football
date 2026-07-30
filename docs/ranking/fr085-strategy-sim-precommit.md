@@ -113,6 +113,15 @@ curve fitted on seasons strictly before the target season** (look-ahead safe; it
 the shipped board does, per `CLAUDE.md`'s note that the shipped board holds no player-level opinion).
 Replacement levels are ADR-029's measured RB30 / WR40 / TE10 / QB10.
 
+Curve construction, fixed here: mean **points per game** at each positional *finish* rank over the
+**five seasons immediately preceding** the target season, smoothed with a 3-wide moving average,
+then multiplied by the target season's scheduled game count (16 before 2021, 17 from 2021 — known
+pre-draft). Five seasons rather than all history because `CLAUDE.md` §6.4 says how far back to
+weight is empirical and older seasons can be actively misleading; the window is declared here so it
+cannot be tuned after seeing a result. A player's ADP *positional* rank is read onto this curve —
+which is precisely the shipped board's assumption, and deliberately so: it holds no player-level
+opinion, which is what isolates strategy from projection quality.
+
 **No strategy contains a TE or QB rule.** They are handled by the same VBD ordering as every other
 position. That is the answer to *"do you take a TE or no judgment?"* — no judgement, and stating so
 is part of the definition.
