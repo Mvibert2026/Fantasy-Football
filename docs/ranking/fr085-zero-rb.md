@@ -669,6 +669,12 @@ VBD of the positional rank-1 slot, mean 2021–2024:
 thought was contradicted. It is not. The simulator's arm acts on it: it takes RB1 first overall
 whenever RB1 is on the board at its first pick.
 
+*(The reconstruction row is a check on my own reading of ADR-016, not a replication of it. It lands
+within 4% on RB, WR and QB and **does not reconcile on TE — 100.8 against 73.1.** That gap is
+unexplained. It is not load-bearing for anything here, since no conclusion in this document turns on
+TE1's slot value, but it should not be quoted as agreement. Different market, different seasons, and
+possibly a different TE replacement depth; I did not chase it.)*
+
 They are not the same number, and the difference is real and should be recorded:
 
 - The simulator reads **finish**-rank curves (mean season total of whoever *finished* RBk) at a
