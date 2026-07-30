@@ -4,7 +4,7 @@
 Threads are the source of truth. Change a thread's `STATUS:`, then re-run sync.
 Protocol: [`README.md`](README.md).
 
-**74 open** · 46 resolved
+**75 open** · 46 resolved
 
 ---
 
@@ -62,7 +62,7 @@ not an omission. Start your session at your own heading.
 | [111](111-sleeper-screen-use-recent-usage-not-career-mean.md) | Sleeper screen use recent usage not career mean | `ranker` | OPEN | 0d | nothing; changes a feature choice in the FR-094 sleeper screen before it ships |
 | [88](088-pr-004-f-bottomup-core-run-the-confirmatory-bott.md) | Pr 004 f bottomup core run the confirmatory bott | `strategist` | OPEN | 1d | none |
 
-### `frontend` — 18 waiting
+### `frontend` — 19 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
@@ -84,6 +84,7 @@ not an omission. Start your session at your own heading.
 | [093](093-fr-057-part-1-availability-json-now-covers-every.md) | Fr 057 part 1 availability json now covers every | `backend` | OPEN | 1d | none |
 | [110](109-opponents-and-liveopponents-have-diverged.md) | Opponents and liveopponents have diverged | `frontend` | OPEN | 0d | none |
 | [110](110-opponents-and-liveopponents-have-diverged.md) | Opponents and liveopponents have diverged | `frontend` | OPEN | 0d | none |
+| [115](115-vs-your-options-contract-answer-client-computati.md) | Vs your options contract answer client computati | `backend` | OPEN | 0d | none |
 
 ### `data-ops` — 9 waiting
 
@@ -97,7 +98,7 @@ not an omission. Start your session at your own heading.
 | [070](070-recurring-injury-suspension-feed.md) | Recurring injury suspension feed | `pm` | OPEN | 3d | T4 (suspensions/roster-status table stakes), E[games_played] per ADR-E Amendment E-A1 |
 | [084](084-deepen-expert-consensus-history-beyond-2021-2025.md) | Deepen expert consensus history beyond 2021 2025 | `ranker` | OPEN | 1d | none |
 | [097](097-ingest-nflverse-weekly-roster-status-the-only-so.md) | Ingest nflverse weekly roster status the only so | `ranker` | OPEN | 0d | the season-ending-IR and suspension error classes in the bottom-up component model (docs/ranking/component-model-rb-qb-te-pass-1.md §5.2). Nothing shipped. |
-| [114](113-rosters-weekly-blocks-vacated-opportunity.md) | Rosters weekly blocks vacated opportunity | `ranker` | OPEN | 0d | test-registry #28 (vacated targets & carries) |
+| [113](113-rosters-weekly-blocks-vacated-opportunity.md) | Rosters weekly blocks vacated opportunity | `ranker` | OPEN | 0d | test-registry #28 (vacated targets & carries) |
 
 ### `strategist` — 14 waiting
 
@@ -115,8 +116,8 @@ not an omission. Start your session at your own heading.
 | [102](102-fr-094-sleeper-screen-methodology-review.md) | Fr 094 sleeper screen methodology review | `backend` | OPEN | 0d |  |
 | [105](105-fr085-fr086-methodology-review.md) | Fr085 fr086 methodology review | `ranker` | OPEN | 0d | whether anything from FR-085/FR-086 is registered; whether CLAUDE.md §7's ceiling claim stands |
 | [111](111-valuation-tests-35-36-results.md) | Valuation tests 35 36 results | `backend` | OPEN | 0d | none |
+| [112](112-preregistration-gates-need-a-decision-subset.md) | Preregistration gates need a decision subset | `ranker` | OPEN | 0d | every future pre-registration that gates on projection error |
 | [112](114-founder-mock-scoring-format-inference-needs-sepa.md) | Founder mock scoring format inference needs sepa | `data-ops` | OPEN | 0d | none |
-| [113](112-preregistration-gates-need-a-decision-subset.md) | Preregistration gates need a decision subset | `ranker` | OPEN | 0d | every future pre-registration that gates on projection error |
 
 ### `researcher` — 4 waiting
 
