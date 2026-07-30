@@ -237,19 +237,34 @@ including at its most favourable setting, and there is nothing there. Sources:
 The goal is low human touch with real checkpoints — not zero oversight. Bad assumptions
 compound silently; the gates exist to catch them without requiring the user to review every step.
 
+The roster is the agent definitions in `.claude/agents/`. That directory is the source of truth for
+each role's pinned model and effort; this table says what each is *for*.
+
 | Agent | Role | Model |
 |---|---|---|
-| **Builder** | Writes ingestion, scoring, harness, and model code | Sonnet |
-| **Verifier** | Reviews Builder output against this spec before anything is marked done; runs tests | Sonnet |
-| **Statistician** | Designs and reviews methodology, weighting, backtest validity | Opus |
-| **Red-team** | Actively attacks assumptions: look-ahead leakage, survivorship, overfitting, over-engineering, unearned confidence | Opus |
+| **pm** | Sequencing, dispatch, merges, the founder's interface | Opus |
+| **ranker** | The proprietary bottom-up ranking — the product's core | Opus |
+| **strategist** | Methodology, formula specs, pre-registration. **No database access, deliberately** | Opus |
+| **researcher** | External verification, competitive analysis, source audits | Opus |
+| **fable** | Adversarial review on a separate weekly budget | Fable |
+| **frontend** | The React app | Sonnet |
+| **backend** | Python, exports, tests, statistics | Sonnet |
+| **librarian** | What is true, where it lives, what was already decided | Sonnet |
+| **data-ops** | Capture, ingestion, snapshots | Sonnet |
+| **verifier** | Checks a finished branch against the dispatch that produced it. Read-only | Sonnet |
+| **operator** | Owns "is the live site current and correct" — the seam no specialist owns. Read-only | Sonnet |
 
-**Gates run at checkpoints, not continuously.** Every build task ends with Verifier. Every
-methodology decision and every completed milestone ends with Statistician + Red-team.
+**Gates run at checkpoints, not continuously.** Every build task ends with **verifier**. Every
+methodology decision and every completed milestone ends with **strategist + fable**. **operator**
+runs at session start, after any merge, and before the founder is told anything is live.
 
-**Red-team has standing authority to block.** If it identifies a leakage or bias problem, the
-work does not advance until resolved. Red-team's mandate explicitly includes flagging
-over-engineering — building infrastructure with no current consumer is a finding, not a virtue.
+**fable has standing authority to block.** If it identifies a leakage or bias problem, the work does
+not advance until resolved. Its mandate explicitly includes flagging over-engineering — building
+infrastructure with no current consumer is a finding, not a virtue.
+
+**Neither verifier nor operator may fix what it finds.** Both are read-only by design. An agent that
+edits what it just reviewed is reviewing its own work, which is the arrangement the gate exists to
+prevent. Findings go back to the owning role as threads.
 
 **Escalate to the user when:** a gate fails twice on the same issue, a decision changes anything
 in this file, scope expands beyond Phase 1, or a result looks too good (that is usually leakage,
@@ -306,6 +321,7 @@ tier is ambiguous, say which tier you think it is and why before starting.
 | `docs/status.md` | **Frozen 2026-07-28**, historical archive only. New session narratives: `docs/status/` (one dated file per session, `tools/status_log.py sync` generates `docs/status/INDEX.md`) |
 | `docs/statistical-guardrails.md` | Methodology reference expanding §6 into concrete, checkable procedures. Read before running any backtest; every backtest report must state which checks were applied |
 | `docs/product-explanations.md` | Why the product behaves the way it does, in founder-facing language, one idea per entry, each tagged with the surface it would appear on (tour / tooltip / hover). Append to it whenever a session explains a behaviour in chat — chat is discarded, this is not. Source content for the eventual in-app product tour and tooltips (FR-119; **do not build the tour**, the founder deferred it) |
+| `docs/design/reference-screenshots/` | Standing screenshots of every key surface, regenerated on merge, at two widths in both themes. Design has read access and no running app — this is how it sees current reality instead of speccing against whatever capture someone remembered to take |
 | `docs/assistant-context.md` | Curated, current-state-only summary for the in-app assistant's "why" questions. One paragraph per settled decision, no history, no superseded numbers. Edited in place when an ADR supersedes something in it — never appended to. The assistant must read this instead of `decisions.md`/`test-registry.md`, both of which contain figures later entries overwrote |
 
 Keep this file lean. When a section outgrows a paragraph or two, move it to a companion doc and
