@@ -24,6 +24,10 @@ REPO = Path(__file__).resolve().parents[3]
 if str(REPO) not in sys.path:
     sys.path.insert(0, str(REPO))
 
+from experiments.bottomup.factors.factor_features2 import (  # noqa: E402
+    _normalise_coach,
+)
+
 DB = REPO / "data" / "nfl.db"
 
 
@@ -38,6 +42,12 @@ def load(title: str = "OC") -> pd.DataFrame:
         conn.close()
     df["key"] = df["coach_id"].where(df["coach_id"].notna(),
                                      "HC:" + df["head_coach"].astype(str))
+    # the key the FEATURE actually compares on -- see
+    # factor_features2._normalise_coach for why the HC:/OC distinction is
+    # deliberately dropped from the continuity key
+    df["nkey"] = df["key"].map(lambda k: _normalise_coach(str(k)[3:]
+                                                          if str(k).startswith("HC:")
+                                                          else k))
     return df
 
 
@@ -82,12 +92,12 @@ def main() -> None:
     print("\n--- 3. how many OC changes are there to detect, and are they traceable? ---")
     rows = []
     for s in seasons[1:]:
-        cur = oc[oc["season"] == s].set_index("team")["key"]
-        prev = oc[oc["season"] == s - 1].set_index("team")["key"]
+        cur = oc[oc["season"] == s].set_index("team")["nkey"]
+        prev = oc[oc["season"] == s - 1].set_index("team")["nkey"]
         both = cur.index.intersection(prev.index)
         changed = [t for t in both if cur[t] != prev[t]]
         # of the new OCs, how many were an OC somewhere else the previous season?
-        prev_all = set(oc.loc[oc["season"] == s - 1, "key"])
+        prev_all = set(oc.loc[oc["season"] == s - 1, "nkey"])
         from_elsewhere = [t for t in changed if cur[t] in prev_all]
         rows.append(dict(season=s, clubs_comparable=len(both),
                          oc_changed=len(changed),

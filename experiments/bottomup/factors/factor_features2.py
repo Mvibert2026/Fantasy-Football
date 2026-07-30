@@ -49,6 +49,8 @@ to have touched it by the same audit assertion batch 1 already runs.
 
 from __future__ import annotations
 
+import re
+
 import numpy as np
 import pandas as pd
 
@@ -109,6 +111,34 @@ def _ahead_of_me(prev: pd.DataFrame, tt: pd.DataFrame, stays: np.ndarray,
         for pid, c in zip(g["player_id"], cum):
             out[pid] = c / d if np.isfinite(d) else np.nan
     return pd.Series(out, dtype=float)
+
+
+_SUFFIX_RE = re.compile(r"\b(jr|sr|ii|iii|iv)\.?\b")
+_PUNCT_RE = re.compile(r"[.,'’\-]")
+
+
+def _normalise_coach(name) -> str:
+    """Collapse rendering variants of the same person's name to one key.
+
+    Measured, not precautionary: across 170 consecutive-season OC transitions in
+    `play_callers_preseason`, three are the same person rendered differently --
+    "Pete Carmichael, Jr." -> "Pete Carmichael" (NO 2015), and two cases where
+    the navbox stopped duplicating a head coach on the OC line while he kept
+    calling plays (Hue Jackson CLE 2017, Kyle Shanahan SF 2020). Left alone,
+    each is a fabricated "new OC" for a club that changed nothing.
+
+    Deliberately does NOT preserve whether the play-caller was the HC or a
+    separate OC. That is a different question (registry #30 territory) and it
+    belongs in its own feature, not smuggled into a continuity key.
+    """
+    if name is None or (isinstance(name, float) and np.isnan(name)):
+        return ""
+    s = str(name).strip()
+    if not s or s.lower() in {"nan", "none"}:
+        return ""
+    s = _SUFFIX_RE.sub("", s.lower())
+    s = _PUNCT_RE.sub(" ", s)
+    return " ".join(s.split())
 
 
 def _fill_median(s: pd.Series, name: str) -> np.ndarray:
@@ -190,8 +220,9 @@ def _batch2(panel: SeasonPanel, f: pd.DataFrame, target_season: int
         # is a real and common arrangement, so key on the HC rather than dropping
         # the club. The substitution is HERE, in feature code, where it is
         # visible and can be turned off -- not baked into the stored table.
-        k = df["coach_id"].where(df["coach_id"].notna(),
-                                 "HC:" + df["head_coach"].astype(str))
+        k = df["coach_id"].where(df["coach_id"].notna(), df["head_coach"])
+        k = k.map(_normalise_coach)
+        k = k.where(k.astype(str).str.len() > 0, None)
         return pd.Series(k.to_numpy(), index=df["team"].to_numpy())
 
     k_now, k_prev = _key(oc_now), _key(oc_prev)

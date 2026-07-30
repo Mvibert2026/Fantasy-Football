@@ -2006,7 +2006,11 @@ export function DraftRoom({
                   data={data}
                   abbreviation="AVAIL"
                   text={boardAvailTargetPick !== null ? `AVAIL @ ${boardAvailTargetPick}` : 'AVAIL'}
-                  overrideTitle="Baseline -> live-adjusted availability at the pick named in the header, then the same number as ten dots"
+                  overrideTitle={
+                    boardAvailTargetPick !== null
+                      ? `Baseline -> live-adjusted availability at pick ${boardAvailTargetPick}, then the same number as ten dots`
+                      : 'Baseline -> live-adjusted availability, then the same number as ten dots'
+                  }
                 />
               </span>
               {/* Unlabeled, width-only: the dots repeat AVAIL's own number, and

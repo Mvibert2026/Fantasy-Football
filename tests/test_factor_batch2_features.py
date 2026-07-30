@@ -27,7 +27,7 @@ from experiments.bottomup.factors.factor_features import (  # noqa: E402
     build_factor_features,
 )
 from experiments.bottomup.factors.factor_features2 import (  # noqa: E402
-    _ahead_of_me, build_factor2_features,
+    _ahead_of_me, _normalise_coach, build_factor2_features,
 )
 
 DB_PATH = ROOT / "data" / "nfl.db"
@@ -124,6 +124,19 @@ def test_ahead_of_me_ties_get_the_same_value():
     s = _ahead_of_me(prev, tt, np.array([False, True, True]), "targets",
                      "team_targets")
     assert s["t1"] == pytest.approx(s["t2"])
+
+
+def test_coach_name_normalisation_kills_the_three_real_false_changes():
+    """Each of these is an actual pair from `play_callers_preseason` that would
+    otherwise fabricate a 'new OC' for a club that changed nothing."""
+    assert _normalise_coach("Pete Carmichael, Jr.") == _normalise_coach("Pete Carmichael")
+    assert _normalise_coach("Hue Jackson") == _normalise_coach("hue  jackson")
+    assert _normalise_coach("Kevin O'Connell") == _normalise_coach("Kevin O Connell")
+    # and it must NOT collapse two different people
+    assert _normalise_coach("Mike Shula") != _normalise_coach("Mike Sullivan")
+    # empty-ish inputs are empty, never the string "nan"
+    for bad in (None, float("nan"), "", "  ", "None", "nan"):
+        assert _normalise_coach(bad) == ""
 
 
 @needs_db
