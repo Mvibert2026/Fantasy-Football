@@ -507,5 +507,121 @@ def _grade(res: pd.DataFrame) -> None:
     print(f"\nwrote {OUT/'factor_batch7_results.csv'}")
 
 
+# ======================================================= POST-HOC diagnostics
+# EVERYTHING BELOW IS POST-HOC. It was written after the 16 registered arms had
+# been run, it is not in `docs/ranking/factor-batch-7-precommit.md`, and it
+# carries a LOWER evidential standard than anything above -- the same rule batch
+# 1 §4 and batch 3 §1 applied to their own post-hoc work. No arm's grade may be
+# changed by it. It exists because two registered results demand an explanation
+# that the registered endpoints cannot give:
+#
+#   D1  Every red-zone and snap-share arm improves the FULL-UNIVERSE component
+#       MAE and DEGRADES the ADP-board MAE, by roughly ten times as much in
+#       percentage terms. The registered endpoints report both numbers; they do
+#       not say where the full-universe gain physically sits.
+#
+#   D2  `rzsnap_known` -- a binary "is this player in the participation table at
+#       all" flag, registered as a control -- is the LARGEST effect in the whole
+#       N14 family, more than double either treatment. What it encodes decides
+#       whether the red-zone block is football or bookkeeping.
+
+_D1_ARMS = (1, 2, 12, 16)
+
+
+def _split_mae(pl: pd.DataFrame, comp: str) -> pd.DataFrame:
+    """Per-season component MAE, split by whether the player is on the ADP board.
+    `average_pick` is finite exactly for board players (`pos_eval.WalkForward`)."""
+    rows = []
+    for s, g in pl.groupby("season"):
+        e = np.abs(g[f"proj_{comp}"].to_numpy(dtype=float)
+                   - g[comp].to_numpy(dtype=float))
+        on = np.isfinite(g["average_pick"].to_numpy(dtype=float))
+        if on.sum() < 10:
+            continue
+        rows.append({"season": int(s), "mae_board": float(e[on].mean()),
+                     "mae_off": float(e[~on].mean()), "n_board": int(on.sum()),
+                     "n_off": int((~on).sum())})
+    return pd.DataFrame(rows)
+
+
+def diagnostics() -> None:
+    t0 = time.time()
+    panel = build_panel()
+    sources()
+    out: List[Dict] = []
+
+    prim_wf = E.WalkForward(panel=panel, position=POS, first_target=FIRST,
+                            last_target=LAST, avail_arm="A", feature_fn=_feat(()))
+    prim_pl, _ = prim_wf.run()
+
+    print("=" * 96)
+    print("D1 -- POST-HOC. Where does the full-universe gain physically sit?")
+    print("     Component MAE, arm - primary, split by ADP-board membership.")
+    print("=" * 96)
+    by_idx = {a.idx: a for a in ARMS}
+    for i in _D1_ARMS:
+        a = by_idx[i]
+        wf = WF7(panel=panel, position=POS, first_target=a.first, last_target=LAST,
+                 avail_arm="A", feature_fn=_feat(a.blocks), rate_cov=a.rate_cov,
+                 **a.kwargs)
+        pl, _m = wf.run()
+        sa = _split_mae(pl, a.e1)
+        sp = _split_mae(prim_pl[prim_pl["season"] >= a.first], a.e1)
+        db = paired(sa[["season", "mae_board"]].rename(columns={"mae_board": "v"}),
+                    sp[["season", "mae_board"]].rename(columns={"mae_board": "v"}), "v")
+        do = paired(sa[["season", "mae_off"]].rename(columns={"mae_off": "v"}),
+                    sp[["season", "mae_off"]].rename(columns={"mae_off": "v"}), "v")
+        pb, po = float(sp["mae_board"].mean()), float(sp["mae_off"].mean())
+        out.append(dict(diag="D1", idx=i, arm=a.arm, comp=a.e1,
+                        board_d=db[0], board_lo=db[1], board_hi=db[2], board_p=db[3],
+                        board_pct=100 * db[0] / pb if pb else np.nan,
+                        off_d=do[0], off_lo=do[1], off_hi=do[2], off_p=do[3],
+                        off_pct=100 * do[0] / po if po else np.nan,
+                        n_board=int(sp["n_board"].mean()),
+                        n_off=int(sp["n_off"].mean())))
+        r = out[-1]
+        print(f"  {a.arm:40s} board {r['board_d']:+8.4f} ({r['board_pct']:+6.2f}%)  "
+              f"off-board {r['off_d']:+8.4f} ({r['off_pct']:+6.2f}%)   "
+              f"n {r['n_board']}/{r['n_off']}")
+
+    print("\n" + "=" * 96)
+    print("D2 -- POST-HOC. What does `rzsnap_known` actually encode?")
+    print("=" * 96)
+    fn = _feat(("rz", "snap"))
+    frames = []
+    for s in range(FIRST_PARTICIPATION, LAST + 1):
+        board = E.adp.load_adp(s, position=POS)
+        extra = (board.loc[~board["unmatched"], "player_id"].tolist()
+                 if len(board) else None)
+        u = E.universe_for(panel, s, POS, extra_ids=extra)
+        f = fn(panel, u, s)
+        f["on_board"] = f["player_id"].isin(extra or [])
+        frames.append(f)
+    big = pd.concat(frames, ignore_index=True)
+    k = big["rzsnap_known"] > 0.5
+    rk = big["entry"] == "rookie"
+    row = dict(diag="D2", n=len(big), known_share=float(k.mean()),
+               rookie_share=float(rk.mean()),
+               p_unknown_given_rookie=float(1 - k[rk].mean()),
+               p_rookie_given_unknown=float(rk[~k].mean()),
+               agree_known_eq_notrookie=float((k == ~rk).mean()),
+               mean_games1_known=float(big.loc[k, "games_1"].mean()),
+               mean_games1_unknown=float(big.loc[~k, "games_1"].mean()),
+               mean_evidence_known=float(big.loc[k, "evidence"].mean()),
+               mean_evidence_unknown=float(big.loc[~k, "evidence"].mean()),
+               board_share_known=float(big.loc[k, "on_board"].mean()),
+               board_share_unknown=float(big.loc[~k, "on_board"].mean()))
+    out.append(row)
+    for kk, vv in row.items():
+        if kk != "diag":
+            print(f"  {kk:32s} {vv}")
+
+    pd.DataFrame(out).to_csv(OUT / "factor_batch7_diagnostics.csv", index=False)
+    print(f"\nwrote {OUT/'factor_batch7_diagnostics.csv'}  [{time.time()-t0:.0f}s]")
+
+
 if __name__ == "__main__":
-    main()
+    if "--diagnostics" in sys.argv:
+        diagnostics()
+    else:
+        main()
