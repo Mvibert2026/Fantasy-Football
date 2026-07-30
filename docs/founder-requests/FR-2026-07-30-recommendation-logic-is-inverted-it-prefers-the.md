@@ -71,3 +71,26 @@ three things in place, I don't want to use the tool for my real draft."*
 
 It is also the question PM already recorded as the weakest of the three (FR-136), and whose `need`
 parameter is an open decision PM must not frame, having authored the claim.
+
+---
+
+## Strategist ruling — 2026-07-30
+
+**The rule:** `docs/adr-drafts/ADR-DRAFT-suggested-pick-opportunity-cost-rule.md`.
+**The registration:** `docs/ranking/suggested-pick-rule-precommit.md`.
+**The diagnosis it is built on:** `docs/handoffs/2026-07-30-pick-18-recommendation-defect-traced-reproduced.md`
+(ranker's, independently corroborated) and its `### strategist · 2026-07-30` reply.
+
+| Founder's item | Ruling |
+|---|---|
+| "the logic is backwards" | **Right about the sign, wrong about the replacement.** The correct rule is $\arg\max_X q_X g_X$ — (probability he is **gone** by your next pick) × (how much better he is than what you would take instead). His shorthand is $q$ alone, which drafts a 1%-survival replacement-level player ahead of a 60%-survival star. Refused in writing (ADR §3.4, §7 D-7). |
+| Is it a sign error? | **No — structural.** `recommendation.ts:64-72`/`:82-97` take `(row, round, unfilledPositions)`. No `Dataset`, no `LeagueConfig`, no pick log. Availability is unreachable from the ordering function; there is no coefficient to invert. A "sign fix" would add availability as an additive VBD-points term, which is the wrong object. |
+| Item 1 — contradicts the early-QB finding | **Neither ignoring it nor encoding it.** It carries an unfitted `−25` proxy that fires and loses by 21.70. The finding is narrower than the assistant said in five ways, and the assistant **inverted the uncertainty**: −115.4 is the point estimate at σ=10, not the worst case (CI [−176.3, −54.4]). No conversion exists between season roster points and a per-pick VBD addend, so no magnitude could have been "correct." |
+| Item 2 — the garbled sentence | Model output from the reasoning lane, not a template. Its most likely cause is `DraftRoom.tsx:1005`'s false causal claim being handed to the model alongside contradicting VBD numbers. Fixing the string removes the cause. |
+| Item 3 — two availability numbers | **Different picks, both correct, neither labelled.** Verified from `data/export/availability.json`: board `AVAIL` 79%/40% is the σ=10 marginal at **pick 18**; card 71%/25% is live-adjusted at **pick 23** (baselines 63%/22.5%). Worse: on the clock, `AVAIL` is the probability of an event you can see already happened. Disposition in ADR §6. |
+
+**Three fixes need no measurement and ship now** (staged to `frontend`): the false causal sentence
+at `DraftRoom.tsx:1005`, the unconditional "only" at `:961`, and the board `AVAIL` target pick at
+`:1915`. **The ordering change does not ship until measured** — thread 111 measured the rule's
+nearest relative at −106 to −126 roster points, and the argument that that arm was mis-specified is
+an explanation, not evidence.
