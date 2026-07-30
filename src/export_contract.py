@@ -652,6 +652,81 @@ def _all_slot_pick_numbers(cfg: lc.LeagueConfig) -> Dict[str, List[int]]:
     return out
 
 
+def _load_ffc_skill_adp(
+    conn: sqlite3.Connection, season_data: "ds.SeasonData", adp_source: str = "ffc_half_ppr_10team"
+) -> Dict[str, object]:
+    """FFC ADP (thread 119/FR-131), restricted to QB/RB/WR/TE and joined to the
+    SAME player universe `ds.load_season` returned -- so its keys line up with
+    `by_player`'s by construction, exactly like the consensus-rank block above.
+
+    NOT the model's input today. `simulate_availability` has not switched to
+    ADP (that switch is gated on the M0-M5 pre-registration,
+    docs/ranking/availability-opponent-model-precommit.md); this is a
+    preparatory export for the reformulated shape thread 119's strategist
+    reply asked for (thread 104), read fresh from the DB every call so it
+    cannot go stale relative to whatever snapshot is actually live.
+
+    Two things are DELIBERATELY NOT done here, both out of a backend
+    engineer's scope and explicitly assigned elsewhere in the precommit doc:
+      - No axis recalibration (M4(a)): FFC's `average_pick` counts kickers and
+        defenses and its sampled drafts run deeper than this league's 16
+        rounds, so raw values are on a different axis than a Westwood pick
+        number. The precommit doc calls for an isotonic fit against board.json
+        to fix this ("returns to strategist before shipping" if material) --
+        not invented here. `axis_note` in the caller states this loudly
+        instead.
+      - No sigma (M0/M2/M3 gate): FFC's `times_drafted` and
+        `total_drafts_in_sample` columns do not reconcile (Bijan Robinson
+        times_drafted=90 against total_drafts_in_sample=1254 on every row),
+        so no per-player sampling-variance weight is trustworthy yet. Nothing
+        resembling a sigma value is exported.
+
+    Returns {"by_gsis": {gsis: {"adp_pick": float, "std_dev": float|None,
+    "times_drafted": int|None}}, "as_of_date": str|None,
+    "sample_window": str|None, "n_skill_rows": int, "adp_source": str}.
+    Empty/None throughout if the source has not been ingested -- never raises.
+    """
+    row = conn.execute(
+        "SELECT MAX(retrieved_at) FROM ffc_adp_snapshots WHERE adp_source=?", (adp_source,)
+    ).fetchone()
+    latest = row[0] if row else None
+    if not latest:
+        return {
+            "by_gsis": {}, "as_of_date": None, "sample_window": None,
+            "n_skill_rows": 0, "adp_source": adp_source,
+        }
+    rows = conn.execute(
+        "SELECT f.player_name, f.average_pick, f.std_dev, f.times_drafted, "
+        "f.as_of_date, f.sample_window, p.source_id AS gsis "
+        "FROM ffc_adp_snapshots f "
+        "LEFT JOIN player_ids p ON p.mfl_id = f.mfl_id AND p.source='gsis' "
+        "WHERE f.adp_source=? AND f.retrieved_at=? "
+        "AND f.position IN ('QB','RB','WR','TE')",
+        (adp_source, latest),
+    ).fetchall()
+    by_gsis: Dict[str, dict] = {}
+    as_of_dates = set()
+    windows = set()
+    for r in rows:
+        if r["gsis"]:
+            by_gsis[r["gsis"]] = {
+                "adp_pick": float(r["average_pick"]) if r["average_pick"] is not None else None,
+                "std_dev": float(r["std_dev"]) if r["std_dev"] is not None else None,
+                "times_drafted": r["times_drafted"],
+            }
+        if r["as_of_date"]:
+            as_of_dates.add(r["as_of_date"])
+        if r["sample_window"]:
+            windows.add(r["sample_window"])
+    return {
+        "by_gsis": by_gsis,
+        "as_of_date": max(as_of_dates) if as_of_dates else None,
+        "sample_window": next(iter(windows)) if len(windows) == 1 else None,
+        "n_skill_rows": len(rows),
+        "adp_source": adp_source,
+    }
+
+
 def build_availability_json(
     conn: sqlite3.Connection, cfg: lc.LeagueConfig = lc.CURRENT_LEAGUE
 ) -> dict:
@@ -670,6 +745,24 @@ def build_availability_json(
         season_data.names[i]: float(season_data.consensus_rank[i])
         for i in range(len(season_data.names))
     }
+    # Thread 119 reformulated thread 104's ask mid-flight: the raw ECR array
+    # above is NOT what a client-side recompute should be built against once
+    # the opponent model's central tendency moves to ADP (recommended,
+    # pending the M0-M5 pre-registration). adp_by_gsis/adp_by_name below is
+    # the `{adp_pick, coverage_flag}` shape strategist asked for -- sigma is
+    # withheld, not placeholdered, because M0 (times_drafted/
+    # total_drafts_in_sample reconciliation) has not cleared. Every key in
+    # by_player gets an entry here, coverage_flag True or False, never a
+    # silently-missing key -- see docs/handoffs/104-fr066-availability-ranking-source-export.md.
+    ffc_adp = _load_ffc_skill_adp(conn, season_data)
+    adp_by_name: Dict[str, dict] = {}
+    for i, pid in enumerate(season_data.player_ids):
+        hit = ffc_adp["by_gsis"].get(pid)
+        adp_by_name[season_data.names[i]] = {
+            "adp_pick": hit["adp_pick"] if hit else None,
+            "coverage_flag": hit is not None,
+        }
+    n_covered = sum(1 for v in adp_by_name.values() if v["coverage_flag"])
     is_primary = cfg.is_primary
     engine = None if is_primary else ds.DraftEngine(cfg)
     user_picks = ds.user_pick_numbers() if is_primary else engine.user_pick_numbers()
@@ -748,14 +841,16 @@ def build_availability_json(
                 "weight": 1.0,
                 "as_of_date": season_data.consensus_rank_as_of_date,
             }],
-            # FR-066/thread 104: the per-player rank the opponent model AND the
-            # user's own strategy_bpa pick actually run on (ds.load_season's
-            # consensus_rank), keyed by player name to match by_player's
-            # existing keys. This is NOT board.json:consensus_rank -- those are
-            # two different rankings from two different sources (measured:
-            # 73 of the top 80 players differ in order, see thread 104). Use
-            # THIS field for any client-side recompute of simulate_availability;
-            # board.json's rank runs a categorically different model.
+            # FR-066/thread 104: the ECR-sourced rank the opponent model AND
+            # the user's own strategy_bpa pick actually run on TODAY (ds.load_
+            # season's consensus_rank), keyed by player name to match
+            # by_player's existing keys. This is NOT board.json:consensus_rank
+            # -- those are two different rankings from two different sources
+            # (measured: 73 of the top 80 players differ in order, see thread
+            # 104). This is what simulate_availability actually runs on right
+            # now -- see adp_central_tendency below for what a FUTURE client
+            # recompute should be built against instead, once that switch
+            # ships.
             "player_ranks": consensus_ranks_by_name,
             "player_ranks_note": (
                 "Keyed by player name (matches by_player's keys). Value is the "
@@ -764,9 +859,69 @@ def build_availability_json(
                 "against today -- read from ranking_sources[0] "
                 "(name+as_of_date above), NOT from board.json:consensus_rank, "
                 "which is a different ranking from a different source (73 of "
-                "the top 80 players differ in order; see "
-                "docs/handoffs/104-fr066-availability-ranking-source-export.md)."
+                "the top 80 players differ in order). Superseded as the basis "
+                "for a NEW client-side recompute by adp_central_tendency below "
+                "(thread 119) -- kept here because it is still what the SHIPPED "
+                "model runs on until that switch clears its pre-registration."
             ),
+            # Thread 119 (strategist reply to thread 104, 2026-07-30):
+            # reformulated ask, {adp_pick, sigma_pick, coverage_flag} per
+            # player, on the recommendation that the opponent model's central
+            # tendency move to FFC ADP with per-player dispersion, at which
+            # point the unconditional Prep-mode marginal becomes closed-form
+            # (P(available at p) = 1 - F_i(p)) and a browser needs no Monte
+            # Carlo port at all -- only (adp, sigma, coverage) per player. NOT
+            # YET the model's input; see status_note.
+            "adp_central_tendency": {
+                "status": "preparatory_switch_not_yet_shipped",
+                "status_note": (
+                    "simulate_availability has NOT switched to ADP. It still runs "
+                    "entirely on ranking_sources[0] (fantasypros_ecr) above; "
+                    "player_ranks is still the accurate description of today's "
+                    "shipped model. This block is exported ahead of the switch "
+                    "(recommended by strategist, thread 119, pending the M0-M5 "
+                    "pre-registration at "
+                    "docs/ranking/availability-opponent-model-precommit.md) so a "
+                    "client build does not have to be redone once it ships. Do "
+                    "not use adp_pick to recompute today's availability.json "
+                    "numbers -- they do not reflect it."
+                ),
+                "adp_source": ffc_adp["adp_source"],
+                "as_of_date": ffc_adp["as_of_date"],
+                "sample_window": ffc_adp["sample_window"],
+                "n_players_covered": n_covered,
+                "n_players_total": len(adp_by_name),
+                "axis_note": (
+                    "adp_pick is FFC's raw average_pick, UNCORRECTED. FFC's pick "
+                    "axis counts kickers and defenses (Westwood has no kicker "
+                    "slot) and its sampled drafts run deeper than this league's "
+                    "16 rounds (FFC low_pick reaches ~18.0), so an FFC pick "
+                    "number is not directly comparable to a Westwood pick number "
+                    "-- most divergent in the back half of the draft. The M4 "
+                    "axis correction (isotonic calibration against board.json) "
+                    "has not been run; do not treat adp_pick as a Westwood pick "
+                    "number without it."
+                ),
+                "sigma_pending_note": (
+                    "No per-player dispersion (sigma_pick) is exported. It is "
+                    "gated on M0: FFC's times_drafted and total_drafts_in_sample "
+                    "columns do not reconcile as-is (e.g. Bijan Robinson "
+                    "times_drafted=90 against total_drafts_in_sample=1254 on "
+                    "every row of the same snapshot), so no per-player sampling-"
+                    "variance weight is trustworthy yet. A placeholder sigma is "
+                    "deliberately withheld rather than shipped -- see M0 in the "
+                    "precommit doc."
+                ),
+                "coverage_note": (
+                    "by_player carries entries for every player in "
+                    "adp_central_tendency.by_player, coverage_flag true or "
+                    "false -- never a missing key. adp_pick is present (non-"
+                    "null) only when coverage_flag is true; a player outside "
+                    "the FFC skill-position snapshot gets adp_pick=null, never "
+                    "a fabricated value."
+                ),
+                "by_player": adp_by_name,
+            },
             "mechanical_need_targets": need_targets,
             "mechanical_need_targets_note": (
                 "Per position: STARTERS[pos] + (FLEX_SLOTS if pos is flex-eligible else 0). "

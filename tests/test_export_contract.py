@@ -262,10 +262,85 @@ def test_te_scenarios_is_gone_and_client_simulation_parameters_present():
     avail = _load("availability.json")
     assert "te_scenarios" not in avail
     csp = avail["client_simulation_parameters"]
-    assert csp["ranking_sources"] == [{"name": "fantasypros_ecr", "weight": 1.0}]
+    # 1.17.0 (thread 104): as_of_date is now derived from the same query the
+    # ranks came from (ds.load_season), not hardcoded -- see
+    # test_ranking_source_as_of_date_matches_the_query_it_was_read_from below.
+    assert csp["ranking_sources"][0]["name"] == "fantasypros_ecr"
+    assert csp["ranking_sources"][0]["weight"] == 1.0
     assert csp["mechanical_need_targets"]["QB"] == 1  # 1 starter, not flex-eligible
     assert csp["room_noise_drawn_once_per_draft"] is True
     assert avail["metadata"]["figures_are_unconditional_marginals"] is True
+
+
+@pytest.mark.requires_db
+def test_ranking_source_identity_matches_the_query_it_was_read_from():
+    """Thread 104's deliverable: the exported source name/as_of_date must be
+    derived from ds.load_season's OWN execution path, not a second hardcoded
+    literal that could drift from it. Proven directly: call ds.load_season
+    ourselves and assert the export's client_simulation_parameters carries
+    the identical values, byte for byte -- not merely plausible-looking ones.
+    If a future session repoints ds.CONSENSUS_RANK_SOURCE (thread 119) without
+    updating export_contract.py, this test fails instead of the export
+    silently naming the old source."""
+    import db as dbmod
+    import draft_sim as ds
+    import export_contract as ec
+
+    conn = dbmod.connect()
+    try:
+        data = ds.load_season(conn, ec.SEASON)
+        payload = ec.build_availability_json(conn)
+    finally:
+        conn.close()
+
+    csp = payload["client_simulation_parameters"]
+    assert csp["ranking_sources"][0]["name"] == data.consensus_rank_source
+    assert csp["ranking_sources"][0]["as_of_date"] == data.consensus_rank_as_of_date
+    # And the source identity is non-trivial -- not two Nones matching by
+    # coincidence.
+    assert data.consensus_rank_source
+    assert data.consensus_rank_as_of_date
+
+    # player_ranks is keyed to match by_player, and its values are exactly
+    # data.consensus_rank -- the same array the opponent model and the
+    # user's own BPA pick actually ran on.
+    by_index = {name: float(data.consensus_rank[i]) for i, name in enumerate(data.names)}
+    for name, rank in csp["player_ranks"].items():
+        assert by_index[name] == rank
+
+
+@pytest.mark.requires_db
+def test_adp_central_tendency_covers_every_by_player_key_honestly():
+    """Thread 119's reformulation of thread 104's ask: {adp_pick,
+    coverage_flag} per player (sigma withheld pending M0). This is the
+    'field exists but is empty for half the keys' bug this project has
+    already hit twice -- assert every name by_player actually contains has a
+    real entry (coverage_flag True or False, never a missing key), and that
+    at least some are actually covered (not a field nobody populated)."""
+    avail = _load("availability.json")
+    csp = avail["client_simulation_parameters"]
+    adp = csp["adp_central_tendency"]
+    assert adp["status"] == "preparatory_switch_not_yet_shipped"
+    assert adp["adp_source"] == "ffc_half_ppr_10team"
+    assert adp["as_of_date"] is not None
+
+    by_player_keys = set(avail["by_player"].keys())
+    adp_by_player = adp["by_player"]
+    missing = by_player_keys - set(adp_by_player.keys())
+    assert not missing, f"by_player keys with no adp_central_tendency entry at all: {missing}"
+
+    covered = [k for k in by_player_keys if adp_by_player[k]["coverage_flag"]]
+    assert covered, "adp_central_tendency populated for zero by_player keys -- field exists, nothing reads it"
+    for k in by_player_keys:
+        entry = adp_by_player[k]
+        if entry["coverage_flag"]:
+            assert entry["adp_pick"] is not None
+        else:
+            assert entry["adp_pick"] is None  # never a fabricated value
+
+    # sigma is explicitly NOT shipped -- gated on M0.
+    assert "sigma_pick" not in adp
+    assert "sigma_pending_note" in adp
 
 
 def test_flex_split_is_described_as_measured_not_assumed():

@@ -637,6 +637,41 @@ def find_thread_id_collisions() -> list[str]:
     return problems
 
 
+# --- Pre-existing debt: legacy-scheme collisions frozen at 2026-07-30 (ADR-064) -------
+# These predate W3 and are exactly the damage the old counter scheme did before this
+# fix landed -- discovered by this same `check`, not created by it (verified by running
+# `check` against HEAD before this change: it was already red). Policy forbids renaming
+# or renumbering an existing file, so these numbers stay ambiguous forever; what this
+# registry does is stop them from masking a *new* collision going forward, by naming
+# exactly the pre-existing debt so `check` can tell "already known, already ambiguous"
+# apart from "new, still preventable." Full account, including which files/headers are
+# involved and why none can be safely reconciled without a content decision this tool
+# has no authority to make: docs/known-id-collisions.md.
+#
+# Frozen. Never add to this set for a *new* collision -- a new collision under the
+# legacy NNN scheme (still possible; old files are never renamed but nothing stops a
+# human hand-typing a legacy-shaped filename) or the W3 date-slug scheme (should be
+# structurally near-impossible, see DATE_ID_RE comment) must still fail `check` loudly.
+# test_known_legacy_collisions_registry_is_frozen in tests/test_handoffs.py pins the
+# exact contents so a silent addition doesn't slip through review.
+KNOWN_LEGACY_ID_COLLISIONS = frozenset({"093", "094", "109", "110", "111", "112"})
+KNOWN_LEGACY_ADR_COLLISIONS = frozenset({"ADR-054", "ADR-055"})
+
+
+def _is_known_legacy_debt(problem: str) -> bool:
+    """True if `problem` (one line from cmd_check's problem list) is exactly the
+    pre-existing, frozen legacy-scheme debt above -- never a NEW collision, which this
+    deliberately does not match (a new duplicate id/ADR number not already in the
+    frozen sets above still fails `check`)."""
+    for tid in KNOWN_LEGACY_ID_COLLISIONS:
+        if f"duplicate ID {tid} " in problem or f"thread {tid} claimed" in problem:
+            return True
+    for adr in KNOWN_LEGACY_ADR_COLLISIONS:
+        if problem.startswith(f"{adr} has"):
+            return True
+    return False
+
+
 def cmd_check(_args) -> int:
     threads = load()
     problems: list[str] = []
@@ -672,12 +707,21 @@ def cmd_check(_args) -> int:
     problems += find_adr_collisions()
     problems += find_thread_id_collisions()
 
-    if problems:
+    hard_problems = [p for p in problems if not _is_known_legacy_debt(p)]
+    known_debt = [p for p in problems if _is_known_legacy_debt(p)]
+
+    if hard_problems:
         print("mailbox check FAILED:\n")
-        for p in problems:
+        for p in hard_problems:
             print(f"  - {p}")
         print("\nA neglected mailbox is how this system dies quietly. Fix or explicitly re-status.")
         return 1
+
+    if known_debt:
+        print(f"mailbox check OK ({len(known_debt)} known pre-existing legacy-ID collisions, "
+              f"frozen 2026-07-30 / ADR-064, see docs/known-id-collisions.md -- not new):")
+        for p in known_debt:
+            print(f"  - {p}")
 
     # Contradiction detection (062 Part 2): runs inside `check`, but reported as
     # warnings rather than build failures. False positives are declared acceptable

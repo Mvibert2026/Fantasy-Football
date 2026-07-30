@@ -7883,8 +7883,8 @@
       }
     }
   },
-  "contract_version": "1.16.0",
-  "generated_utc": "2026-07-30T18:06:45.222312+00:00",
+  "contract_version": "1.17.0",
+  "generated_utc": "2026-07-30T18:28:55.635852+00:00",
   "league_id": "primary",
   "metadata": {
     "season": 2026,
@@ -8106,9 +8106,1917 @@
     "ranking_sources": [
       {
         "name": "fantasypros_ecr",
-        "weight": 1.0
+        "weight": 1.0,
+        "as_of_date": "2026-07-24"
       }
     ],
+    "player_ranks": {
+      "Ja'Marr Chase": 1.0,
+      "Bijan Robinson": 2.0,
+      "Puka Nacua": 3.0,
+      "Jahmyr Gibbs": 4.0,
+      "Jaxon Smith-Njigba": 5.0,
+      "Amon-Ra St. Brown": 6.0,
+      "CeeDee Lamb": 7.0,
+      "Christian McCaffrey": 8.0,
+      "Justin Jefferson": 9.0,
+      "Jonathan Taylor": 10.0,
+      "Drake London": 11.0,
+      "A.J. Brown": 12.0,
+      "Nico Collins": 13.0,
+      "Ashton Jeanty": 14.0,
+      "Trey McBride": 15.0,
+      "George Pickens": 16.0,
+      "James Cook III": 17.0,
+      "De'Von Achane": 18.0,
+      "Chase Brown": 19.0,
+      "Chris Olave": 20.0,
+      "Brock Bowers": 21.0,
+      "Rashee Rice": 22.0,
+      "Omarion Hampton": 23.0,
+      "DeVonta Smith": 24.0,
+      "Josh Allen": 25.0,
+      "Saquon Barkley": 26.0,
+      "Garrett Wilson": 27.0,
+      "Tetairoa McMillan": 28.0,
+      "Zay Flowers": 29.0,
+      "Kenneth Walker III": 30.0,
+      "Tee Higgins": 31.0,
+      "Lamar Jackson": 32.0,
+      "Drake Maye": 33.0,
+      "Ladd McConkey": 34.0,
+      "Jaylen Waddle": 35.0,
+      "Emeka Egbuka": 36.0,
+      "Colston Loveland": 37.0,
+      "Derrick Henry": 38.0,
+      "Malik Nabers": 39.0,
+      "Breece Hall": 40.0,
+      "Kyren Williams": 41.0,
+      "Terry McLaurin": 42.0,
+      "Joe Burrow": 43.0,
+      "Josh Jacobs": 44.0,
+      "Luther Burden III": 45.0,
+      "Javonte Williams": 46.0,
+      "Travis Etienne Jr.": 47.0,
+      "Davante Adams": 48.0,
+      "Mike Evans": 49.0,
+      "DJ Moore": 50.0,
+      "Jameson Williams": 51.0,
+      "Tyler Warren": 52.0,
+      "Cam Skattebo": 53.0,
+      "Jayden Daniels": 54.0,
+      "Jalen Hurts": 55.0,
+      "Bucky Irving": 56.0,
+      "Christian Watson": 57.0,
+      "Rome Odunze": 58.0,
+      "Quinshon Judkins": 59.0,
+      "TreVeyon Henderson": 60.0,
+      "D'Andre Swift": 61.0,
+      "David Montgomery": 62.0,
+      "Marvin Harrison Jr.": 63.0,
+      "Caleb Williams": 64.0,
+      "Justin Herbert": 65.0,
+      "Bhayshul Tuten": 66.0,
+      "Tucker Kraft": 67.0,
+      "Jaylen Warren": 68.0,
+      "Harold Fannin Jr.": 69.0,
+      "DK Metcalf": 70.0,
+      "Alec Pierce": 71.0,
+      "Courtland Sutton": 72.0,
+      "Trevor Lawrence": 73.0,
+      "Brian Thomas Jr.": 74.0,
+      "Dak Prescott": 75.0,
+      "Kyle Pitts Sr.": 76.0,
+      "Chris Godwin Jr.": 77.0,
+      "Tony Pollard": 78.0,
+      "Rhamondre Stevenson": 79.0,
+      "Chuba Hubbard": 80.0,
+      "Michael Pittman Jr.": 81.0,
+      "Sam LaPorta": 82.0,
+      "Rico Dowdle": 83.0,
+      "Wan'Dale Robinson": 84.0,
+      "RJ Harvey": 85.0,
+      "Parker Washington": 86.0,
+      "Michael Wilson": 87.0,
+      "Jaxson Dart": 88.0,
+      "Brock Purdy": 89.0,
+      "Jakobi Meyers": 90.0,
+      "Josh Downs": 91.0,
+      "Ricky Pearsall": 92.0,
+      "Kyle Monangai": 93.0,
+      "Patrick Mahomes II": 94.0,
+      "Travis Kelce": 95.0,
+      "Bo Nix": 96.0,
+      "Kenny Gainwell": 97.0,
+      "Quentin Johnston": 98.0,
+      "Matthew Stafford": 99.0,
+      "J.K. Dobbins": 100.0,
+      "George Kittle": 101.0,
+      "Jake Ferguson": 102.0,
+      "Jordan Addison": 103.0,
+      "Rachaad White": 104.0,
+      "Jared Goff": 105.0,
+      "Aaron Jones Sr.": 106.0,
+      "Blake Corum": 107.0,
+      "Jayden Reed": 108.0,
+      "Kyler Murray": 109.0,
+      "Dalton Kincaid": 110.0,
+      "Khalil Shakir": 111.0,
+      "Jordan Love": 112.0,
+      "Isaiah Likely": 113.0,
+      "Baker Mayfield": 114.0,
+      "Xavier Worthy": 115.0,
+      "Jayden Higgins": 116.0,
+      "Tyler Shough": 117.0,
+      "Dallas Goedert": 118.0,
+      "Jonathon Brooks": 119.0,
+      "Jacory Croskey-Merritt": 120.0,
+      "Jordan Mason": 121.0,
+      "Romeo Doubs": 122.0,
+      "Mark Andrews": 123.0,
+      "Jalen Coker": 124.0,
+      "Tyrone Tracy Jr.": 125.0,
+      "Malik Willis": 126.0,
+      "Matthew Golden": 127.0,
+      "Woody Marks": 128.0,
+      "C.J. Stroud": 129.0,
+      "Tyler Allgeier": 130.0,
+      "Sam Darnold": 131.0,
+      "Zach Charbonnet": 132.0,
+      "Tyjae Spears": 133.0,
+      "Dylan Sampson": 134.0,
+      "Chris Rodriguez Jr.": 135.0,
+      "Isiah Pacheco": 136.0,
+      "Juwan Johnson": 137.0,
+      "Alvin Kamara": 138.0,
+      "Rashid Shaheed": 139.0,
+      "Brenton Strange": 140.0,
+      "Jauan Jennings": 141.0,
+      "Cam Ward": 142.0,
+      "Jerry Jeudy": 143.0,
+      "Chig Okonkwo": 144.0,
+      "Bryce Young": 145.0,
+      "Stefon Diggs": 146.0,
+      "Daniel Jones": 147.0,
+      "Hunter Henry": 148.0,
+      "Keaton Mitchell": 149.0,
+      "Oronde Gadsden II": 150.0,
+      "Jalen McMillan": 151.0,
+      "Adonai Mitchell": 152.0,
+      "Travis Hunter": 153.0,
+      "Braelon Allen": 154.0,
+      "Brian Robinson Jr.": 155.0,
+      "Tre Tucker": 156.0,
+      "Tank Bigsby": 157.0,
+      "Dalton Schultz": 158.0,
+      "Tre' Harris": 159.0,
+      "Deebo Samuel Sr.": 161.0,
+      "Ryan Flournoy": 162.0,
+      "Troy Franklin": 163.0,
+      "James Conner": 164.0,
+      "T.J. Hockenson": 165.0,
+      "Kayshon Boutte": 167.0,
+      "Jaylin Noel": 168.0,
+      "Jacoby Brissett": 170.0,
+      "Kimani Vidal": 172.0,
+      "Isaac TeSlaa": 173.0,
+      "Emanuel Wilson": 174.0,
+      "Ray Davis": 176.0,
+      "Calvin Ridley": 177.0,
+      "Jalen Nailor": 178.0,
+      "Darnell Mooney": 179.0,
+      "Brandon Aiyuk": 182.0,
+      "AJ Barner": 183.0,
+      "Pat Bryant": 184.0,
+      "Sean Tucker": 185.0,
+      "Dontayvion Wicks": 187.0,
+      "Malik Washington": 188.0,
+      "Greg Dulcich": 190.0,
+      "Gunnar Helm": 191.0,
+      "Chimere Dike": 193.0,
+      "Aaron Rodgers": 195.0,
+      "Tank Dell": 197.0,
+      "Tyreek Hill": 198.0,
+      "Cooper Kupp": 199.0,
+      "Jaylen Wright": 200.0,
+      "Rashod Bateman": 202.0,
+      "Geno Smith": 203.0,
+      "Justice Hill": 204.0,
+      "Elic Ayomanor": 205.0,
+      "Ollie Gordon II": 206.0,
+      "Pat Freiermuth": 208.0,
+      "MarShawn Lloyd": 209.0,
+      "Cade Otton": 210.0,
+      "Jack Bech": 211.0,
+      "David Njoku": 212.0,
+      "Keon Coleman": 214.0,
+      "Terrance Ferguson": 215.0,
+      "Christian Kirk": 217.0,
+      "Ty Johnson": 218.0,
+      "Trey Benson": 219.0,
+      "Jaydon Blue": 221.0,
+      "Colby Parkinson": 224.0,
+      "Marvin Mims Jr.": 225.0,
+      "Evan Engram": 226.0,
+      "Isaiah Davis": 227.0,
+      "Devin Neal": 228.0,
+      "Xavier Legette": 229.0,
+      "Chris Brooks": 230.0,
+      "DJ Giddens": 231.0,
+      "Tory Horton": 233.0,
+      "LeQuint Allen Jr.": 234.0,
+      "Darius Slayton": 235.0,
+      "Kaleb Johnson": 237.0,
+      "Mike Gesicki": 238.0,
+      "Andrei Iosivas": 239.0,
+      "George Holani": 240.0,
+      "Jordan James": 241.0,
+      "Kyle Williams": 242.0,
+      "Mason Taylor": 243.0,
+      "Samaje Perine": 244.0,
+      "Tua Tagovailoa": 245.0,
+      "Keenan Allen": 246.0,
+      "Theo Johnson": 249.0,
+      "Devaughn Vele": 250.0,
+      "Tyquan Thornton": 251.0,
+      "Mack Hollins": 252.0,
+      "Malik Davis": 253.0,
+      "Brashard Smith": 255.0,
+      "Michael Penix Jr.": 256.0,
+      "Kyle Juszczyk": 257.0,
+      "Najee Harris": 258.0,
+      "Jerome Ford": 259.0,
+      "Kendre Miller": 260.0,
+      "Odell Beckham Jr.": 261.0,
+      "Hollywood Brown": 262.0,
+      "Jake Tonges": 263.0,
+      "Jahan Dotson": 264.0,
+      "Jaleel McLaughlin": 266.0,
+      "Emari Demercado": 267.0,
+      "Deshaun Watson": 268.0,
+      "Shedeur Sanders": 270.0,
+      "Konata Mumpfield": 271.0,
+      "Tim Patrick": 272.0,
+      "Darnell Washington": 273.0,
+      "Joshua Palmer": 274.0,
+      "Joe Mixon": 275.0,
+      "Devin Singletary": 276.0,
+      "Isaiah Bond": 277.0,
+      "Isaac Guerendo": 279.0,
+      "Jalen Tolbert": 280.0,
+      "Brandin Cooks": 281.0,
+      "Tahj Brooks": 282.0,
+      "Kendrick Bourne": 283.0,
+      "Kirk Cousins": 284.0,
+      "Olamide Zaccheaus": 285.0,
+      "Cedric Tillman": 286.0,
+      "Jeremy McNichols": 287.0,
+      "Luke McCaffrey": 288.0,
+      "Tez Johnson": 289.0,
+      "Calvin Austin III": 290.0,
+      "Michael Mayer": 293.0,
+      "Bam Knight": 294.0,
+      "Rasheen Ali": 295.0,
+      "Trevor Etienne": 296.0,
+      "KaVontae Turpin": 297.0,
+      "Audric Estime": 298.0,
+      "Jalen Royals": 299.0,
+      "Devontez Walker": 300.0,
+      "Jarquez Hunter": 301.0,
+      "Sione Vaki": 302.0,
+      "Xavier Restrepo": 303.0,
+      "Ja'Tavion Sanders": 304.0,
+      "Treylon Burks": 305.0,
+      "Van Jefferson": 306.0,
+      "Tyler Higbee": 307.0,
+      "Erick All Jr.": 308.0,
+      "DeMario Douglas": 309.0,
+      "J.J. McCarthy": 310.0,
+      "Isaiah Williams": 311.0,
+      "Will Shipley": 312.0,
+      "Elijah Arroyo": 313.0,
+      "DeAndre Hopkins": 314.0,
+      "Marquez Valdes-Scantling": 315.0,
+      "Tyler Lockett": 316.0,
+      "Kalif Raymond": 317.0,
+      "Jake Bobo": 318.0,
+      "Kareem Hunt": 319.0,
+      "John Bates": 320.0,
+      "Noah Gray": 321.0,
+      "Dont'e Thornton Jr.": 322.0,
+      "Nick Westbrook-Ikhine": 323.0,
+      "Cole Kmet": 324.0,
+      "Xavier Hutchinson": 325.0,
+      "Elijah Moore": 326.0,
+      "Ashton Dulin": 327.0,
+      "Lil'Jordan Humphrey": 328.0,
+      "Tutu Atwell": 329.0,
+      "Dawson Knox": 330.0,
+      "Diontae Johnson": 331.0,
+      "Hunter Luepke": 332.0,
+      "Nick Chubb": 333.0,
+      "Raheim Sanders": 334.0,
+      "Jawhar Jordan": 335.0,
+      "Phil Mafah": 336.0,
+      "John Metchie III": 337.0,
+      "Dyami Brown": 338.0,
+      "Taysom Hill": 339.0,
+      "Mac Jones": 340.0,
+      "Greg Dortch": 341.0,
+      "Jaylin Lane": 342.0,
+      "Jonnu Smith": 343.0,
+      "Michael Carter": 344.0,
+      "Joe Milton III": 345.0,
+      "Mitch Tinsley": 346.0,
+      "Jahdae Walker": 347.0,
+      "Anthony Richardson Sr.": 348.0,
+      "Zavier Scott": 349.0,
+      "Savion Williams": 350.0,
+      "Justin Fields": 351.0,
+      "Dylan Laube": 352.0,
+      "Xavier Smith": 353.0,
+      "Dameon Pierce": 354.0,
+      "Drew Sample": 355.0,
+      "Noah Fant": 356.0,
+      "Tommy Tremble": 357.0,
+      "Michael Woods II": 358.0,
+      "Darren Waller": 359.0,
+      "Antonio Gibson": 360.0,
+      "Durham Smythe": 361.0,
+      "Theo Wease Jr.": 362.0,
+      "Terrell Jennings": 363.0,
+      "Jacob Saylors": 364.0,
+      "Scotty Miller": 365.0,
+      "Austin Ekeler": 366.0,
+      "Ronnie Rivers": 367.0,
+      "Jordan Whittington": 368.0,
+      "Riley Leonard": 369.0,
+      "Elijah Mitchell": 370.0,
+      "Marcus Mariota": 371.0,
+      "Gardner Minshew II": 372.0,
+      "Josh Oliver": 373.0,
+      "Will Dissly": 374.0,
+      "Austin Hooper": 375.0,
+      "Derius Davis": 376.0,
+      "Roschon Johnson": 377.0,
+      "Zach Ertz": 378.0,
+      "Jermaine Burton": 379.0,
+      "Daniel Bellinger": 380.0,
+      "Charlie Kolar": 381.0,
+      "Luke Musgrave": 382.0,
+      "Jameis Winston": 383.0,
+      "Damien Martinez": 384.0,
+      "Tai Felton": 385.0,
+      "Joe Flacco": 386.0,
+      "Adam Trautman": 387.0,
+      "Ben Sinnott": 388.0,
+      "Frank Gore Jr.": 389.0,
+      "Jaret Patterson": 390.0,
+      "Mecole Hardman Jr.": 391.0,
+      "Cade Stover": 392.0,
+      "Quinn Ewers": 393.0,
+      "Luke Schoonmaker": 394.0,
+      "Demarcus Robinson": 395.0,
+      "Donovan Edwards": 396.0,
+      "Elijah Higgins": 397.0,
+      "Mo Alie-Cox": 398.0,
+      "Tyler Badie": 399.0,
+      "Anthony Gould": 400.0,
+      "Gabe Davis": 401.0,
+      "Skyy Moore": 402.0,
+      "Mitchell Evans": 403.0,
+      "Tyler Conklin": 404.0,
+      "Jared Wiley": 405.0,
+      "Miles Sanders": 406.0,
+      "Thomas Fidone II": 408.0
+    },
+    "player_ranks_note": "Keyed by player name (matches by_player's keys). Value is the same consensus_rank ds.load_season/simulate_availability run the opponent model and the user's own best-available pick against today -- read from ranking_sources[0] (name+as_of_date above), NOT from board.json:consensus_rank, which is a different ranking from a different source (73 of the top 80 players differ in order). Superseded as the basis for a NEW client-side recompute by adp_central_tendency below (thread 119) -- kept here because it is still what the SHIPPED model runs on until that switch clears its pre-registration.",
+    "adp_central_tendency": {
+      "status": "preparatory_switch_not_yet_shipped",
+      "status_note": "simulate_availability has NOT switched to ADP. It still runs entirely on ranking_sources[0] (fantasypros_ecr) above; player_ranks is still the accurate description of today's shipped model. This block is exported ahead of the switch (recommended by strategist, thread 119, pending the M0-M5 pre-registration at docs/ranking/availability-opponent-model-precommit.md) so a client build does not have to be redone once it ships. Do not use adp_pick to recompute today's availability.json numbers -- they do not reflect it.",
+      "adp_source": "ffc_half_ppr_10team",
+      "as_of_date": "2026-07-30",
+      "sample_window": "July 25, 2026 to July 30, 2026",
+      "n_players_covered": 157,
+      "n_players_total": 378,
+      "axis_note": "adp_pick is FFC's raw average_pick, UNCORRECTED. FFC's pick axis counts kickers and defenses (Westwood has no kicker slot) and its sampled drafts run deeper than this league's 16 rounds (FFC low_pick reaches ~18.0), so an FFC pick number is not directly comparable to a Westwood pick number -- most divergent in the back half of the draft. The M4 axis correction (isotonic calibration against board.json) has not been run; do not treat adp_pick as a Westwood pick number without it.",
+      "sigma_pending_note": "No per-player dispersion (sigma_pick) is exported. It is gated on M0: FFC's times_drafted and total_drafts_in_sample columns do not reconcile as-is (e.g. Bijan Robinson times_drafted=90 against total_drafts_in_sample=1254 on every row of the same snapshot), so no per-player sampling-variance weight is trustworthy yet. A placeholder sigma is deliberately withheld rather than shipped -- see M0 in the precommit doc.",
+      "coverage_note": "by_player carries entries for every player in adp_central_tendency.by_player, coverage_flag true or false -- never a missing key. adp_pick is present (non-null) only when coverage_flag is true; a player outside the FFC skill-position snapshot gets adp_pick=null, never a fabricated value.",
+      "by_player": {
+        "Ja'Marr Chase": {
+          "adp_pick": 4.9,
+          "coverage_flag": true
+        },
+        "Bijan Robinson": {
+          "adp_pick": 2.0,
+          "coverage_flag": true
+        },
+        "Puka Nacua": {
+          "adp_pick": 2.9,
+          "coverage_flag": true
+        },
+        "Jahmyr Gibbs": {
+          "adp_pick": 1.4,
+          "coverage_flag": true
+        },
+        "Jaxon Smith-Njigba": {
+          "adp_pick": 6.2,
+          "coverage_flag": true
+        },
+        "Amon-Ra St. Brown": {
+          "adp_pick": 8.2,
+          "coverage_flag": true
+        },
+        "CeeDee Lamb": {
+          "adp_pick": 13.3,
+          "coverage_flag": true
+        },
+        "Christian McCaffrey": {
+          "adp_pick": 5.0,
+          "coverage_flag": true
+        },
+        "Justin Jefferson": {
+          "adp_pick": 15.2,
+          "coverage_flag": true
+        },
+        "Jonathan Taylor": {
+          "adp_pick": 6.3,
+          "coverage_flag": true
+        },
+        "Drake London": {
+          "adp_pick": 11.6,
+          "coverage_flag": true
+        },
+        "A.J. Brown": {
+          "adp_pick": 17.6,
+          "coverage_flag": true
+        },
+        "Nico Collins": {
+          "adp_pick": 23.7,
+          "coverage_flag": true
+        },
+        "Ashton Jeanty": {
+          "adp_pick": 13.3,
+          "coverage_flag": true
+        },
+        "Trey McBride": {
+          "adp_pick": 41.0,
+          "coverage_flag": true
+        },
+        "George Pickens": {
+          "adp_pick": 21.5,
+          "coverage_flag": true
+        },
+        "James Cook III": {
+          "adp_pick": 10.4,
+          "coverage_flag": true
+        },
+        "De'Von Achane": {
+          "adp_pick": 9.0,
+          "coverage_flag": true
+        },
+        "Chase Brown": {
+          "adp_pick": 18.8,
+          "coverage_flag": true
+        },
+        "Chris Olave": {
+          "adp_pick": 24.0,
+          "coverage_flag": true
+        },
+        "Brock Bowers": {
+          "adp_pick": 44.5,
+          "coverage_flag": true
+        },
+        "Rashee Rice": {
+          "adp_pick": 22.3,
+          "coverage_flag": true
+        },
+        "Omarion Hampton": {
+          "adp_pick": 19.1,
+          "coverage_flag": true
+        },
+        "DeVonta Smith": {
+          "adp_pick": 30.8,
+          "coverage_flag": true
+        },
+        "Josh Allen": {
+          "adp_pick": 25.7,
+          "coverage_flag": true
+        },
+        "Saquon Barkley": {
+          "adp_pick": 15.6,
+          "coverage_flag": true
+        },
+        "Garrett Wilson": {
+          "adp_pick": 32.6,
+          "coverage_flag": true
+        },
+        "Tetairoa McMillan": {
+          "adp_pick": 33.9,
+          "coverage_flag": true
+        },
+        "Zay Flowers": {
+          "adp_pick": 31.2,
+          "coverage_flag": true
+        },
+        "Kenneth Walker III": {
+          "adp_pick": 23.0,
+          "coverage_flag": true
+        },
+        "Tee Higgins": {
+          "adp_pick": 34.7,
+          "coverage_flag": true
+        },
+        "Lamar Jackson": {
+          "adp_pick": 53.5,
+          "coverage_flag": true
+        },
+        "Drake Maye": {
+          "adp_pick": 51.7,
+          "coverage_flag": true
+        },
+        "Ladd McConkey": {
+          "adp_pick": 42.8,
+          "coverage_flag": true
+        },
+        "Jaylen Waddle": {
+          "adp_pick": 47.8,
+          "coverage_flag": true
+        },
+        "Emeka Egbuka": {
+          "adp_pick": 38.6,
+          "coverage_flag": true
+        },
+        "Colston Loveland": {
+          "adp_pick": 61.0,
+          "coverage_flag": true
+        },
+        "Derrick Henry": {
+          "adp_pick": 10.6,
+          "coverage_flag": true
+        },
+        "Malik Nabers": {
+          "adp_pick": 51.7,
+          "coverage_flag": true
+        },
+        "Breece Hall": {
+          "adp_pick": 28.7,
+          "coverage_flag": true
+        },
+        "Kyren Williams": {
+          "adp_pick": 32.1,
+          "coverage_flag": true
+        },
+        "Terry McLaurin": {
+          "adp_pick": 40.0,
+          "coverage_flag": true
+        },
+        "Joe Burrow": {
+          "adp_pick": 52.0,
+          "coverage_flag": true
+        },
+        "Josh Jacobs": {
+          "adp_pick": 21.3,
+          "coverage_flag": true
+        },
+        "Luther Burden III": {
+          "adp_pick": 52.5,
+          "coverage_flag": true
+        },
+        "Javonte Williams": {
+          "adp_pick": 31.6,
+          "coverage_flag": true
+        },
+        "Travis Etienne Jr.": {
+          "adp_pick": 38.7,
+          "coverage_flag": true
+        },
+        "Davante Adams": {
+          "adp_pick": 39.8,
+          "coverage_flag": true
+        },
+        "Mike Evans": {
+          "adp_pick": 56.2,
+          "coverage_flag": true
+        },
+        "DJ Moore": {
+          "adp_pick": 65.2,
+          "coverage_flag": true
+        },
+        "Jameson Williams": {
+          "adp_pick": 45.3,
+          "coverage_flag": true
+        },
+        "Tyler Warren": {
+          "adp_pick": 62.1,
+          "coverage_flag": true
+        },
+        "Cam Skattebo": {
+          "adp_pick": 33.7,
+          "coverage_flag": true
+        },
+        "Jayden Daniels": {
+          "adp_pick": 75.2,
+          "coverage_flag": true
+        },
+        "Jalen Hurts": {
+          "adp_pick": 73.8,
+          "coverage_flag": true
+        },
+        "Bucky Irving": {
+          "adp_pick": 44.5,
+          "coverage_flag": true
+        },
+        "Christian Watson": {
+          "adp_pick": 60.2,
+          "coverage_flag": true
+        },
+        "Rome Odunze": {
+          "adp_pick": 50.8,
+          "coverage_flag": true
+        },
+        "Quinshon Judkins": {
+          "adp_pick": 44.1,
+          "coverage_flag": true
+        },
+        "TreVeyon Henderson": {
+          "adp_pick": 56.3,
+          "coverage_flag": true
+        },
+        "D'Andre Swift": {
+          "adp_pick": 43.3,
+          "coverage_flag": true
+        },
+        "David Montgomery": {
+          "adp_pick": 55.5,
+          "coverage_flag": true
+        },
+        "Marvin Harrison Jr.": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Caleb Williams": {
+          "adp_pick": 96.9,
+          "coverage_flag": true
+        },
+        "Justin Herbert": {
+          "adp_pick": 96.4,
+          "coverage_flag": true
+        },
+        "Bhayshul Tuten": {
+          "adp_pick": 56.2,
+          "coverage_flag": true
+        },
+        "Tucker Kraft": {
+          "adp_pick": 97.1,
+          "coverage_flag": true
+        },
+        "Jaylen Warren": {
+          "adp_pick": 71.7,
+          "coverage_flag": true
+        },
+        "Harold Fannin Jr.": {
+          "adp_pick": 84.5,
+          "coverage_flag": true
+        },
+        "DK Metcalf": {
+          "adp_pick": 62.3,
+          "coverage_flag": true
+        },
+        "Alec Pierce": {
+          "adp_pick": 58.7,
+          "coverage_flag": true
+        },
+        "Courtland Sutton": {
+          "adp_pick": 66.8,
+          "coverage_flag": true
+        },
+        "Trevor Lawrence": {
+          "adp_pick": 85.0,
+          "coverage_flag": true
+        },
+        "Brian Thomas Jr.": {
+          "adp_pick": 78.0,
+          "coverage_flag": true
+        },
+        "Dak Prescott": {
+          "adp_pick": 62.7,
+          "coverage_flag": true
+        },
+        "Kyle Pitts Sr.": {
+          "adp_pick": 93.2,
+          "coverage_flag": true
+        },
+        "Chris Godwin Jr.": {
+          "adp_pick": 86.3,
+          "coverage_flag": true
+        },
+        "Tony Pollard": {
+          "adp_pick": 65.6,
+          "coverage_flag": true
+        },
+        "Rhamondre Stevenson": {
+          "adp_pick": 71.4,
+          "coverage_flag": true
+        },
+        "Chuba Hubbard": {
+          "adp_pick": 80.9,
+          "coverage_flag": true
+        },
+        "Michael Pittman Jr.": {
+          "adp_pick": 78.3,
+          "coverage_flag": true
+        },
+        "Sam LaPorta": {
+          "adp_pick": 83.5,
+          "coverage_flag": true
+        },
+        "Rico Dowdle": {
+          "adp_pick": 77.7,
+          "coverage_flag": true
+        },
+        "Wan'Dale Robinson": {
+          "adp_pick": 90.9,
+          "coverage_flag": true
+        },
+        "RJ Harvey": {
+          "adp_pick": 106.1,
+          "coverage_flag": true
+        },
+        "Parker Washington": {
+          "adp_pick": 73.6,
+          "coverage_flag": true
+        },
+        "Michael Wilson": {
+          "adp_pick": 89.6,
+          "coverage_flag": true
+        },
+        "Jaxson Dart": {
+          "adp_pick": 112.5,
+          "coverage_flag": true
+        },
+        "Brock Purdy": {
+          "adp_pick": 77.2,
+          "coverage_flag": true
+        },
+        "Jakobi Meyers": {
+          "adp_pick": 81.2,
+          "coverage_flag": true
+        },
+        "Josh Downs": {
+          "adp_pick": 101.5,
+          "coverage_flag": true
+        },
+        "Ricky Pearsall": {
+          "adp_pick": 96.5,
+          "coverage_flag": true
+        },
+        "Kyle Monangai": {
+          "adp_pick": 94.4,
+          "coverage_flag": true
+        },
+        "Patrick Mahomes II": {
+          "adp_pick": 102.0,
+          "coverage_flag": true
+        },
+        "Travis Kelce": {
+          "adp_pick": 110.7,
+          "coverage_flag": true
+        },
+        "Bo Nix": {
+          "adp_pick": 119.7,
+          "coverage_flag": true
+        },
+        "Kenny Gainwell": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Quentin Johnston": {
+          "adp_pick": 93.3,
+          "coverage_flag": true
+        },
+        "Matthew Stafford": {
+          "adp_pick": 93.4,
+          "coverage_flag": true
+        },
+        "J.K. Dobbins": {
+          "adp_pick": 84.2,
+          "coverage_flag": true
+        },
+        "George Kittle": {
+          "adp_pick": 117.0,
+          "coverage_flag": true
+        },
+        "Jake Ferguson": {
+          "adp_pick": 136.2,
+          "coverage_flag": true
+        },
+        "Jordan Addison": {
+          "adp_pick": 89.7,
+          "coverage_flag": true
+        },
+        "Rachaad White": {
+          "adp_pick": 109.1,
+          "coverage_flag": true
+        },
+        "Jared Goff": {
+          "adp_pick": 108.3,
+          "coverage_flag": true
+        },
+        "Aaron Jones Sr.": {
+          "adp_pick": 101.4,
+          "coverage_flag": true
+        },
+        "Blake Corum": {
+          "adp_pick": 110.7,
+          "coverage_flag": true
+        },
+        "Jayden Reed": {
+          "adp_pick": 89.4,
+          "coverage_flag": true
+        },
+        "Kyler Murray": {
+          "adp_pick": 142.1,
+          "coverage_flag": true
+        },
+        "Dalton Kincaid": {
+          "adp_pick": 148.4,
+          "coverage_flag": true
+        },
+        "Khalil Shakir": {
+          "adp_pick": 107.0,
+          "coverage_flag": true
+        },
+        "Jordan Love": {
+          "adp_pick": 138.5,
+          "coverage_flag": true
+        },
+        "Isaiah Likely": {
+          "adp_pick": 139.9,
+          "coverage_flag": true
+        },
+        "Baker Mayfield": {
+          "adp_pick": 134.9,
+          "coverage_flag": true
+        },
+        "Xavier Worthy": {
+          "adp_pick": 96.4,
+          "coverage_flag": true
+        },
+        "Jayden Higgins": {
+          "adp_pick": 121.7,
+          "coverage_flag": true
+        },
+        "Tyler Shough": {
+          "adp_pick": 138.6,
+          "coverage_flag": true
+        },
+        "Dallas Goedert": {
+          "adp_pick": 132.0,
+          "coverage_flag": true
+        },
+        "Jonathon Brooks": {
+          "adp_pick": 124.4,
+          "coverage_flag": true
+        },
+        "Jacory Croskey-Merritt": {
+          "adp_pick": 118.6,
+          "coverage_flag": true
+        },
+        "Jordan Mason": {
+          "adp_pick": 114.5,
+          "coverage_flag": true
+        },
+        "Romeo Doubs": {
+          "adp_pick": 98.5,
+          "coverage_flag": true
+        },
+        "Mark Andrews": {
+          "adp_pick": 130.2,
+          "coverage_flag": true
+        },
+        "Jalen Coker": {
+          "adp_pick": 122.5,
+          "coverage_flag": true
+        },
+        "Tyrone Tracy Jr.": {
+          "adp_pick": 152.2,
+          "coverage_flag": true
+        },
+        "Malik Willis": {
+          "adp_pick": 168.7,
+          "coverage_flag": true
+        },
+        "Matthew Golden": {
+          "adp_pick": 110.5,
+          "coverage_flag": true
+        },
+        "Woody Marks": {
+          "adp_pick": 156.4,
+          "coverage_flag": true
+        },
+        "C.J. Stroud": {
+          "adp_pick": 154.8,
+          "coverage_flag": true
+        },
+        "Tyler Allgeier": {
+          "adp_pick": 179.4,
+          "coverage_flag": true
+        },
+        "Sam Darnold": {
+          "adp_pick": 153.6,
+          "coverage_flag": true
+        },
+        "Zach Charbonnet": {
+          "adp_pick": 149.7,
+          "coverage_flag": true
+        },
+        "Tyjae Spears": {
+          "adp_pick": 131.7,
+          "coverage_flag": true
+        },
+        "Dylan Sampson": {
+          "adp_pick": 168.0,
+          "coverage_flag": true
+        },
+        "Chris Rodriguez Jr.": {
+          "adp_pick": 137.8,
+          "coverage_flag": true
+        },
+        "Isiah Pacheco": {
+          "adp_pick": 142.5,
+          "coverage_flag": true
+        },
+        "Juwan Johnson": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Alvin Kamara": {
+          "adp_pick": 156.1,
+          "coverage_flag": true
+        },
+        "Rashid Shaheed": {
+          "adp_pick": 118.8,
+          "coverage_flag": true
+        },
+        "Brenton Strange": {
+          "adp_pick": 145.8,
+          "coverage_flag": true
+        },
+        "Jauan Jennings": {
+          "adp_pick": 137.6,
+          "coverage_flag": true
+        },
+        "Cam Ward": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Jerry Jeudy": {
+          "adp_pick": 139.4,
+          "coverage_flag": true
+        },
+        "Chig Okonkwo": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Bryce Young": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Stefon Diggs": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Daniel Jones": {
+          "adp_pick": 170.2,
+          "coverage_flag": true
+        },
+        "Hunter Henry": {
+          "adp_pick": 152.3,
+          "coverage_flag": true
+        },
+        "Keaton Mitchell": {
+          "adp_pick": 167.6,
+          "coverage_flag": true
+        },
+        "Oronde Gadsden II": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Jalen McMillan": {
+          "adp_pick": 136.6,
+          "coverage_flag": true
+        },
+        "Adonai Mitchell": {
+          "adp_pick": 159.8,
+          "coverage_flag": true
+        },
+        "Travis Hunter": {
+          "adp_pick": 161.3,
+          "coverage_flag": true
+        },
+        "Braelon Allen": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Brian Robinson Jr.": {
+          "adp_pick": 150.8,
+          "coverage_flag": true
+        },
+        "Tre Tucker": {
+          "adp_pick": 128.2,
+          "coverage_flag": true
+        },
+        "Tank Bigsby": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Dalton Schultz": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Tre' Harris": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Deebo Samuel Sr.": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Ryan Flournoy": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Troy Franklin": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "James Conner": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "T.J. Hockenson": {
+          "adp_pick": 187.3,
+          "coverage_flag": true
+        },
+        "Kayshon Boutte": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Jaylin Noel": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Jacoby Brissett": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Kimani Vidal": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Isaac TeSlaa": {
+          "adp_pick": 168.0,
+          "coverage_flag": true
+        },
+        "Emanuel Wilson": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Ray Davis": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Calvin Ridley": {
+          "adp_pick": 132.2,
+          "coverage_flag": true
+        },
+        "Jalen Nailor": {
+          "adp_pick": 140.3,
+          "coverage_flag": true
+        },
+        "Darnell Mooney": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Brandon Aiyuk": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "AJ Barner": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Pat Bryant": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Sean Tucker": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Dontayvion Wicks": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Malik Washington": {
+          "adp_pick": 165.1,
+          "coverage_flag": true
+        },
+        "Greg Dulcich": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Gunnar Helm": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Chimere Dike": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Aaron Rodgers": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Tank Dell": {
+          "adp_pick": 153.6,
+          "coverage_flag": true
+        },
+        "Tyreek Hill": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Cooper Kupp": {
+          "adp_pick": 155.7,
+          "coverage_flag": true
+        },
+        "Jaylen Wright": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Rashod Bateman": {
+          "adp_pick": 132.7,
+          "coverage_flag": true
+        },
+        "Geno Smith": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Justice Hill": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Elic Ayomanor": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Ollie Gordon II": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Pat Freiermuth": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "MarShawn Lloyd": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Cade Otton": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Jack Bech": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "David Njoku": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Keon Coleman": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Terrance Ferguson": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Christian Kirk": {
+          "adp_pick": 194.7,
+          "coverage_flag": true
+        },
+        "Ty Johnson": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Trey Benson": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Jaydon Blue": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Colby Parkinson": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Marvin Mims Jr.": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Evan Engram": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Isaiah Davis": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Devin Neal": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Xavier Legette": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Chris Brooks": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "DJ Giddens": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Tory Horton": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "LeQuint Allen Jr.": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Darius Slayton": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Kaleb Johnson": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Mike Gesicki": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Andrei Iosivas": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "George Holani": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Jordan James": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Kyle Williams": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Mason Taylor": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Samaje Perine": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Tua Tagovailoa": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Keenan Allen": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Theo Johnson": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Devaughn Vele": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Tyquan Thornton": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Mack Hollins": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Malik Davis": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Brashard Smith": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Michael Penix Jr.": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Kyle Juszczyk": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Najee Harris": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Jerome Ford": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Kendre Miller": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Odell Beckham Jr.": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Hollywood Brown": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Jake Tonges": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Jahan Dotson": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Jaleel McLaughlin": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Emari Demercado": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Deshaun Watson": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Shedeur Sanders": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Konata Mumpfield": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Tim Patrick": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Darnell Washington": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Joshua Palmer": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Joe Mixon": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Devin Singletary": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Isaiah Bond": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Isaac Guerendo": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Jalen Tolbert": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Brandin Cooks": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Tahj Brooks": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Kendrick Bourne": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Kirk Cousins": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Olamide Zaccheaus": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Cedric Tillman": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Jeremy McNichols": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Luke McCaffrey": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Tez Johnson": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Calvin Austin III": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Michael Mayer": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Bam Knight": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Rasheen Ali": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Trevor Etienne": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "KaVontae Turpin": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Audric Estime": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Jalen Royals": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Devontez Walker": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Jarquez Hunter": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Sione Vaki": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Xavier Restrepo": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Ja'Tavion Sanders": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Treylon Burks": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Van Jefferson": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Tyler Higbee": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Erick All Jr.": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "DeMario Douglas": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "J.J. McCarthy": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Isaiah Williams": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Will Shipley": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Elijah Arroyo": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "DeAndre Hopkins": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Marquez Valdes-Scantling": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Tyler Lockett": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Kalif Raymond": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Jake Bobo": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Kareem Hunt": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "John Bates": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Noah Gray": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Dont'e Thornton Jr.": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Nick Westbrook-Ikhine": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Cole Kmet": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Xavier Hutchinson": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Elijah Moore": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Ashton Dulin": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Lil'Jordan Humphrey": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Tutu Atwell": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Dawson Knox": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Diontae Johnson": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Hunter Luepke": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Nick Chubb": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Raheim Sanders": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Jawhar Jordan": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Phil Mafah": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "John Metchie III": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Dyami Brown": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Taysom Hill": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Mac Jones": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Greg Dortch": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Jaylin Lane": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Jonnu Smith": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Michael Carter": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Joe Milton III": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Mitch Tinsley": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Jahdae Walker": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Anthony Richardson Sr.": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Zavier Scott": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Savion Williams": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Justin Fields": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Dylan Laube": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Xavier Smith": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Dameon Pierce": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Drew Sample": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Noah Fant": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Tommy Tremble": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Michael Woods II": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Darren Waller": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Antonio Gibson": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Durham Smythe": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Theo Wease Jr.": {
+          "adp_pick": 126.1,
+          "coverage_flag": true
+        },
+        "Terrell Jennings": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Jacob Saylors": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Scotty Miller": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Austin Ekeler": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Ronnie Rivers": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Jordan Whittington": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Riley Leonard": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Elijah Mitchell": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Marcus Mariota": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Gardner Minshew II": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Josh Oliver": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Will Dissly": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Austin Hooper": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Derius Davis": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Roschon Johnson": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Zach Ertz": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Jermaine Burton": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Daniel Bellinger": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Charlie Kolar": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Luke Musgrave": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Jameis Winston": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Damien Martinez": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Tai Felton": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Joe Flacco": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Adam Trautman": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Ben Sinnott": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Frank Gore Jr.": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Jaret Patterson": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Mecole Hardman Jr.": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Cade Stover": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Quinn Ewers": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Luke Schoonmaker": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Demarcus Robinson": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Donovan Edwards": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Elijah Higgins": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Mo Alie-Cox": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Tyler Badie": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Anthony Gould": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Gabe Davis": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Skyy Moore": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Mitchell Evans": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Tyler Conklin": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Jared Wiley": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Miles Sanders": {
+          "adp_pick": null,
+          "coverage_flag": false
+        },
+        "Thomas Fidone II": {
+          "adp_pick": null,
+          "coverage_flag": false
+        }
+      }
+    },
     "mechanical_need_targets": {
       "QB": 1,
       "RB": 4,
@@ -8126,6 +10034,6 @@
     "need_penalty_per_surplus": 25.0,
     "room_noise_drawn_once_per_draft": true,
     "room_noise_note": "One Gaussian(0, sigma) draw per player is shared by the whole room for a single simulated draft, not redrawn per pick or per team -- this models \"the room collectively valued him a round higher this year\", not nine independently confused teams.",
-    "algorithm_note": "Per simulated draft: (1) sample each opponent team's ranking source from ranking_sources (fresh draw every draft, never fixed to a team); (2) draw one shared noise vector for the room; (3) each opponent's effective rank is their source's rank plus the shared noise; (4) pick order is standard snake over teams=league.json:teams, rounds=league.json:rounds, user_slot=league.json:user_draft_slot; (5) each opponent picks the lowest effective-rank available player, with mechanical_need_targets applied as an additive rank penalty (need_penalty_per_surplus per player beyond target, infinite at max_at_position); (6) the user is assumed to draft best-available off the TRUE consensus board (unperturbed) -- see board.json."
+    "algorithm_note": "Per simulated draft: (1) sample each opponent team's ranking source from ranking_sources (fresh draw every draft, never fixed to a team); (2) draw one shared noise vector for the room; (3) each opponent's effective rank is their source's rank plus the shared noise; (4) pick order is standard snake over teams=league.json:teams, rounds=league.json:rounds, user_slot=league.json:user_draft_slot; (5) each opponent picks the lowest effective-rank available player, with mechanical_need_targets applied as an additive rank penalty (need_penalty_per_surplus per player beyond target, infinite at max_at_position); (6) the user is assumed to draft best-available off THIS SAME unperturbed consensus rank (player_ranks above / ranking_sources[0]) -- corrected 2026-07-30 (thread 104): this previously said board.json, which is wrong and was never wired that way; ds.strategy_bpa reads data.consensus_rank, the identical array the opponent model's ranking_sources draws from, not board.json's separately-sourced rank."
   }
 }

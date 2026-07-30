@@ -44,21 +44,25 @@ def test_new_writes_unallocated_file_then_allocates_via_sync(fr):
     fr.cmd_new(Args)
     allocated = list(fr.FR_DIR.glob("FR-*.md"))
     assert len(allocated) == 1
-    assert allocated[0].name == "FR-018-add-a-widget.md"
-    assert "ID: FR-018" in allocated[0].read_text(encoding="utf-8")
+    today = fr.datetime.date.today().isoformat()
+    assert allocated[0].name == f"FR-{today}-add-a-widget.md"
+    assert f"ID: FR-{today}-add-a-widget" in allocated[0].read_text(encoding="utf-8")
     assert not list(fr.FR_DIR.glob("NEW-*.md"))  # nothing left pending
 
 
-def test_ingest_refuses_to_overwrite_existing_destination(fr):
-    # Forces the exact collision next_free_id() would otherwise avoid naturally -- mirrors
-    # tools/handoffs.py's own test for the cross-worktree-race case (thread 076): two
-    # worktrees can each compute a locally-valid "next free" number that collides at merge.
-    (fr.FR_DIR / "FR-018-taken.md").write_text("---\nID: FR-018\nSTATUS: NEW\n---\n\nbody\n", encoding="utf-8")
+def test_ingest_never_raises_on_same_day_same_slug(fr):
+    """W3: the old counter-collision test is gone -- new_request_filename() cannot
+    return an already-taken path, so there is nothing left for _ingest_one to
+    hard-fail on. Two pending files that slugify identically on the same day both
+    ingest, deterministically disambiguated."""
+    (fr.FR_DIR / f"FR-2026-07-28-taken.md").write_text(
+        "---\nID: FR-2026-07-28-taken\nSTATUS: NEW\n---\n\nbody\n", encoding="utf-8"
+    )
     src = fr.FR_DIR / "NEW-taken.md"
     src.write_text("---\nSTATUS: NEW\n---\n\nbody\n", encoding="utf-8")
-    with pytest.raises(SystemExit):
-        fr._ingest_one(src, nid=18, today="2026-07-28")
-    assert src.exists()  # the pending file must survive a refused ingestion
+    dest = fr._ingest_one(src, today="2026-07-28")
+    assert dest.name == "FR-2026-07-28-taken-2.md"
+    assert not src.exists()
 
 
 def test_subject_strips_full_fr_nnn_prefix_not_just_first_hyphen(fr):
@@ -102,6 +106,21 @@ def test_find_fr_collisions_silent_when_no_conflict(fr, monkeypatch):
         lambda ref, subdir: ["FR-020-same-ask.md"] if ref == "origin/other-branch" else [],
     )
     assert fr.find_fr_collisions() == []
+
+
+def test_known_legacy_fr_collisions_registry_is_frozen():
+    mod = _load_module()
+    assert mod.KNOWN_LEGACY_FR_COLLISIONS == frozenset({"FR-029", "FR-030"})
+
+
+def test_check_passes_on_real_repo_only_via_known_legacy_debt():
+    """Mirrors tools/handoffs.py's equivalent: the real docs/founder-requests/ mailbox
+    must be green, and specifically because its pre-existing collisions are named in
+    the frozen registry -- not because detection stopped working."""
+    mod = _load_module()
+    problems = mod.find_fr_collisions()
+    hard = [p for p in problems if not any(p.startswith(f"{fid} ") for fid in mod.KNOWN_LEGACY_FR_COLLISIONS)]
+    assert hard == [], f"unaccounted-for FR collision(s), not in the frozen debt registry: {hard}"
 
 
 def test_sync_groups_by_status(fr):

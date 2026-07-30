@@ -334,15 +334,29 @@ def cmd_sync(_args) -> int:
     return 0
 
 
+# Pre-existing debt: legacy-scheme collisions frozen at 2026-07-30 (ADR-064). Mirrors
+# tools/handoffs.py's KNOWN_LEGACY_ID_COLLISIONS -- see its comment and
+# docs/known-id-collisions.md for the full reasoning. Never grow this set for a new
+# collision; test_known_legacy_fr_collisions_registry_is_frozen pins it.
+KNOWN_LEGACY_FR_COLLISIONS = frozenset({"FR-029", "FR-030"})
+
+
 def cmd_check(_args) -> int:
     problems = find_fr_collisions()
-    if problems:
+    hard = [p for p in problems if not any(p.startswith(f"{fid} ") for fid in KNOWN_LEGACY_FR_COLLISIONS)]
+    debt = [p for p in problems if p not in hard]
+    if hard:
         print("founder-requests check FAILED:\n")
-        for p in problems:
+        for p in hard:
             print(f"  - {p}")
         print("\nDetection only -- do not renumber. Escalate; this is a merge-time collision.")
         return 1
-    print(f"founder-requests check OK — {len(load())} requests, no cross-branch ID collisions.")
+    print(f"founder-requests check OK — {len(load())} requests, no NEW cross-branch ID collisions.")
+    if debt:
+        print(f"({len(debt)} known pre-existing legacy collisions, frozen 2026-07-30 / ADR-064, "
+              f"see docs/known-id-collisions.md -- not new):")
+        for p in debt:
+            print(f"  - {p}")
     return 0
 
 

@@ -2810,3 +2810,76 @@ correctly in the committed artifact. No code change; confirmed by reading the re
 Full suite and commit hash in this session's `docs/status/` entry. Contract version 1.15.0 (was
 1.14.0) — handoff thread 093 opened to frontend with the field-level contract and required
 frontend-side change (read `picks_by_slot[str(slot)]` instead of assuming the founder's own).
+
+## ADR-064 — Thread/FR IDs move to date+slug (`YYYY-MM-DD-slug`), retiring counter-based
+allocation for new items (2026-07-30, backend, founder-approved)
+
+**The counter is not the bug; the scheme is.** `tools/handoffs.py` and `tools/founder_requests.py`
+allocated new IDs as `max(existing) + 1`, later widened to scan every local + remote-tracking git
+ref (2026-07-29, thread 079/081) so a number claimed on an unmerged branch wouldn't be handed out
+again. That widening narrowed the race; it could not close it, because two worktrees can each
+compute a locally-valid "next free" number in the same window and only find out they collided when
+someone reads the merged result — and because the two colliding files have *different filenames*
+(`093-a.md` and `093-b.md`, say), git happily merges both with no conflict, so the collision does
+not even fail loudly. It waits to be noticed. Six ID collisions happened this way on 2026-07-30
+alone (threads 043/049/053, ADR-048, and — found by this session, not before it — 093/094/109/
+110/111/112, ADR-054, ADR-055, FR-029, FR-030).
+
+**Decision: new threads and founder requests are named `{date}-{slug}.md`
+(`docs/founder-requests/` keeps the `FR-` prefix: `FR-{date}-{slug}.md`), not `{NNN}-{slug}.md`.**
+No shared counter, no git ref scan, needed to allocate one — `new_thread_filename()` /
+`new_request_filename()` (`tools/handoffs.py`, `tools/founder_requests.py`) claim
+`docs/handoffs/{date}-{slug}[-N].md` via `os.O_CREAT | os.O_EXCL`, purely from (today's date, this
+thread's own slugified subject), both already known locally with nothing to coordinate. Two agents
+naming *different* things on the same day get different filenames for free. The one case that
+can't be locally disambiguated — two separate worktrees independently choosing the identical
+subject on the identical day — no longer collides silently either: the filename **is** the
+identifier now, so two worktrees writing different content to the same path is an ordinary git
+same-path merge conflict, which blocks the merge and forces a human/agent to resolve it, instead of
+merging clean and hiding in the `ID:` field the way the old scheme's collisions did.
+
+**Clock source: system clock, not passed in.** All worktrees for this project run in one
+environment (`docs/environment.md`) with one clock; a day-granularity date has no meaningful skew
+risk here. If this project ever runs across real timezone-separated machines, revisit — a UTC-day
+boundary crossed mid-session could put two genuinely-same-day threads one calendar day apart, which
+is a cosmetic ordering annoyance, not a correctness bug (filenames still never collide from it).
+
+**Existing files are never renamed or renumbered.** ~135 numbered threads and ~120 numbered FRs are
+cited by number throughout the repo (prose, commits, other threads, `CLAUDE.md` itself). All
+`NNN-slug.md` / `FR-NNN-slug.md` files keep their filenames and their `ID:` frontmatter exactly as
+they are; `load()` in both tools now matches either the legacy `\d{3}-` or the new
+`\d{4}-\d{2}-\d{2}-` filename shape so old numeric threads keep resolving (`docs/handoffs/
+119-*.md` still loads, sorts, and appears in `inbox`/`sync`/`check` output unchanged). Sorting by
+`id` (a plain string sort) puts every legacy `NNN` thread before every date-shaped one, which is
+also the correct chronological order in this repo's history.
+
+**`next_free_id()` in both tools is kept, not deleted, but no longer used to allocate new IDs.**
+It still answers "what's the highest legacy number anyone has claimed" honestly (still tested), and
+`adr_next()` (ADR numbering, a separate, smaller space with far fewer concurrent allocators) is
+**out of scope for this change** — it keeps its existing counter-plus-ref-scan-plus-backstop
+design; this ADR does not touch it.
+
+**Pre-existing collisions from before this change are not fixed, only accounted for.** `check` in
+both tools now carries a frozen, dated exception registry (`KNOWN_LEGACY_ID_COLLISIONS` /
+`KNOWN_LEGACY_ADR_COLLISIONS` / `KNOWN_LEGACY_FR_COLLISIONS`) naming the exact pre-existing
+duplicates found while building this — full account, including the ADR-054/ADR-055 case (two
+different real decisions recorded under one number, a content problem no filename fix can resolve)
+in `docs/known-id-collisions.md`. This was the coordinator's addition mid-task, confirmed correct:
+without it, `check` could never go green again regardless of this fix, and a genuinely new
+collision would be lost in the noise of six already-known ones. The registries are pinned by test
+(`test_known_legacy_collisions_registry_is_frozen`, `test_known_legacy_fr_collisions_registry_is_
+frozen`) so growing them to hide a *new* collision is a visible diff, not a silent absorption — and
+they match only on the specific pre-existing numbers, never on the new `YYYY-MM-DD-slug` shape,
+which structurally can't produce the same failure mode in the first place.
+
+**Evidence.** `python3 -m pytest tests/test_handoffs.py tests/test_founder_requests.py -q` — 36
+passed (was 27/9 before this session's edits — some pre-existing tests describing the old counter
+allocation behavior for *new* IDs were rewritten to describe the new date+slug behavior instead;
+none of the legacy-ID-resolution or cross-branch-backstop tests changed). `python3 tools/
+handoffs.py check` and `python3 tools/founder_requests.py check` both exit 0 against the real repo
+(previously both failed — verified pre-existing via `git stash`, not introduced by this session).
+Concurrency proven directly: `test_two_worktrees_different_subjects_same_day_cannot_collide`
+reproduces thread 076's exact scenario (two isolated worktrees, no shared state) and asserts no
+collision; `test_new_thread_filename_dedupes_same_day_same_slug_deterministically` proves the
+same-slug-same-day case resolves deterministically rather than raising. Commit: see this session's
+`docs/status/` entry.

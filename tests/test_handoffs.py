@@ -345,3 +345,46 @@ def test_flag_stale_decision_refs_detects_reference_to_decided_d_number(hf, tmp_
     flagged_files = {t.path.name for t, _ in flags}
     assert "010-touches-decided.md" in flagged_files
     assert "011-touches-open.md" not in flagged_files
+
+
+# --- Pre-existing legacy debt carve-out (frozen 2026-07-30, ADR-064) --------------------
+
+def test_known_legacy_collisions_registry_is_frozen():
+    """Pins the exact contents of the debt registries so a future session can't quietly
+    grow them to hide a NEW collision. Growing this set is a real edit that must be
+    visible in review, not something check silently absorbs."""
+    mod = _load_module()
+    assert mod.KNOWN_LEGACY_ID_COLLISIONS == frozenset({"093", "094", "109", "110", "111", "112"})
+    assert mod.KNOWN_LEGACY_ADR_COLLISIONS == frozenset({"ADR-054", "ADR-055"})
+
+
+def test_check_passes_on_real_repo_only_via_known_legacy_debt():
+    """The real docs/handoffs/ mailbox check must be green -- and specifically because
+    its existing collisions are all accounted for in the frozen registry, not because
+    the detectors stopped working. If this ever fails, either a genuinely new collision
+    appeared (fix it) or one of the debt entries above was quietly resolved (shrink the
+    registry and update docs/known-id-collisions.md, don't just leave it stale)."""
+    mod = _load_module()
+    threads = mod.load()
+    seen: dict[str, str] = {}
+    dup_problems = []
+    for t in threads:
+        if t.id in seen:
+            dup_problems.append(f"{t.path.name}: duplicate ID {t.id} (also {seen[t.id]})")
+        seen[t.id] = t.path.name
+    dup_problems += mod.find_adr_collisions()
+    dup_problems += mod.find_thread_id_collisions()
+    hard = [p for p in dup_problems if not mod._is_known_legacy_debt(p)]
+    assert hard == [], f"unaccounted-for collision(s), not in the frozen debt registry: {hard}"
+
+
+def test_is_known_legacy_debt_does_not_match_new_ids():
+    """A collision on a number NOT in the frozen registry must still be treated as hard
+    -- the carve-out names specific pre-existing numbers, it is not a blanket exemption
+    for anything shaped like a legacy id."""
+    mod = _load_module()
+    assert mod._is_known_legacy_debt("999-some-thread.md: duplicate ID 999 (also 998-other.md)") is False
+    assert mod._is_known_legacy_debt("thread 999 claimed for conflicting subjects across branches: a, b") is False
+    assert mod._is_known_legacy_debt("ADR-999 has 2 conflicting headers across branches: a | b") is False
+    # sanity: a real frozen entry does match
+    assert mod._is_known_legacy_debt("093-x.md: duplicate ID 093 (also 093-y.md)") is True

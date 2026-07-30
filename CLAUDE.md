@@ -358,10 +358,12 @@ expensively and expensive work cheaply.
 All of it goes through `docs/handoffs/`. Protocol in `docs/handoffs/README.md`. Never rely on a
 human to relay a message between agents — assume no human is in the loop.
 
-**Thread IDs and ADR numbers are never hand-typed or computed by reading a directory and adding
-one.** They come from `tools/handoffs.py new` / `sync` / `adr next` only. Hand-computed numbering
-has already caused collisions (threads 043, 049, 053; ADR-048) — full protocol in
-`docs/handoffs/README.md`.
+**Thread IDs, FR IDs, and ADR numbers are never hand-typed.** New threads/FRs are
+`YYYY-MM-DD-slug.md`, allocated by `tools/handoffs.py new`/`sync` (`tools/founder_requests.py` for
+FRs) with no shared counter — collisions on new items are structurally near-impossible (ADR-064).
+Existing `NNN`-numbered threads/FRs keep their numbers forever, never renamed. ADR numbers still
+come from `tools/handoffs.py adr next` only — hand-computed numbering caused ADR-048's collision;
+full protocol in `docs/handoffs/README.md`.
 
 - Need something from another role? Open a thread. Specify it fully; a half-specified ask costs a
   full session, not a minute.
