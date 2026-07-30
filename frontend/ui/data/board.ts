@@ -31,7 +31,12 @@ export interface BoardRow {
 
   /** Absent for the 233 out-of-range players. */
   projectedPoints: Cell<number>;
-  /** Interval on VBD, not on points. Absent for the same 233. */
+  /**
+   * `appliesTo` carries `ci_applies_to` verbatim ("vbd" on every one of the
+   * 145 rows that have an interval today) -- do not assume it, resolve it via
+   * `ciTargetFor` below before rendering. Absent for the same 233 out-of-range
+   * players `projectedPoints` is absent for.
+   */
   interval: Cell<{ low: number; high: number; appliesTo: string }>;
 
   vbd: Cell<number>;
@@ -66,6 +71,44 @@ export interface BoardRow {
   /** True when the projection is an out-of-range extrapolation. Drives the sparse styling. */
   isSparse: boolean;
   raw: RawBoardPlayer;
+}
+
+/**
+ * What a row's interval actually brackets, read from `board.json:ci_applies_to`
+ * rather than assumed. Founder, 2026-07-30: "what is in the parenthesis here --
+ * it's a range, but the projection isn't in it?" He was right -- every consumer
+ * (Board's PROJ column, DraftRoom's RECOMMENDED card, PlayerDetail's range bar)
+ * paired the interval with `projected_points` while the export said, on every
+ * one of the 145 rows that carry an interval, `ci_applies_to: "vbd"`.
+ *
+ * This is the one place that decision gets made. A consumer that wants to
+ * render the interval calls `ciTargetFor(row)` and attaches it to whichever
+ * Cell comes back -- never to `row.projectedPoints` directly, and never by
+ * assuming the string is always `"vbd"`. `known` covers the two quantities
+ * this app has a Cell for; anything else is `unrecognized` and must render as
+ * an honest absence (the value is real, but this UI has no field to attach it
+ * to), never silently dropped and never silently paired with points anyway.
+ */
+export type CiQuantity = 'vbd' | 'projected_points';
+
+const CI_QUANTITY_LABEL: Record<CiQuantity, string> = {
+  vbd: 'VBD',
+  projected_points: 'PROJ',
+};
+
+export type CiTarget =
+  | { kind: 'none' }
+  | { kind: 'known'; quantity: CiQuantity; label: string; cell: Cell<number> }
+  | { kind: 'unrecognized'; raw: string };
+
+export function ciTargetFor(row: BoardRow): CiTarget {
+  if (row.interval.kind !== 'present') return { kind: 'none' };
+  const raw = row.interval.value.appliesTo;
+  if (raw === 'vbd' || raw === 'projected_points') {
+    const cell = raw === 'vbd' ? row.vbd : row.projectedPoints;
+    return { kind: 'known', quantity: raw, label: CI_QUANTITY_LABEL[raw], cell };
+  }
+  return { kind: 'unrecognized', raw };
 }
 
 export function buildRows(data: Dataset): BoardRow[] {

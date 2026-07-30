@@ -46,7 +46,16 @@ export interface RecommendationSnapshot {
   playerName: string;
   position: string;
   reason: string;
-  pointsRange: { low: number; high: number } | null;
+  /**
+   * The player's interval, attached to whichever quantity `ci_applies_to`
+   * actually names (`label`) -- "VBD" on every row that carries one today.
+   * Retired 2026-07-30: this used to be `pointsRange`, an interval converted
+   * onto the points scale and captioned "Honest points range" below, which
+   * read as a projection interval that does not exist in the export. See
+   * `DraftRoom.tsx`'s `ciRangeFor` for the derivation this now carries
+   * verbatim, unconverted.
+   */
+  ciRange: { low: number; high: number; label: string } | null;
 }
 
 export interface GiveUpSnapshot {
@@ -142,8 +151,13 @@ function recommendationItem(input: DraftPageContextInput): ContextItem | null {
       ? `For the user's upcoming pick at overall ${integer(pick)}, evaluated against today's board (not a forecast of who will still be available then):`
       : 'Evaluated against today\'s board (not a forecast of who will still be available then):'
     : "For the pick happening right now:";
-  const range = rec.pointsRange
-    ? ` Honest points range ${decimal(rec.pointsRange.low)}–${decimal(rec.pointsRange.high)}.`
+  // ciRange.label names whatever quantity the interval actually applies to
+  // ("VBD" on every row that carries one today) -- stated explicitly rather
+  // than left for the model to guess, so a "what's that range on" question
+  // has a real fact to answer from instead of an unlabelled number that
+  // reads as a projection range by default.
+  const range = rec.ciRange
+    ? ` ${rec.ciRange.label} range ${decimal(rec.ciRange.low)}–${decimal(rec.ciRange.high)} (this is an interval on ${rec.ciRange.label}, not on the point projection).`
     : '';
   return {
     id: 'page.recommendation',

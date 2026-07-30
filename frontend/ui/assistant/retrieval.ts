@@ -1,4 +1,5 @@
-import type { BoardRow } from '../data/board';
+import { ciTargetFor, type BoardRow } from '../data/board';
+import { GLOSSARY_ALIASES } from '../data/glossaryAliases';
 import type { Dataset } from '../data/load';
 import { decimal, integer, percent, signed } from '../lib/format';
 import type { ContextItem } from './reasoning';
@@ -186,6 +187,26 @@ interface ScoredDoc {
   attached?: boolean;
 }
 
+function escapeRegExp(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+/**
+ * Whole-word match, not a bare substring. Player full names and multi-word
+ * glossary terms were always long enough for plain `includes()` to be safe,
+ * but the glossary alias map (added for the "CI" abbreviation, 2026-07-30)
+ * introduced 2-4 letter identifiers -- "ci" is a substring of "decision",
+ * "efficient", "specific" and dozens of other ordinary words, and a bare
+ * substring match would have turned an unrelated question into a false
+ * 'high'-confidence hit. `\b` word boundaries make an identifier match only
+ * when it appears as its own word (or exact multi-word phrase), which is what
+ * "exact match" is supposed to mean here.
+ */
+function isExactIdentifierMatch(question: string, identifier: string): boolean {
+  if (identifier.length === 0) return false;
+  return new RegExp(`\\b${escapeRegExp(identifier.toLowerCase())}\\b`, 'i').test(question);
+}
+
 export function retrieve(corpus: readonly RetrievalDoc[], question: string): ContextItem[] {
   const queryTokens = Array.from(new Set(tokenize(question)));
   if (queryTokens.length === 0 || corpus.length === 0) return [];
@@ -196,7 +217,7 @@ export function retrieve(corpus: readonly RetrievalDoc[], question: string): Con
   const scored: ScoredDoc[] = docs
     .map((doc) => {
       const { score, distinctiveMatches } = scoreDoc(doc, queryTokens, df, avgdl, N);
-      const exact = doc.identifiers.some((id) => id.length > 0 && q.includes(id.toLowerCase()));
+      const exact = doc.identifiers.some((id) => isExactIdentifierMatch(q, id));
       return { doc, score, distinctiveMatches, exact };
     })
     .filter((s) => s.exact || (s.distinctiveMatches >= MIN_DISTINCTIVE_MATCHES && s.score >= MIN_SCORE));
@@ -297,6 +318,22 @@ function boardDocs(rows: readonly BoardRow[]): RetrievalDoc[] {
         ? `${name} projects ${decimal(row.projectedPoints.value)} points.`
         : `${name} has no displayable projection: ${row.projectedPoints.reason}`;
 
+    // Founder, 2026-07-30, after the CI/VBD mislabelling was explained and
+    // fixed on screen: "the chat bot should have been able to answer the
+    // question like you did about CI." It couldn't, because this doc never
+    // mentioned the interval or what it applies to -- the assistant saw the
+    // same two numbers the founder did and had nothing to reconcile them
+    // with. `ciTargetFor` reads `ci_applies_to` per row rather than assuming
+    // "vbd"; this is the fact, not a hand-written answer -- the reasoning
+    // lane still has to use it to actually answer the question.
+    const ciTarget = ciTargetFor(row);
+    const ciText =
+      row.interval.kind === 'present'
+        ? ciTarget.kind === 'known'
+          ? ` ${name} also has an interval on file, ${decimal(row.interval.value.low)}-${decimal(row.interval.value.high)}, which applies to ${ciTarget.label} (${ciTarget.quantity === 'vbd' ? 'value over replacement' : 'the point projection'}), not to whichever other number is being discussed unless that number is ${ciTarget.label}.`
+          : ` ${name} also has an interval on file, ${decimal(row.interval.value.low)}-${decimal(row.interval.value.high)}, which applies to "${ciTarget.kind === 'unrecognized' ? ciTarget.raw : ''}", a quantity this app does not otherwise display.`
+        : '';
+
     const adpText =
       row.adp.kind === 'present'
         ? `MyFantasyLeague proxy ADP has ${name} at pick ${decimal(row.adp.value)}` +
@@ -321,7 +358,7 @@ function boardDocs(rows: readonly BoardRow[]): RetrievalDoc[] {
       text:
         `${name} is a ${label}, tier ${tier}, on this board at overall rank ${rank}. Consensus has ` +
         `${name} at ${consensus}, a difference of ${delta}. VBD ${vbd}. ${projectionText} ${adpText}` +
-        `${rosterStatusText}${suspensionText}`,
+        `${rosterStatusText}${suspensionText}${ciText}`,
       source_path: at('overall_rank'),
       identifiers: [name],
     });
@@ -337,14 +374,30 @@ function boardDocs(rows: readonly BoardRow[]): RetrievalDoc[] {
   return docs;
 }
 
-/** One document per glossary term, term + both definitions, so either the short
- *  or long wording can be the thing that matches a differently-phrased question. */
+/**
+ * One document per glossary term, term + both definitions, so either the
+ * short or long wording can be the thing that matches a differently-phrased
+ * question.
+ *
+ * `identifiers` also carries every UI abbreviation that `GLOSSARY_ALIASES`
+ * maps onto this term ("CI" -> "confidence interval", etc.) -- the founder
+ * asked this exact question ("what is CI") and retrieval found nothing,
+ * because the column header renders "CI" and the glossary key is the spelled-
+ * out term; nothing connected them. This is the fix: an exact-identifier hit
+ * on the abbreviation the user actually saw now resolves to the real term.
+ */
 function glossaryDocs(data: Dataset): RetrievalDoc[] {
+  const aliasesByTerm = new Map<string, string[]>();
+  for (const [abbr, term] of Object.entries(GLOSSARY_ALIASES)) {
+    const list = aliasesByTerm.get(term) ?? [];
+    list.push(abbr);
+    aliasesByTerm.set(term, list);
+  }
   return Object.entries(data.glossary.terms).map(([term, def]) => ({
     id: `glossary.${term}`,
     text: `${term}: ${def.short_definition} ${def.long_explanation}`,
     source_path: `glossary.json:terms.${term}.short_definition`,
-    identifiers: [term],
+    identifiers: [term, ...(aliasesByTerm.get(term) ?? [])],
   }));
 }
 
