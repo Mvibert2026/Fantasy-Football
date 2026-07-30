@@ -357,7 +357,147 @@ Per the mandate, nothing here is validated by me:
 
 ---
 
-## 6. Status of this document
+## 6. The build plan
+
+**Founder direction received mid-pass, 2026-07-30, verbatim:**
+
+> "Let's prioritize bottoms up. I think availability is probably most based on ADP, then the way the
+> draft has fallen so far, other teams needs etc. The recommender would depend on both."
+
+He has ordered the three questions into a dependency chain they did not previously have:
+**bottom-up → availability → recommender.** §1.1 is why that ordering bites. The shipped board is
+within-position identical to consensus, so availability is currently simulating a draft over
+consensus ordering, and the recommender's opportunity-cost term is pricing "value now vs. value at
+my next pick" entirely out of four slopes. **A wrong ranking does not stay contained; it makes both
+downstream models confidently wrong.** Fixing the ranking is the only one of the three that improves
+the other two for free.
+
+### 6.1 Step 0 — the metric has to change before anything is built. This is a finding, not a delay.
+
+§1.2 measured per-position τ_b at exactly **0.000000** between the board and raw consensus, twelve
+of twelve position-seasons. Build a component projection, grade it with that instrument, and you
+have graded it with a ruler that already cannot distinguish the incumbent from consensus.
+
+**I am not choosing the replacement.** What I can supply is the missing half of the problem: the
+incumbent's error, on the metric the product actually displays, which had never been measured.
+
+**The bar.** Shipped `projected_points` against realised points, walk-forward (curve for season S
+fitted only on `fantasypros_ecr` seasons < S), universe = that season's consensus board, busts
+retained at zero, 2025 untouched:
+
+| season | QB | RB | WR | TE |
+|---|---|---|---|---|
+| 2022 | 76.8 | 53.3 | 46.4 | 32.6 |
+| 2023 | 80.5 | 62.3 | 49.4 | 38.0 |
+| 2024 | 64.7 | 70.4 | 48.2 | 36.9 |
+| **mean MAE (points)** | **74.0** | **62.0** | **48.0** | **35.8** |
+| MAE ÷ mean actual points | 0.30 | 0.40 | 0.32 | 0.31 |
+
+**The number on the screen is wrong by about a third of what the player scores.** That is the bar,
+it is unambiguous, and any bottom-up projection either beats it or does not.
+
+This metric has three properties the current primary lacks: it is **sensitive to player-level
+opinion**, it does **not** require demonstrating "beats consensus on rank order" (§1.4 shows that is
+unreachable at this sample size at three of four positions), and it is **exactly what the founder
+asked for** — projections.
+
+**Systematic, worth flagging, not yet a finding:** the QB curve's bias runs **+33.4, +36.8, −15.3**.
+Three seasons; noted, not acted on.
+
+### 6.2 Step 1 — measure the component models against the incumbent. Nobody has.
+
+`component-model-*-pass-1.md` measured the component models against consensus ADP, prior-season
+points, and weighted prior PPG. **They were never measured against the thing actually shipped**, and
+never on projection error. That comparison is the cheapest real answer available: both objects
+exist, both are committed, no new model is required.
+
+**One structural fix belongs here, and it is about power, not accuracy.** The head-to-head is
+currently limited to **three seasons (2022–2024)** — not by the component models, which have seven
+(FFC ADP 2018–2024), but by the incumbent, whose training source `fantasypros_ecr` starts in 2021
+and so cannot produce a walk-forward curve before 2022. Refitting the same object
+(`E[our_points | positional market rank]`) on FFC ADP instead yields **six** evaluation seasons.
+That doubles the power of every board-vs-anything comparison at zero model complexity.
+
+**Caveat, and `strategist` must rule on it.** Today's H1 result measured **NULL**: ADP is *not* more
+accurate than expert consensus at predicting realised pick order (mean gap −1.27 picks, in the
+incumbent's favour). So this substitution must be argued as **a longer rank series for power**, not
+as "ADP is a better input." Those are different claims and only the first is supportable.
+
+### 6.3 Step 2 — re-enable baseline #1, knowing what it can and cannot settle
+
+**Wiring: small.** `experiments/bottomup/components/adp_baseline.py` already loads FFC half-PPR ADP
+and matches **998 of 998 players to gsis ids across 2018–2024, all four positions — 100%.** Promoting
+it to `src/` and building a `RankingConfig` is hours.
+
+**Statistically: it cannot settle the question, and that must be said when it is enabled.** Usable
+board-vs-market-ADP evaluation seasons are the intersection of *board-buildable* (2022+) and *FFC ADP
+coverage* (≤2024), minus the sealed holdout: **2022, 2023, 2024 — three seasons.** A sign test on
+three seasons floors at p = 0.25. Re-enabling the arm converts a **"never measured"** into a
+**measured-but-underpowered** result. That is worth doing — a known-inconclusive number beats a blank
+— but it will not tell the founder whether the board has edge, and §6.2's FFC refit is what raises
+it to six.
+
+FFC history is **12-team** against a **10-team** league. Real confound, must travel with the number.
+
+### 6.4 Step 3 — the smallest genuinely bottom-up thing, and it already exists
+
+**The minimum real projection is not a new model. It is the component models, pointed at 2026.**
+They project games · volume · efficiency · touchdowns · fumbles · per-game exceedance from player
+inputs, they beat naive persistence on **every component at all four positions**, and
+`pos_model.score_components()` re-scores them under any ruleset without refitting. Building a second
+one would be the over-engineering finding this project treats as a defect.
+
+What stands between them and a 2026 number, in order:
+
+1. **Freeze the decision** — which requires §6.1's metric and §6.2's comparison first. `holdout.py`'s
+   own design releases 2025 for the production refit *after* selection is frozen, never before.
+2. `release_for_final_fit(reason=...)`, then `FIRST, LAST` extended to a 2026 target
+   (`run_position.py:36`). **Not in this pass; the holdout stays sealed.**
+3. **Rookies fall back to consensus and are labelled on screen.** Six of the top 150 have no stat
+   history, the highest being Jeremiyah Love at consensus #33. Rookie draft capital is an already-
+   eliminated edge channel — modelling them is the wrong move and consensus is the honest one.
+4. **DEF stays a blank with a note.** A starting slot with zero coverage; that does not change by
+   September.
+
+### 6.5 Step 4 — one factor at a time, and only two candidates fit the window
+
+Both are **already in `data/nfl.db`** and **untouched by any model in this project**:
+
+| candidate | coverage | why it is the right size |
+|---|---|---|
+| `snap_counts` | 2013–2025, 324,611 rows | the documented route-participation proxy `CLAUDE.md` §5 names; WR pass 1 deliberately withheld it so as not to contaminate a baseline pass. That baseline now exists |
+| `ngs_*` | 2016–2025, 26,723 rows | separation, cushion, time-to-throw — the only in-DB signal not derived from box score volume |
+
+Each is one pre-registered factor with a falsifier and a stopping condition, registered by
+`strategist` before running, evaluated against §6.1's bar. **Two, not twenty** — §6.3's
+multiple-comparisons exposure applies to the campaign, not per test.
+
+### 6.6 What cannot be earned by 7 September — separately from what is merely hard
+
+| | status | reason |
+|---|---|---|
+| Vegas odds / implied team totals | **cannot be earned** | historical odds need a paid source, *and* the whole team-environment channel is bounded at **≤ +0.055 τ_b by oracle**. The second reason is the better one |
+| Coaching / coordinator tendency | **cannot be earned** | PFR 403, no table has ever landed, premise untested. The mandate's calibration prior applies squarely: this is a situation story |
+| Rookie projection | **cannot be earned, and should not be attempted** | eliminated channel; use consensus and label it |
+| The rate channel in full (§4, +0.35–0.44 ρ) | **cannot be earned** | real, large, and not a 39-day object. §6.5 is the slice of it that fits |
+| DEF edge | **cannot be earned** | coverage can be added; a defensible *ranking* cannot |
+| **Beating consensus on rank, demonstrably** | **cannot be earned at QB, WR, TE** | measured, not assumed: seven seasons cannot show consensus beats a three-line heuristic at those positions. **Only RB has power.** Do not design toward it |
+| PBP + the four factors it unblocks | **hard, not impossible** | 20.4 s to acquire; ingest and *one* registered factor fits, all four with campaign-level multiplicity control does not |
+
+### 6.7 Sequencing, one line each
+
+1. `strategist` rules on the primary metric (§6.1) — **blocking; nothing should be built first**
+2. `data-ops` ingests the half-minute of missing data (§5.0) — parallel, blocks nothing
+3. Component models vs. the incumbent on projection error, FFC-refit curve for six seasons (§6.2)
+4. Baseline #1 re-enabled with its power caveat attached (§6.3)
+5. Two registered factors, snaps and NGS (§6.5)
+6. Only then: freeze, release the holdout for the production refit, produce 2026 (§6.4)
+
+**Steps 1 and 2 are the only ones that can start today, and step 1 is not mine to do.**
+
+---
+
+## 7. Status of this document
 
 **Settled:** §0 preconditions and the two extra precondition findings; §1.1–§1.3; §2 (the board is
 consensus at ρ 0.972 in the top 100, and its whole opinion is a QB/TE positional tilt); §3.1 (the
@@ -369,4 +509,4 @@ measured table by table).
 **Not judged here, by design:** whether any of this is good enough for 7 September. That is not the
 ranker's call to make about the ranker's own object. Independent checks are named in §6.
 
-**Still open at this commit:** §6, the ordered gap list.
+**Still open:** nothing in this pass. The build plan in §6 is a plan, not a result — every step in it needs the check named beside it.

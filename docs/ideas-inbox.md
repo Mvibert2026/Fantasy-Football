@@ -1491,3 +1491,19 @@ and a real environment finding, logged here per the "decide and log" instruction
   exploratory). Separate family, separate registration, same batch, same CRN seeds. Also flagged
   that PR-007 itself has still never run — thread 093 open since 2026-07-29.
 
+
+- **2026-07-30, ranker (FR-136 Q1).** The shipped board's within-position ordering is identical to
+  consensus at all four positions, so `backtest.py`'s primary metric (per-position τ_b) returns
+  exactly 0.000000 between the board arm and the consensus arm, 12 of 12 position-seasons. Decided
+  without asking: report it as a blocking methodology defect to `strategist` rather than choosing a
+  replacement metric myself. A ranker who picks the ruler that scores the ranker is the failure the
+  role split exists to prevent. Thread `2026-07-30-fr-136-q1-the-primary-metric-cannot-see-the-boar`.
+- **2026-07-30, ranker.** Measured, not estimated: all 17 seasons of nflverse play-by-play fetch in
+  **20.4 s** and slim to **15.2 MB** for the 24 columns that red-zone usage, PROE, team pace and xFP
+  need. Four Tier-1 factors marked unbuildable in `docs/test-registry.md` are gated behind a
+  20-second download nobody ran. Commissioned to `data-ops` rather than designed around.
+- **2026-07-30, ranker.** `injuries` and `depth_charts_weekly` both stop at **2024**. No N−1
+  availability feature can be built for a 2026 projection today. Found by inventory, not by failure.
+- **2026-07-30, ranker.** Oracle ladder (exploratory, unregistered): perfect foresight of games
+  played alone, with zero knowledge of talent, beats expert consensus at all four positions. Logged
+  as a hypothesis about where to look; sent to `strategist` to register or reject, not acted on.
