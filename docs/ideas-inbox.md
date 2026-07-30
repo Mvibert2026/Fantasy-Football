@@ -1111,3 +1111,52 @@ thread ID and no `tools/founder_requests.py` run; hand-typing an ID refused (043
 ADR-048). Also could not query `nfl.db` for our own fantasy-relevant injury base rate, which would
 have been the single most useful number in the report. Nothing committed.
 
+- 2026-07-29 · (researcher, component projections + FR-053) **Decided, not escalated — five calls.**
+  Artifact: `docs/research/component-projections-and-fr-053-features-2026-07-29.md`.
+  (a) **Proceeded despite the dispatch naming a file this worktree does not have.**
+  `docs/founder-requests/FR-053-*.md` is absent from this branch (`claude/pm-agent-setup-gobxa0`,
+  which is also missing FR-048 through FR-052). It exists in the main checkout at
+  `/home/user/Fantasy-Football/docs/founder-requests/` and I read it there. **This worktree is behind
+  main and a dispatch pointed at a file it could not see** — the same class of failure the frontend
+  session hit above with FR-035/036. Did not halt; read across and continued.
+  (b) **Answered the licensing question as the deliverable rather than returning a vendor list.**
+  Component projections turn out to be easy to obtain and impossible to redistribute: Sleeper's
+  undocumented `api.sleeper.com/projections/nfl/2026` serves full component lines for 2026 free
+  (provider Rotowire, robots permit it), FantasyPros Premium sells them at $8.99/mo — and **both are
+  personal-use-only, redistribution expressly forbidden.** So FR-040's "definitively dead" was
+  misdiagnosed: the blocker is not missing data, it is that we host publicly.
+  (c) **Recommended against a feature the founder observed in Yahoo.** "Selectable projection source"
+  should not be built: a 2014–2025, 11-source MAE study finds the average beats individual sources in
+  69% of head-to-head comparisons, individual sources are volatile year to year, and **Yahoo's own
+  free default is a consensus** — the switcher is its paid upsell. The productive version is thread
+  086's existing #1 (render the spread), not a new control.
+  (d) **Flagged a design constraint on a feature I otherwise endorsed.** The "your turn — Nth pick"
+  divider is cheap and we already compute the underlying survival probability, but drawn as a hard
+  line it asserts a binary over a smooth distribution — the unearned confidence `CLAUDE.md` §11
+  forbids. Recommended a band or a labelled line, not a rule.
+  (e) **Left eleven `[GAP]`s empty rather than plausible.** Notably: every commercial price (all four
+  are sales-call only, and I did not email anyone), Sleeper ToS §11.1's prohibited-conduct list
+  (truncated by the fetch tool — I will not characterise a clause I did not see), and **any user
+  demand evidence for the divider**, where I found nothing in either direction and said so.
+  **Recorded and stopped, not routed around:** `www.nfl.com` publishes the single best-matching
+  component column set found — it carries return TDs and 2-point conversions, which even Sleeper's
+  feed lacks — and its ToS prohibits *"systematic retrieval of data or other content … to create or
+  compile … a collection, compilation, database."* One assessment fetch was made before reading the
+  terms; **no ingestion is proposed and the host is recorded as ToS-blocked.** Yahoo/ESPN/CBS not
+  attempted. `api.fantasynerds.com` and `www.fantasynerds.com` both 403'd; MySportsFeeds did not
+  render; Rotowire has no findable licensing page — three candidates unreachable, and their absence
+  is not evidence they are unsuitable.
+  **Escalating, two live licensing conditions the public deploy may have crossed — flagged, not
+  resolved:** (i) `board.json` is served publicly and carries FantasyPros-derived `consensus_rank`
+  with `board_source: fantasypros_csv_2026draft`, while FantasyPros' terms permit *"a single copy
+  made for personal use only"* and forbid republication; (ii) **FR-023's FFC permission says in its
+  own text "Scoped to private use by one person. Void if the product ever reaches a second human"**,
+  and `CURRENT-STATE.md` records the app as public by founder choice. Contradictions between a
+  documented condition and a documented state go to PM and probably to the founder, not to me.
+  **Also worth PM's attention:** five founder screenshots of a live Yahoo draft room produced more
+  competitive fact than two full agent research passes. Yahoo blocks agents by name; the founder is
+  not blocked. That asymmetry is a cheap standing capability nobody has named.
+  **No shell in this session** (tools were Read/Write/Edit/Glob/Grep/WebSearch/WebFetch — no Bash),
+  so **no allocator access and nothing could be committed.** The handoff body is staged unallocated at
+  `docs/research/HANDOFF-BODY-unallocated-component-projections-2026-07-29.md` with the exact command,
+  following thread 086's precedent. Hand-typing an ID was refused (043/049/053, ADR-048).
