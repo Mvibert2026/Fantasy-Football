@@ -305,6 +305,7 @@ tier is ambiguous, say which tier you think it is and why before starting.
 | `docs/decisions.md` | Architecture decision log — what changed, when, and the reasoning |
 | `docs/status.md` | **Frozen 2026-07-28**, historical archive only. New session narratives: `docs/status/` (one dated file per session, `tools/status_log.py sync` generates `docs/status/INDEX.md`) |
 | `docs/statistical-guardrails.md` | Methodology reference expanding §6 into concrete, checkable procedures. Read before running any backtest; every backtest report must state which checks were applied |
+| `docs/product-explanations.md` | Why the product behaves the way it does, in founder-facing language, one idea per entry, each tagged with the surface it would appear on (tour / tooltip / hover). Append to it whenever a session explains a behaviour in chat — chat is discarded, this is not. Source content for the eventual in-app product tour and tooltips (FR-119; **do not build the tour**, the founder deferred it) |
 | `docs/assistant-context.md` | Curated, current-state-only summary for the in-app assistant's "why" questions. One paragraph per settled decision, no history, no superseded numbers. Edited in place when an ADR supersedes something in it — never appended to. The assistant must read this instead of `decisions.md`/`test-registry.md`, both of which contain figures later entries overwrote |
 
 Keep this file lean. When a section outgrows a paragraph or two, move it to a companion doc and
