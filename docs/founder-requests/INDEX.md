@@ -9,7 +9,7 @@ Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests
 
 ---
 
-## NEW — 55
+## NEW — 53
 
 | ID | Subject | Raised | Source |
 |---|---|---|---|
@@ -49,8 +49,6 @@ Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests
 | [FR-072](FR-072-thread-hygiene-process-is-failing-24-of-38-threa.md) | Thread hygiene process is failing 24 of 38 threa | 2026-07-30 | chat 2026-07-30, PM session |
 | [FR-074](FR-074-backfill-the-rest-of-historical-adp-across-ffc-f.md) | Backfill the rest of historical adp across ffc f | 2026-07-30 | chat 2026-07-30, PM session (feedback batch) |
 | [FR-075](FR-075-build-player-archetype-and-surface-it-high-on-th.md) | Build player archetype and surface it high on th | 2026-07-30 | chat 2026-07-30, PM session (feedback batch) |
-| [FR-076](FR-076-chatbot-must-see-what-the-front-end-already-disp.md) | Chatbot must see what the front end already disp | 2026-07-30 | chat 2026-07-30, PM session (feedback batch) |
-| [FR-077](FR-077-chatbot-needs-standing-chat-box-and-answer-area.md) | Chatbot needs standing chat box and answer area | 2026-07-30 | chat 2026-07-30, PM session (feedback batch) |
 | [FR-078](FR-078-does-early-rb-underperformance-support-zero-rb.md) | Does early rb underperformance support zero rb | 2026-07-30 | chat 2026-07-30, PM session (feedback batch) |
 | [FR-079](FR-079-last-few-seasons-must-render-in-the-selected-sco.md) | Last few seasons must render in the selected sco | 2026-07-30 | chat 2026-07-30, PM session (feedback batch) |
 | [FR-080](FR-080-light-theme-is-too-bright-and-needs-shading.md) | Light theme is too bright and needs shading | 2026-07-30 | chat 2026-07-30, PM session (feedback batch) |
@@ -91,7 +89,7 @@ _None._
 | [FR-062](FR-062-yahoo-league-connection-if-no-api-access-what-ar.md) | Yahoo league connection if no api access what ar | 2026-07-30 | chat 2026-07-30, PM session |
 | [FR-092](FR-092-figure-out-the-coordinator-table-play-callers-is.md) | Figure out the coordinator table play callers is | 2026-07-30 | PM dispatch, data-ops session 2026-07-30 |
 
-## SHIPPED — 13
+## SHIPPED — 15
 
 | ID | Subject | Raised | Source |
 |---|---|---|---|
@@ -107,6 +105,8 @@ _None._
 | [FR-055](FR-055-draft-mode-board-needs-column-headers.md) | Draft mode board needs column headers | 2026-07-29 | chat 2026-07-29, PM session |
 | [FR-056](FR-056-personal-use-confirmed-get-the-component-project.md) | Personal use confirmed get the component project | 2026-07-29 | chat 2026-07-29, PM session |
 | [FR-058](FR-058-the-recommendation-must-explain-itself-whenever.md) | The recommendation must explain itself whenever | 2026-07-29 | chat 2026-07-29, PM session |
+| [FR-076](FR-076-chatbot-must-see-what-the-front-end-already-disp.md) | Chatbot must see what the front end already disp | 2026-07-30 | chat 2026-07-30, PM session (feedback batch) |
+| [FR-077](FR-077-chatbot-needs-standing-chat-box-and-answer-area.md) | Chatbot needs standing chat box and answer area | 2026-07-30 | chat 2026-07-30, PM session (feedback batch) |
 | [FR-093](FR-093-historical-adp-get-the-rest-of-it-ffc-has-differ.md) | Historical adp get the rest of it ffc has differ | 2026-07-30 | PM dispatch, data-ops session 2026-07-30 |
 
 ## DECLINED — 0

@@ -283,11 +283,34 @@ const filterBoard: Template = {
   },
 };
 
+/**
+ * FR-076 root-cause finding, confirmed by a test before this guard existed:
+ * the founder's own reported failing question -- "what are my likely choices
+ * and trade-offs at my next pick" -- matches this regex's original, unguarded
+ * form (`^what are ...`) and was captured whole as a "term," routing it to
+ * the export lane's "not in the glossary" message rather than ever reaching
+ * the reasoning lane at all. That is a sharper, more literal explanation of
+ * the founder's exact complaint than "the reasoning lane lacked page
+ * context" -- both were true, and both needed fixing. Glossary terms are
+ * short noun phrases (checked against the real export: 1-4 words, "VBD",
+ * "confidence interval", "structural adjustment", "availability
+ * probability"), so a captured phrase longer than that is a real question in
+ * "what ... " clothing, not a definition lookup, and is rejected here rather
+ * than swallowed.
+ */
+const MAX_DEFINE_TERM_WORDS = 4;
+
 const defineTerm: Template = {
   id: 'define_term',
   example: 'what is VBD',
   description: 'Definitions, straight from the glossary export.',
-  match: (q) => q.match(/^(?:what(?:'s| is| are| does)|define)\s+(?:an?\s+|the\s+)?(.+?)(?:\s+mean)?\s*\??$/i),
+  match: (q) => {
+    const m = q.match(/^(?:what(?:'s| is| are| does)|define)\s+(?:an?\s+|the\s+)?(.+?)(?:\s+mean)?\s*\??$/i);
+    if (!m) return null;
+    const term = (m[1] ?? '').trim();
+    if (!term || term.split(/\s+/).length > MAX_DEFINE_TERM_WORDS) return null;
+    return m;
+  },
   run: (m, ctx) => {
     const needle = (m[1] ?? '').trim().toLowerCase();
     const runId = runIdOf(ctx.data.manifest, 'glossary');
@@ -369,6 +392,17 @@ export const TEMPLATES: readonly Template[] = [
   filterBoard,
   defineTerm,
 ];
+
+/**
+ * FR-077 ("shrink the number of suggested or relevant questions to 3 tops"):
+ * the starter buttons shown in the dock, not the full set of seven templates
+ * this file can still match -- a typed question can still hit any template in
+ * `TEMPLATES` above, this only trims what's offered unprompted. Picked to
+ * cover three distinct capabilities (board arithmetic, a head-to-head
+ * comparison, a glossary lookup) rather than the first three declared, so the
+ * three buttons don't all look like the same kind of question.
+ */
+export const SUGGESTED_TEMPLATES: readonly Template[] = [bestAvailable, comparePlayers, defineTerm];
 
 export function matchTemplate(question: string): { template: Template; m: RegExpMatchArray } | null {
   for (const template of TEMPLATES) {

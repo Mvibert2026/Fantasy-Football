@@ -4,6 +4,7 @@ import { NotBuilt } from './components/shell/NotBuilt';
 import { NAV_MAIN, SOON_ITEMS, Sidebar, type ScreenId } from './components/shell/Sidebar';
 import { TopBar, type Mode } from './components/shell/TopBar';
 import { useTheme } from './components/shell/useTheme';
+import type { ContextItem } from './assistant/reasoning';
 import { Assistant } from './views/Assistant';
 import { Availability } from './views/Availability';
 import { Board } from './views/Board';
@@ -63,6 +64,14 @@ export function App() {
   // assistant itself was already mounted on this screen before this thread --
   // see the App() doc comment above -- this only enriches its context string.
   const [draftPick, setDraftPick] = useState<number | null>(null);
+  // FR-076: the bounded page-context bundle DraftRoom reports for its own
+  // current render (see DraftRoom.tsx's onAssistantContext effect), handed to
+  // the assistant so a question like "what are my choices at my next pick"
+  // can be answered from the same values already on screen instead of "the
+  // backend doesn't have that." [] outside Draft mode -- Assistant.tsx passes
+  // an empty bundle through to the reasoning lane exactly like having no page
+  // context at all, not a stale one from a prior screen.
+  const [assistantPageContext, setAssistantPageContext] = useState<ContextItem[]>([]);
 
   const [leagues, setLeagues] = useState<SelectableLeague[]>([{ id: DEFAULT_LEAGUE_ID, label: 'Default league' }]);
   const [leagueId, setLeagueId] = useState<string>(DEFAULT_LEAGUE_ID);
@@ -109,6 +118,7 @@ export function App() {
     setData(null);
     setError(null);
     setFocusedPlayer(null);
+    setAssistantPageContext([]);
     loadDataset(leagueId).then(
       (d) => {
         if (!cancelled) setData(d);
@@ -163,6 +173,7 @@ export function App() {
     setMode(next);
     setFocusedPlayer(null);
     setDraftPick(null);
+    setAssistantPageContext([]);
   }
 
   // The top bar -- and the league switcher inside it -- stays mounted through
@@ -189,7 +200,14 @@ export function App() {
     );
   } else if (mode === 'draft') {
     body = (
-      <DraftRoom data={data} rows={rows} league={league} onOpenPlayer={setFocusedPlayer} onPickContext={setDraftPick} />
+      <DraftRoom
+        data={data}
+        rows={rows}
+        league={league}
+        onOpenPlayer={setFocusedPlayer}
+        onPickContext={setDraftPick}
+        onAssistantContext={setAssistantPageContext}
+      />
     );
   } else if (mode === 'season') {
     body = <NotBuilt title="Season mode" body="Season mode is not built in this app yet." />;
@@ -261,7 +279,7 @@ export function App() {
 
       {data && rows && league ? (
         <AssistantDock where={assistantWhere}>
-          <Assistant data={data} rows={rows} league={league} />
+          <Assistant data={data} rows={rows} league={league} pageContext={assistantPageContext} />
         </AssistantDock>
       ) : null}
     </div>

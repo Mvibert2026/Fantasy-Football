@@ -44,11 +44,16 @@ Binding rules:
 5. Respect the confidence level attached to each context item. An item marked "low" must not be phrased as assertively as one marked "high". Where an item carries an interval, a sample size or a status of "exploratory", say so in the same sentence as the claim -- never as a trailing caveat.
 6. Answer the question that was asked. Lead with the answer, then what it is made of.
 7. Prefer plain words to the project's internal vocabulary. The reader is not a developer.
-8. Be concise. Two or three sentences unless the question genuinely needs more.`;
+8. Be concise. Two or three sentences unless the question genuinely needs more.
+9. Earlier turns in this conversation, if any, are for continuity only -- so "he", "that pick", "the other one" can resolve to something said earlier. They are never a source of facts. Every claim in THIS answer must still be traceable to an item in THIS turn's retrieved context, exactly as rules 1-4 require, even when a prior turn discussed the same player or number.`;
 
 type ReasoningRequest = {
   question: string;
   context: Array<{ id: string; text: string; confidence: string; source_path: string }>;
+  /** FR-077: prior turns in this dock session, oldest first, so a follow-up
+   *  question can carry a referent from the conversation. Bounded client-side
+   *  (ui/assistant/reasoning.ts's boundHistory) before it ever reaches here. */
+  history?: Array<{ question: string; answerText: string }>;
 };
 
 function json(res: ServerResponse, status: number, body: unknown) {
@@ -117,6 +122,31 @@ function explainUpstreamError(err: unknown): { reason: string; detail: string } 
   };
 }
 
+/**
+ * FR-077: turns prior Q/A pairs into alternating user/assistant messages ahead
+ * of the current turn, so the model can resolve a follow-up's referents ("what
+ * about him") without those prior turns ever being treated as retrieved
+ * context -- rule 9 above states that constraint to the model directly; this
+ * function is what makes the shape of the request match it (history messages
+ * carry no context block, only the current turn does).
+ */
+function buildMessages(
+  parsed: ReasoningRequest,
+  contextBlock: string,
+): Array<{ role: 'user' | 'assistant'; content: string }> {
+  const messages: Array<{ role: 'user' | 'assistant'; content: string }> = [];
+  for (const turn of parsed.history ?? []) {
+    if (!turn.question?.trim() || !turn.answerText?.trim()) continue;
+    messages.push({ role: 'user', content: turn.question });
+    messages.push({ role: 'assistant', content: turn.answerText });
+  }
+  messages.push({
+    role: 'user',
+    content: `Retrieved context:\n${contextBlock}\n\nQuestion: ${parsed.question}`,
+  });
+  return messages;
+}
+
 export function reasoningProxy(apiKey: string | undefined): Plugin {
   return {
     name: 'prep-reasoning-proxy',
@@ -179,12 +209,7 @@ export function reasoningProxy(apiKey: string | undefined): Plugin {
             model: MODEL,
             max_tokens: MAX_TOKENS,
             system: SYSTEM,
-            messages: [
-              {
-                role: 'user',
-                content: `Retrieved context:\n${contextBlock}\n\nQuestion: ${parsed.question}`,
-              },
-            ],
+            messages: buildMessages(parsed, contextBlock),
           });
 
           // A refusal returns HTTP 200 with an empty or partial content array, so

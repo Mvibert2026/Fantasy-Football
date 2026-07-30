@@ -840,3 +840,25 @@ surfaces a derived archetype label on a player card is left as an explicit `[GAP
 help-doc reading found none, but that is absence of evidence, and the three blocked hosts are
 exactly the ones most likely to have one.
 
+## 2026-07-30 — frontend, assistant page-context + chat surface (dispatched as "FR-080"/"FR-081"): decided without asking
+
+1. **The dispatch prompt named "FR-080" and "FR-081" for these two problems. Neither exists under
+   that number.** `python tools/founder_requests.py new` (the correct allocator) assigned FR-072/
+   FR-073 in this worktree's own view of the backlog — which itself collided with FR-072 files
+   already committed on three *other* branches (`adp-vs-production`, `extend-the-bottom-up-
+   component-model`, `thread-hygiene`) and an FR-073 on a fourth. Scanning every local+remote ref
+   (the same widened check `tools/founder_requests.py::next_free_id` does) found the real matches:
+   `FR-076-chatbot-must-see-what-the-front-end-already-disp.md` (Problem 1, this session's
+   FR-081) and `FR-077-chatbot-needs-standing-chat-box-and-answer-area.md` (Problem 2, this
+   session's FR-080), both `STATUS: NEW`, both opened 2026-07-30 by a PM session, both quoting
+   the exact founder words this dispatch quotes — on branch `claude/pm-agent-setup-gobxa0`, not
+   yet merged into the branch this worktree cloned from. Deleted the two erroneously-allocated
+   FR-072/FR-073 stub files before they were ever committed, copied FR-076/FR-077's real content
+   into this worktree via `git show <branch>:<path>` (no merge, no rebase — just reading a file
+   at a ref), and worked those two files instead. This is not a new collision added to the pile;
+   it is the same "PM's own allocator can't see sibling worktrees" problem `docs/handoffs/
+   README.md` already documents for threads, now confirmed to affect `docs/founder-requests/`
+   too despite that tool's already-widened ref scan (the sibling branch simply wasn't fetched
+   into this worktree's git history at clone time, so no ref-scan can see it). Flagging for PM:
+   the founder-request allocator's collision-avoidance is only as good as this worktree's fetched
+   refs, and a freshly cloned worktree can be behind a same-day sibling by a wide margin.

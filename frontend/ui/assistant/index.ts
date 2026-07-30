@@ -4,8 +4,8 @@ import type { Dataset } from '../data/load';
 import { assertTagged, type Claim } from './claim';
 import { classify, type Lane } from './intent';
 import { NO_CORPUS_MESSAGE, runNewsLane } from './news';
-import { runReasoningLane } from './reasoning';
-import { matchTemplate, TEMPLATES } from './templates';
+import { runReasoningLane, type ContextItem, type ConversationTurn } from './reasoning';
+import { matchTemplate, SUGGESTED_TEMPLATES, TEMPLATES } from './templates';
 
 /**
  * The single entry point. Classify, dispatch, and validate.
@@ -33,9 +33,23 @@ export interface AssistantContext {
   data: Dataset;
   rows: BoardRow[];
   league: LeagueConfig;
+  /**
+   * FR-076: the bounded, always-current snapshot of what the Draft Room screen
+   * is showing right now (`ui/assistant/pageContext.ts`), or `[]` outside an
+   * active draft. Only the reasoning lane consumes this -- the export/news
+   * lanes are already deterministic computation over the same live `rows`
+   * this context carries, so they have no gap this closes.
+   */
+  pageContext?: readonly ContextItem[];
 }
 
-export async function ask(question: string, ctx: AssistantContext): Promise<Answer> {
+export async function ask(
+  question: string,
+  ctx: AssistantContext,
+  /** Prior turns in this conversation, oldest first -- see `ConversationTurn`'s
+   *  doc comment in `./reasoning` for what this is and is not for. */
+  history: readonly ConversationTurn[] = [],
+): Promise<Answer> {
   const { lane, rationale } = classify(question);
   const base = { question, lane, rationale };
 
@@ -64,7 +78,7 @@ export async function ask(question: string, ctx: AssistantContext): Promise<Answ
     return { ...base, claims: assertTagged(result.claims) };
   }
 
-  const outcome = await runReasoningLane(ctx.data, ctx.rows, question);
+  const outcome = await runReasoningLane(ctx.data, ctx.rows, question, ctx.pageContext ?? [], history);
   if (outcome.status === 'ok') {
     return { ...base, claims: assertTagged(outcome.claims) };
   }
@@ -81,5 +95,5 @@ function unmatchedNotice(): string {
   );
 }
 
-export { TEMPLATES };
-export type { Lane };
+export { TEMPLATES, SUGGESTED_TEMPLATES };
+export type { Lane, ContextItem, ConversationTurn };
