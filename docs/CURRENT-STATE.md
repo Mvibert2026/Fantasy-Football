@@ -691,12 +691,28 @@ pass or is marked as unverified.
    `schedules` also added (7,548 rows, 1999-2026; 2026 has 272 rows, unplayed, `home_score`/
    `away_score`/`result` honestly NULL). Coaching staff and odds are still not ingested — separate,
    unstarted work (§5 sources table, coach identity vs coordinator duty distinction).
-10. **Three nflverse pulls worth making**, from the 13 of 23 loaders this repo never calls
-    (`docs/research/nflverse-unused-data-audit-2026-07-29.md`): `load_schedules()` head-coach
-    columns (1999-2026, closes coach *identity* but not coordinator duty), `load_participation()`
-    route columns (2016-2025, a documented proxy for the route gap — must be labelled a proxy), and
-    `load_ff_opportunity()` (2006-2025 pre-fitted xFP, needs Statistician sign-off before it is a
-    ranking input). Nothing ingested yet.
+10. **RESOLVED 2026-07-30 (`data-ops`), six-loader sweep.** Per
+    `docs/research/analyst-factor-sweep-2026-07-30.md` §1, ingested:
+    `participation` (`load_participation`, 2016-2025, 478,989 rows — the real source for registry
+    #16/#17, mistagged `nflverse:FTN`, which has no per-player columns at all);
+    `ff_opportunity` (`load_ff_opportunity`, 2006-2025, 105,905 rows — registry #18 xFP, a free
+    prebuilt versioned xgboost model, re-costed H→download; `model_version` requested literal
+    recorded per row, source exposes no resolved semver);
+    `pfr_advstats_{pass,rush,rec,def}` (`load_pfr_advstats`, 2018-2025, 121,954 rows total —
+    registry #23 O-line, routes around the known PFR-scrape 403);
+    `contracts` (`load_contracts`, 51,772 rows — registry #27, a **present-day snapshot, not a time
+    series**; `is_active` must never be read as historical status, flagged heavily in the ingest
+    script's docstring);
+    `combine` (`load_combine`, draft classes 2000-2026, 8,968 rows — registry N34, entered with no
+    predictive prior per the researcher);
+    `trades`/`officials` (4,975 / 21,900 rows, unused project-wide, recorded per instruction).
+    None ingested a `season`-typed as_of_date beyond what the source natively carries — see each
+    script's docstring for its specific time-key reasoning. `participation`, `ff_opportunity`, and
+    all four `pfr_advstats_*` tables carry season 2025 rows (sealed holdout, in-progress); a future
+    backtest must not treat them as train/tune input outside pre-registered holdout context.
+    `tools/data_freshness_check.py` extended to watch all eight new tables (exit 0 before and
+    after). Statistician sign-off on `ff_opportunity` as a ranking input is still a separate,
+    unstarted decision — ingestion only here (`CLAUDE.md` §2/§9).
 16. **Per-player COMPONENT projections now exist, personal-use only** (2026-07-29, data-ops,
     thread 092, FR-056 — founder ruled "personal use, proceed").
     `src/ingest_sleeper_projections.py` pulls `api.sleeper.com/projections/nfl/2026`
