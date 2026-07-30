@@ -309,6 +309,63 @@ def build_report(db_path: Path, export_dir: Path, today: Optional[dt.date] = Non
                   "not an ingestion fix.",
         ))
 
+        # nflverse tables added 2026-07-30, six-loader sweep (FR-2026-07-30-
+        # widen-the-ranking-input-list; docs/research/analyst-factor-sweep-
+        # 2026-07-30.md). Season-grain, same reasoning as the pbp/rosters_weekly
+        # block above -- none of these carry a real as_of_date either.
+        rows.append(_table_max_season_row(
+            conn, "participation", "SELECT MAX(season) FROM participation", (),
+            warn_at=0, max_age=1, owner="data-ops, automated (src/ingest_participation.py)",
+        ))
+        rows.append(_table_max_season_row(
+            conn, "ff_opportunity", "SELECT MAX(season) FROM ff_opportunity", (),
+            warn_at=0, max_age=1, owner="data-ops, automated (src/ingest_ff_opportunity.py)",
+        ))
+        for stat_type in ("pass", "rush", "rec", "def"):
+            rows.append(_table_max_season_row(
+                conn, f"pfr_advstats_{stat_type}",
+                f'SELECT MAX(season) FROM pfr_advstats_{stat_type}', (),
+                warn_at=0, max_age=1, owner="data-ops, automated (src/ingest_pfr_advstats.py)",
+            ))
+        # contracts and trades expose no reliable season-of-fetch upper bound
+        # worth gating on (contracts is a rolling present-day snapshot with no
+        # season column at all in the freshness sense -- see the ingest
+        # script's docstring; trades' season column tracks trade year, not
+        # fetch recency). combine and officials are checked on season too but
+        # both are effectively static/backfill sources, not daily feeds --
+        # included for visibility, not as a hard gate (wide max_age).
+        rows.append(_table_max_date_row(
+            conn, "contracts:ingested_at",
+            "SELECT MAX(ingested_at) FROM contracts", (),
+            warn_at=30, max_age=60,
+            owner="data-ops, automated (src/ingest_contracts.py) -- rolling "
+                  "present-day snapshot; is_active is only meaningful near "
+                  "this ingested_at, never for historical seasons",
+            today=today,
+        ))
+        rows.append(_table_max_date_row(
+            conn, "trades:ingested_at",
+            "SELECT MAX(ingested_at) FROM trades", (),
+            warn_at=30, max_age=90,
+            owner="data-ops, automated (src/ingest_trades.py) -- unused project-wide",
+            today=today,
+        ))
+        rows.append(_table_max_date_row(
+            conn, "officials:ingested_at",
+            "SELECT MAX(ingested_at) FROM officials", (),
+            warn_at=30, max_age=90,
+            owner="data-ops, automated (src/ingest_officials.py) -- unused project-wide",
+            today=today,
+        ))
+        rows.append(_table_max_date_row(
+            conn, "combine:ingested_at",
+            "SELECT MAX(ingested_at) FROM combine", (),
+            warn_at=60, max_age=180,
+            owner="data-ops, automated (src/ingest_combine.py) -- new draft "
+                  "classes appear ~annually, spring; unused project-wide",
+            today=today,
+        ))
+
         gaps = capture_without_ingest_checks(conn)
     finally:
         conn.close()
