@@ -211,9 +211,24 @@ QB / 3 WR / 2 RB / 1 TE / 2 FLEX (W-R-T) / 1 DEF, 6 bench, 1 IR. Both are requir
 tier and replacement-level calculations. (Two other leagues exist with different scoring/team
 counts, still unconfirmed — see `docs/founder-requests.md` FR-012.)
 
-The yardage bonuses matter more than they look — they reward ceiling outcomes over floor, which
-should influence how variance is valued in rankings. Do not silently drop bonuses when
-implementing the scoring engine.
+Do not silently drop the yardage bonuses when implementing the scoring engine — they are real points
+and the engine must compute them.
+
+**Retired 2026-07-30, founder's decision.** This section previously claimed the bonuses "reward
+ceiling outcomes over floor, which should influence how variance is valued in rankings." The
+arithmetic was never in doubt; the *operational* claim is dead, on four independent measurements:
+
+| Instrument | Result |
+|---|---|
+| WR ceiling ablation | Perfect foresight of every WR's bonus points would improve rank correlation by **+0.026**. That is the hard ceiling on the whole idea; the model built to capture it got +0.0002. |
+| RB stacking-bonus transfer | Worth 0.57%–2.39% of realised points; moves **three players by three or more rank positions across 4,792 player-seasons.** |
+| Per-player dispersion in the exceedance curve | NULL at every threshold, family and shrinkage — with both arms given the *realised* mean, the most favourable setting available. |
+| Skewness and kurtosis (the founder's own proposed mechanism) | Fails upstream: shape does not persist year to year, six of six NULL. Empirical-Bayes τ̂² driven to **exactly zero** — no between-player variance in true shape beyond sampling noise. An oracle arm using the target season's own shape makes bonus error *worse*. |
+
+**Do not re-derive a variance preference from the bonus structure.** It has been tested four ways,
+including at its most favourable setting, and there is nothing there. Sources:
+`docs/ranking/component-model-wr-pass-1.md` §6.2, `component-model-rb-qb-te-pass-1.md` §6,
+`fr086-volatility.md` §3.4, and `docs/strategic-insights.md` §5b.
 
 ---
 

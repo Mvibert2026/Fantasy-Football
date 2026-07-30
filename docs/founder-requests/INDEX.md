@@ -5,11 +5,11 @@ Per-request files in this directory are the source of truth. Edit a request's ow
 `STATUS:` line, then re-run sync. Protocol: [`README.md`](README.md).
 Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests.md).
 
-**94 requests since freeze.**
+**100 requests since freeze.**
 
 ---
 
-## NEW — 55
+## NEW — 60
 
 | ID | Subject | Raised | Source |
 |---|---|---|---|
@@ -67,7 +67,12 @@ Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests
 | [FR-106](FR-106-does-age-matter-more-or-less-by-position-and-doe.md) | Does age matter more or less by position and doe | 2026-07-30 | chat 2026-07-30, PM session |
 | [FR-107](FR-107-has-vegas-been-used-in-the-bottom-up-model-at-al.md) | Has vegas been used in the bottom up model at al | 2026-07-30 | chat 2026-07-30, PM session |
 | [FR-108](FR-108-making-the-playoff-outranks-playoff-week-schedul.md) | Making the playoff outranks playoff week schedul | 2026-07-30 | chat 2026-07-30, PM session |
-| [FR-109](FR-109-the-vbd-arm-in-the-zero-rb-sim-may-be-wrong-and-.md) | The vbd arm in the zero rb sim may be wrong and  | 2026-07-30 | chat 2026-07-30, PM session |
+| [FR-110](FR-110-chat-window-needs-to-persist-and-scroll.md) | Chat window needs to persist and scroll | 2026-07-30 | chat 2026-07-30, PM session (screenshot feedback) |
+| [FR-111](FR-111-draft-headers-still-do-not-line-up.md) | Draft headers still do not line up | 2026-07-30 | chat 2026-07-30, PM session (screenshot feedback) |
+| [FR-112](FR-112-insights-tab-timing.md) | Insights tab timing | 2026-07-30 | chat 2026-07-30, PM session (screenshot feedback) |
+| [FR-113](FR-113-player-profile-information-order-and-density.md) | Player profile information order and density | 2026-07-30 | chat 2026-07-30, PM session (screenshot feedback) |
+| [FR-114](FR-114-remove-code-and-sourcing-clutter-across-the-site.md) | Remove code and sourcing clutter across the site | 2026-07-30 | chat 2026-07-30, PM session (screenshot feedback) |
+| [FR-115](FR-115-value-of-next-flex-te-over-suggested-by-pure-vbd.md) | Value of next flex te over suggested by pure vbd | 2026-07-30 | chat 2026-07-30, PM session (screenshot feedback) |
 
 ## SCOPING — 1
 
@@ -140,4 +145,5 @@ _None._
 | [FR-100](FR-100-rank-positions-by-volatility-per-roster-slot.md) | Rank positions by volatility per roster slot | `ANSWERED` |
 | [FR-101](FR-101-use-points-distribution-tails-for-volatility-rat.md) | Use points distribution tails for volatility rat | `ANSWERED` |
 | [FR-103](FR-103-do-not-store-assistant-chat-logs-standing-constr.md) | Do not store assistant chat logs standing constr | `DECIDED — DO NOT BUILD` |
+| [FR-109](FR-109-the-vbd-arm-in-the-zero-rb-sim-may-be-wrong-and-.md) | The vbd arm in the zero rb sim may be wrong and  | `ANSWERED — RANKER 2026-07-30; TWO FOLLOW-UPS ROUTED TO STRATEGIST (SEE RESPONSE)` |
 
