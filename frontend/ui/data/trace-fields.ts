@@ -33,7 +33,7 @@ export interface TraceField {
 }
 
 /** The contract version the registry below is pinned against. */
-export const TRACE_CONTRACT = '1.16.0';
+export const TRACE_CONTRACT = '1.17.0';
 
 /**
  * Changes to the user-visible trace surface, newest first.
@@ -47,6 +47,19 @@ export const TRACE_CHANGELOG: ReadonlyArray<{
   kind: 'rename' | 'value' | 'added' | 'removed';
   summary: string;
 }> = [
+  {
+    version: '1.17.0',
+    kind: 'added',
+    summary:
+      'Pin moves 1.16.0 -> 1.17.0 (2026-07-30 backend, thread 104). `availability.json` gains ' +
+      '`client_simulation_parameters.player_ranks` -- the per-player rank the availability model ' +
+      'actually runs its opponent model and the user\'s own best-available pick against, keyed to ' +
+      'match `by_player`. It unblocks the browser-side recompute, which could not be built on ' +
+      '`board.json:consensus_rank`: those are different rankings from different sources, and 73 of ' +
+      'the top 80 players sit in a different order. Also adds an `adp_central_tendency` block, ' +
+      'explicitly marked `preparatory_switch_not_yet_shipped` -- the model has NOT moved to ADP; ' +
+      'that decision is gated on the M0 data defect. Additive only, nothing renamed or removed.',
+  },
   {
     version: '1.16.0',
     kind: 'rename',

@@ -115,3 +115,37 @@ sign — which bears directly on criterion (a)'s materiality floor before any si
 
 Thread allocated by `tools/handoffs.py sync` per the strategist's note; no id was hand-typed.
 
+---
+
+### strategist · 2026-07-30
+
+**Priority raised, and the ordering question you asked in
+`docs/handoffs/2026-07-30-pick-18-recommendation-defect-traced-reproduced.md` is answered there:
+run PR-007 FIRST.** This reply is the pointer, not a second answer — the reasoning lives in that
+thread's `### strategist · 2026-07-30` §2.
+
+Two things changed since 2026-07-29 that bear on this thread specifically:
+
+1. **The `−25` was observed failing in production**, on the founder's own screen at pick 18. Ranker
+   reproduced it against the real `board.json`: Allen VBD 113.71, McBride 49.01, raw gap 64.70; the
+   constants move the differential by 43.00 and the recommendation still lands on Allen by 21.70.
+   `PR-007:499` predicted **DELETE on redundancy, margin 0 to +15, failing the +20 floor** — that
+   prediction now has a live, founder-visible instance behind it. Nothing about §4 moves; it is
+   frozen and stays frozen. This is priority, not a threshold change.
+2. **A second registration now depends on this one's census and seeds.**
+   `docs/ranking/suggested-pick-rule-precommit.md` (family `F-OPPORTUNITY-COST-RULE`, m = 3) tests
+   an opportunity-cost decision rule against `vbd_plain` and against `vbd_all4`. Its fold set is
+   inherited from **your §6 census**, and its arms must run on the **same CRN seeds** as PR-007's so
+   the two sets of margins are comparable.
+
+**Two registrations, one execution, PR-007's arms first. Do not amend PR-007 to absorb the new
+arms** — it is frozen at `content_hash: sha256:bdcd090e...` and an amendment after seeing data
+irreversibly demotes it to exploratory. Separate family, separate denominator, shared seeds.
+
+**And the reason the order is not arbitrary:** if PR-007 deletes all three as §9 predicts, the
+shipped recommender collapses to `vbd_plain`, which is already the new family's comparator — so its
+H3 (`qg_rule − vbd_all4`) becomes redundant and m drops 3 → 2. **Removing a test before a run is
+free; adding one after reopens the family.** That asymmetry is what decides the order.
+
+`STATUS` unchanged (`OPEN`, `TO: ranker`) — this is the originator adding context, not a resolution.
+

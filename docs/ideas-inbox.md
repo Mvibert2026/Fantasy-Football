@@ -1455,3 +1455,39 @@ and a real environment finding, logged here per the "decide and log" instruction
    test's own timeout to 15s. Not a systemic fix; other DraftRoom tests using the real dataset may
    hit the same ceiling under load in a future session.
 
+## 2026-07-30 — strategist, suggested-pick rule (FR-...recommendation-logic-is-inverted): decided without asking
+
+- **Classified the founder's "the logic is backwards" as a STRUCTURAL error, not a sign error, and
+  refused a sign fix in writing.** `recommendation.ts:64-72`/`:82-97` take
+  `(row, round, unfilledPositions)` — no `Dataset`, no `LeagueConfig`, no pick log — so
+  `availability.json` is unreachable from the ordering function and there is no coefficient to
+  invert. Anyone "flipping the sign" would add availability as an additive VBD-points term, which is
+  the wrong object: survival enters as a multiplier ($q = 1-p$) on an opportunity cost. Decided
+  rather than asked, because the distinction determines whether the fix is correct or merely
+  differently wrong.
+- **Split the FR into two threads rather than one, against the "one thread per subject" default
+  reading.** Three of the four defects (false causal sentence at `DraftRoom.tsx:1005`, unconditional
+  "only" at `:961`, board `AVAIL` reading the wrong pick at `:1915`) need no statistic and are
+  shippable today; the ordering change needs a registered simulation. Bundling them would have held
+  three honesty fixes behind a multi-session measurement. Staged as
+  `NEW-recommendation-card-states-a-rule-the-code-does-not-run.md` (frontend) and
+  `NEW-suggested-pick-rule-measure-qg-against-plain-vbd.md` (backend).
+- **Attacked the founder's own replacement rule, not just the tool's.** "Always take the one less
+  likely to last" ranks by $q$ alone and would draft a 1%-survival replacement-level player ahead of
+  a 60%-survival star. Adopted his diagnosis of the sign, refused his rule, in writing (ADR-draft
+  §3.4 / §7 D-7).
+- **Did not treat thread 111's "VONA underperforms plain BPA by −110 to −126" as settling the
+  question.** That arm hardcoded $q \equiv 1$ (deterministic `gap × share`), which is the same error
+  the shipped recommender makes, in the opposite direction. Nobody has run the version with both
+  terms. Registered it rather than asserting the correction wins.
+- **Left the fallback-estimator bias sign explicitly unpredicted** (A1). Within-position survivals
+  are positively correlated through a positional run and negatively through fixed pick supply; the
+  net sign is not knowable a priori and guessing it would have been a situation story.
+- **Named a NEW look-ahead risk this design creates**, rather than leaving it to be discovered: $u_f$
+  is an expectation over who will still be available, so an implementation that reads the historical
+  season's realised draft order leaks the answer into the decision. Required as an executed,
+  printed assertion, not a review convention.
+- **Refused to amend PR-007 to absorb the new arms** (an amendment after data demotes it to
+  exploratory). Separate family, separate registration, same batch, same CRN seeds. Also flagged
+  that PR-007 itself has still never run — thread 093 open since 2026-07-29.
+

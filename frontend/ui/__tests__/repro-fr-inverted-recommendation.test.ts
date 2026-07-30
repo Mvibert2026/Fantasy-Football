@@ -61,7 +61,13 @@ describe('repro: pick 18, Allen over McBride', () => {
     const before = recommendationScore(allen, round, unfilled);
     // Mutate the row's availability wholesale. If survival entered the score,
     // this would have to move it.
-    const mutated = { ...allen, raw: { ...allen.raw, availability: 0.01 } } as typeof allen;
+    // `availability` on the raw row is a Record, not a number -- casting a number into it
+    // through `as typeof allen` type-checks in the editor and fails `tsc -b`, which is how
+    // this landed with a green suite and a red production build. Go through `unknown`.
+    const mutated = {
+      ...allen,
+      raw: { ...allen.raw, availability: 0.01 as unknown as typeof allen.raw.availability },
+    } as typeof allen;
     const after = recommendationScore(mutated, round, unfilled);
     expect(after).toBe(before);
   });
