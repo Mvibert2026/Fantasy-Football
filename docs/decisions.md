@@ -2952,3 +2952,109 @@ on the M0-M5 pre-registration in `docs/ranking/availability-opponent-model-preco
 **Evidence.** `data/export/availability.json`/`board.json`/`league.json`/`glossary.json`/
 `nulls.json`/`opponents.json` regenerated against `data/nfl.db` (2026-07-30). Full test count and
 commit hash in this session's `docs/status/` entry and the reply to thread 104.
+
+## ADR-066 — Never-played ranked players in the backtest harness score the replacement deficit, not zero VBD (2026-07-30, backend, strategist finding on the primary-metric ruling)
+
+**The defect.** `src/backtest.py`'s `_vbd_sum_for_ranking` and `top_k_starter_vbd` accumulated a
+ranked player's contribution with `vbd.get(pid, 0.0)`. `vbd` is built by `_vbd_lookup` only over
+players present in `_season_actuals` — i.e. players with at least one weekly stat row. A ranked
+player with a resolved position but **zero weekly rows at all** (retired, cut, a season-ending
+preseason injury, suspended for the year) still consumes a starting slot via
+`build_position_lookup`'s "rankings win" query, and used to contribute exactly `0.0` — replacement
+level. His true contribution is `0 − replacement_points[pos]`: he consumed a starting slot and
+returned nothing, which is a materially worse outcome than "as good as the waiver wire." Found by
+strategist while ruling on the primary evaluation metric
+(`docs/adr-drafts/ADR-DRAFT-primary-evaluation-metric.md` §4.1), not by backend.
+
+**The fix.** `_vbd_lookup` now also returns `replacement_points`, the per-position POINT value at
+the replacement baseline (same index arithmetic `scoring.compute_vbd` already uses internally,
+duplicated locally since `compute_vbd` does not expose it — this is an evaluation-harness change,
+not a change to `scoring.py` or any ranking logic). A new `_slot_value(pid, pos, vbd,
+replacement_points)` helper returns the real `vbd[pid]` when the player has one, otherwise
+`-replacement_points[pos]`. Used by both `_vbd_sum_for_ranking` and `top_k_starter_vbd`.
+Regression tests (`test_never_played_player_scores_the_replacement_deficit_not_zero_vbd`,
+`test_never_played_player_in_starter_vbd_also_scores_the_deficit`) were written first, confirmed to
+fail against the pre-fix code, then the fix landed. Commit `b567586`.
+
+**Re-run of ADR-025.** ADR-025's published board-vs-consensus `starter_vbd` figures (+176.0 / −34.7
+/ +113.4 / +83.8 for 2022-2025) were recomputed under the fix, both dev seasons and the sealed 2025
+holdout (holdout access logged as a recomputation, not a fresh spend — see below):
+
+| Season | Original (published, ADR-025) | Recomputed, current DB, same defective code | Recomputed, current DB, fixed code | Fix delta |
+|---|---|---|---|---|
+| 2022 | +176.0 | +174.60 | +174.60 | **0.0** |
+| 2023 | −34.7 | −27.68 | −27.68 | **0.0** |
+| 2024 | +113.4 | +94.10 | +94.10 | **0.0** |
+| 2025 (holdout) | +83.8 | +79.54 | +79.54 | **0.0** |
+
+**Two separate findings, not one.** (1) The fix itself changes **none** of these four numbers: zero
+board- or raw-consensus-ranked players who filled a top-15 starting slot in 2022-2025 had zero
+recorded games that season, so `_slot_value`'s new branch is never exercised for this specific
+comparison. Directly verified by diffing the pre-fix and post-fix code against the same DB snapshot
+and ranking objects (delta exactly `0.0` in all four seasons, both arms). (2) Separately, and
+**not caused by this fix**, the numbers no longer exactly match ADR-025's originally published
+values (174.60 vs 176.0, etc.) — this is `data/nfl.db` drift since 2026-07-25 (the DB is gitignored
+and rebuilt/re-ingested repeatedly across sessions), confirmed by reproducing the drift with the
+*unmodified* pre-fix code. **ADR-025's qualitative conclusion is unaffected either way**: 3 of 4
+seasons positive, board advantage not statistically established at n=3/4 (CLAUDE.md §6.5,
+§6.3) — unchanged in direction and magnitude class.
+
+**The defect is real regardless — found a live instance.** `bpa_prior_season_points` (the weak
+prior-season-points arm), which is exactly the class of backward-looking ranking most likely to
+promote an injury-risk player, changed on `vbd_sum` (the deeper per-position metric, not
+`starter_vbd`) by **−114.7 in 2022** and **−139.1 in 2025 holdout** — one player each season who
+consumed a per-position slot with zero games, now correctly scored as a deficit instead of 0.0.
+`starter_vbd` (top-15 budget) for this same arm was unaffected in all four seasons — the disaster
+player in each case fell outside the top-15 picks, inside the deeper per-position cutoff. This
+confirms the mechanism is real and fires exactly where predicted (weak/naive arms), just not on
+the specific board-vs-consensus `starter_vbd` comparison ADR-025 reports.
+
+**Blast radius — other results computed through this path:**
+
+1. **ADR-025 board-vs-consensus `starter_vbd`** (the table above): re-run, unaffected by the fix.
+2. **`bpa_prior_season_points` vs board, `vbd_sum`** (printed in the standard backtest report's
+   DELTAS section, not previously published as a standalone headline in `docs/decisions.md`):
+   changes materially (~$100-140 pts in 2 of 4 seasons) — the verdict was already "LOSES" against
+   the board pre-fix; post-fix it loses by more. Direction unchanged, magnitude understated before.
+3. **`docs/test-registry.md` #44/#45/#46 "headline" (−1,070 pts, BPA-by-2024-VBD vs FantasyPros
+   consensus, scored on the real 2025 season via `src/candidate_rankings.py` +
+   `_vbd_sum_for_ranking`)** — the same class of backward-looking arm shown in (2) to be sensitive to
+   this defect, evaluated on the sealed holdout. **Not re-run here**: no committed script reproduces
+   the original run, it reads the sealed 2025 season, and `docs/strategic-insights.md` already
+   marks this exact figure "Discarded as superseded... do not cite" for unrelated methodological
+   reasons (no CI, predates required per-position baselines). Flagging it as *additionally*
+   contaminated by this defect, on top of already being deprecated, rather than re-running it
+   myself. Escalated to `strategist`/`pm` — see handoff thread — since ADR-026 (alpha track closure)
+   cites the same general ratio-of-evidence pattern this number was one input to.
+4. **`docs/adr-drafts/ADR-DRAFT-oracle-ladder-disposition.md`'s planned durability test** was
+   already blocked on this exact precondition (its own §"blocked on" cites precondition A by name).
+   This fix unblocks it; no re-run needed since it never ran.
+5. Everything else referencing `starter_vbd`/`vbd_sum` in the repo (`PR-002`, `PR-003`,
+   `docs/deferred.md`, `docs/status.md`) restates the ADR-025 or ADR-020 figures above rather than
+   reporting an independent number — not separately affected.
+
+**Holdout access.** Recomputing ADR-025's figures under the fix reads the sealed 2025 season again.
+Per the strategist's own ruling (§4.1): *"Re-computing an already-spent holdout number under a
+corrected metric does not constitute a second holdout access... Log it as a recomputation with that
+reason, do not treat it as a fresh spend."* The 2025 season was already unsealed for exactly this
+decomposition (`docs/preregistration/holdout_access_log.jsonl` line 1, 2026-07-25, reviewed in
+`tests/test_holdout_audit.py::REVIEWED_TIMESTAMPS`). This session's recomputation and diagnostic
+re-verification (after an unrelated commit reshuffle by the shared session's other concurrent
+agents required repeating the diff against the correct pre-fix parent commit) produced eight new
+`FINAL_EVALUATION_OPENED` log entries, all citing this same recomputation reason. Added to
+`REVIEWED_TIMESTAMPS` in `tests/test_holdout_audit.py` with this ADR as the justification note, per
+that test file's own required procedure — no new registration id exists for this because it is a
+recomputation of an already-reviewed access, not a new pre-registered test. No decision was made
+from the holdout that was not already made in ADR-025; the fix is evaluation-only and this
+recomputation confirmed rather than changed ADR-025's conclusion.
+
+**Not in scope, deliberately.** No ranking logic, weight, or export field was touched — this is an
+evaluation-harness-only fix. `test_no_new_direct_sqlite_connections_in_src`'s current failures
+(`ingest_combine.py`, `ingest_contracts.py`, `ingest_ff_opportunity.py`, `ingest_officials.py`,
+`ingest_participation.py`, `ingest_pbp.py`, `ingest_pfr_advstats.py`, `ingest_sleeper_projections.py`,
+`ingest_trades.py`) are pre-existing, from concurrent sessions sharing this container, and unrelated
+to this change — not fixed here, not this thread's scope.
+
+**Evidence.** Commits `b567586` (fix + regression tests), plus this ADR and the
+`REVIEWED_TIMESTAMPS` update. Full test count in this session's `docs/status/` entry. Handoff thread
+opened to `strategist`/`pm` for item 3 above (the test-registry #44-46 figure).
