@@ -13,6 +13,7 @@ import { computeLiveAvailability, dotsFilled, freqText, type LiveAvailabilityRes
 import type { Dataset } from '../data/load';
 import type { LeagueConfig } from '../data/league';
 import { recentSeasonKeys, usePlayerHistory, type PlayerHistoryState } from '../data/playerHistory';
+import { useTraceMode } from '../data/traceMode';
 import type {
   RawBoard,
   RawSeasonStats,
@@ -119,6 +120,10 @@ export function PlayerDetail({
   stale?: boolean;
   onClose: () => void;
 }) {
+  // FR-121: field-path captions throughout this sheet are gated on this switch
+  // (default off); the honest-reason prose next to each of them is not.
+  const { on: showSources } = useTraceMode();
+
   const name = row.name.kind === 'present' ? row.name.value : '';
   // FR-075: the join is real regardless of whether it resolves -- see
   // ui/data/archetype.ts and the file-level doc comment above for what each
@@ -137,7 +142,12 @@ export function PlayerDetail({
     ? {
         text: archetypeLabel(archetypeEntry.archetype, row.raw.position).toUpperCase(),
         title:
-          `player_descriptions.json:players[].archetype = "${archetypeEntry.archetype}" ` +
+          // FR-121: the field-path citation clause is gated; the confidence and
+          // (where present) the live share-stat sentence are plain-English
+          // meaning, not sourcing, and stay either way.
+          (showSources
+            ? `player_descriptions.json:players[].archetype = "${archetypeEntry.archetype}" `
+            : `Archetype: "${archetypeEntry.archetype}" `) +
           `(confidence: ${archetypeEntry.confidence}).` +
           (archetypeShare
             ? ` ${archetypeShare.n} of ${archetypeShare.ofClassified} classified ${row.raw.position}s in ` +
@@ -149,7 +159,9 @@ export function PlayerDetail({
     : !archetypeIsCovered
       ? {
           text: 'ARCHETYPE N/A',
-          title: `Archetype not modelled for ${row.raw.position} -- src/archetypes.py covers RB/WR/TE only.`,
+          title:
+            `Archetype not modelled for ${row.raw.position} -- covers RB/WR/TE only.` +
+            (showSources ? ' (src/archetypes.py)' : ''),
           muted: true,
         }
       : data.playerDescriptions === null
@@ -318,9 +330,11 @@ export function PlayerDetail({
             <div style={{ borderLeft: '2px solid var(--acc)', paddingLeft: 10, fontSize: 14.5, lineHeight: 1.5 }}>
               {verdictLine(row, rows, availAtNext, nextUserPick, stale)}
             </div>
-            <div style={{ marginTop: 4, fontSize: 9, letterSpacing: '.02em', color: 'var(--dim2)' }}>
-              board.json:tier_label · availability.json:by_player · board.json:vbd
-            </div>
+            {showSources ? (
+              <div style={{ marginTop: 4, fontSize: 9, letterSpacing: '.02em', color: 'var(--dim2)' }}>
+                board.json:tier_label · availability.json:by_player · board.json:vbd
+              </div>
+            ) : null}
 
             {/* 3. Projection -- point estimate, honest range as a bar, VBD, gloss. */}
             <SectionHeader label="PROJECTION" />
@@ -389,10 +403,12 @@ export function PlayerDetail({
                     'Suspension flagged without a recognised adjustment note.'
                   )}
                 </div>
-                <div className="num" style={{ marginTop: 5, fontSize: 9, color: 'var(--dim2)' }}>
-                  board.json:suspension_flag · board.json:suspension_games ·
-                  board.json:projected_points_suspension_adjusted
-                </div>
+                {showSources ? (
+                  <div className="num" style={{ marginTop: 5, fontSize: 9, color: 'var(--dim2)' }}>
+                    board.json:suspension_flag · board.json:suspension_games ·
+                    board.json:projected_points_suspension_adjusted
+                  </div>
+                ) : null}
               </div>
             ) : null}
 
@@ -500,9 +516,23 @@ export function PlayerDetail({
                 />
               ) : null}
             </div>
-            <p className="notice" style={{ marginTop: 9 }}>
-              {row.evaluativeNote}
-            </p>
+            {/* This board holds no player-level opinion (every player at the same
+                positional consensus rank gets an identical projection -- see the
+                file-top doc comment), and the export's own note used to say so at
+                length, ending with a literal instruction to the UI it was not
+                obeying: "SUPPRESS this row in the UI while
+                evaluative_adjustment_available is false." Founder's own read
+                (docs/design/PROVENANCE-DISCLOSURE.md): treat that as a straight
+                bug, not a provenance-disclosure case -- obey the field rather than
+                display it, unconditionally, regardless of the "show data sources"
+                switch below. When a real evaluative component exists someday
+                (evaluative_adjustment_available: true), its note renders exactly
+                as before. */}
+            {row.raw.evaluative_adjustment_available ? (
+              <p className="notice" style={{ marginTop: 9 }}>
+                {row.evaluativeNote}
+              </p>
+            ) : null}
 
             {/* Contract 1.14.0 (thread 082, FR-024): market ADP, a different
                 claim from CONSENSUS above -- that box is FantasyPros expert
@@ -552,9 +582,11 @@ export function PlayerDetail({
             ) : (
               <p className="notice" style={{ marginTop: 8, fontSize: 12 }}>{archetypeChip.title}</p>
             )}
-            <div className="num" style={{ marginTop: 6, fontSize: 9, color: 'var(--dim2)' }}>
-              player_descriptions.json:players[].archetype
-            </div>
+            {showSources ? (
+              <div className="num" style={{ marginTop: 6, fontSize: 9, color: 'var(--dim2)' }}>
+                player_descriptions.json:players[].archetype
+              </div>
+            ) : null}
 
             {/* 7. Weekly finishes / consistency heat-map. Real data as of
                 thread 052/ADR-048's join-key fix -- see WeeklyFinishesSection
@@ -847,6 +879,7 @@ function Dots({ value }: { value: number }) {
  * it, so a reader can see the two don't necessarily describe the same thing.
  */
 function AdpBlock({ row, board, league }: { row: BoardRow; board: RawBoard; league: LeagueConfig }) {
+  const { on: showSources } = useTraceMode();
   const sourceLabel =
     row.adpSource === 'mfl_proxy'
       ? 'MyFantasyLeague proxy, full PPR -- not this league\'s own ADP'
@@ -896,9 +929,12 @@ function AdpBlock({ row, board, league }: { row: BoardRow; board: RawBoard; leag
             This league's scoring ruleset: {league.scoringRulesetNote.value}
           </p>
         ) : null}
+        {/* The snapshot date is freshness info, not a field-path citation -- stays
+            visible either way. Both `board.json:` mentions around it are gated. */}
         <div className="num" style={{ marginTop: 6, fontSize: 9, color: 'var(--dim2)' }}>
-          board.json:players[].adp{board.adp_as_of_date ? ` · snapshot as of ${board.adp_as_of_date}` : ''}
-          {league.scoringRulesetNote.kind === 'present' ? ' · league.json:scoring_ruleset_note' : ''}
+          {showSources ? 'board.json:players[].adp' : null}
+          {board.adp_as_of_date ? `${showSources ? ' · ' : ''}snapshot as of ${board.adp_as_of_date}` : ''}
+          {showSources && league.scoringRulesetNote.kind === 'present' ? ' · league.json:scoring_ruleset_note' : ''}
         </div>
       </div>
     </div>
@@ -916,6 +952,7 @@ function adpPctText(n: number): string {
 }
 
 function CorrPart({ label, value, note, field }: { label: string; value: string; note: string; field: string }) {
+  const { on: showSources } = useTraceMode();
   return (
     <div style={{ padding: '9px 12px', background: 'var(--panel2)' }}>
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 10 }}>
@@ -925,9 +962,11 @@ function CorrPart({ label, value, note, field }: { label: string; value: string;
         </span>
       </div>
       <div style={{ marginTop: 4, fontSize: 12, lineHeight: 1.55, color: 'var(--dim)' }}>{note}</div>
-      <div className="num" style={{ marginTop: 5, fontSize: 9, color: 'var(--dim2)' }}>
-        {field}
-      </div>
+      {showSources ? (
+        <div className="num" style={{ marginTop: 5, fontSize: 9, color: 'var(--dim2)' }}>
+          {field}
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -941,6 +980,7 @@ function CorrPart({ label, value, note, field }: { label: string; value: string;
  * see the file-top docstring for why that distinction is load-bearing.
  */
 function HistoryFallback({ history, file }: { history: PlayerHistoryState; file: string }) {
+  const { on: showSources } = useTraceMode();
   if (history.status === 'loading') {
     return (
       <p className="notice" style={{ marginTop: 10, fontSize: 12 }}>
@@ -955,9 +995,11 @@ function HistoryFallback({ history, file }: { history: PlayerHistoryState; file:
           This player's board row carries no player_id_gsis -- can't attach {file}. Distinct from
           the 371/378 that do resolve (thread 052/ADR-048); this specific row is the exception.
         </p>
-        <div className="num" style={{ marginTop: 5, fontSize: 9, color: 'var(--dim2)' }}>
-          board.json:player_id_gsis
-        </div>
+        {showSources ? (
+          <div className="num" style={{ marginTop: 5, fontSize: 9, color: 'var(--dim2)' }}>
+            board.json:player_id_gsis
+          </div>
+        ) : null}
       </>
     );
   }
@@ -984,18 +1026,7 @@ function WeeklyFinishesSection({
     return <HistoryFallback history={history} file="weekly_finishes.json" />;
   }
   if (!history.weeklyFinishes) {
-    return (
-      <>
-        <p className="notice" style={{ marginTop: 10, fontSize: 12 }}>
-          No historical stats on file for this player -- zero rows in player_weekly_stats (thread
-          052 measured 7 of 378 board players this way, plausibly rookies). The join key resolved;
-          there is simply no prior NFL history to show. Not the same claim as a join failure.
-        </p>
-        <div className="num" style={{ marginTop: 5, fontSize: 9, color: 'var(--dim2)' }}>
-          weekly_finishes.json:players[]
-        </div>
-      </>
-    );
+    return <NoHistoryRows file="weekly_finishes.json:players[]" />;
   }
   return (
     <WeeklyFinishesHeatmap
@@ -1013,20 +1044,32 @@ function ThreeSeasonSection({ history, currentLeagueId }: { history: PlayerHisto
     return <HistoryFallback history={history} file="season_stats.json" />;
   }
   if (!history.seasonStats) {
-    return (
-      <>
-        <p className="notice" style={{ marginTop: 10, fontSize: 12 }}>
-          No historical stats on file for this player -- zero rows in player_weekly_stats (thread
-          052 measured 7 of 378 board players this way, plausibly rookies). The join key resolved;
-          there is simply no prior NFL history to show. Not the same claim as a join failure.
-        </p>
-        <div className="num" style={{ marginTop: 5, fontSize: 9, color: 'var(--dim2)' }}>
-          season_stats.json:players[]
-        </div>
-      </>
-    );
+    return <NoHistoryRows file="season_stats.json:players[]" />;
   }
   return <ThreeSeasonTable player={history.seasonStats} envelope={history.seasonStatsEnvelope} currentLeagueId={currentLeagueId} />;
+}
+
+/** Shared by both sections 7/8's "join resolved, this player just has zero rows"
+ *  state (thread 052: 7 of 378 board players) -- same reason prose either way,
+ *  which is why this used to be duplicated inline; factored out once a second
+ *  gated field-path caption made the duplication worth removing. The reason is
+ *  always visible; only `file` (the field-path caption) is gated. */
+function NoHistoryRows({ file }: { file: string }) {
+  const { on: showSources } = useTraceMode();
+  return (
+    <>
+      <p className="notice" style={{ marginTop: 10, fontSize: 12 }}>
+        No historical stats on file for this player -- zero rows in player_weekly_stats (thread
+        052 measured 7 of 378 board players this way, plausibly rookies). The join key resolved;
+        there is simply no prior NFL history to show. Not the same claim as a join failure.
+      </p>
+      {showSources ? (
+        <div className="num" style={{ marginTop: 5, fontSize: 9, color: 'var(--dim2)' }}>
+          {file}
+        </div>
+      ) : null}
+    </>
+  );
 }
 
 /** True scoring-league note for a history file's envelope -- contract 1.16.0. Compares
@@ -1068,6 +1111,7 @@ function WeeklyFinishesHeatmap({
   envelope: RawWeeklyFinishes;
   currentLeagueId: string | null;
 }) {
+  const { on: showSources } = useTraceMode();
   const [seasonKey] = recentSeasonKeys(player, 1);
   if (!seasonKey) {
     return (
@@ -1105,9 +1149,11 @@ function WeeklyFinishesHeatmap({
       <p className="notice" style={{ marginTop: 6, fontSize: 10.5 }}>
         {historyScoringNote(envelope, currentLeagueId)}
       </p>
-      <div className="num" style={{ marginTop: 5, fontSize: 9, color: 'var(--dim2)' }}>
-        weekly_finishes.json:players[].seasons[{seasonKey}].weeks
-      </div>
+      {showSources ? (
+        <div className="num" style={{ marginTop: 5, fontSize: 9, color: 'var(--dim2)' }}>
+          weekly_finishes.json:players[].seasons[{seasonKey}].weeks
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -1189,6 +1235,7 @@ function ThreeSeasonTable({
   envelope: RawSeasonStats;
   currentLeagueId: string | null;
 }) {
+  const { on: showSources } = useTraceMode();
   const seasons = [...player.seasons].sort((a, b) => b.year - a.year).slice(0, 3);
   if (seasons.length === 0) {
     return (
@@ -1250,8 +1297,8 @@ function ThreeSeasonTable({
       {unavailableYears.length > 0 ? (
         <p className="notice" style={{ marginTop: 8, fontSize: 10.5 }}>
           Targets not reliably charted for {unavailableYears.join(', ')} (upstream charting-coverage
-          gap, not a real zero) -- season_stats.json:players[].seasons[].target_data_unavailable.
-          Not shown as its own column for that reason.
+          gap, not a real zero). Not shown as its own column for that reason.
+          {showSources ? ' -- season_stats.json:players[].seasons[].target_data_unavailable' : ''}
         </p>
       ) : null}
       {/* FR-079 resolution, contract 1.16.0: PTS is now this league's own
@@ -1261,9 +1308,11 @@ function ThreeSeasonTable({
       <p className="notice" style={{ marginTop: 8, fontSize: 10.5 }}>
         {historyScoringNote(envelope, currentLeagueId)}
       </p>
-      <div className="num" style={{ marginTop: 6, fontSize: 9, color: 'var(--dim2)' }}>
-        season_stats.json:players[].seasons
-      </div>
+      {showSources ? (
+        <div className="num" style={{ marginTop: 6, fontSize: 9, color: 'var(--dim2)' }}>
+          season_stats.json:players[].seasons
+        </div>
+      ) : null}
     </div>
   );
 }

@@ -6,6 +6,7 @@ import {
   type StrategyKey,
 } from '../data/strategySelector';
 import type { Dataset } from '../data/load';
+import { useTraceMode } from '../data/traceMode';
 import { decimal, integer } from '../lib/format';
 
 /**
@@ -62,11 +63,12 @@ function StrategyRow({
   active: boolean;
   onSelect: () => void;
 }) {
+  const { on: showSources } = useTraceMode();
   return (
     <button
       onClick={onSelect}
       aria-pressed={active}
-      title={strategyRuleText(row.key as StrategyKey)}
+      title={strategyRuleText(row.key as StrategyKey, showSources)}
       style={{
         display: 'flex',
         alignItems: 'center',
@@ -107,6 +109,7 @@ export function StrategySelector({
   onSelect: (key: StrategyKey) => void;
 }) {
   const s = data.strategies;
+  const { on: showSources } = useTraceMode();
 
   if (s === null) {
     const isPrimary = data.league.league_id === 'primary';
@@ -128,7 +131,7 @@ export function StrategySelector({
                 key={key}
                 aria-pressed={active === key}
                 onClick={() => onSelect(key as StrategyKey)}
-                title={strategyRuleText(key as StrategyKey)}
+                title={strategyRuleText(key as StrategyKey, showSources)}
                 style={{
                   display: 'flex',
                   justifyContent: 'space-between',

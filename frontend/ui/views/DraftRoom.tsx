@@ -40,6 +40,7 @@ import {
   tierDepletionLine,
   under50Line,
 } from '../data/scarcity';
+import { useTraceMode } from '../data/traceMode';
 import { useWatchlist } from '../data/useWatchlist';
 import { PlayerDetail } from '../components/PlayerDetail';
 import { computeAdpHeaderTitle } from './Board';
@@ -383,6 +384,9 @@ export function DraftRoom({
   onAssistantContext?: (items: ContextItem[]) => void;
 }) {
   const leagueId = data.manifest.artifacts.board?.league_id ?? 'default';
+  // FR-121: field-path mentions in this screen's tooltips/captions are gated on
+  // this switch (default off); the plain-English meaning next to each is not.
+  const { on: showSources } = useTraceMode();
   const [draft, setDraft] = useState<DraftState>(() => loadDraftState(leagueId));
   const [watchlist, toggleWatch] = useWatchlist();
   const [query, setQuery] = useState('');
@@ -1678,7 +1682,7 @@ export function DraftRoom({
             </span>
             <span
               className="num"
-              title="Value over positional replacement (board.json:players[].vbd) -- what the board is actually ranked on"
+              title={`Value over positional replacement -- what the board is actually ranked on${showSources ? ' (board.json:players[].vbd)' : ''}`}
               style={{ fontSize: 9, letterSpacing: '.02em', color: 'var(--dim2)', width: DRAFT_LIST_COLS.vbd, textAlign: 'right' }}
             >
               VBD
@@ -1775,7 +1779,7 @@ export function DraftRoom({
                         (Board.tsx:590) -- not a second version. */}
                     <span
                       className="num"
-                      title="Value over positional replacement -- board.json:players[].vbd"
+                      title={`Value over positional replacement${showSources ? ' -- board.json:players[].vbd' : ''}`}
                       style={{ fontSize: 11, color: 'var(--dim2)', width: DRAFT_LIST_COLS.vbd, textAlign: 'right' }}
                     >
                       <Value cell={r.vbd} render={decimal} />
@@ -1861,13 +1865,17 @@ export function DraftRoom({
                       {r.replacementLevelsComponent.kind === 'present' ? (
                         <div style={{ fontSize: 11, color: 'var(--dim)' }}>
                           Replacement levels: <span className="num">{signed(r.replacementLevelsComponent.value)}</span>{' '}
-                          <span style={{ color: 'var(--dim2)' }}>({r.replacementLevelsComponent.path})</span>
+                          {showSources ? (
+                            <span style={{ color: 'var(--dim2)' }}>({r.replacementLevelsComponent.path})</span>
+                          ) : null}
                         </div>
                       ) : null}
                       {r.scoringAndVbdComponent.kind === 'present' ? (
                         <div style={{ fontSize: 11, color: 'var(--dim)' }}>
                           Scoring and VBD method: <span className="num">{signed(r.scoringAndVbdComponent.value)}</span>{' '}
-                          <span style={{ color: 'var(--dim2)' }}>({r.scoringAndVbdComponent.path})</span>
+                          {showSources ? (
+                            <span style={{ color: 'var(--dim2)' }}>({r.scoringAndVbdComponent.path})</span>
+                          ) : null}
                         </div>
                       ) : null}
                     </div>
@@ -2203,7 +2211,7 @@ export function DraftRoom({
                                 STRATEGY ADJUSTMENT — {strategyLabel(strategyOverride.strategy).toUpperCase()}
                               </div>
                               <div style={{ marginTop: 6, fontSize: 12.5, lineHeight: 1.5, color: 'var(--dim)' }}>
-                                {strategyLabel(strategyOverride.strategy)} is active: {strategyRuleText(strategyOverride.strategy)}
+                                {strategyLabel(strategyOverride.strategy)} is active: {strategyRuleText(strategyOverride.strategy, showSources)}
                               </div>
                               <div style={{ marginTop: 6, fontSize: 12.5, lineHeight: 1.5, color: 'var(--dim)' }}>
                                 That moved{' '}
@@ -2356,8 +2364,8 @@ export function DraftRoom({
                             </div>
                           </div>
                           <div style={{ marginTop: 10, fontFamily: 'var(--font-num)', fontSize: 9, color: 'var(--dim2)', lineHeight: 1.5 }}>
-                            availability.json:by_player · board.json:players[].vbd · sigma 5/10/20 spread. Display only -- not fed into the
-                            recommendation above.
+                            {showSources ? 'availability.json:by_player · board.json:players[].vbd · ' : ''}
+                            sigma 5/10/20 spread. Display only -- not fed into the recommendation above.
                           </div>
                         </div>
                       ) : null}
@@ -2803,6 +2811,7 @@ export function DraftRoom({
  * `row.adp`.
  */
 function DraftRoomAdpCell({ row }: { row: BoardRow }) {
+  const { on: showSources } = useTraceMode();
   if (row.adp.kind === 'absent') {
     return (
       <span
@@ -2817,7 +2826,7 @@ function DraftRoomAdpCell({ row }: { row: BoardRow }) {
   const title =
     (row.adpSource === 'mfl_proxy'
       ? 'MyFantasyLeague proxy ADP, full PPR (not this league\'s own ADP)'
-      : (row.adpSource ?? 'unlabelled ADP source')) + ' · board.json:players[].adp';
+      : (row.adpSource ?? 'unlabelled ADP source')) + (showSources ? ' · board.json:players[].adp' : '');
   return (
     <span className="num" title={title} style={{ fontSize: 10, color: 'var(--dim2)', width: DRAFT_LIST_COLS.adp, textAlign: 'right' }}>
       {decimal(row.adp.value)}

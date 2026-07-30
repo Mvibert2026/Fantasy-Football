@@ -93,14 +93,25 @@ describe('strategyLabel / STRATEGY_CATALOG', () => {
 });
 
 describe('strategyRuleText', () => {
-  it('names src/draft_sim.py as the source for every round-gated strategy, never inventing a new rule', () => {
+  // FR-121: the `src/draft_sim.py::strategy_*` source citation is
+  // developer-facing sourcing text, gated by the "show data sources" switch
+  // (default off/omitted here) -- never welded into the plain-English rule
+  // text itself, which every case must still carry regardless of the switch.
+  it('does not name src/draft_sim.py by default -- the switch is off', () => {
     for (const key of ['zero_rb', 'hero_rb', 'elite_te_early', 'qb_early'] as const) {
-      expect(strategyRuleText(key)).toContain('src/draft_sim.py');
+      expect(strategyRuleText(key)).not.toContain('src/draft_sim.py');
     }
   });
 
-  it('states plainly that balanced applies no additional reorder', () => {
+  it('names src/draft_sim.py as the source for every round-gated strategy once the switch is on, never inventing a new rule', () => {
+    for (const key of ['zero_rb', 'hero_rb', 'elite_te_early', 'qb_early'] as const) {
+      expect(strategyRuleText(key, true)).toContain('src/draft_sim.py');
+    }
+  });
+
+  it('states plainly that balanced applies no additional reorder, on or off', () => {
     expect(strategyRuleText('balanced')).toContain('does not additionally reorder');
+    expect(strategyRuleText('balanced', true)).toContain('does not additionally reorder');
   });
 });
 

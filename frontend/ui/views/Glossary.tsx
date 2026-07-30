@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { CATEGORY_LABEL, CATEGORY_ORDER, categoryOf, fieldOf, type GlossaryCategory } from '../data/glossaryCategories';
 import type { Dataset } from '../data/load';
+import { useTraceMode } from '../data/traceMode';
 
 /**
  * Glossary, categorised per FRONTEND-SPEC.md §7.3 ("Four categories, two-column
@@ -17,6 +18,7 @@ import type { Dataset } from '../data/load';
  * "Absent per term. The dock stays; the per-term button goes."
  */
 export function Glossary({ data }: { data: Dataset }) {
+  const { on: showSources } = useTraceMode();
   const [open, setOpen] = useState<string | null>(null);
   const terms = Object.entries(data.glossary.terms);
 
@@ -74,7 +76,7 @@ export function Glossary({ data }: { data: Dataset }) {
                       {def.long_explanation}
                     </p>
                   ) : null}
-                  {field ? (
+                  {field && showSources ? (
                     <div style={{ marginTop: 10 }}>
                       <span className="num" style={{ fontSize: 9.5, color: 'var(--dim2)' }}>{field}</span>
                     </div>

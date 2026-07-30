@@ -4,7 +4,7 @@ import { PlayerDetail } from '../components/PlayerDetail';
 import { buildRows, type BoardRow } from '../data/board';
 import { buildLeagueConfig } from '../data/league';
 import type { Dataset } from '../data/load';
-import { loadDatasetFromDisk } from './helpers';
+import { loadDatasetFromDisk, withTraceOn } from './helpers';
 
 /**
  * FR-075: `PlayerDetail.tsx` used to render "Not computed: archetype. No
@@ -53,6 +53,23 @@ function renderDetail(row: BoardRow, dataset: Dataset = data) {
   );
 }
 
+function renderDetailWithSourcesShown(row: BoardRow, dataset: Dataset = data) {
+  return render(
+    withTraceOn(
+      <PlayerDetail
+        row={row}
+        rows={rows}
+        data={dataset}
+        league={league}
+        picks={[]}
+        watchlist={[]}
+        onToggleWatch={() => {}}
+        onClose={() => {}}
+      />,
+    ),
+  );
+}
+
 describe('PlayerDetail archetype (FR-075)', () => {
   it('never renders the old blanket "not computed: archetype" false claim, for any player', () => {
     // Section 9 (bullet takeaways) is a genuinely separate, still-permanent
@@ -69,15 +86,25 @@ describe('PlayerDetail archetype (FR-075)', () => {
 
   it('shows the real label, confidence and description for a classified RB/WR/TE', () => {
     const entry = data.playerDescriptions!.players.find((p) => p.player_id === labelledRow.raw.player_id_gsis)!;
-    const { getByText, getAllByTitle } = renderDetail(labelledRow);
-    // The chip strips the position prefix (see archetypeLabel) -- assert the
-    // sourced field is reachable via the title attribute rather than
-    // reconstructing the exact label text here. Rendered twice on purpose
-    // (identity-strip chip + section 6), so both must carry it.
-    const titled = getAllByTitle(new RegExp(`archetype = "${entry.archetype}"`));
+    const { getByText, getAllByTitle, queryAllByTitle } = renderDetail(labelledRow);
+    // FR-121: the sourced field path itself is behind the "show data sources"
+    // switch, default off -- this default-state render must NOT carry the
+    // `player_descriptions.json:...` path, only the plain-English archetype
+    // value. Confidence and description are meaning, not sourcing, and stay.
+    expect(queryAllByTitle(/player_descriptions\.json:/).length).toBe(0);
+    const titled = getAllByTitle(new RegExp(`Archetype: "${entry.archetype}"`));
     expect(titled.length).toBe(2);
     expect(getByText(new RegExp(`confidence: ${entry.confidence}`))).toBeTruthy();
     expect(getByText(entry.description)).toBeTruthy();
+  });
+
+  it('shows the field path once the switch is on, same two places', () => {
+    const entry = data.playerDescriptions!.players.find((p) => p.player_id === labelledRow.raw.player_id_gsis)!;
+    const { getAllByTitle } = renderDetailWithSourcesShown(labelledRow);
+    // Rendered twice on purpose (identity-strip chip + section 6), so both
+    // must carry it once the switch is on.
+    const titled = getAllByTitle(new RegExp(`player_descriptions\\.json:players\\[\\]\\.archetype = "${entry.archetype}"`));
+    expect(titled.length).toBe(2);
   });
 
   it('shows an honest UNCLASSIFIED state for a covered position with no matching row', () => {

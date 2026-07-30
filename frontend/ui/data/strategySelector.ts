@@ -58,40 +58,39 @@ export function strategyLabel(key: string): string {
 
 /** Plain-word rule text for each strategy's Recommend-tab effect, shown next to
  *  the selector and in the strategy-adjustment panel when it fires. Every
- *  round-gated rule here names the exact round window it ports from
- *  `src/draft_sim.py`, and every one says outright that only direction and window
- *  are ported, not magnitude -- see the module doc comment. */
-export function strategyRuleText(key: StrategyKey): string {
+ *  round-gated rule here names the exact round window it applies -- that part is
+ *  the honest reason and always shows. The `src/draft_sim.py::strategy_*` source
+ *  citation is developer-facing sourcing text (FR-121); it is appended only when
+ *  `showSources` is on (`ui/data/traceMode.ts`, default off), never welded into
+ *  the reason itself. */
+export function strategyRuleText(key: StrategyKey, showSources: boolean = false): string {
+  const src = (fn: string) => (showSources ? ` (src/draft_sim.py::${fn})` : '');
   switch (key) {
     case 'bpa_consensus':
       return 'No adjustment -- this is the recommendation you already see by default.';
     case 'balanced':
       return (
-        "Balanced's simulated rule is a continuous, need-weighted adjustment across the whole draft " +
-        "(src/draft_sim.py::strategy_balanced), not a round-gated one -- close in spirit to this app's " +
-        'own default unfilled-need term already in the recommendation score. Selecting it does not ' +
-        'additionally reorder today\'s shortlist.'
+        `Balanced's simulated rule is a continuous, need-weighted adjustment across the whole draft${src('strategy_balanced')}, ` +
+        "not a round-gated one -- close in spirit to this app's own default unfilled-need term already " +
+        "in the recommendation score. Selecting it does not additionally reorder today's shortlist."
       );
     case 'zero_rb':
       return (
-        'Ported from src/draft_sim.py::strategy_zero_rb: avoid running backs through round 4. Direction ' +
-        'and round window only -- see the module note on magnitude.'
+        `Avoid running backs through round 4${src('strategy_zero_rb')}. Direction and round window only ` +
+        '-- see the module note on magnitude.'
       );
     case 'hero_rb':
       return (
-        "Ported from src/draft_sim.py::strategy_hero_rb: strongly prefer a running back with round 1's " +
-        "pick. (The source rule also softly leans RB through round 5 with a WR penalty; that softer lean " +
-        "isn't reproduced here -- it has no unit-compatible magnitude to port faithfully.)"
+        `Strongly prefer a running back with round 1's pick${src('strategy_hero_rb')}. (The source rule ` +
+        "also softly leans RB through round 5 with a WR penalty; that softer lean isn't reproduced here " +
+        '-- it has no unit-compatible magnitude to port faithfully.)'
       );
     case 'elite_te_early':
-      return (
-        'Ported from src/draft_sim.py::strategy_elite_te (_positional_bias): prefer a tight end through ' +
-        'round 3. Direction and round window only.'
-      );
+      return `Prefer a tight end through round 3${src('strategy_elite_te (_positional_bias)')}. Direction and round window only.`;
     case 'qb_early':
       return (
-        'Ported from src/draft_sim.py::strategy_qb_early (_positional_bias): prefer a quarterback through ' +
-        "round 3 -- overriding this app's own default penalty against an early QB while it's active."
+        `Prefer a quarterback through round 3${src('strategy_qb_early (_positional_bias)')} -- overriding ` +
+        "this app's own default penalty against an early QB while it's active."
       );
   }
 }

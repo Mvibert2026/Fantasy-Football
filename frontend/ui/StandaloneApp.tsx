@@ -13,6 +13,7 @@ import { Predictions } from './views/Predictions';
 import { StrategyGuide } from './views/StrategyGuide';
 import { buildRows } from './data/board';
 import { buildLeagueConfig } from './data/league';
+import { TraceModeProvider } from './data/traceMode';
 import { STANDALONE_DATASET } from './data/standaloneEmbedded.generated';
 
 /**
@@ -159,22 +160,24 @@ export function StandaloneApp() {
   }
 
   return (
-    <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-      <TopBar
-        mode={mode}
-        onModeChange={setMode}
-        modes={PREP_AND_DRAFT_MODES}
-        theme={theme}
-        onToggleTheme={toggleTheme}
-        league={league}
-        leagues={leagues}
-        leagueId="default"
-        onSelectLeague={() => {}}
-        refreshSlot={<StandaloneFreshnessNote />}
-      />
+    <TraceModeProvider>
+      <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        <TopBar
+          mode={mode}
+          onModeChange={setMode}
+          modes={PREP_AND_DRAFT_MODES}
+          theme={theme}
+          onToggleTheme={toggleTheme}
+          league={league}
+          leagues={leagues}
+          leagueId="default"
+          onSelectLeague={() => {}}
+          refreshSlot={<StandaloneFreshnessNote />}
+        />
 
-      <div style={{ flex: 1, minHeight: 0, display: 'flex' }}>{body}</div>
-    </div>
+        <div style={{ flex: 1, minHeight: 0, display: 'flex' }}>{body}</div>
+      </div>
+    </TraceModeProvider>
   );
 }
 

@@ -1,4 +1,5 @@
 import type { LeagueConfig } from '../../data/league';
+import { useTraceMode } from '../../data/traceMode';
 import { Value } from '../Value';
 import { integer } from '../../lib/format';
 
@@ -66,6 +67,7 @@ export function SettingsPanel({
    *  what it looks like or how it behaves. */
   DraftSlotControl: () => JSX.Element;
 }) {
+  const { on: showSources, setOn: setShowSources } = useTraceMode();
   return (
     <>
       <div
@@ -101,6 +103,42 @@ export function SettingsPanel({
             esc
           </button>
         </div>
+
+        {/* FR-121 (docs/design/PROVENANCE-DISCLOSURE.md): the global "show data
+            sources" switch. App-wide, not per-league, so it sits above the
+            league-scoped sections below. Default off -- the clean view is the one
+            used live during a draft; this is the one turned on when a number looks
+            wrong. `Alt+T` is the faster path to the same boolean (ui/data/traceMode.tsx);
+            this checkbox is the discoverable one. Founder's own words for the label,
+            never "provenance"/"trace"/"field path". */}
+        <div style={{ marginTop: 14, fontSize: 10, letterSpacing: '.1em', color: 'var(--dim2)' }}>
+          DISPLAY
+        </div>
+        <label
+          style={{
+            marginTop: 8,
+            display: 'flex',
+            alignItems: 'flex-start',
+            gap: 8,
+            cursor: 'pointer',
+          }}
+        >
+          <input
+            type="checkbox"
+            checked={showSources}
+            onChange={(e) => setShowSources(e.target.checked)}
+            style={{ marginTop: 2 }}
+          />
+          <span>
+            <span style={{ fontSize: 12.5 }}>Show data sources</span>
+            <p className="notice" style={{ marginTop: 2, fontSize: 10.5, lineHeight: 1.4 }}>
+              Shows exactly which export field each number on screen came from. Off by default; turn
+              it on when a number looks wrong and you want to check it. Nothing that explains why a
+              value is missing is ever hidden by this -- only the field citations are. Also toggled by{' '}
+              <span className="num">Alt+T</span>.
+            </p>
+          </span>
+        </label>
 
         {!league ? (
           <p className="notice" style={{ marginTop: 12, fontSize: 12 }}>

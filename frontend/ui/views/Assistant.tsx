@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { BoardRow } from '../data/board';
 import type { LeagueConfig } from '../data/league';
 import type { Dataset } from '../data/load';
+import { stripInlineCitations, useTraceMode } from '../data/traceMode';
 import { ask, SUGGESTED_TEMPLATES, type Answer, type ContextItem, type ConversationTurn } from '../assistant';
 
 /**
@@ -129,6 +130,13 @@ function flattenAnswer(answer: Answer): string {
 }
 
 function AnswerBlock({ answer, onAsk }: { answer: Answer; onAsk: (q: string) => void }) {
+  // FR-121 (docs/design/PROVENANCE-DISCLOSURE.md item 1, "highest priority"):
+  // this is the exact case the founder flagged -- the assistant panel printing
+  // a raw provenance line, including the reasoning lane's own
+  // "model prose over context: page.draft_state, page.roster_needs, ..." dump.
+  // Gated on the switch; the claim's tag (MODEL/SOURCE/INFERENCE) and its text
+  // are not sourcing text and stay visible either way.
+  const { on: showSources } = useTraceMode();
   return (
     <section>
       <h3>{answer.question}</h3>
@@ -156,11 +164,19 @@ function AnswerBlock({ answer, onAsk }: { answer: Answer; onAsk: (q: string) => 
         <div className="claim" key={i}>
           <span className={`tag tag-${claim.tag}`}>{claim.tag}</span>
           {claim.age ? <span className="tag tag-SOURCE">{claim.age}</span> : null}
-          <span>{claim.text}</span>
-          <div className="provenance">
-            {claim.provenance}
-            {claim.confidence ? ` · confidence ${claim.confidence}` : ''}
-          </div>
+          {/* The reasoning lane's own model sometimes echoes a bracketed context id
+              (e.g. "[page.next_pick_reference]") inline, mid-sentence, from the
+              retrieved-context block it was shown (server/proxy.ts's contextBlock
+              formats each item that way) -- a field-path citation in the worst
+              possible position. Stripped here rather than upstream so trace mode ON
+              still shows the model's real output verbatim. */}
+          <span>{stripInlineCitations(claim.text, showSources)}</span>
+          {showSources ? (
+            <div className="provenance">
+              {claim.provenance}
+              {claim.confidence ? ` · confidence ${claim.confidence}` : ''}
+            </div>
+          ) : null}
         </div>
       ))}
     </section>

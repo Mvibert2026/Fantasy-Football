@@ -17,6 +17,7 @@ import { StrategyGuide } from './views/StrategyGuide';
 import { buildRows } from './data/board';
 import { applyUserSlotOverride, buildLeagueConfig } from './data/league';
 import { clearSlotOverride, loadSlotOverride, saveSlotOverride } from './data/draftSlot';
+import { TraceModeProvider, useTraceMode } from './data/traceMode';
 import { DEFAULT_LEAGUE_ID, fetchSelectableLeagues, type SelectableLeague } from './data/league-registry';
 import { loadDataset, type Dataset } from './data/load';
 
@@ -253,36 +254,38 @@ export function App() {
   }
 
   return (
-    <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-      <TopBar
-        mode={mode}
-        onModeChange={changeMode}
-        theme={theme}
-        onToggleTheme={toggleTheme}
-        league={league}
-        leagues={displayLeagues}
-        leagueId={leagueId}
-        onSelectLeague={setLeagueId}
-        onSelectSlot={setDraftSlotOverride}
-        onClearSlot={clearDraftSlotOverride}
-        refreshSlot={
-          <FreshnessNote
-            boardGeneratedUtc={data?.board.generated_utc ?? null}
-            snapshotAgeDays={data?.board.snapshot_age_days ?? null}
-            snapshotMaxAgeDays={data?.board.snapshot_max_age_days ?? null}
-            snapshotStale={data?.board.snapshot_stale ?? null}
-          />
-        }
-      />
+    <TraceModeProvider>
+      <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        <TopBar
+          mode={mode}
+          onModeChange={changeMode}
+          theme={theme}
+          onToggleTheme={toggleTheme}
+          league={league}
+          leagues={displayLeagues}
+          leagueId={leagueId}
+          onSelectLeague={setLeagueId}
+          onSelectSlot={setDraftSlotOverride}
+          onClearSlot={clearDraftSlotOverride}
+          refreshSlot={
+            <FreshnessNote
+              boardGeneratedUtc={data?.board.generated_utc ?? null}
+              snapshotAgeDays={data?.board.snapshot_age_days ?? null}
+              snapshotMaxAgeDays={data?.board.snapshot_max_age_days ?? null}
+              snapshotStale={data?.board.snapshot_stale ?? null}
+            />
+          }
+        />
 
-      <div style={{ flex: 1, minHeight: 0, display: 'flex' }}>{body}</div>
+        <div style={{ flex: 1, minHeight: 0, display: 'flex' }}>{body}</div>
 
-      {data && rows && league ? (
-        <AssistantDock where={assistantWhere}>
-          <Assistant data={data} rows={rows} league={league} pageContext={assistantPageContext} />
-        </AssistantDock>
-      ) : null}
-    </div>
+        {data && rows && league ? (
+          <AssistantDock where={assistantWhere}>
+            <Assistant data={data} rows={rows} league={league} pageContext={assistantPageContext} />
+          </AssistantDock>
+        ) : null}
+      </div>
+    </TraceModeProvider>
   );
 }
 
@@ -316,17 +319,22 @@ function FreshnessNote({
   snapshotMaxAgeDays: number | null;
   snapshotStale: boolean | null;
 }) {
+  const { on: showSources } = useTraceMode();
   const hasFreshness = snapshotAgeDays !== null && snapshotMaxAgeDays !== null && snapshotStale !== null;
   const freshnessText = hasFreshness
     ? `snapshot ${snapshotStale ? 'STALE' : 'fresh'} (${snapshotAgeDays}d old, max ${snapshotMaxAgeDays}d)`
     : 'snapshot freshness not exported by backend';
+  const freshnessTitle = showSources
+    ? "board.json:generated_utc is the export-file timestamp. snapshot_age_days/snapshot_max_age_days/" +
+      "snapshot_stale are src/freshness.py's separate staleness check (T5), attached to the export since " +
+      "contract 1.13.0. Reload the page, or switch leagues, to re-check against the latest export."
+    : 'When this export was built, and whether the rankings snapshot it used was fresh. Reload the ' +
+      'page, or switch leagues, to re-check against the latest export.';
   return (
     <span
       className="num"
       data-testid="freshness-note"
-      title="board.json:generated_utc is the export-file timestamp. snapshot_age_days/snapshot_max_age_days/
-        snapshot_stale are src/freshness.py's separate staleness check (T5), attached to the export since
-        contract 1.13.0. Reload the page, or switch leagues, to re-check against the latest export."
+      title={freshnessTitle}
       style={{
         fontSize: 11,
         color: 'var(--dim2)',
