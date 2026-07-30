@@ -9,7 +9,7 @@ Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests
 
 ---
 
-## NEW — 29
+## NEW — 28
 
 | ID | Subject | Raised | Source |
 |---|---|---|---|
@@ -41,13 +41,13 @@ Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests
 | [FR-059](FR-059-test-the-recommendation-s-four-constants-against.md) | Test the recommendation s four constants against | 2026-07-29 | chat 2026-07-29, PM session |
 | [FR-060](FR-060-adp-versus-production-find-where-the-market-is-s.md) | Adp versus production find where the market is s | 2026-07-29 | chat 2026-07-29, PM session |
 | [FR-061](FR-061-strategy-selector-changes-recommendations-not-ra.md) | Strategy selector changes recommendations not ra | 2026-07-30 | chat 2026-07-30, PM session |
-| [FR-062](FR-062-yahoo-league-connection-if-no-api-access-what-ar.md) | Yahoo league connection if no api access what ar | 2026-07-30 | chat 2026-07-30, PM session |
 
-## SCOPING — 1
+## SCOPING — 2
 
 | ID | Subject | Raised | Source |
 |---|---|---|---|
 | [FR-028](FR-028-research-what-yahoo-s-in-draft-assistant-shows-t.md) | Research what yahoo s in draft assistant shows t | 2026-07-29 | chat session 2026-07-29 (PM takeover) |
+| [FR-062](FR-062-yahoo-league-connection-if-no-api-access-what-ar.md) | Yahoo league connection if no api access what ar | 2026-07-30 | chat 2026-07-30, PM session |
 
 ## SPECCED — 0
 
