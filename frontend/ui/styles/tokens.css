@@ -101,11 +101,16 @@
 
 :root[data-theme='light'] {
   color-scheme: light;
-  --bg: #f4f6f8;
-  --panel: #ffffff;
-  --panel2: #eaeef3;
-  --s3: #ffffff;
-  --line: #e1e6ec;
+  /* docs/design/LIGHT-THEME-SHADING.md (2026-07-31, spec-2026-07-31.html §5):
+     three surfaces instead of one, so the page is no longer the brightest thing
+     on screen. Text/semantic/position colours are deliberately untouched here --
+     the spec scopes this change to surfaces only, and dark is not touched at all
+     (its whole block above this one is unmodified). */
+  --bg: #eef0f3; /* page -- grey, recedes */
+  --panel: #fbfcfd; /* sits on the page */
+  --panel2: #ffffff; /* raised -- the row/tab you are on, and only that */
+  --s3: #ffffff; /* also raised; light has one "raised" tier, not two */
+  --line: #dde1e6; /* border -- same-level joins only */
   --line2: #c7cfda;
   --txt: #131821;
   --dim: #4f5867;
@@ -121,4 +126,13 @@
   --def: #525c6b;
   --soon: #c8cfda;
   --sh: 0 1px 2px rgba(16, 22, 32, 0.07), 0 6px 18px rgba(16, 22, 32, 0.06);
+
+  /* Light-only helpers for the spec's "alternating row tint replaces row
+     borders" and "borders survive only at same-level joins" consequences.
+     Referenced elsewhere via var(--row-alt, transparent) / var(--row-line,
+     var(--line)) so an undefined var in dark mode falls back to dark's
+     existing, unchanged behaviour -- no dark-mode branch needed in component
+     code, and no shared token is being redefined for both themes. */
+  --row-alt: var(--panel);
+  --row-line: transparent;
 }
