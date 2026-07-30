@@ -1291,3 +1291,21 @@ Worth a `tools/handoffs.py check`-style structural validator that runs on `NEW-*
 write time rather than surfacing as an opaque failure the next time anyone runs `sync` — logged,
 not built (out of scope for a frontend-dispatched session).
 
+**2026-07-30, frontend session (light theme shading, docs/design/LIGHT-THEME-SHADING.md item
+5/8).** Scoping decisions made without asking, logged here per the "decide and log" instruction:
+(1) Only `Board.tsx`'s data rows got the explicit "alternating row tint replaces row borders" /
+"borders survive only at same-level joins" treatment. `DraftRoom.tsx`, `Availability.tsx`,
+`Opponents.tsx`, and `Predictions.tsx` all have similar per-row `borderBottom: '1px solid
+var(--line)'` patterns that were left as plain hairlines — they still improve for free from the
+token-level border-colour change (`--line` now `#dde1e6` in light), but none of them got the
+zebra/border-removal treatment Board did. A full app-wide redundant-border audit (which hairlines
+now duplicate a tone step that already separates two surfaces) was judged out of scope for one
+session against a real risk of visual regression across screens with no per-screen screenshot
+check. (2) One redundant border was identified and *not* removed: `Board.tsx`'s header bar
+(`background: var(--panel)`) sits directly above the page-toned control row, separated by a
+`borderBottom: 1px solid var(--line)` that, per the spec's letter, shouldn't be needed once the
+panel/page tone step exists. Left alone rather than risk an unverified layout change beyond the
+row-level fix that was screenshotted. If a future design pass wants the full "borders only at
+same-level joins" rule enforced everywhere, it needs a dedicated pass with per-screen screenshots,
+not a rider on a shading token change.
+

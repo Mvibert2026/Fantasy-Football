@@ -27,6 +27,27 @@ repo — Cloudflare holds its own deploy token. This closes the last dependency 
 machine: development, tests, the database rebuild, the daily capture and now viewing the app all run
 without it.
 
+**Last verified:** 2026-07-30, frontend session (worktree `agent-a56f58462a3b8e6fb`) shipping the
+light-theme shading spec (`docs/design/LIGHT-THEME-SHADING.md`, item 5 of 8 in the 2026-07-31
+design handoff), the founder's only unprompted visual-comfort complaint ("light view... very
+bright, could use some shading"). Three light-only surface tokens replace the old two-surface set
+in `frontend/ui/styles/tokens.css`: `--bg` (page) `#f4f6f8`→`#eef0f3`, `--panel`
+`#ffffff`→`#fbfcfd`, `--panel2`/`--s3` (raised — "the row you are on, and only that")
+`#eaeef3`→`#ffffff`, `--line` (border, same-level joins only) `#e1e6ec`→`#dde1e6`. Text, semantic,
+and position colours untouched; dark theme's whole token block untouched (verified with a
+same-page dark Board screenshot). Two new light-only helper vars (`--row-alt`, `--row-line`),
+referenced everywhere via `var(x, fallback)` so an undefined var in dark falls back to today's
+exact dark behaviour with no theme branch in component code. `Board.tsx`'s data rows get the
+spec's two named consequences directly: alternating row tint replaces the per-row hairline, and
+the selected/expanded row keeps `--panel2` (now raised) as the sole "row you are on." Not done:
+the same treatment on `DraftRoom.tsx`/`Availability.tsx`/`Opponents.tsx`/`Predictions.tsx`'s
+similar per-row hairlines (still benefit from the token-level border-colour change alone) and one
+identified-but-unremoved redundant border (Board's header-bar/control-row divider) — both logged
+to `docs/ideas-inbox.md` as a scoping decision rather than attempted app-wide in one session. 356
+tests passed, 42 files; `npx tsc -b --noEmit` clean; `npm run build` clean. Screenshots (light:
+Board, a player card, Availability; one dark Board for comparison) at
+`frontend/e2e/artifacts/light-shading-0{1,2,3,4}-*.png`. Commit `3d20984`.
+
 **Last verified:** 2026-07-30, backend session (worktree `agent-afc041a7bd8aaa6ab`) answering
 design's `TWO-VALUE-COLUMNS.md` contract question (FR-115/FR-118, "vs replacement" vs "vs your
 options"): **client computation, no export change.** Every non-live-roster input the second

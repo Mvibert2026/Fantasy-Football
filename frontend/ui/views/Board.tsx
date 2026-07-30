@@ -468,32 +468,41 @@ function BoardTable({
         })}
       </div>
 
-      {items.map((item) =>
-        item.kind === 'band' ? (
-          <div
-            key={`band-${item.tier}`}
-            style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '13px 20px 6px' }}
-          >
-            <span style={{ fontSize: 12, letterSpacing: '.1em', color: 'var(--dim)' }}>
-              TIER {item.tier.replace('T', '')}
-            </span>
-            <span style={{ flex: 1, height: 1, background: 'var(--line2)' }} />
-            <span style={{ fontFamily: 'var(--font-num)', fontSize: 12, color: 'var(--dim2)' }}>
-              {item.count} players
-            </span>
-          </div>
-        ) : (
-          <BoardRowLine
-            key={item.row.id}
-            row={item.row}
-            league={league}
-            selected={item.row.id === selected}
-            onSelect={onSelect}
-            expanded={item.row.id === expandedId}
-            onToggleExpand={onToggleExpand}
-          />
-        ),
-      )}
+      {(() => {
+        // Row index, counting rows only (band dividers don't consume a slot) --
+        // drives the alternating row tint that replaces the old per-row hairline
+        // in light mode (docs/design/LIGHT-THEME-SHADING.md). See BoardRowLine:
+        // undefined in dark mode, --row-alt/--row-line fall back to today's
+        // transparent/var(--line) exactly, so dark is unaffected.
+        let rowIndex = 0;
+        return items.map((item) =>
+          item.kind === 'band' ? (
+            <div
+              key={`band-${item.tier}`}
+              style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '13px 20px 6px' }}
+            >
+              <span style={{ fontSize: 12, letterSpacing: '.1em', color: 'var(--dim)' }}>
+                TIER {item.tier.replace('T', '')}
+              </span>
+              <span style={{ flex: 1, height: 1, background: 'var(--line2)' }} />
+              <span style={{ fontFamily: 'var(--font-num)', fontSize: 12, color: 'var(--dim2)' }}>
+                {item.count} players
+              </span>
+            </div>
+          ) : (
+            <BoardRowLine
+              key={item.row.id}
+              row={item.row}
+              league={league}
+              selected={item.row.id === selected}
+              alt={rowIndex++ % 2 === 1}
+              onSelect={onSelect}
+              expanded={item.row.id === expandedId}
+              onToggleExpand={onToggleExpand}
+            />
+          ),
+        );
+      })()}
     </div>
   );
 }
@@ -502,6 +511,7 @@ function BoardRowLine({
   row,
   league,
   selected,
+  alt,
   onSelect,
   expanded,
   onToggleExpand,
@@ -509,11 +519,20 @@ function BoardRowLine({
   row: BoardRow;
   league: LeagueConfig;
   selected: boolean;
+  alt: boolean;
   onSelect: (id: number | null) => void;
   expanded: boolean;
   onToggleExpand: (id: number) => void;
 }) {
   const startable = isStartable(league, row.raw.position, row.positionalRank);
+  // Row background/border: selected uses --panel2 (raised in light, the row
+  // you are on and only that -- unchanged in dark). Unselected rows alternate
+  // with --row-alt, which only exists in light mode (docs/design/
+  // LIGHT-THEME-SHADING.md's "alternating row tint replaces row borders");
+  // undefined in dark, so it falls back to today's transparent there. The
+  // hairline itself falls back the same way via --row-line.
+  const rowBg = selected ? 'var(--panel2)' : alt ? 'var(--row-alt, transparent)' : 'transparent';
+  const rowBorder = expanded ? 'none' : '1px solid var(--row-line, var(--line))';
   return (
     <div>
       <div
@@ -523,9 +542,9 @@ function BoardRowLine({
           gridTemplateColumns: GRID_TEMPLATE,
           alignItems: 'center',
           padding: '8px 20px',
-          borderBottom: expanded ? 'none' : '1px solid var(--line)',
+          borderBottom: rowBorder,
           cursor: 'pointer',
-          background: selected ? 'var(--panel2)' : 'transparent',
+          background: rowBg,
           fontFamily: 'var(--font-ui)',
           fontSize: 13,
           color: 'var(--txt)',
@@ -582,7 +601,7 @@ function BoardRowLine({
         <div
           style={{
             padding: '4px 20px 12px 84px',
-            borderBottom: '1px solid var(--line)',
+            borderBottom: '1px solid var(--row-line, var(--line))',
             display: 'flex',
             flexDirection: 'column',
             gap: 4,
