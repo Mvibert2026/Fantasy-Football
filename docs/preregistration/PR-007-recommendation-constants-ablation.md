@@ -34,8 +34,8 @@ threshold: Materiality floor M = +20 roster points, INHERITED VERBATIM from PR-0
   advance (see power_note). The DEF term is DELETED unconditionally with no arm run - it cannot
   fire on any board this project has (ADR-039, no DST ingested) or in the simulator (draft_sim
   assumption 5), so no measurement can license keeping it.
-data_scope: {seasons: MEASURED-BY-CENSUS-SEE-SECTION-6, expected_seasons: [2022, 2023, 2024], sigma_sweep: [5, 10, 20], holdout_unsealed: false}
-frozen: {arms: as specified in section 2, sims_per_cell: 1000, seed: 20260729, bootstrap_draws: 10000, registered_at: 2026-07-29, registered_by: strategist, content_hash: PENDING-FREEZE}
+data_scope: {seasons: [2022, 2023, 2024], expected_seasons: [2022, 2023, 2024], sigma_sweep: [5, 10, 20], holdout_unsealed: false}
+frozen: {arms: as specified in section 2, sims_per_cell: 1000, seed: 20260729, bootstrap_draws: 10000, registered_at: 2026-07-29, registered_by: strategist, content_hash: sha256:bdcd090e4487aaf6032d9f6dbe3167254bb691ad76a6514795667413763f6a3c}
 secondary: The arms vbd_te_window (the +18 moved from tier-1 to the consensus TE7-10 band from
   FR-039 pass 2), vbd_need_continuous (the +8 replaced by live_availability.n_need), bpa_consensus
   and balanced (PR-003's existing consensus-board strategies), the sigma=0 deterministic
