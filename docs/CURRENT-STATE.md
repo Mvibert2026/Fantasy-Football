@@ -515,7 +515,7 @@ by the session whose work changed them, per the agent operating rules.
 
 | | Value | Notes |
 |---|---|---|
-| Agent infrastructure | **Live, mailbox check FAILING — deliberately, see Top open items #15** | Seven subagents in `.claude/agents/` (backend, frontend, data-ops, strategist, researcher, librarian, pm), `/inbox` command, mailbox tooling at `tools/handoffs.py` + `tools/sprint_status.py`, mailbox health enforced in the test suite (`tests/test_handoffs.py`). `tools/handoffs.py check` (2026-07-29, PM closeout, cloud): **FAILS on two cross-branch ADR collisions only — 90 threads, 49 open / 41 resolved, none stale, all addressed.** Threads 083/084/087 collided the same way and were renumbered to 088/089/090 at this closeout. The earlier 069/073 failure was fixed when the frontend replies landed and `047ff90` corrected thread 080's reply heading. The check still emits ~29 non-fatal contradiction warnings (shared-target antonym pairs, plus five threads citing D-021 as undecided when it is DECIDED) — glance-and-disposition items, not failures. |
+| Agent infrastructure | **Live, mailbox check PASSING** (ADR-064, 2026-07-30, backend) | Seven subagents in `.claude/agents/` (backend, frontend, data-ops, strategist, researcher, librarian, pm), `/inbox` command, mailbox tooling at `tools/handoffs.py` + `tools/founder_requests.py` + `tools/sprint_status.py`, mailbox health enforced in the test suite (`tests/test_handoffs.py`, `tests/test_founder_requests.py`). **New thread/FR IDs are now `YYYY-MM-DD-slug.md` (`FR-YYYY-MM-DD-slug.md`), not a shared counter** — no cross-worktree race is possible (ADR-064); existing `NNN`/`FR-NNN` threads keep their numbers forever, unrenamed, and still resolve normally. `tools/handoffs.py check` / `tools/founder_requests.py check`: **both exit 0** — the six 2026-07-30 legacy-counter collisions (threads 093/094/109/110/111/112, ADR-054, ADR-055, FR-029, FR-030) are recorded as frozen, dated, non-fatal debt (`docs/known-id-collisions.md`) rather than fixed by renaming, per the no-rename policy; a genuinely new collision still fails `check` hard. ADR-054/ADR-055's *content* ambiguity (two different real decisions under one number) is unresolved and handed to PM: `docs/handoffs/2026-07-30-adr-054-and-adr-055-each-record-two-different-re.md`. 129 threads, 81 open. `check` still emits non-fatal contradiction warnings (shared-target antonym pairs, D-021-cited-as-undecided) — glance-and-disposition, not failures. |
 | Document-claim detector | **Live, PASSING** (ADR-059, 2026-07-29) | `docs/state-claims.toml` (registry) + `tools/state_claims.py` (checker) + `tests/test_state_claims.py` (21 tests). Fails when one of ten **live** documents asserts something the repo contradicts: existence, a constant quoted in prose, a source/capability status, a count, or two live docs disagreeing. Append-only logs are deliberately out of scope. Caught **eight live false claims** on its first run, all corrected here; proved on six planted faults reproducing the real 2026-07-29 failures, in both directions. **Rule it enforces: a factual claim of those classes in a live document must be registered with its verification.** Known gap, asserted in a test: whether a GitHub Actions *schedule* has fired is not readable from a checkout, so the ADP-capture claim has no registered truth — a single document asserting the false version still passes. `docs/pm/**` is not yet scanned (thread 083). |
 | Frontend location | `frontend/` subdirectory of this repo | Merged from `frontend-prep` via `git subtree add`, full history preserved. No longer a separate working copy. |
 
@@ -718,14 +718,20 @@ pass or is marked as unverified.
     can. At equal expected points, team variance is worth ~0.5pp of title odds across a 3.3× range —
     the "worse getting in, better once in" story is measured and is not there.
 
-**Known-red, deliberately**
+**Resolved (was "known-red, deliberately")**
 
-15. **`tools/handoffs.py check` fails on two ADR numbers, and that failure is the record.** ADR-054
-    and ADR-055 each carry a second, different definition on the unmerged branch
-    `origin/backend/mock-calibration-kickers` ("Batch mock-draft ingestion…" and "Kickers get a
-    consensus-only export artifact…"). Both sets are real work. Renumbering belongs to whoever merges
-    that branch, knowingly — not to a passing session guessing which wins. Do not silence it.
-    `tests/test_handoffs.py::test_mailbox_health` is red for this reason and no other.
+15. **`tools/handoffs.py check` / `test_mailbox_health` PASS again (ADR-064, 2026-07-30).** The
+    underlying ADR-054/ADR-055 content ambiguity this item used to keep the check red over is
+    **still unresolved** — nobody has picked which of the two definitions under each number wins,
+    and this session did not either (that call still belongs to whoever has the context, not to a
+    passing session guessing). What changed: leaving `check` permanently red stopped being useful
+    the moment more legacy collisions accumulated alongside it (093/094/109/110/111/112, FR-029,
+    FR-030 — all found this session) — a check that's always red can't tell a new collision from
+    old debt. ADR-064 records the known set as frozen, dated, non-fatal debt
+    (`docs/known-id-collisions.md`, `KNOWN_LEGACY_ADR_COLLISIONS` etc. in `tools/handoffs.py`) so
+    `check` is green on today's debt and still red on anything new. The actual ADR-054/055
+    disambiguation is now its own tracked ask to PM:
+    `docs/handoffs/2026-07-30-adr-054-and-adr-055-each-record-two-different-re.md`.
 
 **Suspended, not forgotten**
 

@@ -1401,3 +1401,11 @@ Scoping decisions made without asking, logged here per the "decide and log" inst
   `python tools/handoffs.py adr next`). `OPEN.md` hand-edited minimally and flagged as
   sync-authoritative.
 
+
+- 2026-07-30, backend (ADR-064 session): `tools/founder_requests.py check` (cross-branch FR
+  collision detector, same shape as `tools/handoffs.py check`) is not wired into the automated
+  test suite the way `tools/handoffs.py check` is via `test_mailbox_health`. It currently only
+  runs if someone invokes it by hand. Found while auditing FR-029/FR-030's pre-existing collision
+  for ADR-064 — would have caught it sooner if it ran in CI. Low effort to add
+  (`tests/test_founder_requests.py` already has the fixture machinery); not fixed this session
+  because it's outside this session's actual ask.

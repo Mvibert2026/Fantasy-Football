@@ -4,7 +4,7 @@
 Threads are the source of truth. Change a thread's `STATUS:`, then re-run sync.
 Protocol: [`README.md`](README.md).
 
-**81 open** · 48 resolved
+**82 open** · 48 resolved
 
 ---
 
@@ -13,7 +13,7 @@ Protocol: [`README.md`](README.md).
 Every role gets a section, including empty ones — an empty inbox is a fact worth stating,
 not an omission. Start your session at your own heading.
 
-### `pm` — 13 waiting
+### `pm` — 14 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
@@ -29,6 +29,7 @@ not an omission. Start your session at your own heading.
 | [120](120-assistant-window-container-shipped-assistant-win.md) | Assistant window container shipped assistant win | `frontend` | OPEN | 0d | none |
 | [2026-07-30-adr-054-and-adr-055-each-record-two-different-re](2026-07-30-adr-054-and-adr-055-each-record-two-different-re.md) | Adr 054 and adr 055 each record two different re | `backend` | OPEN | 0d | none |
 | [2026-07-30-draft-board-reference-axis-unanimous-snake-never](2026-07-30-draft-board-reference-axis-unanimous-snake-never.md) | Draft board reference axis unanimous snake never | `researcher` | OPEN | 0d | none |
+| [2026-07-30-no-allocator-exists-for-pr-0nn-pre-registration](2026-07-30-no-allocator-exists-for-pr-0nn-pre-registration.md) | No allocator exists for pr 0nn pre registration | `backend` | OPEN | 0d | none |
 | [90](090-fr-043-audit-claude-md-ss5-staleness-built-but-u.md) | Fr 043 audit claude md ss5 staleness built but u | `librarian` | OPEN | 1d | none |
 
 ### `backend` — 31 waiting
