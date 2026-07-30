@@ -4,7 +4,7 @@
 Threads are the source of truth. Change a thread's `STATUS:`, then re-run sync.
 Protocol: [`README.md`](README.md).
 
-**82 open** · 49 resolved
+**81 open** · 50 resolved
 
 ---
 
@@ -32,7 +32,7 @@ not an omission. Start your session at your own heading.
 | [2026-07-30-no-allocator-exists-for-pr-0nn-pre-registration](2026-07-30-no-allocator-exists-for-pr-0nn-pre-registration.md) | No allocator exists for pr 0nn pre registration | `backend` | OPEN | 0d | none |
 | [90](090-fr-043-audit-claude-md-ss5-staleness-built-but-u.md) | Fr 043 audit claude md ss5 staleness built but u | `librarian` | OPEN | 1d | none |
 
-### `backend` — 30 waiting
+### `backend` — 29 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
@@ -60,7 +60,6 @@ not an omission. Start your session at your own heading.
 | [094](094-sleeper-projection-ingest-landed-red-against-the.md) | Sleeper projection ingest landed red against the | `ranker` | OPEN | 1d | a clean suite; the "known-red is exactly one test" claim in CURRENT-STATE item 15 |
 | [101](101-coordinator-final-staff-lookahead-semantics.md) | Coordinator final staff lookahead semantics | `data-ops` | OPEN | 0d | none |
 | [103](103-fr-096-bust-candidate-screen-scope.md) | Fr 096 bust candidate screen scope | `backend` | OPEN | 0d |  |
-| [104](104-fr066-availability-ranking-source-export.md) | Fr066 availability ranking source export | `frontend` | OPEN | 0d | none |
 | [109](109-league-settings-custom-pane.md) | League settings custom pane | `frontend` | OPEN | 0d | FR-069 (kill the 24-preset matrix; dropdown is 3 leagues + Custom) |
 | [111](110-sleeper-screen-use-recent-usage-not-career-mean.md) | Sleeper screen use recent usage not career mean | `ranker` | OPEN | 0d | nothing; changes a feature choice in the FR-094 sleeper screen before it ships |
 | [111](111-sleeper-screen-use-recent-usage-not-career-mean.md) | Sleeper screen use recent usage not career mean | `ranker` | OPEN | 0d | nothing; changes a feature choice in the FR-094 sleeper screen before it ships |
@@ -219,6 +218,7 @@ _Nothing waiting on you._
 | [087](087-fr-039-pass-2-register-the-confirmatory-te-windo.md) | Fr 039 pass 2 register the confirmatory te windo | `ranker` → `strategist` |
 | [093](093-contract-1-15-0-scoring-ruleset-note-on-league-j.md) | Contract 1 15 0 scoring ruleset note on league j | `backend` → `frontend` |
 | [098](098-adp-and-history-not-league-scoring-aware.md) | Adp and history not league scoring aware | `frontend` → `backend` |
+| [104](104-fr066-availability-ranking-source-export.md) | Fr066 availability ranking source export | `frontend` → `backend` |
 | [117](117-prepared-answers-to-the-2026-08-01-handoff-held.md) | Prepared answers to the 2026 08 01 handoff held | `pm` → `design` |
 | [119](119-availability-opponent-model-adp-as-the-central-t.md) | Availability opponent model adp as the central t | `pm` → `strategist` |
 | [89](089-fr-040-costing-static-hosting-blocks-scoring-rec.md) | Fr 040 costing static hosting blocks scoring rec | `backend` → `frontend, pm` |

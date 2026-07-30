@@ -102,6 +102,162 @@ and it is currently unanswerable without them.
 
 ---
 
+### backend · 2026-07-30
+
+**Scope of this reply: M0 and M1 only**, per this session's dispatch. M2–M5 not attempted — M0's
+failure blocks the dispersion half by the pre-registration's own rule, and central-tendency M1 is
+what the founder actually asked to see resolved first. A follow-up session should pick up M2–M5
+(pipeline plumbing below — snapshot lookup, name resolution, gsis/mfl crosswalk — is reusable for
+them).
+
+**Process note, stated up front so it isn't buried:** `PR-0NN`/`content_hash` registration through
+`src/preregistration.require_confirmatory` could not happen — no allocator exists for `PR-0NN` ids
+(third session to hit this; opened `docs/handoffs/2026-07-30-no-allocator-exists-for-pr-0nn-pre-registration.md`
+to `pm` rather than hand-typing one, per CLAUDE.md). M1 below therefore ran as ad hoc analysis, not
+through the confirmatory harness — it is not in `docs/preregistration/test_run_log.jsonl` and does
+not count against any BH denominator yet. The pre-registration's thresholds and rules (family
+`availability-opponent-model`, declared `m=4`) were still followed to the letter; only the formal
+logging step is missing, and it should be backfilled once the allocator exists.
+
+#### M0 — GATE: NOT RECONCILED. Central tendency (M1) may proceed; dispersion (M2/M3) may not.
+
+**1. FFC's own documented meaning, cited.** FFC's help article
+(`https://help.fantasyfootballcalculator.com/article/34-average-draft-position-adp-data`, "ADP
+Data", last updated 2018-07-17) contains exactly one substantive sentence on methodology: *"Computer
+selections are always removed before doing any averaging. The mock draft computer algorithm has a
+slight random variance to it. This means that the impact of the computer on the ADP data is
+minimal."* Nothing there, nor on the ADP page itself, nor in the REST API's field list (confirmed
+live at `https://fantasyfootballcalculator.com/api/v1/adp/half-ppr?teams=10&year=2026` — field names
+`adp`, `times_drafted`, `high`, `low`, `stdev`, no accompanying definition) states what `times_drafted`
+counts relative to `total_drafts`/`total_drafts_in_sample`. Verified this is FFC's live production
+data, not a scraper artifact: the API's raw JSON for Bijan Robinson today is `times_drafted: 90`,
+`stdev: 0.7`, matching the committed CSV exactly, and the API `meta` block reports
+`{"teams": 10, "rounds": 15, "total_drafts": 1254}` — same 1254 as every CSV row.
+
+**2. Internal consistency check.** Picks-per-draft implied by FFC's own `meta.rounds=15` ×
+`meta.teams=10` = 150. Against `total_drafts_in_sample=1254`, a fully-participating player should
+show `times_drafted` approaching 1254 (or at minimum several hundred, for a player like Bijan Robinson
+taken at pick 2 in essentially every completed draft). Instead:
+
+| Quantity | Value |
+|---|---|
+| `sum(times_drafted)` across all 182 rows, 07-30 snapshot | **12,009** |
+| `sum(times_drafted)` across all 180 rows, 07-29 snapshot | **11,123** |
+| Implied total player-slots if 1254 drafts × 150 picks each, fully populated | **188,100** |
+| `sum(times_drafted) / total_drafts_in_sample`, 07-30 | 9.58 |
+| `sum(times_drafted) / total_drafts_in_sample`, 07-29 | 9.37 |
+
+`sum(times_drafted)` is **6.4% of** the picks-per-draft × n_drafts figure implied by FFC's own
+`meta.rounds`/`meta.teams`. That ratio is roughly stable day-over-day (~9.4–9.6), but nothing in
+FFC's documentation explains what that ratio *is* — it is not "average roster spots filled by
+tracked players" under any reading consistent with `total_drafts_in_sample=1254` meaning what its
+name says. **Does not reconcile.** Reproduced the pre-registration's own examples independently
+from the live API (not just the committed CSV): Bijan Robinson `times_drafted=90` at `adp=2.0`;
+Ja'Marr Chase fell 189→175 (07-29→07-30) while `total_drafts_in_sample` rose 1187→1254.
+
+**3. Per-player effective n.** **None available.** Given (2), `times_drafted` cannot be certified as
+a per-player draw count against a known, shared denominator — it may be a decayed/windowed count, a
+count from a different (undocumented) recency window than the displayed `sample_window`, or
+something else entirely. No standard error, shrinkage weight, or CI in M2/M3 may be built on it
+without a defensible n, and none is available. **M2 and M3 stay blocked**, exactly as the
+pre-registration specifies. M1 does not depend on `n_i` and proceeds below.
+
+#### M1 — central tendency: FFC half-PPR ADP vs. incumbent ECR vs. board vs. other FFC formats
+
+**Pipeline built:** `data/mock-drafts/{yahoo-10team-slot4,yahoo-12team-slot2,founder-mock}-*.json`
+picks → `identity.resolve_name()` (unchanged) → **one explicit, logged tiebreak added on top** for
+two failure classes `resolve_name()` correctly refuses to guess on: (a) exact suffix-preserving name
+match (Jr./Sr./II/III) when `identity.normalize_name()`'s suffix-stripping collapses a player onto a
+namesake (fixed "Marvin Harrison Jr." → the 2024 draftee, not his father); (b) exactly one candidate
+among ambiguous matches plays a fantasy skill position (QB/RB/WR/TE) — used only to exclude
+non-skill namesakes (a linebacker, a cornerback), never to pick between two skill players of the
+same name. `mfl_id` → `gsis` via `player_ids` (source='gsis') for the two `rankings`-table sources;
+`mfl_id` direct for the three `ffc_adp_snapshots` sources. Each candidate read at its own latest
+`as_of_date ≤ draft_date` (ECR: 2026-07-24 for all three mocks; board: 2026-07-27 for the founder
+mock, **2026-07-30** for both Yahoo mocks — `rankings` carries a second, newer board snapshot dated
+2026-07-30 that a first pass of this script missed by only checking the 07-27 date by hand; the
+committed script resolves it correctly via `MAX(as_of_date) <= draft_date`; FFC 10-team formats:
+2026-07-29 for the founder mock, 2026-07-30 for both Yahoo mocks).
+
+**Arithmetic check — REPRODUCED EXACTLY.** 10-team mock, all resolved picks per round (not
+common-support-restricted, matching how the check was hand-computed) against `ffc_half_ppr_10team`
+only: **R1 = 1.12 (n=10), R2 = 3.66 (n=10), R3 = 8.22 (n=10)**. Matches the pre-registered target to
+the digit. Pipeline trusted on that basis.
+
+**Common support** (a value present in *all five* candidates simultaneously — the strict reading of
+"carrying a value in every candidate source"): n = 123 (10-team, of 134 resolved / 150 total
+picks), n = 142 (12-team, of 164 resolved / 180), n = 124 (founder mock, of 134 resolved / 150).
+Non-skill picks (team defenses — 8–11 per mock) and a handful of names absent from
+`players_canonical` (Kenny Gainwell, Oronde Gadsden, Chig Okonkwo, Andy Borregales, Michael Pittman
+Jr. — a genuine second Jr./Sr. collision the suffix tiebreak didn't reach because *both* candidate
+rows in `players_canonical` read `display_name='Michael Pittman'` with no suffix) account for all
+unresolved and all common-support exclusions; none is a resolver defect.
+
+**MAE in picks, per mock, never pooled:**
+
+| Source | 10-team (n=123) | 12-team (n=142) | Founder mock (n=124) |
+|---|---|---|---|
+| `fantasypros_ecr` (incumbent) | **10.545** | **10.197** | **11.008** |
+| `fantasypros_csv_2026draft` (board) | 9.951 | 9.824 | 10.459 |
+| `ffc_half_ppr_10team` | 11.807 | 12.905 | 10.851 |
+| `ffc_ppr_10team` | 11.276 | 11.709 | 10.832 |
+| `ffc_non_ppr_10team` | 12.973 | 13.627 | 12.443 |
+
+Spearman ρ, secondary only:
+
+| Source | 10-team | 12-team | Founder mock |
+|---|---|---|---|
+| `fantasypros_ecr` | 0.961 | 0.963 | 0.959 |
+| `fantasypros_csv_2026draft` | 0.975 | 0.977 | 0.975 |
+| `ffc_half_ppr_10team` | 0.940 | 0.942 | 0.953 |
+| `ffc_ppr_10team` | 0.950 | 0.951 | 0.956 |
+| `ffc_non_ppr_10team` | 0.933 | 0.941 | 0.942 |
+
+**H1 verdict: NULL.** FFC half-PPR beats ECR on MAE in only **1 of 3** mocks (founder mock, by
+0.157 picks — noise-scale), and loses to ECR by **1.26 picks** (10-team) and **2.71 picks**
+(12-team) in the other two. Mean gap across mocks = **−1.27 picks** (ECR *ahead*, not behind). Both
+the pre-registered thresholds fail: not all-three-in-favor, and the mean gap is negative, nowhere
+near the ≥ 2.0-pick bar. **The board (`fantasypros_csv_2026draft`) is the best performer on raw MAE
+in all three mocks**, beating both ECR and every FFC format — noted as a descriptive fact, not a
+confirmatory result (the board isn't in H1's stated comparison, and n=3 rooms forecloses any claim
+beyond "consistent direction observed").
+
+**What this does and does not mean, stated per the pre-registration's own guardrail.** This is a
+NULL on the *accuracy* question, not a verdict against adopting ADP. The estimand argument
+(thread 119 §1: ADP measures the quantity the opponent model needs, on the correct scale, ECR
+measures something else entirely) is untouched by this result and stands on its own. What this NULL
+blocks, per the pre-registration verbatim: **no export field, tooltip, glossary entry, or
+founder-facing sentence may state or imply the ADP-based model is more accurate than ECR.** It may
+state that it is measured in the units of the decision (picks) and carries a dispersion ECR does
+not. Given the direction of this result — ECR *outperforming* ADP on MAE in two of three rooms — that
+constraint is doing real work here, not a formality.
+
+**Power, stated as pre-registered.** n = 3 rooms. A sign test floors at p = 0.125 in the *best*
+case for either direction; observed here is 1-of-3 in FFC's favor, which is weaker than the floor
+case and not analyzable for significance at all. No confidence interval is reported, as
+pre-registered — the between-room spread (ECR ahead by up to 2.7 picks in one room, behind by 0.16
+in another) is itself the finding, not noise to be averaged away.
+
+**Not delivered in this reply, and why:** the paired per-pick vectors thread 114 asked for (raw
+data exists in the pipeline above and can be exported on request — did not do it unprompted since
+this session's dispatch was scoped to M0/M1 verdicts, not thread 114's separate ask).
+
+**Guardrails applied:** §5 (all three required baselines present: ECR incumbent, board, market ADP —
+this is the run guardrails §5 flagged as missing); §3 (n=3 rooms, no CI claimed, BH family/m=4
+declared and preserved even though this run sits outside the formal log); §0 (resampling unit is
+the room per the pre-registration, never the pick — reported per-mock, never pooled). Pre-mortem
+item 7 (leakage explanation for a suspiciously good result) is moot here — the result is a clean
+NULL, the opposite of suspiciously good.
+
+**Pipeline script:** `analysis/availability_adp_m0_m1.py` (committed — `python3
+analysis/availability_adp_m0_m1.py` reproduces every number above and the M0 reconciliation check).
+Promote it into the confirmatory harness once `PR-0NN` exists, so M1 can be re-run through
+`require_confirmatory` and actually logged rather than ad hoc.
+
+STATUS: OPEN — M2–M5 still pending a follow-up session; M0/M1 complete.
+
+---
+
 ### M2 — Is per-player dispersion anything beyond a function of ADP position?
 
 **Data.** `ffc_adp_snapshots`, `adp_source='ffc_half_ppr_10team'`, latest snapshot,
