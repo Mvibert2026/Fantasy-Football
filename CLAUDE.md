@@ -375,6 +375,9 @@ concerned, never been made.
   `docs/status/INDEX.md`. `docs/status.md` is frozen — do not append there.
 - New decision → an ADR in `docs/decisions.md`.
 - Contract schema change → bump the version **and** open a handoff thread to `frontend`.
+- **PM only: sweep dead agent worktrees before ending a session.** Each costs ~0.9–1.0 GB and
+  nothing removes them automatically; 49 of them filled the disk to 100% on 2026-07-30 and cost a
+  running agent real time. Merge first, then remove — procedure in `docs/environment.md` §4b.
 
 ### Completion reporting
 Report commit hash and test count. Not prose summaries.

@@ -128,7 +128,52 @@ to the master-checkout path on their own.
 
 ---
 
-## 5. Browser-pane screenshots fail in worktrees — use Playwright
+## 4b. That DB copy costs 855 MB, and worktrees are never cleaned automatically
+
+The copy §4 tells you to make is **855.5 MB**. A frontend agent that also runs `npm ci` adds
+another ~130 MB. So **each agent worktree costs roughly 0.9–1.0 GB**, and nothing removes it when
+the agent finishes — `git worktree remove` is a step somebody has to take.
+
+**Measured 2026-07-30: 49 stale worktrees holding 25 GB, filling the disk to 100%** (252 MB free of
+252 GB). A frontend agent hit `ENOSPC` mid-run and lost time to it. Cleanup took the volume back to
+36%.
+
+### What this looks like when it bites you
+
+Not as "disk full." As a **build or test failure with an unrelated-looking message** — `npm ci`
+dying partway, `vite build` failing to write a chunk, sqlite refusing a write. The first instinct is
+to debug the code. Check `df -h` first when a command fails in a way that makes no sense.
+
+The environment note at the top of a session says this too, and it is worth repeating because it
+misleads: **`Avail` at ~0 with low `Used` means the allowance is spent, not that the machine is
+broken.** Deletes still succeed while writes fail, and freed space is immediately writable. This is
+recoverable in place — it is never a reason to ask for a fresh session.
+
+### If you hit it mid-run
+
+Delete from **your own worktree only**. Another agent's worktree looks like dead weight and is not.
+
+Do **not** delete your worktree's `data/nfl.db` to free space — it is the 855 MB file, so it is the
+tempting one, and §4 explains what happens next: sqlite silently recreates it as an empty stub and
+~21 tests fail with "no such table," looking exactly like a regression you caused. If you have
+already deleted it, re-copy it from the main checkout rather than letting a stub be created.
+
+Cheaper things to delete first: build output (`frontend/dist`, `.vite`), your scratchpad, and
+`node_modules` if you are done with the frontend suite.
+
+### Whose job the cleanup is
+
+**PM's**, at session boundaries — only PM can see which worktrees still have live agents in them.
+The sweep, keeping any worktree with a running agent:
+
+    git worktree list                       # identify live ones first
+    git worktree remove --force <path>      # for each dead one
+    git worktree prune
+    git branch --list 'worktree-agent-*' | grep -v <live-id> | xargs -r git branch -D
+    git gc --prune=now
+
+Removing a worktree does not lose committed work — the commits live in the repo once merged, and
+the branch is deleted separately. **Merge first, then remove.**
 
 Observed 2026-07-28 (threads 058, 069/073 and workstream C): the sandbox Browser pane loads
 pages, but `screenshot` fails with "Browser pane is not displayed."
