@@ -5,11 +5,11 @@ Per-request files in this directory are the source of truth. Edit a request's ow
 `STATUS:` line, then re-run sync. Protocol: [`README.md`](README.md).
 Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests.md).
 
-**48 requests since freeze.**
+**49 requests since freeze.**
 
 ---
 
-## NEW — 25
+## NEW — 26
 
 | ID | Subject | Raised | Source |
 |---|---|---|---|
@@ -38,6 +38,7 @@ Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests
 | [FR-060](FR-060-adp-versus-production-find-where-the-market-is-s.md) | Adp versus production find where the market is s | 2026-07-29 | chat 2026-07-29, PM session |
 | [FR-061](FR-061-strategy-selector-changes-recommendations-not-ra.md) | Strategy selector changes recommendations not ra | 2026-07-30 | chat 2026-07-30, PM session |
 | [FR-063](FR-063-scarcity-depletion-warning-uses-the-next-pick-no.md) | Scarcity depletion warning uses the next pick no | 2026-07-30 | chat 2026-07-30, PM session, screenshot |
+| [FR-064](FR-064-look-and-feel-reads-dated-draft-rankings-pane-to.md) | Look and feel reads dated draft rankings pane to | 2026-07-30 | chat 2026-07-30, PM session |
 
 ## SCOPING — 1
 
