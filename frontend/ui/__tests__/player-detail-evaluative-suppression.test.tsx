@@ -9,7 +9,7 @@ import type { RawBoardPlayer } from '../data/types';
 import { loadDatasetFromDisk, withTraceOn } from './helpers';
 
 /**
- * FR-121 / `docs/design/PROVENANCE-DISCLOSURE.md`'s "class 3" finding: the
+ * FR-114 / `docs/design/PROVENANCE-DISCLOSURE.md`'s "class 3" finding: the
  * export's own `evaluative_adjustment_note` used to render verbatim, including
  * a literal instruction to the UI it was not obeying -- "SUPPRESS this row in
  * the UI while evaluative_adjustment_available is false." Founder's own read,
@@ -56,7 +56,7 @@ function renderFirst(dataset: Dataset, wrapper: (el: ReactElement) => ReactEleme
 const SUPPRESS_TEXT = 'SUPPRESS this row';
 const REAL_NOTE = withEvaluativeOverride({}).board.players[0]!.evaluative_adjustment_note;
 
-describe('PlayerDetail evaluative-adjustment suppression (FR-121, class 3)', () => {
+describe('PlayerDetail evaluative-adjustment suppression (FR-114, class 3)', () => {
   it('the real export note actually contains the literal UI instruction -- confirms this test is not vacuous', () => {
     expect(REAL_NOTE).toContain(SUPPRESS_TEXT);
   });

@@ -120,7 +120,7 @@ export function PlayerDetail({
   stale?: boolean;
   onClose: () => void;
 }) {
-  // FR-121: field-path captions throughout this sheet are gated on this switch
+  // FR-114: field-path captions throughout this sheet are gated on this switch
   // (default off); the honest-reason prose next to each of them is not.
   const { on: showSources } = useTraceMode();
 
@@ -142,7 +142,7 @@ export function PlayerDetail({
     ? {
         text: archetypeLabel(archetypeEntry.archetype, row.raw.position).toUpperCase(),
         title:
-          // FR-121: the field-path citation clause is gated; the confidence and
+          // FR-114: the field-path citation clause is gated; the confidence and
           // (where present) the live share-stat sentence are plain-English
           // meaning, not sourcing, and stay either way.
           (showSources

@@ -87,7 +87,7 @@ describe('PlayerDetail archetype (FR-075)', () => {
   it('shows the real label, confidence and description for a classified RB/WR/TE', () => {
     const entry = data.playerDescriptions!.players.find((p) => p.player_id === labelledRow.raw.player_id_gsis)!;
     const { getByText, getAllByTitle, queryAllByTitle } = renderDetail(labelledRow);
-    // FR-121: the sourced field path itself is behind the "show data sources"
+    // FR-114: the sourced field path itself is behind the "show data sources"
     // switch, default off -- this default-state render must NOT carry the
     // `player_descriptions.json:...` path, only the plain-English archetype
     // value. Confidence and description are meaning, not sourcing, and stay.

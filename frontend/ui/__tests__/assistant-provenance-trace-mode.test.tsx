@@ -7,7 +7,7 @@ import { buildLeagueConfig } from '../data/league';
 import { loadDatasetFromDisk, withTraceOn } from './helpers';
 
 /**
- * FR-121 / `docs/design/PROVENANCE-DISCLOSURE.md` item 1 -- the exact case the
+ * FR-114 / `docs/design/PROVENANCE-DISCLOSURE.md` item 1 -- the exact case the
  * founder named: the assistant panel printing a raw provenance line, including
  * (for the reasoning lane) a "model prose over context: page.draft_state,
  * page.roster_needs, ..." dump. `.claim` tag and text are meaning, not

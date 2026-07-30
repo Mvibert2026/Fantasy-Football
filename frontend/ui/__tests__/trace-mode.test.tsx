@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { stripInlineCitations, TraceModeProvider, useTraceMode } from '../data/traceMode';
 
 /**
- * FR-121 (`docs/design/PROVENANCE-DISCLOSURE.md`) -- the global "show data
+ * FR-114 (`docs/design/PROVENANCE-DISCLOSURE.md`) -- the global "show data
  * sources" switch. Founder's own words: *"I like the idea about traceablity, I
  * found a lot of things with those notes, I just want to be able to see a
  * version with and without them."* Never deletes anything; a visibility

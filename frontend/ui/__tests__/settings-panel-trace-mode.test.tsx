@@ -6,7 +6,7 @@ import { TraceModeProvider } from '../data/traceMode';
 import { loadDatasetFromDisk } from './helpers';
 
 /**
- * FR-121 / `docs/design/PROVENANCE-DISCLOSURE.md`. The founder's own ask: put
+ * FR-114 / `docs/design/PROVENANCE-DISCLOSURE.md`. The founder's own ask: put
  * the control in the existing Settings panel. This exercises the real
  * `TraceModeProvider` (App.tsx/StandaloneApp.tsx wrap the whole shell in one;
  * `settings-panel.test.tsx`'s existing suite renders TopBar bare, which is
@@ -43,7 +43,7 @@ beforeEach(() => {
   localStorage.clear();
 });
 
-describe('Settings panel "show data sources" switch (FR-121)', () => {
+describe('Settings panel "show data sources" switch (FR-114)', () => {
   it('is labelled in the founder\'s own language -- never "provenance", "trace", or "field path"', () => {
     renderTopBar();
     fireEvent.click(screen.getByRole('button', { name: 'Settings' }));

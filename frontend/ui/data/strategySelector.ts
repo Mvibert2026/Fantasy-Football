@@ -60,7 +60,7 @@ export function strategyLabel(key: string): string {
  *  the selector and in the strategy-adjustment panel when it fires. Every
  *  round-gated rule here names the exact round window it applies -- that part is
  *  the honest reason and always shows. The `src/draft_sim.py::strategy_*` source
- *  citation is developer-facing sourcing text (FR-121); it is appended only when
+ *  citation is developer-facing sourcing text (FR-114); it is appended only when
  *  `showSources` is on (`ui/data/traceMode.ts`, default off), never welded into
  *  the reason itself. */
 export function strategyRuleText(key: StrategyKey, showSources: boolean = false): string {

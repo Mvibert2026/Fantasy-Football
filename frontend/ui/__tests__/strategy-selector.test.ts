@@ -93,7 +93,7 @@ describe('strategyLabel / STRATEGY_CATALOG', () => {
 });
 
 describe('strategyRuleText', () => {
-  // FR-121: the `src/draft_sim.py::strategy_*` source citation is
+  // FR-114: the `src/draft_sim.py::strategy_*` source citation is
   // developer-facing sourcing text, gated by the "show data sources" switch
   // (default off/omitted here) -- never welded into the plain-English rule
   // text itself, which every case must still carry regardless of the switch.

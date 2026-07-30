@@ -6,7 +6,7 @@ import { buildLeagueConfig } from '../data/league';
 import { loadDatasetFromDisk, withTraceOn } from './helpers';
 
 /**
- * FR-121 / `docs/design/PROVENANCE-DISCLOSURE.md` -- the board's own "why this
+ * FR-114 / `docs/design/PROVENANCE-DISCLOSURE.md` -- the board's own "why this
  * rank" expanded row used to print the structural-breakdown field path as
  * static, always-visible text: `board.json:players[0].structural_breakdown.
  * replacement_levels`, one of the exact examples named in the design spec.
@@ -23,7 +23,7 @@ function expandFirstRow() {
   fireEvent.click(expandHandles[0]!);
 }
 
-describe('Board expanded-row field paths (FR-121)', () => {
+describe('Board expanded-row field paths (FR-114)', () => {
   it('does not show a board.json field path by default, once a row is expanded', () => {
     render(<Board data={data} rows={rows} league={league} />);
     expandFirstRow();

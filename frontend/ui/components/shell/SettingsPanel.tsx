@@ -104,7 +104,7 @@ export function SettingsPanel({
           </button>
         </div>
 
-        {/* FR-121 (docs/design/PROVENANCE-DISCLOSURE.md): the global "show data
+        {/* FR-114 (docs/design/PROVENANCE-DISCLOSURE.md): the global "show data
             sources" switch. App-wide, not per-league, so it sits above the
             league-scoped sections below. Default off -- the clean view is the one
             used live during a draft; this is the one turned on when a number looks

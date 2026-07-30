@@ -384,7 +384,7 @@ export function DraftRoom({
   onAssistantContext?: (items: ContextItem[]) => void;
 }) {
   const leagueId = data.manifest.artifacts.board?.league_id ?? 'default';
-  // FR-121: field-path mentions in this screen's tooltips/captions are gated on
+  // FR-114: field-path mentions in this screen's tooltips/captions are gated on
   // this switch (default off); the plain-English meaning next to each is not.
   const { on: showSources } = useTraceMode();
   const [draft, setDraft] = useState<DraftState>(() => loadDraftState(leagueId));

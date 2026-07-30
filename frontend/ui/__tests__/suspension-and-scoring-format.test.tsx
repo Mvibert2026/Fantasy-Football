@@ -131,7 +131,7 @@ describe('suspension display (thread 073)', () => {
     expect(note).toHaveTextContent('SUSPENSION ON FILE');
     expect(note).toHaveTextContent('Suspended 6 games');
     expect(note).toHaveTextContent('180.4');
-    // FR-121: the field-path caption is behind the "show data sources" switch,
+    // FR-114: the field-path caption is behind the "show data sources" switch,
     // default off -- this default-state render must not carry it.
     expect(note).not.toHaveTextContent('board.json:suspension_flag');
   });

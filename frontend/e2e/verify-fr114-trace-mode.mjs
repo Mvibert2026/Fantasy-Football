@@ -1,8 +1,8 @@
 /**
- * FR-121 verification -- the global "show data sources" switch, both states,
+ * FR-114 verification -- the global "show data sources" switch, both states,
  * on the Draft board and a player card (CLAUDE.md's screenshot requirement).
  *
- * Usage: node e2e/verify-fr121-trace-mode.mjs [--url http://localhost:5199]
+ * Usage: node e2e/verify-fr114-trace-mode.mjs [--url http://localhost:5199]
  */
 
 import { mkdirSync } from 'node:fs';
@@ -57,7 +57,7 @@ async function shot(page, name) {
   const bodyOff = await page.textContent('body');
   console.log(`[draft board, off] contains 'board.json:players[': ${bodyOff.includes('board.json:players[')}`);
   console.log(`[draft board, off] contains 'DATA SOURCES SHOWN': ${bodyOff.includes('DATA SOURCES SHOWN')}`);
-  await shot(page, 'fr121-draft-board-off.png');
+  await shot(page, 'fr114-draft-board-off.png');
   await page.close();
 }
 
@@ -78,7 +78,7 @@ async function shot(page, name) {
   const bodyOn = await page.textContent('body');
   console.log(`[draft board, on] contains 'board.json:players[': ${bodyOn.includes('board.json:players[')}`);
   console.log(`[draft board, on] contains 'DATA SOURCES SHOWN': ${bodyOn.includes('DATA SOURCES SHOWN')}`);
-  await shot(page, 'fr121-draft-board-on.png');
+  await shot(page, 'fr114-draft-board-on.png');
   await page.close();
 }
 
@@ -98,7 +98,7 @@ async function shot(page, name) {
   const bodyOff = await page.textContent('body');
   console.log(`[player card, off] contains 'board.json:tier_label': ${bodyOff.includes('board.json:tier_label')}`);
   console.log(`[player card, off] contains 'SUPPRESS this row': ${bodyOff.includes('SUPPRESS this row')}`);
-  await shot(page, 'fr121-player-card-off.png');
+  await shot(page, 'fr114-player-card-off.png');
   await page.close();
 }
 
@@ -119,7 +119,7 @@ async function shot(page, name) {
   const bodyOn = await page.textContent('body');
   console.log(`[player card, on] contains 'board.json:tier_label': ${bodyOn.includes('board.json:tier_label')}`);
   console.log(`[player card, on] contains 'SUPPRESS this row': ${bodyOn.includes('SUPPRESS this row')}`);
-  await shot(page, 'fr121-player-card-on.png');
+  await shot(page, 'fr114-player-card-on.png');
   await page.close();
 }
 
@@ -130,7 +130,7 @@ async function shot(page, name) {
   await page.waitForSelector('text=/generated 20/', { timeout: 30_000 });
   await page.getByRole('button', { name: 'Settings' }).click();
   await page.waitForSelector('text=Show data sources', { timeout: 10_000 });
-  await shot(page, 'fr121-settings-panel.png');
+  await shot(page, 'fr114-settings-panel.png');
   await page.close();
 }
 

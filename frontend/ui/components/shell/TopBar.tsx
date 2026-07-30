@@ -143,7 +143,7 @@ export function TopBar({
   // the badge simply doesn't render then, exactly today's UI.
   const activeTrack = leagues.find((l) => l.id === leagueId)?.track;
 
-  // FR-121 (docs/design/PROVENANCE-DISCLOSURE.md): the "show data sources" switch's
+  // FR-114 (docs/design/PROVENANCE-DISCLOSURE.md): the "show data sources" switch's
   // persistent on-screen indicator -- so a screenshot is never ambiguous about which
   // mode produced it -- plus the value this bar's own field-path tooltip (trackTitle)
   // is gated on.
@@ -198,7 +198,7 @@ export function TopBar({
         </div>
       ) : null}
 
-      {/* FR-121: persistent indicator, shown only while the switch is on, so a
+      {/* FR-114: persistent indicator, shown only while the switch is on, so a
           screenshot (the founder's own primary review method, per
           docs/operating-model.md) is never ambiguous about which view produced it.
           Deliberately not `--acc`/`--live` -- this is a mode, not a "good" signal or

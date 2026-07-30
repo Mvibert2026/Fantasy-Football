@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 
 /**
- * The global "show data sources" switch (FR-121, `docs/design/PROVENANCE-DISCLOSURE.md`).
+ * The global "show data sources" switch (FR-114, `docs/design/PROVENANCE-DISCLOSURE.md`).
  *
  * The founder's own words, twice: first "remove the code and sourcing that's all over,"
  * then, refining it once he saw what it caught: "I like the idea about traceability, I

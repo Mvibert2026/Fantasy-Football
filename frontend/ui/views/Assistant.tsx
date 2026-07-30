@@ -130,7 +130,7 @@ function flattenAnswer(answer: Answer): string {
 }
 
 function AnswerBlock({ answer, onAsk }: { answer: Answer; onAsk: (q: string) => void }) {
-  // FR-121 (docs/design/PROVENANCE-DISCLOSURE.md item 1, "highest priority"):
+  // FR-114 (docs/design/PROVENANCE-DISCLOSURE.md item 1, "highest priority"):
   // this is the exact case the founder flagged -- the assistant panel printing
   // a raw provenance line, including the reasoning lane's own
   // "model prose over context: page.draft_state, page.roster_needs, ..." dump.

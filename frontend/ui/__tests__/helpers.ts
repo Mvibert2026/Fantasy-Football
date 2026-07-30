@@ -40,7 +40,7 @@ export function loadDatasetFromDisk(): Dataset {
 }
 
 /**
- * FR-121 (the "show data sources" switch, `ui/data/traceMode.tsx`) -- wraps a
+ * FR-114 (the "show data sources" switch, `ui/data/traceMode.tsx`) -- wraps a
  * tree with the switch forced on, so a test can assert the ON state without a
  * real Settings-panel/`Alt+T` interaction. Tests that render a component
  * without this wrapper get the switch's real default (off), which is the
