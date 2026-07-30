@@ -1,10 +1,35 @@
 ---
 ID: FR-099
-STATUS: NEW
+STATUS: ANSWERED
 PRIORITY: HIGH
 SOURCE: chat 2026-07-30, PM session
 RAISED: 2026-07-30
 ---
+
+## Answer (backend, 2026-07-30)
+
+Full writeup: `docs/analysis/consensus-vs-adp-2026-07-30.md`, code in
+`analysis/consensus_vs_adp.py`. Pending `strategist` methodology review
+(`docs/handoffs/NEW-consensus-vs-adp-methodology-review.md`).
+
+**Coverage correction first:** the premise "five completed seasons (2021-2025) have both [ECR and
+ADP]" is wrong — FFC ADP has no 2025 archive in any format. True overlap is **2021-2024, n=4**.
+2025 is therefore never read; not holdout discipline, the data isn't there.
+
+**Overall correlation:** tau_b 0.52-0.79 (mean 0.67) — strong but well short of the ~0.95 assumed
+in this request; a real, sizeable disagreement subset exists (52% of matched players/season differ
+by >1 round).
+
+**On that disagreement subset: indistinguishable, use either.** Pooled ECR win rate 0.546, Wilson
+CI [0.491, 0.600] — crosses 0.5. Per-season table shows real instability (0.474-0.652); the pooled
+lean is carried almost entirely by one season (2023). **One real, not-yet-confirmed interaction
+worth a future pre-registration:** early-draft disagreements (top ~5 rounds) favor ECR (0.595,
+CI barely excludes 0.5) with ~5x the effect size of late-round disagreements, which are a coin
+flip.
+
+**Third-baseline add (ECR into the bottom-up-vs-consensus-ADP comparison):** assessed, not done —
+requires re-running `ranker`-owned walk-forward infrastructure that's mid-review elsewhere. Logged
+as follow-on, not attempted speculatively.
 
 ## Request
 Is consensus or ADP the better baseline — and is bottom-up better than top-down?
