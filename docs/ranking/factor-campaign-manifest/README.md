@@ -51,6 +51,18 @@ campaign opened. Their m stands as recorded.
 | batch | agent | m_b | registered | pre-commitment |
 |---|---|---|---|---|
 | 5 | ranker | **17** | 2026-07-30, before fitting | `docs/ranking/factor-batch-5-precommit.md` |
+| 6 | ranker | **23** | 2026-07-30, before fitting (in a duplicate manifest, migrated here) | `docs/ranking/factor-batch-6-precommit.md` |
 
 *(Other batches: add your row and your `batch-<n>.md` file. If your row is missing at grading
 time, the floor is what protects the campaign.)*
+
+**Σ m_b = 40 as of 2026-07-30, so the FLOOR of 80 is what bound for both batches 5 and 6.** That
+is the floor doing exactly the job it was put there for: batches 4 and 7 ran concurrently and had
+not registered when either batch graded. Neither batch's grades change if they register later —
+80 already exceeds any plausible Σ.
+
+**The duplicate-manifest episode is recorded, not tidied away.** Batches 5 and 6 independently
+reached the same conclusion about campaign-level correction and each built a manifest without
+seeing the other; batch 6's (`docs/preregistration/families/F-FACTOR-CAMPAIGN-2026-07-30.yaml`) is
+retired in place with the full account. Two manifests is the failure both were built to stop, and
+the one-file-per-batch layout here is the reason this one survived four concurrent writers.

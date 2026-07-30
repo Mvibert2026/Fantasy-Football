@@ -167,7 +167,13 @@ def campaign_m() -> Tuple[int, Dict[str, int]]:
     if MANIFEST.exists():
         for p in sorted(MANIFEST.glob("batch-*.md")):
             txt = p.read_text(encoding="utf-8")
-            hit = re.search(r"m_\d+\s*=\s*\*{0,2}(\d+)", txt)
+            # Two registration shapes are in the directory already -- batch 5's
+            # prose `m_5 = 17` and batch 6's table row `| **m_6** | **23** |`.
+            # Both are matched rather than one being declared canonical: a
+            # denominator that silently misses a sibling batch is the exact
+            # failure this manifest exists to prevent.
+            hit = (re.search(r"m_\d+\**\s*=\s*\*{0,2}(\d+)", txt)
+                   or re.search(r"\*{0,2}m_\d+\*{0,2}\s*\|\s*\*{0,2}(\d+)", txt))
             if hit:
                 found[p.stem] = int(hit.group(1))
     return max(sum(found.values()), CAMPAIGN_FLOOR), found
