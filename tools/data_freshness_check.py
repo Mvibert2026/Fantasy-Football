@@ -75,6 +75,15 @@ DEFAULT_EXPORT_DIR = REPO / "data" / "export"
 SEASON = lc.CURRENT_LEAGUE.season if hasattr(lc.CURRENT_LEAGUE, "season") else 2026
 DATE_RE = re.compile(r"(\d{4}-\d{2}-\d{2})")
 
+# Most recent *completed* season as of today: before September the current
+# calendar year hasn't kicked off, so last year is the latest with full data.
+# Matches src/ingest_weekly_stats.py's latest_season() -- kept independent
+# rather than imported, since this file already stands alone from src/.
+_today_for_season = dt.datetime.now(dt.timezone.utc).date()
+CURRENT_LATEST_SEASON = (
+    _today_for_season.year - 1 if _today_for_season.month < 9 else _today_for_season.year
+)
+
 
 def _today(today: Optional[dt.date]) -> dt.date:
     return today or dt.datetime.now(dt.timezone.utc).date()
@@ -112,6 +121,24 @@ def _table_max_date_row(conn, label: str, sql: str, params: tuple, warn_at: int,
     return {
         "source": label, "as_of": as_of_date, "age_days": age,
         "warn_at_days": warn_at, "max_age_days": max_age, "status": status, "owner": owner,
+    }
+
+
+def _table_max_season_row(conn, label: str, sql: str, params: tuple, warn_at: int, max_age: int,
+                           owner: str) -> dict:
+    """Season-granularity freshness for tables with no real as_of_date (pbp,
+    rosters_weekly, schedules, injuries) -- age is measured in seasons behind
+    `latest_season`, not days. See CURRENT_LATEST_SEASON below."""
+    row = conn.execute(sql, params).fetchone()
+    max_season = row[0] if row and row[0] is not None else None
+    age = None
+    if max_season is not None:
+        age = CURRENT_LATEST_SEASON - int(max_season)
+    status = _status(age, warn_at, max_age)
+    return {
+        "source": label, "as_of": (f"season {int(max_season)}" if max_season is not None else None),
+        "age_days": age, "warn_at_days": warn_at, "max_age_days": max_age,
+        "status": status, "owner": owner,
     }
 
 
@@ -250,6 +277,36 @@ def build_report(db_path: Path, export_dir: Path, today: Optional[dt.date] = Non
             "export:player_descriptions.json", export_dir / "player_descriptions.json",
             "generated_utc", warn_at=2, max_age=3,
             owner="data-ops, run player_descriptions.py after board changes", today=today,
+        ))
+
+        # nflverse tables added 2026-07-30 (thread
+        # 2026-07-30-five-datasets-30-seconds-total-all-measured-toda). None of
+        # these carry a real as_of_date -- season/week (or season/game_id for
+        # schedules) is the finest grain the source has. "as_of" here is the max
+        # season present, not a calendar date; age is measured in seasons, not
+        # days, so warn/max thresholds are seasons too (a table one season stale
+        # heading into a new draft is the failure mode that matters).
+        rows.append(_table_max_season_row(
+            conn, "pbp", "SELECT MAX(season) FROM pbp", (),
+            warn_at=0, max_age=1, owner="data-ops, automated (src/ingest_pbp.py)",
+        ))
+        rows.append(_table_max_season_row(
+            conn, "rosters_weekly", "SELECT MAX(season) FROM rosters_weekly", (),
+            warn_at=0, max_age=1, owner="data-ops, automated (src/ingest_reference.py)",
+        ))
+        rows.append(_table_max_season_row(
+            conn, "schedules", "SELECT MAX(season) FROM schedules", (),
+            warn_at=0, max_age=0,  # schedules should always include the current/next season
+            owner="data-ops, automated (src/ingest_reference.py)",
+        ))
+        rows.append(_table_max_season_row(
+            conn, "injuries", "SELECT MAX(season) FROM injuries", (),
+            warn_at=1, max_age=1,
+            owner="data-ops, BLOCKED 2026-07-30: 2025 rows exist upstream but "
+                  "date_modified is NULL for all of them; ingest_reference.py "
+                  "correctly refuses to default the as_of column (CLAUDE.md "
+                  "Sec6.1). Needs a methodology decision (backend/statistician), "
+                  "not an ingestion fix.",
         ))
 
         gaps = capture_without_ingest_checks(conn)
