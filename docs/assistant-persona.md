@@ -65,10 +65,36 @@ assistant does not.
 
 ## Page awareness
 
-The founder asked for the assistant to know what screen he is on. When that lands, the rule is:
-**the page narrows what is relevant, it never widens what may be claimed.** Knowing he is on the
-draft screen means preferring context about the current pick. It does not license anything the rules
-above forbid.
+The founder asked for the assistant to know what screen he is on (FR-076, 2026-07-30 — "the chatbot
+should have access to that data to synthesize it intelligently," about a real failure: asked what
+his likely choices and trade-offs were at his next pick, the assistant said the backend didn't have
+that information, even though the Draft Room was already rendering all of it). Shipped as a bounded
+`ContextItem[]` snapshot (`frontend/ui/assistant/pageContext.ts`) built from values `DraftRoom.tsx`
+has already computed for its own render — current pick, roster needs, the live recommendation and
+its stated reason, the give-up trade-off, the WHY NOT HIGHEST VBD explanation when one fires, the
+next-pick reference point, and position scarcity — merged into every reasoning-lane call alongside
+whatever the lexical retriever finds, never replacing it.
+
+The rule holds exactly as stated before this landed: **the page narrows what is relevant, it never
+widens what may be claimed.** Page-context items are ordinary context items — rules 1–4 bind them
+the same as a `board.json` line. Knowing he is on the draft screen means preferring context about
+the current pick; it does not let the assistant compute a number of its own from what it sees on
+screen and present that as a page value. The `page.scope_note` item shipped with every bundle says
+what was deliberately left out (the full board, the queue, every remaining player's own odds), per
+the founder's own "keep the payload bounded, say what you excluded" instruction — so the assistant
+can say plainly that a wider question needs a separate, more specific one.
+
+## Conversation history
+
+FR-077 ("Chatbot ony allows for one question input at a time... shrink the number of suggested or
+relevant questions to 3 tops") added a real, standing conversation to the dock — prior turns are now
+sent with every follow-up (`frontend/ui/assistant/reasoning.ts`'s `ConversationTurn`, bounded to the
+last 6 turns and 600 characters of prior answer each) so "what about him" can resolve to whoever the
+previous turn was about. This is why rule 9 exists below: history is for continuity only, never a
+second source of facts alongside the retrieved context. It is not a relaxation of rules 1–4 — a
+prior turn's own claims already passed those rules when they were first produced; rule 9 just says
+plainly that discussing the same player twice doesn't let the second answer skip citing its own
+context.
 
 ## Model
 
@@ -92,7 +118,10 @@ Binding rules:
 6. Answer the question that was asked. Lead with the answer, then what it is made of.
 7. Prefer plain words to the project's internal vocabulary. The reader is not a developer.
 8. Be concise. Two or three sentences unless the question genuinely needs more.
+9. Earlier turns in this conversation, if any, are for continuity only -- so "he", "that pick", "the other one" can resolve to something said earlier. They are never a source of facts. Every claim in THIS answer must still be traceable to an item in THIS turn's retrieved context, exactly as rules 1-4 require, even when a prior turn discussed the same player or number.
 ```
 
 Rules 1–4 are the safety floor and predate this file. Rules 5–8 are the founder's voice, added
-2026-07-29; rule 5's second sentence is the one doing the real work.
+2026-07-29; rule 5's second sentence is the one doing the real work. Rule 9, added 2026-07-30
+(FR-077), is the safety floor extended to cover conversation history once the dock became a real
+back-and-forth instead of one shot per question — see "Conversation history" above.

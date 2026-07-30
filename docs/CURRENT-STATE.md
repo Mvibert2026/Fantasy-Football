@@ -27,7 +27,48 @@ repo — Cloudflare holds its own deploy token. This closes the last dependency 
 machine: development, tests, the database rebuild, the daily capture and now viewing the app all run
 without it.
 
-**Last verified:** 2026-07-30, frontend session (worktree `agent-a160788e8e9ccc925`) porting two
+**Last verified:** 2026-07-30, frontend session (worktree `agent-af87493d6c285e241`) shipping FR-076
+(the assistant couldn't see what the Draft Room screen was already showing) and FR-077 (the assistant
+dock needed real conversation history, not just a persistent input, and fewer suggested-question
+buttons). **Two root causes for FR-076, both confirmed by a failing test, not assumed:** the
+reasoning lane's retrieval corpus (`ui/assistant/retrieval.ts`) was built only from static export
+artifacts and never carried anything about the live draft (current pick, roster state, the
+recommendation, scarcity) — the root cause named in the dispatch, and real; separately, and
+unexpectedly, the founder's own literal reported question ("what are my likely choices and trade
+offs ... at my next pick") never reached the reasoning lane at all — `ui/assistant/intent.ts`'s
+news-pattern regex matched the bare word "trade" inside "trade offs" (meant for "player X was
+traded") and misrouted the whole question to the news lane, which correctly reported "no player
+named in that question," a message easily paraphrased as "the backend doesn't have that." New
+`frontend/ui/assistant/pageContext.ts` builds a bounded `ContextItem[]` bundle from values
+`DraftRoom.tsx` already computed for its own render (current pick, roster needs, the live
+recommendation and its stated reason, the give-up trade-off, the WHY NOT HIGHEST VBD explanation,
+the next-pick reference point, position scarcity — never re-derived, per the dispatch's own "two
+code paths that can disagree is worse than one"), reported via a new `onAssistantContext` prop
+(additive only — one prop, one effect, no JSX touched) and merged into every reasoning-lane call
+alongside lexical retrieval. The classifier's `trade`/`trade-off` collision and `defineTerm`'s
+unbounded "term" capture (which would have swallowed the same sentence into a "not in the glossary"
+message even after the news-pattern fix) are both fixed and covered by a regression test asserting
+the founder's exact sentence now classifies as `reasoning`. FR-077: `ask()` now threads a bounded
+`ConversationTurn[]` history (last 6 turns, 600 chars/answer) through to `/__reasoning`;
+`frontend/server/proxy.ts` and `worker/index.js` (kept in sync per `docs/assistant-persona.md`) both
+build alternating user/assistant messages from it and gained a 9th binding rule (history is for
+continuity only, never a fact source — the current answer must still trace to the current turn's
+retrieved context) added to all three files including the persona doc itself. Suggested-question
+buttons capped from 6 to a curated 3 (`SUGGESTED_TEMPLATES`). Verified against a real, seeded draft
+(not just unit tests): `frontend/e2e/verify-fr076-fr077.mjs` intercepts `/__reasoning` and confirms
+the founder's exact question retrieves 7 real page-context items from a real `DraftRoom` render, and
+a follow-up carries 1 prior turn — screenshots
+`frontend/e2e/artifacts/fr076-founder-question-answered.png` and
+`fr077-followup-conversation.png` looked at directly; the answer text matches the real Recommend-tab
+panel numbers behind it. `ANTHROPIC_API_KEY` remains absent in this container (confirmed again, per
+`docs/frontend-cloud-runbook.md`), so the real hosted Anthropic call itself was not exercised — the
+screenshot proves the request payload, not the model's live reply. `npx tsc -b --noEmit` clean; 301
+tests, 300 passed + 1 flaky-under-full-suite-contention timeout (`draft-room-typeahead.test.tsx`,
+25/25 passing in isolation — reproduces the same container-speed finding a prior session already
+recorded for this file, not a regression). Full resolution detail:
+`docs/founder-requests/FR-076-*.md`, `FR-077-*.md`.
+
+**Prior verification:** 2026-07-30, frontend session (worktree `agent-a160788e8e9ccc925`) porting two
 design specs in order, both in `docs/design/`: `DRAFT-MIDDLE-PANE.md` and `SUPPLIED-VALUES.md`. The
 Draft screen's middle pane (`frontend/ui/views/DraftRoom.tsx`) is now one tab set — **Recommend ·
 Scarcity · Queue · Insights** — replacing the old fixed stack (RECOMMENDED-when-on-clock, else
@@ -260,7 +301,7 @@ by the session whose work changed them, per the agent operating rules.
 
 | | Value | Notes |
 |---|---|---|
-| Backend branch / commit | `worktree-agent-a160788e8e9ccc925`, `b04ac45785338fc0c655851173c69a25b321b369` | `git rev-parse --abbrev-ref HEAD` / `HEAD` |
+| Backend branch / commit | `worktree-agent-af87493d6c285e241`, `f07cf88d21546e21ef7e5bc7df1a4b8d7d9bf723` | `git rev-parse --abbrev-ref HEAD` / `HEAD` |
 | Data contract | `1.15.0` | `CONTRACT_VERSION` in `src/export_contract.py` |
 | Python modules | 44 | `src/*.py`, counted |
 | Export artifacts | 11 | top-level files in `data/export/` |

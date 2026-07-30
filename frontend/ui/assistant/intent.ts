@@ -16,9 +16,22 @@ export type Lane = 'export' | 'news' | 'reasoning';
 /**
  * News intent is checked first and matched on explicit vocabulary. If someone asks
  * about an injury, they must not get board arithmetic dressed up as a status report.
+ *
+ * FR-076 root-cause finding, confirmed by a test: the founder's own reported
+ * failing question -- "what are my likely choices and trade offs ... at my
+ * next pick" -- matched this pattern's bare `trade` alternative (meant for "was
+ * X traded") purely because "trade offs" contains the word "trade," and was
+ * misrouted to the news lane before it ever reached the reasoning lane. The
+ * news lane then correctly reports "no ingested feed item mentions a player
+ * named in that question" -- a message a non-technical reader could easily
+ * paraphrase as "the backend doesn't have that information," which is exactly
+ * what was reported. The negative lookahead below excludes "trade off(s)" /
+ * "trade-off(s)" / "tradeoff(s)" specifically -- a fixed, known compound
+ * phrase with a different meaning -- without touching "traded," "trade
+ * rumor," "trade deadline," or any other genuine trade-news phrasing.
  */
 const NEWS_PATTERN =
-  /\b(?:news|injur\w*|hurt|questionable|doubtful|probable|inactive|ruled out|practice|snap count|report(?:ed|ing)?|signing|signed|traded?|trade|waiver|suspension|suspended|holdout|latest|update|beat writer|depth chart)\b/i;
+  /\b(?:news|injur\w*|hurt|questionable|doubtful|probable|inactive|ruled out|practice|snap count|report(?:ed|ing)?|signing|signed|trad(?:ed|e(?!\s?-?\s?offs?\b))|waiver|suspension|suspended|holdout|latest|update|beat writer|depth chart)\b/i;
 
 export interface Classification {
   lane: Lane;

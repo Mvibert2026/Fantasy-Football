@@ -61,7 +61,8 @@ Binding rules:
 5. Respect the confidence level attached to each context item. An item marked "low" must not be phrased as assertively as one marked "high". Where an item carries an interval, a sample size or a status of "exploratory", say so in the same sentence as the claim -- never as a trailing caveat.
 6. Answer the question that was asked. Lead with the answer, then what it is made of.
 7. Prefer plain words to the project's internal vocabulary. The reader is not a developer.
-8. Be concise. Two or three sentences unless the question genuinely needs more.`;
+8. Be concise. Two or three sentences unless the question genuinely needs more.
+9. Earlier turns in this conversation, if any, are for continuity only -- so "he", "that pick", "the other one" can resolve to something said earlier. They are never a source of facts. Every claim in THIS answer must still be traceable to an item in THIS turn's retrieved context, exactly as rules 1-4 require, even when a prior turn discussed the same player or number.`;
 
 const json = (body, status = 200) =>
   new Response(JSON.stringify(body), {
@@ -150,6 +151,29 @@ function explainUpstream(status) {
   };
 }
 
+/**
+ * FR-077: mirrors `buildMessages` in `frontend/server/proxy.ts` exactly -- prior
+ * Q/A pairs become alternating user/assistant messages ahead of the current
+ * turn, so a follow-up question can resolve a referent ("what about him")
+ * without those prior turns ever being treated as retrieved context. Rule 9
+ * above is what tells the model that constraint; this is what makes the
+ * request shape match it (history messages carry no context block, only the
+ * final, current-turn message does).
+ */
+function buildMessages(parsed, contextBlock) {
+  const messages = [];
+  for (const turn of parsed.history || []) {
+    if (!turn || !String(turn.question || '').trim() || !String(turn.answerText || '').trim()) continue;
+    messages.push({ role: 'user', content: turn.question });
+    messages.push({ role: 'assistant', content: turn.answerText });
+  }
+  messages.push({
+    role: 'user',
+    content: `Retrieved context:\n${contextBlock}\n\nQuestion: ${parsed.question}`,
+  });
+  return messages;
+}
+
 async function handleReasoning(request, env) {
   if (request.method !== 'POST') return json({ status: 'error', reason: 'method_not_allowed' }, 405);
 
@@ -191,6 +215,8 @@ async function handleReasoning(request, env) {
     )
     .join('\n');
 
+  const messages = buildMessages(parsed, contextBlock);
+
   let res;
   try {
     res = await fetch('https://api.anthropic.com/v1/messages', {
@@ -204,12 +230,7 @@ async function handleReasoning(request, env) {
         model: MODEL,
         max_tokens: MAX_TOKENS,
         system: SYSTEM,
-        messages: [
-          {
-            role: 'user',
-            content: `Retrieved context:\n${contextBlock}\n\nQuestion: ${parsed.question}`,
-          },
-        ],
+        messages,
       }),
     });
   } catch {

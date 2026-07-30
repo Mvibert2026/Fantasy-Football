@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
 import type { BoardRow } from '../data/board';
+import { buildDraftPageContextItems, type DraftPageContextInput } from '../assistant/pageContext';
+import type { ContextItem } from '../assistant/reasoning';
 import {
   currentOverallPick,
   isSlotOnClock,
@@ -305,6 +307,7 @@ export function DraftRoom({
   league,
   onOpenPlayer,
   onPickContext,
+  onAssistantContext,
 }: {
   data: Dataset;
   rows: BoardRow[];
@@ -317,6 +320,17 @@ export function DraftRoom({
    *  once the draft is complete / before league config loads) so App.tsx can
    *  compose "Draft · pick 24", matching the design's assistant context line. */
   onPickContext?: (pick: number | null) => void;
+  /**
+   * FR-076: reports the same bounded page-context bundle the assistant dock
+   * hands to the reasoning lane on every question, built from values this
+   * component has already computed for its own render (see the effect near
+   * the bottom of this component, and `ui/assistant/pageContext.ts`). `[]`
+   * whenever there is nothing on screen yet worth summarising (before league
+   * config resolves, or once the draft is complete) -- never omitted, so
+   * App.tsx always has a definite, current value rather than a stale one from
+   * an earlier pick.
+   */
+  onAssistantContext?: (items: ContextItem[]) => void;
 }) {
   const leagueId = data.manifest.artifacts.board?.league_id ?? 'default';
   const [draft, setDraft] = useState<DraftState>(() => loadDraftState(leagueId));
@@ -1019,6 +1033,84 @@ export function DraftRoom({
       ),
     [data, rows, draft.picks, currentPick, nextUserPick, league.thresholds, teams, hasAutoFillPlaceholders],
   );
+
+  /**
+   * FR-076: builds the page-context bundle App.tsx hands to the assistant on
+   * every question, from values this component already computed above for its
+   * own render -- never a second computation of the recommendation, the VBD
+   * gap, or the next-pick reference point. Picks whichever recommendation is
+   * actually on screen right now (`lookAheadActive` decides this exact same
+   * way for the Recommend tab's own render), so the assistant can never
+   * describe a recommendation the user isn't currently looking at.
+   */
+  const nameOf = useCallback((row: BoardRow) => (row.name.kind === 'present' ? row.name.value : ''), []);
+  const assistantPageContext = useMemo<ContextItem[]>(() => {
+    if (teams === 0 || rounds === 0 || userSlot === 0) return [];
+
+    const activeTop = lookAheadActive ? recommendationDetailLookAhead?.top ?? null : recommendationDetail?.top ?? null;
+    const activeReason = lookAheadActive ? recommendationDetailLookAhead?.reason ?? null : recommendationDetail?.reason ?? null;
+    const activePointsRange = lookAheadActive
+      ? recommendationDetailLookAhead?.pointsRange ?? null
+      : recommendationDetail?.pointsRange ?? null;
+
+    const input: DraftPageContextInput = {
+      currentPick,
+      currentRound,
+      userOnClock,
+      nextUserPick,
+      picksUntilYou,
+      followingUserPick,
+      draftComplete,
+      unfilledPositions: Array.from(unfilledPositions),
+      rosterChips,
+      activeRecommendation:
+        activeTop && activeReason
+          ? { playerName: nameOf(activeTop.row), position: activeTop.row.raw.position, reason: activeReason, pointsRange: activePointsRange }
+          : null,
+      recommendationContext: { pick: lookAheadActive ? lookAheadPick : currentPick, isLookAhead: lookAheadActive },
+      giveUp: !lookAheadActive && recommendationDetail?.giveUp ? { text: recommendationDetail.giveUp } : null,
+      vbdOverride: !lookAheadActive ? (recommendationDetail?.vbdOverride ?? null) : null,
+      referencePoint: referencePoint
+        ? {
+            consideringName: nameOf(referencePoint.considering),
+            consideringPosition: referencePoint.considering.raw.position,
+            pick: referencePoint.pick,
+            likelyThere: referencePoint.likelyThere
+              ? { name: nameOf(referencePoint.likelyThere.row), position: referencePoint.likelyThere.row.raw.position }
+              : null,
+          }
+        : null,
+      scarcity: scarcityList,
+      data,
+    };
+    return buildDraftPageContextItems(input);
+  }, [
+    teams,
+    rounds,
+    userSlot,
+    lookAheadActive,
+    recommendationDetailLookAhead,
+    recommendationDetail,
+    currentPick,
+    currentRound,
+    userOnClock,
+    nextUserPick,
+    picksUntilYou,
+    followingUserPick,
+    draftComplete,
+    unfilledPositions,
+    rosterChips,
+    lookAheadPick,
+    referencePoint,
+    scarcityList,
+    data,
+    nameOf,
+  ]);
+
+  useEffect(() => {
+    onAssistantContext?.(assistantPageContext);
+    return () => onAssistantContext?.([]);
+  }, [onAssistantContext, assistantPageContext]);
 
   if (teams === 0 || rounds === 0 || userSlot === 0) {
     return (

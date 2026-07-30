@@ -5,7 +5,7 @@ Per-request files in this directory are the source of truth. Edit a request's ow
 `STATUS:` line, then re-run sync. Protocol: [`README.md`](README.md).
 Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests.md).
 
-**56 requests since freeze.**
+**58 requests since freeze.**
 
 ---
 
@@ -68,7 +68,7 @@ _None._
 | [FR-048](FR-048-insights-from-research-must-reach-the-chatbot-an.md) | Insights from research must reach the chatbot an | 2026-07-29 | chat 2026-07-29, PM session |
 | [FR-062](FR-062-yahoo-league-connection-if-no-api-access-what-ar.md) | Yahoo league connection if no api access what ar | 2026-07-30 | chat 2026-07-30, PM session |
 
-## SHIPPED — 12
+## SHIPPED — 14
 
 | ID | Subject | Raised | Source |
 |---|---|---|---|
@@ -84,6 +84,8 @@ _None._
 | [FR-055](FR-055-draft-mode-board-needs-column-headers.md) | Draft mode board needs column headers | 2026-07-29 | chat 2026-07-29, PM session |
 | [FR-056](FR-056-personal-use-confirmed-get-the-component-project.md) | Personal use confirmed get the component project | 2026-07-29 | chat 2026-07-29, PM session |
 | [FR-058](FR-058-the-recommendation-must-explain-itself-whenever.md) | The recommendation must explain itself whenever | 2026-07-29 | chat 2026-07-29, PM session |
+| [FR-076](FR-076-chatbot-must-see-what-the-front-end-already-disp.md) | Chatbot must see what the front end already disp | 2026-07-30 | chat 2026-07-30, PM session (feedback batch) |
+| [FR-077](FR-077-chatbot-needs-standing-chat-box-and-answer-area.md) | Chatbot needs standing chat box and answer area | 2026-07-30 | chat 2026-07-30, PM session (feedback batch) |
 
 ## DECLINED — 0
 
