@@ -51,6 +51,7 @@ import { decimal, integer, interval as intervalText, percent, signed } from '../
 import { Predictions } from './Predictions';
 import { LAYOUT_MODE_ORDER, LAYOUT_PRESETS, paneColumns, useDraftLayout } from '../data/layoutModes';
 import { PeriodicTableGrid, buildGridCellData, type GridSortMode } from '../components/PeriodicTableGrid';
+import { TraditionalDraftBoard } from '../components/TraditionalDraftBoard';
 
 // Thread 058 section A item 4: DEF is a fifth scarcity row, matching the
 // design's five positions. board.json carries zero DEF players (ADR-039, no
@@ -430,7 +431,14 @@ export function DraftRoom({
   // team's roster and needs from this session's local pick log rather than
   // from the backend export -- FR-032, because the export is empty during an
   // in-progress draft, which was the whole complaint.
-  const [hubTab, setHubTab] = useState<'board' | 'opponents' | 'predictions'>('board');
+  // FR-135: a fourth hub tab, 'draftboard' -- the traditional manager x round
+  // grid (docs/design/research/draft-board/FINDINGS.md). Additive, same as
+  // PERIODIC-TABLE-GRID.md's own precedent for the pane tabs: nothing removed
+  // from the existing three, appended at the end (see HUB_TABS below and
+  // draft-room-tabs-integrity.test.tsx, which pins Board/Opponents/
+  // Predictions unchanged -- it does not assert an exhaustive tab list the
+  // way the pane-tab test does, so a fourth tab does not break it).
+  const [hubTab, setHubTab] = useState<'board' | 'opponents' | 'predictions' | 'draftboard'>('board');
   // PERIODIC-TABLE-GRID.md: "closes itself when a pick lands. You never
   // return from a pick to find the board hidden." draft.picks.length changing
   // covers a recorded pick, an undo and auto-fill alike -- any of those is a
@@ -1240,6 +1248,8 @@ export function DraftRoom({
     { key: 'board', label: 'Board' },
     { key: 'opponents', label: 'Opponents' },
     { key: 'predictions', label: 'Predictions' },
+    // FR-135, appended -- see the hubTab useState comment above.
+    { key: 'draftboard', label: 'Draft Board' },
   ];
 
   // DRAFT-MIDDLE-PANE.md's "one tab set, in the pane, four tabs" -- same
@@ -1317,6 +1327,10 @@ export function DraftRoom({
       ) : hubTab === 'predictions' ? (
         <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: 20 }}>
           <Predictions data={data} rows={rows} league={league} />
+        </div>
+      ) : hubTab === 'draftboard' ? (
+        <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: 20 }}>
+          <TraditionalDraftBoard data={data} league={league} draft={draft} rowsById={rowsById} leagueId={leagueId} />
         </div>
       ) : (
     <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
