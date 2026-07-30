@@ -9,7 +9,7 @@ Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests
 
 ---
 
-## NEW — 55
+## NEW — 54
 
 | ID | Subject | Raised | Source |
 |---|---|---|---|
@@ -40,7 +40,6 @@ Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests
 | [FR-063](FR-063-scarcity-depletion-warning-uses-the-next-pick-no.md) | Scarcity depletion warning uses the next pick no | 2026-07-30 | chat 2026-07-30, PM session, screenshot |
 | [FR-064](FR-064-look-and-feel-reads-dated-draft-rankings-pane-to.md) | Look and feel reads dated draft rankings pane to | 2026-07-30 | chat 2026-07-30, PM session |
 | [FR-065](FR-065-resizable-panes-and-pop-out-views-for-the-draft.md) | Resizable panes and pop out views for the draft | 2026-07-30 | chat 2026-07-30, PM session |
-| [FR-066](FR-066-availability-picks-do-not-change-when-the-draft.md) | Availability picks do not change when the draft | 2026-07-30 | chat 2026-07-30, PM session |
 | [FR-068](FR-068-player-profile-work-still-outstanding.md) | Player profile work still outstanding | 2026-07-30 | chat 2026-07-30, PM session |
 | [FR-069](FR-069-kill-the-24-preset-matrix-the-league-dropdown-is.md) | Kill the 24 preset matrix the league dropdown is | 2026-07-30 | chat 2026-07-30, PM session |
 | [FR-070](FR-070-calibration-mocks-cannot-use-my-real-league-sett.md) | Calibration mocks cannot use my real league sett | 2026-07-30 | chat 2026-07-30, PM session |
@@ -79,7 +78,7 @@ Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests
 
 _None._
 
-## IN PROGRESS — 9
+## IN PROGRESS — 10
 
 | ID | Subject | Raised | Source |
 |---|---|---|---|
@@ -89,6 +88,7 @@ _None._
 | [FR-043](FR-043-audit-for-capability-already-built-and-sitting-u.md) | Audit for capability already built and sitting u | 2026-07-29 | chat 2026-07-29, PM session |
 | [FR-048](FR-048-insights-from-research-must-reach-the-chatbot-an.md) | Insights from research must reach the chatbot an | 2026-07-29 | chat 2026-07-29, PM session |
 | [FR-062](FR-062-yahoo-league-connection-if-no-api-access-what-ar.md) | Yahoo league connection if no api access what ar | 2026-07-30 | chat 2026-07-30, PM session |
+| [FR-066](FR-066-availability-picks-do-not-change-when-the-draft.md) | Availability picks do not change when the draft | 2026-07-30 | chat 2026-07-30, PM session |
 | [FR-079](FR-079-last-few-seasons-must-render-in-the-selected-sco.md) | Last few seasons must render in the selected sco | 2026-07-30 | chat 2026-07-30, PM session (feedback batch) |
 | [FR-083](FR-083-player-card-adp-shows-wrong-format-for-selected-.md) | Player card adp shows wrong format for selected  | 2026-07-30 | chat 2026-07-30, PM session (feedback batch) |
 | [FR-092](FR-092-figure-out-the-coordinator-table-play-callers-is.md) | Figure out the coordinator table play callers is | 2026-07-30 | PM dispatch, data-ops session 2026-07-30 |

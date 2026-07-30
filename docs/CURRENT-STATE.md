@@ -334,9 +334,9 @@ by the session whose work changed them, per the agent operating rules.
 
 | | Value | Notes |
 |---|---|---|
-| Backend branch / commit | `worktree-agent-a160788e8e9ccc925`, `b04ac45785338fc0c655851173c69a25b321b369` | `git rev-parse --abbrev-ref HEAD` / `HEAD` |
+| Backend branch / commit | `worktree-agent-a6aa496d85bd1b2b9`, `4d86a4929cff1663ec490a15cecf0c4291094664` | `git rev-parse --abbrev-ref HEAD` / `HEAD` |
 | Data contract | `1.15.0` | `CONTRACT_VERSION` in `src/export_contract.py` |
-| Python modules | 44 | `src/*.py`, counted |
+| Python modules | 45 | `src/*.py`, counted |
 | Export artifacts | 11 | top-level files in `data/export/` |
 | Config matrix | 26 | dirs under `data/export/` |
 | Backend tests | (skipped — pass --tests to run the suite) |  |
@@ -396,6 +396,21 @@ pass or is marked as unverified.
    in the whole file.
 7. **Duplicate founder-request ids.** FR-029 and FR-030 each name two different requests, so a
    status update to one is invisible in the other. `tools/dashboard.py` now flags this on every run.
+17. **FR-066 (availability picks not changing on slot override) — the founder-visible defect is
+    fixed, 2026-07-30 frontend; the browser-side recompute he approved is not built and is blocked
+    on backend.** The Availability Explorer (`ui/views/Availability.tsx`) now reads
+    `league.pickSequence` for its pick selector instead of `availability.json:metadata.user_picks`
+    (FR-034's own seam, previously not wired to this one screen at all — it took no `league` prop),
+    and shows a standing banner naming both slots whenever a slot override is active and unrecomputed
+    numbers would otherwise read as real. **The real recompute stays blocked**: measured that
+    `board.json:consensus_rank` (`fantasypros_csv_2026draft`, per its own `consensus_source_note`)
+    and the rank `src/availability.py:simulate_availability` actually runs its opponent model AND the
+    user's own BPA pick against (`fantasypros_ecr`, via `draft_sim.load_season()`) are two different,
+    both-currently-live rankings — 73 of the top 80 players differ in order between them. The
+    frontend has no honest access to the rank the simulation needs, so a client-side port built on
+    `board.json:consensus_rank` would silently run a different (wrong) opponent model, not an
+    approximation of the real one. `docs/handoffs/NEW-fr066-availability-ranking-source-export.md`
+    asks backend for the missing export field or a ruling on which source the model should use.
 
 **Data the model wants and does not have**
 

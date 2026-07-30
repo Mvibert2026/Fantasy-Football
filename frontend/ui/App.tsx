@@ -221,7 +221,7 @@ export function App() {
           ) : screen === 'board' ? (
             <Board data={data} rows={rows} league={league} onFocusPlayer={setFocusedPlayer} />
           ) : screen === 'availability' ? (
-            <Availability data={data} rows={rows} />
+            <Availability data={data} rows={rows} league={league} />
           ) : screen === 'opponents' ? (
             <div className="view" style={{ flex: 1, minHeight: 0 }}>
               <Opponents data={data} />
