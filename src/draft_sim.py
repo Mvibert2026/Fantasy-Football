@@ -106,6 +106,19 @@ MECHANICAL_NEED_TARGETS: Dict[str, int] = {
 DEFAULT_SIGMA = 10.0
 SIGMA_SWEEP = (5.0, 10.0, 20.0)
 
+# The `rankings` source `load_season` pulls `consensus_rank` from. This is the
+# single edit point for thread 119 (strategist, may re-point availability's
+# central input at ADP): change this constant and the WHERE clause that uses
+# it in `load_season`, and every export that reports "what source did this
+# rank come from" (export_contract.build_availability_json's
+# client_simulation_parameters.ranking_sources[0]) follows automatically,
+# because it reads SeasonData.consensus_rank_source / consensus_rank_as_of_date
+# -- populated by load_season from the SAME query the ranks themselves came
+# from -- rather than a second hardcoded literal. See
+# tests/test_draft_sim.py::test_consensus_rank_source_matches_query and
+# docs/handoffs/104-fr066-availability-ranking-source-export.md.
+CONSENSUS_RANK_SOURCE = "fantasypros_ecr"
+
 
 @dataclass
 class SeasonData:
@@ -116,6 +129,12 @@ class SeasonData:
     consensus_rank: np.ndarray  # float
     weekly_points: np.ndarray   # (n_players, n_weeks) actual points
     n_weeks: int
+    # Self-describing provenance for consensus_rank, populated by load_season
+    # from the exact rows the ranks were read from -- never hand-set by a
+    # caller. Optional/defaulted so every pre-existing SeasonData(...)
+    # construction in tests (which predates this field) keeps working.
+    consensus_rank_source: Optional[str] = None
+    consensus_rank_as_of_date: Optional[str] = None
 
 
 @dataclass
@@ -135,10 +154,10 @@ Strategy = Callable[[DraftState, np.ndarray, SeasonData, np.ndarray], int]
 # ----------------------------------------------------------------- data loading
 def load_season(conn: sqlite3.Connection, season: int) -> SeasonData:
     rows = conn.execute(
-        "SELECT player_id, player_name, position, adp_rank FROM rankings "
-        "WHERE source='fantasypros_ecr' AND season=? AND position IN ('QB','RB','WR','TE') "
+        "SELECT player_id, player_name, position, adp_rank, as_of_date FROM rankings "
+        "WHERE source=? AND season=? AND position IN ('QB','RB','WR','TE') "
         "ORDER BY adp_rank",
-        (season,),
+        (CONSENSUS_RANK_SOURCE, season),
     ).fetchall()
     if not rows:
         raise ValueError(f"no consensus board for {season}")
@@ -147,6 +166,11 @@ def load_season(conn: sqlite3.Connection, season: int) -> SeasonData:
     names = [r["player_name"] or r["player_id"] for r in rows]
     pos = np.array([POSITIONS.index(r["position"]) for r in rows], dtype=int)
     rank = np.array([float(r["adp_rank"]) for r in rows])
+    # Most recent as_of_date among the rows actually read above -- same
+    # "newest row wins" convention as freshness.snapshot_age_days -- so this
+    # can never name a date the ranks didn't come from.
+    as_of_dates = [r["as_of_date"] for r in rows if r["as_of_date"]]
+    consensus_rank_as_of_date = max(as_of_dates) if as_of_dates else None
 
     idx_of = {pid: i for i, pid in enumerate(ids)}
     max_week = conn.execute(
@@ -161,7 +185,11 @@ def load_season(conn: sqlite3.Connection, season: int) -> SeasonData:
         stats = {c: row[c] for c in dbmod.SCORING_STAT_COLUMNS}
         pts[i, row["week"]] += score_offensive_game(stats)
 
-    return SeasonData(season, ids, names, pos, rank, pts, max_week)
+    return SeasonData(
+        season, ids, names, pos, rank, pts, max_week,
+        consensus_rank_source=CONSENSUS_RANK_SOURCE,
+        consensus_rank_as_of_date=consensus_rank_as_of_date,
+    )
 
 
 # ----------------------------------------------------------------- draft order

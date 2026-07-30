@@ -21,7 +21,7 @@ Usage
 """
 
 from __future__ import annotations
-import argparse, datetime, pathlib, re, subprocess, sys
+import argparse, datetime, os, pathlib, re, subprocess, sys
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 FR_DIR = ROOT / "docs" / "founder-requests"
@@ -30,6 +30,14 @@ ARCHIVE = ROOT / "docs" / "founder-requests.md"
 
 FIELD = re.compile(r"^([A-Z_]+):\s*(.*)$")
 STATUS_VALUES = ["NEW", "SCOPING", "SPECCED", "IN PROGRESS", "SHIPPED", "DECLINED", "DEFERRED"]
+
+# W3 (mirrors tools/handoffs.py -- see its DATE_ID_RE comment for the full reasoning):
+# new requests are named FR-YYYY-MM-DD-slug.md, not FR-NNN-slug.md. The "FR-" prefix is
+# kept so every existing "FR-NNN" citation convention in prose/CLAUDE.md/docs still
+# reads naturally for new IDs too -- only the number becomes a date+slug. Existing
+# FR-NNN-slug.md files are NEVER renamed.
+LEGACY_ID_RE = re.compile(r"^FR-\d{3}-")
+DATE_ID_RE = re.compile(r"^FR-\d{4}-\d{2}-\d{2}-")
 
 
 def _rel(path: pathlib.Path) -> str:
@@ -70,9 +78,11 @@ class Request:
     def source(self) -> str: return self.meta.get("SOURCE", "?")
     @property
     def subject(self) -> str:
-        # stem is "FR-NNN-slug"; strip the "FR-NNN-" prefix, not just the first hyphen.
-        m = re.match(r"^FR-\d{3}-(.+)$", self.path.stem)
-        slug = m.group(1) if m else self.path.stem
+        # stem is "FR-NNN-slug" or (W3) "FR-YYYY-MM-DD-slug"; strip the ID prefix, not
+        # just the first hyphen.
+        stem = self.path.stem
+        m = re.match(r"^FR-\d{4}-\d{2}-\d{2}-(.+)$", stem) or re.match(r"^FR-\d{3}-(.+)$", stem)
+        slug = m.group(1) if m else stem
         return slug.replace("-", " ").capitalize()
 
 
@@ -83,7 +93,10 @@ def _slugify(text: str) -> str:
 def load() -> list[Request]:
     if not FR_DIR.exists():
         return []
-    files = sorted(p for p in FR_DIR.glob("FR-*.md") if re.match(r"^FR-\d{3}-", p.name))
+    files = sorted(
+        p for p in FR_DIR.glob("FR-*.md")
+        if LEGACY_ID_RE.match(p.name) or DATE_ID_RE.match(p.name)
+    )
     return [Request(p) for p in files]
 
 

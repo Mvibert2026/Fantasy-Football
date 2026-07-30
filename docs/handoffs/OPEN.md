@@ -4,7 +4,7 @@
 Threads are the source of truth. Change a thread's `STATUS:`, then re-run sync.
 Protocol: [`README.md`](README.md).
 
-**79 open** · 47 resolved
+**79 open** · 48 resolved
 
 ---
 
@@ -29,7 +29,7 @@ not an omission. Start your session at your own heading.
 | [120](120-assistant-window-container-shipped-assistant-win.md) | Assistant window container shipped assistant win | `frontend` | OPEN | 0d | none |
 | [90](090-fr-043-audit-claude-md-ss5-staleness-built-but-u.md) | Fr 043 audit claude md ss5 staleness built but u | `librarian` | OPEN | 1d | none |
 
-### `backend` — 30 waiting
+### `backend` — 31 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
@@ -62,6 +62,7 @@ not an omission. Start your session at your own heading.
 | [109](109-league-settings-custom-pane.md) | League settings custom pane | `frontend` | OPEN | 0d | FR-069 (kill the 24-preset matrix; dropdown is 3 leagues + Custom) |
 | [111](110-sleeper-screen-use-recent-usage-not-career-mean.md) | Sleeper screen use recent usage not career mean | `ranker` | OPEN | 0d | nothing; changes a feature choice in the FR-094 sleeper screen before it ships |
 | [111](111-sleeper-screen-use-recent-usage-not-career-mean.md) | Sleeper screen use recent usage not career mean | `ranker` | OPEN | 0d | nothing; changes a feature choice in the FR-094 sleeper screen before it ships |
+| [2026-07-30-availability-adp-measurements-m0-m5](2026-07-30-availability-adp-measurements-m0-m5.md) | Availability adp measurements m0 m5 | `strategist` | OPEN | 0d | FR-131, FR-066, thread 104, FR-128, thread 114 (partially) |
 | [88](088-pr-004-f-bottomup-core-run-the-confirmatory-bott.md) | Pr 004 f bottomup core run the confirmatory bott | `strategist` | OPEN | 1d | none |
 
 ### `frontend` — 19 waiting
@@ -102,7 +103,7 @@ not an omission. Start your session at your own heading.
 | [097](097-ingest-nflverse-weekly-roster-status-the-only-so.md) | Ingest nflverse weekly roster status the only so | `ranker` | OPEN | 0d | the season-ending-IR and suspension error classes in the bottom-up component model (docs/ranking/component-model-rb-qb-te-pass-1.md §5.2). Nothing shipped. |
 | [113](113-rosters-weekly-blocks-vacated-opportunity.md) | Rosters weekly blocks vacated opportunity | `ranker` | OPEN | 0d | test-registry #28 (vacated targets & carries) |
 
-### `strategist` — 15 waiting
+### `strategist` — 14 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
@@ -120,7 +121,6 @@ not an omission. Start your session at your own heading.
 | [111](111-valuation-tests-35-36-results.md) | Valuation tests 35 36 results | `backend` | OPEN | 0d | none |
 | [112](112-preregistration-gates-need-a-decision-subset.md) | Preregistration gates need a decision subset | `ranker` | OPEN | 0d | every future pre-registration that gates on projection error |
 | [112](114-founder-mock-scoring-format-inference-needs-sepa.md) | Founder mock scoring format inference needs sepa | `data-ops` | OPEN | 0d | none |
-| [119](119-availability-opponent-model-adp-as-the-central-t.md) | Availability opponent model adp as the central t | `pm` | OPEN | 0d | FR-066 (browser-side availability recompute), thread 104, FR-131 |
 
 ### `researcher` — 4 waiting
 
@@ -214,5 +214,6 @@ _Nothing waiting on you._
 | [093](093-contract-1-15-0-scoring-ruleset-note-on-league-j.md) | Contract 1 15 0 scoring ruleset note on league j | `backend` → `frontend` |
 | [098](098-adp-and-history-not-league-scoring-aware.md) | Adp and history not league scoring aware | `frontend` → `backend` |
 | [117](117-prepared-answers-to-the-2026-08-01-handoff-held.md) | Prepared answers to the 2026 08 01 handoff held | `pm` → `design` |
+| [119](119-availability-opponent-model-adp-as-the-central-t.md) | Availability opponent model adp as the central t | `pm` → `strategist` |
 | [89](089-fr-040-costing-static-hosting-blocks-scoring-rec.md) | Fr 040 costing static hosting blocks scoring rec | `backend` → `frontend, pm` |
 

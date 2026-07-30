@@ -45,7 +45,7 @@ import team_codes as tc
 from config import DEFAULT_CONFIG
 from scoring import LEAGUE, ReplacementLevels
 
-CONTRACT_VERSION = "1.16.0"
+CONTRACT_VERSION = "1.17.0"
 SEASON = 2026
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 EXPORT_DIR = DATA_DIR / "export"
@@ -652,8 +652,24 @@ def _all_slot_pick_numbers(cfg: lc.LeagueConfig) -> Dict[str, List[int]]:
     return out
 
 
-def build_availability_json(cfg: lc.LeagueConfig = lc.CURRENT_LEAGUE) -> dict:
+def build_availability_json(
+    conn: sqlite3.Connection, cfg: lc.LeagueConfig = lc.CURRENT_LEAGUE
+) -> dict:
     payload = _load_availability_csv(avail_csv_for(cfg.league_id))
+    # Thread 104 (FR-066 resolution): the per-player rank simulate_availability
+    # actually runs its opponent model AND the user's own strategy_bpa pick
+    # against -- read via the SAME call (ds.load_season) the simulation itself
+    # uses, so this cannot name a source or as_of_date the simulation didn't
+    # actually run on. If thread 119 repoints ds.CONSENSUS_RANK_SOURCE at ADP,
+    # this follows with zero edits here -- see draft_sim.py's constant
+    # docstring. Keyed by data.names[i], the SAME name list run_availability.py
+    # writes into the CSV's "player" column, so this lines up with by_player's
+    # existing keys by construction, not by convention.
+    season_data = ds.load_season(conn, SEASON)
+    consensus_ranks_by_name: Dict[str, float] = {
+        season_data.names[i]: float(season_data.consensus_rank[i])
+        for i in range(len(season_data.names))
+    }
     is_primary = cfg.is_primary
     engine = None if is_primary else ds.DraftEngine(cfg)
     user_picks = ds.user_pick_numbers() if is_primary else engine.user_pick_numbers()
@@ -721,11 +737,36 @@ def build_availability_json(cfg: lc.LeagueConfig = lc.CURRENT_LEAGUE) -> dict:
         # structure; this block adds only what belongs to the OPPONENT MODEL
         # itself.
         "client_simulation_parameters": {
-            # Mirrors av.default_ranking_sources(): single source today. Not
-            # computed from a live SeasonData here (this function only reads the
-            # CSV) -- if a second source (MFL ADP, ADR-035) is wired into
-            # run_availability.py, update this list in the same commit.
-            "ranking_sources": [{"name": "fantasypros_ecr", "weight": 1.0}],
+            # Mirrors av.default_ranking_sources(): single source today. Name
+            # and as_of_date are READ from season_data (ds.load_season's own
+            # provenance fields, see above), not hardcoded here -- if a second
+            # source (MFL ADP, ADR-035) is wired into run_availability.py, or
+            # thread 119 repoints ds.CONSENSUS_RANK_SOURCE, this list updates
+            # itself; only the weight (still a single source) needs a look.
+            "ranking_sources": [{
+                "name": season_data.consensus_rank_source,
+                "weight": 1.0,
+                "as_of_date": season_data.consensus_rank_as_of_date,
+            }],
+            # FR-066/thread 104: the per-player rank the opponent model AND the
+            # user's own strategy_bpa pick actually run on (ds.load_season's
+            # consensus_rank), keyed by player name to match by_player's
+            # existing keys. This is NOT board.json:consensus_rank -- those are
+            # two different rankings from two different sources (measured:
+            # 73 of the top 80 players differ in order, see thread 104). Use
+            # THIS field for any client-side recompute of simulate_availability;
+            # board.json's rank runs a categorically different model.
+            "player_ranks": consensus_ranks_by_name,
+            "player_ranks_note": (
+                "Keyed by player name (matches by_player's keys). Value is the "
+                "same consensus_rank ds.load_season/simulate_availability run "
+                "the opponent model and the user's own best-available pick "
+                "against today -- read from ranking_sources[0] "
+                "(name+as_of_date above), NOT from board.json:consensus_rank, "
+                "which is a different ranking from a different source (73 of "
+                "the top 80 players differ in order; see "
+                "docs/handoffs/104-fr066-availability-ranking-source-export.md)."
+            ),
             "mechanical_need_targets": need_targets,
             "mechanical_need_targets_note": (
                 "Per position: STARTERS[pos] + (FLEX_SLOTS if pos is flex-eligible else 0). "
@@ -759,7 +800,11 @@ def build_availability_json(cfg: lc.LeagueConfig = lc.CURRENT_LEAGUE) -> dict:
                 "effective-rank available player, with mechanical_need_targets applied as an "
                 "additive rank penalty (need_penalty_per_surplus per player beyond target, "
                 "infinite at max_at_position); (6) the user is assumed to draft best-available "
-                "off the TRUE consensus board (unperturbed) -- see board.json."
+                "off THIS SAME unperturbed consensus rank (player_ranks above / "
+                "ranking_sources[0]) -- corrected 2026-07-30 (thread 104): this previously said "
+                "board.json, which is wrong and was never wired that way; ds.strategy_bpa reads "
+                "data.consensus_rank, the identical array the opponent model's ranking_sources "
+                "draws from, not board.json's separately-sourced rank."
             ),
         },
     })
@@ -1075,7 +1120,7 @@ def write_all(
     written = []
     artifacts = {
         "board.json": build_board_json(conn, cfg),
-        "availability.json": build_availability_json(cfg),
+        "availability.json": build_availability_json(conn, cfg),
         "league.json": build_league_json(cfg),
         "rosters.json": build_rosters_json(conn, cfg),
     }

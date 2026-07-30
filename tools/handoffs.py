@@ -40,6 +40,20 @@ UNREACHABLE = {"design"}
 FIELD = re.compile(r"^([A-Z-]+):\s*(.*)$")
 REPLY = re.compile(r"^###\s+(\S+)\s+·", re.M)
 
+# W3 (ADR-see docs/decisions.md, 2026-07-30): new threads are named
+# docs/handoffs/YYYY-MM-DD-slug.md, not NNN-slug.md. The old NNN- scheme required a
+# shared "highest number so far" view to allocate the next one -- correct in a single
+# worktree, structurally unable to see what a sibling worktree allocated in the same
+# window (thread 076; collisions on 043/049/053, commit 1140586 for ADR-048's twin).
+# date+slug needs no shared counter at all: two agents naming different things on the
+# same day get different filenames for free, and the rare same-day-same-slug case
+# becomes an ordinary git filename conflict at merge (loud, blocks the merge) instead
+# of the old failure mode (two different filenames silently carrying the same ID:,
+# which merges cleanly and only surfaces if someone happens to notice).
+# Existing NNN-slug.md threads are NEVER renamed -- old numeric IDs keep resolving.
+LEGACY_ID_RE = re.compile(r"^\d{3}-")
+DATE_ID_RE = re.compile(r"^\d{4}-\d{2}-\d{2}-")
+
 
 class Thread:
     def __init__(self, path: pathlib.Path):
@@ -82,7 +96,13 @@ class Thread:
     @property
     def subject(self) -> str:
         stem = self.path.stem
-        return stem.split("-", 1)[1].replace("-", " ").capitalize() if "-" in stem else stem
+        if DATE_ID_RE.match(stem):
+            slug = stem[len("YYYY-MM-DD-"):]
+        elif "-" in stem:
+            slug = stem.split("-", 1)[1]
+        else:
+            slug = stem
+        return slug.replace("-", " ").capitalize()
 
     @property
     def age_days(self) -> int | None:
@@ -108,7 +128,10 @@ class Thread:
 def load() -> list[Thread]:
     if not HANDOFFS.exists():
         return []
-    files = sorted(p for p in HANDOFFS.glob("*.md") if re.match(r"^\d{3}-", p.name))
+    files = sorted(
+        p for p in HANDOFFS.glob("*.md")
+        if LEGACY_ID_RE.match(p.name) or DATE_ID_RE.match(p.name)
+    )
     return [Thread(p) for p in files]
 
 
@@ -173,9 +196,14 @@ def _git_show(ref: str, path: str) -> str | None:
 
 
 def next_free_id() -> int:
-    """W1(c): allocate from filenames on disk, never from parsed frontmatter --
-    a thread's own ID: field can be wrong, missing, or (pre-sync) not exist at all.
-    Scanning the directory listing is the one thing that can't lie.
+    """LEGACY (W1(c), superseded by W3 -- see DATE_ID_RE comment above). Kept working
+    and kept tested because it still answers one real question honestly -- 'what is the
+    highest legacy NNN thread number anyone has claimed' -- but as of W3 it is NOT used
+    to allocate new thread filenames. Even with the cross-branch widening below, this
+    function reads a 'highest so far' view that two worktrees can each see identically
+    stale at the same instant; that structural gap is exactly what W3 removes for new
+    threads by not requiring a shared counter at all. Do not wire this back into
+    cmd_new/ingest_pending.
 
     Widened (thread 079/081, FR-020 double-allocation, ADR-054 collision, 2026-07-29):
     also scans docs/handoffs/ as committed on every local + remote-tracking branch, so
@@ -191,6 +219,39 @@ def next_free_id() -> int:
     return (max(nums) + 1) if nums else 1
 
 
+def new_thread_filename(date: str, slug: str) -> pathlib.Path:
+    """W3: claim docs/handoffs/{date}-{slug}[-N].md with no shared counter and no git
+    ref scan. `os.O_CREAT | os.O_EXCL` makes the claim atomic within this working tree
+    -- if the exact path is already taken (same date, same slug, most likely because
+    this same tree already has a thread on the same subject today) the next integer
+    suffix is tried instead, deterministically, until one is free. This is what 'W1'
+    could never be for the old scheme: correctness here does not depend on seeing what
+    another worktree is doing, because the two things that make the name (today's date
+    and this thread's own subject) are already known locally, with nothing to race.
+
+    The one case this can't disambiguate is two *separate* worktrees independently
+    creating the identical date+slug with no shared filesystem between them -- there is
+    no way to know about a sibling worktree's in-flight allocation without a network
+    round trip, which this tool deliberately does not add. That case still can't
+    silently collide the way the old scheme did: the destination path itself is the
+    identifier, so both worktrees writing different content to the same path is an
+    ordinary git file conflict at merge time -- loud, blocking, and forces a human/agent
+    to resolve it -- not a same-number two-different-filenames collision that merges
+    clean and hides until someone reads the ID: field."""
+    HANDOFFS.mkdir(parents=True, exist_ok=True)
+    base = f"{date}-{slug}"
+    n = 1
+    while True:
+        candidate = base if n == 1 else f"{base}-{n}"
+        path = HANDOFFS / f"{candidate}.md"
+        try:
+            fd = os.open(str(path), os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+            os.close(fd)
+            return path
+        except FileExistsError:
+            n += 1
+
+
 def _rel(path: pathlib.Path) -> str:
     """Best-effort path-for-humans. Falls back to the absolute path when the given
     path isn't under ROOT (e.g. a test pointed the module at a scratch tmp_path)."""
@@ -204,10 +265,11 @@ def _slugify(text: str) -> str:
     return re.sub(r"[^a-z0-9]+", "-", text.lower()).strip("-")[:48] or "thread"
 
 
-def _stamp_frontmatter(text: str, nid: int, today: str) -> str:
+def _stamp_frontmatter(text: str, id_str: str, today: str) -> str:
     """Insert/overwrite ID: and OPENED: in a thread's frontmatter block. Refuses to
     proceed on a file with no frontmatter at all -- that is a malformed thread, not
-    something to paper over with a guessed block."""
+    something to paper over with a guessed block. `id_str` is written verbatim so it
+    works for both the legacy `NNN` shape and W3's `YYYY-MM-DD-slug` shape."""
     if not text.startswith("---"):
         raise SystemExit(f"handoffs sync: file has no frontmatter block, refusing to stamp it")
     _, fm, body = text.split("---", 2)
@@ -217,7 +279,7 @@ def _stamp_frontmatter(text: str, nid: int, today: str) -> str:
     for line in lines:
         stripped = line.strip()
         if stripped.upper().startswith("ID:"):
-            out_lines.append(f"ID: {nid:03d}")
+            out_lines.append(f"ID: {id_str}")
             has_id = True
         elif stripped.upper().startswith("OPENED:"):
             out_lines.append(f"OPENED: {today}")
@@ -225,7 +287,7 @@ def _stamp_frontmatter(text: str, nid: int, today: str) -> str:
         else:
             out_lines.append(line)
     if not has_id:
-        out_lines.insert(0, f"ID: {nid:03d}")
+        out_lines.insert(0, f"ID: {id_str}")
     if not has_opened:
         out_lines.append(f"OPENED: {today}")
     return "---\n" + "\n".join(out_lines) + "\n---" + body
@@ -242,35 +304,31 @@ def _pending_new_files() -> list[pathlib.Path]:
     return pending
 
 
-def _ingest_one(src: pathlib.Path, nid: int, today: str) -> pathlib.Path:
-    """Allocate a single pending file to a specific ID. Split out from ingest_pending()
-    so the hard-fail-on-collision behaviour is testable as a defense-in-depth property in
-    its own right, independent of whether next_free_id() ever actually produces a
-    colliding number in practice."""
+def _ingest_one(src: pathlib.Path, today: str) -> pathlib.Path:
+    """Allocate a single pending file to docs/handoffs/{today}-{slug}[-N].md via
+    new_thread_filename() (W3) -- no nid, no counter, no collision to hard-fail on:
+    new_thread_filename() itself cannot return an already-occupied path, so there is
+    nothing left here that needs a defensive raise. Split out from ingest_pending() so
+    the allocation-plus-stamp step is independently testable."""
     stem = src.stem
     raw_slug = stem[4:] if stem.upper().startswith("NEW-") else stem
     slug = _slugify(raw_slug)
-    dest = HANDOFFS / f"{nid:03d}-{slug}.md"
-    if dest.exists():
-        raise SystemExit(
-            f"handoffs sync: refusing to overwrite existing {_rel(dest)} "
-            f"while ingesting {_rel(src)}"
-        )
+    dest = new_thread_filename(today, slug)
     text = src.read_text(encoding="utf-8")
-    dest.write_text(_stamp_frontmatter(text, nid, today), encoding="utf-8")
+    dest.write_text(_stamp_frontmatter(text, dest.stem, today), encoding="utf-8")
     src.unlink()
     return dest
 
 
 def ingest_pending(today: str | None = None) -> list[pathlib.Path]:
-    """W1(b): rename every pending file to {next_free_id:03d}-<slug>.md, stamp ID/OPENED,
-    hard-fail rather than overwrite an existing path. Idempotent: running with nothing
-    pending is a no-op."""
+    """W3: rename every pending file to {today}-<slug>[-N].md via new_thread_filename(),
+    stamp ID/OPENED. Idempotent: running with nothing pending is a no-op. Unlike the old
+    W1(b), this never needs to hard-fail on a collision -- new_thread_filename() resolves
+    same-day-same-slug deterministically within this working tree instead of raising."""
     today = today or datetime.date.today().isoformat()
     ingested: list[pathlib.Path] = []
     for src in _pending_new_files():
-        nid = next_free_id()
-        ingested.append(_ingest_one(src, nid, today))
+        ingested.append(_ingest_one(src, today))
     return ingested
 
 
@@ -364,8 +422,10 @@ def cmd_inbox(args) -> int:
 
 
 def cmd_new(args) -> int:
-    """W1(a): write NEW-<slug>.md with no ID: field. Nobody types a number, so nobody
-    can collide on one. sync (called at the end of this command) allocates the real ID."""
+    """W1(a)/W3: write NEW-<slug>.md with no ID: field. Nobody types a number (or a
+    date -- ingest_pending() reads the system clock at allocation time, see comment on
+    DATE_ID_RE), so nobody can collide on one. sync (called at the end of this command)
+    allocates the real docs/handoffs/YYYY-MM-DD-slug.md filename."""
     slug = _slugify(args.subject)
     path = HANDOFFS / f"NEW-{slug}.md"
     if path.exists():
@@ -551,7 +611,14 @@ def find_adr_collisions() -> list[str]:
 
 def find_thread_id_collisions() -> list[str]:
     """Same backstop shape as find_adr_collisions(), for thread IDs: a docs/handoffs/
-    NNN-*.md filename claimed for different subjects on different branches."""
+    NNN-*.md filename claimed for different subjects on different branches.
+
+    Legacy-only (`\\d{3}-`) on purpose. W3's YYYY-MM-DD-slug.md threads have no
+    equivalent failure mode to backstop: the filename itself *is* the identifier there
+    (not a separate ID: number that two different filenames could each carry), so two
+    branches genuinely disagreeing about what YYYY-MM-DD-slug.md contains is an ordinary
+    git same-path conflict that blocks the merge on its own -- nothing here needs to
+    detect it after the fact."""
     by_id: dict[str, set[str]] = {}
     if HANDOFFS.exists():
         for p in HANDOFFS.glob("*.md"):

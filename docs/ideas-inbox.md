@@ -1363,3 +1363,41 @@ Scoping decisions made without asking, logged here per the "decide and log" inst
    the header/input pinned) but cannot prove scrollbar-track *visibility* — that half of the
    spec's ask needs a founder look at the real app, not a headless screenshot.
 
+- 2026-07-30 · (strategist, thread 119 / FR-131) **Decided, not escalated — five calls, all reasoned
+  in the thread-119 reply.** (a) **Agreed with the founder's conclusion and rejected his reason.**
+  Switching the availability opponent model to FFC ADP is right on *estimand* grounds — ADP measures
+  realised pick position, in picks, with an uncertainty; expert consensus measures analyst opinion,
+  ordinally, with none — not because ADP "fits the mocks better," which has never been measured
+  against the incumbent and is what guardrails §5 requires. (b) **Refused the framing "is FFC
+  representative of a Yahoo room?"** It is unanswerable: n = 2 rooms, resampling unit is the room,
+  Yahoo mock lobbies carry an unknown autopick-bot fraction, and Westwood itself has zero logged
+  drafts. Replaced with a question that has an answer (M1: ADP vs ECR on realised-pick MAE, per mock,
+  no pooling, no CI). (c) **Refused FFC's raw per-player `std_dev` as the shipped sigma**, and
+  attacked FR-131's own evidence with FR-131's own source: between the committed 07-29 and 07-30
+  snapshots, Kamara moved 26.2 → **19.0** (−27%, n = 28), Hunter Henry 28.0 → 24.8, Kittle 26.9 →
+  24.9, McPherson 39.2 → 36.4 — the four "the room does not agree" exhibits are exactly the four with
+  the smallest n and the largest one-day drift, while Gibbs/Bijan/Chase did not move at all. Also
+  found a **gating data-semantics defect**: `total_drafts_in_sample` is 1254 on every row while
+  Bijan Robinson (an every-draft pick-2) shows `times_drafted` 90, and Ja'Marr Chase's count *fell*
+  189 → 175 while the total *rose*. Until that reconciles, no per-player n, SE or shrinkage weight is
+  founded. (d) **Named the quiet error before it happens:** FFC `std_dev` is the dispersion of a
+  *realised* pick (an output); the simulator's sigma is a *latent board perturbation* whose variance
+  the mechanics then add to. Substituting one for the other over-disperses and *looks like humility*
+  while doing it. Calibrate through the simulator (M3), never substitute. (e) **Pre-committed a
+  directional prediction: `lambda_hat < 10`** — i.e. current availability numbers for top-80 players
+  are systematically too close to 0.5. Hand-computed from committed files: the 10-team Yahoo mock's
+  mean |pick − ADP| is **1.12 / 3.66 / 8.22** picks over rounds 1–3 against the ~8 a flat sigma = 10
+  implies in every round, and over ADP 1–90 the typical FFC `std_dev` is ~4–5, not the ~9.7 median
+  quoted over all 180 rows including kickers. Noting for my own calibration record that this is an
+  *arithmetic* prediction, not a situation story — the category that has held up.
+  **Worth a PM call, second time raised:** PR ids are still hand-picked filenames with no allocator
+  (`tools/handoffs.py` covers threads and ADRs only), and an ADR-C registration additionally needs a
+  computed `content_hash`, so a no-shell role cannot write a valid one at all. I wrote the design as
+  `docs/ranking/availability-opponent-model-precommit.md` and left the `PR-0NN` file to backend
+  rather than hand-typing a number. Same gap flagged by strategist on 2026-07-29 (PR-006/PR-007).
+  **No shell in this session, by design** — nothing committed, nothing allocated. Staged:
+  `docs/handoffs/NEW-availability-adp-measurements-m0-m5.md` (needs `python tools/handoffs.py sync`)
+  and `docs/adr-drafts/ADR-DRAFT-availability-opponent-model-source-and-dispersion.md` (needs
+  `python tools/handoffs.py adr next`). `OPEN.md` hand-edited minimally and flagged as
+  sync-authoritative.
+
