@@ -64,10 +64,25 @@ from experiments.bottomup.factors.factor_features2 import (
 #: qualification bar (25 carries) -- and never tuned against any result.
 EXPL_K0 = 50.0
 
-#: How far back the coordinator chain is walked. 12 seasons exceeds every OC
+#: How far back the coordinator chain is walked. 15 seasons exceeds every OC
 #: spell in the modern league; a chain that reaches the source's first season is
 #: reported as censored rather than truncated silently.
-OC_MAX_BACK = 12
+OC_MAX_BACK = 15
+
+#: THE SOURCE FLOOR, and it is a measured limit rather than a chosen one.
+#: A backfill of `coord_preseason.py` to 2004 was run for this batch and FAILED
+#: for a documented reason: 96 of 192 team-seasons in 2004-2009 return
+#: `no_revision_before_kickoff` because the club staff navbox TEMPLATES did not
+#: exist on Wikipedia before roughly 2010. What landed was 5 clubs in 2007, 4 in
+#: 2008 and 12 in 2009 -- partial, and partial in a club-specific way, so a chain
+#: that happened to reach a covered club would look longer than an identical
+#: chain at an uncovered one. That is worse than a clean floor, so the sparse
+#: 2007-2009 rows are deliberately NOT used and the chain stops at 2010.
+#:
+#: Censoring measured under this floor, target seasons 2014-2024: exactly ONE
+#: club-season per year (3.1%), zero in 2024. Censored rows are flagged
+#: `oc_tenure_known = 0` and imputed; they are not reported as tenure.
+OC_FIRST_SEASON = 2010
 
 
 def _median_fill(v: np.ndarray) -> np.ndarray:
@@ -153,15 +168,15 @@ def _tenure_table(panel: SeasonPanel, target_season: int
                   ) -> Tuple[pd.Series, pd.Series]:
     """(tenure years, censored flag) per club, entering `target_season`."""
     keys: Dict[int, pd.Series] = {}
-    earliest = target_season
-    for s in range(target_season, target_season - OC_MAX_BACK - 1, -1):
+    floor = max(OC_FIRST_SEASON, target_season - OC_MAX_BACK)
+    for s in range(target_season, floor - 1, -1):
         co = panel.preseason_coordinators(s)
         if not len(co):
             break
         keys[s] = _oc_key(co)
-        earliest = s
     if target_season not in keys:
         return pd.Series(dtype=float), pd.Series(dtype=float)
+    earliest = min(keys)
 
     tenure, censored = {}, {}
     for team, k0 in keys[target_season].items():
