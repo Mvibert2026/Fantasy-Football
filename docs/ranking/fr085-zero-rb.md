@@ -11,6 +11,24 @@ ran: `docs/ranking/fr085-strategy-sim-precommit.md`, committed as `a9e3b2b`.
 **Exploratory. Nothing here is registered, nothing is confirmatory, and the sealed 2025 holdout was
 never opened** — it is excluded in code (`season_vbd()` raises at ≥2025), not by convention.
 
+---
+
+> ## CORRECTION, 2026-07-30 (FR-109) — read before §1(6), §5.1 and §5.4
+>
+> The founder challenged §1(6) — *"there's not 60 better players than the first rb"* — and he was
+> right. **He was right about the claim and wrong about the cause, and the claim was mine.**
+>
+> | | |
+> |---|---|
+> | **Is the VBD arm mis-specified?** | **No.** At pick 1 the highest-VBD player on the board is RB1, and the arm takes him. Audit dump in **§5.5**. |
+> | **Was "VBD takes its first RB in round 6.3" a sound thing to report?** | **No.** 6.33 is the mean of a violently bimodal distribution, and it is the single most extreme cell in the run's own σ grid. |
+> | **Does the Zero RB null inherit a defect?** | **Not from the arm.** The arm behaves as the pre-commitment defines it. What the null does inherit is a **contrast problem** — see §5.4. |
+> | **Was anything else wrong?** | **Yes, one real code bug.** §5.4's slot table was printed from the σ=20 sensitivity cell, not the primary σ. Fixed; §5.4 replaced. |
+>
+> §1(6), §5.1's closing two paragraphs, and all of §5.4 are **withdrawn and replaced**. The §5.2
+> margins are unchanged and were not recomputed — nothing found in the audit touches them.
+> Audit code: `experiments/strategy/audit_vbd.py`, `why_first_rb.py`, `slot_sweep.py`.
+
 Code: `experiments/strategy/`. Reproduce with
 
 ```
@@ -79,11 +97,29 @@ level.**
 ECR, 4 seasons: +3.1 realistic points [−13.0, +19.3] NULL, P(playoff) +0.033 [−0.028, +0.093] NULL.
 **Both sources, all four metrics, every σ: null.** §5.
 
-**(6) The reason is mechanical and worth more than the null itself. VBD in this league is already a
-late-RB strategy.** Under the primary opponent model, plain VBD takes its first RB in **round 6.3 on
-average**. Zero RB moves that to 10.7. **Both are already "zero RB" by any conventional definition** —
-the founder's question turns out to compare two flavours of waiting, not waiting against not
-waiting. §5.1.
+**(6) — WITHDRAWN 2026-07-30 (FR-109). The original text is struck through below; the replacement
+follows it.**
+
+> ~~**The reason is mechanical and worth more than the null itself. VBD in this league is already a
+> late-RB strategy.** Under the primary opponent model, plain VBD takes its first RB in **round 6.3
+> on average**. Zero RB moves that to 10.7. **Both are already "zero RB" by any conventional
+> definition** — the founder's question turns out to compare two flavours of waiting, not waiting
+> against not waiting.~~
+
+**(6, replacement) VBD is an elite-RB-or-nothing strategy, and "round 6.3" is a mean of a
+distribution that has almost no mass anywhere near 6.** Measured over 2,100 drafts at the primary σ:
+**44.6% take an RB in round 1**, 44.0% take their first RB in round 11 or 12, and **rounds 3–5
+together account for 0.5%** — 11 drafts out of 2,100, with **none at all in round 3**. At slot 1 the
+arm takes RB1 with the first overall pick in **100%** of drafts; at slot 10, in 22%. The mean was
+reported without its distribution and it described a behaviour the model essentially never exhibits.
+§5.5.
+
+Two further things make the original sentence indefensible rather than merely imprecise. **6.33 is
+the most extreme value in the run's own 14-cell sensitivity grid** — every other (board, σ) cell puts
+VBD's first RB between round 1.17 and 4.64, and on the *second* market board (ECR) it is **1.39 at
+the primary σ**. And the round-11/12 mode is not a value judgement at all: **94% of those picks are
+driven by the positional-need penalty**, the amendment to the pre-commitment, not by the RB being the
+best player available. §5.5.
 
 **(7) The one thing that did beat VBD is not a strategy at all: doing what the room says.**
 `bpa_consensus` — take the highest-consensus player available — is +24.1 realistic points and
@@ -301,15 +337,19 @@ FFC, primary σ, pooled over seven seasons:
 | Balanced | 1992.2 | 1796.2 | 0.427 | 0.105 | 3.68 |
 | BPA-consensus | 2016.4 | 1806.2 | 0.443 | 0.112 | 1.77 |
 
-**The first-RB column is the finding underneath the null.** VBD, with no positional rule of any kind
-and this league's measured RB30 replacement level, already waits until **round 6.3**. It does that
-because RB value-over-replacement crosses zero at RB30 while WR's runs to WR40, so once the top backs
-are gone — and at the primary σ the room takes them almost deterministically — the highest-VBD player
-is a receiver for several rounds running.
+**The two paragraphs that stood here are WITHDRAWN (FR-109, 2026-07-30).** They read the 6.33 mean as
+a description of the strategy. It is not one — see §5.5 for the distribution, the σ grid, and the
+cause breakdown. The point estimates in the table above are arithmetically correct and unchanged;
+what was wrong was the interpretation placed on the last column, and the fact that a mean was
+reported for a bimodal quantity with no interval and no distribution. That is the failure mode
+`CLAUDE.md` §6 exists to prevent, and I committed it in the same document that names it.
 
-**So "VBD vs Zero RB" in this league is round 6.3 against round 10.7.** It is not a test of drafting
-backs early against not drafting them early. Nobody had checked this, and it reframes the question
-the founder asked.
+The one part of the withdrawn text that survives audit is the *within-round-1* mechanism: RB
+value-over-replacement does cross zero at RB30 while WR's runs to WR40, so after the top handful of
+backs are gone the highest-VBD player is a receiver for a long stretch. What that produces is not
+"VBD waits until round 6" — it is **"VBD takes an elite RB if one is on the board at its first pick,
+and otherwise takes no RB on value grounds again for the rest of the draft."** Those are different
+claims and only the second is supported.
 
 ### 5.2 The comparison
 
@@ -394,6 +434,225 @@ P(make playoffs) by slot group, FFC primary σ. Zero RB does not become correct 
 
 *(Slot table is from the last σ cell run and is reported as a diagnostic, not a headline; the paired
 comparisons in §5.2 are the evidence.)*
+
+---
+
+## 5.5 FR-109 — the audit of the VBD arm
+
+The founder's objection, verbatim: *"Hard for me really to believe vbd doesnt take a RB before 6th
+round. Maybe a certain slot. But there's not 60 better players than the first rb. I have real
+questions about that test."*
+
+Both halves are correct. There are not 60 better players than the first RB — **the model agrees, and
+always did.** And "maybe a certain slot" is exactly the shape of the distribution.
+
+### 5.5.1 The dump — what the arm actually sees at pick 1
+
+Top 10 available by the simulator's own VBD, 2022 FFC board, primary σ, seed `20260730+season*1000`,
+sim index 0. This is the raw output of `experiments/strategy/audit_vbd.py`.
+
+```
+-- overall pick 1 (round 1) -- USER ON THE CLOCK; user roster so far: empty
+    # pos   raw VBD  VBDrank  need pen    score consensus  name
+    1 RB      229.5        1       0.0      1.0         1  Jonathan Taylor
+    2 RB      206.5        2       0.0      2.0         2  Christian McCaffrey
+    3 WR      180.8        3       0.0      3.0         4  Justin Jefferson
+    4 RB      174.7        4       0.0      4.0         3  Derrick Henry
+    5 WR      162.9        5       0.0      5.0         6  Cooper Kupp
+    6 RB      154.5        6       0.0      6.0         5  Dalvin Cook
+    7 WR      140.3        7       0.0      7.0         8  Ja'Marr Chase
+    8 RB      135.3        8       0.0      8.0         7  Najee Harris
+    9 WR      128.2        9       0.0      9.0        13  Davante Adams
+   10 RB      121.0       10       0.0     10.0         9  Joe Mixon
+```
+
+**The best player on the board by VBD is RB1, the second-best is RB2, and five of the top ten are
+running backs. The arm takes Jonathan Taylor first overall.** The need penalty is zero at pick 1 for
+every player, so nothing is being suppressed. There are not 60 better players than the first RB;
+there are none.
+
+What the arm goes on to draft from slot 1, same draft:
+
+```
+ rd  ovr  pos      VBD  VBDrk  cons  name
+  1    1  RB     229.5      1     1  Jonathan Taylor
+  2   20  WR     111.2     13    20  CeeDee Lamb
+  3   21  WR     103.7     15    22  Deebo Samuel Sr.
+  4   40  WR      70.0     30    40  Jaylen Waddle
+  5   41  WR      66.0     32    41  DJ Moore
+  6   60  WR      47.3     46    57  DeAndre Hopkins
+  7   61  WR      44.4     48    59  Brandin Cooks
+  8   80  QB       7.4     80    79  Dak Prescott
+  9   81  TE       5.5     83    91  Zach Ertz
+ ...
+  first RB round = 1
+```
+
+And the same draft from **slot 10**, which is where the "waits until round 6" impression came from:
+
+```
+-- overall pick 10 (round 1) -- USER ON THE CLOCK; user roster so far: empty
+    # pos   raw VBD  VBDrank  need pen    score consensus  name
+    1 WR      128.2        9       0.0      9.0        13  Davante Adams
+    2 WR      118.1       11       0.0     11.0        14  Stefon Diggs
+    3 TE      112.8       12       0.0     12.0        18  Travis Kelce
+    4 WR      111.2       13       0.0     13.0        20  CeeDee Lamb
+    5 RB      107.2       14       0.0     14.0        10  Austin Ekeler
+    ...
+-- overall pick 20 (round 2) --
+   ... best available RB is #17 on this list: RB Leonard Fournette raw VBD 61.2
+-- overall pick 40 (round 4) --
+   ... best available RB is #18 on this list: RB Elijah Mitchell raw VBD 32.8
+-- overall pick 60 (round 6) --
+   ... best available RB is #16 on this list: RB Rashaad Penny raw VBD 13.1
+```
+
+**This is the mechanism, and it is legible.** At pick 10 the best available RB is the model's 5th-best
+player, 21 VBD points behind the best WR — a close call, not a dismissal. Ten picks later the best
+available RB has dropped from 107 to 61 while the best available WR has only dropped from 128 to 111.
+The room takes 10 RBs in the first 20 picks and 15 by pick 25, so by the user's second pick the RB
+pool is picked over and the WR pool is not. After that the RB curve never recovers.
+
+### 5.5.2 The distribution behind the 6.33 mean
+
+`experiments/strategy/audit_vbd.py`, ffc, primary σ, 300 sims × 7 seasons = 2,100 drafts.
+
+| first-RB round | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| drafts | **937** | 27 | **0** | 2 | 9 | 66 | 28 | 10 | 20 | 74 | **476** | **449** | 2 |
+
+Mean 6.33, median 7.0, and **round 6.3 is a value the arm essentially never produces**. By slot:
+
+| slot | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| mean first-RB round | **1.00** | 1.64 | 3.80 | 6.22 | 7.47 | 8.73 | 8.98 | 8.17 | 8.28 | 8.46 |
+| median | 1 | 1 | 1 | 6 | 11 | 11 | 11 | 11 | 11 | 11 |
+| share taking RB in round 1 | **100%** | 90% | 68% | 44% | 35% | 22% | 22% | 29% | 20% | 22% |
+
+The founder's "maybe a certain slot" is the whole of it.
+
+### 5.5.3 Why the arm takes the RB when it does
+
+Every first-RB pick classified at the pick itself (`experiments/strategy/why_first_rb.py`, 200 sims ×
+7 seasons × 10 slots = 14,000 drafts). **VALUE** = the RB had the highest *raw* VBD of all available
+legal players. **PENALTY** = he did not, and only won once the positional-need penalty was added.
+**FORCED** = legality had removed every non-RB option.
+
+| | VALUE | PENALTY | FORCED |
+|---|---|---|---|
+| pooled | **54.2%** | 45.8% | **0.0%** |
+| slot 1 | 100.0% | 0.0% | 0.0% |
+| slot 3 | 80.4% | 19.6% | 0.0% |
+| slots 5–10 | 32–39% | 61–68% | 0.0% |
+| first RB in rounds 1–7 | ~100% | ~0% | 0.0% |
+| first RB in rounds 11–12 | 6% | **94%** | 0.0% |
+
+**The two modes have different causes.** Round 1 is the arm buying the best player on the board.
+Rounds 11–12 are the **need penalty** — 25 rank units per surplus at 6 WR, plus the QB/TE caps of 2 —
+finally making a replacement-level RB the least-penalised option. Those late RBs carry raw VBD of
+roughly 0 to −50. **Legality never forces the pick; the penalty does.**
+
+That penalty is the amendment I made to the pre-commitment after the smoke test, and it is doing
+about half the work in the headline number I reported. That is exactly the kind of load an
+after-the-fact amendment should not silently carry, and it is why the amendment needed the
+`strategist` ruling I asked for before, not after, the number was quoted to the founder.
+
+### 5.5.4 Is 6.33 even a property of the strategy? No — mostly of σ
+
+The same quantity across every cell the run already computed:
+
+| board / σ | measured | flat 5 | flat 10 | flat 20 |
+|---|---|---|---|---|
+| **FFC, 16 rounds** | **6.33** | 3.36 | 1.83 | 1.24 |
+| FFC, 11 rounds | 4.64 | 2.64 | 1.62 | 1.20 |
+| **ECR, 16 rounds** | — | 2.08 | **1.39** | 1.18 |
+| ECR, 11 rounds | — | 1.72 | 1.33 | 1.17 |
+
+**6.33 is the single most extreme value in its own 14-cell grid**, and the primary cell on the second
+market board is 1.39. The FFC measured σ is very small at the top (~1.2 picks at pick 1), so the room
+takes the elite backs in near-deterministic order and they simply never reach slots 5–10. Loosen σ
+and they do, and the arm takes them. **The first-RB round is measuring how often an elite RB falls to
+you, not what the VBD rule prefers.** Reporting it as the latter was the error.
+
+### 5.5.5 Reconciliation against the ledger's 168.5 / 153.2 / 114.1 / 73.1
+
+FR-109 asserts these two cannot both be right. **They can, and both are.** They are different
+estimators of the same object, and they agree on the ordering that matters.
+
+VBD of the positional rank-1 slot, mean 2021–2024:
+
+| | RB | WR | QB | TE |
+|---|---|---|---|---|
+| **simulator** (finish-rank curve, `experiments/strategy/board.py`) | **223.1** | 178.6 | 107.1 | 109.5 |
+| **shipped board / ADR-016** (log-linear on *consensus* rank, `src/make_board.py`) | **168.5** | 153.2 | 114.1 | 73.1 |
+| my reconstruction of ADR-016's form on the FFC board | 171.9 | 151.3 | 118.3 | 100.8 |
+
+**RB1 is the highest-VBD slot in this league under both estimators**, which is the claim FR-109
+thought was contradicted. It is not. The simulator's arm acts on it: it takes RB1 first overall
+whenever RB1 is on the board at its first pick.
+
+They are not the same number, and the difference is real and should be recorded:
+
+- The simulator reads **finish**-rank curves (mean season total of whoever *finished* RBk) at a
+  player's **consensus** positional rank. The shipped board fits `points ~ α + β·ln(consensus rank)`.
+  Finish ranks are order statistics, so the simulator's curve is inflated — ratio 1.1–1.5× at the top
+  of each position and 1.5–2× deeper.
+- **ADR-016 explicitly settled against conditioning on the outcome** (*"That conditions on the
+  outcome. What a drafter actually chooses is a draft slot"*). The pre-commitment specified a
+  finish-rank curve anyway, and I did not notice the conflict. **That is an undeclared departure from
+  a settled ADR** and it is mine.
+- It does **not** explain the behaviour under audit. The round-2 RB-vs-WR call comes out the same way
+  under both curves: finish-curve RB12 69.6 vs WR8 94.9 (WR +25.3); consensus-curve RB12 46.3 vs WR8
+  66.0 (WR +19.7). The estimator changes the magnitudes, not the decision.
+- Second undeclared departure: the pre-commitment says *"mean points per game … multiplied by the
+  target season's scheduled game count"*; the code uses **season totals rescaled by the games ratio**.
+  `board.py` documents the choice and I think it is the better one, but the pre-commitment was never
+  amended to say so.
+
+### 5.5.6 QB crowd-out — tested directly, and it is not the mechanism
+
+Raised 2026-07-30: the shipped board places QB1 at overall **6** against a consensus of 26, so a
+highest-VBD arm might be taking quarterbacks in round 1 and crowding out the backs. The shipped-board
+figures reproduce exactly (`data/export/board.json`: QB1 +20, QB2 +19, QB3 +16, QB4 +14 vs consensus,
+inverting from QB9). **But the simulator does not draft from that board**, and on the board it does
+draft from the effect is much smaller and is not the cause:
+
+| | |
+|---|---|
+| simulator board's overall VBD rank of its own best QB, 2018–2024 | **15, 16, 14, 13, 16, 14, 11** (consensus 18–27) |
+| QBs the arm takes before its first RB, pooled | **0.98** |
+| WRs the arm takes before its first RB, pooled | **3.26** |
+| share of those QBs taken in round 1 | **0.000** |
+| mean round of a pre-first-RB QB | 4.92 (median 4) |
+| at slot 1 | 0.00 QB, 0.00 WR, 0.00 TE — RB1 goes first overall |
+| at slots 6–10 | 1.3–1.5 QB against 4.5–4.8 WR |
+
+**The answer to "is it two or three QBs inside the first four rounds" is no: it is about one QB,
+typically round 4–5, against three times as many receivers.** The crowd-out is WR, not QB. The
+board-level QB concern is real and belongs to the shipped board — it is a different object with a
+different owner and it should be raised there, not resolved here.
+
+### 5.5.7 The parameter that actually decides this, and it was never tested
+
+Both baselines in play are "teams × starting slots": QB10 / RB30 / WR40 / TE10. The alternative
+principle — replacement sits where a position becomes *freely replaceable*, i.e. at the last player
+actually rostered — gives, measured from the FFC board's own top 150 (10 teams × 15 offensive
+rounds), a mean composition of **QB 24 / RB 54 / WR 57 / TE 15**.
+
+| baseline | RB | WR | QB | TE | RB12 vs WR8 (the round-2 call) |
+|---|---|---|---|---|---|
+| starting slots (current) | 223.1 | 178.6 | 107.1 | 109.5 | **WR by 25.3** |
+| last rostered | 282.6 | 210.0 | 218.0 | 125.4 | **RB by 2.8** |
+
+**The round-2 decision that produces the entire late-RB behaviour flips sign under a baseline choice
+that is at least as defensible as the one used.** Neither is obviously right — the "last rostered"
+depth for QB (24 in a 1-QB, 10-team league) is itself a product of draft convention rather than
+scarcity, and it drives QB1's VBD to 218, which is plainly wrong for this format.
+
+**This is the single most influential free parameter in the whole exercise and no version of this
+document has tested it.** It is not adjacent to test-registry #35 (global flex baseline, closed NULL
+by backend) — #35 replaced all four baselines with one; this is a per-position question. It needs a
+pre-registered test owned by `strategist`, not a number chosen here after seeing which way it goes.
 
 ---
 
