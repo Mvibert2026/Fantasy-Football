@@ -102,3 +102,41 @@ under every answer. `docs/assistant-persona.md` takes the opposite approach — 
 the specific claim, in the same sentence, rather than a standing caveat the reader learns to ignore.
 **Worth keeping that contrast deliberately.**
 
+### The player card, in full — the layout design asked about
+
+Header band: photo, name at display size, `WR - SEA | Bye 11 | Age 24`, a **Draft Now** primary
+button, and a scoring-format selector (`STD ▾`) so the whole card re-prices without leaving it.
+
+**Four stats as a single strip, equal weight, no hierarchy between them:**
+
+| ADP | ECR | Last Season | SOS |
+|---|---|---|---|
+| WR3 | WR3 | WR1 | 21st |
+
+Every one is expressed **as a positional rank, not a raw number** — WR3, not 8.2. That is the
+readable form under a clock, and it is worth noting against our own board, which shows overall rank
+and raw ADP.
+
+Then tabs: **Latest News · Game Logs · Season Stats · Outlook · News & Analysis · Depth Chart**, with
+**Full Profile →** pushed to the right as a separate escape hatch.
+
+**The AI panel, and this is the one to study rather than copy.** "Consensus Draft Sentiment, powered
+by Coach AI": three meters — **OVERALL · UPSIDE · BUST** — each a five-segment bar with a word
+(`Very High`, `Very High`, `Low`) and an ⓘ. Beneath, a paragraph of generated prose.
+
+**Two observations, and they cut against each other.**
+
+The meters are a genuinely good idiom: a five-segment bar plus a word survives greyscale, reads at a
+glance, and refuses false precision — no "87% upside". Worth stealing as a *form*.
+
+**What is behind them is the opposite of this project's standard.** The prose is confident,
+sourced to nothing checkable, and hedged only by the standing "Coach can make mistakes" footer. It
+says the ceiling case "probably" holds and names three specific worries. **Nothing states where any
+of it came from or how strongly it is held.** A reader cannot tell an analyst consensus from a model
+output from a paraphrase.
+
+`docs/assistant-persona.md` forbids exactly this — every claim traceable to one retrieved item, no
+number that is not verbatim in context, uncertainty in the same sentence as the claim. **The
+constraint is not a limitation to design around; it is the difference between the two products.**
+If we ship meters, they must be computed from something and say what.
+
