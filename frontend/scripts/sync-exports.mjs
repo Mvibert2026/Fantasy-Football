@@ -146,31 +146,54 @@ export function syncExports({ quiet = false } = {}) {
     const to = join(outDir, 'leagues', leagueId);
     const leagueArtifacts = copyJsonDir(from, to, `leagues/${leagueId}/`, log);
 
-    // league_name (added contract 1.7.0, ADR-041) makes a much better switcher
-    // label than the raw id -- read it straight from the copy just written rather
-    // than re-parsing the source, so there's exactly one place that trusts the
-    // file's content. Falls back to the id itself on an older contract that
-    // doesn't carry the field yet, same as the default league's label.
-    let label = leagueId;
-    try {
-      const leagueJson = JSON.parse(readFileSync(join(to, 'league.json'), 'utf8'));
-      if (typeof leagueJson.league_name === 'string' && leagueJson.league_name.trim()) {
-        label = leagueJson.league_name;
-      }
-    } catch {
-      // No league.json, or it doesn't parse -- copyJsonDir already threw loudly
-      // for a genuine parse error, so reaching here just means "no name available".
-    }
+    const { label, track } = readLabelAndTrack(to, leagueId);
 
-    return { id: leagueId, label, artifacts: leagueArtifacts };
+    return { id: leagueId, label, artifacts: leagueArtifacts, track };
   });
 
-  writeFileSync(join(outDir, '_leagues.json'), JSON.stringify({ leagues }, null, 2));
+  // The primary (default, unprefixed-path) league's own selector metadata --
+  // design/TWO-TRACK-EXPRESSION.md: the switcher needs to say which track a
+  // league is on *before* it's loaded, and that includes the currently-default
+  // one too, not only the additional leagues above.
+  const primaryInfo = readLabelAndTrack(outDir, 'primary');
+  const primary = { id: 'default', label: primaryInfo.label, track: primaryInfo.track };
+
+  writeFileSync(join(outDir, '_leagues.json'), JSON.stringify({ leagues, primary }, null, 2));
   if (leagueDirs.length > 0) {
     log(`[sync-exports] ${leagueDirs.length} additional league(s) copied. Manifest: public/data/_leagues.json`);
   }
 
   return manifest;
+}
+
+/**
+ * Reads a just-copied league.json (`to`/league.json) for its switcher label and
+ * two-track metadata (design/TWO-TRACK-EXPRESSION.md), rather than re-parsing
+ * the source -- there is exactly one place that trusts the file's content.
+ * Falls back to safe "unknown" values on an older contract or a missing file,
+ * matching the label fallback this replaced.
+ */
+function readLabelAndTrack(to, fallbackId) {
+  let label = fallbackId;
+  let track = { isPrimary: false, scoringRulesetNote: null, opponentsModelledCount: null };
+  try {
+    const leagueJson = JSON.parse(readFileSync(join(to, 'league.json'), 'utf8'));
+    if (typeof leagueJson.league_name === 'string' && leagueJson.league_name.trim()) {
+      label = leagueJson.league_name;
+    }
+    const isPrimary = leagueJson.league_id === 'primary';
+    const scoringRulesetNote =
+      typeof leagueJson.scoring_ruleset_note === 'string' ? leagueJson.scoring_ruleset_note : null;
+    // teams - 1: the league's own real other teams, a structural fact already on
+    // league.json -- never how many of them carry behavioural data (see
+    // LeagueTrack's doc comment in ui/data/types.ts).
+    const opponentsModelledCount = isPrimary && typeof leagueJson.teams === 'number' ? leagueJson.teams - 1 : null;
+    track = { isPrimary, scoringRulesetNote, opponentsModelledCount };
+  } catch {
+    // No league.json, or it doesn't parse -- copyJsonDir already threw loudly for
+    // a genuine parse error, so reaching here just means "no metadata available".
+  }
+  return { label, track };
 }
 
 /** Reads the manifest already in public/data/, or null on a cold start. */

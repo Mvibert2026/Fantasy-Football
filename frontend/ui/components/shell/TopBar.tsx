@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { randomSlot } from '../../data/draftSlot';
 import type { LeagueConfig } from '../../data/league';
 import type { SelectableLeague } from '../../data/league-registry';
+import type { LeagueTrack } from '../../data/types';
 import type { Theme } from './useTheme';
 
 /**
@@ -31,6 +32,50 @@ const DEFAULT_MODES: Array<{ key: Mode; label: string }> = [
   { key: 'draft', label: 'Draft' },
   { key: 'season', label: 'Season' },
 ];
+
+/**
+ * design/TWO-TRACK-EXPRESSION.md: plain-text (never colour-coded -- `--acc`
+ * already means "good, better than baseline" elsewhere in this system, see
+ * SUPPLIED-VALUES.md) description of which track a league is on, shown before
+ * the league is ever loaded. Two real tracks exist today; a third ("not yet")
+ * is named in the design spec but reserved -- no league in this export is in
+ * that state, so there is no branch for it here.
+ *
+ * Two forms of the same fact: the full sentence design's mockup shows (used in
+ * the title, and anywhere with room to spare -- see Methodology's own scoring-
+ * ruleset section for the full `scoring_ruleset_note` prose), and a short label
+ * for the top bar itself, which was already tight before this existed (a real
+ * export's freshness note and league-detail string both already truncate at
+ * this app's usual screenshot width). Principle #4 -- density is the product --
+ * cuts against spending that little remaining width on a second full sentence
+ * next to information already on screen; the short label plus the option-list
+ * markers below carry the same distinction, and the full sentence is one hover
+ * away rather than gone.
+ */
+function trackFullDescriptor(track: LeagueTrack): string {
+  return track.isPrimary
+    ? `primary track · full ruleset · ${track.opponentsModelledCount ?? '—'} opponents modelled`
+    : 'generic track · standard scoring · opponents not modelled';
+}
+
+function trackBadgeLabel(track: LeagueTrack): string {
+  return track.isPrimary ? 'PRIMARY' : 'GENERIC';
+}
+
+/** Short marker prefixed to each option's own text, so the distinction is visible
+ *  inside the dropdown itself before a selection is made -- not only after. */
+function trackMarker(track: LeagueTrack | undefined): string {
+  if (!track) return '';
+  return track.isPrimary ? '● ' : '○ ';
+}
+
+/** Full text for the badge's title attribute -- the sourced field and its
+ *  verbatim value, never just the compact label with nothing behind it. */
+function trackTitle(track: LeagueTrack): string {
+  const idNote = track.isPrimary ? 'league.json:league_id === "primary"' : 'league.json:league_id !== "primary"';
+  const noteText = track.scoringRulesetNote ?? '(this export predates league.json:scoring_ruleset_note)';
+  return `${trackFullDescriptor(track)}\n${idNote}\nleague.json:scoring_ruleset_note: ${noteText}`;
+}
 
 export function TopBar({
   mode,
@@ -87,6 +132,11 @@ export function TopBar({
       : league
         ? 'CONFIG UNAVAILABLE'
         : 'LOADING…';
+
+  // design/TWO-TRACK-EXPRESSION.md: undefined on a manifest written before the
+  // `track` field existed, or for the standalone build's single static entry --
+  // the badge simply doesn't render then, exactly today's UI.
+  const activeTrack = leagues.find((l) => l.id === leagueId)?.track;
 
   return (
     <div
@@ -182,6 +232,7 @@ export function TopBar({
         >
           {leagues.map((l) => (
             <option key={l.id} value={l.id}>
+              {trackMarker(l.track)}
               {l.label}
             </option>
           ))}
@@ -196,24 +247,47 @@ export function TopBar({
         >
           {leagueDetail}
         </span>
+        {activeTrack ? (
+          <span
+            className="num"
+            data-testid="league-track"
+            title={trackTitle(activeTrack)}
+            style={{
+              flex: 'none',
+              letterSpacing: '.06em',
+              color: activeTrack.isPrimary ? 'var(--txt)' : 'var(--dim2)',
+              borderLeft: '1px solid var(--line2)',
+              paddingLeft: 8,
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {trackBadgeLabel(activeTrack)}
+          </span>
+        ) : null}
       </div>
 
       {onSelectSlot && onClearSlot ? <DraftSlotControl league={league} onSelectSlot={onSelectSlot} onClearSlot={onClearSlot} /> : null}
 
-      <button
-        title="League settings"
-        aria-disabled="true"
+      {/* design/INERT-CONTROLS.md: "A control that cannot act is not a control.
+          Render the fact instead of the dead affordance" -- not itemised by name
+          in that spec's own six-row table (which predates this control being
+          identified as inert; see docs/design/LEAGUE-SETTINGS-BOUNDARY.md for the
+          separate, fuller editable/read-only split design has speced for this
+          control specifically, priority 5, not built this pass), but the general
+          rule it states applies here the same way: remove the button, state the
+          fact. No border, no hover, no click target -- it is text, not an
+          affordance that merely looks disabled. */}
+      <span
+        title="Not built yet -- see docs/design/LEAGUE-SETTINGS-BOUNDARY.md for the planned design."
         style={{
-          padding: '4px 10px',
+          padding: '4px 2px',
           whiteSpace: 'nowrap',
-          background: 'transparent',
-          border: '1px solid var(--line2)',
-          color: 'var(--txt)',
+          color: 'var(--dim2)',
           fontSize: 12,
         }}
       >
-        League settings
-      </button>
+        Settings — not built
+      </span>
 
       <button
         onClick={onToggleTheme}

@@ -219,19 +219,18 @@ pass or is marked as unverified.
 
 **Correctness — the app states something that is not so**
 
-4. **All 24 preset leagues carry Westwood's scoring ruleset while being labelled platform
-   defaults** (FR-042, founder ruling). `src/generate_config_matrix.py:71-74` deep-copies `LEAGUE`
-   and swaps only the reception value. Regenerate, do not edit — this invalidates projections in
-   every preset export. **Sequence before the custom-league builder**, or the builder inherits it.
-   That file's docstring also contradicts itself on whether ESPN scoring was ever verified
-   (lines 6-11 versus 52-53).
-5. **Non-primary leagues are missing four export artifacts.** Primary carries 11, the 26
-   sub-leagues carry 7. Absent everywhere: `strategies.json`, `player_descriptions.json`,
-   `season_stats.json`, `weekly_finishes.json`. Consequence: **the Strategy guide is empty in 26 of
-   27 leagues**, and three other screens thin out on league switch.
-6. **Six present-but-inert controls** (FR-037): Export CSV, Export PDF, League settings, Compare,
-   Ask, and Ask-the-assistant per glossary term. All carry `aria-disabled`. The founder is finding
-   them by clicking. One design treatment covers all six.
+5. **Non-primary leagues are still missing four export artifacts** (data gap, unresolved):
+   `strategies.json`, `player_descriptions.json`, `season_stats.json`, `weekly_finishes.json` —
+   primary carries 11, the 26 sub-leagues carry 7. **The UI now explains this rather than reading
+   as broken**, fixed 2026-07-29 (frontend, `docs/design/TWO-TRACK-EXPRESSION.md`): the league
+   selector carries a PRIMARY/GENERIC track badge and a ●/○ marker per option before a league is
+   even selected, and the Strategy guide's old single "Not available for this league" string
+   (which conflated "generic track, by design" with "not yet run") is split by track. Only
+   `strategies.json` actually reads as a thinned screen in practice — `weekly_finishes.json`/
+   `season_stats.json` are fetched from a genuinely shared, unprefixed path regardless of which
+   league is loaded (`ui/data/playerHistory.ts`), so PlayerDetail's history sections render the
+   same on every league; that correction is logged in `docs/ideas-inbox.md` (2026-07-29, frontend,
+   item 5) since it revises this line's own earlier "three other screens thin out" framing.
 7. **Duplicate founder-request ids.** FR-029 and FR-030 each name two different requests, so a
    status update to one is invisible in the other. `tools/dashboard.py` now flags this on every run.
 

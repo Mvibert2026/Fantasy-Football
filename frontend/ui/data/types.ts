@@ -184,6 +184,16 @@ export interface RawLeague {
   playoff: { teams: number; weeks: number[]; reseeding: boolean };
   trade_deadline: string;
   faab_budget: number;
+  /**
+   * Added contract 1.15.0 (ADR-062, thread 093). States plainly which scoring
+   * ruleset this league actually runs on -- Westwood's verified custom ruleset
+   * (stacking yardage bonuses, ADR-052) for the primary league, or
+   * `standard_scoring.SCORING_RULESET_NOTE` (FR-042's own definition, no
+   * stacking bonuses, defense unverified) for every other league. Optional so
+   * an export that predates 1.15.0 doesn't fail to parse -- absence is a real
+   * "this export predates the note" state, not an error.
+   */
+  scoring_ruleset_note?: string;
 }
 
 export interface RawGlossary {
@@ -422,6 +432,39 @@ export interface ArtifactManifestEntry {
   run_id: string;
 }
 
+/**
+ * design/TWO-TRACK-EXPRESSION.md: which of the two tracks a league is on, read
+ * straight off that league's own league.json at sync time so the switcher can
+ * show it before the league is ever loaded -- "the thinning should be expected
+ * before it is encountered, not discovered four screens in."
+ *
+ * Exactly two tracks are reachable today: `isPrimary` true for the one real,
+ * fully-modelled league (Westwood -- league.json:league_id === "primary"),
+ * false for all 26 others (24 synthetic presets plus Ethan's real league --
+ * design's own mockup groups Ethan's league under "generic track" too, since
+ * FR-042 put it on the same standard ruleset as the presets). A third "not
+ * yet" track is named in the design spec but reserved for a case no league
+ * is in today (data that could genuinely arrive, e.g. a supplied prior-season
+ * draft board) -- there is deliberately no code path producing it yet, rather
+ * than a fabricated example.
+ */
+export interface LeagueTrack {
+  isPrimary: boolean;
+  /** league.json:scoring_ruleset_note verbatim, for a tooltip -- never
+   *  paraphrased where it's actually displayed at length. Null on a pre-1.15.0
+   *  export, matching the field's own optionality. */
+  scoringRulesetNote: string | null;
+  /**
+   * `teams - 1` for the primary league only -- a real structural fact already
+   * on league.json (this project's actual other real teams), not a claim about
+   * how many of them carry behavioural data (opponents.json's own
+   * coverage_warning is the honest source for that, and stays separate). Null
+   * for every generic-track league: FR-042's presets and Ethan's league have
+   * no real opponents behind their slots at all, so there is nothing to count.
+   */
+  opponentsModelledCount: number | null;
+}
+
 /** One additional league's artifact set, from public/data/_leagues.json. Empty
  *  today -- no backend league directory exists yet -- but the shape is real, not
  *  speculative: sync-exports.mjs writes it from whatever it actually finds under
@@ -431,10 +474,18 @@ export interface LeagueManifestEntry {
   /** league.json's own league_name where available (contract 1.7.0+), else the id. */
   label: string;
   artifacts: Record<string, ArtifactManifestEntry>;
+  /** Absent on a manifest written before this field existed, or by a synthetic
+   *  test fixture -- the switcher renders exactly as it did before this field
+   *  existed in that case, never a guessed track. */
+  track?: LeagueTrack;
 }
 
 export interface LeaguesManifest {
   leagues: LeagueManifestEntry[];
+  /** The primary (default, unprefixed-path) league's own selector metadata,
+   *  added alongside `track` above. Absent on an older manifest -- the
+   *  registry falls back to the static "Default league" label it always used. */
+  primary?: { id: string; label: string; track: LeagueTrack };
 }
 
 export interface Manifest {

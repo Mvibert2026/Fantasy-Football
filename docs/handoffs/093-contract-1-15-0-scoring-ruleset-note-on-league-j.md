@@ -2,7 +2,7 @@
 ID: 093
 FROM: backend
 TO: frontend
-STATUS: OPEN
+STATUS: RESOLVED
 BLOCKS: 
 OPENED: 2026-07-29
 ---
@@ -44,3 +44,42 @@ Frontend's own call on whether/where to surface `scoring_ruleset_note` in the UI
 league-switcher or a settings/methodology panel) -- at minimum, confirm the contract-version bump
 doesn't break `EXPECTED_CONTRACT`/`TRACE_CONTRACT` checks, and reply here either way (screenshot
 if UI is added, or "no UI change, version check updated" if not).
+
+### frontend · 2026-07-29
+
+Confirmed the version-check break first: `ui/data/contract.ts:EXPECTED_CONTRACT` and
+`ui/data/trace-fields.ts:TRACE_CONTRACT` were still pinned to 1.14.0 against a real 1.15.0 export
+-- `ui/__tests__/trace-fields.test.ts`'s pin-check was the one pre-existing red test in the suite
+before any of this session's own changes. Bumped both to 1.15.0 and added the `TRACE_CHANGELOG`
+entry (the Bijan Robinson 303.16-vs-296.68 split is named there too, so a reader lands on the
+real evidence, not just the field list).
+
+Surfaced `scoring_ruleset_note` in two places, done together as part of
+`docs/design/TWO-TRACK-EXPRESSION.md` (a separate design spec assigned this same session, and the
+two turned out to answer each other):
+
+1. **The league selector's track badge** (`ui/components/shell/TopBar.tsx`) -- a compact
+   PRIMARY/GENERIC label next to the switcher for whichever league is loaded, `title` carrying
+   the field's full verbatim text (`league.json:scoring_ruleset_note`) plus the sourced field
+   path. Every option in the dropdown itself also carries a ●/○ marker so the distinction is
+   visible before a league is even selected. New `ui/data/types.ts:LeagueTrack`,
+   `LeagueManifestEntry.track`, `LeaguesManifest.primary` -- computed once at sync time
+   (`frontend/scripts/sync-exports.mjs`) from each league's own copied `league.json`, not
+   invented client-side.
+2. **A new "Scoring ruleset" section in Methodology** (`ui/views/Methodology.tsx`), rendering
+   `league.scoringRulesetNote` (new `LeagueConfig` field, `ui/data/league.ts`) in full -- the home
+   your ask suggested as the alternative to the selector.
+
+Kept the badge's always-visible text short (PRIMARY/GENERIC, not the full sentence) rather than
+design's mockup wording verbatim -- measured that the top bar already truncates its freshness
+note and league-detail string at this app's usual screenshot width before this badge existed, so
+a second full sentence had nowhere to go without a hard mid-word clip. The full sentence design
+wrote ("primary track · full ruleset · 9 opponents modelled") is the badge's `title` and appears
+unabbreviated in Methodology. Logged as a decision in `docs/ideas-inbox.md` (2026-07-29, frontend,
+item 3) rather than asked.
+
+Screenshots: `frontend/e2e/artifacts/inert-04-topbar-westwood-primary-track.png` (PRIMARY badge,
+Westwood), `inert-04b-topbar-wide.png` (same bar at 2200px, unabbreviated, proving the truncation
+reasoning), `inert-05-league-switch-generic-track-topbar.png` (GENERIC badge after switching to
+an ESPN preset). 261 tests passing (251 baseline + 10 new in
+`ui/__tests__/inert-controls-and-two-track.test.tsx`), `npx tsc -b --noEmit` clean.

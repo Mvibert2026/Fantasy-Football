@@ -71,3 +71,23 @@ drafts, and mock collection has not started and is itself gated on the same conf
 is real and correctly scoped, but it competes for the same weeks. **Recommend: the config fix
 immediately (it serves both tiers), the generic tier scoped only after the availability work has a
 verdict, and no promise that all three leagues are equally supported by 7 September.**
+
+## Update (2026-07-29, frontend)
+
+The UI-expression slice of this is done -- not the whole request (API-in / connected settings is
+still untouched). `docs/design/TWO-TRACK-EXPRESSION.md` speced how a screen should say "this
+league is the generic track" rather than reading as broken; built this session:
+
+- League selector carries the track on every option (a ●/○ marker per league, before it's even
+  selected) and a compact PRIMARY/GENERIC badge for whichever league is loaded, both reading
+  `league.json:league_id`/`scoring_ruleset_note` -- real, sourced, computed once at sync time, not
+  guessed client-side.
+- `StrategyGuide`'s old single "Not available for this league" string (conflating "generic, by
+  design" with "not yet run") is split by track.
+
+STATUS left at `NEW` -- this closes the "does it read as broken" complaint for the screens
+touched, not the deeper direction (API-in, connected settings, opponent modelling logic itself).
+See `docs/founder-requests/FR-042-*.md`'s resolution for the backend half (the actual scoring
+separation this UI is now honest about), and `docs/ideas-inbox.md` (2026-07-29, frontend) for
+scope notes on what was deliberately left out this pass (`Opponents.tsx`, out of this session's
+file ownership).
