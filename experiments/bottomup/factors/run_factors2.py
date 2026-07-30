@@ -207,8 +207,12 @@ def main() -> None:
               f"E1a {e1a[0]:+8.4f}  E2 {e2[0]:+.4f}  proxy={px}{tag}")
 
     res = pd.DataFrame(rows)
-    fam = res["in_family"] & res["grade"].isna() if "grade" in res.columns \
-        else res["in_family"]
+    for c in ("grade", "e1b_d", "e1b_lo", "e1b_hi", "e1b_p", "e1a_d", "e2_d"):
+        if c not in res.columns:
+            res[c] = np.nan
+    res["bh_10"] = False
+    res["bh_05"] = False
+    fam = res["in_family"] & res["grade"].isna()
     # BH denominator is 15 regardless of how many arms were computable (§5)
     m_family = int((res["in_family"]).sum())
     pv = res.loc[fam, "e1b_p"].fillna(1.0).tolist()

@@ -4,7 +4,7 @@
 Threads are the source of truth. Change a thread's `STATUS:`, then re-run sync.
 Protocol: [`README.md`](README.md).
 
-**88 open** · 53 resolved
+**88 open** · 54 resolved
 
 ---
 
@@ -68,7 +68,7 @@ not an omission. Start your session at your own heading.
 | [2026-07-30-suggested-pick-rule-measure-qg-against-plain-vbd](2026-07-30-suggested-pick-rule-measure-qg-against-plain-vbd.md) | Suggested pick rule measure qg against plain vbd | `strategist` | OPEN | 0d | FR-2026-07-30-recommendation-logic-is-inverted (question 3 of the founder's bar), FR-051, FR-115 |
 | [88](088-pr-004-f-bottomup-core-run-the-confirmatory-bott.md) | Pr 004 f bottomup core run the confirmatory bott | `strategist` | OPEN | 1d | none |
 
-### `frontend` — 23 waiting
+### `frontend` — 22 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
@@ -93,7 +93,6 @@ not an omission. Start your session at your own heading.
 | [116](116-vs-your-options-contract-answer-client-computati.md) | Vs your options contract answer client computati | `backend` | OPEN | 0d | none |
 | [2026-07-30-availability-json-1-17-0-adp-central-tendency-pr](2026-07-30-availability-json-1-17-0-adp-central-tendency-pr.md) | Availability json 1 17 0 adp central tendency pr | `backend` | OPEN | 0d | none |
 | [2026-07-30-draft-board-reference-axis-unanimous-snake-never](2026-07-30-draft-board-reference-axis-unanimous-snake-never.md) | Draft board reference axis unanimous snake never | `researcher` | OPEN | 0d | none |
-| [2026-07-30-recommendation-card-states-a-rule-the-code-does-](2026-07-30-recommendation-card-states-a-rule-the-code-does-.md) | Recommendation card states a rule the code does  | `strategist` | OPEN | 0d | FR-2026-07-30-recommendation-logic-is-inverted (the three defects that need no measurement) |
 | [2026-07-30-wire-assistant-retrieval-to-docs-assistant-conte](2026-07-30-wire-assistant-retrieval-to-docs-assistant-conte.md) | Wire assistant retrieval to docs assistant conte | `librarian` | OPEN | 0d | none |
 
 ### `data-ops` — 10 waiting
@@ -111,7 +110,7 @@ not an omission. Start your session at your own heading.
 | [113](113-rosters-weekly-blocks-vacated-opportunity.md) | Rosters weekly blocks vacated opportunity | `ranker` | OPEN | 0d | test-registry #28 (vacated targets & carries) |
 | [2026-07-30-play-callers-is-not-in-nfl-db-and-end-of-season](2026-07-30-play-callers-is-not-in-nfl-db-and-end-of-season.md) | Play callers is not in nfl db and end of season | `ranker` | OPEN | 0d | none |
 
-### `strategist` — 15 waiting
+### `strategist` — 16 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
@@ -129,6 +128,7 @@ not an omission. Start your session at your own heading.
 | [111](111-valuation-tests-35-36-results.md) | Valuation tests 35 36 results | `backend` | OPEN | 0d | none |
 | [112](112-preregistration-gates-need-a-decision-subset.md) | Preregistration gates need a decision subset | `ranker` | OPEN | 0d | every future pre-registration that gates on projection error |
 | [112](114-founder-mock-scoring-format-inference-needs-sepa.md) | Founder mock scoring format inference needs sepa | `data-ops` | OPEN | 0d | none |
+| [2026-07-30-backtest-vbd-deficit-fix-landed-adr-025-confirme](2026-07-30-backtest-vbd-deficit-fix-landed-adr-025-confirme.md) | Backtest vbd deficit fix landed adr 025 confirme | `backend` | OPEN | 0d | none |
 | [2026-07-30-register-factor-batch-2-28-vacated-opportunity-o](2026-07-30-register-factor-batch-2-28-vacated-opportunity-o.md) | Register factor batch 2 28 vacated opportunity o | `ranker` | OPEN | 0d | none |
 
 ### `researcher` — 4 waiting
@@ -231,5 +231,6 @@ _Nothing waiting on you._
 | [2026-07-30-five-datasets-30-seconds-total-all-measured-toda](2026-07-30-five-datasets-30-seconds-total-all-measured-toda.md) | Five datasets 30 seconds total all measured toda | `ranker` → `data-ops` |
 | [2026-07-30-fr-136-q1-the-primary-metric-cannot-see-the-boar](2026-07-30-fr-136-q1-the-primary-metric-cannot-see-the-boar.md) | Fr 136 q1 the primary metric cannot see the boar | `ranker` → `strategist` |
 | [2026-07-30-pick-18-recommendation-defect-traced-reproduced](2026-07-30-pick-18-recommendation-defect-traced-reproduced.md) | Pick 18 recommendation defect traced reproduced | `ranker` → `strategist` |
+| [2026-07-30-recommendation-card-states-a-rule-the-code-does-](2026-07-30-recommendation-card-states-a-rule-the-code-does-.md) | Recommendation card states a rule the code does  | `strategist` → `frontend` |
 | [89](089-fr-040-costing-static-hosting-blocks-scoring-rec.md) | Fr 040 costing static hosting blocks scoring rec | `backend` → `frontend, pm` |
 
