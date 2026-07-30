@@ -25,7 +25,6 @@ Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests
 | [FR-031](FR-031-consensus-as-an-adjustment-to-bottom-up-not-a-ri.md) | Consensus as an adjustment to bottom up not a ri | 2026-07-29 | pm relay, 2026-07-29 |
 | [FR-032](FR-032-make-the-opponents-screen-functional-during-a-li.md) | Make the opponents screen functional during a li | 2026-07-29 | chat session 2026-07-29 |
 | [FR-033](FR-033-build-a-bottom-up-ranking-from-zero-a-directive.md) | Build a bottom up ranking from zero a directive | 2026-07-29 | chat session 2026-07-29 |
-| [FR-037](FR-037-export-csv-and-export-pdf-do-not-work-low-priori.md) | Export csv and export pdf do not work low priori | 2026-07-29 | chat 2026-07-29, PM session |
 | [FR-038](FR-038-look-at-other-apps-ux-before-committing-to-an-ov.md) | Look at other apps ux before committing to an ov | 2026-07-29 | chat session 2026-07-29, relayed via researcher dispatch |
 | [FR-040](FR-040-custom-league-option-in-league-settings-two-hard.md) | Custom league option in league settings two hard | 2026-07-29 | chat 2026-07-29, PM session |
 | [FR-041](FR-041-prose-design-and-relevance-review-of-strategy-gu.md) | Prose design and relevance review of strategy gu | 2026-07-29 | chat 2026-07-29, PM session |
@@ -39,18 +38,17 @@ Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests
 | [FR-060](FR-060-adp-versus-production-find-where-the-market-is-s.md) | Adp versus production find where the market is s | 2026-07-29 | chat 2026-07-29, PM session |
 | [FR-061](FR-061-strategy-selector-changes-recommendations-not-ra.md) | Strategy selector changes recommendations not ra | 2026-07-30 | chat 2026-07-30, PM session |
 
-## SCOPING — 2
+## SCOPING — 1
 
 | ID | Subject | Raised | Source |
 |---|---|---|---|
 | [FR-028](FR-028-research-what-yahoo-s-in-draft-assistant-shows-t.md) | Research what yahoo s in draft assistant shows t | 2026-07-29 | chat session 2026-07-29 (PM takeover) |
-| [FR-062](FR-062-yahoo-league-connection-if-no-api-access-what-ar.md) | Yahoo league connection if no api access what ar | 2026-07-30 | chat 2026-07-30, PM session |
 
 ## SPECCED — 0
 
 _None._
 
-## IN PROGRESS — 5
+## IN PROGRESS — 6
 
 | ID | Subject | Raised | Source |
 |---|---|---|---|
@@ -59,8 +57,9 @@ _None._
 | [FR-029](FR-029-opponents-screen-must-be-functional-during-a-liv.md) | Opponents screen must be functional during a liv | 2026-07-29 | frontend session, dispatched as "FR-032" in the task brief |
 | [FR-043](FR-043-audit-for-capability-already-built-and-sitting-u.md) | Audit for capability already built and sitting u | 2026-07-29 | chat 2026-07-29, PM session |
 | [FR-048](FR-048-insights-from-research-must-reach-the-chatbot-an.md) | Insights from research must reach the chatbot an | 2026-07-29 | chat 2026-07-29, PM session |
+| [FR-062](FR-062-yahoo-league-connection-if-no-api-access-what-ar.md) | Yahoo league connection if no api access what ar | 2026-07-30 | chat 2026-07-30, PM session |
 
-## SHIPPED — 11
+## SHIPPED — 12
 
 | ID | Subject | Raised | Source |
 |---|---|---|---|
@@ -68,6 +67,7 @@ _None._
 | [FR-034](FR-034-draft-position-must-be-selectable-in-prep-this-i.md) | Draft position must be selectable in prep this i | 2026-07-29 | chat session 2026-07-29 |
 | [FR-035](FR-035-predictions-in-prep-must-be-scoped-to-the-select.md) | Predictions in prep must be scoped to the select | 2026-07-29 | chat 2026-07-29, PM session |
 | [FR-036](FR-036-manual-team-name-entry-for-opponents-in-the-draf.md) | Manual team name entry for opponents in the draf | 2026-07-29 | chat 2026-07-29, PM session |
+| [FR-037](FR-037-export-csv-and-export-pdf-do-not-work-low-priori.md) | Export csv and export pdf do not work low priori | 2026-07-29 | chat 2026-07-29, PM session |
 | [FR-045](FR-045-position-scarcity-reads-every-position-as-behind.md) | Position scarcity reads every position as behind | 2026-07-29 | chat 2026-07-29, PM session |
 | [FR-049](FR-049-tabs-in-the-draft-middle-pane-including-recommen.md) | Tabs in the draft middle pane including recommen | 2026-07-29 | chat 2026-07-29, PM session |
 | [FR-050](FR-050-show-vbd-in-the-draft-player-list.md) | Show vbd in the draft player list | 2026-07-29 | chat 2026-07-29, PM session |

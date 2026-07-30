@@ -17,3 +17,7 @@ data/*.db-journal
 data/*.db-wal
 data/*.db-shm
 .claude/worktrees/
+# Yahoo OAuth token cache (src/providers/yahoo_oauth.py::TokenStore) -- the
+# only Yahoo-derived data persisted anywhere in this project (ADR, thread
+# FR-062). Not a raw league payload; access token + refresh token + expiry.
+data/.yahoo_token.json
