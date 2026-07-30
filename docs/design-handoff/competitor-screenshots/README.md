@@ -117,8 +117,25 @@ Every one is expressed **as a positional rank, not a raw number** — WR3, not 8
 readable form under a clock, and it is worth noting against our own board, which shows overall rank
 and raw ADP.
 
-Then tabs: **Latest News · Game Logs · Season Stats · Outlook · News & Analysis · Depth Chart**, with
-**Full Profile →** pushed to the right as a separate escape hatch.
+Then a bar reading **Latest News · Game Logs · Season Stats · Outlook · News & Analysis · Depth
+Chart**, with **Full Profile →** pushed right as a separate escape hatch.
+
+**Correction from the founder, who used it: that bar is not a tab set.** Verbatim: *"the bar across
+the top just zooms you down to the section, you could scroll all the way down if you wanted."*
+
+**It is a jump-to-section nav over one continuous scrolling page.** Everything is always present;
+the bar is a shortcut, not a filter. That is a materially different interaction from tabs and the
+distinction matters for the pane spec — tabs hide what you are not looking at, this does not.
+
+Design should read this as evidence for the pattern it already flagged: the app's own top-level tabs
+**swap the whole body**, so Predictions during a live draft removes the board and roster.
+FantasyPros solved the same crowding problem without hiding anything. Whether that generalises from
+a player card to a draft pane is design's call, but the option is now on the table and it was not
+before.
+
+**The `STD ▾` selector is a real re-pricing control** — it opens to **STD / HALF / PPR** and re-prices
+the card in place. Confirms that a scoring switch on a player card is expected behaviour in this
+category, not an invention.
 
 **The AI panel, and this is the one to study rather than copy.** "Consensus Draft Sentiment, powered
 by Coach AI": three meters — **OVERALL · UPSIDE · BUST** — each a five-segment bar with a word
@@ -139,4 +156,3 @@ output from a paraphrase.
 number that is not verbatim in context, uncertainty in the same sentence as the claim. **The
 constraint is not a limitation to design around; it is the difference between the two products.**
 If we ship meters, they must be computed from something and say what.
-
