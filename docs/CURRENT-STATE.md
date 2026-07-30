@@ -68,7 +68,6 @@ reconcile). `tests/test_backtest.py` 33/33 passing; `tests/test_holdout_audit.py
 test passing (its one remaining failure, `test_no_new_direct_sqlite_connections_in_src`, is
 pre-existing, from concurrent sessions' new ingestion scripts, unrelated to this change).
 
-<<<<<<< HEAD
 **Last verified:** 2026-07-30, frontend session (worktree `agent-a9e24c92a40214afb`) shipping design
 round-1 item 6 (`docs/design/RANKINGS-PANE.md`) plus FR-122, the three-thing dispatch: **A.** the
 missing PLAYER column at 1180w, **B.** FR-122 (typing a name filters the list), **C.** the
@@ -129,7 +128,6 @@ the first full-suite run, passed cleanly standalone and on every rerun; its own 
 `SHIPPED` (`docs/founder-requests/FR-122-*.md`, Resolution section, `tools/founder_requests.py
 sync` re-run). `docs/design/RANKINGS-PANE.md` itself left `STATUS: OPEN` — items 2/3 of that spec
 remain, not this session's scope to close.
-=======
 **Last verified:** 2026-07-30, frontend session (worktree `agent-a7446873495c871f2`) shipping the
 three recommendation-card honesty fixes strategist ruled need no measurement
 (`docs/handoffs/2026-07-30-recommendation-card-states-a-rule-the-code-does-.md`,
@@ -156,7 +154,6 @@ existing tests updated, 466 passing (was 459), `tsc`/`build` clean. Screenshots 
 light, card/board — 8 files) in `frontend/e2e/artifacts/rec-card-*.png`, looked at directly; the
 before-dark-card screenshot reproduces the founder's exact bug against real data. Commits `dfb9a78`,
 `7fa7eb9`. Full narrative: `docs/status/2026-07-30-frontend-recommendation-card-honesty-fixes.md`.
->>>>>>> worktree-agent-a7446873495c871f2
 
 **Last verified:** 2026-07-30, frontend session (worktree `agent-a08e75a2b222a2f66`, FR-114) shipping
 the global "show data sources" switch. Founder, refined mid-thread: *"I like the idea about
