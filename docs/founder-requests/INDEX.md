@@ -5,11 +5,11 @@ Per-request files in this directory are the source of truth. Edit a request's ow
 `STATUS:` line, then re-run sync. Protocol: [`README.md`](README.md).
 Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests.md).
 
-**79 requests since freeze.**
+**80 requests since freeze.**
 
 ---
 
-## NEW — 52
+## NEW — 53
 
 | ID | Subject | Raised | Source |
 |---|---|---|---|
@@ -65,6 +65,7 @@ Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests
 | [FR-089](FR-089-update-glossary-and-methodology-pages.md) | Update glossary and methodology pages | 2026-07-30 | chat 2026-07-30, PM session (feedback batch) |
 | [FR-090](FR-090-bookkeeping-overhead-must-be-measured-and-cut.md) | Bookkeeping overhead must be measured and cut | 2026-07-30 | chat 2026-07-30, PM session |
 | [FR-094](FR-094-predict-sleepers-late-adp-with-breakout-characte.md) | Predict sleepers late adp with breakout characte | 2026-07-30 | chat 2026-07-30, PM session |
+| [FR-095](FR-095-archetype-confidence-should-scale-with-career-hi.md) | Archetype confidence should scale with career hi | 2026-07-30 | chat 2026-07-30, PM session |
 
 ## SCOPING — 1
 
