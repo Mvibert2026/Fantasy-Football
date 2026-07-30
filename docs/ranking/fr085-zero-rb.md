@@ -97,6 +97,13 @@ level.**
 ECR, 4 seasons: +3.1 realistic points [−13.0, +19.3] NULL, P(playoff) +0.033 [−0.028, +0.093] NULL.
 **Both sources, all four metrics, every σ: null.** §5.
 
+> **(5, qualification added 2026-07-30 after the FR-109 slot sweep.) The null stands, and it is
+> weaker evidence than it reads as.** Measured at every fixed draft slot, **Zero RB and VBD draft
+> 94–96% of the same players at slots 5–10** — VBD is already waiting there, so seven of the ten
+> seats carry almost no treatment. The contrast the founder is asking about lives at slots 1–3, where
+> the arms still share 83–87% of a roster and the per-slot intervals are ±60 to ±100 realistic points
+> on seven seasons. **"Not distinguishable" is correct; "tested" is generous.** §5.4.
+
 **(6) — WITHDRAWN 2026-07-30 (FR-109). The original text is struck through below; the replacement
 follows it.**
 
@@ -421,19 +428,79 @@ filling starters early is worth more. Two MARGINALs among 196 tests, so hypothes
 but the direction is consistent across four strategies and both metrics, and it is the opposite of
 what Zero RB predicts.
 
-### 5.4 Draft slot
+### 5.4 Draft slot — REPLACED 2026-07-30 (FR-109)
 
-P(make playoffs) by slot group, FFC primary σ. Zero RB does not become correct from any seat:
+> **The table that stood here was from the wrong σ cell, and it was a code bug, not a wording
+> slip.** `run_strategies.py` assigned `playoff_rate_by_slot` *after* the σ loop closed, reading a
+> dict that is rebound at the top of every σ iteration — so the only slot table ever written was the
+> **last** cell (flat σ=20), while the heading said "FFC primary σ". The tell was visible and I
+> missed it: its VBD row averaged 0.77 against a primary-σ pooled P(playoff) of **0.398** three
+> sections above. Confirmed against the stored run — flat20's pooled VBD P(playoff) is 0.774.
+> Fixed; the value is now recorded per σ.
+>
+> ~~| strategy | picks 1–3 | picks 4–7 | picks 8–10 |~~
+> ~~| VBD | 0.760 | 0.777 | 0.781 | Zero RB | 0.714 | 0.750 | 0.745 |~~
+> ~~| Robust RB | 0.750 | 0.778 | 0.788 | BPA-consensus | 0.777 | 0.774 | 0.796 |~~
 
-| strategy | picks 1–3 | picks 4–7 | picks 8–10 |
-|---|---|---|---|
-| VBD | 0.760 | 0.777 | 0.781 |
-| Zero RB | 0.714 | 0.750 | 0.745 |
-| Robust RB | 0.750 | 0.778 | 0.788 |
-| BPA-consensus | 0.777 | 0.774 | 0.796 |
+The replacement is a proper sweep: every arm run at **every fixed slot 1–10** rather than a slot
+drawn per simulation. FFC, primary σ, 300 sims × 7 seasons **per slot**
+(`experiments/strategy/slot_sweep.py`, `data/qa/fr109-slot-sweep-ffc-r16.json`).
 
-*(Slot table is from the last σ cell run and is reported as a diagnostic, not a headline; the paired
-comparisons in §5.2 are the evidence.)*
+**Mean round of first RB, by slot.** This replicates §5.5.2 with fixed rather than drawn slots:
+
+| slot | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| **VBD** | **1.00** | 1.61 | 3.63 | 6.34 | 7.86 | 8.69 | 8.55 | 8.14 | 8.52 | 8.30 |
+| Zero RB | 10.65 | 10.74 | 10.81 | 10.81 | 10.75 | 10.67 | 10.70 | 10.69 | 10.69 | 10.67 |
+| gap | **9.65** | 9.13 | 7.18 | 4.47 | 2.89 | **1.98** | 2.15 | 2.55 | 2.17 | 2.37 |
+
+**And the number that matters most in this whole document — roster overlap with the VBD arm:**
+
+| slot | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| **Zero RB** | 0.825 | 0.836 | 0.870 | 0.913 | 0.943 | **0.960** | 0.955 | 0.941 | 0.946 | 0.947 |
+| Robust RB | 0.822 | 0.798 | 0.765 | 0.732 | 0.705 | 0.694 | 0.696 | 0.713 | 0.715 | 0.714 |
+| Balanced | 0.699 | 0.682 | 0.642 | 0.613 | 0.593 | 0.589 | 0.576 | 0.589 | 0.603 | 0.622 |
+| BPA-consensus | 0.468 | 0.442 | 0.421 | 0.385 | 0.360 | 0.361 | 0.388 | 0.383 | 0.385 | 0.426 |
+
+**At slots 5–10, Zero RB and VBD draft 94–96% of the same players.** Seven of the ten seats produce
+almost no contrast at all, because VBD is already waiting there. The comparison the founder actually
+asked about — draft an elite back early, or don't — **exists only at slots 1–3**, and even there the
+two arms share 83–87% of a roster.
+
+That is the honest qualification on §5.2, and it is a power statement, not a result: **the pooled
+null is measured across ten seats of which roughly three carry the treatment.** It does not make the
+null wrong. It does mean "Zero RB is not distinguishable from VBD" is substantially a statement about
+seats where nobody was proposing to draft an RB early in the first place.
+
+**Per-slot margins vs VBD, realistic points** (the full four-metric grid is in the JSON):
+
+| slot | Zero RB | Robust RB | Balanced | BPA-consensus |
+|---|---|---|---|---|
+| 1 | +23.0 [−64.4, +106.4] | +2.5 | +26.2 [+3.1, +52.7] MARG | +15.7 |
+| 2 | +10.8 [−27.8, +49.7] | +13.0 | +18.4 | +6.5 |
+| 3 | −19.1 [−88.6, +41.3] | +22.3 | +6.7 | −13.1 |
+| 4 | +8.6 | +67.3 [+0.5, +135.4] MARG | +0.0 | +61.1 [+0.8, +128.4] MARG |
+| 5 | +16.1 | +21.5 | +19.3 | +59.1 |
+| 6 | +6.2 | +3.2 | +28.7 [+0.4, +53.4] MARG | +46.1 |
+| 7 | −5.4 | +33.7 | +21.9 | +53.6 |
+| 8 | −10.1 | +43.2 | +11.8 | +26.7 |
+| 9 | −16.3 | +15.7 | +1.3 | +4.2 |
+| 10 | −21.5 [−73.1, +6.9] | −20.3 | +2.5 | −5.9 |
+
+**Every Zero RB cell is NULL at every seat.** The point estimates drift from positive at slots 1–2 to
+negative at slots 7–10, which is *directionally* the opposite of the usual Zero RB argument (it is
+supposed to help most from the back of the round, where no elite back is available). **That drift is
+a hypothesis and nothing more** — this sweep runs **160 interval tests**, at 5% expects ~8 false
+"clears zero" results, and observed **5 MARGINALs**. Fewer than chance would hand you. Nothing in
+this table is evidence of anything.
+
+**What the sweep does establish is negative and worth stating plainly:** with 7 seasons the per-slot
+intervals are ±60 to ±100 realistic points at the very seats where the strategies differ. **This
+design cannot answer the founder's question at slots 1–3 at any effect size he would care about.**
+Splitting by slot buys resolution on *mechanism* and costs all remaining power on *outcome*. Anyone
+wanting an outcome answer at a specific seat needs a different design, and `strategist` should
+specify it before it is run rather than after.
 
 ---
 
