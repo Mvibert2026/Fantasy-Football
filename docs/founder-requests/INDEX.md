@@ -5,11 +5,11 @@ Per-request files in this directory are the source of truth. Edit a request's ow
 `STATUS:` line, then re-run sync. Protocol: [`README.md`](README.md).
 Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests.md).
 
-**59 requests since freeze.**
+**75 requests since freeze.**
 
 ---
 
-## NEW — 34
+## NEW — 50
 
 | ID | Subject | Raised | Source |
 |---|---|---|---|
@@ -47,6 +47,22 @@ Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests
 | [FR-070](FR-070-calibration-mocks-cannot-use-my-real-league-sett.md) | Calibration mocks cannot use my real league sett | 2026-07-30 | chat 2026-07-30, PM session |
 | [FR-071](FR-071-a-simulate-feature-real-autopick-from-adp-with-w.md) | A simulate feature real autopick from adp with w | 2026-07-30 | chat 2026-07-30, PM session |
 | [FR-072](FR-072-thread-hygiene-process-is-failing-24-of-38-threa.md) | Thread hygiene process is failing 24 of 38 threa | 2026-07-30 | chat 2026-07-30, PM session |
+| [FR-074](FR-074-backfill-the-rest-of-historical-adp-across-ffc-f.md) | Backfill the rest of historical adp across ffc f | 2026-07-30 | chat 2026-07-30, PM session (feedback batch) |
+| [FR-075](FR-075-build-player-archetype-and-surface-it-high-on-th.md) | Build player archetype and surface it high on th | 2026-07-30 | chat 2026-07-30, PM session (feedback batch) |
+| [FR-076](FR-076-chatbot-must-see-what-the-front-end-already-disp.md) | Chatbot must see what the front end already disp | 2026-07-30 | chat 2026-07-30, PM session (feedback batch) |
+| [FR-077](FR-077-chatbot-needs-standing-chat-box-and-answer-area.md) | Chatbot needs standing chat box and answer area | 2026-07-30 | chat 2026-07-30, PM session (feedback batch) |
+| [FR-078](FR-078-does-early-rb-underperformance-support-zero-rb.md) | Does early rb underperformance support zero rb | 2026-07-30 | chat 2026-07-30, PM session (feedback batch) |
+| [FR-079](FR-079-last-few-seasons-must-render-in-the-selected-sco.md) | Last few seasons must render in the selected sco | 2026-07-30 | chat 2026-07-30, PM session (feedback batch) |
+| [FR-080](FR-080-light-theme-is-too-bright-and-needs-shading.md) | Light theme is too bright and needs shading | 2026-07-30 | chat 2026-07-30, PM session (feedback batch) |
+| [FR-081](FR-081-news-feed-for-prep-and-in-season.md) | News feed for prep and in season | 2026-07-30 | chat 2026-07-30, PM session (feedback batch) |
+| [FR-082](FR-082-opponents-pane-does-not-scroll.md) | Opponents pane does not scroll | 2026-07-30 | chat 2026-07-30, PM session (feedback batch) |
+| [FR-083](FR-083-player-card-adp-shows-wrong-format-for-selected-.md) | Player card adp shows wrong format for selected  | 2026-07-30 | chat 2026-07-30, PM session (feedback batch) |
+| [FR-084](FR-084-populate-the-coordinator-play-callers-table.md) | Populate the coordinator play callers table | 2026-07-30 | chat 2026-07-30, PM session (feedback batch) |
+| [FR-085](FR-085-rank-player-types-by-week-to-week-volatility.md) | Rank player types by week to week volatility | 2026-07-30 | chat 2026-07-30, PM session (feedback batch) |
+| [FR-086](FR-086-save-state-and-league-sharing-if-no-yahoo-api.md) | Save state and league sharing if no yahoo api | 2026-07-30 | chat 2026-07-30, PM session (feedback batch) |
+| [FR-087](FR-087-show-draft-position-in-rounds-not-only-pick-numb.md) | Show draft position in rounds not only pick numb | 2026-07-30 | chat 2026-07-30, PM session (feedback batch) |
+| [FR-088](FR-088-spend-fable-tokens-on-proprietary-rankings.md) | Spend fable tokens on proprietary rankings | 2026-07-30 | chat 2026-07-30, PM session (feedback batch) |
+| [FR-089](FR-089-update-glossary-and-methodology-pages.md) | Update glossary and methodology pages | 2026-07-30 | chat 2026-07-30, PM session (feedback batch) |
 
 ## SCOPING — 1
 
