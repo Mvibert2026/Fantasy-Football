@@ -33,7 +33,7 @@ export interface TraceField {
 }
 
 /** The contract version the registry below is pinned against. */
-export const TRACE_CONTRACT = '1.15.0';
+export const TRACE_CONTRACT = '1.16.0';
 
 /**
  * Changes to the user-visible trace surface, newest first.
@@ -47,6 +47,27 @@ export const TRACE_CHANGELOG: ReadonlyArray<{
   kind: 'rename' | 'value' | 'added' | 'removed';
   summary: string;
 }> = [
+  {
+    version: '1.16.0',
+    kind: 'rename',
+    summary:
+      'Pin moves 1.15.0 -> 1.16.0 (2026-07-30 backend session, FR-079/FR-083 league-scoring-aware ' +
+      'history fix). `season_stats.json`\'s `fantasy_points_ppr` is renamed `fantasy_points` (removed, ' +
+      'not additive) plus a new `fantasy_points_available` boolean -- both files now compute this via ' +
+      'THIS project\'s own scoring engine (`scoring.score_offensive_game`) under the exporting league\'s ' +
+      'own `cfg.scoring`, scored per game and summed, never nflreadpy\'s fixed full-PPR ' +
+      '`fantasy_points_ppr` column. `weekly_finishes.json`\'s `finish` ranking basis moved with it -- ' +
+      'positional finish is now ranked by this same re-scored figure. Both files\' envelopes gain ' +
+      '`league_id`/`scoring_note`/`scoring_ruleset_note`. PlayerDetail.tsx\'s WEEKLY FINISHES and THREE ' +
+      'SEASONS sections previously carried a caveat unconditionally claiming "standard PPR, not this ' +
+      'league\'s own ruleset" -- true of the pre-1.16.0 export, false of this one, and removed; replaced ' +
+      'with a note built from the fetched envelope\'s own `league_id`/`scoring_ruleset_note ` (see ' +
+      '`historyScoringNote` in PlayerDetail.tsx), since the fetch itself is still unprefixed (always the ' +
+      'primary league\'s file regardless of which league is loaded -- a separate, still-open gap, see ' +
+      '`ui/data/types.ts`\'s `RawWeeklyFinishes` doc comment and `docs/CURRENT-STATE.md` open item 5) and ' +
+      'so may not actually match the league on screen. "PPR PTS" column header shortened to "PTS" to ' +
+      'match -- it is no longer a PPR-specific figure.',
+  },
   {
     version: '1.15.0',
     kind: 'added',

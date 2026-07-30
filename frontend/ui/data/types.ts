@@ -495,16 +495,24 @@ export interface Manifest {
 
 /**
  * `weekly_finishes.json` / `season_stats.json` (thread 017/039, `src/export_history.py`).
- * Outside `CONTRACT_VERSION` -- own `export_version`, unprefixed path only, same for
- * every league (see `ui/data/playerHistory.ts` for the fetch/join layer). Keyed by
- * nflverse `player_id` (a gsis id) -- joined to a board row via
- * `RawBoardPlayer.player_id_gsis`, populated as of thread 052/ADR-048.
+ * Outside `CONTRACT_VERSION` -- own `export_version` (contract 1.16.0 bumped this to
+ * `2.0.0`, see `ui/data/trace-fields.ts` TRACE_CHANGELOG). Fetched from the unprefixed
+ * path only today (`ui/data/playerHistory.ts`), even when a non-primary league is
+ * loaded -- the backend now exports both files per league (`export_dir_for`), but the
+ * frontend fetch layer has not been switched over to read from the loaded league's own
+ * prefix yet; PlayerDetail.tsx compares this envelope's own `league_id` against the
+ * currently-loaded league and says so plainly when they differ, rather than silently
+ * presenting one league's history as another's. Keyed by nflverse `player_id` (a gsis
+ * id) -- joined to a board row via `RawBoardPlayer.player_id_gsis`, populated as of
+ * thread 052/ADR-048.
  */
 export interface RawWeeklyFinishWeek {
   week: number;
-  /** `RANK()` over positional fantasy_points_ppr that week; ties share a rank. Null
-   *  with `bye: false` means no recorded stat line -- not a confirmed inactive/roster
-   *  lookup, just the absence of a row (see the artifact's own no_row_semantics_note). */
+  /** `RANK()` over this envelope's own `fantasy_points` (THIS league's scoring, per
+   *  `scoring_note` below -- contract 1.16.0, no longer nflreadpy's fixed
+   *  `fantasy_points_ppr`) that week; ties share a rank. Null with `bye: false` means
+   *  no recorded stat line -- not a confirmed inactive/roster lookup, just the absence
+   *  of a row (see the artifact's own no_row_semantics_note). */
   finish: number | null;
   bye: boolean;
 }
@@ -522,7 +530,19 @@ export interface RawWeeklyFinishesPlayer {
 export interface RawWeeklyFinishes {
   export_version: string;
   generated_utc: string;
+  /** Contract 1.16.0. Which league this file's `fantasy_points`/`finish` figures were
+   *  scored under -- compare against the currently-loaded league before presenting
+   *  this data as that league's own (see the interface doc comment above). */
+  league_id: string;
   note: string;
+  /** Contract 1.16.0. States plainly that `fantasy_points`/`finish` come from THIS
+   *  project's own scoring engine under `league_id`'s ruleset, scored per game and
+   *  summed -- never nflreadpy's fixed, league-invariant `fantasy_points_ppr` column. */
+  scoring_note: string;
+  /** Contract 1.16.0. Same field `league.json` carries, shared derivation
+   *  (`league_config.scoring_ruleset_note_for`) -- the plain-English ruleset name for
+   *  `league_id` above. */
+  scoring_ruleset_note: string;
   no_row_semantics_note: string;
   players: RawWeeklyFinishesPlayer[];
 }
@@ -539,7 +559,13 @@ export interface RawSeasonStatSeason {
   receiving_tds: number;
   rushing_yards: number;
   rushing_tds: number;
-  fantasy_points_ppr: number;
+  /** Contract 1.16.0: renamed from `fantasy_points_ppr` (removed, not additive --
+   *  see TRACE_CHANGELOG). Scored under `league_id`'s own ruleset (`scoring_note`
+   *  below), per game then summed -- not nflreadpy's fixed full-PPR column. Null,
+   *  with `fantasy_points_available: false`, on the rare player-season where no
+   *  scoring-view stats resolved at all -- absent beats a fabricated 0. */
+  fantasy_points: number | null;
+  fantasy_points_available: boolean;
 }
 
 export interface RawSeasonStatsPlayer {
@@ -550,7 +576,13 @@ export interface RawSeasonStatsPlayer {
 export interface RawSeasonStats {
   export_version: string;
   generated_utc: string;
+  /** Contract 1.16.0. See `RawWeeklyFinishes.league_id` -- same meaning. */
+  league_id: string;
   note: string;
+  /** Contract 1.16.0. See `RawWeeklyFinishes.scoring_note`. */
+  scoring_note: string;
+  /** Contract 1.16.0. See `RawWeeklyFinishes.scoring_ruleset_note`. */
+  scoring_ruleset_note: string;
   players: RawSeasonStatsPlayer[];
 }
 
