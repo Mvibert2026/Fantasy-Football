@@ -753,3 +753,53 @@ file (ADR-057). Full evidence `docs/ranking/bottom-up-research-pass-3.md`, threa
    rather than resolved — one ruling should cover all three sources, not three separate ones.
    See ADR-063 and the research doc's SS6 for the full clause reasoning.
 
+## 2026-07-30 — researcher, FR-097 injury-prediction-service buy decision: decided without asking
+
+Report `docs/research/injury-prediction-services-2026-07-30.md`; handoff staged unallocated at
+`docs/handoffs/NEW-injury-prediction-services-buy-nothing.md`. **Recommendation: buy nothing**,
+~$100-190/year avoided.
+
+1. **Proceeded despite the dispatch's two named files not existing in this worktree.**
+   `docs/founder-requests/FR-097-are-injury-prediction-services-accurate-enough-t.md` is absent
+   (highest FR here is **FR-071**; INDEX.md says "56 requests since freeze"), and
+   `docs/analysis/adp-vs-production-2026-07-30.md` is absent — `docs/analysis/` does not exist at
+   all. The `ranker` coverage finding (26-35% short absences, 2.5-4.8% for 9+ games) is in no doc
+   here either. The dispatch's own framing is self-contained, so halting would have cost the whole
+   session over a file-sync problem I cannot diagnose without a shell. **Every claim sourced to
+   those files is tagged `[GAP]` in the report rather than reported as verified**, and the
+   discrepancy is escalated to `pm` in the handoff — either this worktree is behind `main` or
+   FR-097 was never allocated, and that is not a researcher call.
+2. **Did not score unfalsifiable claims, and said so as the finding.** Four of six services emit
+   tiers or narrative. Rather than grading prose, the report answers "could a third party score
+   this at all" per service — the answer is no for five of six, which is most of the decision.
+3. **Marked two vendor figures unusable rather than reporting them.** PlayerProfiler's "~50% of
+   80th-100th-percentile WRs missed 2+ games" has no denominator; Zone7's "72.4%" is a sensitivity
+   with base rate and false-positive rate both unstated (flag-everyone scores 100% on it).
+4. **Left the tail number as `[GAP]` rather than deriving one.** Draft Sharks' MAE of 1.610 games
+   and R2 of 0.401 say nothing about 9+ game absences, and nobody has published that figure. A
+   plausible-looking derived number is exactly the contamination this project has been burned by.
+5. **Reported the sample honestly as n=1, not n=6.** Draft Sharks *is* Sports Injury Predictor
+   (acquisition); Footballguys/Fantasy Points/PlayerProfiler are one methodological unit for the
+   falsifiability question; Zone7/Kitman/Zelus are one B2B unit. Exactly one retail numeric NFL
+   injury model with a documented validation exists, and its validation is a single 2016 holdout
+   on a page last updated 2020-09-28.
+
+**Worth a PM/founder call, and the reason a positive recommendation was impossible even if the
+model were good:** `draftsharks.com`'s Terms of Use footer link is a dead `#` placeholder — **no
+terms document is reachable on the site.** `CLAUDE.md` SS5 says check terms *before* building
+against a source. We cannot. Fourth source in a row (FFC, FantasyPros, Yahoo, now Draft Sharks)
+where fetching is permitted and redistribution is unverifiable while the app is public. One
+standing ruling should cover all of them.
+
+**Reprioritisation this argues for, no new scope:** the gap is *current status*, not *forecast*.
+Sleeper `/v1/players/nfl` (`status`, `injury_status`, `injury_start_date`,
+`practice_participation`, `[VERIFIED]` from docs.sleeper.com, once-daily pull invited) plus
+open item 8's `load_rosters()` ingest close the IR-invisibility hole for free. Sleeper has **zero
+history**, so every un-snapshotted day is permanently lost — same urgency argument as ADP, and
+nflverse's own injury feed died after 2024 with NFL.com `[BLOCKED]` by ToS.
+
+**No shell in this session** (fourth researcher session on record): no allocator access, so no
+thread ID and no `tools/founder_requests.py` run; hand-typing an ID refused (043/049/053,
+ADR-048). Also could not query `nfl.db` for our own fantasy-relevant injury base rate, which would
+have been the single most useful number in the report. Nothing committed.
+
