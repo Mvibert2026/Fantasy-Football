@@ -87,7 +87,52 @@ afterwards to suit the outcome. `strategist` owns that wording.
 `balanced` in the middle; robust-RB is the heavy end and nothing currently occupies it. A selector
 offering only the extremes would misrepresent the space of choices.
 
-**The founder's message was truncated mid-sentence** — *"and those tests need t..."* — by what appears
-to be an input glitch. **The remainder is unknown and has not been guessed at.** Whatever condition he
-was about to place on these tests is not recorded here and should be asked for rather than inferred.
+**The truncated remainder, supplied 2026-07-30:**
 
+> "each strategy tested across all league types and basic presets - then they can be loaded and no
+> math needs to happen, also you'll need to define the rules to each strategy tested somewhere (like
+> how long till you take your first RB in zero RB, do you take a TE or no judgment?) within it is it
+> BPA? VBD? etc. what is balanced?"
+
+### Two requirements, and the second is the more important
+
+**1 · Pre-compute across every league type and preset; the app loads, it does not calculate.**
+
+Right now `strategies.json` exists for **primary only** — one league, one roster shape. The founder
+wants the full matrix so a selector works in any league he opens, with no runtime cost.
+
+Scope it honestly before building: 27 league configs × 6+ strategies × the sigma sweep {5,10,20} ×
+simulated seasons. That is a large grid and the availability sweep already showed this class of
+simulation is expensive — a single 10-slot availability run took hours. **Measure one cell first and
+report the total**, rather than starting a job nobody has costed. If the full matrix is impractical,
+the honest fallback is the presets the founder actually uses, named as such.
+
+**2 · Write down what each strategy actually is. This is the real gap and he is right that it is
+missing.**
+
+His questions are exactly the ambiguities: *how long until the first RB in zero-RB? Is a TE allowed,
+or is that unconstrained? Within the constraint, is the pick BPA or VBD? What does "balanced" even
+mean?*
+
+**The rules do exist — in code, in `src/draft_sim.py` (`strategy_bpa`, `strategy_hero_rb`,
+`strategy_zero_rb`, `_positional_bias`) — and nowhere a human can read, check or disagree with
+them.** That is the defect. A strategy whose definition lives only in a function body cannot be
+audited, cannot be shown on screen beside its measured cost, and cannot be compared to what the
+category means by the same word.
+
+**Every tested strategy needs a written definition covering, at minimum:**
+
+| | |
+|---|---|
+| **The constraint** | What it forbids or forces, and until when — "no RB before round N" |
+| **The within-constraint rule** | Once the constraint is satisfied or inactive, is it BPA, VBD, or something else? |
+| **Unconstrained positions** | Explicitly stated. Is TE free, or does the strategy have a view? |
+| **Termination** | When does the constraint stop applying? |
+| **Source** | Is this the category's conventional meaning, or this project's own? Say which. |
+
+**`balanced` is the one to define first**, because it is the least standard word in the set and the
+most likely to be doing something arbitrary that nobody has looked at.
+
+Owner: `strategist` writes the definitions, since it also owns the pre-registration that tests them;
+`ranker` or `backend` runs the matrix. **Definitions committed before the runs**, or the results
+describe rules nobody agreed to.
