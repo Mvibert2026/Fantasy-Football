@@ -175,8 +175,10 @@ def _consensus_board(
 ) -> List[sqlite3.Row]:
     return conn.execute(
         "SELECT player_id, player_name, position, adp_rank FROM rankings "
-        "WHERE source = ? AND season = ? ORDER BY adp_rank",
-        (source, season),
+        "WHERE source = ? AND season = ? AND as_of_date = "
+        "  (SELECT MAX(as_of_date) FROM rankings WHERE source = ? AND season = ?) "
+        "ORDER BY adp_rank",
+        (source, season, source, season),
     ).fetchall()
 
 

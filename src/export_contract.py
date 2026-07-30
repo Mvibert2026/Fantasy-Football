@@ -331,9 +331,17 @@ def build_board_json(
     # team) for the SAME players `ours` ranks. Using a different, stale source
     # here would silently desync team/positional-rank display from the board's
     # actual player set (thread 053/067 rewire finding).
+    # as_of_date filter: `rankings` now holds MULTIPLE dated snapshots per source
+    # (2026-07-27 and 2026-07-30 as of this writing). Without it every player
+    # appears once per snapshot -- 1037 rows for 574 distinct ranks, caught by
+    # test_consensus_rank_is_unique_across_players. History stays in the table
+    # deliberately; CLAUDE.md §6.1 needs as-of-date-correct reads for backtesting.
+    # The *current* board always takes the newest.
     meta = conn.execute(
         "SELECT player_name, team, position, adp_rank, scoring_format FROM rankings "
-        "WHERE source=? AND season=?", (make_board.SOURCE, SEASON)
+        "WHERE source=? AND season=? AND as_of_date = "
+        "  (SELECT MAX(as_of_date) FROM rankings WHERE source=? AND season=?)",
+        (make_board.SOURCE, SEASON, make_board.SOURCE, SEASON),
     ).fetchall()
     # scoring_format is a column the old fantasypros_ecr mirror never carried
     # (NULL for every row); the new CSV source has a real value per row

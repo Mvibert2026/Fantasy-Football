@@ -154,10 +154,17 @@ Strategy = Callable[[DraftState, np.ndarray, SeasonData, np.ndarray], int]
 # ----------------------------------------------------------------- data loading
 def load_season(conn: sqlite3.Connection, season: int) -> SeasonData:
     rows = conn.execute(
+        # as_of_date filter, added 2026-07-30. `rankings` can hold multiple dated
+        # snapshots per source; without this every player appears once per snapshot
+        # and the opponent model's pool silently doubles. It bit make_board and
+        # export_contract the moment fantasypros_csv_2026draft got a second
+        # snapshot. CONSENSUS_RANK_SOURCE has only one today, but the HTTP 403
+        # keeping it stale is now known to be routable, so it will get more.
         "SELECT player_id, player_name, position, adp_rank, as_of_date FROM rankings "
         "WHERE source=? AND season=? AND position IN ('QB','RB','WR','TE') "
+        "  AND as_of_date = (SELECT MAX(as_of_date) FROM rankings WHERE source=? AND season=?) "
         "ORDER BY adp_rank",
-        (CONSENSUS_RANK_SOURCE, season),
+        (CONSENSUS_RANK_SOURCE, season, CONSENSUS_RANK_SOURCE, season),
     ).fetchall()
     if not rows:
         raise ValueError(f"no consensus board for {season}")
