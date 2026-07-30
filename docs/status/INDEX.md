@@ -4,7 +4,7 @@
 Session files in this directory are the source of truth. Add a new dated file, then
 re-run sync. Protocol: [`README.md`](README.md).
 
-**57 sessions recorded.**
+**60 sessions recorded.**
 
 ---
 
@@ -3890,6 +3890,147 @@ re-fetch — same data, same historical `as_of_date`s.
 
 ---
 
+<!-- 2026-07-30-backend-availability-adp-central-tendency-export.md -->
+
+# 2026-07-30 — backend — thread 104/119: availability.json 1.17.0, provenance-safe rank export plus preparatory ADP block
+
+## What was asked
+
+Thread 104 (FR-066's resolution): export the per-player rank `src/availability.py:simulate_
+availability` actually runs its opponent model AND the user's own `strategy_bpa` pick against —
+`board.json:consensus_rank` is a different ranking from a different source (73/80 top players
+differ in order), and frontend correctly refused to build a browser-side recompute on it. The
+dispatch specifically asked for the export to be self-describing (source name + `as_of_date`
+derived from the model's own execution path, not hardcoded) so a future repoint of the model's
+central tendency wouldn't silently make the export wrong.
+
+## Mid-session redirect
+
+While this was in flight, thread 119 resolved: strategist recommended the opponent model's
+central tendency move from `fantasypros_ecr` to FFC ADP (`ffc_half_ppr_10team`) with per-player
+dispersion — not adopted yet, gated on an M0-M5 pre-registration
+(`docs/ranking/availability-opponent-model-precommit.md`) — and reformulated thread 104's ask from
+the raw rank array to `{adp_pick, sigma_pick, coverage_flag}` per player, since with ADP the
+unconditional marginal becomes closed-form and a browser recompute wouldn't need a Monte Carlo
+port at all. The coordinator relayed this mid-task with explicit instructions: keep the
+self-describing-source requirement (it's exactly what let the original build survive the
+redirect), reformulate the shape, withhold `sigma_pick` since M0 hasn't cleared, handle or flag
+the FFC/Westwood pick-axis mismatch, and do not implement the model switch itself.
+
+## What shipped
+
+**`src/draft_sim.py`.** New module constant `CONSENSUS_RANK_SOURCE = "fantasypros_ecr"` — the
+single edit point for a future repoint. `SeasonData` gains `consensus_rank_source`/
+`consensus_rank_as_of_date`, both fields, populated by `load_season` from the exact rows
+`consensus_rank` was read from (added `as_of_date` to the SELECT, took `MAX()` over the rows
+actually returned — same "newest row wins" convention as `freshness.snapshot_age_days`).
+
+**`src/export_contract.py`.** `build_availability_json` now takes `conn` (was CSV-only before).
+`client_simulation_parameters.ranking_sources[0]` gains `as_of_date`, both fields read from
+`season_data` rather than hardcoded. New `player_ranks: {player_name: rank}`, keyed to `by_player`'s
+existing keys — the array the shipped model runs on today. New `adp_central_tendency` block
+(additive): `status: "preparatory_switch_not_yet_shipped"`, `{adp_pick, coverage_flag}` per player
+sourced from `ffc_adp_snapshots` (skill positions only, joined via `player_ids.mfl_id` to the same
+gsis-keyed universe `load_season` returns), `axis_note`/`sigma_pending_note`/`coverage_note`
+stating the two known gaps loudly rather than silently. New helper `_load_ffc_skill_adp`. Also
+corrected `algorithm_note`, which claimed the user's own BPA pick runs off `board.json` — it
+doesn't and never did (`ds.strategy_bpa` reads `data.consensus_rank`, same array the opponents
+use).
+
+**`CONTRACT_VERSION` 1.16.0 → 1.17.0.** `docs/data-contract.md` updated (field table + changelog).
+`docs/decisions.md` gains ADR-065. Handoff thread to frontend:
+`docs/handoffs/2026-07-30-availability-json-1-17-0-adp-central-tendency-pr.md`. Thread 104 replied
+and marked `RESOLVED`.
+
+## What was deliberately NOT done
+
+- The model has not switched to ADP. `simulate_availability` still runs entirely on
+  `fantasypros_ecr`.
+- No `sigma_pick`. FFC's `times_drafted`/`total_drafts_in_sample` columns don't reconcile on the
+  committed snapshot (M0 in the precommit doc) — a placeholder would be a guess dressed as a
+  measurement.
+- No M4 axis correction on `adp_pick`. FFC counts kickers/defenses and samples deeper drafts than
+  this league's 16 rounds; the isotonic-regression fix is assigned to strategist in the precommit
+  doc, not invented here.
+
+## Evidence
+
+Coverage measured against the live DB: 157/378 season-universe players resolve an FFC row; 79/80
+players actually present in `by_player` are covered (one honest gap: Marvin Harrison Jr., no FFC
+row). New tests: `tests/test_export_contract.py::
+test_ranking_source_identity_matches_the_query_it_was_read_from`,
+`tests/test_export_contract.py::test_adp_central_tendency_covers_every_by_player_key_honestly`,
+`tests/test_availability.py::test_load_season_provenance_matches_the_rows_it_actually_read`. All
+regenerate the DB-backed exports directly and re-derive the same identity independently, rather
+than asserting the export against itself.
+
+All six primary-league export artifacts regenerated against `data/nfl.db`
+(`python3 src/export_contract.py`, `python3 src/export_static.py`); `src/export_strategies.py`
+also re-run to clear its own contract-version drift test.
+
+Full test count, commit hash: see this thread's reply in `docs/handoffs/104-...md` and the final
+report to the coordinator (background full-suite run was still in flight when this file was
+written; check the reply for the final number if it differs).
+
+## Handoffs touched
+
+- `docs/handoffs/104-fr066-availability-ranking-source-export.md` — replied, `STATUS: RESOLVED`.
+- `docs/handoffs/2026-07-30-availability-json-1-17-0-adp-central-tendency-pr.md` — opened, `TO:
+  frontend`, `STATUS: OPEN` (no action required, notification only).
+- `docs/handoffs/OPEN.md` — synced.
+
+---
+
+<!-- 2026-07-30-backend-availability-adp-m0-m1.md -->
+
+# 2026-07-30 — backend — availability opponent-model M0/M1 measurements
+
+Ran the M0 gate and M1 central-tendency measurement pre-registered in
+`docs/ranking/availability-opponent-model-precommit.md`, dispatched via
+`docs/handoffs/2026-07-30-availability-adp-measurements-m0-m5.md`. Full results, citations, and
+per-mock tables are in that thread's `### backend · 2026-07-30` reply — this is a pointer, not a
+duplicate.
+
+**M0 (gate): FAILS to reconcile.** FFC's own help documentation
+(`help.fantasyfootballcalculator.com/article/34-...`) says nothing about how `times_drafted` relates
+to `total_drafts_in_sample`; live-API-verified (not just the committed CSV) that
+`sum(times_drafted)` is 6.4% of the picks-per-draft × n_drafts figure FFC's own API meta implies,
+and Ja'Marr Chase's count fell 189→175 while the total rose 1187→1254. No defensible per-player n.
+**M2/M3 (dispersion) stay blocked**, per the pre-registration's own rule.
+
+**M1: H1 NULL.** FFC half-PPR ADP beats `fantasypros_ecr` on pick-MAE in only 1 of 3 logged mocks
+(founder mock, by 0.16 picks); loses by 1.26 picks (10-team Yahoo) and 2.71 picks (12-team Yahoo).
+Mean gap across mocks: **−1.27 picks, ECR ahead**. Neither pre-registered threshold (all-three /
+mean gap ≥ 2.0) is met. Reproduced the pre-registered arithmetic check exactly (10-team mock R1/R2/R3
+MAE vs FFC half-PPR = 1.12/3.66/8.22 picks). Per the pre-registration, this NULL blocks any
+founder-facing "ADP is more accurate" claim; it does not block adopting ADP on estimand grounds
+(thread 119).
+
+**Process gap surfaced and escalated, not worked around:** no allocator exists for `PR-0NN`
+pre-registration ids — third session to hit this. Opened
+`docs/handoffs/2026-07-30-no-allocator-exists-for-pr-0nn-pre-registration.md` to `pm` rather than
+hand-typing an id. M1 therefore ran outside `src/preregistration.require_confirmatory` and is not
+yet in `docs/preregistration/test_run_log.jsonl` — the pre-registration's thresholds and rules were
+followed to the letter regardless; only the formal logging step is deferred.
+
+**Scope not attempted this session:** M2 (blocked by M0 anyway), M3, M4, M5 — the dispatch scoped
+this session to M0/M1 only. The pipeline (`analysis/availability_adp_m0_m1.py`) is reusable for a
+follow-up.
+
+**Files touched:**
+- `analysis/availability_adp_m0_m1.py` (new) — the M0/M1 pipeline, reproducible from the committed
+  CSVs and `data/nfl.db`.
+- `docs/handoffs/2026-07-30-availability-adp-measurements-m0-m5.md` — full reply with citations,
+  per-mock MAE/ρ tables, and the guardrails checklist.
+- `docs/handoffs/2026-07-30-no-allocator-exists-for-pr-0nn-pre-registration.md` (new) — the
+  allocator-gap escalation to `pm`.
+- `docs/CURRENT-STATE.md` — in-place update to the CONTRACT_VERSION 1.17.0 paragraph noting the
+  M0/M1 outcome.
+
+**Commit:** `e551dcc`.
+
+---
+
 <!-- 2026-07-30-backend-sleeper-screen-fr094.md -->
 
 # 2026-07-30 — backend — sleeper screen (FR-094)
@@ -3953,6 +4094,81 @@ No `src/` or `tests/` code touched this session (analysis-only, per the dispatch
 `src/`, `tests/`, export contract, ADR log were not in play here beyond the DB rebuild, which
 used existing ingestion scripts unmodified). Ran the full pytest suite for a sanity check after
 the DB rebuild; see commit message / final report for count.
+
+---
+
+<!-- 2026-07-30-backend-thread-fr-id-allocation-date-slug.md -->
+
+# 2026-07-30 — backend — thread/FR ID allocation moves to date+slug (ADR-064)
+
+**Task:** founder-approved directive, relayed via dispatch — replace counter-based ID allocation
+in `tools/handoffs.py` / `tools/founder_requests.py` with a scheme that structurally cannot
+collide across git worktrees, without renaming or renumbering any of the ~135 existing threads or
+~120 existing FRs.
+
+## What shipped
+
+New threads/FRs are named `docs/handoffs/YYYY-MM-DD-slug.md` and
+`docs/founder-requests/FR-YYYY-MM-DD-slug.md`. Allocation (`new_thread_filename()` /
+`new_request_filename()`) is a pure function of (today's date, this thread's own slugified
+subject) claimed atomically via `os.O_CREAT | os.O_EXCL` — no shared counter, no git ref scan.
+Same-day-same-slug within one working tree deterministically gets a `-2`/`-3`/... suffix instead
+of failing. The one case a single tree can't disambiguate — two separate worktrees choosing the
+identical subject on the identical day — is no longer a silent collision either: the filename is
+now the identifier, so it becomes an ordinary git same-path merge conflict instead of two
+different filenames quietly carrying the same `ID:`.
+
+Existing `NNN-slug.md` / `FR-NNN-slug.md` files: untouched, never renamed. `load()` in both tools
+now matches either filename shape so old numeric threads keep resolving exactly as before
+(verified: `docs/handoffs/119-*.md` still loads/sorts/appears in `inbox`/`sync`/`check`).
+`next_free_id()` in both tools is kept (still tested, still answers "highest legacy number
+claimed" honestly) but is no longer wired into `cmd_new`/`ingest_pending` — dead as an allocator,
+alive as a query. `adr_next()` is explicitly out of scope, unchanged.
+
+## The mid-task addition (coordinator-directed)
+
+Running `check` against the real repo surfaced pre-existing collisions from before this fix —
+threads 093/094/109/110/111/112 (some with a filename/frontmatter-ID mismatch on top, from a
+rename-without-restamp pattern — see `docs/known-id-collisions.md`), ADR-054/ADR-055 (two
+different real decisions recorded under one number — a content problem, not a naming one), and
+FR-029/FR-030. Verified pre-existing via `git stash` before touching anything. Per coordinator
+direction: recorded as a frozen, dated exception registry
+(`KNOWN_LEGACY_ID_COLLISIONS`/`KNOWN_LEGACY_ADR_COLLISIONS` in `tools/handoffs.py`,
+`KNOWN_LEGACY_FR_COLLISIONS` in `tools/founder_requests.py`) so `check` goes green on today's debt
+and stays red on anything new — pinned by test so growing the registry to hide a future collision
+is a visible diff, not silent. Did not attempt to reconcile ADR-054/ADR-055's actual content
+ambiguity myself — no authority to pick a winner unilaterally — opened
+`docs/handoffs/2026-07-30-adr-054-and-adr-055-each-record-two-different-re.md` to PM instead.
+
+## Evidence
+
+- `python3 -m pytest tests/test_handoffs.py tests/test_founder_requests.py -q` — **36 passed**
+  (was 27 handoffs + a subset — old counter-allocation tests rewritten for the new scheme; no
+  legacy-resolution or cross-branch-backstop test changed).
+- `python3 tools/handoffs.py check` — exit 0 (was exit 1, confirmed pre-existing failure via
+  `git stash`).
+- `python3 tools/founder_requests.py check` — exit 0 (was exit 1, same pattern, not previously
+  wired into the test suite at all — still isn't; flagged as a gap, not fixed here, see
+  `docs/ideas-inbox.md`).
+- Full suite: see this session's commit for the final count (kicked off before session close;
+  the handoffs/founder_requests subset above is the code this session actually touched).
+- ADR-064 in `docs/decisions.md`, allocated via `tools/handoffs.py adr next` (returned 64,
+  independently re-verified after the coordinator reported the same number).
+
+## Docs touched
+
+`docs/decisions.md` (ADR-064), `docs/known-id-collisions.md` (new), `docs/handoffs/README.md`,
+`CLAUDE.md` (tight edit, one paragraph), `docs/CURRENT-STATE.md` (Agent infrastructure row +
+"Top open items" #15, in place — the old #15 said "do not silence" the ADR-054/055 check failure;
+updated to say what actually changed and why, with the still-open content question now tracked
+separately).
+
+## Not done / left open
+
+- ADR-054/ADR-055's actual disambiguation (whose content is canonical) — PM's call, threaded.
+- `tools/founder_requests.py check` still isn't wired into the automated test suite the way
+  `tools/handoffs.py check` is (`test_mailbox_health`) — noted, not fixed, logged to
+  `docs/ideas-inbox.md`.
 
 ---
 

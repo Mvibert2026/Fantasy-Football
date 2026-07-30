@@ -474,6 +474,14 @@ player from FFC ADP, `sigma_pick` deliberately withheld pending the M0 pre-regis
 `docs/ranking/availability-opponent-model-precommit.md`. `simulate_availability` has NOT switched
 to ADP — was 1.16.0, this session's FR-079/FR-083 bump; this line
 previously said 1.13.0 until an earlier claim checker caught that drift).
+**M0 has now run (2026-07-30, backend, `docs/handoffs/2026-07-30-availability-adp-measurements-m0-m5.md`):
+GATE FAILS to reconcile — FFC's `times_drafted`/`total_drafts_in_sample` do not relate in any way
+FFC documents or that internal consistency supports, so `sigma_pick` stays withheld and M2/M3
+(dispersion) stay blocked. M1 (central tendency) ran anyway since it needs no per-player n: H1
+NULL — FFC half-PPR ADP does not beat `fantasypros_ecr` on pick-MAE across the 3 logged mocks
+(mean gap −1.27 picks, ECR ahead), so no accuracy claim may attach to a future ADP switch, though
+adoption on estimand grounds is unaffected. M2–M5 not yet run. Pipeline:
+`analysis/availability_adp_m0_m1.py`.**
 was **1.14.0** at that session's measurement (2026-07-29 — this line said 1.13.0 until
 the claim checker caught the drift; the Build state table below had been right all along; now
 1.15.0, see this doc's "Last verified" paragraph above, ADR-061).
