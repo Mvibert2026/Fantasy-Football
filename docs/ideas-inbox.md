@@ -753,3 +753,40 @@ file (ADR-057). Full evidence `docs/ranking/bottom-up-research-pass-3.md`, threa
    rather than resolved — one ruling should cover all three sources, not three separate ones.
    See ADR-063 and the research doc's SS6 for the full clause reasoning.
 
+## 2026-07-30 — frontend, founder feedback batch (FR-067/079/082/083/087): decided without asking
+
+1. **The task brief's FR numbers (074, 076, 084, 077) were stale and would have collided.**
+   The dispatching message cited FR-074/FR-076 for the ADP/history item, FR-084 for Opponents
+   scroll, FR-077 for rounds. All four numbers were already claimed for entirely different
+   subjects by `claude/pm-agent-setup-gobxa0`'s commit `ea141f4` ("FR-074..089: capture 16-item
+   founder feedback batch verbatim") — e.g. FR-074 there is "backfill historical ADP across
+   FFC," FR-077 is "chatbot needs standing chat box." That commit is one commit ahead of this
+   worktree's own merge-base and was never pulled in. Cross-checked every local + remote branch
+   (`git ls-tree` over `docs/founder-requests/`) and found the SAME four founder complaints
+   already correctly captured there under different numbers — FR-079, FR-083, FR-082, FR-087 —
+   with verbatim founder quotes matching the task brief exactly. Cherry-picked those four files'
+   content in (`git show ea141f4:<path>`) rather than either (a) blindly trusting the brief's
+   numbers and creating colliding files, or (b) self-allocating fresh numbers via
+   `founder_requests.py new`, which would have produced a THIRD set of numbers for the same four
+   asks. Did not merge the rest of that commit's 12 other items (out of scope for this task).
+   Flagging the process gap: whatever generates these task briefs should read from the same
+   already-committed FR capture, not re-paraphrase founder quotes into fresh (and here, wrong)
+   numbers.
+2. **FR-079/FR-083 (ADP + historical-season scoring format) marked IN PROGRESS, not SHIPPED.**
+   Both root causes traced to backend (`src/export_contract.py`'s `_load_adp_snapshot` hardcoding
+   `mfl_proxy`/Westwood's ruleset text for every league; `src/export_history.py` computing a
+   fixed standard-PPR figure with no per-league `scoring_cfg`). Did not attempt a backend fix
+   (no `nfl.db` in this worktree to verify one against, and `src/` is backend's file per
+   `docs/operating-model.md`'s role table) — shipped an honest frontend disclosure instead and
+   opened `docs/handoffs/NEW-adp-and-history-not-league-scoring-aware.md` to backend with the
+   exact fix needed.
+3. **Opened `docs/handoffs/NEW-opponents-and-liveopponents-have-diverged.md` (frontend → frontend)**
+   rather than consolidating `Opponents.tsx`/`LiveOpponents.tsx` inside this task, per the
+   coordinator's explicit mid-task instruction not to (parallel frontend work in this codebase
+   already touches that area).
+4. **Did not open or reply to the 16 pre-existing `docs/handoffs/OPEN.md` threads** listed in
+   this session's inbox at start — the dispatched task was this specific 4-item founder-feedback
+   batch, not general inbox triage, and touching unrelated threads without reading them fully
+   first would violate the "ask fully or don't ask" / no-half-specified-replies rule. Left for a
+   dedicated session; noted in this session's final report rather than silently skipped.
+
