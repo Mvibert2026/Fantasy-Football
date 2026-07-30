@@ -24,6 +24,13 @@ import { playerAvailabilityAtPick } from '../data/availability';
 import type { Dataset } from '../data/load';
 import type { LeagueConfig } from '../data/league';
 import { findVbdOverride, rankByRecommendation } from '../data/recommendation';
+import {
+  applyStrategyPreference,
+  strategyLabel,
+  strategyRuleText,
+  type StrategyKey,
+} from '../data/strategySelector';
+import { StrategySelector } from '../components/StrategySelector';
 import { buildRosterSlots } from '../data/rosterSlots';
 import {
   depletionWarning,
@@ -397,6 +404,11 @@ export function DraftRoom({
   // (RECOMMENDED-when-on-clock, else POSITION SCARCITY + Queue/Watch + NEXT
   // DECISION all in one column). Recommend is the spec's stated default.
   const [paneTab, setPaneTab] = useState<'recommend' | 'scarcity' | 'queue' | 'insights'>('recommend');
+  // FR-061 / STRATEGY-SELECTOR.md: "rankings do not move; recommendations do."
+  // Component-local, not persisted -- resets to the default (VBD/best-player-
+  // available) on reload, same as every other in-session-only control in this
+  // pane (paneTab above, lookAheadToggle below).
+  const [activeStrategy, setActiveStrategy] = useState<StrategyKey>('bpa_consensus');
   // FR-049's "look-ahead is a toggle inside [Recommend], not a second tab --
   // same content computed at your pick instead of this one." Only meaningful
   // while on the clock (off-clock, look-ahead is the only content there is to
@@ -868,10 +880,31 @@ export function DraftRoom({
     [teams, userSlot, rounds, currentPick],
   );
 
-  const recommended = useMemo(() => {
+  // FR-061: the VBD-only order (unchanged formula) kept separate from the
+  // strategy-adjusted one below, so the strategy panel can name exactly what
+  // moved -- comparing the two tells the difference apart from FR-058's own
+  // VBD-override machinery, which explains a different thing (recommendation
+  // vs. board VBD leader, not recommendation vs. itself pre-strategy).
+  const baseRecommended = useMemo(() => {
     if (!userOnClock) return [];
-    return rankByRecommendation(available, currentRound, unfilledPositions).slice(0, 6);
+    return rankByRecommendation(available, currentRound, unfilledPositions);
   }, [userOnClock, available, currentRound, unfilledPositions]);
+
+  const recommended = useMemo(
+    () => applyStrategyPreference(baseRecommended, currentRound, activeStrategy).slice(0, 6),
+    [baseRecommended, currentRound, activeStrategy],
+  );
+
+  /** Non-null exactly when the active strategy actually moved the #1 pick away
+   *  from what plain VBD+stopgap-terms would have recommended at this round --
+   *  "nothing at all when nothing moved," the same idiom FR-058 already uses. */
+  const strategyOverride = useMemo(() => {
+    if (activeStrategy === 'bpa_consensus') return null;
+    const baseTop = baseRecommended[0] ?? null;
+    const adjustedTop = recommended[0] ?? null;
+    if (!baseTop || !adjustedTop || baseTop.row.id === adjustedTop.row.id) return null;
+    return { baseTop, adjustedTop, strategy: activeStrategy, round: currentRound };
+  }, [activeStrategy, baseRecommended, recommended, currentRound]);
 
   /**
    * Thread 049 item 2: the RECOMMENDED card's reason and "WHAT YOU GIVE UP"
@@ -987,8 +1020,13 @@ export function DraftRoom({
   const recommendedLookAhead = useMemo(() => {
     if (lookAheadPick === null) return [];
     const round = teams > 0 ? roundOfPick(lookAheadPick, teams) : 0;
-    return rankByRecommendation(available, round, unfilledPositions).slice(0, 6);
-  }, [lookAheadPick, teams, available, unfilledPositions]);
+    const base = rankByRecommendation(available, round, unfilledPositions);
+    // FR-061: the active strategy reorders the look-ahead shortlist too, same
+    // as "this pick" above -- but this branch stays without its own
+    // strategy-override explanation panel, same documented scope narrowing as
+    // `recommendationDetailLookAhead`'s own missing vbdOverride just below.
+    return applyStrategyPreference(base, round, activeStrategy).slice(0, 6);
+  }, [lookAheadPick, teams, available, unfilledPositions, activeStrategy]);
 
   /**
    * A deliberately smaller sibling of `recommendationDetail` above: the same
@@ -1871,6 +1909,11 @@ export function DraftRoom({
                 <div style={{ color: 'var(--dim)' }}>Draft complete.</div>
               ) : (
                 <>
+                  {/* FR-061 / STRATEGY-SELECTOR.md: "sits at the head of the
+                      Recommend tab." Rankings (the board) never move from this
+                      -- only what's below reorders. */}
+                  <StrategySelector data={data} active={activeStrategy} onSelect={setActiveStrategy} />
+
                   {userOnClock ? (
                     <div
                       style={{
@@ -2142,6 +2185,57 @@ export function DraftRoom({
                               </div>
                             </div>
                           ) : null}
+                          {/* FR-061: "recommendations change, and the change is
+                              explained." Renders only when the active strategy
+                              actually moved the #1 pick away from the plain
+                              VBD+stopgap-terms order -- "nothing at all when
+                              nothing moved," same idiom as FR-058's panel just
+                              below. Takes precedence over that panel (mutually
+                              exclusive render below) so a single reorder never
+                              gets two different, possibly-conflicting tellings:
+                              the VBD-override panel only knows about the three
+                              named stopgap terms, not this strategy reorder, so
+                              it would either explain nothing or explain the
+                              wrong thing here. */}
+                          {strategyOverride ? (
+                            <div style={{ borderTop: '1px solid var(--line)', padding: '11px 14px', background: 'var(--bg)' }}>
+                              <div style={{ fontFamily: 'var(--font-num)', fontSize: 10, letterSpacing: '.12em', color: 'var(--dim2)' }}>
+                                STRATEGY ADJUSTMENT — {strategyLabel(strategyOverride.strategy).toUpperCase()}
+                              </div>
+                              <div style={{ marginTop: 6, fontSize: 12.5, lineHeight: 1.5, color: 'var(--dim)' }}>
+                                {strategyLabel(strategyOverride.strategy)} is active: {strategyRuleText(strategyOverride.strategy)}
+                              </div>
+                              <div style={{ marginTop: 6, fontSize: 12.5, lineHeight: 1.5, color: 'var(--dim)' }}>
+                                That moved{' '}
+                                <strong>
+                                  {strategyOverride.adjustedTop.row.name.kind === 'present'
+                                    ? strategyOverride.adjustedTop.row.name.value
+                                    : 'this player'}
+                                </strong>{' '}
+                                ahead of{' '}
+                                <strong>
+                                  {strategyOverride.baseTop.row.name.kind === 'present'
+                                    ? strategyOverride.baseTop.row.name.value
+                                    : 'the plain-VBD pick'}
+                                </strong>{' '}
+                                (VBD{' '}
+                                <span className="num">
+                                  {strategyOverride.adjustedTop.row.vbd.kind === 'present'
+                                    ? decimal(strategyOverride.adjustedTop.row.vbd.value)
+                                    : '—'}
+                                </span>{' '}
+                                vs{' '}
+                                <span className="num">
+                                  {strategyOverride.baseTop.row.vbd.kind === 'present'
+                                    ? decimal(strategyOverride.baseTop.row.vbd.value)
+                                    : '—'}
+                                </span>
+                                ) — a preference you selected, not a claim that this pick scores higher. This
+                                strategy's own measured margin (with the power-floor caveat) is in the STRATEGY
+                                panel above, not repeated here as if it applied to this one pick specifically.
+                              </div>
+                            </div>
+                          ) : null}
                           {/* FR-058: "if the recommendation strays from VBD ... the
                               panel needs to provide an explanation" -- renders only
                               when recommendationDetail.vbdOverride is non-null, i.e.
@@ -2154,8 +2248,10 @@ export function DraftRoom({
                               untested, verbatim, every time -- recommendation.ts's own
                               module doc calls the formula "a stopgap, not a validated
                               model," and this panel repeats that rather than letting
-                              a cited constant read as a finding. */}
-                          {recommendationDetail.vbdOverride ? (
+                              a cited constant read as a finding. Suppressed while
+                              strategyOverride's own panel above already explains this
+                              exact reorder (FR-061) -- see that panel's comment. */}
+                          {!strategyOverride && recommendationDetail.vbdOverride ? (
                             <div style={{ borderTop: '1px solid var(--line)', padding: '11px 14px', background: 'var(--bg)' }}>
                               <div style={{ fontFamily: 'var(--font-num)', fontSize: 10, letterSpacing: '.12em', color: 'var(--dim2)' }}>
                                 WHY NOT HIGHEST VBD
