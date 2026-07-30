@@ -180,6 +180,14 @@ def test_never_infers_a_team_need_beyond_slot_arithmetic():
 
 
 def test_contract_version_bumped():
+    # 1.16.0 (FR-079/FR-083, 2026-07-30): board.json's adp_source_note is now
+    # DERIVED from cfg instead of hardcoding Westwood's half-PPR ruleset for
+    # every league (see export_contract._adp_source_note). export_history.py's
+    # weekly_finishes.json/season_stats.json are now league-scoring-aware
+    # (scored via scoring.score_offensive_game under cfg.scoring, not the
+    # fixed nflreadpy fantasy_points_ppr column) and exported per-league via
+    # export_contract.write_all, matching board.json's existing pattern. See
+    # docs/handoffs/NEW-adp-and-history-not-league-scoring-aware.md.
     # 1.15.0 (ADR-061, FR-042): league.json gains scoring_ruleset_note, stating on
     # screen whether a league uses Westwood's verified custom ruleset or the new
     # standard_scoring.STANDARD_LEAGUE. See src/export_contract.py::build_league_json.
@@ -198,7 +206,7 @@ def test_contract_version_bumped():
     # suspension_adjustment_note (src/suspensions.py wired into
     # build_board_json). 1.11.0 was thread 053/067's rewire onto
     # fantasypros_csv_2026draft plus the top-level scoring_format field.
-    assert ec.CONTRACT_VERSION == "1.15.0"
+    assert ec.CONTRACT_VERSION == "1.16.0"
 
 
 # -- real-DB test: today's actual state must be the empty case ---------------

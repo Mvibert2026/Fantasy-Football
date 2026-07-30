@@ -1,6 +1,6 @@
 {
-  "contract_version": "1.15.0",
-  "generated_utc": "2026-07-29T23:24:57.387020+00:00",
+  "contract_version": "1.16.0",
+  "generated_utc": "2026-07-30T05:30:43.478180+00:00",
   "league_id": "yahoo_10_standard",
   "preamble": "These findings were tested for the PRIMARY league and are shown here for reference only -- see each finding's result field. Per ADR-041, league-specific results are not assumed to generalize.",
   "findings": [

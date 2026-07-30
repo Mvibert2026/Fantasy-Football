@@ -1,7 +1,6 @@
 ---
 ID: FR-083
-STATUS: NEW
-STATUS: IN PROGRESS
+STATUS: SHIPPED
 SOURCE: chat 2026-07-30, PM session (feedback batch)
 RAISED: 2026-07-30
 ---
@@ -47,3 +46,25 @@ stacking yardage bonuses").
 Backend fix logged: `docs/handoffs/NEW-adp-and-history-not-league-scoring-aware.md` (pending PM's
 ID allocation). `npx tsc -b --noEmit` clean. Test count/commit: see session report in
 `docs/status/`.
+
+## Resolution (2026-07-30, backend)
+
+Fixed at the root. New `export_contract._adp_source_note(cfg, adp_snapshot)` derives every claim
+in the note fresh from `cfg.scoring` on each call instead of hand-written Westwood prose: which
+PPR value THIS league scores, whether it matches MFL's binary `IS_PPR` flag (states a real
+"these match" case when it does, not just a mismatch warning), and whether the capture's `fcount`
+actually equals `cfg.teams` (was hardcoded "(10-team, matching this league)" unconditionally --
+also wrong for any non-10-team preset). Verified live against the exact league the frontend
+reproduction used: `espn_10_standard` now reads "...while THIS league ('espn_10_standard') scores
+standard (0-PPR, no points per reception)..." with no "half-PPR" anywhere; Westwood's own board
+still correctly says "half-PPR" (genuinely true there), now derived rather than hardcoded.
+
+Contract 1.15.0 -> 1.16.0 (content-only change to this field; no shape/type change). Sub-ask 1b
+(whether to wire `ffc_half_ppr_10team` into Westwood's own ADP display instead of the universal
+`mfl_proxy` capture) intentionally left open -- real methodology call, logged in
+`docs/handoffs/NEW-adp-and-history-not-league-scoring-aware.md` for a future thread, not decided
+away here.
+
+**STATUS: SHIPPED** for the literal complaint (the note lying about the league's format). The ADP
+*values* themselves are unchanged (still one universal MFL proxy for every league, sub-ask 1b) --
+that's a separate, real scoping question, not this bug.

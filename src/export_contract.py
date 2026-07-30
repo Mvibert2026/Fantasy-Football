@@ -33,6 +33,7 @@ import numpy as np
 import availability as av
 import db as dbmod
 import draft_sim as ds
+import export_history as eh
 import freshness as fr
 import league_config as lc
 import make_board
@@ -43,7 +44,7 @@ import team_codes as tc
 from config import DEFAULT_CONFIG
 from scoring import LEAGUE, ReplacementLevels
 
-CONTRACT_VERSION = "1.15.0"
+CONTRACT_VERSION = "1.16.0"
 SEASON = 2026
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 EXPORT_DIR = DATA_DIR / "export"
@@ -210,6 +211,82 @@ def _load_adp_snapshot(conn: sqlite3.Connection, adp_source: str = "mfl_proxy") 
         "match_rate_note": f"{len(by_gsis)} of {len(mfl_by_id)} {adp_source} rows resolved "
                             f"a gsis id via player_ids.",
     }
+
+
+def _ppr_format_description(ppr: float) -> str:
+    """Plain-English description of a reception value, for prose that must
+    describe WHATEVER league it is building for -- never a hardcoded format
+    name. 0 / 0.5 / 1.0 are this project's only in-use values (Westwood's
+    scoring.LEAGUE and standard_scoring.py's three presets); anything else
+    still gets an honest, non-crashing description rather than a KeyError."""
+    if ppr == 0:
+        return "standard (0-PPR, no points per reception)"
+    if ppr == 0.5:
+        return "half-PPR (0.5 points per reception)"
+    if ppr == 1.0:
+        return "full-PPR (1 point per reception)"
+    return f"{ppr}-point-per-reception"
+
+
+def _adp_source_note(cfg: lc.LeagueConfig, adp_snapshot: dict) -> str:
+    """The adp_source_note text, DERIVED from `cfg` -- never hardcoded to any
+    one league's ruleset.
+
+    FR-083 (2026-07-30): this note used to assert, verbatim, "this league
+    scores half-PPR" for every league board.json is built for, because the
+    prose was hand-written once for Westwood and never parameterized.
+    Reproduced live against a real STANDARD/0-PPR preset (espn_10_standard),
+    which carried the identical false sentence. See
+    docs/handoffs/NEW-adp-and-history-not-league-scoring-aware.md.
+
+    This function computes the comparison fresh from cfg.scoring and the
+    snapshot's own IS_PPR flag/fcount, so the claim is true for whichever
+    league cfg describes -- including the case where MFL's capture happens
+    to match this league's format exactly (previously that case was never
+    even considered; the note always warned about a half-PPR gap that may
+    not exist for this league at all).
+    """
+    league_ppr = cfg.scoring["offense"]["receptions"]
+    league_format = _ppr_format_description(league_ppr)
+
+    mfl_ppr = adp_snapshot["is_ppr"]
+    mfl_format = {1: "full-PPR", 0: "standard (non-PPR)"}.get(
+        mfl_ppr, "an unrecorded PPR setting"
+    )
+    format_matches = (mfl_ppr == 1 and league_ppr == 1.0) or (mfl_ppr == 0 and league_ppr == 0)
+
+    fcount = adp_snapshot["fcount"]
+    fcount_note = (
+        "matching this league's team count"
+        if fcount is not None and fcount == cfg.teams
+        else f"a {fcount}-team pull, NOT this league's {cfg.teams}-team format"
+    )
+
+    format_comparison = (
+        "These match, so the reception-value gap this note otherwise warns about does not "
+        "apply here -- MFL's capture is a reasonable format proxy for this league."
+        if format_matches else
+        "MFL's IS_PPR flag is binary and cannot express this league's own reception value "
+        f"({league_ppr}), so treat the capture as an approximation, not an exact match: "
+        "drafters under a higher PPR value take pass-catchers earlier than drafters under a "
+        "lower one, so receiver ADP here may run ahead of or behind where this league would "
+        "actually take them, depending on the direction of the mismatch."
+    )
+
+    return (
+        "adp/adp_min_pick/adp_max_pick/adp_selected_pct on each player row come from "
+        f"MyFantasyLeague's public aggregate ADP endpoint (adp_source={adp_snapshot['adp_source']!r}, "
+        "ADR-035), NOT this league's own draft history and NOT a blend of platforms -- "
+        "adp_source travels with every value and must never be merged with a differently-"
+        "sourced ADP number. The population is whoever drafts on MFL (largely dynasty/"
+        f"redraft hobbyists), not this league's roster. Captured at FCOUNT={fcount} "
+        f"({fcount_note}) and IS_PPR={mfl_ppr} ({mfl_format}), while THIS league "
+        f"({cfg.league_id!r}) scores {league_format}. {format_comparison} Sample size is thin "
+        f"(total_drafts_in_sample={adp_snapshot['total_drafts_in_sample']}) and MFL only "
+        "covers roughly the top ~230 players in a 10-team pull -- most of the board has no "
+        "MFL opinion at all, and that is a real null (adp=None), never a fabricated rank. "
+        "See adp_match_rate_note for how many of this board's rows actually resolved."
+    )
 
 
 def build_board_json(
@@ -528,24 +605,7 @@ def build_board_json(
         "adp_source": adp_snapshot["adp_source"],
         "adp_as_of_date": adp_snapshot["as_of_date"],
         "adp_match_rate_note": adp_snapshot["match_rate_note"],
-        "adp_source_note": (
-            "adp/adp_min_pick/adp_max_pick/adp_selected_pct on each player row come from "
-            f"MyFantasyLeague's public aggregate ADP endpoint (adp_source={adp_snapshot['adp_source']!r}, "
-            "ADR-035), NOT this league's own draft history and NOT a blend of platforms -- "
-            "adp_source travels with every value and must never be merged with a differently-"
-            "sourced ADP number. The population is whoever drafts on MFL (largely dynasty/"
-            "redraft hobbyists), not this league's roster. Captured at FCOUNT="
-            f"{adp_snapshot['fcount']} (10-team, matching this league) and IS_PPR="
-            f"{adp_snapshot['is_ppr']}, but MFL's IS_PPR flag is binary and this league scores "
-            "half-PPR -- treat the full-PPR capture as an approximation, not an exact match: "
-            "full-PPR drafters take pass-catchers earlier than half-PPR drafters do, so "
-            "receiver ADP here likely runs a few picks ahead of where this league would "
-            "actually take them. Sample size is thin "
-            f"(total_drafts_in_sample={adp_snapshot['total_drafts_in_sample']}) and MFL only "
-            "covers roughly the top ~230 players in a 10-team pull -- most of the board has no "
-            "MFL opinion at all, and that is a real null (adp=None), never a fabricated rank. "
-            "See adp_match_rate_note for how many of this board's rows actually resolved."
-        ),
+        "adp_source_note": _adp_source_note(cfg, adp_snapshot),
         "players": players,
     }
 
@@ -773,10 +833,9 @@ def build_league_json(cfg: lc.LeagueConfig = lc.CURRENT_LEAGUE) -> dict:
         # named "ESPN-default" imply platform-verified scoring it doesn't
         # have. See standard_scoring.SCORING_RULESET_NOTE for what in that
         # ruleset is founder-specified vs. an unverified placeholder.
-        "scoring_ruleset_note": (
-            "Westwood's verified custom ruleset (stacking yardage bonuses, ADR-052) -- the "
-            "one real, confirmed league this project models."
-        ) if is_primary else standard_scoring.SCORING_RULESET_NOTE,
+        # Shared with export_history.py's per-league envelope (FR-083/FR-079)
+        # via lc.scoring_ruleset_note_for so the two never disagree.
+        "scoring_ruleset_note": lc.scoring_ruleset_note_for(cfg),
     }
 
 
@@ -968,6 +1027,15 @@ def write_all(
             json.dumps(payload, indent=2, default=str, allow_nan=False), encoding="utf-8"
         )
         written.append(p)
+    # weekly_finishes.json / season_stats.json (FR-079/FR-083, contract
+    # 1.16.0): every caller of this write_all -- the single-league CLI AND
+    # generate_config_matrix's 24-preset loop -- gets a per-league,
+    # league-scoring-aware history export for free, the same way board.json/
+    # league.json already are. Previously these two files were built
+    # separately (export_history.main(), never called from here or from the
+    # matrix loop) and only ever landed unprefixed at the top level,
+    # regardless of which league's directory this write_all was asked for.
+    written.extend(eh.write_all(out_dir, conn, cfg=cfg))
     return written
 
 

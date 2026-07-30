@@ -1,8 +1,8 @@
 {
-  "contract_version": "1.15.0",
-  "generated_utc": "2026-07-29T23:22:51.529503+00:00",
+  "contract_version": "1.16.0",
+  "generated_utc": "2026-07-30T05:37:28.023342+00:00",
   "snapshot_as_of_date": "2026-07-27",
-  "snapshot_age_days": 2,
+  "snapshot_age_days": 3,
   "snapshot_max_age_days": 3,
   "snapshot_stale": false,
   "snapshot_freshness_note": "as_of_date/age_days/stale describe the rankings snapshot ('fantasypros_csv_2026draft', season 2026) that this board was built from -- NOT when this board.json file was written (see generated_utc for that). stale=True means the snapshot exceeded snapshot_max_age_days as of build time; enforce_freshness=True builds refuse to proceed past that point at all, so a stale=True board only reaches this file when enforce_freshness was explicitly disabled.",
@@ -64,7 +64,7 @@
   "adp_source": "mfl_proxy",
   "adp_as_of_date": "2026-07-29",
   "adp_match_rate_note": "147 of 225 mfl_proxy rows resolved a gsis id via player_ids.",
-  "adp_source_note": "adp/adp_min_pick/adp_max_pick/adp_selected_pct on each player row come from MyFantasyLeague's public aggregate ADP endpoint (adp_source='mfl_proxy', ADR-035), NOT this league's own draft history and NOT a blend of platforms -- adp_source travels with every value and must never be merged with a differently-sourced ADP number. The population is whoever drafts on MFL (largely dynasty/redraft hobbyists), not this league's roster. Captured at FCOUNT=10 (10-team, matching this league) and IS_PPR=1, but MFL's IS_PPR flag is binary and this league scores half-PPR -- treat the full-PPR capture as an approximation, not an exact match: full-PPR drafters take pass-catchers earlier than half-PPR drafters do, so receiver ADP here likely runs a few picks ahead of where this league would actually take them. Sample size is thin (total_drafts_in_sample=43) and MFL only covers roughly the top ~230 players in a 10-team pull -- most of the board has no MFL opinion at all, and that is a real null (adp=None), never a fabricated rank. See adp_match_rate_note for how many of this board's rows actually resolved.",
+  "adp_source_note": "adp/adp_min_pick/adp_max_pick/adp_selected_pct on each player row come from MyFantasyLeague's public aggregate ADP endpoint (adp_source='mfl_proxy', ADR-035), NOT this league's own draft history and NOT a blend of platforms -- adp_source travels with every value and must never be merged with a differently-sourced ADP number. The population is whoever drafts on MFL (largely dynasty/redraft hobbyists), not this league's roster. Captured at FCOUNT=10 (a 10-team pull, NOT this league's 8-team format) and IS_PPR=1 (full-PPR), while THIS league ('yahoo_8_standard') scores standard (0-PPR, no points per reception). MFL's IS_PPR flag is binary and cannot express this league's own reception value (0.0), so treat the capture as an approximation, not an exact match: drafters under a higher PPR value take pass-catchers earlier than drafters under a lower one, so receiver ADP here may run ahead of or behind where this league would actually take them, depending on the direction of the mismatch. Sample size is thin (total_drafts_in_sample=43) and MFL only covers roughly the top ~230 players in a 10-team pull -- most of the board has no MFL opinion at all, and that is a real null (adp=None), never a fabricated rank. See adp_match_rate_note for how many of this board's rows actually resolved.",
   "players": [
     {
       "id": 1,

@@ -418,6 +418,101 @@ def test_load_adp_snapshot_honestly_omits_unmatched_players():
     assert "00-0002" not in result["by_gsis"]
 
 
+# --- adp_source_note must be DERIVED per league, never hardcoded (FR-083) --
+#
+# Reproduced live 2026-07-30: a real STANDARD/0-PPR preset (espn_10_standard)
+# carried the sentence "this league scores half-PPR" verbatim, because the
+# note was hand-written prose for Westwood and never parameterized on `cfg`.
+# See docs/handoffs/NEW-adp-and-history-not-league-scoring-aware.md.
+
+import league_config as lc
+import standard_scoring
+
+
+def _snapshot(fcount=10, is_ppr=1, total_drafts=123):
+    return {
+        "adp_source": "mfl_proxy",
+        "fcount": fcount,
+        "is_ppr": is_ppr,
+        "total_drafts_in_sample": total_drafts,
+    }
+
+
+def _standard_cfg(ppr: float, teams: int = 10, league_id: str = "test_standard") -> lc.LeagueConfig:
+    return lc.LeagueConfig(
+        league_id=league_id,
+        name="Test standard",
+        platform="espn",
+        teams=teams,
+        scoring=standard_scoring.standard_scoring_variant(ppr),
+        starters={"QB": 1, "RB": 2, "WR": 3, "TE": 1, "DEF": 1},
+        flex_slots=1,
+        flex_eligible=("RB", "WR", "TE"),
+        bench=6,
+        ir=1,
+        user_draft_slot=1,
+    )
+
+
+class TestPprFormatDescription:
+    def test_zero_is_standard(self):
+        assert "standard" in export_contract._ppr_format_description(0).lower()
+
+    def test_half_is_half_ppr(self):
+        assert "half-ppr" in export_contract._ppr_format_description(0.5).lower()
+
+    def test_one_is_full_ppr(self):
+        assert "full-ppr" in export_contract._ppr_format_description(1.0).lower()
+
+
+class TestAdpSourceNoteIsDerivedPerLeague:
+    def test_never_hardcodes_half_ppr_for_a_standard_0ppr_league(self):
+        """The exact FR-083 reproduction: a 0-PPR league's note must not
+        claim this league scores half-PPR."""
+        cfg = _standard_cfg(0.0)
+        note = export_contract._adp_source_note(cfg, _snapshot(is_ppr=1))
+        assert "this league scores half-ppr" not in note.lower()
+        assert "standard (0-ppr" in note.lower()
+
+    def test_westwood_note_still_names_half_ppr_for_itself(self):
+        """Westwood genuinely IS half-PPR -- the note should still say so,
+        just derived rather than hardcoded."""
+        note = export_contract._adp_source_note(lc.CURRENT_LEAGUE, _snapshot(is_ppr=1))
+        assert "half-ppr" in note.lower()
+
+    def test_two_different_leagues_get_two_different_notes(self):
+        note_standard = export_contract._adp_source_note(_standard_cfg(0.0), _snapshot())
+        note_westwood = export_contract._adp_source_note(lc.CURRENT_LEAGUE, _snapshot())
+        assert note_standard != note_westwood
+
+    def test_matching_format_says_so_instead_of_warning_about_a_gap(self):
+        """A full-PPR league against MFL's IS_PPR=1 capture is an honest
+        MATCH -- the note must say that, not recycle a mismatch warning that
+        does not apply to this league."""
+        cfg = _standard_cfg(1.0)
+        note = export_contract._adp_source_note(cfg, _snapshot(is_ppr=1))
+        assert "match" in note.lower()
+
+    def test_fcount_mismatch_is_stated_not_silently_claimed_as_matching(self):
+        """The old note hardcoded '(10-team, matching this league)' even for
+        a 12-team preset. Must now say the pull's team count does NOT match
+        a league whose teams != fcount."""
+        cfg = _standard_cfg(0.5, teams=12)
+        note = export_contract._adp_source_note(cfg, _snapshot(fcount=10))
+        assert "not this league's 12-team format" in note.lower() or "12-team" in note.lower()
+        assert "matching this league's team count" not in note.lower()
+
+    def test_fcount_match_is_stated_honestly(self):
+        cfg = _standard_cfg(0.5, teams=10)
+        note = export_contract._adp_source_note(cfg, _snapshot(fcount=10))
+        assert "matching this league's team count" in note.lower()
+
+    def test_league_id_appears_in_its_own_note(self):
+        cfg = _standard_cfg(0.5, league_id="espn_10_standard")
+        note = export_contract._adp_source_note(cfg, _snapshot())
+        assert "espn_10_standard" in note
+
+
 @pytest.mark.requires_db
 def test_board_json_adp_fields_present_and_source_travels_with_value():
     """Every player row carries adp/adp_source/adp_min_pick/adp_max_pick/
