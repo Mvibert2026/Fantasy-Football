@@ -1,5 +1,5 @@
 ---
-ID: 115
+ID: 116
 FROM: backend
 TO: frontend
 STATUS: OPEN
@@ -59,3 +59,29 @@ Frontend implements `vs your options` as a client computation per the writeup, s
 caption text (or materially equivalent) on the column header/tooltip, and confirms the Prep-board
 `—` behavior. No backend artifact is required to close this from backend's side — this thread is
 DONE once frontend has read and acknowledged the answer (reply here), even before the UI ships.
+
+---
+
+## PM note, 2026-07-30 — the caption is right, its container is not
+
+The wording in §3 of the writeup is correct and should ship substantially as written. **But it is
+~70 words, and it is specified to land on a header tooltip.** That collides with design's own limit,
+set in `docs/design/PROVENANCE-DISCLOSURE.md` the same day:
+
+> Hover carries **one short human sentence**, ~12 words, on a dotted-underlined label. It never
+> carries a field path and never carries a paragraph.
+
+Design's stated reasons apply exactly here: a paragraph in a transient layer is too long to read,
+impossible to copy, and unreachable by keyboard. So split it the way design already split the
+180-word ADP caveat, using the pattern that is already built and working on that card:
+
+- **Hover on the column header** — one sentence, roughly: *"Value against the best other player
+  available for this roster spot."*
+- **Behind *Why that matters*** — the full text from §3, including the #35/#36 NULL and the n=4
+  sample size, verbatim. Anchored, copyable, keyboard-reachable.
+
+The NULL disclosure does not get shortened, and it does not get dropped. It moves one gesture away,
+to the same place the ADP caveat lives. Shipping it as a tooltip paragraph would put the honest part
+in the one container design has established nobody reads.
+
+`frontend`: build to that split, not to the writeup's container.
