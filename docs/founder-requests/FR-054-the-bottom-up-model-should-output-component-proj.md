@@ -131,3 +131,44 @@ or TE and both remain open.
 
 **Not read, deliberately:** the 2,007 Sleeper/Rotowire component rows. Baseline to beat, never an
 input, per `CLAUDE.md` §4.
+
+---
+
+## Founder's decisions, 2026-07-30
+
+> "Ok for our model, let's do the other positions too, why just WR - is VBD now across positions, I
+> didn't realize that, I think the glossary needs an update, Don't show our rankings in the app until
+> we can do it for all players"
+
+**Three rulings, all recorded as settled:**
+
+1. **Extend to RB, QB and TE.** Approved.
+2. **Do not show our rankings in the app until every position is covered.** This overrides the PM's
+   suggestion of showing the WR model beside consensus as a second opinion — **the founder said no,
+   and he is right.** A partial ranking on screen is a ranking the reader will compare across
+   positions whether or not it is labelled.
+3. **The glossary must explain that VBD is cross-positional.** He did not know, and it is the single
+   most load-bearing idea on the board. If the founder did not know it, nothing on screen says it.
+
+**Why WR was chosen first, since he asked:** the ranker picked it deliberately over TE, departing
+from pass 1's finding. Pass 1 showed TE is where the *market* is most wrong; forming a *player-level
+opinion* needs sample, and **WR has roughly 2.5× TE's**. It was a sample-size decision, not a
+judgement that WR matters most.
+
+**Why the "don't show it yet" ruling is technically correct, not just cautious:** VBD measures a
+player against replacement level *at his own position*, which is what makes a running back and a
+receiver comparable in one column. A board with receivers from our model and everyone else from
+consensus is two different scales in one ordering — wrong in a way that is invisible on screen.
+
+**The glossary gap is real and wider than VBD.** The board shows `structural_adjustment`,
+`evaluative_adjustment`, `ci_applies_to`, `roster_status`, `suspension_flag` and tier labels; the
+glossary defines 14 terms. VBD's entry exists but does not say the comparison is cross-positional —
+which is the part that makes the number mean anything. Owner: `backend` (glossary is a generated
+export), with FR-041's queued prose review.
+
+**Also from the same message:** *"well availability model does have to update based on picks."*
+Correct, and it is an argument for FR-057 part 2 rather than part 1. A pre-computed sweep answers
+"who survives to pick N" before the draft; only browser-side computation can answer it *given the
+picks actually made*. The live pick log already feeds `liveAvailability.ts` — the base survival
+curves are what cannot currently respond.
+
