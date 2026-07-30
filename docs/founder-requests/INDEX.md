@@ -5,11 +5,11 @@ Per-request files in this directory are the source of truth. Edit a request's ow
 `STATUS:` line, then re-run sync. Protocol: [`README.md`](README.md).
 Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests.md).
 
-**105 requests since freeze.**
+**110 requests since freeze.**
 
 ---
 
-## NEW — 61
+## NEW — 66
 
 | ID | Subject | Raised | Source |
 |---|---|---|---|
@@ -74,6 +74,11 @@ Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests
 | [FR-117](FR-117-draft-strategies-need-roster-awareness-constrain.md) | Draft strategies need roster awareness constrain | 2026-07-30 | chat 2026-07-30, PM session |
 | [FR-118](FR-118-vbd-should-show-two-numbers-position-and-flex-aw.md) | Vbd should show two numbers position and flex aw | 2026-07-30 | chat 2026-07-30, PM session |
 | [FR-120](FR-120-frontend-changes-verified-locally-are-not-verifi.md) | Frontend changes verified locally are not verifi | 2026-07-30 | PM session 2026-07-30, founder chat |
+| [FR-121](FR-121-strategy-selector-should-be-a-collapsible-menu-n.md) | Strategy selector should be a collapsible menu n | 2026-07-30 | PM session 2026-07-30, founder chat |
+| [FR-122](FR-122-typing-a-player-name-should-filter-the-list-sear.md) | Typing a player name should filter the list sear | 2026-07-30 | PM session 2026-07-30, founder chat |
+| [FR-123](FR-123-archetypes-need-more-categories-the-35-rule-cann.md) | Archetypes need more categories the 35 rule cann | 2026-07-30 | PM session 2026-07-30, founder chat |
+| [FR-124](FR-124-news-feed-global-per-player-and-eventually-roste.md) | News feed global per player and eventually roste | 2026-07-30 | PM session 2026-07-30, founder chat |
+| [FR-125](FR-125-injury-status-at-a-glance-in-player-lists-and-on.md) | Injury status at a glance in player lists and on | 2026-07-30 | PM session 2026-07-30, founder chat |
 
 ## SCOPING — 1
 
