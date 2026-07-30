@@ -27,7 +27,20 @@ confirmation_threshold: SURVIVES requires the season-paired points margin (globa
   holding at only one sigma. NULL is a CI including zero at either sigma, or a negative
   point estimate. A NULL here is a reportable, useful result — it closes #35 as measured
   rather than SPEC, which the registry currently marks it.
-status: REGISTERED
+status: RUN
+result: NULL. vbd_global_flex minus vbd_current season-paired margin is +1.7 pts [-67.6,+74.8]
+  at sigma=10 and -6.7 pts [-51.2,+37.8] at sigma=20 -- both CIs wide open around zero, sign
+  flips between sigmas, magnitude far below the simulation-level noise floor (sim SE ~8.5 pts
+  at 300 sims/cell, confirmed directly -- more sims would not narrow this; the season-level
+  bootstrap, not simulation count, is the binding constraint at n=4 seasons). Neither VBD arm
+  beats bpa_consensus (market): vbd_current -270.0/-264.4 pts vs market at sigma 10/20 (CI
+  excludes zero both times), vbd_global_flex -268.4/-271.1 (same) -- expected, since both use
+  season S-1 actual points as the projection stand-in (no player-level projections exist,
+  ADR-017) and prior-season persistence is a known-weak predictor relative to market
+  consensus (matches strategic-insights.md SS1's existing headline). Zero of 12 joint
+  PR-006/PR-008 comparisons survived Benjamini-Hochberg at n_total=63 (expected: the n=4
+  season sign test floors at p=0.125, below the 0.05 threshold even before correction).
+  Full log: data/qa/valuation-tests-35-36-run-2026-07-30.log.
 run_date: 2026-07-30
 primary_comparison: vbd_global_flex vs vbd_current (paired by season), both also vs bpa_consensus
 sensitivity_requirement: sigma in {10, 20} (two of draft_sim.SIGMA_SWEEP's three points, to

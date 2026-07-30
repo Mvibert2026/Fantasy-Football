@@ -1,0 +1,62 @@
+PR-006 status=REGISTERED  PR-008 status=REGISTERED
+seasons [2021, 2022, 2023, 2024] | sigmas [10.0, 20.0] | sims/cell 300
+user slot 3, picks [3, 18, 23, 38, 43]..., gaps [14, 4, 14, 4]...
+
+share_bar_offense (QB/RB/WR/TE, renormalised): {'QB': 0.06666666666666667, 'RB': 0.36666666666666664, 'WR': 0.4666666666666667, 'TE': 0.1}
+
+==========================================================================================
+TEST 1 (PR-006, #35): global flex baseline vs current per-position baseline
+==========================================================================================
+  [PR-006:global_vs_current] sigma=10.0: vbd_global_flex - vbd_current = +1.7 [-67.6,+74.8] signs 2/4 sign_p=1.000 (min_p=0.125)
+  [PR-006:global_vs_market] sigma=10.0: vbd_global_flex - bpa_consensus = -268.4 [-377.6,-155.1] signs 0/4 sign_p=0.125 (min_p=0.125)
+  [PR-006:current_vs_market] sigma=10.0: vbd_current - bpa_consensus = -270.0 [-321.3,-215.6] signs 0/4 sign_p=0.125 (min_p=0.125)
+    p_top4[vbd_global_flex, sigma=10.0] = 0.073
+    p_top4[vbd_current, sigma=10.0] = 0.054
+    p_top4[bpa_consensus, sigma=10.0] = 0.514
+  [PR-006:global_vs_current] sigma=20.0: vbd_global_flex - vbd_current = -6.7 [-51.2,+37.8] signs 2/4 sign_p=1.000 (min_p=0.125)
+  [PR-006:global_vs_market] sigma=20.0: vbd_global_flex - bpa_consensus = -271.1 [-324.1,-207.9] signs 0/4 sign_p=0.125 (min_p=0.125)
+  [PR-006:current_vs_market] sigma=20.0: vbd_current - bpa_consensus = -264.4 [-288.6,-239.9] signs 0/4 sign_p=0.125 (min_p=0.125)
+    p_top4[vbd_global_flex, sigma=20.0] = 0.235
+    p_top4[vbd_current, sigma=20.0] = 0.231
+    p_top4[bpa_consensus, sigma=20.0] = 0.717
+
+==========================================================================================
+TEST 2 (PR-008, #36): VONA gap-aware vs gap-blind
+==========================================================================================
+  [PR-008:aware_vs_blind] sigma=10.0: vona_gap_aware - vona_gap_blind = -37.2 [-118.8,+36.0] signs 1/4 sign_p=0.625 (min_p=0.125)
+  [PR-008:aware_vs_market] sigma=10.0: vona_gap_aware - bpa_consensus = -376.4 [-403.9,-345.2] signs 0/4 sign_p=0.125 (min_p=0.125)
+  [PR-008:aware_vs_plainbpa] sigma=10.0: vona_gap_aware - vbd_current = -106.4 [-182.4,-54.3] signs 0/4 sign_p=0.125 (min_p=0.125)
+    p_top4[vona_gap_aware, sigma=10.0] = 0.013
+    p_top4[vona_gap_blind, sigma=10.0] = 0.016
+  [PR-008:aware_vs_blind] sigma=20.0: vona_gap_aware - vona_gap_blind = -2.8 [-48.0,+37.1] signs 2/4 sign_p=1.000 (min_p=0.125)
+  [PR-008:aware_vs_market] sigma=20.0: vona_gap_aware - bpa_consensus = -390.4 [-450.9,-352.7] signs 0/4 sign_p=0.125 (min_p=0.125)
+  [PR-008:aware_vs_plainbpa] sigma=20.0: vona_gap_aware - vbd_current = -126.0 [-214.5,-69.2] signs 0/4 sign_p=0.125 (min_p=0.125)
+    p_top4[vona_gap_aware, sigma=20.0] = 0.111
+    p_top4[vona_gap_blind, sigma=20.0] = 0.074
+
+------------------------------------------------------------------------------------------
+DECISION DIVERGENCE: vona_gap_aware vs vona_gap_blind, same opponent-noise draws
+------------------------------------------------------------------------------------------
+  sigma=10.0 season=2021: diverged 100.0% of 300 drafts (illegal=0), paired points margin -25.5
+  sigma=10.0 season=2022: diverged 100.0% of 300 drafts (illegal=0), paired points margin +86.7
+  sigma=10.0 season=2023: diverged 100.0% of 299 drafts (illegal=1), paired points margin -5.2
+  sigma=10.0 season=2024: diverged 100.0% of 300 drafts (illegal=0), paired points margin -154.0
+  sigma=20.0 season=2021: diverged 100.0% of 299 drafts (illegal=1), paired points margin -15.3
+  sigma=20.0 season=2022: diverged 100.0% of 300 drafts (illegal=0), paired points margin +26.5
+  sigma=20.0 season=2023: diverged 100.0% of 300 drafts (illegal=0), paired points margin +0.8
+  sigma=20.0 season=2024: diverged 100.0% of 300 drafts (illegal=0), paired points margin -59.1
+
+BENJAMINI-HOCHBERG across n_total=63 (corrected across the full run log (63 tests), not just the 12 reported here)
+  survived BH: 0 of 12
+    PR-006:global_vs_current     sigma=10.0 raw_p=1.000 adj_p=1.000 survives=False
+    PR-006:global_vs_market      sigma=10.0 raw_p=0.125 adj_p=0.984 survives=False
+    PR-006:current_vs_market     sigma=10.0 raw_p=0.125 adj_p=0.984 survives=False
+    PR-006:global_vs_current     sigma=20.0 raw_p=1.000 adj_p=1.000 survives=False
+    PR-006:global_vs_market      sigma=20.0 raw_p=0.125 adj_p=0.984 survives=False
+    PR-006:current_vs_market     sigma=20.0 raw_p=0.125 adj_p=0.984 survives=False
+    PR-008:aware_vs_blind        sigma=10.0 raw_p=0.625 adj_p=1.000 survives=False
+    PR-008:aware_vs_market       sigma=10.0 raw_p=0.125 adj_p=0.984 survives=False
+    PR-008:aware_vs_plainbpa     sigma=10.0 raw_p=0.125 adj_p=0.984 survives=False
+    PR-008:aware_vs_blind        sigma=20.0 raw_p=1.000 adj_p=1.000 survives=False
+    PR-008:aware_vs_market       sigma=20.0 raw_p=0.125 adj_p=0.984 survives=False
+    PR-008:aware_vs_plainbpa     sigma=20.0 raw_p=0.125 adj_p=0.984 survives=False
