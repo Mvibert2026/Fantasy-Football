@@ -6,6 +6,7 @@ import {
   loadDraftState,
   nextPickForSlot,
   roundOfPick,
+  roundPickLabel,
   saveDraftState,
   takenPlayerIds,
   type DraftState,
@@ -188,7 +189,12 @@ export function Predictions({ data, rows, league }: { data: Dataset; rows: Board
 
       <div style={{ flex: 'none' }}>
         <div style={{ fontSize: 15, fontWeight: 600 }}>
-          {nextUserPick !== null ? `Live availability at pick ${nextUserPick}` : 'Live availability'}
+          {/* FR-087: round + pick-within-round beside the raw pick number --
+              nextUserPick itself, which feeds computeLiveAvailability above,
+              is unchanged. */}
+          {nextUserPick !== null
+            ? `Live availability at pick ${nextUserPick} (${roundPickLabel(nextUserPick, teams)})`
+            : 'Live availability'}
         </div>
         <div style={{ marginTop: 4, fontSize: 12.5, color: header.warn ? 'var(--down)' : 'var(--dim)' }}>
           {header.text}

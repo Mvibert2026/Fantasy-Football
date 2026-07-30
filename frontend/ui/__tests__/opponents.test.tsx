@@ -1,7 +1,7 @@
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { pickNumbersForSlot } from '../data/draft';
+import { pickNumbersForSlot, roundPickLabel } from '../data/draft';
 import { loadOpponentNames } from '../data/opponentNames';
 import { Opponents } from '../views/Opponents';
 import { loadDatasetFromDisk } from './helpers';
@@ -131,7 +131,13 @@ describe('Opponents', () => {
       if (expected === undefined) {
         expect(within(card).getByText('—')).toBeInTheDocument();
       } else {
-        expect(within(card).getByText(`#${expected}`)).toBeInTheDocument();
+        // FR-087: the pick number now carries its round.pick label alongside it
+        // ("#23 (R3.03)"), same `roundOfPick`/`pickWithinRound` arithmetic this
+        // test already trusts pickNumbersForSlot to use -- not a second,
+        // independently-typed expectation.
+        expect(
+          within(card).getByText(`#${expected} (${roundPickLabel(expected, data.league.teams)})`),
+        ).toBeInTheDocument();
       }
     }
   });

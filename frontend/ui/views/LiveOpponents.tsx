@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import type { BoardRow } from '../data/board';
-import { currentOverallPick, nextPickForSlot, teamSlotAtPick, type DraftState } from '../data/draft';
+import { currentOverallPick, nextPickForSlot, roundPickLabel, teamSlotAtPick, type DraftState } from '../data/draft';
 import type { Dataset } from '../data/load';
 import type { LeagueConfig } from '../data/league';
 import { buildRosterSlots, type RosterSlot } from '../data/rosterSlots';
@@ -110,6 +110,7 @@ function TeamCard({
   isUser,
   isOnClock,
   next,
+  teams,
   rosterSlots,
 }: {
   slot: number;
@@ -117,6 +118,10 @@ function TeamCard({
   isUser: boolean;
   isOnClock: boolean;
   next: number | null;
+  /** FR-087: teams count, only for formatting `next` as a round.pick label
+   *  alongside the raw overall pick number -- not used for any arithmetic
+   *  here (that's `nextPickForSlot`, already done by the caller). */
+  teams: number;
   rosterSlots: RosterSlot[];
 }) {
   const starterGroups = groupStarters(rosterSlots);
@@ -159,7 +164,10 @@ function TeamCard({
           {isUser ? <span style={{ color: 'var(--acc)', fontStyle: 'normal' }}> (you)</span> : null}
         </span>
         <span className="num" style={{ fontSize: 11.5, letterSpacing: '.04em', color: 'var(--dim2)', whiteSpace: 'nowrap' }}>
-          next <span style={{ color: 'var(--txt)', fontWeight: 600 }}>{next === null ? '—' : `#${next}`}</span>
+          next{' '}
+          <span style={{ color: 'var(--txt)', fontWeight: 600 }}>
+            {next === null ? '—' : `#${next} (${roundPickLabel(next, teams)})`}
+          </span>
         </span>
       </div>
       {isOnClock ? (
@@ -290,6 +298,7 @@ export function LiveOpponents({
               isUser={slot === userSlot}
               isOnClock={slot === onClockSlot}
               next={next}
+              teams={teams}
               rosterSlots={rosterSlots}
             />
           );

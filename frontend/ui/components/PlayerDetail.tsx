@@ -1,7 +1,7 @@
 import { Component, useEffect, useMemo, type ReactNode } from 'react';
 import type { BoardRow } from '../data/board';
 import type { DraftPickRecord } from '../data/draft';
-import { currentOverallPick, nextPickForSlot, pickNumbersForSlot } from '../data/draft';
+import { currentOverallPick, nextPickForSlot, pickNumbersForSlot, roundPickLabel } from '../data/draft';
 import { isPresent } from '../data/cell';
 import { computeLiveAvailability, dotsFilled, freqText, type LiveAvailabilityResult } from '../data/liveAvailability';
 import type { Dataset } from '../data/load';
@@ -321,14 +321,25 @@ export function PlayerDetail({
                 No further picks for this team in this league's format.
               </p>
             ) : (
-              <AvailabilitySection avail={availAtNext!} targetPick={nextUserPick} />
+              <>
+                {/* FR-087: which pick this section is about, and which round it
+                    falls in -- nextUserPick itself still drives
+                    computeLiveAvailability above, unchanged. */}
+                <div style={{ marginTop: 10, fontSize: 11, color: 'var(--dim2)' }}>
+                  at pick <span className="num">{integer(nextUserPick)}</span> ({roundPickLabel(nextUserPick, teams)})
+                </div>
+                <AvailabilitySection avail={availAtNext!} targetPick={nextUserPick} />
+              </>
             )}
             {perPickStrip.length > 0 ? (
               <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 6 }}>
                 {perPickStrip.map(({ pick, result }) => (
                   <div key={pick} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12 }}>
-                    <span className="num" style={{ width: 34, color: 'var(--dim2)' }}>
-                      #{pick}
+                    {/* FR-087: round + pick-within-round next to the overall pick
+                        number -- `pick` itself (what feeds computeLiveAvailability
+                        above) is unchanged. */}
+                    <span className="num" style={{ width: 68, color: 'var(--dim2)' }}>
+                      #{pick} <span style={{ color: 'var(--dim2)' }}>{roundPickLabel(pick, teams)}</span>
                     </span>
                     <span style={{ flex: 1, height: 6, background: 'var(--line)', position: 'relative' }}>
                       <span

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { pickNumbersForSlot } from '../data/draft';
+import { pickNumbersForSlot, roundPickLabel } from '../data/draft';
 import { clearOpponentName, loadOpponentNames, saveOpponentName, type OpponentNameMap } from '../data/opponentNames';
 import type { RawRoster, RawRosters } from '../data/types';
 import type { Dataset } from '../data/load';
@@ -159,7 +159,10 @@ export function Opponents({ data }: { data: Dataset }) {
                   >
                     next{' '}
                     <span style={{ color: 'var(--txt)', fontWeight: 600 }}>
-                      {nextPick === null ? '—' : `#${nextPick}`}
+                      {/* FR-087: round + pick-within-round beside the raw pick
+                          number -- nextPick itself (the arithmetic used for
+                          `holds_picks_19_to_22` etc. elsewhere) is untouched. */}
+                      {nextPick === null ? '—' : `#${nextPick} (${roundPickLabel(nextPick, teams)})`}
                     </span>
                   </span>
                 )}

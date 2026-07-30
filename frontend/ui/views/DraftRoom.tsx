@@ -8,6 +8,7 @@ import {
   pickNumbersForSlot,
   pruneQueue,
   roundOfPick,
+  roundPickLabel,
   saveDraftState,
   takenPlayerIds,
   teamSlotAtPick,
@@ -1369,7 +1370,12 @@ export function DraftRoom({
               ON THE CLOCK
             </div>
             <div style={{ fontFamily: 'var(--font-num)', fontSize: 18, fontWeight: 600 }}>
-              {draftComplete ? 'done' : `#${currentPick} · team ${onClockSlot}`}
+              {draftComplete
+                ? 'done'
+                : /* FR-087: round + pick-within-round alongside the overall pick
+                     number -- display only, `currentPick` itself still drives
+                     every computation on this screen unchanged. */
+                  `#${currentPick} (${roundPickLabel(currentPick, teams)}) · team ${onClockSlot}`}
             </div>
           </div>
           <div
@@ -1391,6 +1397,11 @@ export function DraftRoom({
             <div style={{ fontFamily: 'var(--font-num)', fontSize: 9, letterSpacing: '.1em', color: 'var(--dim2)' }}>YOUR NEXT</div>
             <div style={{ fontFamily: 'var(--font-num)', fontSize: 18, fontWeight: 600 }}>
               {nextUserPick ?? '—'}
+              {/* FR-087: display only, same round arithmetic as the ON THE CLOCK
+                  badge above -- `nextUserPick` itself is unchanged. */}
+              {nextUserPick !== null ? (
+                <span style={{ fontSize: 10, fontWeight: 400, color: 'var(--dim2)' }}> {roundPickLabel(nextUserPick, teams)}</span>
+              ) : null}
             </div>
           </div>
         </div>
@@ -2110,7 +2121,7 @@ export function DraftRoom({
                       {referencePoint ? (
                         <div style={{ marginTop: 14, padding: '12px 13px', border: '1px solid var(--line2)', background: 'var(--panel2)' }}>
                           <div style={{ fontFamily: 'var(--font-num)', fontSize: 9, letterSpacing: '.11em', color: 'var(--dim2)' }}>
-                            LIKELY BEST AVAILABLE AT YOUR PICK {referencePoint.pick}
+                            LIKELY BEST AVAILABLE AT YOUR PICK {referencePoint.pick} ({roundPickLabel(referencePoint.pick, teams)})
                           </div>
                           <div style={{ marginTop: 8, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
                             <div>
@@ -2129,7 +2140,7 @@ export function DraftRoom({
                             </div>
                             <div style={{ borderLeft: '1px solid var(--line2)', paddingLeft: 14 }}>
                               <div style={{ fontSize: 9, letterSpacing: '.1em', color: 'var(--dim2)' }}>
-                                LIKELY THERE AT {referencePoint.pick}
+                                LIKELY THERE AT {referencePoint.pick} ({roundPickLabel(referencePoint.pick, teams)})
                               </div>
                               {referencePoint.likelyThere ? (
                                 <>

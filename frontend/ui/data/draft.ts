@@ -136,6 +136,29 @@ export function roundOfPick(overallPick: number, teams: number): number {
   return Math.ceil(overallPick / teams);
 }
 
+/** 1-indexed position within that round (NOT snake-adjusted team slot --
+ *  `teamSlotAtPick` below is the one that reverses on even rounds). Pick 23 in
+ *  a 10-team league is round 3, pick-within-round 3, regardless of which team
+ *  slot actually holds it. */
+export function pickWithinRound(overallPick: number, teams: number): number {
+  return overallPick - (roundOfPick(overallPick, teams) - 1) * teams;
+}
+
+/**
+ * FR-087 ("It's also helpful to think in rounds"): a compact "round.pick"
+ * label for any overall pick number this app displays, e.g. pick 23 in a
+ * 10-team league renders "R3.03". Display only -- every caller still keys its
+ * own logic off the real overall pick number (`roundOfPick`/
+ * `pickWithinRound` above, already used for snake arithmetic elsewhere in
+ * this file); this just formats the same two numbers next to the raw pick,
+ * never replaces it, so nothing computation-facing changes.
+ */
+export function roundPickLabel(overallPick: number, teams: number): string {
+  const round = roundOfPick(overallPick, teams);
+  const posInRound = pickWithinRound(overallPick, teams);
+  return `R${round}.${String(posInRound).padStart(2, '0')}`;
+}
+
 /** 1-indexed team slot on the clock at a given overall pick. Odd rounds run
  *  slot 1..teams; even rounds reverse, teams..1 -- the same snake RoundGrid.tsx
  *  computes forward, inverted here from pick back to (round, slot). */
