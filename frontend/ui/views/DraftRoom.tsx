@@ -48,17 +48,8 @@ import { LiveOpponents } from './LiveOpponents';
 import { Value } from '../components/Value';
 import { decimal, integer, interval as intervalText, percent, signed } from '../lib/format';
 import { Predictions } from './Predictions';
-
-/** §3.2's pane-width formula, using the spec's own defaults since this build has
- *  no host props editor (see the module doc). Returns a grid-template-columns
- *  value with each pane as a normalised percentage. */
-function paneColumns(boardPct = 35, centerPct = 40): string {
-  const board = Math.min(60, Math.max(20, boardPct));
-  const center = Math.min(65, Math.max(20, centerPct));
-  const right = Math.max(14, 100 - board - center);
-  const total = board + center + right;
-  return `minmax(0,${((board / total) * 100).toFixed(2)}%) minmax(0,${((center / total) * 100).toFixed(2)}%) minmax(0,${((right / total) * 100).toFixed(2)}%)`;
-}
+import { LAYOUT_MODE_ORDER, LAYOUT_PRESETS, paneColumns, useDraftLayout } from '../data/layoutModes';
+import { PeriodicTableGrid, buildGridCellData, type GridSortMode } from '../components/PeriodicTableGrid';
 
 // Thread 058 section A item 4: DEF is a fifth scarcity row, matching the
 // design's five positions. board.json carries zero DEF players (ADR-039, no
@@ -407,7 +398,21 @@ export function DraftRoom({
   // Recommend / Scarcity / Queue / Insights -- replacing the old fixed stack
   // (RECOMMENDED-when-on-clock, else POSITION SCARCITY + Queue/Watch + NEXT
   // DECISION all in one column). Recommend is the spec's stated default.
-  const [paneTab, setPaneTab] = useState<'recommend' | 'scarcity' | 'queue' | 'insights'>('recommend');
+  // 'grid' added by PERIODIC-TABLE-GRID.md (item 3, 2026-07-31 round) --
+  // additive per the founder's explicit "don't remove stuff from the middle
+  // panel, you can add it there" instruction: the four original tabs keep
+  // their content, order and default (recommend) unchanged; grid is a fifth,
+  // appended at the end. See draft-room-tabs-integrity.test.tsx.
+  const [paneTab, setPaneTab] = useState<'recommend' | 'scarcity' | 'queue' | 'insights' | 'grid'>('recommend');
+  const [gridSortMode, setGridSortMode] = useState<GridSortMode>('draft-order');
+  // Esc precedence (PERIODIC-TABLE-GRID.md's Expand mechanism, shared with
+  // PANE-LAYOUT-MODES.md): PlayerDetail.tsx owns its own unconditional Escape
+  // listener that closes the player card whenever detailRow is set. This
+  // hook's own Escape handling for the grid sheet must not also fire on that
+  // same keypress -- editable field > player card > grid sheet, exactly one
+  // thing closes per press. escBlocked covers the player-card half; the
+  // editable-field half is handled inside the hook itself.
+  const { layoutMode, setLayoutMode, gridExpanded, setGridExpanded } = useDraftLayout(detailRow !== null);
   // FR-061 / STRATEGY-SELECTOR.md: "rankings do not move; recommendations do."
   // Component-local, not persisted -- resets to the default (VBD/best-player-
   // available) on reload, same as every other in-session-only control in this
@@ -433,6 +438,17 @@ export function DraftRoom({
   // from the backend export -- FR-032, because the export is empty during an
   // in-progress draft, which was the whole complaint.
   const [hubTab, setHubTab] = useState<'board' | 'opponents' | 'predictions'>('board');
+  // PERIODIC-TABLE-GRID.md: "closes itself when a pick lands. You never
+  // return from a pick to find the board hidden." draft.picks.length changing
+  // covers a recorded pick, an undo and auto-fill alike -- any of those is a
+  // reason the sheet should not still be covering the board on the next
+  // render. Also closes if the user leaves the Board hub tab (Opponents/
+  // Predictions swap the whole body and don't have a board/pane grid for the
+  // sheet to span).
+  useEffect(() => {
+    setGridExpanded(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [draft.picks.length, hubTab]);
   // Thread 051 items 1-2: the pick-entry suggester (candidate dropdown) is
   // shown/hidden independently of whether candidates exist. Defaults closed --
   // "not on arrival" -- and opens only on a real focus, `/`, typing, or a
@@ -625,6 +641,17 @@ export function DraftRoom({
   const nextUserPick = teams > 0 ? nextPickForSlot(draft.picks, teams, userSlot, rounds) : null;
   const picksUntilYou = userOnClock ? 0 : nextUserPick !== null ? nextUserPick - currentPick : null;
   const draftComplete = teams > 0 && rounds > 0 && currentPick > teams * rounds;
+
+  // PERIODIC-TABLE-GRID.md: gated on whether the grid tab/sheet is actually
+  // showing (the preview or the expanded sheet), not computed unconditionally
+  // on every render -- `buildGridCellData` runs live-availability arithmetic
+  // per row, the same per-row cost the board list already pays, but for all
+  // ~510 rows rather than just the visible tab's subset.
+  const gridActive = paneTab === 'grid' || gridExpanded;
+  const gridCells = useMemo(() => {
+    if (!gridActive) return [];
+    return buildGridCellData({ rows, taken, data, league, picks: draft.picks, rowsById, nextUserPick });
+  }, [gridActive, rows, taken, data, league, draft.picks, rowsById, nextUserPick]);
 
   useEffect(() => {
     if (userOnClock) setLookAheadToggle(false);
@@ -1230,11 +1257,18 @@ export function DraftRoom({
   // distinct rows (hub tabs above the whole screen, pane tabs inside one
   // column) and conflating them risked a subtle shared-state bug under time
   // pressure.
+  // PERIODIC-TABLE-GRID.md, item 3 of the 2026-07-31 round: "A fifth tab.
+  // Nothing removed ... Recommend · Scarcity · Queue · Insights · Grid. The
+  // four existing tabs keep their content, their order and their default."
+  // Grid is appended, never inserted -- draft-room-tabs-integrity.test.tsx
+  // pins this order and 'recommend' as the default so a future refactor can't
+  // silently reshuffle it.
   const PANE_TABS: Array<{ key: typeof paneTab; label: string }> = [
     { key: 'recommend', label: 'Recommend' },
     { key: 'scarcity', label: 'Scarcity' },
     { key: 'queue', label: 'Queue' },
     { key: 'insights', label: 'Insights' },
+    { key: 'grid', label: 'Grid' },
   ];
 
   return (
@@ -1498,6 +1532,53 @@ export function DraftRoom({
           Reset draft
         </button>
 
+        {/* PANE-LAYOUT-MODES.md, item 7: three preset modes, one keystroke
+            each, instead of a drag handle -- design's own pushback on the
+            founder's ask, preserved: "there is no width he wants that is not
+            one of about three ... a dragged width is homework, and the price
+            of forgetting is drafting the wrong RB10." Balanced is today's
+            unchanged default (LAYOUT_PRESETS.balanced === the old hardcoded
+            paneColumns() call). Only meaningful on the Board hub tab, where
+            the board/pane grid this controls actually renders. */}
+        <div
+          role="group"
+          aria-label="Layout mode"
+          style={{ display: 'flex', alignItems: 'stretch', gap: 0, border: '1px solid var(--line2)' }}
+        >
+          {LAYOUT_MODE_ORDER.map((m, i) => {
+            const preset = LAYOUT_PRESETS[m];
+            const active = layoutMode === m;
+            return (
+              <button
+                key={m}
+                aria-pressed={active}
+                onClick={() => setLayoutMode(m)}
+                // aria-label, not just the visible text, disambiguates this
+                // group's own "Board" button from HUB_TABS' unrelated "Board"
+                // tab button above -- same visible word, two different
+                // controls (confirmed colliding under
+                // `getByRole('button', { name: 'Board' })` in
+                // draft-room-scarcity-and-sort.test.tsx before this was added).
+                aria-label={`${preset.label} layout`}
+                title={`${preset.label} layout (${preset.shortcut}) -- ${
+                  m === 'board' ? 'rankings wide, pane narrow' : m === 'decide' ? 'pane wide' : "today's layout"
+                }`}
+                style={{
+                  padding: '5px 9px',
+                  background: active ? 'var(--panel2)' : 'transparent',
+                  border: 0,
+                  borderRight: i < LAYOUT_MODE_ORDER.length - 1 ? '1px solid var(--line2)' : 0,
+                  color: active ? 'var(--txt)' : 'var(--dim2)',
+                  fontSize: 11,
+                  fontWeight: active ? 600 : 400,
+                }}
+              >
+                {preset.label}
+              </button>
+            );
+          })}
+        </div>
+
         <div style={{ display: 'flex', alignItems: 'stretch', gap: 0, border: '1px solid var(--line2)' }}>
           <div style={{ padding: '4px 12px', textAlign: 'center', borderRight: '1px solid var(--line)' }}>
             <div style={{ fontFamily: 'var(--font-num)', fontSize: 9, letterSpacing: '.1em', color: 'var(--dim2)' }}>
@@ -1541,7 +1622,94 @@ export function DraftRoom({
         </div>
       </div>
 
-      <div style={{ flex: 1, minHeight: 0, display: 'grid', gridTemplateColumns: paneColumns() }}>
+      <div
+        style={{
+          flex: 1,
+          minHeight: 0,
+          display: 'grid',
+          gridTemplateColumns: paneColumns(LAYOUT_PRESETS[layoutMode].boardPct, LAYOUT_PRESETS[layoutMode].centerPct),
+        }}
+      >
+        {gridExpanded ? (
+          // PERIODIC-TABLE-GRID.md's Expand sheet: "Covers the board and pane
+          // area. Top bar, clock and roster rail stay visible." The clock bar
+          // above (lines ~1524-1605) is a sibling outside this grid, already
+          // untouched; the roster rail is this grid's third column, rendered
+          // unconditionally below, outside this branch -- only columns 1+2
+          // (board + pane) are replaced, via gridColumn spanning both rather
+          // than a fixed/position overlay, so the roster-rail column keeps
+          // exactly the width this layout mode already gives it.
+          <div
+            style={{
+              gridColumn: '1 / span 2',
+              minHeight: 0,
+              display: 'flex',
+              flexDirection: 'column',
+              borderRight: '1px solid var(--line)',
+              background: 'var(--panel)',
+            }}
+          >
+            <div
+              style={{
+                flex: 'none',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 10,
+                padding: '9px 14px',
+                borderBottom: '1px solid var(--line)',
+                background: 'var(--panel2)',
+              }}
+            >
+              <span style={{ fontFamily: 'var(--font-num)', fontSize: 10, letterSpacing: '.12em', color: 'var(--dim2)' }}>
+                GRID
+              </span>
+              <div role="group" aria-label="Grid sort" style={{ display: 'flex', border: '1px solid var(--line2)' }}>
+                <button
+                  aria-pressed={gridSortMode === 'draft-order'}
+                  onClick={() => setGridSortMode('draft-order')}
+                  style={{
+                    padding: '4px 10px',
+                    background: gridSortMode === 'draft-order' ? 'var(--panel)' : 'transparent',
+                    border: 0,
+                    borderRight: '1px solid var(--line2)',
+                    color: gridSortMode === 'draft-order' ? 'var(--txt)' : 'var(--dim2)',
+                    fontSize: 11,
+                    fontWeight: gridSortMode === 'draft-order' ? 600 : 400,
+                  }}
+                >
+                  Draft order
+                </button>
+                <button
+                  aria-pressed={gridSortMode === 'position-by-team'}
+                  onClick={() => setGridSortMode('position-by-team')}
+                  style={{
+                    padding: '4px 10px',
+                    background: gridSortMode === 'position-by-team' ? 'var(--panel)' : 'transparent',
+                    border: 0,
+                    color: gridSortMode === 'position-by-team' ? 'var(--txt)' : 'var(--dim2)',
+                    fontSize: 11,
+                    fontWeight: gridSortMode === 'position-by-team' ? 600 : 400,
+                  }}
+                >
+                  Position × team
+                </button>
+              </div>
+              <span style={{ flex: 1 }} />
+              <span style={{ fontSize: 10.5, color: 'var(--dim2)' }}>{gridCells.length} players</span>
+              <button
+                onClick={() => setGridExpanded(false)}
+                title="Close (Esc or ⌥G)"
+                style={{ padding: '4px 10px', background: 'transparent', border: '1px solid var(--line2)', color: 'var(--dim)', fontSize: 11 }}
+              >
+                Close
+              </button>
+            </div>
+            <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: 12 }}>
+              <PeriodicTableGrid cells={gridCells} sortMode={gridSortMode} defNote={data.board.def_note} />
+            </div>
+          </div>
+        ) : (
+          <>
         <div style={{ minHeight: 0, display: 'flex', flexDirection: 'column', borderRight: '1px solid var(--line)' }}>
           <div style={{ flex: 'none', padding: '8px 12px 6px', borderBottom: '1px solid var(--line)', display: 'flex', gap: 4 }}>
             {POSITION_TABS.map((t) => (
@@ -2563,7 +2731,7 @@ export function DraftRoom({
                   </div>
                 ) : null}
               </div>
-            ) : (
+            ) : paneTab === 'insights' ? (
               // Insights tab, FR-048. DRAFT-MIDDLE-PANE.md scopes this to
               // "players on screen and to this pick" -- a real per-pick
               // findings corpus (`findings.json`, `status: confirmed`) does not
@@ -2589,6 +2757,33 @@ export function DraftRoom({
                   unconfirmed claim as if it were tied to the pick in front of you.
                 </div>
               </div>
+            ) : (
+              // Grid tab, PERIODIC-TABLE-GRID.md: "The Grid tab holds a
+              // preview and one Expand control." Locked to draft order here --
+              // the position-by-team matrix "is the reason Expand exists; it
+              // cannot be squeezed into the pane at all," so that sort mode is
+              // only offered inside the expanded sheet, not this preview.
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10, height: '100%' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <span style={{ fontSize: 10, letterSpacing: '.12em', color: 'var(--dim2)' }}>GRID</span>
+                  <span style={{ flex: 1 }} />
+                  <button
+                    onClick={() => setGridExpanded(true)}
+                    title="Expand (⌥G) -- also unlocks the position × team matrix"
+                    style={{ padding: '4px 10px', background: 'var(--panel2)', border: '1px solid var(--line2)', color: 'var(--txt)', fontSize: 11, fontWeight: 600 }}
+                  >
+                    Expand ⌥G
+                  </button>
+                </div>
+                <div style={{ fontSize: 11, color: 'var(--dim2)', lineHeight: 1.5 }}>
+                  Identity, position and depletion only -- no VBD, no projection, no delta; the board to the
+                  left already does numbers. Position × team (32 teams × 5 positions) only fits in the
+                  expanded sheet.
+                </div>
+                <div style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
+                  <PeriodicTableGrid cells={gridCells} sortMode="draft-order" defNote={data.board.def_note} dense />
+                </div>
+              </div>
             )}
           </div>
           {/* DRAFT-MIDDLE-PANE.md: "NEXT DECISION is a persistent footer, never
@@ -2608,7 +2803,8 @@ export function DraftRoom({
             </div>
           </div>
         </div>
-
+          </>
+        )}
 
         <div style={{ minHeight: 0, overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
           <div style={{ padding: '10px 12px', borderBottom: '1px solid var(--line)' }}>
