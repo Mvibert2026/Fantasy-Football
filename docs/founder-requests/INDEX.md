@@ -5,11 +5,11 @@ Per-request files in this directory are the source of truth. Edit a request's ow
 `STATUS:` line, then re-run sync. Protocol: [`README.md`](README.md).
 Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests.md).
 
-**81 requests since freeze.**
+**82 requests since freeze.**
 
 ---
 
-## NEW — 54
+## NEW — 55
 
 | ID | Subject | Raised | Source |
 |---|---|---|---|
@@ -67,6 +67,7 @@ Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests
 | [FR-094](FR-094-predict-sleepers-late-adp-with-breakout-characte.md) | Predict sleepers late adp with breakout characte | 2026-07-30 | chat 2026-07-30, PM session |
 | [FR-095](FR-095-archetype-confidence-should-scale-with-career-hi.md) | Archetype confidence should scale with career hi | 2026-07-30 | chat 2026-07-30, PM session |
 | [FR-096](FR-096-bust-candidate-flag-the-mirror-of-the-sleeper-sc.md) | Bust candidate flag the mirror of the sleeper sc | 2026-07-30 | chat 2026-07-30, PM session |
+| [FR-097](FR-097-are-injury-prediction-services-accurate-enough-t.md) | Are injury prediction services accurate enough t | 2026-07-30 | chat 2026-07-30, PM session |
 
 ## SCOPING — 1
 
