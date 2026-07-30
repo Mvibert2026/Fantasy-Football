@@ -507,6 +507,115 @@ multiple-comparisons exposure applies to the campaign, not per test.
 
 ---
 
+## 6a. Table stakes (FR-2026-07-30-bottom-up-must-include-all-tier-0-table-stakes-n)
+
+Founder: *"Our bottoms up needs to include all the table stakes. There are probably quite a few."*
+**He is right, and the PM's framing of *why* is right.** One factual correction and one methodological
+caveat before the plan.
+
+### 6a.1 The correction: four of the twelve are already built and measured
+
+The FR says "Not one is implemented." **That is true of the shipped board and false of the component
+models**, and the distinction is the whole point. `experiments/bottomup/components/pos_features.py`
+already carries:
+
+| Tier 0 row | feature in the component models | measured result |
+|---|---|---|
+| **#7 Age** | `age`, `age2` — primary arm, all positions | in the base feature set |
+| **#8 Prior-year target / touch share** | `tshare_w`, `cshare_w` | in the base feature set; registry #20 measured it **NULL at RB**, earning its place at WR |
+| **#6 Injury designations & status** | `inj_missed_share_1`, `unexp_missed_share_1` (arm B) | **built, measured, NULL on ranking at all four positions** |
+| **#5 Depth chart / role** | `rostered_absent_share_1`, `offroster_share_1`, `depth_first_share_1` (arms D/E) | **built, measured, NULL on ranking at all four positions** |
+
+So the gap is not twelve unbuilt features. **It is that the object which ships does not use the
+object that has them.** That is §1.1 restated from the product side, exactly as the FR says — and it
+makes the fix cheaper than the FR implies: wiring table stakes is mostly *ship the component model*,
+not *build twelve features*.
+
+**It also supplies the first real test of the construction-grounds argument, and the argument loses
+that round:** two of the twelve are built, are unarguably table stakes, and produce nothing at the
+ranking level. That is not a reason to exclude them. It is a reason to expect several of the twelve
+to be present at zero weight (§6a.3) rather than to expect the board to improve because they landed.
+
+### 6a.2 Where the PM's reasoning holds, and the one place it must not be extended
+
+**It holds on multiplicity, and I would have got this wrong.** §6.3's exposure comes from *selecting*
+factors on measured performance. A factor included unconditionally, never tested, never dropped for
+underperforming, contributes **exactly zero** to the FDR denominator. Reserving the budget for Tier 1
+and 2 is correct and it is not a relaxation.
+
+**It must not be extended to "table stakes are free."** Three distinct costs; the PM addressed one:
+
+| cost | arises from | does construction-grounds inclusion avoid it? |
+|---|---|---|
+| **Multiplicity / selection** | choosing factors on their results | **Yes, entirely.** PM is right |
+| **Estimation variance** | *fitting parameters*, tested or not | **No.** `CLAUDE.md` §6.3's "every added parameter must earn its place against a holdout" is about this, not multiplicity. Twelve features against ~13 usable seasons is real variance |
+| **Leakage surface** | each feature is a new look-ahead opportunity | **No.** Scales with count. Twelve features is twelve new audit surfaces |
+
+**The operational form that keeps both:** include by construction; do **not** test each factor
+individually; but the Tier 0 block gets **one** holdout evaluation *as a block*, and every feature
+passes the same `SeasonPanel` access-log audit the existing ones do. One test, not twelve — so the
+FDR denominator rises by one, and the estimation and leakage costs are still paid rather than
+declared away.
+
+**One escalation, because it touches `CLAUDE.md`.** §11 says *"Football claims must be grounded in
+verifiable data from the pipeline, not intuition. 'Everyone knows X' is a hypothesis to test."*
+Construction-grounds inclusion is in tension with that sentence as written. My reading is that §11
+governs *claims* — "this factor gives us edge" is a claim, "this factor is an input" is not — and
+that the two coexist. **That is a reading, not a ruling, and it is not mine to make.** Routed to
+`strategist`.
+
+### 6a.3 Include is not weight — the twelve, sorted by what I expect them to carry
+
+| expect **non-zero** weight in the projection | expect **~zero**, present anyway | not a projection input at all |
+|---|---|---|
+| **#7 Age** *(already in)* | **#5 Depth chart** *(already in — measured NULL)* | **#1 Multi-source ADP** — this is baseline #1 and the availability model's input. H1 measured ADP no better than ECR at pick order |
+| **#8 Prior-year share** *(already in)* | **#6 Injury status** *(already in — measured NULL)* | **#3 Positional tiers** — derived *from* a ranking, output side |
+| **#9 Snap share** — in `nfl.db` 2013+, `offense_pct`, **untouched by any model** | **#12 SoS** — measured **~zero**; `rankings.sos_season` populated 515/554 | **#4 Bye weeks** — roster legality; drives the *recommender*, not the projection. `rankings.bye_week` 515/554 |
+| **#10 Red-zone / goal-line** — needs the PBP landing today | **#11 Vegas** — no data path, and the whole team-environment channel is oracle-bounded at **≤ +0.055 τ_b** | **#2 Consensus projections** — belongs as a **baseline to beat**, never an input. `CLAUDE.md` §4's `ranking_source` rule forbids blending, and Sleeper's ToS forbids redistribution on a public app |
+
+**At most four of the twelve should carry non-zero weight, and two of those four are already in.**
+Stated now, before anything is wired, so that "we added the table stakes and nothing moved" is a
+prediction rather than a post-hoc excuse.
+
+### 6a.4 What the twelve do to the model's shape — and it resolves the metric question
+
+| | today | with Tier 0 wired |
+|---|---|---|
+| parameters | **8** (4 slopes, 4 replacement ranks) | ~20–40 fitted per position |
+| **player-level inputs** | **one — the consensus rank** | ~10 |
+| `projected_points` is a function of | the player's *rank* | the *player* |
+| within-position ordering | **identical to consensus, by construction** | can differ — for the first time |
+
+**This is the answer to the question I sent `strategist`, arriving from the other direction, and it
+changes my ask.** Per-position τ_b returns exactly 0.000000 today **because** the board has no
+player-level input. **The moment any one of the twelve is wired, that stops being true and τ_b
+becomes informative for the first time.** The metric is not wrong in general; it is blind
+*specifically to the current object*, and wiring table stakes cures the blindness from the other end.
+
+**But τ_b alone still cannot see the cross-positional channel**, which is the board's *entire*
+present content and does not go away. So the correct answer is a **pair, not a replacement**: a
+within-position metric (τ_b, live as soon as any player feature lands) plus a cross-position one
+(`top_k_starter_vbd` or `draft_sim`). Neither alone covers the object the board is becoming. Replied
+on the thread; still `strategist`'s ruling, not mine.
+
+### 6a.5 Order, by what unblocks the most
+
+| | item | why here | cost |
+|---|---|---|---|
+| **1** | **Wire the component models into the board at all** | Delivers **#5, #6, #7, #8 at once** — four of the twelve, already built, already audited for look-ahead. Nothing else on this list has that ratio | the §6.2 head-to-head, then a `backend` handoff. **Gated on §6.1's metric** |
+| **2** | **#9 Snap share** | `snap_counts` 2013+ is in the DB with `offense_pct` and **no model has ever read it**. The documented route-participation proxy `CLAUDE.md` §5 names — **must be labelled a proxy** | low; one feature into an existing fitter |
+| **3** | **#10 Red-zone / goal-line** | Lands with the PBP `data-ops` is ingesting now. The only Tier 0 row that adds a genuinely new *signal class* (TD equity) rather than a new view of volume | low once PBP lands |
+| **4** | **#3 tiers · #4 byes · #12 SoS** | All three already populated in `rankings` (554/554, 515/554, 515/554). **Nearly free** — display and recommender wiring, not modelling. Two of the three carry zero weight by design | hours |
+| **5** | **#1 Multi-source ADP** | Data is already there: **7 distinct `adp_source` values** across `adp_snapshots` + `ffc_adp_snapshots`, plus 145 mock picks. This is §6.3's baseline #1 and the availability model's input | hours; the *statistical* limit (3 usable seasons) is unchanged by having more sources |
+| **6** | **#2 Consensus projections** | Genuinely blocked, and **should stay a baseline rather than an input** — §4 `ranking_source`, plus Sleeper ToS vs. a public app | not this cycle |
+| **7** | **#11 Vegas** | No data path *and* oracle-bounded ≤ +0.055 τ_b. **Cannot be earned by 7 September** | — |
+
+**Items 1–4 are all reachable before 7 September. Item 1 is worth more than 2–4 combined**, because
+it is the only one that changes the board from an object with one player-level input into an object
+with ten.
+
+---
+
 ## 7. Status of this document
 
 **Settled:** §0 preconditions and the two extra precondition findings; §1.1–§1.3; §2 (the board is

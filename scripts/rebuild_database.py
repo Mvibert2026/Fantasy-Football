@@ -1,10 +1,17 @@
 """Rebuild `data/nfl.db` from a clean checkout, in one command, no credentials.
 
 Run in this exact order, measured end-to-end against this database path in this session
-(2026-07-29):
+(2026-07-29; step 1b added 2026-07-30, see
+docs/handoffs/2026-07-30-five-datasets-30-seconds-total-all-measured-toda.md):
 
   1. ingest_weekly_stats.py
-  2. ingest_reference.py
+  1b. ingest_pbp.py                 -- play-by-play, 2009-present, slimmed to 24 columns
+                                       (see its module docstring). 816,856 rows, ~35s cold /
+                                       ~10s warm cache. season/week granularity, no as_of_date
+                                       column exists in the source.
+  2. ingest_reference.py            -- also carries rosters_weekly (status incl. RES/EXE,
+                                       2002-present) and schedules (incl. 2026, unplayed)
+                                       as of 2026-07-30.
   3. ingest_league_metrics.py
   4. ingest_rankings.py            -- 2021-2026, re-pulls identically to the committed
                                        rescue CSV (see docs/can-we-rebuild-the-database.md)
@@ -25,6 +32,14 @@ Run in this exact order, measured end-to-end against this database path in this 
                                        point-in-time CSVs; a live --force pull only ever
                                        gets *today's* rolling aggregate, never a past date.
                                        Order-independent relative to the rest.
+
+NOTE on `injuries` and 2025: `load_injuries` returns 2025 rows, but every one of them has a
+NULL `date_modified` upstream (verified 2026-07-30, not assumed) -- `ingest_reference.py`
+correctly drops rows missing their as_of column (CLAUDE.md Sec6.1: reject, never default) rather
+than inventing a date. This means `injuries` has zero 2025 rows in `nfl.db` by design, not by
+bug. If a downstream consumer wants a season/week-only substitute for 2025 injury status,
+that is a methodology decision for backend/statistician, not something this ingester should
+silently do on its own authority.
 
 `identity.py` HAS NO --db FLAG. Any doc that shows one for it is wrong; this script accounts
 for that by calling its `build_identity_tables(conn)` function directly against a connection

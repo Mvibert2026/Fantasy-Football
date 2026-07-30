@@ -139,6 +139,27 @@ SPECS: List[SourceSpec] = [
         primary_key=None,  # multiple contracts per player-year; no natural key
     ),
     SourceSpec(
+        table="rosters_weekly",
+        loader=nfl.load_rosters_weekly,
+        loader_kwargs={"seasons": True},
+        primary_key=("season", "team", "week", "gsis_id"),
+        notes="status includes RES (IR) and EXE (suspended/exempt) -- the only "
+              "source found with season-ending IR/suspension coverage the "
+              "injuries table cannot see (component-model-rb-qb-te-pass-1.md "
+              "Sec5.2). Verified earliest valid season is 2002 (nflreadpy raises "
+              "for 2001 and earlier: 'Season must be between 2002 and 2025').",
+    ),
+    SourceSpec(
+        table="schedules",
+        loader=nfl.load_schedules,
+        loader_kwargs={"seasons": True},
+        primary_key=("game_id",),
+        notes="no as_of_date column exists in the source; season/week/gameday is "
+              "the table's real granularity. Includes 2026 (unplayed) rows -- "
+              "home_score/away_score/result are NULL for those, which is honest, "
+              "not a bug.",
+    ),
+    SourceSpec(
         table="ff_playerids",
         loader=nfl.load_ff_playerids,
         loader_kwargs={},

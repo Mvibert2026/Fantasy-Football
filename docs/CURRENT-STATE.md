@@ -515,7 +515,8 @@ PHASE 1/PHASE 2 closeout session (main @ `9d8e09b`, merge of `integration-2026-0
 — build-state table below is
 measured directly from `git rev-parse HEAD`, real backend/frontend full-suite runs,
 `CONTRACT_VERSION` in `src/export_contract.py`, and `tools/handoffs.py check`. `CONTRACT_VERSION`
-is **1.16.0** (measured from `src/export_contract.py`, 2026-07-30, this session's FR-079/FR-083
+is **1.17.0** (measured from `src/export_contract.py`, 2026-07-30, the trace-contract bump in
+commit ee5cae2; the FR-079/FR-083
 league-scoring-aware ADP note + history export fix — was 1.15.0, ADR-062's bump; this line
 previously said 1.13.0 until an earlier claim checker caught that drift).
 was **1.14.0** at that session's measurement (2026-07-29 — this line said 1.13.0 until
@@ -531,7 +532,9 @@ The 1.13.0 bump, from the Phase 3 Chain 1 backend session (worktree
 `suspension_adjustment_note` — real, dated, sourced, currently empty; T4 wired into the live board
 via the shared `write_all` path; ADR-051: top-level `scoring_format`, `board_source`/
 `consensus_source` now name `fantasypros_csv_2026draft`; ADR-050: `roster_status`, contract 1.10.0.
-Primary board and `ethans_expert_league` both rebuilt at 510 players; 2026 rookies confirmed
+Primary board and `ethans_expert_league` both rebuilt; the primary now holds **527** QB/RB/WR/TE
+(measured from `data/export/board.json`, 2026-07-30 ranker session — was 510 at the 07-27
+snapshot); 2026 rookies confirmed
 present with real ranks (Jeremiyah Love #33, Carnell Tate #70, Jordyn Tyson #84). Half-PPR yardage
 bonuses independently verified to stack against the live Yahoo platform (ADR-052) — see §7 of
 `CLAUDE.md`. Handoff threads 069 (scoring_format display) and 073 (suspension fields display) are
