@@ -67,6 +67,45 @@ file frontend requests; no server-side recommender exists). Tests: `tests/test_m
 +10, `tests/test_export_contract.py` +6, written before the implementation, all passing (32/32
 and 62/62 respectively). Full reasoning: ADR-068 (`docs/decisions.md`).
 
+**Follow-up audit, 2026-07-30 (same day, second backend session — verification only, no code
+changed).** (1) The three built boards genuinely differ. `player_id_gsis`-keyed comparison
+(the exported `id` field is row position, not a stable key — do not join on it):
+`expert_adjusted` vs `expert_raw`: 527 common players, Spearman ρ=0.944, top-25 overlap 22/25,
+but **within-position order is byte-identical for all four positions** — the FR's prediction
+confirmed empirically: re-scoring consensus through our VBD curve never reorders players inside
+a position, it only reshuffles which position gets picked when (cross-positional only).
+`expert_adjusted`/`expert_raw` vs `market_adp`: 158 common players (market_adp's real coverage),
+ρ≈0.945–0.960, top-25 overlap 21–23/25, and **market_adp does reorder within position** (e.g.
+55/66 WR pairs out of order vs. expert_adjusted) — confirming market_adp is the only one of the
+three that is a genuinely independent re-ranking, not just a re-scoring of the same order.
+(2) Full consumer audit beyond the board layer, by file:line:
+- `src/draft_sim.py:120` `CONSENSUS_RANK_SOURCE = "fantasypros_ecr"` is the root hardcode — a
+  module constant, not a parameter of `load_season`. Four production callers inherit it with no
+  override: `export_contract.py` (`build_availability_json`, confirmed empirically —
+  158/158 players have byte-identical `availability` blocks across `board.json` and
+  `board.market_adp.json`), `run_availability.py`, `mock_validation_report.py`,
+  `export_strategies.py`, `run_draft_sim.py`, `run_pr007.py`.
+- `src/availability.py::simulate_availability` — hardcoded via the `data` it's handed (from
+  `load_season`); its own `sources`/`source_weights` params are for the opponent-mixture noise
+  model (ADR-034), not a way to pick the consensus source.
+- `src/live_availability.py` — re-weights survival probabilities computed elsewhere; inherits the
+  same hardcode transitively, not an independent offender.
+- `src/mock_lab_store.py::predict_next_pick`/`replay_predictions` — parameterized
+  (`available_ranks`/`board_ranks` passed in by the caller), so not itself hardcoded, but **no
+  caller exists yet anywhere in `src/` or `frontend/`** — not wired into any live route, so out of
+  scope for this toggle.
+- `src/export_strategies.py` (`strategies.json`), `src/candidate_rankings.py`, `src/backtest.py`,
+  `src/run_pr007.py` — all fixed to `fantasypros_ecr`/`TRAINING_SOURCE` **by design**: these are
+  historical-backtest/methodology-validation artifacts over pre-2026 `DEV_SEASONS`, not live
+  per-toggle app features, so "hardcoded" here is correct, not a gap.
+- Recommender (`frontend/ui/.../recommendation.ts`), predictions/opponents/grid views — frontend
+  surfaces reading whichever board file is requested; no separate backend export exists for them.
+- Assistant — no backend data pipeline reads a ranking source directly; it reads
+  `docs/assistant-context.md` via frontend/librarian's retrieval layer (separate open threads
+  032/033/088), out of this audit's scope.
+No code changed this session — `simulate_availability`'s source stays gated on thread
+`2026-07-30-availability-adp-measurements-m0-m5` per this file's instruction not to fix it here.
+
 **Last verified:** 2026-07-30, ranker session — **factor batch 2 (ADR-067): registry #28 is NULL not
 HARMFUL, registry #29 is no longer gated and is also NULL, and neither earns an insight sentence.**
 Batch 1's #28 HARMFUL grade was a **data artifact**, confirmed by direct head-to-head on one harness:

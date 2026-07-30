@@ -4,7 +4,7 @@
 Threads are the source of truth. Change a thread's `STATUS:`, then re-run sync.
 Protocol: [`README.md`](README.md).
 
-**89 open** · 54 resolved
+**91 open** · 54 resolved
 
 ---
 
@@ -13,7 +13,7 @@ Protocol: [`README.md`](README.md).
 Every role gets a section, including empty ones — an empty inbox is a fact worth stating,
 not an omission. Start your session at your own heading.
 
-### `pm` — 15 waiting
+### `pm` — 17 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
@@ -30,7 +30,9 @@ not an omission. Start your session at your own heading.
 | [121](121-archetype-placement-built-both-ways-behind-a-fla.md) | Archetype placement built both ways behind a fla | `frontend` | OPEN | 0d | none |
 | [2026-07-30-adr-054-and-adr-055-each-record-two-different-re](2026-07-30-adr-054-and-adr-055-each-record-two-different-re.md) | Adr 054 and adr 055 each record two different re | `backend` | OPEN | 0d | none |
 | [2026-07-30-draft-board-reference-axis-unanimous-snake-never](2026-07-30-draft-board-reference-axis-unanimous-snake-never.md) | Draft board reference axis unanimous snake never | `researcher` | OPEN | 0d | none |
+| [2026-07-30-live-site-verified-hash-identical-to-main-5e8222](2026-07-30-live-site-verified-hash-identical-to-main-5e8222.md) | Live site verified hash identical to main 5e8222 | `operator` | OPEN | 0d | none |
 | [2026-07-30-no-allocator-exists-for-pr-0nn-pre-registration](2026-07-30-no-allocator-exists-for-pr-0nn-pre-registration.md) | No allocator exists for pr 0nn pre registration | `backend` | OPEN | 0d | none |
+| [2026-07-30-operator-standing-check-2026-07-30-handoffs-py-r](2026-07-30-operator-standing-check-2026-07-30-handoffs-py-r.md) | Operator standing check 2026 07 30 handoffs py r | `operator` | OPEN | 0d | none |
 | [90](090-fr-043-audit-claude-md-ss5-staleness-built-but-u.md) | Fr 043 audit claude md ss5 staleness built but u | `librarian` | OPEN | 1d | none |
 
 ### `backend` — 30 waiting
@@ -173,6 +175,14 @@ _Nothing waiting on you._
 | [093](093-run-pr-007-recommendation-constants-vs-plain-vbd.md) | Run pr 007 recommendation constants vs plain vbd | `strategist` | OPEN | 1d | FR-059; FR-058's panel copy; the chatbot half of FR-059 |
 | [099](099-archetype-taxonomy-derivability-review-fr-075.md) | Archetype taxonomy derivability review fr 075 | `researcher` | OPEN | 0d | FR-075 (archetype on the player card), FR-086 (volatility as an archetype dimension) |
 | [2026-07-30-component-model-vs-incumbent-head-to-head-compon](2026-07-30-component-model-vs-incumbent-head-to-head-compon.md) | Component model vs incumbent head to head compon | `backend` | OPEN | 0d | none |
+
+### `operator` — 0 waiting
+
+_Nothing waiting on you._
+
+### `verifier` — 0 waiting
+
+_Nothing waiting on you._
 
 ---
 

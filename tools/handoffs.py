@@ -28,7 +28,12 @@ DECISIONS_NEEDED = ROOT / "docs" / "decisions-needed.md"
 DECISIONS_LOG = ROOT / "docs" / "decisions.md"
 ADR_DRAFTS = ROOT / "docs" / "adr-drafts"
 
-ROLES = ["pm", "backend", "frontend", "data-ops", "strategist", "researcher", "librarian", "design", "founder", "fable", "ranker"]
+# operator and verifier added 2026-07-30 with the roles themselves (CLAUDE.md sec8).
+# Omitting them made `handoffs.py new --from operator` argparse-reject, so the two
+# read-only gate roles could not file the findings that are their entire output --
+# caught by operator's own first run, which is the seam it exists to watch.
+ROLES = ["pm", "backend", "frontend", "data-ops", "strategist", "researcher", "librarian",
+         "design", "founder", "fable", "ranker", "operator", "verifier"]
 OPEN_STATUSES = {"OPEN", "BLOCKED-ON-YOU", "BLOCKED-EXTERNAL"}
 STALE_DAYS = 14
 NEW_STALE_DAYS = 1  # W1(d): an unfiled NEW-*.md thread older than this is a problem

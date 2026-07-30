@@ -300,6 +300,11 @@ class SeasonPanel:
     # not declare them can still be proven not to have touched them.
     _roster: pd.DataFrame = field(default_factory=pd.DataFrame)
     _coord: pd.DataFrame = field(default_factory=pd.DataFrame)
+    # factor batch 3, 2026-07-30. Both are ORDINARY HISTORICAL sources -- season
+    # N-1 and earlier only -- so they go through the same `before()`-style gate as
+    # the box score, NOT through the `proxy` tag. Nothing here is a season-N read.
+    _ngs: pd.DataFrame = field(default_factory=pd.DataFrame)
+    _rush: pd.DataFrame = field(default_factory=pd.DataFrame)
     access_log: List[tuple] = field(default_factory=list)
 
     def _gate(self, cutoff: int) -> None:
@@ -332,6 +337,29 @@ class SeasonPanel:
         out = self._depth[self._depth["season"] <= cutoff].copy()
         if len(out) and out["season"].max() > cutoff:
             raise CutoffViolation("depth-chart cutoff gate failed")
+        self.access_log.append(("feature", cutoff))
+        return out
+
+    def ngs_before(self, cutoff: int) -> pd.DataFrame:
+        """NGS receiving tracking, seasons <= cutoff. A `feature` read, not a
+        proxy: the 2016 season's separation numbers are 2016 information."""
+        self._gate(cutoff)
+        out = self._ngs[self._ngs["season"] <= cutoff].copy() if len(self._ngs) \
+            else pd.DataFrame(columns=["season", "player_id", "position",
+                                       "avg_separation", "targets"])
+        if len(out) and out["season"].max() > cutoff:
+            raise CutoffViolation("NGS cutoff gate failed")
+        self.access_log.append(("feature", cutoff))
+        return out
+
+    def rush_before(self, cutoff: int) -> pd.DataFrame:
+        """Play-by-play rushing counts, seasons <= cutoff. A `feature` read."""
+        self._gate(cutoff)
+        out = self._rush[self._rush["season"] <= cutoff].copy() if len(self._rush) \
+            else pd.DataFrame(columns=["season", "team", "player_id",
+                                       "pbp_carries", "expl10", "expl15"])
+        if len(out) and out["season"].max() > cutoff:
+            raise CutoffViolation("pbp cutoff gate failed")
         self.access_log.append(("feature", cutoff))
         return out
 
@@ -590,13 +618,79 @@ def load_preseason_coordinators(db_path: Path = DEFAULT_DB) -> pd.DataFrame:
     return co
 
 
+# --------------------------------------------------------- factor batch 3
+_NGS_SQL = """
+SELECT season, player_gsis_id AS player_id, player_position AS position,
+       avg_separation, avg_cushion, avg_intended_air_yards, targets
+FROM ngs_receiving
+WHERE season_type = 'REG' AND week = 0 AND season < ?
+  AND player_gsis_id IS NOT NULL AND player_gsis_id <> ''
+"""
+
+
+def load_ngs_receiving(db_path: Path = DEFAULT_DB) -> pd.DataFrame:
+    """Next Gen Stats season-level receiving tracking, 2016+.
+
+    `week = 0` is nflverse's season-aggregate row. THIS TABLE IS QUALIFIED --
+    roughly 95 WR and 31 TE per season clear NGS's own minimum, i.e. it covers
+    the top of the position and nobody else. That is not a missing-data nuisance,
+    it is a SELECTION: "has an NGS row last year" is very nearly "was a real
+    starter last year", which is exactly the shape of the `move_known` defect
+    that batch 2 caught. The coverage flag is therefore registered as its own
+    control arm rather than travelling silently inside the treatment.
+    """
+    conn = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True)
+    try:
+        n = pd.read_sql_query(_NGS_SQL, conn, params=(HOLDOUT_SEASON,))
+    finally:
+        conn.close()
+    if len(n) and (n["season"] >= HOLDOUT_SEASON).any():
+        raise HoldoutViolation("NGS holdout rows leaked past the SQL gate")
+    return n
+
+
+_RUSH_SQL = """
+SELECT season, posteam AS team, rusher_player_id AS player_id,
+       COUNT(*) AS pbp_carries,
+       SUM(CASE WHEN yards_gained >= 10 THEN 1 ELSE 0 END) AS expl10,
+       SUM(CASE WHEN yards_gained >= 15 THEN 1 ELSE 0 END) AS expl15
+FROM pbp
+WHERE rush_attempt = 1 AND rusher_player_id IS NOT NULL
+  AND rusher_player_id <> '' AND posteam IS NOT NULL AND season < ?
+GROUP BY season, posteam, rusher_player_id
+"""
+
+
+def load_rush_explosive(db_path: Path = DEFAULT_DB) -> pd.DataFrame:
+    """Per (player, season, club): carries and the count that gained >= 10 (and
+    >= 15) yards, straight from play-by-play.
+
+    Regular AND post season are both in `pbp`; no `season_type` column exists on
+    this table, so the counts include playoff carries. That is a known and stated
+    difference from `player_weekly_stats` (REG only) and it affects the
+    DENOMINATOR of a rate, not its look-ahead status -- every row used is from a
+    season strictly before the target.
+    """
+    conn = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True)
+    try:
+        r = pd.read_sql_query(_RUSH_SQL, conn, params=(HOLDOUT_SEASON,))
+    finally:
+        conn.close()
+    if len(r) and (r["season"] >= HOLDOUT_SEASON).any():
+        raise HoldoutViolation("pbp holdout rows leaked past the SQL gate")
+    if len(r):
+        r["team"] = r["team"].astype(str).replace(_CLUB_ALIAS)
+    return r
+
+
 def build_panel(db_path: Path = DEFAULT_DB) -> SeasonPanel:
     wk = load_weekly(db_path)
     return SeasonPanel(
         aggregate_seasons(wk), team_context(wk), load_injury_seasons(db_path),
         load_depth_seasons(db_path), load_birthdates(db_path), load_draft(db_path),
         load_week1_rosters(db_path), load_preseason_rosters(db_path),
-        load_preseason_coordinators(db_path))
+        load_preseason_coordinators(db_path), load_ngs_receiving(db_path),
+        load_rush_explosive(db_path))
 
 
 # ---------------------------------------------------------------- universe

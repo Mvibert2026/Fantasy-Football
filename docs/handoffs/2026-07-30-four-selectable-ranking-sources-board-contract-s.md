@@ -85,3 +85,41 @@ A reply here stating: which consumers (board, VBD, tiers, recommender fallback, 
 opponents, grid, assistant) now read the selected source's file vs. which still silently read
 `board.json` regardless of toggle state, plus a screenshot of the picker (including the disabled
 `proprietary` option) per this project's UI evidence standard.
+
+### backend · 2026-07-30
+
+Follow-up verification pass, same day, no code changes (STATUS stays `OPEN` — this thread is
+still yours to close with the toggle + screenshot).
+
+**The three built boards are confirmed to genuinely differ**, so the picker isn't wiring three
+copies of the same list. Join key is `player_id_gsis` — **`id` in the export is row position
+(== `overall_rank`), not a stable player key; do not join on it.** `expert_adjusted` vs
+`expert_raw`: within-position order is byte-identical (our VBD re-scoring never reorders players
+inside a position, only shuffles which position gets picked when — cross-positional deviation
+only, Spearman ρ=0.944 overall). `market_adp` (158/527 coverage) is the only one of the three
+that reorders *within* position too (e.g. 55/66 WR pairs swap vs. `expert_adjusted`) — it is the
+one genuinely independent re-ranking among the three.
+
+**Full consumer audit, beyond what's in this thread already:**
+- Board order/VBD/tiers/`overall_rank`/`consensus_rank`/`delta_vs_consensus` — switches correctly
+  per `ranking_source_selection`, all three built files (already covered above).
+- Per-player `availability` block inside every `board*.json`, and standalone `availability.json`
+  — hardcoded, confirmed empirically (158/158 players byte-identical between `board.json` and
+  `board.market_adp.json`). Root cause: `draft_sim.py:120`'s `CONSENSUS_RANK_SOURCE` module
+  constant, not a `load_season` parameter. Gated on thread
+  `2026-07-30-availability-adp-measurements-m0-m5`, not fixed here on purpose.
+- `live_availability.py` (live-draft re-weighting) — inherits the same hardcode transitively via
+  the marginal it's handed; not an independent offender.
+- `mock_lab_store.py`'s prediction replay — parameterized, not itself hardcoded, but has **no
+  live caller anywhere in `src/` or `frontend/` yet** — not wired to anything, so not part of this
+  toggle's surface area today.
+- `strategies.json`, `candidate_rankings.py`, `backtest.py`, `run_pr007.py` — fixed to
+  `fantasypros_ecr`/`TRAINING_SOURCE` **by design** (historical-backtest/methodology validation
+  over pre-2026 seasons, not a live per-toggle feature) — correctly hardcoded, not a gap.
+- Recommender fallback, predictions/opponents/grid — frontend surfaces with no separate backend
+  export; they inherit correctness from whichever board file you request.
+- Assistant — no backend pipeline reads a ranking source directly for it; it reads
+  `docs/assistant-context.md` via your retrieval layer (separate threads 032/033/088).
+
+Full numbers and file:line detail: `docs/CURRENT-STATE.md`'s FR-2026-07-30 entry, second
+paragraph ("Follow-up audit, 2026-07-30").

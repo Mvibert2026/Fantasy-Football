@@ -87,3 +87,29 @@ Already underway: `docs/assistant-context.md` now carries 11 curated entries wit
 effective n and scope inline, and a thread is open to `frontend` to confirm the retrieval layer
 surfaces them. **This request extends it** — the assistant must also know *which source is selected*
 and answer accordingly, or it will explain a board the user is not looking at.
+
+## Backend follow-up, 2026-07-30 (second session, verification only)
+
+**The three built boards genuinely differ**, verified by `player_id_gsis` join (the export's `id`
+field is row position, not a stable key — do not join on it). `expert_adjusted` vs `expert_raw`:
+within-position order is byte-identical for every position — VBD re-scoring reorders only across
+positions, never within one, exactly as the "within-position identical to consensus" line above
+predicted. `market_adp` (158/527 coverage) is the only one of the three that reorders *within*
+position too, confirming it is the sole genuinely independent re-ranking among the three built
+sources.
+
+**Consumer audit widened past `simulate_availability` (thread 119, still the headline gap,
+confirmed empirically: 158/158 players have byte-identical `availability` blocks whether the
+board is `expert_adjusted` or `market_adp`).** Everything else that reads a ranking was checked:
+board order/VBD/tiers/deltas switch correctly (already shipped); `live_availability.py` inherits
+the same hardcode as `simulate_availability` (not an independent bug, same root cause,
+`draft_sim.py:120`); `mock_lab_store.py`'s prediction replay is parameterized but has no live
+caller anywhere yet, so it's not part of the toggle's surface today; `strategies.json`,
+`candidate_rankings.py`, `backtest.py`, `run_pr007.py` are fixed to `fantasypros_ecr` **by
+design** (historical-backtest/methodology validation, not live per-toggle features — correctly
+hardcoded); the recommender fallback and predictions/opponents/grid views are frontend surfaces
+with no separate backend export, so they inherit whichever board file is requested with no
+backend change needed; the assistant has no backend pipeline reading a ranking source directly.
+
+No code changed this pass. Full detail: `docs/CURRENT-STATE.md`'s FR-2026-07-30 entry,
+`docs/handoffs/2026-07-30-four-selectable-ranking-sources-board-contract-s.md`.
