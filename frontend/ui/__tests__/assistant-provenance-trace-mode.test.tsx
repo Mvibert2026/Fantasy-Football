@@ -12,6 +12,13 @@ import { loadDatasetFromDisk, withTraceOn } from './helpers';
  * (for the reasoning lane) a "model prose over context: page.draft_state,
  * page.roster_needs, ..." dump. `.claim` tag and text are meaning, not
  * sourcing, and stay visible either way; only the `.provenance` line is gated.
+ *
+ * ASSISTANT-WINDOW.md item 4 moved the raw provenance strings out of an
+ * always-rendered per-claim line and into the "N sources" disclosure, closed
+ * by default -- so these tests now open it (click the sources toggle) before
+ * asserting on `.provenance`. The switch's own on/off contract (field paths
+ * never leak while off, are verbatim once on) is unchanged; only where the
+ * line lives moved.
  */
 
 const data = loadDatasetFromDisk();
@@ -21,22 +28,29 @@ const league = buildLeagueConfig(data);
 afterEach(() => vi.unstubAllGlobals());
 
 describe('Assistant provenance line (export lane, deterministic)', () => {
-  it('hides the provenance line by default -- no glossary.json field path or claim tag text visible', async () => {
+  it('hides the provenance line by default, even with the sources disclosure open -- no glossary.json field path or claim tag text visible', async () => {
     render(<Assistant data={data} rows={rows} league={league} pageContext={[]} />);
     await userEvent.type(screen.getByPlaceholderText('Ask about the board'), 'what is VBD');
     await userEvent.click(screen.getByRole('button', { name: /ask/i }));
     await waitFor(() => expect(document.querySelector('.claim')).toBeTruthy());
 
+    await userEvent.click(screen.getByRole('button', { name: /source/i }));
     expect(document.querySelector('.provenance')).toBeNull();
     expect(document.body.textContent).not.toContain('glossary.json:terms');
   });
 
-  it('shows the provenance line, verbatim, once the switch is on', async () => {
+  it('shows the provenance line, verbatim, once the switch is on and the disclosure is opened', async () => {
     render(withTraceOn(<Assistant data={data} rows={rows} league={league} pageContext={[]} />));
     await userEvent.type(screen.getByPlaceholderText('Ask about the board'), 'what is VBD');
     await userEvent.click(screen.getByRole('button', { name: /ask/i }));
-    await waitFor(() => expect(document.querySelector('.provenance')).toBeTruthy());
+    await waitFor(() => expect(document.querySelector('.claim')).toBeTruthy());
 
+    // Closed by default even with the switch on -- the disclosure is a click,
+    // not an automatic reveal.
+    expect(document.querySelector('.provenance')).toBeNull();
+
+    await userEvent.click(screen.getByRole('button', { name: /source/i }));
+    await waitFor(() => expect(document.querySelector('.provenance')).toBeTruthy());
     expect(document.body.textContent).toContain('glossary.json:terms');
   });
 

@@ -1325,3 +1325,41 @@ row-level fix that was screenshotted. If a future design pass wants the full "bo
 same-level joins" rule enforced everywhere, it needs a dedicated pass with per-screen screenshots,
 not a rider on a shading token change.
 
+**2026-07-30, frontend session (assistant window container, ASSISTANT-WINDOW.md item 4).**
+Scoping decisions made without asking, logged here per the "decide and log" instruction:
+
+1. **Width shipped at 520px, the spec's floor, not its 720px ceiling.** The design brief itself
+   said to measure before resizing rather than default to the maximum ("the container may need
+   less than the spec's maximum, and 720px of a 1180px laptop screen is a lot of board to
+   cover"). After trace mode (item 1, already merged) stripped the six inline `[page.*]` tokens
+   and the raw provenance footer from assistant prose, a three-player answer wraps cleanly at
+   520px with no name/number split across lines in real-browser screenshots
+   (`frontend/e2e/artifacts/fr077-followup-assistant-scroll-top.png`). If a future answer shape
+   (e.g. a wide comparison table inside a claim) needs more, `PANEL_WIDTH` in
+   `AssistantDock.tsx` is a single named constant — raising it to the 720px ceiling is a one-line
+   change, not a redesign.
+
+2. **The old per-claim `.provenance` line's `confidence` display (`· confidence high/medium/
+   low`) has no equivalent in the new one-line-per-answer "N sources" disclosure.** `SourceRow`
+   (`ui/assistant/claim.ts`) intentionally carries only `{tag, id}` — confidence is a
+   claim-level property, and a reasoning-lane answer with one claim can now expand to several
+   source *rows* (one per context id), so there is no single row a claim's confidence value maps
+   onto cleanly. Confidence is genuinely evaluative metadata (arguably class 2 — "why is this
+   absent/how sure are we" — rather than class 1 field-path provenance) and dropping it from an
+   always-hidden-by-default line is a minor, judgment-call information loss, not a data-integrity
+   issue. Flagging rather than silently deciding it doesn't matter: if a future session wants
+   confidence back, the natural place is next to the claim's own tag pill (already rendered
+   unconditionally, both switch states), not inside the sources disclosure.
+
+3. **Not investigated further: headless Chromium in this sandbox renders zero scrollbar pixels
+   in a screenshot even for a guaranteed-overflowing element with explicit `::-webkit-scrollbar`
+   styling and `overflow-y: scroll`** (verified against a minimal, app-independent test page —
+   `offsetWidth === clientWidth` with 900px of content in a 300px box, and the captured PNG shows
+   no scrollbar chrome at all). This is a known headless-capture limitation, not a CSS defect —
+   the app's pre-existing global `::-webkit-scrollbar` rule (`base.css`, present before this
+   session) is the standard technique and should render correctly on the founder's actual
+   Windows/Chrome desktop. The `frontend/e2e/artifacts/fr077-followup-assistant-scroll-*.png`
+   pair proves the transcript *scrolls* (different content visible at each scroll position, with
+   the header/input pinned) but cannot prove scrollbar-track *visibility* — that half of the
+   spec's ask needs a founder look at the real app, not a headless screenshot.
+

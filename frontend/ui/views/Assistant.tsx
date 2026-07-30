@@ -3,6 +3,7 @@ import type { BoardRow } from '../data/board';
 import type { LeagueConfig } from '../data/league';
 import type { Dataset } from '../data/load';
 import { stripInlineCitations, useTraceMode } from '../data/traceMode';
+import { answerSources } from '../assistant/claim';
 import { ask, SUGGESTED_TEMPLATES, type Answer, type ContextItem, type ConversationTurn } from '../assistant';
 
 /**
@@ -171,14 +172,48 @@ function AnswerBlock({ answer, onAsk }: { answer: Answer; onAsk: (q: string) => 
               possible position. Stripped here rather than upstream so trace mode ON
               still shows the model's real output verbatim. */}
           <span>{stripInlineCitations(claim.text, showSources)}</span>
-          {showSources ? (
-            <div className="provenance">
-              {claim.provenance}
-              {claim.confidence ? ` · confidence ${claim.confidence}` : ''}
-            </div>
-          ) : null}
         </div>
       ))}
+
+      {answer.claims.length > 0 ? <AnswerSources claims={answer.claims} showSources={showSources} /> : null}
     </section>
+  );
+}
+
+/**
+ * ASSISTANT-WINDOW.md item 4: "Per-answer, that note becomes one line — Answered
+ * from what is on screen — with a `3 sources` disclosure that opens the list. In
+ * trace mode that expands to the `page.*` keys." Replaces the old per-claim
+ * `.provenance` dump (one raw field-path line under every claim, unconditionally
+ * gated on the switch) with one disclosure per answer: closed by default, and the
+ * field paths/context keys it reveals stay behind the trace-mode switch exactly as
+ * they did before -- this only consolidates where they render, not whether.
+ */
+function AnswerSources({ claims, showSources }: { claims: Answer['claims']; showSources: boolean }) {
+  const [open, setOpen] = useState(false);
+  const sources = answerSources(claims);
+  if (sources.length === 0) return null;
+  return (
+    <div className="answer-sources">
+      <span>Answered from what is on screen. </span>
+      <button
+        type="button"
+        className="sources-toggle"
+        aria-expanded={open}
+        onClick={() => setOpen((v) => !v)}
+      >
+        {sources.length} source{sources.length === 1 ? '' : 's'}
+      </button>
+      {open ? (
+        <ul className="sources-list">
+          {sources.map((s, i) => (
+            <li key={i}>
+              <span className={`tag tag-${s.tag}`}>{s.tag}</span>
+              {showSources ? <span className="provenance">{s.id}</span> : null}
+            </li>
+          ))}
+        </ul>
+      ) : null}
+    </div>
   );
 }

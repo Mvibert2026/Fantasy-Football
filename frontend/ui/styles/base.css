@@ -361,7 +361,12 @@ tr.sparse td:first-child {
 }
 
 .answers {
-  overflow: auto;
+  /* ASSISTANT-WINDOW.md item 4: "The scrollbar is always visible, so the panel
+     never looks finished when it is cut." `scroll` (not `auto`) reserves the
+     gutter and keeps the track visible even when content currently fits --
+     the point is to signal scrollability up front, not only once content
+     already overflows. */
+  overflow-y: scroll;
   display: flex;
   flex-direction: column;
   gap: var(--gap);
@@ -400,6 +405,44 @@ tr.sparse td:first-child {
   color: var(--fg-faint);
   margin-top: 4px;
   word-break: break-all;
+}
+
+/* ---- Assistant per-answer sources disclosure (ASSISTANT-WINDOW.md item 4) ---- */
+
+.answer-sources {
+  font-size: var(--fs-xs);
+  color: var(--fg-faint);
+  margin-top: 4px;
+}
+
+.sources-toggle {
+  font-family: inherit;
+  font-size: inherit;
+  color: var(--fg-muted);
+  background: transparent;
+  border: none;
+  padding: 0;
+  text-decoration: underline dotted;
+  cursor: pointer;
+}
+
+.sources-list {
+  list-style: none;
+  margin: 4px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sources-list li {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.sources-list .provenance {
+  margin-top: 0;
 }
 
 .ask {
