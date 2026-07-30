@@ -1773,3 +1773,26 @@ list already documented as pre-existing in ADR-066). **None touch `experiments/b
    feature that helps sort the deep tail and hurts among draftable players. **No decision rule in
    this project treats a sign flip between the two populations as informative in its own right** —
    it only downgrades to BOARD-NEUTRAL. Worth a rule that names it.
+
+**2026-07-30, ranker — factor batch 7 (RB usage and efficiency), decisions taken and logged.**
+
+1. **Created `docs/ranking/factor-campaign-manifest.md`** because the dispatch required registration
+   into a shared campaign family and none existed. Campaign BH denominator registered at **m = 80**
+   (four concurrent batches × 20 tests) with a one-directional rule: if the realised total exceeds
+   80 every grade is recomputed at the realised total; if it comes in under 80 nothing is relaxed.
+   Batches 4–6 have placeholder sections to append to. Confirmation asked of `strategist`; nothing in
+   batch 7 turns on the answer, since nothing passes at any denominator.
+2. **Built a rate-covariate hook as a batch-local subclass** rather than editing `pos_model.py`, which
+   three other factor agents were working the same checkout. Two of batch 7's six factors are
+   efficiency claims whose hypotheses live in a shrunk rate, not a volume spec; adding them to
+   `carries_pg` would have tested a proposition nobody made. Flagged to `fable` as the piece of new
+   machinery I graded my own nulls with, and as the place I failed to register a positive control.
+3. **Did not resolve another session's merge conflict.** A concurrent agent left `docs/CURRENT-STATE.md`,
+   `docs/ideas-inbox.md`, `docs/status/INDEX.md` and `frontend/ui/views/DraftRoom.tsx` unmerged in this
+   shared checkout, which blocks any commit repo-wide. Per `docs/handoffs/README.md` rule 8 I waited
+   rather than merging over someone else's work; it cleared in 30 seconds. **Worth noting as a
+   structural hazard: four agents on one working tree means any one of them mid-merge freezes commits
+   for all four.**
+4. **Did not edit `docs/ranking/factor-batch-3-*`** despite finding that one of its published control
+   arms has the same defect as one of mine. Registered as a claim to `strategist` instead. I do not
+   grade other agents' work any more than my own.
