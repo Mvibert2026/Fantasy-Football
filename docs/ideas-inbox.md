@@ -753,3 +753,26 @@ file (ADR-057). Full evidence `docs/ranking/bottom-up-research-pass-3.md`, threa
    rather than resolved — one ruling should cover all three sources, not three separate ones.
    See ADR-063 and the research doc's SS6 for the full clause reasoning.
 
+
+## 2026-07-30 — backend, ADP vs production analysis (FR-072, thread 096): decided without asking
+
+1. **This worktree's `nfl.db` was missing the thread-055 FFC historical ADP backfill** even
+   though `docs/CURRENT-STATE.md` says it "landed" -- `nfl.db` is gitignored, worktrees don't
+   inherit it (`docs/environment.md` SS4), and no session's populated DB copy had propagated here.
+   Loaded the 2,467 rows directly from the already-committed CSVs
+   (`data/adp-snapshots-ffc/*_12team_period*.csv`) rather than re-fetching over the network --
+   same data, same `as_of_date`s, zero new requests against FFC. Did not open a new thread for
+   this since it's a worktree-inheritance quirk already documented, not a new defect.
+2. **`play_callers` (coach/coordinator identity) has zero rows in this environment's `nfl.db`.**
+   The dispatch explicitly asked for "team change / new coordinator" as a candidate factor;
+   only "team changed" could actually be tested (and found nothing). Coordinator-identity
+   ingestion (`src/ingest_play_callers.py` exists, was apparently never run against a `nfl.db`
+   that then got captured into a shared/committed state) is real follow-on work if anyone wants
+   the coordinator-specific version of this factor tested. Not attempted this session --
+   out of scope for a measurement-only dispatch, and CLAUDE.md SS5 flags coaching-staff scraping
+   as needing its own licensing check before building.
+3. **No real 10-team historical ADP source exists anywhere in this project.** Every historical-
+   ADP analysis (this one included) runs on FFC's 12-team mock-draft archive. If the founder
+   wants ADP-vs-production validated against this league's actual real-money market rather than
+   a mock-draft proxy, that requires a new ADP source this project doesn't have and hasn't
+   evaluated -- a scoping question for PM, not decided here.

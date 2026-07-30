@@ -27,7 +27,42 @@ repo — Cloudflare holds its own deploy token. This closes the last dependency 
 machine: development, tests, the database rebuild, the daily capture and now viewing the app all run
 without it.
 
-**Last verified:** 2026-07-30, frontend session (worktree `agent-a160788e8e9ccc925`) porting two
+**Last verified:** 2026-07-30, backend session (worktree `agent-a3f0bc3cc3efb7185`, FR-072, thread
+096) running the founder's ADP-vs-production analysis ("look at ADP vs Production and try to
+establish patterns"). Full writeup `docs/analysis/adp-vs-production-2026-07-30.md`, script
+`analysis/adp_vs_production.py`, raw output `data/qa/adp-vs-production-2026-07-30.json`. Loaded
+the thread-055 FFC historical ADP backfill (2,467 rows, `ffc_half_ppr_12team`/`ffc_non_ppr_12team`,
+2013-2024) into this worktree's `nfl.db` from the already-committed CSVs — this worktree's own DB
+did not have those rows despite the earlier "landed" note below, confirming `nfl.db` really does
+not survive across worktrees (docs/environment.md SS4) even after a session reports it fixed.
+Residual = actual value-over-replacement (VBD, via `scoring.compute_vbd`/`ReplacementLevels`, this
+league's real ADR-029 baselines) minus expected VBD at the player's real ADP overall rank, on a
+season's own realized cross-position value curve — NOT built per-position (first draft did this,
+made every position's residual trivially ~0 by construction) and NOT raw points (second draft did
+this, "found" QB underpriced by +146 pts/season, which is this league's 1-QB roster rule, not a
+market error, not a real finding). A third bug — indexing the curve by FFC's raw `rank` column,
+which includes kickers this analysis drops, leaving gaps — was caught by the residual-sums-to-~0
+sanity check (season 2022 summed to +1,465.76 before the fix) and corrected to index by ordinal
+position in the filtered universe instead. Six pre-registered factor families tested 2018-2023
+(train) with 2024 held out (2025 isn't in this ADP source at all, so the project's locked holdout
+is untouched by construction), season-clustered bootstrap CIs, season-clustered permutation
+p-values, Benjamini-Hochberg correction across the six. Headline, MODERATE confidence: early-round
+RB underperforms same-round peers at every other position by roughly 3x (-54.1 VBD pts vs -15.9 to
+-18.9, rounds 1-3, train seasons) — survives an era split (2018-20 vs 2021-23) though the
+*unconditional* position-level framing did not clearly survive the 2024 holdout (RB flipped from
+-20.2 to +1.6) and is explicitly flagged as the weaker, not-to-be-carried-forward version of the
+finding. Second, MODERATE-HIGH confidence: young WR/TE (age <=23) outperform ADP by +34.6 VBD
+pts/season, holds directionally both eras. Three families (prior games missed, team change, prior
+volume-vs-efficiency split) found **no reliable pattern** — reported plainly per guardrails SS5,
+not buried. Known gap: `play_callers` (coach/coordinator identity) has zero rows in this
+environment's `nfl.db`, so "new coordinator" (the reason `coach_id` is first-class in this schema)
+could not be tested — only the narrower "team changed" proxy was, and it found nothing. No ADR
+opened and no ranker code touched — methodology review handed to `strategist` (thread 096) before
+anything here reaches the ranking model. FR-072 logged and marked DONE for the analysis itself.
+This was a Sonnet/default-tier dispatch for statistical-methodology work that CLAUDE.md SS9 says
+belongs at Opus/high effort; flagged in the writeup rather than stopping to ask.
+
+**Prior verification:** 2026-07-30, frontend session (worktree `agent-a160788e8e9ccc925`) porting two
 design specs in order, both in `docs/design/`: `DRAFT-MIDDLE-PANE.md` and `SUPPLIED-VALUES.md`. The
 Draft screen's middle pane (`frontend/ui/views/DraftRoom.tsx`) is now one tab set — **Recommend ·
 Scarcity · Queue · Insights** — replacing the old fixed stack (RECOMMENDED-when-on-clock, else
