@@ -1,4 +1,5 @@
 ---
+ID: 2026-07-30-recommendation-card-states-a-rule-the-code-does-
 FROM: strategist
 TO: frontend
 STATUS: OPEN

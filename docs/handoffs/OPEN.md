@@ -4,7 +4,7 @@
 Threads are the source of truth. Change a thread's `STATUS:`, then re-run sync.
 Protocol: [`README.md`](README.md).
 
-**83 open** · 50 resolved
+**84 open** · 51 resolved
 
 ---
 
@@ -33,7 +33,7 @@ not an omission. Start your session at your own heading.
 | [2026-07-30-no-allocator-exists-for-pr-0nn-pre-registration](2026-07-30-no-allocator-exists-for-pr-0nn-pre-registration.md) | No allocator exists for pr 0nn pre registration | `backend` | OPEN | 0d | none |
 | [90](090-fr-043-audit-claude-md-ss5-staleness-built-but-u.md) | Fr 043 audit claude md ss5 staleness built but u | `librarian` | OPEN | 1d | none |
 
-### `backend` — 29 waiting
+### `backend` — 30 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
@@ -65,9 +65,10 @@ not an omission. Start your session at your own heading.
 | [111](110-sleeper-screen-use-recent-usage-not-career-mean.md) | Sleeper screen use recent usage not career mean | `ranker` | OPEN | 0d | nothing; changes a feature choice in the FR-094 sleeper screen before it ships |
 | [111](111-sleeper-screen-use-recent-usage-not-career-mean.md) | Sleeper screen use recent usage not career mean | `ranker` | OPEN | 0d | nothing; changes a feature choice in the FR-094 sleeper screen before it ships |
 | [2026-07-30-availability-adp-measurements-m0-m5](2026-07-30-availability-adp-measurements-m0-m5.md) | Availability adp measurements m0 m5 | `strategist` | OPEN | 0d | FR-131, FR-066, thread 104, FR-128, thread 114 (partially) |
+| [2026-07-30-suggested-pick-rule-measure-qg-against-plain-vbd](2026-07-30-suggested-pick-rule-measure-qg-against-plain-vbd.md) | Suggested pick rule measure qg against plain vbd | `strategist` | OPEN | 0d | FR-2026-07-30-recommendation-logic-is-inverted (question 3 of the founder's bar), FR-051, FR-115 |
 | [88](088-pr-004-f-bottomup-core-run-the-confirmatory-bott.md) | Pr 004 f bottomup core run the confirmatory bott | `strategist` | OPEN | 1d | none |
 
-### `frontend` — 21 waiting
+### `frontend` — 22 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
@@ -92,6 +93,7 @@ not an omission. Start your session at your own heading.
 | [116](116-vs-your-options-contract-answer-client-computati.md) | Vs your options contract answer client computati | `backend` | OPEN | 0d | none |
 | [2026-07-30-availability-json-1-17-0-adp-central-tendency-pr](2026-07-30-availability-json-1-17-0-adp-central-tendency-pr.md) | Availability json 1 17 0 adp central tendency pr | `backend` | OPEN | 0d | none |
 | [2026-07-30-draft-board-reference-axis-unanimous-snake-never](2026-07-30-draft-board-reference-axis-unanimous-snake-never.md) | Draft board reference axis unanimous snake never | `researcher` | OPEN | 0d | none |
+| [2026-07-30-recommendation-card-states-a-rule-the-code-does-](2026-07-30-recommendation-card-states-a-rule-the-code-does-.md) | Recommendation card states a rule the code does  | `strategist` | OPEN | 0d | FR-2026-07-30-recommendation-logic-is-inverted (the three defects that need no measurement) |
 
 ### `data-ops` — 9 waiting
 
@@ -222,5 +224,6 @@ _Nothing waiting on you._
 | [104](104-fr066-availability-ranking-source-export.md) | Fr066 availability ranking source export | `frontend` → `backend` |
 | [117](117-prepared-answers-to-the-2026-08-01-handoff-held.md) | Prepared answers to the 2026 08 01 handoff held | `pm` → `design` |
 | [119](119-availability-opponent-model-adp-as-the-central-t.md) | Availability opponent model adp as the central t | `pm` → `strategist` |
+| [2026-07-30-pick-18-recommendation-defect-traced-reproduced](2026-07-30-pick-18-recommendation-defect-traced-reproduced.md) | Pick 18 recommendation defect traced reproduced | `ranker` → `strategist` |
 | [89](089-fr-040-costing-static-hosting-blocks-scoring-rec.md) | Fr 040 costing static hosting blocks scoring rec | `backend` → `frontend, pm` |
 

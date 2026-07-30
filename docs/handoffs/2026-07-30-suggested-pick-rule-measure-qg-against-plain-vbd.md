@@ -1,4 +1,5 @@
 ---
+ID: 2026-07-30-suggested-pick-rule-measure-qg-against-plain-vbd
 FROM: strategist
 TO: backend
 STATUS: OPEN
