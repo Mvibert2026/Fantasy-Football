@@ -4,7 +4,7 @@
 Session files in this directory are the source of truth. Add a new dated file, then
 re-run sync. Protocol: [`README.md`](README.md).
 
-**29 sessions recorded.**
+**32 sessions recorded.**
 
 ---
 
@@ -1661,6 +1661,103 @@ Screenshots in `frontend/e2e/artifacts/`: `fr034-*.png`, `fr035-*.png`, `fr036-*
 
 ---
 
+<!-- 2026-07-29-frontend-fr050-055-058.md -->
+
+# 2026-07-29 · frontend · FR-055 (draft column headers) + FR-050 (VBD in draft list) + FR-058 (recommendation explains VBD overrides)
+
+**Role:** frontend (Sonnet, effort 3→4-5 for a fidelity-sensitive change) · **Shell:** worktree
+`agent-a2ac0a9c4c8191c5e`
+
+## What was asked
+
+Three founder requests naming the same screen and the same underlying complaint — "the draft
+room's numbers do not explain themselves" — batched deliberately into one pass so they wouldn't
+fight over the same column space:
+
+- **FR-055**: Draft mode's board list has no column headers ("so I know what I'm looking at").
+- **FR-050**: VBD is a sortable Prep column, absent from the Draft list.
+- **FR-058**, the substantial one: when the recommendation panel's score departs from raw VBD
+  ordering, it must say why — which of the three unvalidated stopgap constants fired, what it
+  displaced, and the size of the gap — without arguing the pick is good, and while saying every
+  cited rule is unbacktested.
+
+## Verified first
+
+FR-055's premise (draft room had no header row) was confirmed directly against
+`frontend/ui/views/DraftRoom.tsx` before building anything — position tabs, then a SORT row, then
+straight into row data, no header. Prep's `Board.tsx:89-101` does carry one.
+
+## What shipped
+
+**`frontend/ui/views/DraftRoom.tsx`**
+- A static header row (`RANK · PLAYER · POS · TM · ADP · Δ · VBD · AVAIL`) above the scrollable
+  row list, outside the `overflowY: auto` container — never scrolls away, no `position: sticky`
+  needed. Labels ported verbatim from `Board.tsx` where the number matches; `computeAdpHeaderTitle`
+  exported from `Board.tsx` and reused rather than reimplemented.
+- A VBD cell on every row (`Value cell={r.vbd} render={decimal}`, Board.tsx's own formatting),
+  between Δ and the availability cell.
+- VBD added as a sixth SORT control (`Our rank | Consensus | Delta | Proj pts | VBD`).
+- A "WHY NOT HIGHEST VBD" panel in the RECOMMENDED card, rendered only when the #1 recommendation
+  is not the highest-VBD player still available anywhere on the board (not just the six-deep
+  shortlist) — names the displaced player, the exact VBD points overridden, and every firing term
+  in plain words, each one tagged "an unbacktested stopgap constant, not a finding." Nothing when
+  the ordering already agrees with VBD.
+
+**`frontend/ui/data/recommendation.ts`**
+- `recommendationTerms(row, round, unfilledPositions)`: the three reachable stopgap constants
+  (unfilled-need +8, tier-1-TE +18, early-QB −25 — DEF's −40 was never reachable, no DST data,
+  ADR-039), each paired with a plain-word reason. `recommendationScore` now builds from this list
+  so the score and its own explanation can never drift apart — same arithmetic, same output.
+- `findVbdOverride(top, available, round, unfilledPositions)`: compares the recommendation's #1
+  pick against the whole board's actual VBD leader; returns `null` when they agree.
+
+## Verification
+
+Real, reproducible scenario (not a synthetic fixture) built from the live board export: with the
+top five real VBD players drafted off, the user's next turn recommends Jaxon Smith-Njigba over
+Josh Allen (7 more VBD) because of the unfilled-WR bonus and the early-QB penalty combined — the
+panel names Josh Allen, the 7-point gap, and both terms. A second scenario (the user's actual first
+real turn) confirms the negative case: recommendation #1 already is the VBD leader, no panel
+renders. Screenshots looked at directly:
+`frontend/e2e/artifacts/fr055-fr050-headers-and-vbd.png`,
+`frontend/e2e/artifacts/fr058-vbd-override-explanation.png`,
+`frontend/e2e/artifacts/fr058-no-override-when-order-agrees.png`. Script:
+`frontend/e2e/verify-fr050-055-058.mjs` (dev server + pre-installed Chromium via `executablePath`,
+per `docs/frontend-cloud-runbook.md`).
+
+## Tests
+
+`npx tsc -b --noEmit`: clean. Unit tests: 12 new/changed in `ui/__tests__/recommendation.test.ts`
+(`recommendationTerms` reasons, `findVbdOverride` null/non-null, displaced player, exact VBD gap,
+both `appliesTo` sides) and 4 new in `ui/__tests__/draft-room-scarcity-and-sort.test.tsx` (header
+row content, VBD sort, VBD cell on a real row) — full counts and pass/fail in the session's final
+reply, since the full-suite run was still finishing when this file was written.
+
+**A real bug caught by the suite, not by eyeballing**: the first version of the header-row test
+used an unscoped `getByText('VBD', { exact: true })`, which correctly failed — "VBD" legitimately
+appears twice on screen (the new header cell and the pre-existing SORT tab button). Fixed by
+scoping the assertion to the header row's own container via `within()`.
+
+**Container flakiness, isolated and ruled out, not silenced**: the first full-suite run showed 3
+timeouts (`board-filters.test.tsx`, `draft-room-typeahead.test.tsx`, `offline.test.tsx`) at the
+container's default 5000ms budget. Reproduced the identical failures with `git stash` (unmodified
+code) run the same way, and got 100% pass on all three re-run alone with no other vitest process
+competing for CPU — confirming container-CPU contention, not a regression, before trusting the
+final number.
+
+## Founder-request files updated
+
+`docs/founder-requests/FR-055-*.md`, `FR-050-*.md`, `FR-058-*.md` — each `STATUS: SHIPPED` with a
+`## Resolution` section; `python tools/founder_requests.py sync` run.
+
+## Out of scope, on purpose
+
+FR-058's "or any selected strategy" — no strategy selector exists in the app for a recommendation
+to depart from; noted as separate, dependent work in the request's own initial read, not built
+here.
+
+---
+
 <!-- 2026-07-29-frontend-hub-adp-captures.md -->
 
 # 2026-07-29 — frontend — draft-hub fold-in, ADP verification, four screenshot backlog threads
@@ -2644,6 +2741,151 @@ The decomposition experiment in thread 085 — it is the only candidate that tou
 in a shipped artefact, needs no new data, is few-parameter, and is testable on 26 seasons rather
 than 4. Runner-up and close: a TE arm built on `snap_counts` (2013-2025, 324,611 rows, already in
 the database, never read by the prototype) as a labelled route-participation proxy.
+
+---
+
+<!-- 2026-07-29-ranker-research-pass-3.md -->
+
+# 2026-07-29 — ranker — research pass 3: the rank-curve slope collapse
+
+**Task.** `docs/CURRENT-STATE.md` item 12: is the QB rank-curve slope collapse real, is it
+happening at other positions, what weighting does a holdout support per position, and what does
+flat pooling cost in board positions.
+
+**Output.** `docs/ranking/bottom-up-research-pass-3.md`. Code:
+`experiments/bottomup/pass3_rank_curve_regimes.py`, `pass3_artifacts.py`, `pass3_weighting.py`,
+`pass3_persistence.py`. Thread **093** opened to `strategist`. All exploratory; nothing
+registered, no multiplicity correction, nothing wired to the board.
+
+## What was found
+
+**The board is four numbers.** `make_board`'s VBD is `(a + b·ln i) − (a + b·ln base)` — the
+intercept cancels exactly. Reconstructing the live 2026 board from the four slopes and four
+replacement ranks alone reproduces all 510 rows with **zero ordering mismatches**. So the slope
+question is the whole board question, and no setting of it can give the board a player-level
+opinion.
+
+**The QB collapse is not established.** Point estimates reproduce exactly; the confidence does
+not. Trend +15.3/season [−3.5, +34.1]. 2025's CI [−46.5, +69.2] contains 2024's estimate. The
+monotone appearance is a property of `RELEVANT_DEPTH["QB"]=20` — at depth 12 the series is
+−15.0, −106.9, −68.5, −41.7, −38.5 and 2021 is the flattest. Jackknife: dropping Jayden Daniels
+alone takes 2025 from −4.1 to +28.6, a swing larger than the effect.
+
+**Other positions: no.** RB 2025 is −77.9, steepest of five. WR flat. TE monotone (ρ = +1.00 at
+the permutation floor) but magnitude CI spans zero and it breaks at depth 32.
+
+**Mechanism: the market, not the position.** 2025 realised QB value curve −58.7, flat against era
+means −57.7/−59.0/−56.8. Consensus τ_b at QB: +0.484, +0.305, +0.263, +0.263, **−0.042**. RB the
+mirror image: τ_b +0.507, its best, on a flat value curve.
+
+**Weighting, per position, on the value curve (20 targets, split at 2016).** QB strongly yes
+(RMSE 45.00 → 22.41, −22.6 [−30.3, −13.6]); RB no; **WR contraindicated** (last1 +2.75 [+0.96,
++4.80] *worse*); TE weak (hl5 −2.69 [−4.71, −0.48]) with its training pick returning nothing on
+test. On the board's own consensus curve: **n = 2 evaluable targets, disagreeing at the 4th
+decimal of Kendall τ. Unanswerable.**
+
+**The recorded fix inverts at QB.** The QB value curve is steepening (−0.461/season [−0.874,
+−0.034]), so recency weighting it makes the premium *larger*. The consensus curve's movement
+tracks ordering skill, whose lag-1 autocorrelation is −0.007 [−0.414, +0.411].
+
+**Board cost ≈ zero.** Half-life 3: one top-150 player moves ≥10. Half-life 5: none. Every scheme
+from last3 down leaves all four slopes inside the board's own published 95% CI.
+
+## Escalated, not celebrated
+
+Mean attenuation ratio 0.686 / 0.702 / 0.693 / 0.691 across QB/RB/WR/TE — four positions agreeing
+to 0.016. Cannot separate a real regularity from shared fitting mechanics. Flagged in thread 093.
+
+## Own-code bug, recorded
+
+The trend test originally used an exact permutation over `n!` orderings — fine for the 5-season
+consensus series, infeasible for the 26-season realised one, and it hung silently rather than
+erroring. Now switches to 20,000 sampled permutations above n = 8 and reports the attainable
+floor either way.
+
+## Suite
+
+**2 failed, 758 passed** (12m29s, worktree with `data/nfl.db` copied in). One is the known-red
+`test_handoffs.py::test_mailbox_health` (CURRENT-STATE item 15). The second is **new and not
+mine**: `test_holdout_audit.py::test_no_new_direct_sqlite_connections_in_src` went red on
+`src/ingest_sleeper_projections.py` from commit `fdd4685` tonight. Pass 3 touches zero files
+under `src/`. Opened as thread **094** to `backend` rather than fixed here.
+
+## Not done, deliberately
+
+No confirmatory run. No change to `src/`. No board rebuild shipped. Thread 093 asks `strategist`
+for the ruling on the diagnosis, the sealed-2025 judgment call, and the registration.
+
+---
+
+<!-- 2026-07-29-ranker-wr-component-model.md -->
+
+# 2026-07-29 — ranker — WR component model, pass 1 (FR-054)
+
+Worktree `agent-a642ecc75591d1614`. Commits `61012d0`, `43ad7b1`, and the test commit that
+follows them. 14 new tests, all passing.
+
+## What was asked
+
+Start the bottom-up model proper. Not a better ordering — a per-player projection of the
+components scoring consumes, from which a rank falls out under any ruleset, carrying a per-game
+distribution so the stacking bonuses are computable. One position, done properly.
+
+## What was built
+
+`experiments/bottomup/components/` — five modules:
+
+| file | what it is |
+|---|---|
+| `wr_data.py` | player-season panel with a hard cutoff gate and a per-read audit log; pre-season universe builder |
+| `wr_features.py` | lagged features, all from seasons ≤ N−1 plus April-of-N draft slots |
+| `wr_model.py` | the component model — availability, volume, three shrunk efficiency rates, and a binomial GLM for the per-game exceedance distribution |
+| `adp_baseline.py` | FFC archived ADP, re-gated against real Week 1 kickoffs parsed from PFR game ids |
+| `wr_eval.py` / `run_wr.py` | walk-forward 2014-2024, three required baselines, season-block bootstrap |
+
+Report: `docs/ranking/component-model-wr-pass-1.md`. Results CSVs:
+`experiments/bottomup/results/wr_components_{walkforward,metrics}.csv`.
+
+## Result, stated the way CLAUDE.md §6.5 requires
+
+**The model does not beat consensus ADP.** +0.048 Spearman, 95% CI [−0.013, +0.124], seven
+seasons. It beats prior-season points (+0.128 [+0.072, +0.186]) and the weighted-PPG heuristic
+(+0.091 [+0.013, +0.163]).
+
+**The design is underpowered and that is the more useful observation.** On the same seven seasons,
+consensus ADP itself cannot be shown to beat the weighted-PPG heuristic (+0.043 [−0.035, +0.124]).
+A beats-consensus test is not resolvable from this data, so registering one would spend the sealed
+2025 holdout on a question it cannot answer.
+
+**The component projections — FR-054's actual deliverable — beat naive persistence on every
+component with clear intervals.** Receiving yards MAE −31.0 [−37.4, −25.0] per player-season,
+receptions −2.4, receiving TDs −0.28, games −0.64, targets −4.3.
+
+**The ceiling channel is closed at WR.** Oracle with perfect foresight of realised stacking-bonus
+points: +0.026 ρ [+0.018, +0.033]. Modelled version: +0.0002, moving five receivers out of 2,271
+by three or more ranks. Conditional on mean yards per game, between-player dispersion in
+100-yard-game rate is *below* binomial noise (excess −0.00176, n=1,360), and the residual does not
+persist (r = −0.006 [−0.073, +0.060]).
+
+## What changes for other sessions
+
+- **Ceiling/variance pricing should stop being planned work at WR.** Referred to `strategist`
+  (thread 094) rather than asserted; it is a WR result and does not automatically transfer to RB or
+  TE.
+- **`nfl.db.injuries` (79,816 rows) is unused by every model in this project and is the highest-value
+  unexploited input found this pass.** The model's ten worst calls versus market are all receivers
+  coming off a season lost to injury or suspension; the availability sub-model cannot tell "did not
+  play" from "played badly".
+- **"We have 26 seasons" is false for anything usage-based.** Targets are empty 2003-2008, air yards
+  begin 2009, three seasons go to lags. The real number is 13.
+- **The FFC ADP backfill CSVs are usable without the database.** `adp_baseline.py` reads
+  `data/adp-snapshots-ffc/` directly, so a session that cannot rebuild `nfl.db` still has real ADP.
+
+## Open
+
+Thread **094** to `strategist`: register the availability factor as the confirmatory test, and rule
+on dropping the beats-consensus test. Nothing in this pass is confirmatory and nothing is claimed
+as an edge.
 
 ---
 

@@ -43,6 +43,39 @@ documented team-defense `no_name_match` ceiling):
 replied and `STATUS: RESOLVED`.
 
 **Last verified:** 2026-07-29, backend session (PM-dispatched, worktree
+**Last verified:** 2026-07-29, frontend session (worktree `agent-a2ac0a9c4c8191c5e`) shipping
+FR-055/FR-050/FR-058 together — the same draft-room screen, the same founder complaint ("the
+numbers do not explain themselves"). Confirmed FR-055's premise first: the Draft-mode board list
+had no column header row at all (Prep's `Board.tsx` has one). Added a static header row (RANK ·
+PLAYER · POS · TM · ADP · Δ · VBD · AVAIL, labels ported verbatim from `Board.tsx` where the
+number matches) and a VBD cell on every row plus a fifth SORT option (FR-050). The substantial
+piece, FR-058: `ui/data/recommendation.ts` gained `recommendationTerms()` (the three reachable
+stopgap constants — unfilled-need +8, tier-1-TE +18, early-QB −25 — each paired with a plain-word
+reason) and `findVbdOverride()`, comparing the recommendation's #1 pick against the whole board's
+real VBD leader, not just the six-deep shortlist. `DraftRoom.tsx`'s RECOMMENDED card now shows a
+"WHY NOT HIGHEST VBD" panel exactly when they disagree — the displaced player by name, the exact
+VBD points overridden, and every firing term explicitly tagged "an unbacktested stopgap constant,
+not a finding" — and nothing when the ordering already agrees with VBD. Verified against a real,
+reproducible scenario built from the live board export (not synthetic): with the board's real top
+five VBD players drafted off, the recommendation prefers Jaxon Smith-Njigba over the actual VBD
+leader Josh Allen, and the panel names him, the 7-point gap, and both firing terms; a second
+scenario (the user's real first turn) confirms no panel renders when recommendation already agrees
+with VBD. Screenshots looked at directly (`frontend/e2e/artifacts/fr055-fr050-headers-and-vbd.png`,
+`fr058-vbd-override-explanation.png`, `fr058-no-override-when-order-agrees.png`). `npx tsc -b
+--noEmit` clean; 16 tests added/changed across `ui/__tests__/recommendation.test.ts` and
+`ui/__tests__/draft-room-scarcity-and-sort.test.tsx`. Caught and fixed one real defect via the
+suite itself, not eyeballing: the first header-row test used an unscoped text query and correctly
+failed on "VBD" appearing twice on screen (header cell + pre-existing SORT tab button) — scoped
+with `within()`. Three flaky test-file timeouts in the full suite (`board-filters.test.tsx`,
+`draft-room-typeahead.test.tsx`, `offline.test.tsx`) were reproduced identically against
+unmodified (`git stash`) code under the same CPU contention and disappeared entirely re-run alone
+— container speed, not a regression, confirmed rather than assumed. FR-058's "or any selected
+strategy" is explicitly out of scope: no strategy selector exists in the app to depart from; noted
+as separate, dependent work. `docs/founder-requests/FR-055-*.md`, `FR-050-*.md`, `FR-058-*.md` each
+carry `STATUS: SHIPPED` with a `## Resolution` section. Full test count and commit hash: see
+`docs/status/2026-07-29-frontend-fr050-055-058.md`.
+
+Prior verification: 2026-07-29, backend session (PM-dispatched, worktree
 `agent-a2a7e52225b3a7db0`, ADR-060) closing a real gap: contract 1.14.0 (thread 082) put real ADP
 fields on the board but defined the term nowhere reachable — 13-term glossary, zero mentions in
 Methodology. Added an `ADP` glossary term (`src/export_static.py`, folding
@@ -210,9 +243,29 @@ pass or is marked as unverified.
     quality is unpriced by consensus versus 15.1% RB/WR and 6.3% QB, but that is pooled across all
     tight ends. If it concentrates in the top few, the founder's late-round strategy is wrong and
     the finding argues the opposite way. Survivorship is the specific way this analysis fails.
-12. **The shipped rank curve pools all seasons flat.** The QB slope collapsed monotonically
-    2021→2025 (−67, −73, −59, −45, **−4**), so the board recommends from a regime that has
-    disappeared. Whether other positions are doing the same has never been checked.
+12. **The shipped rank curve pools all seasons flat — and measured 2026-07-29, that costs almost
+    nothing** (`ranker` pass 3, `docs/ranking/bottom-up-research-pass-3.md`, thread **093** to
+    `strategist`, awaiting ruling). The QB slope point estimates reproduce exactly (−66.6, −72.6,
+    −58.6, −45.0, −4.1) but **the collapse is not established**: trend +15.3/season [−3.5, +34.1],
+    CI spanning zero; 2025's own CI [−46.5, +69.2] contains 2024's estimate; the monotonicity is a
+    property of `RELEVANT_DEPTH["QB"]=20` (at depth 12 the series is not monotone and 2021 is the
+    flattest season); and dropping one player (Jayden Daniels, consensus QB3) moves 2025 from −4.1
+    to **+28.6**. **Other positions checked and the answer is no** — RB's 2025 slope is −77.9, the
+    *steepest* of its five; WR is flat; TE is monotone with a magnitude CI spanning zero.
+    **The mechanism is market ordering skill, not positional value**: the 2025 realised QB value
+    curve is −58.7, flat against era means of −57.7/−59.0/−56.8, while consensus τ_b at QB went
+    +0.484 → **−0.042** (worse than random). Ordering skill has **zero measured persistence**
+    (lag-1 r = −0.007 [−0.414, +0.411]), so recency-weighting the *consensus* curve would track the
+    least persistent quantity in the system. On the *value* curve the answer is position-specific
+    (QB strongly yes, hl1 −22.6 [−30.3, −13.6] on a 9-season holdout; RB no; **WR contraindicated**,
+    last1 +2.75 [+0.96, +4.80] worse; TE weak) **and at QB it points the opposite way from the fix
+    on record** — the QB value curve is steepening, so weighting it recently makes the QB premium
+    *larger*. Board cost: `vbd = b·ln(rank/base)` exactly (intercept cancels; verified against the
+    live 510-row board, zero ordering mismatches), so the board is four numbers — under half-life 3
+    **one** top-150 player moves ≥10 places, under half-life 5 **none**, and every scheme from last3
+    down leaves all four slopes inside the board's own published 95% CI. **The board-curve weighting
+    question itself is unanswerable on current data: n = 2 evaluable targets, disagreeing at the 4th
+    decimal of Kendall τ.** Threads **055**/**084** are what unblock it.
 
 **Known-red, deliberately**
 

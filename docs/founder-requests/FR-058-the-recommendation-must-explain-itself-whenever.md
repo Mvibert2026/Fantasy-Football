@@ -1,6 +1,6 @@
 ---
 ID: FR-058
-STATUS: NEW
+STATUS: SHIPPED
 PRIORITY: HIGH
 SOURCE: chat 2026-07-29, PM session
 RAISED: 2026-07-29
@@ -76,3 +76,38 @@ separate build.
 **This also strengthens the case for fixing the constants** (already flagged for adversarial review).
 Once the panel has to say *why* it overrode VBD, "because of a number someone picked" becomes visible
 to the founder every time it happens.
+
+## Resolution (2026-07-29, frontend)
+
+**Shipped: the VBD-departure explanation.** Out of scope, per this file's own read and this
+session's task boundary: "or any selected strategy" — no strategy selector exists to depart from,
+so nothing was built there; still open, dependent work.
+
+`ui/data/recommendation.ts` gained `recommendationTerms()` (the three reachable constants — DEF's
+`-40` was never reachable, board.json carries no DEF rows, ADR-039 — each paired with the plain-word
+reason it fired, e.g. `"you have no tight end yet"`, `"this is the last tier-1 tight end left on the
+board"`, `"it is a quarterback being taken before round 6"`) and `findVbdOverride(top, available,
+round, unfilledPositions)`, which compares the recommendation's #1 pick against the single
+highest-VBD player still available on the *whole* board (not just the six-deep shortlist already
+shown) and returns `null` whenever they already agree — satisfying "when nothing moved, say
+nothing" exactly, not just usually. `recommendationScore` itself is unchanged arithmetic, now built
+from the same term list so the score and its own explanation can never drift apart.
+
+`DraftRoom.tsx`'s RECOMMENDED card gained a "WHY NOT HIGHEST VBD" panel, rendered only when
+`findVbdOverride` returns non-null, showing: the displaced player by name and position, the exact
+VBD gap (`vbdLeader.vbd - top.vbd`, e.g. "7 more VBD (113.7 vs 106.8)"), and every firing term in
+plain words with its signed point value — each one tagged, every time, "an unbacktested stopgap
+constant, not a finding" (item 2's literal ask). Nothing in the panel argues the pick is good
+(item 1) — it states which rule fired and what it cost, full stop.
+
+Verified against a real, reproducible scenario (not a synthetic fixture): with the board's real top
+five VBD players drafted off, the user's next real turn recommends Jaxon Smith-Njigba (WR) over
+Josh Allen (QB, 7 more VBD) because the unfilled-WR bonus (+8) and the early-QB penalty (-25, round
+2 < 6) combine to flip the order — the panel names Josh Allen, the 7-point gap, and both terms.
+A second scenario (the user's actual first real pick, only the board's top two players gone)
+confirms the negative case: the recommendation's #1 pick *is* the VBD leader there, and no panel
+renders. Screenshots: `frontend/e2e/artifacts/fr058-vbd-override-explanation.png` and
+`frontend/e2e/artifacts/fr058-no-override-when-order-agrees.png`; script:
+`frontend/e2e/verify-fr050-055-058.mjs`. Unit tests: `ui/__tests__/recommendation.test.ts` (12
+tests covering `recommendationTerms` reasons and `findVbdOverride`'s null/non-null cases, the
+displaced player, the exact VBD gap, and both `appliesTo` sides).
