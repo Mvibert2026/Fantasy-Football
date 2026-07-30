@@ -27,6 +27,53 @@ repo — Cloudflare holds its own deploy token. This closes the last dependency 
 machine: development, tests, the database rebuild, the daily capture and now viewing the app all run
 without it.
 
+**Last verified:** 2026-07-30, backend session (worktree `agent-a780c67919f11cf27`, FR-094) building
+the sleeper screen the founder asked for ("can we predict late-round sleepers who show breakout
+characteristics but not enough to warrant score adjustments"). Full writeup
+`docs/analysis/sleeper-screen-2026-07-30.md`, script `analysis/sleeper_screen.py` (self-contained
+-- see below), raw output `data/qa/sleeper-screen-2026-07-30.json`. **Step 1 base rate (round-10+
+FFC 12-team ADP, `actual_vbd>0` as the hit definition, this league's own ADR-029 replacement
+levels): 24.1% [19.1%,30.0%] Wilson, train 2018-2023; 24.5% [14.6%,38.1%], holdout 2024** -- a
+real, publishable finding on its own: roughly 1 in 4 late-round players return startable value,
+not the 3-6% a "sleeper" framing might suggest. **Step 2: none of the three pre-registered
+features (AGE_YOUNG, EFFICIENT_LOW_VOLUME, RISING_SHARE) reach significance** (raw p 0.209/
+0.643/0.266, BH-adjusted higher) at this sample size; RISING_SHARE inverted on its one holdout
+look (0/6 hits vs 24.5% base). AGE_YOUNG is the one candidate worth carrying forward as a
+hypothesis (direction held in holdout, independently evidenced at MODERATE-HIGH confidence on
+the full board in the adp-vs-production analysis) but is underpowered here (n=47 train / n=8
+holdout flagged), not disproven. **Verdict: no flag from this pass should ship** -- a clean
+negative result, reported plainly per the founder's own instruction that this is the most
+valuable output if nothing separates hits from misses. This worktree's `data/nfl.db` started as
+the standard 0-byte stub (docs/environment.md SS4); rebuilt via `scripts/rebuild_database.py`'s
+steps 1/2/3/5/6 plus a direct `ingest_ffc_adp.import_all_snapshot_csvs` call (step 4,
+`ingest_rankings.py`, 403'd against `dynastyprocess/data` in this session -- a documented proxy
+restriction, not needed by this analysis). **Script is self-contained rather than importing
+`analysis/adp_vs_production.py`**, because that script's commit (`e334473`) lives on sibling
+branch `worktree-agent-a3f0bc3cc3efb7185`, not yet merged into this branch -- a real, reportable
+structural gap: this worktree's branch (forked from `main` at `f07cf88`) is missing FR-072/
+thread-096's ADP-vs-production work entirely (no `analysis/` dir, no `docs/analysis/`, no
+FR-094/FR-096 founder-request files, `docs/founder-requests/INDEX.md` here only reaches FR-071)
+even though `docs/CURRENT-STATE.md` in the shared/main checkout describes it as done -- the same
+class of cross-worktree drift environment.md SS4 documents for `nfl.db`, now observed for
+un-merged commits generally. Founder extended the request mid-session to FR-096 (bust-candidate
+screen, the mirror case); per explicit sequencing instruction, not attempted this session --
+scoped in a NEW- handoff (`docs/handoffs/NEW-fr-096-bust-candidate-screen-scope.md`) instead of
+half-building both. Methodology review requested via
+`docs/handoffs/NEW-fr-094-sleeper-screen-methodology-review.md` (TO: strategist) -- both threads
+unallocated IDs per this dispatch's explicit instruction not to allocate a thread number this
+session; next session running `python tools/handoffs.py sync` assigns them. This was a
+Sonnet/default-tier dispatch for statistical-methodology work that CLAUDE.md SS9 says belongs at
+Opus/high effort; flagged in the writeup rather than stopping to ask.
+
+**Prior verification (from the shared/main checkout, not yet present on this branch):** 2026-07-30,
+backend session (worktree `agent-a3f0bc3cc3efb7185`, FR-072, thread 096) running the founder's
+ADP-vs-production analysis ("look at ADP vs Production and try to establish patterns"). See
+`docs/analysis/adp-vs-production-2026-07-30.md` in the main checkout for the full writeup this
+session's sleeper screen builds on (early-round RB overpriced ~3x same-round peers; young WR/TE
+age<=23 outperform ADP by ~+34.6 VBD pts/season). Left unedited here rather than copied in, since
+this branch does not have the underlying commit -- copying only the prose without the script and
+data would misrepresent this branch's own state.
+
 **Last verified:** 2026-07-30, frontend session (worktree `agent-a160788e8e9ccc925`) porting two
 design specs in order, both in `docs/design/`: `DRAFT-MIDDLE-PANE.md` and `SUPPLIED-VALUES.md`. The
 Draft screen's middle pane (`frontend/ui/views/DraftRoom.tsx`) is now one tab set — **Recommend ·

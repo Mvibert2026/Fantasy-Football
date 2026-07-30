@@ -753,3 +753,19 @@ file (ADR-057). Full evidence `docs/ranking/bottom-up-research-pass-3.md`, threa
    rather than resolved — one ruling should cover all three sources, not three separate ones.
    See ADR-063 and the research doc's SS6 for the full clause reasoning.
 
+
+## 2026-07-30 — backend, FR-094 sleeper screen: worktree branch drift beyond nfl.db
+
+`docs/environment.md` SS4 documents that a worktree does not inherit `data/nfl.db`. This session
+found the same class of drift for **committed work generally**: worktree `agent-a780c67919f11cf27`
+was forked from `main` before `e334473` (the ADP-vs-production analysis, FR-072/thread 096) merged
+anywhere reachable from `main` -- so `analysis/`, `docs/analysis/`, and `docs/founder-requests/`
+entries past FR-071 (including FR-094/FR-096 themselves) are all absent from this branch, even
+though the shared/main checkout and `docs/CURRENT-STATE.md` there describe that work as done. Not
+resolved this session (out of scope to merge another branch's history unilaterally -- would need
+explicit escalation per the standing "pull conflict is not yours to resolve alone" rule if attempted).
+Flagging as a process gap: a long-lived worktree can silently miss an arbitrary amount of merged-
+elsewhere-but-not-to-main work, not just the DB file. Whoever owns branch/worktree lifecycle should
+consider whether worktrees need a periodic rebase-onto-main step, or whether dispatches should check
+`git merge-base --is-ancestor <expected-recent-commit> HEAD` before assuming referenced docs exist
+in the current branch.
