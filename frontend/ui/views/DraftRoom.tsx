@@ -51,6 +51,7 @@ import { decimal, integer, interval as intervalText, percent, signed } from '../
 import { Predictions } from './Predictions';
 import { LAYOUT_MODE_ORDER, LAYOUT_PRESETS, paneColumns, useDraftLayout } from '../data/layoutModes';
 import { PeriodicTableGrid, buildGridCellData, type GridSortMode } from '../components/PeriodicTableGrid';
+import { matchesPlayerQuery } from '../data/playerSearch';
 
 // Thread 058 section A item 4: DEF is a fifth scarcity row, matching the
 // design's five positions. board.json carries zero DEF players (ADR-039, no
@@ -240,9 +241,31 @@ const POSITION_COLOR: Record<string, string> = {
  * ~110px narrower than one that had it, so rows drifted from EACH OTHER, not
  * just from the header. Every row now reserves the same slot and prints a
  * neutral "not yet" state inside it instead of collapsing the column away.
+ *
+ * RANKINGS-PANE.md item 1 (design round 2026-07-31, "at 1180 the pane drops
+ * the player's name entirely"): confirmed against this file directly -- the
+ * old header/row markup gave PLAYER `flex: 1, minWidth: 0`, which has no
+ * floor at all. Once this pane's own share of the layout-mode grid
+ * (`paneColumns`, 22-52% of the window) got narrower than the sum of every
+ * OTHER column's fixed width, PLAYER's flex-basis computed to (near) zero and
+ * the name disappeared completely -- not truncated, gone, exactly the
+ * screenshot design caught (`RB10` with nothing beside it).
+ *
+ * Fixed the same way Board.tsx's own table already solves this
+ * (`GRID_TEMPLATE`, Board.tsx:89): a real CSS Grid with one shared column
+ * template, PLAYER as `minmax(name, 1fr)` instead of a floor-less flex
+ * child. A `minmax` floor in a grid track is a hard guarantee, not a
+ * preference -- if the pane is narrower than the template's total minimum
+ * width, the ROW overflows and scrolls horizontally (see the shared
+ * scroll/sticky-header wrapper below), but PLAYER itself never drops below
+ * `name` px. `name: 64` is picked to comfortably hold the ~7-character
+ * truncated form design's own 1500w capture showed as already-acceptable
+ * ("Bijan …"), so a squeeze never goes past what the design review itself
+ * treated as fine.
  */
 const DRAFT_LIST_COLS = {
   rank: 22,
+  name: 64,
   pos: 38,
   tm: 26,
   adp: 34,
@@ -255,6 +278,26 @@ const DRAFT_LIST_COLS = {
   taken: 20,
 } as const;
 const DRAFT_LIST_GAP = 9;
+
+/** One column definition, shared verbatim by the header and every row --
+ *  RANKINGS-PANE.md item 3's constraint ("a layout that states its columns
+ *  twice is rejected") satisfied as a side effect of fixing item 1, since
+ *  both now read from this one template rather than each hand-placing a
+ *  `width:` per cell. Order matches the header's own left-to-right reading:
+ *  RANK, PLAYER, POS, TM, ADP, Δ, VBD, AVAIL, dots, watch, taken. */
+const DRAFT_LIST_GRID_TEMPLATE = [
+  `${DRAFT_LIST_COLS.rank}px`,
+  `minmax(${DRAFT_LIST_COLS.name}px,1fr)`,
+  `${DRAFT_LIST_COLS.pos}px`,
+  `${DRAFT_LIST_COLS.tm}px`,
+  `${DRAFT_LIST_COLS.adp}px`,
+  `${DRAFT_LIST_COLS.delta}px`,
+  `${DRAFT_LIST_COLS.vbd}px`,
+  `${DRAFT_LIST_COLS.avail}px`,
+  `${DRAFT_LIST_COLS.dots}px`,
+  `${DRAFT_LIST_COLS.watch}px`,
+  `${DRAFT_LIST_COLS.taken}px`,
+].join(' ');
 
 // Thread 058 section B4: DEF added to the position filter, matching the
 // design's ALL/QB/RB/WR/TE/DEF row. Selecting it shows an honest "no DEF
@@ -570,10 +613,32 @@ export function DraftRoom({
 
   const taken = useMemo(() => takenPlayerIds(draft.picks), [draft.picks]);
   const available = useMemo(() => rows.filter((r) => !taken.has(r.id)), [rows, taken]);
-  const availableInTabUnsorted = useMemo(
-    () => (positionTab === 'ALL' ? available : available.filter((r) => r.raw.position === positionTab)),
-    [available, positionTab],
-  );
+
+  /**
+   * FR-122 ("typing in a player's name should filter the list... a search as
+   * well as a 'drafted' function"). Reuses `query` -- already the pick-entry
+   * text field's state, no second input added. Non-null exactly while the
+   * founder is actively narrowing the list; `null` (not `[]`) is the "no
+   * filter active" state, kept distinct from "filter active, zero matches"
+   * per Principle #2.
+   *
+   * Deliberately searches the FULL board (`available`), not `positionTab`'s
+   * own subset first -- the FR's own example ("Typing RB1 should narrow to
+   * running backs ranked 1 and 10-19, not return nothing") only works if the
+   * query is not additionally constrained by whatever position tab happens to
+   * be selected. The position tabs still narrow the *unfiltered* list; a
+   * search in progress supersedes them rather than combining with them.
+   */
+  const searchFilteredAvailable = useMemo(() => {
+    const q = query.trim();
+    if (!q) return null;
+    return available.filter((r) => matchesPlayerQuery(r, q));
+  }, [query, available]);
+
+  const availableInTabUnsorted = useMemo(() => {
+    if (searchFilteredAvailable !== null) return searchFilteredAvailable;
+    return positionTab === 'ALL' ? available : available.filter((r) => r.raw.position === positionTab);
+  }, [available, positionTab, searchFilteredAvailable]);
   // Thread 058 section B3: apply the active sort. Board-rank order is a plain
   // slice (already board-rank ordered), matching every other sort's stable
   // comparator rather than special-casing it.
@@ -607,7 +672,10 @@ export function DraftRoom({
   // stay restricted to a single position tab until backend exports a real
   // `global_tier` field (flagged to backend/PM in the thread reply) -- this is
   // a correction to the thread's read of section B1, not a gap in this build.
-  const bandsEnabled = positionTab !== 'ALL' && sortMode === 'rank';
+  // FR-122: while a search is narrowing the list, it can span positions (see
+  // searchFilteredAvailable's comment) the same way "ALL" can -- same tier-
+  // mislabelling risk documented above, so bands are suppressed the same way.
+  const bandsEnabled = searchFilteredAvailable === null && positionTab !== 'ALL' && sortMode === 'rank';
   const boardItems = useMemo(() => {
     const items: Array<{ kind: 'band'; tier: string; count: number } | { kind: 'row'; row: BoardRow }> = [];
     if (bandsEnabled) {
@@ -1755,10 +1823,14 @@ export function DraftRoom({
             ))}
             <div style={{ flex: 1 }} />
             <span
-              title="Baseline → live-adjusted availability at your next pick"
+              title={
+                searchFilteredAvailable !== null
+                  ? `${searchFilteredAvailable.length} of ${available.length} still-available players match "${query.trim()}"`
+                  : 'Baseline → live-adjusted availability at your next pick'
+              }
               style={{ fontFamily: 'var(--font-num)', fontSize: 10, color: 'var(--dim2)', flex: 'none' }}
             >
-              {availableInTab.length} left
+              {searchFilteredAvailable !== null ? `${searchFilteredAvailable.length} match` : `${availableInTab.length} left`}
             </span>
           </div>
           {/* FR-055: the founder's own report -- "Board in Draft needs column
@@ -1774,10 +1846,7 @@ export function DraftRoom({
               this screen's own existing positional-label cell ("WR12", not
               bare "WR" -- thread 058 section B2, unchanged here) since that is
               a real, different rendering already shipped, not a new name for
-              Board's plain-position column. Static (not position: sticky) --
-              it already sits outside the scrollable row list below, so it
-              never scrolls away, satisfying FR-055's "sticky if the list
-              scrolls" the same way the position/sort bars above it do.
+              Board's plain-position column.
               VBD (FR-050) is new: the number the board actually ranks on,
               previously visible only inside a row's expanded "why" detail as a
               delta component, never as its own value on this screen. AVAIL
@@ -1790,99 +1859,122 @@ export function DraftRoom({
               ("every rendered number traces to a named field") does not apply
               to them -- but per DRAFT_LIST_COLS' own doc comment (FR-067),
               their WIDTH still has to be reserved here even unlabeled, or
-              PLAYER's flex:1 absorbs a different amount of space in the
-              header than in a row and every column drifts. */}
-          <div
-            style={{
-              flex: 'none',
-              display: 'flex',
-              alignItems: 'center',
-              gap: DRAFT_LIST_GAP,
-              padding: '4px 12px',
-              borderBottom: '1px solid var(--line2)',
-              background: 'var(--panel2)',
-            }}
-          >
-            <span className="num" style={{ fontSize: 9, letterSpacing: '.04em', color: 'var(--dim2)', width: DRAFT_LIST_COLS.rank, textAlign: 'right' }}>
-              RANK
-            </span>
-            {/* overflow/whiteSpace/textOverflow matches the row's own PLAYER cell
-                (below) -- found by testing at a second, narrower viewport
-                (FR-067's own instruction): at 1180px the header's trailing
-                dots/watch/taken slots leave less room for PLAYER than "PLAYER"
-                needs, and minWidth:0 (required so the header shrinks exactly
-                like a row does) let the overflowing text spill into POS
-                instead of eliding cleanly. */}
-            <span
+              PLAYER's grid track absorbs a different amount of space in the
+              header than in a row and every column drifts.
+
+              RANKINGS-PANE.md item 1/3: the header used to sit as a plain
+              `position: static` sibling above a separately-scrolling row list
+              (two elements, one column layout duplicated between them -- the
+              exact "states its columns twice" pattern the spec rejects). Now
+              it is the first child *inside* the same scrollable element as the
+              rows, `position: sticky` (Board.tsx's own pattern, Board.tsx:489),
+              so a single `overflow: auto` handles both vertical scroll (header
+              pinned) and horizontal scroll (header and rows move together,
+              never independently) if the pane is ever narrower than
+              DRAFT_LIST_GRID_TEMPLATE's minimum width. */}
+          <div data-testid="rankings-pane-list" style={{ flex: 1, minHeight: 0, overflow: 'auto' }}>
+            <div
+              data-testid="rankings-pane-header-row"
               style={{
-                fontSize: 9,
-                letterSpacing: '.08em',
-                color: 'var(--dim2)',
-                flex: 1,
-                minWidth: 0,
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
+                position: 'sticky',
+                top: 0,
+                zIndex: 2,
+                display: 'grid',
+                gridTemplateColumns: DRAFT_LIST_GRID_TEMPLATE,
+                columnGap: DRAFT_LIST_GAP,
+                alignItems: 'center',
+                padding: '4px 12px',
+                borderBottom: '1px solid var(--line2)',
+                background: 'var(--panel2)',
               }}
             >
-              PLAYER
-            </span>
-            <span style={{ fontSize: 9, letterSpacing: '.08em', color: 'var(--dim2)', width: DRAFT_LIST_COLS.pos }}>POS</span>
-            <span style={{ fontSize: 9, letterSpacing: '.08em', color: 'var(--dim2)', width: DRAFT_LIST_COLS.tm }}>TM</span>
-            {/* ADP/VBD/AVAIL headers below carry the dotted-underline hover
-                affordance (docs/design/SUPPLIED-VALUES.md's existing marker,
-                reused for "hover me" rather than its original "you supplied
-                this" meaning -- founder, 2026-07-30: "even hovering over CI
-                to tell me that would have been ok"). Each keeps its own
-                richer, hand-written title (source note / ranking-method
-                clause) via `overrideTitle` rather than the bare glossary
-                sentence, since that wording is already more specific than a
-                12-word gloss -- but now visibly hoverable, same as a header
-                with no bespoke title falls back to the glossary text alone. */}
-            <span className="num" style={{ fontSize: 9, letterSpacing: '.02em', color: 'var(--dim2)', width: DRAFT_LIST_COLS.adp, textAlign: 'right' }}>
-              <GlossaryHeaderLabel
-                data={data}
-                abbreviation="ADP"
-                text="ADP"
-                overrideTitle={computeAdpHeaderTitle(data.board.adp_source_note, data.board.adp_as_of_date)}
-              />
-            </span>
-            <span
-              className="num"
-              title="Our rank minus consensus rank -- click a row's number to see why"
-              style={{ fontSize: 9, color: 'var(--dim2)', width: DRAFT_LIST_COLS.delta, textAlign: 'right' }}
-            >
-              Δ
-            </span>
-            <span className="num" style={{ fontSize: 9, letterSpacing: '.02em', color: 'var(--dim2)', width: DRAFT_LIST_COLS.vbd, textAlign: 'right' }}>
-              <GlossaryHeaderLabel
-                data={data}
-                abbreviation="VBD"
-                text="VBD"
-                overrideTitle={`Value over positional replacement -- what the board is actually ranked on${showSources ? ' (board.json:players[].vbd)' : ''}`}
-              />
-            </span>
-            <span className="num" style={{ fontSize: 9, letterSpacing: '.02em', color: 'var(--dim2)', width: DRAFT_LIST_COLS.avail, textAlign: 'right' }}>
-              <GlossaryHeaderLabel
-                data={data}
-                abbreviation="AVAIL"
-                text="AVAIL"
-                overrideTitle="Baseline -> live-adjusted availability at your next pick, then the same number as ten dots"
-              />
-            </span>
-            {/* Unlabeled, width-only: the dots repeat AVAIL's own number, and
-                watch/taken are actions, not values -- see the comment above. */}
-            <span style={{ width: DRAFT_LIST_COLS.dots, flex: 'none' }} />
-            <span style={{ width: DRAFT_LIST_COLS.watch, flex: 'none' }} />
-            <span style={{ width: DRAFT_LIST_COLS.taken, flex: 'none' }} />
-          </div>
-          {positionTab === 'DEF' && availableInTab.length === 0 ? (
-            <div style={{ padding: '12px', fontSize: 12.5, color: 'var(--dim2)', lineHeight: 1.5 }}>
-              No DEF players on this board. {data.board.def_note}
+              <span className="num" style={{ fontSize: 9, letterSpacing: '.04em', color: 'var(--dim2)', textAlign: 'right' }}>
+                RANK
+              </span>
+              <span
+                style={{
+                  fontSize: 9,
+                  letterSpacing: '.08em',
+                  color: 'var(--dim2)',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                PLAYER
+              </span>
+              <span style={{ fontSize: 9, letterSpacing: '.08em', color: 'var(--dim2)' }}>POS</span>
+              <span style={{ fontSize: 9, letterSpacing: '.08em', color: 'var(--dim2)' }}>TM</span>
+              {/* ADP/VBD/AVAIL headers below carry the dotted-underline hover
+                  affordance (docs/design/SUPPLIED-VALUES.md's existing marker,
+                  reused for "hover me" rather than its original "you supplied
+                  this" meaning -- founder, 2026-07-30: "even hovering over CI
+                  to tell me that would have been ok"). Each keeps its own
+                  richer, hand-written title (source note / ranking-method
+                  clause) via `overrideTitle` rather than the bare glossary
+                  sentence, since that wording is already more specific than a
+                  12-word gloss -- but now visibly hoverable, same as a header
+                  with no bespoke title falls back to the glossary text alone. */}
+              <span className="num" style={{ fontSize: 9, letterSpacing: '.02em', color: 'var(--dim2)', textAlign: 'right' }}>
+                <GlossaryHeaderLabel
+                  data={data}
+                  abbreviation="ADP"
+                  text="ADP"
+                  overrideTitle={computeAdpHeaderTitle(data.board.adp_source_note, data.board.adp_as_of_date)}
+                />
+              </span>
+              <span
+                className="num"
+                title="Our rank minus consensus rank -- click a row's number to see why"
+                style={{ fontSize: 9, color: 'var(--dim2)', textAlign: 'right' }}
+              >
+                Δ
+              </span>
+              <span className="num" style={{ fontSize: 9, letterSpacing: '.02em', color: 'var(--dim2)', textAlign: 'right' }}>
+                <GlossaryHeaderLabel
+                  data={data}
+                  abbreviation="VBD"
+                  text="VBD"
+                  overrideTitle={`Value over positional replacement -- what the board is actually ranked on${showSources ? ' (board.json:players[].vbd)' : ''}`}
+                />
+              </span>
+              <span className="num" style={{ fontSize: 9, letterSpacing: '.02em', color: 'var(--dim2)', textAlign: 'right' }}>
+                <GlossaryHeaderLabel
+                  data={data}
+                  abbreviation="AVAIL"
+                  text="AVAIL"
+                  overrideTitle="Baseline -> live-adjusted availability at your next pick, then the same number as ten dots"
+                />
+              </span>
+              {/* Unlabeled, width-only: the dots repeat AVAIL's own number, and
+                  watch/taken are actions, not values -- see the comment above. */}
+              <span />
+              <span />
+              <span />
             </div>
-          ) : null}
-          <div style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
-            {boardItems.map((item) => {
+            {/* FR-122: while a search is narrowing the list, "no DEF players on
+                this board" would be a lie -- the tab restriction isn't even
+                being applied (see searchFilteredAvailable's comment), so a
+                zero-result DEF tab during a search means the query matched
+                nothing, not that DEF is empty. The two empty states are kept
+                separate, never combined into one guess at which applies. */}
+            {searchFilteredAvailable === null && positionTab === 'DEF' && availableInTab.length === 0 ? (
+              <div style={{ padding: '12px', fontSize: 12.5, color: 'var(--dim2)', lineHeight: 1.5 }}>
+                No DEF players on this board. {data.board.def_note}
+              </div>
+            ) : null}
+            {searchFilteredAvailable !== null && searchFilteredAvailable.length === 0 ? (
+              <div style={{ padding: '12px', fontSize: 12.5, color: 'var(--dim2)', lineHeight: 1.5 }}>
+                No still-available player matches &ldquo;{query.trim()}&rdquo;.
+              </div>
+            ) : null}
+            {(() => {
+              // FR-122/LIGHT-THEME-SHADING.md: row index counts rows only (band
+              // dividers don't consume a slot), same pattern as Board.tsx's own
+              // `rowIndex` counter (Board.tsx:540) -- drives the alternating
+              // light-mode tint below.
+              let rowIndex = 0;
+              return boardItems.map((item) => {
               if (item.kind === 'band') {
                 return (
                   <div
@@ -1918,26 +2010,44 @@ export function DraftRoom({
               // when there is a real number behind it (live or baseline) -- a
               // zero-filled array is visually indistinguishable from a genuine 0%.
               const dotsValue = avail ? avail.live ?? (avail.baseline.kind === 'present' ? avail.baseline.value : null) : null;
+              // LIGHT-THEME-SHADING.md: same treatment Board.tsx's BoardRowLine
+              // already ships (Board.tsx:591-598) -- alternating `--row-alt` tint
+              // replaces the per-row hairline in light mode, undefined (falls
+              // back to today's transparent/`--line`) in dark, so no theme
+              // branch is needed here either. "The row you are on" for this
+              // screen is the row with its "why this rank" detail open --
+              // DraftRoom has no separate inline-select concept the way
+              // Board.tsx's own row click does.
+              const alt = rowIndex++ % 2 === 1;
+              const rowBg = expanded ? 'var(--panel2)' : alt ? 'var(--row-alt, transparent)' : 'transparent';
+              const rowBorder = expanded ? 'none' : '1px solid var(--row-line, var(--line))';
               return (
-                <div key={r.id} style={{ borderBottom: '1px solid var(--line)' }}>
+                <div key={r.id} data-testid={`rankings-pane-row-${r.id}`} style={{ borderBottom: rowBorder, background: rowBg }}>
                   <div
                     onClick={() => openDetail(r)}
-                    style={{ display: 'flex', alignItems: 'center', gap: DRAFT_LIST_GAP, padding: '6px 12px', cursor: 'pointer' }}
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: DRAFT_LIST_GRID_TEMPLATE,
+                      columnGap: DRAFT_LIST_GAP,
+                      alignItems: 'center',
+                      padding: '6px 12px',
+                      cursor: 'pointer',
+                    }}
                   >
-                    <span className="num" style={{ fontSize: 11, color: 'var(--dim2)', width: DRAFT_LIST_COLS.rank, textAlign: 'right' }}>
+                    <span className="num" style={{ fontSize: 11, color: 'var(--dim2)', textAlign: 'right' }}>
                       <Value cell={r.overallRank} render={integer} />
                     </span>
-                    <span style={{ fontWeight: 600, fontSize: 13, flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <span style={{ fontWeight: 600, fontSize: 13, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {r.name.kind === 'present' ? r.name.value : ''}
                     </span>
                     {/* Thread 058 section B2: positional rank (WR12), not bare
                         position -- board.json:positional_label, already a real
                         exported field (confirmed "RB1"/"WR1"-style against the
                         real export), just not rendered on this row before. */}
-                    <span style={{ fontSize: 11, letterSpacing: '.045em', fontWeight: 600, color: POSITION_COLOR[r.raw.position], width: DRAFT_LIST_COLS.pos }}>
+                    <span style={{ fontSize: 11, letterSpacing: '.045em', fontWeight: 600, color: POSITION_COLOR[r.raw.position] }}>
                       <Value cell={r.positionalLabel} render={(v) => v} />
                     </span>
-                    <span style={{ fontSize: 10, letterSpacing: '.045em', color: 'var(--dim2)', width: DRAFT_LIST_COLS.tm }}>{r.raw.team}</span>
+                    <span style={{ fontSize: 10, letterSpacing: '.045em', color: 'var(--dim2)' }}>{r.raw.team}</span>
                     <DraftRoomAdpCell row={r} />
                     <span
                       onClick={(e) => {
@@ -1946,7 +2056,7 @@ export function DraftRoom({
                       }}
                       title="Why this rank -- click to expand"
                       className="num"
-                      style={{ fontSize: 11, fontWeight: 600, color: deltaColor, width: DRAFT_LIST_COLS.delta, textAlign: 'right', cursor: 'pointer' }}
+                      style={{ fontSize: 11, fontWeight: 600, color: deltaColor, textAlign: 'right', cursor: 'pointer' }}
                     >
                       {delta === null ? '—' : delta > 2 ? `▲${integer(delta)}` : delta < -2 ? `▼${integer(Math.abs(delta))}` : '·'}
                     </span>
@@ -1956,7 +2066,7 @@ export function DraftRoom({
                     <span
                       className="num"
                       title={`Value over positional replacement${showSources ? ' -- board.json:players[].vbd' : ''}`}
-                      style={{ fontSize: 11, color: 'var(--dim2)', width: DRAFT_LIST_COLS.vbd, textAlign: 'right' }}
+                      style={{ fontSize: 11, color: 'var(--dim2)', textAlign: 'right' }}
                     >
                       <Value cell={r.vbd} render={decimal} />
                     </span>
@@ -1976,7 +2086,7 @@ export function DraftRoom({
                             ? 'baseline → live availability at your next pick'
                             : `live not yet computed -- ${avail.picksLogged} of ${avail.picksRequired} picks logged`
                       }
-                      style={{ fontSize: 10, width: DRAFT_LIST_COLS.avail, textAlign: 'right', color: 'var(--dim2)' }}
+                      style={{ fontSize: 10, textAlign: 'right', color: 'var(--dim2)' }}
                     >
                       {avail === null ? (
                         '—'
@@ -1995,7 +2105,7 @@ export function DraftRoom({
                         </>
                       )}
                     </span>
-                    <span style={{ width: DRAFT_LIST_COLS.dots, flex: 'none', display: 'flex', justifyContent: 'flex-end' }}>
+                    <span style={{ display: 'flex', justifyContent: 'flex-end' }}>
                       {dotsValue !== null ? <RowDots value={dotsValue} /> : null}
                     </span>
                     <span
@@ -2006,9 +2116,7 @@ export function DraftRoom({
                       title="Star to track availability on your next pick"
                       style={{
                         fontSize: 11,
-                        width: DRAFT_LIST_COLS.watch,
                         textAlign: 'center',
-                        flex: 'none',
                         color: r.name.kind === 'present' && watchlist.includes(r.name.value) ? 'var(--down)' : 'var(--dim2)',
                         cursor: 'pointer',
                       }}
@@ -2024,10 +2132,8 @@ export function DraftRoom({
                       className="num"
                       style={{
                         fontSize: 10,
-                        width: DRAFT_LIST_COLS.taken,
                         textAlign: 'center',
                         boxSizing: 'border-box',
-                        flex: 'none',
                         color: 'var(--dim2)',
                         border: '1px solid var(--line)',
                         padding: '0 4px',
@@ -2058,7 +2164,8 @@ export function DraftRoom({
                   ) : null}
                 </div>
               );
-            })}
+              });
+            })()}
           </div>
         </div>
 

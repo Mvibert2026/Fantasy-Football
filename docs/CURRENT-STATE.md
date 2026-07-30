@@ -27,6 +27,67 @@ repo — Cloudflare holds its own deploy token. This closes the last dependency 
 machine: development, tests, the database rebuild, the daily capture and now viewing the app all run
 without it.
 
+**Last verified:** 2026-07-30, frontend session (worktree `agent-a9e24c92a40214afb`) shipping design
+round-1 item 6 (`docs/design/RANKINGS-PANE.md`) plus FR-122, the three-thing dispatch: **A.** the
+missing PLAYER column at 1180w, **B.** FR-122 (typing a name filters the list), **C.** the
+light-theme row treatment (`docs/design/LIGHT-THEME-SHADING.md`), previously shipped on `Board.tsx`
+only. All three shipped; the design doc's own items 2 (dot strings/MFL superscript/mono
+labels/hover-only icons) and the rest of its "look dated" section were **not** built — out of this
+session's explicit A/B/C scope, not attempted.
+**A:** root cause confirmed directly in `DraftRoom.tsx` — the rankings-pane row list (RANK/PLAYER/
+POS/TM/ADP/Δ/VBD/AVAIL, the exact column set the design screenshot showed) used hand-rolled flexbox
+with the PLAYER cell as `flex: 1, minWidth: 0` — a floor-less flex child that resolved to near-zero
+width once this pane's own share of the layout-mode grid (22-52% of the window, `paneColumns()`)
+got narrower than every other column's combined fixed width. Fixed by porting `Board.tsx`'s own
+already-working pattern (`GRID_TEMPLATE`, a real CSS Grid with `minmax(Npx,1fr)` for the identity
+column) rather than inventing a new mechanism: new `DRAFT_LIST_GRID_TEMPLATE`, one shared template
+consumed by both the header and every row via `display: grid`, with PLAYER now `minmax(64px,1fr)` —
+a real, non-negotiable floor. Also merged the header into the same scrollable element as the rows
+(`position: sticky`, Board.tsx's own pattern) so header and rows can never scroll independently if a
+pane is ever narrower than the template's minimum — incidentally satisfying the design doc's item 3
+("one grid, one column definition") as a side effect of fixing item 1, though item 3 was not
+separately in scope. Verified at 1180w in both themes: PLAYER renders truncated real names (e.g.
+"Jahmy…", "Puka …"), never absent.
+**B (FR-122):** reused the existing pick-entry field (`query`, already there for RETROFIT-5's
+digit-key commit flow) as the founder's own "one control, two jobs" rather than adding a second
+input. New `ui/data/playerSearch.ts` (`normalizeSearchTerm`/`matchesPlayerQuery`) folds diacritics
+and punctuation (`Ja'Marr`/`JaMarr`/`jamarr` all match) and matches name, team, position, and
+`positionalLabel` (`RB10`) — so `RB1` narrows to RB1/RB10-19 rather than nothing, the FR's own named
+example (verified against the real board: "508 left" → "78 match"). A non-empty query searches the
+full board, superseding rather than combining with the position-tab filter (typing a team code while
+the QB tab is selected still finds non-QBs) — a deliberate reading of "shrink down," not specified
+verbatim by the founder but the only one consistent with his own RB1 example. Never auto-selects or
+auto-commits on a single match; an honest `No still-available player matches "…"` state replaces a
+silently blank list. RETROFIT-5's own separate 5-slot commit suggester (name-only) is untouched.
+**C:** ported `Board.tsx`'s `BoardRowLine` treatment verbatim to the rankings-pane rows — alternating
+`var(--row-alt, transparent)` tint (light-only, falls back to today's transparent in dark, no theme
+branch in component code), `var(--row-line, var(--line))` hairline fallback, and `var(--panel2)` for
+the "row you are on" (this screen's own concept of that is the row with its inline "why this rank"
+detail open, since DraftRoom has no separate row-select the way Board.tsx does) — no new values
+invented, matched to the one table `LIGHT-THEME-SHADING.md` had already finished.
+**Found and corrected mid-session, not left in a commit:** running the Playwright screenshot script
+against a dev server on port 5199 briefly hit a server that turned out to belong to a **different,
+concurrent agent's worktree** (`agent-ae11859768ad7e400`) sharing this container — confirmed via
+`/proc/<pid>/cmdline` before trusting any capture from it, per this file's own standing caution about
+shared-session interference. Switched to an unclaimed port (5220) for this session's own server. **A
+real mistake, disclosed rather than buried:** while cleaning up afterward, `kill <pid>` was run
+against what turned out to still be that other agent's dev-server process (misread from an earlier
+`ps` listing), terminating it. Not reversible from here; flagged so that worktree's own session (or
+PM) knows to restart it if still needed — no other file or state was touched.
+`npx tsc -b --noEmit` clean. Full suite **484 passed, 0 failed, 63 files** (459 baseline + 25 new:
+`ui/__tests__/playerSearch.test.ts` (9), `draft-room-rankings-pane-width.test.tsx` (5, a width-based
+structural assertion on the grid template — the kind that would have caught the original defect),
+`draft-room-search-filter.test.tsx` (8), `draft-room-row-shading.test.tsx` (3)). One test flaked on a
+5000ms timeout under this container's measured CPU contention (`load average: 9.32` on 4 cores) on
+the first full-suite run, passed cleanly standalone and on every rerun; its own timeout raised to
+15s rather than the assertion weakened. Screenshots looked at directly (not just captured), all in
+`frontend/e2e/artifacts/`: `rankings-pane-01-wide-dark.png`, `-02-1180w-dark.png`,
+`-03-wide-light.png`, `-04-1180w-light.png` (1180w + light together, the hardest combination),
+`-05-search-before.png`, `-06-search-after-RB1.png`, `-07-search-no-match.png`. FR-122 marked
+`SHIPPED` (`docs/founder-requests/FR-122-*.md`, Resolution section, `tools/founder_requests.py
+sync` re-run). `docs/design/RANKINGS-PANE.md` itself left `STATUS: OPEN` — items 2/3 of that spec
+remain, not this session's scope to close.
+
 **Last verified:** 2026-07-30, frontend session (worktree `agent-a08e75a2b222a2f66`, FR-114) shipping
 the global "show data sources" switch. Founder, refined mid-thread: *"I like the idea about
 traceablity ... I just want to be able to see a version with and without them."* Not a deletion —
