@@ -147,7 +147,7 @@ def ingest(seasons, teams=None, db_path: Path = DEFAULT_DB,
            refresh: bool = False) -> dict:
     teams = teams or W.TEAMS
     kicks = week1_dates(db_path)
-    conn = sqlite3.connect(db_path)
+    conn = sqlite3.connect(db_path, timeout=120)
     conn.execute(_CREATE_SQL)
     conn.execute(_QUAR_SQL)
     now = datetime.now(timezone.utc).isoformat()
