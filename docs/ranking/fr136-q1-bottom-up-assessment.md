@@ -413,6 +413,14 @@ points, and weighted prior PPG. **They were never measured against the thing act
 never on projection error. That comparison is the cheapest real answer available: both objects
 exist, both are committed, no new model is required.
 
+**Two alignment requirements, or the comparison is not a comparison.** (a) **Same universe.** The
+bar in §6.1 is measured on the `fantasypros_ecr` consensus board; the component models run on the
+FFC ADP board. One of the two has to move, and moving the incumbent is the cheaper direction because
+§6.2's refit already puts it on FFC. (b) **Same output.** The component models currently report MAE
+per *component* (yards, receptions, games); the incumbent reports error on *season points*. The
+components must be scored through `pos_model.score_components()` under this league's rules and
+compared on season points. That is arithmetic on existing objects, not a new model.
+
 **One structural fix belongs here, and it is about power, not accuracy.** The head-to-head is
 currently limited to **three seasons (2022–2024)** — not by the component models, which have seven
 (FFC ADP 2018–2024), but by the incumbent, whose training source `fantasypros_ecr` starts in 2021
