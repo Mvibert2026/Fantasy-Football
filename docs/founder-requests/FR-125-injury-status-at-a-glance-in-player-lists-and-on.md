@@ -123,3 +123,59 @@ Whatever source lands, the render for an uninjured player must be traceable to a
 *affirmatively* lists him as available — not inferred from his absence from an injury list. If the
 chosen source only publishes injured players, then "healthy" is not a fact we hold, and the correct
 render is the status's own vocabulary (e.g. "not on this week's report"), not a health claim.
+
+---
+
+## Founder correction, 2026-07-30 — personal use, and what survives it
+
+His words:
+
+> "rememer, I'm not redistributing these, it's personal use as if I went to the sites themselves -
+> I'm just making my digestion more efficient"
+
+**He is right, and the tier table above overstated the licensing objection.** Most of what was
+written as a blocker was a *redistribution* restriction, and nothing here is redistributed. The
+posture is one person reading sources he could open in a browser, assembled for his own use.
+
+**The password gate is what makes that claim true, and it already exists.** `worker/index.js`'s own
+comment states the reasoning: every data source this project uses — FantasyPros, FFC, Sleeper —
+permits personal use only, and *"a public URL with no auth is the one fact that turns 'personal use'
+into 'distribution', for all three at once."* The gate was built for exactly this. So the constraint
+that actually binds is **keep the gate on**, not "do not use these sources."
+
+### Revised tier table
+
+| Tier | Candidate | Status after the correction |
+|---|---|---|
+| 1 | **nflverse weekly roster status** (thread 097) | Unchanged. Still first — free, CC-BY, already a dependency, no terms question at all. If it covers the ask, stop here. |
+| 2 | **NFL's own injury report** | Unchanged. Clubs publish participation and game status. |
+| 3 | **Aggregators / other fantasy sites** | **Substantially opened up.** The redistribution objection does not apply. Evaluate on retrievability and reliability. Still do not fetch Yahoo, ESPN or CBS — they block research agents by name, which is a practical wall, not a legal one. |
+| 4 | **Reporter feeds on X** | Weakened but not cleared — see below. |
+
+### What still stands, narrowed
+
+Three objections survive the correction, and only one of them is about terms:
+
+1. **X's terms prohibit automated scraping as a contract term, independent of what is done with the
+   data.** Personal use does not dissolve that particular clause the way it dissolves a
+   redistribution clause. This is worth one sentence and no more: it is the founder's call on his own
+   tool, the stakes are low, and he has been told. **It is not a reason to refuse the work** — and if
+   he wants it evaluated anyway, evaluate it.
+2. **No join key.** Free-text posts resolve to a player only by name matching — the problem that
+   quarantined eight of 330 picks in this session's mock ingestion, on cleaner input than a
+   reporter's phrasing. This is a data-quality objection and it is unaffected by licensing.
+3. **Rumour and designation arrive at the same confidence.** "Looked limited in practice" is not a
+   claim a club made; an official designation is. The app has no way to grade the difference, and
+   under the never-fabricate rule the first cannot render as status. Also unaffected by licensing.
+
+**Objections 2 and 3 were always the stronger reasons to prefer tier 1**, and they do not depend on
+the legal argument at all. That was under-weighted in the original writeup and is the correction that
+matters.
+
+### What this changes for the researcher mandate
+
+Lead with retrievability and reliability, not licensing. The question is *"which source publishes an
+affirmative status for every player, at what latency, in a form that joins to `player_id_gsis`"* —
+not *"which source are we allowed to read."* Report terms only where a hard technical or contractual
+wall exists (X's scraping clause, the Yahoo/ESPN/CBS agent block), and do not spend a paragraph on
+redistribution for a tool that redistributes nothing.
