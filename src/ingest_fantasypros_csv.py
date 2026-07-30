@@ -63,14 +63,36 @@ import pandas as pd
 from nflreadpy.config import update_config
 
 DEFAULT_DB_PATH = Path(__file__).resolve().parent.parent / "data" / "nfl.db"
-DEFAULT_CSV_PATH = (
-    Path(__file__).resolve().parent.parent
-    / "data"
-    / "raw"
-    / "founder-export"
-    / "2026-07-27"
-    / "FantasyPros_2026_Draft_ALL_Rankings.csv"
-)
+
+EXPORT_ROOT = Path(__file__).resolve().parent.parent / "data" / "raw" / "founder-export"
+EXPORT_FILENAME = "FantasyPros_2026_Draft_ALL_Rankings.csv"
+_FALLBACK_EXPORT_DATE = "2026-07-27"
+
+
+def latest_export_csv(root: Path = EXPORT_ROOT) -> Path:
+    """Newest dated founder export containing the FantasyPros rankings CSV.
+
+    The founder re-exports this by hand from FantasyPros' site (there is no API
+    path -- see this module's header). Each export lands in its own
+    `data/raw/founder-export/YYYY-MM-DD/` directory, so a hardcoded default goes
+    stale the moment he supplies a fresher one, silently ingesting the old file.
+    Resolving to the newest directory makes a re-export a drop-in: put the file
+    in a new dated folder, run the script, no flag.
+
+    Directory names must be ISO dates so lexical sort is chronological; anything
+    else is ignored rather than guessed at. Falls back to the 2026-07-27 export
+    when nothing matches, which keeps the historical default reproducible.
+    """
+    dated = sorted(
+        d for d in root.glob("[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]")
+        if d.is_dir() and (d / EXPORT_FILENAME).is_file()
+    )
+    if dated:
+        return dated[-1] / EXPORT_FILENAME
+    return root / _FALLBACK_EXPORT_DATE / EXPORT_FILENAME
+
+
+DEFAULT_CSV_PATH = latest_export_csv()
 
 SOURCE = "fantasypros_csv_2026draft"
 RANKING_SOURCE = "expert"

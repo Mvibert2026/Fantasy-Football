@@ -288,7 +288,19 @@ and no per-screen reference HTML exists, a separate, larger gap not fixed this s
 `topbar-supplied-slot.test.tsx`, `formulas.test.ts`, `opponents.test.tsx`, `predictions.test.tsx`).
 Full writeup: `docs/status/2026-07-30-frontend-draft-middle-pane-supplied-values.md`.
 
-**Prior verification:** 2026-07-29, data-ops session (PM-dispatched, worktree
+**Prior verification:** 2026-07-30, data-ops session (main checkout, not a worktree) re-landing an
+ADP ingest a prior worktree session lost (worktree DB writes are gitignored and do not survive a
+container reset, `docs/environment.md` SS4). `data_freshness_check.py` had 4 CAPTURE-WITHOUT-INGEST
+gaps (CSVs dated 2026-07-30, DB tables still at 2026-07-29); imported via the existing
+`--import-csv-dir` paths in `src/ingest_mfl_adp.py` (939 rows from 4 CSVs, `adp_snapshots(mfl_proxy)`
+now `as_of`/`retrieved_at` 2026-07-30) and `src/ingest_ffc_adp.py` (4,967 rows from 37 CSVs across
+`ffc_{non_ppr,half_ppr,ppr}_10team` daily + the already-on-disk 12-team historical backfill files,
+same table). `data_freshness_check.py` now exits 0. Regenerated `data/export/{board,availability,
+league,rosters,season_stats,weekly_finishes}.json` via `src/export_contract.py` (availability.json's
+figures come from a pre-computed CSV, not a live model re-run — the availability model itself was
+NOT re-run, per the standing block on thread 119). Two FantasyPros rows remain WARN, unrelated to
+this task (founder browser export needed; DynastyProcess mirror blocked with HTTP 403 from this
+environment). Commit `fd8f063`.
 **Last verified:** 2026-07-30, backend session (worktree `agent-ab49d060d089f26a1`, ADR-063,
 FR-062) building the Yahoo Fantasy Sports connector the founder promoted to near-term work
 ("add the yahoo connection work... sooner than later"). No real Yahoo credential exists yet
