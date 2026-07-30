@@ -1099,7 +1099,17 @@ export function DraftRoom({
       </div>
 
       {hubTab === 'opponents' ? (
-        <LiveOpponents data={data} league={league} draft={draft} rowsById={rowsById} />
+        // FR-082 ("Opponents doesn't scroll down"): unlike the `predictions` branch
+        // right below, this had no wrapping scroll container at all -- LiveOpponents'
+        // own root div carries padding but no `flex`/`minHeight`/`overflow` of its own,
+        // so inside this tab's `flex-direction: column` parent it just grew to its
+        // natural content height with nothing below it able to scroll. Same
+        // `flex: 1, minHeight: 0, overflowY: 'auto'` wrapper the predictions tab already
+        // uses, so a 10-team grid (or any team's roster tall enough to need it) is
+        // reachable instead of clipped at the pane's bottom edge.
+        <div style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
+          <LiveOpponents data={data} league={league} draft={draft} rowsById={rowsById} />
+        </div>
       ) : hubTab === 'predictions' ? (
         <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: 20 }}>
           <Predictions data={data} rows={rows} league={league} />
