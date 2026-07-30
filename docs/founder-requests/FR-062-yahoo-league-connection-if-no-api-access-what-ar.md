@@ -1,8 +1,8 @@
 ---
 ID: FR-062
-STATUS: SCOPING
+STATUS: IN PROGRESS
 PRIORITY: HIGH
-ROUTED-TO: researcher
+ROUTED-TO: backend
 SOURCE: chat 2026-07-30, PM session
 RAISED: 2026-07-30
 ---
@@ -149,4 +149,25 @@ to the Yahoo account holding the leagues. So the work splits:
 
 **Credentials go in `.env`, gitignored, never committed** — `CLAUDE.md` §10. The same rule that
 applies to the site password applies here.
+## Update 2026-07-30 (backend) — connector built, dispatched directly
+
+Founder promoted this to near-term work in his own words: *"add the yahoo connection work to our
+near term work. Would love to have that working sooner than later."* Dispatched straight to
+backend rather than through a handoff thread.
+
+**Built:** `src/providers/` (adapter interface, Yahoo OAuth2 client, defensive response mapper,
+`YahooProvider`, an always-fails `ESPNProvider`), `scripts/yahoo_connect.py` (one-time interactive
+authorize), `scripts/yahoo_pull_league_settings.py` (fetch/print/diff, no default persistence). No
+real credential exists yet, so everything is built against documented shapes and tested against
+constructed fixtures (58 new tests, all pass without network access). Full reasoning, the real
+`pip install yfpy` failure that changed the dependency approach, and the founder's exact next
+steps: ADR-063 (`docs/decisions.md`), `docs/CURRENT-STATE.md`.
+
+**This thread stays `TO: pm`** (see the unallocated researcher note staged as thread 095) — backend
+does not resolve someone else's thread. This update documents what was built in response to the
+founder's own promotion, not a resolution of the open research handoff.
+
+**STATUS left at `IN PROGRESS`**, not `SHIPPED`: the connector cannot be verified end-to-end without
+the founder's real credentials (§2.4 of the research doc — the five-minute test that closes the
+biggest open gap). Founder action required before this can move to `SHIPPED`; steps are in ADR-063.
 

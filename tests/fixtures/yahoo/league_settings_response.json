@@ -1,0 +1,74 @@
+{
+  "_fixture_note": "CONSTRUCTED, not captured. No live Yahoo credential exists in this project yet (FR-062). Shape follows Yahoo's documented XML-to-JSON convention (nested lists of single-key dicts) and yfpy v17.0.0's Settings/Stat/Bonus/RosterPosition field names as verified in docs/research/yahoo-espn-league-connection-2026-07-30.md SS3.1 -- the exact nesting depth is unverified and must be checked against a real response once credentials exist. Values below are modeled on Westwood (CLAUDE.md SS7, ADR-052), not copied from a live call.",
+  "fantasy_content": {
+    "league": [
+      {
+        "league_key": "461.l.154693",
+        "league_id": "154693",
+        "name": "Westwood",
+        "max_teams": "10",
+        "scoring_type": "head",
+        "draft_type": "snake"
+      },
+      {
+        "settings": [
+          {
+            "draft_type": "snake",
+            "num_playoff_teams": "4",
+            "playoff_start_week": "16",
+            "uses_playoff_reseeding": "0",
+            "roster_positions": [
+              {"roster_position": {"position": "QB", "count": "1", "is_starting_position": "1"}},
+              {"roster_position": {"position": "WR", "count": "3", "is_starting_position": "1"}},
+              {"roster_position": {"position": "RB", "count": "2", "is_starting_position": "1"}},
+              {"roster_position": {"position": "TE", "count": "1", "is_starting_position": "1"}},
+              {"roster_position": {"position": "W/R/T", "count": "2", "is_starting_position": "1"}},
+              {"roster_position": {"position": "DEF", "count": "1", "is_starting_position": "1"}},
+              {"roster_position": {"position": "BN", "count": "6", "is_starting_position": "0"}},
+              {"roster_position": {"position": "IR", "count": "1", "is_starting_position": "0"}}
+            ],
+            "stat_modifiers": {
+              "stats": [
+                {"stat": {"stat_id": "4", "name": "Passing Yards", "value": "0.04"}},
+                {"stat": {"stat_id": "5", "name": "Passing Touchdowns", "value": "4"}},
+                {"stat": {"stat_id": "6", "name": "Interceptions", "value": "-2"}},
+                {
+                  "stat": {
+                    "stat_id": "9",
+                    "name": "Rushing Yards",
+                    "value": "0.1",
+                    "bonuses": {
+                      "bonus": [
+                        {"points": "1", "target": "100"},
+                        {"points": "1.5", "target": "150"},
+                        {"points": "2", "target": "200"}
+                      ]
+                    }
+                  }
+                },
+                {"stat": {"stat_id": "10", "name": "Rushing Touchdowns", "value": "6"}},
+                {"stat": {"stat_id": "11", "name": "Receptions", "value": "0.5"}},
+                {
+                  "stat": {
+                    "stat_id": "12",
+                    "name": "Receiving Yards",
+                    "value": "0.1",
+                    "bonuses": {
+                      "bonus": [
+                        {"points": "1", "target": "100"},
+                        {"points": "1.5", "target": "150"},
+                        {"points": "2", "target": "200"}
+                      ]
+                    }
+                  }
+                },
+                {"stat": {"stat_id": "13", "name": "Receiving Touchdowns", "value": "6"}},
+                {"stat": {"stat_id": "18", "name": "Fumbles Lost", "value": "-2"}}
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

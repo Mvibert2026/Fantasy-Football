@@ -2598,3 +2598,117 @@ use `standard_scoring`, per CLAUDE.md's non-negotiable ordering),
 `tests/test_generate_config_matrix.py::test_scoring_variants_use_standard_ruleset_not_westwood`,
 `tests/test_league_builder.py::test_build_scoring_uses_standard_ruleset_not_westwood`,
 `tests/test_rosters_export.py::test_contract_version_bumped` (updated to assert 1.15.0).
+
+---
+
+## ADR-063 — Yahoo Fantasy Sports connector: adapter, OAuth2, fetch-on-demand only (2026-07-30, backend, FR-062)
+
+**Context.** FR-062 asked what happens if a Yahoo API is unavailable. The researcher's answer
+(`docs/research/yahoo-espn-league-connection-2026-07-30.md`, staged as unallocated thread 095,
+`TO: pm`) found the premise mostly false: Yahoo's OAuth2 path appears open and self-serve; ESPN is
+a clean, permanent no (Disney ToU SS2.B.x/SS2.A/SS3.H name automated/AI access by name, no
+sanctioned channel exists to fall back to). The founder then promoted this to near-term work
+directly ("add the yahoo connection work to our near term work... sooner than later"). This ADR
+covers the connector built in response, dispatched straight to backend rather than through a
+handoff thread.
+
+**The constraint that shaped the whole build: no real Yahoo credential exists yet** (registration
+is tied to the founder's account, undone at build time), and Yahoo hosts are not fetched by agents
+(standing block, respected here too). Everything below is built against documented shapes and
+tested against constructed fixtures, never a live response -- correctness of the parsing layer
+cannot depend on having a credential; only the interactive one-time authorize step can.
+
+**Decision 1 -- `yfpy` is not a runtime dependency, despite being the shape source.** The research
+doc's biggest payoff claim (Yahoo's `Bonus(points, target)` class exposing Westwood's stacking
+yardage bonuses from source-of-truth) rests on `yfpy`'s documented models. `pip install yfpy` was
+attempted this session and **failed**: its OAuth dependency (`yahoo-oauth`) pulls in `myql` and
+`rauth`, two unmaintained legacy Yahoo Query Language (YQL, retired years ago) packages whose
+`setup.py` raises `AttributeError: install_layout` under current `setuptools`. Verified by running
+the install, not assumed from a docstring or a version pin -- exactly the "a source swap is not a
+substitution" check CLAUDE.md's non-negotiables require. **Decision:** `src/providers/yahoo*.py`
+talks to Yahoo's OAuth2 + Fantasy Sports v2 REST endpoints directly via `requests` (already a
+clean, satisfiable dependency), and defines its own `Bonus`/`StatModifier`/`RosterPositionSpec`
+dataclasses (`src/providers/base.py`) matching `yfpy`'s verified field names, rather than vendoring
+a library that does not currently install in this environment. If `yfpy`'s dependency chain is
+fixed upstream later, swapping it in is a `providers/yahoo.py`-internal change; the interface
+(`LeagueProvider`) and everything above it is unaffected.
+
+**Decision 2 -- the response-parsing layer is signature-key-based, not fixed-path.** Yahoo's
+`format=json` output encodes an XML document (deeply nested, index-keyed structures) that no
+session here has ever read directly. `src/providers/mapping.py` never hard-codes an exact nesting
+path; it recursively walks the whole payload and matches on the key-*set* a field is known to
+carry together (`position`+`count` for a roster slot, `stat_id`+`value` for a stat, `points`+
+`target` for a bonus). This degrades gracefully if the real nesting differs from any guess made
+here, and every extraction failure is recorded in `LeagueSettings.parse_warnings` rather than
+raised -- a partially-populated, inspectable result beats a crash on the first response this code
+has ever seen. `.raw` always carries the full untouched payload for audit.
+
+**Decision 3 -- fetch-on-demand only; nothing persists to `nfl.db` or `data/leagues/*.json`.** The
+research doc's [SNIPPET]-tagged reading of Yahoo's developer terms: user data not explicitly listed
+as storable indefinitely must be deleted within 24 hours, with the storable set reported as GUID +
+authenticated token value only. **If that reading holds, "sync a league into `nfl.db`" is exactly
+the design the terms forbid.** This was never independently re-verified against
+`legal.yahoo.com` (not fetched, per the standing block) -- it is a snippet, not a verified clause,
+and is treated as binding anyway because the downside of guessing wrong is a compliance problem,
+not an inconvenience. Consequence: `src/providers/yahoo.py` has no write path to `nfl.db` at all
+(and is correctly outside the `sqlite3.connect()` ingestion allowlist -- it never opens a
+connection), and `scripts/yahoo_pull_league_settings.py` prints its report and exits by default;
+`--out` writes a file only if passed explicitly, and even then it's a derived/human-authored report
+(the kind of artifact this repo commits everywhere), not a raw Yahoo payload cache. The one
+exception, deliberate: `TokenStore` (`src/providers/yahoo_oauth.py`) persists exactly the access
+token, refresh token, and expiry to a gitignored `data/.yahoo_token.json` -- the one thing the
+[SNIPPET] reading says is storable indefinitely. **Do not build a persistent league sync until gap
+5 of the research doc (the exact, complete storable-indefinitely list) is closed against Yahoo's
+actual Fantasy Sports APIs Terms of Use, which no session has read.**
+
+**Decision 4 -- live draft-pick reading is designed for, never asserted, never depended on.** The
+research doc's live-draft "yes" rests on a single, undated SDK docstring (n=1, unconfirmed by four
+other wrappers). `YahooProvider.get_live_draft_picks()` exists, reuses the same
+`league/{key}/draftresults` endpoint as the final-results call, and returns a `DraftResult` with
+`is_live_estimate=True` and a `caveat` string stating the provenance and unknowns (latency,
+throttling) explicitly -- every caller sees the caveat, none can mistake it for a verified
+capability. **No write path exists anywhere in this connector**: no wrapper in any language
+documents a draft-pick write endpoint, and a structural test
+(`test_no_pick_write_capability_exists_on_the_provider`) asserts none was added, so a future PR
+adding one has to justify it against that finding rather than sliding in unnoticed. The founder can
+close the live-read gap for free with a Yahoo mock draft and a 5-second poll, per the research
+doc's own suggestion -- this connector is what makes that test runnable.
+
+**Decision 5 -- ESPN gets a real adapter that always fails, not a missing branch.**
+`src/providers/espn.py::ESPNProvider` implements `LeagueProvider` and raises `ProviderUnavailable`
+unconditionally, citing Disney ToU SS2.B.x/SS2.A/SS3.H by section number. This exists so any call
+site written against the interface is honest about ESPN's status ("unavailable, permanently, for a
+stated reason") instead of silently missing a case. If a founder league is on ESPN, its settings
+stay manual entry (the pattern this project already used for Westwood/Ethan's Expert) unless the
+founder decides otherwise -- his call, not this code's.
+
+**Not resolved by this ADR, left open on purpose:**
+- Whether a newly-registered Yahoo app still gets self-serve Fantasy Sports scope in 2026 (research
+  doc gap 1) -- the founder settles this by attempting registration; no amount of code here can.
+- The exact storable-indefinitely list (gap 5) and the fantasy-specific Terms of Use (gap 6),
+  neither ever read by this project.
+- The public-hosting question (Yahoo ToS clause (c), no competing-product / no income without
+  permission, against an app now live on the open internet) -- flagged in the research doc as "a
+  founder-and-possibly-lawyer question, not an agent one," explicitly not decided here.
+- Whether `Stat.bonuses` actually populates for a football league with commissioner-set bonuses
+  (gap 4) -- `diff_against_claude_md_westwood()` in `mapping.py` checks for exactly this and
+  surfaces it in the pull script's report the first time real credentials exist.
+
+**Evidence.** 58 new tests, all passing without any credential or network access:
+`tests/test_providers_base.py` (7), `tests/test_providers_mapping.py` (16),
+`tests/test_providers_yahoo_oauth.py` (19), `tests/test_providers_yahoo.py` (12),
+`tests/test_providers_espn.py` (4). Fixtures
+(`tests/fixtures/yahoo/*.json`) are explicitly labeled constructed-not-captured in a
+`_fixture_note` field. Full suite: pre-existing failures only (missing `data/nfl.db` in this
+worktree, and the already-known `ingest_sleeper_projections.py` sqlite-allowlist finding from
+thread 094) -- none touch `src/providers/` or its tests.
+
+**Founder's exact next steps** (also in `.env.example` and `scripts/yahoo_connect.py`'s docstring):
+1. Log into the Yahoo account holding the leagues (Westwood 154693, Ethan's Expert 834236).
+2. Go to `https://developer.yahoo.com/apps/create/`, choose "Installed Application," redirect URI
+   `https://localhost:8080`, API Permissions -> Fantasy Sports -> Read, Create App.
+3. Copy the Client ID / Secret into a `.env` file at the repo root (copy `.env.example`).
+4. `python scripts/yahoo_connect.py` -- opens a URL to visit, prompts for the verification code
+   Yahoo displays after clicking Allow, saves the token.
+5. `python scripts/yahoo_pull_league_settings.py --discover` to find league keys, then
+   `--league-key <key>` to pull settings and see the diff against CLAUDE.md SS7's Westwood table.
