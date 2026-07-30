@@ -500,12 +500,103 @@ def load_week1_rosters(db_path: Path = DEFAULT_DB) -> pd.DataFrame:
     return out.reset_index(drop=True)
 
 
+# --------------------------------------------------------- factor batch 2
+# nflverse weekly-roster status codes, split ONCE, on what the code means rather
+# than on which split scored better. Two questions, two answers, both registered:
+#
+#   under_contract -- is this still the club's player entering Week 1? The
+#                     founder's "the starter from last year left" is this one.
+#   available      -- could he take a snap in Week 1? Adds IR / PUP / suspended /
+#                     practice squad to the vacated side.
+#
+# A code seen in the data but absent from both sets is treated as NOT under
+# contract and NOT available, and `unknown_status_codes()` reports it rather than
+# letting it pass silently.
+_STATUS_UNDER_CONTRACT = frozenset({
+    "ACT", "INA", "RES", "DEV", "PUP", "SUS", "RSN", "EXE", "E14", "E01", "NFI",
+})
+_STATUS_AVAILABLE = frozenset({"ACT", "INA"})
+# Separation codes: no longer the club's player at Week 1. Listed explicitly so
+# that `unknown_status_codes()` flags a code nobody has classified rather than
+# reporting every separation as unknown.
+_STATUS_SEPARATED = frozenset({
+    "CUT", "UFA", "RFA", "RET", "NWT", "TRC", "TRD", "TRT", "RSR", "UDF",
+})
+
+_ROSTER_SQL = """
+SELECT season, team, gsis_id AS player_id, status
+FROM rosters_weekly
+WHERE week = 1 AND game_type = 'REG' AND season < ?
+  AND gsis_id IS NOT NULL AND gsis_id <> ''
+"""
+
+
+def load_preseason_rosters(db_path: Path = DEFAULT_DB) -> pd.DataFrame:
+    """Season-N Week-1 club membership WITH STATUS. See
+    `SeasonPanel.preseason_roster` for exactly what it is and is not."""
+    conn = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True)
+    try:
+        r = pd.read_sql_query(_ROSTER_SQL, conn, params=(HOLDOUT_SEASON,))
+    finally:
+        conn.close()
+    if not len(r):
+        return pd.DataFrame(columns=["player_id", "season", "team", "status",
+                                     "under_contract", "available"])
+    if (r["season"] >= HOLDOUT_SEASON).any():
+        raise HoldoutViolation("roster holdout rows leaked past the SQL gate")
+    r["team"] = r["team"].astype(str).replace(_CLUB_ALIAS)
+    s = r["status"].astype(str).str.upper().str.strip()
+    r["status"] = s
+    r["under_contract"] = s.isin(_STATUS_UNDER_CONTRACT).astype(int)
+    r["available"] = s.isin(_STATUS_AVAILABLE).astype(int)
+    # one row per (player, season, team): a player can appear twice in a week if
+    # a status changed; keep the most-attached row so a stale CUT does not erase
+    # a live ACT.
+    r = r.sort_values(["under_contract", "available"], ascending=False)
+    return r.drop_duplicates(["player_id", "season", "team"]).reset_index(drop=True)
+
+
+def unknown_status_codes(roster: pd.DataFrame) -> pd.Series:
+    """Status codes in the data that neither set claims. Reported, never ignored."""
+    known = _STATUS_UNDER_CONTRACT | _STATUS_AVAILABLE | _STATUS_SEPARATED
+    unk = roster.loc[~roster["status"].isin(known), "status"]
+    return unk.value_counts()
+
+
+_COORD_SQL = """
+SELECT team, season, title, coach_id, head_coach, as_of_date
+FROM play_callers_preseason
+WHERE season < ? AND title = 'OC'
+"""
+
+
+def load_preseason_coordinators(db_path: Path = DEFAULT_DB) -> pd.DataFrame:
+    """Pre-Week-1 offensive coordinator per club. Empty frame (not an error) if
+    the research table has not been built -- an arm that needs it then produces
+    all-null features and says so, rather than silently using something else."""
+    conn = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True)
+    try:
+        try:
+            co = pd.read_sql_query(_COORD_SQL, conn, params=(HOLDOUT_SEASON,))
+        except Exception:
+            return pd.DataFrame(columns=["team", "season", "title", "coach_id",
+                                         "head_coach", "as_of_date"])
+    finally:
+        conn.close()
+    if len(co):
+        if (co["season"] >= HOLDOUT_SEASON).any():
+            raise HoldoutViolation("coordinator holdout rows leaked past the SQL gate")
+        co["team"] = co["team"].astype(str).replace(_CLUB_ALIAS)
+    return co
+
+
 def build_panel(db_path: Path = DEFAULT_DB) -> SeasonPanel:
     wk = load_weekly(db_path)
     return SeasonPanel(
         aggregate_seasons(wk), team_context(wk), load_injury_seasons(db_path),
         load_depth_seasons(db_path), load_birthdates(db_path), load_draft(db_path),
-        load_week1_rosters(db_path))
+        load_week1_rosters(db_path), load_preseason_rosters(db_path),
+        load_preseason_coordinators(db_path))
 
 
 # ---------------------------------------------------------------- universe
