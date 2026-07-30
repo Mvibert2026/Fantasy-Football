@@ -5,7 +5,7 @@ Per-request files in this directory are the source of truth. Edit a request's ow
 `STATUS:` line, then re-run sync. Protocol: [`README.md`](README.md).
 Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests.md).
 
-**100 requests since freeze.**
+**103 requests since freeze.**
 
 ---
 
@@ -36,17 +36,14 @@ Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests
 | [FR-057](FR-057-availability-must-recompute-for-any-draft-slot-b.md) | Availability must recompute for any draft slot b | 2026-07-29 | chat 2026-07-29, PM session |
 | [FR-059](FR-059-test-the-recommendation-s-four-constants-against.md) | Test the recommendation s four constants against | 2026-07-29 | chat 2026-07-29, PM session |
 | [FR-060](FR-060-adp-versus-production-find-where-the-market-is-s.md) | Adp versus production find where the market is s | 2026-07-29 | chat 2026-07-29, PM session |
-| [FR-061](FR-061-strategy-selector-changes-recommendations-not-ra.md) | Strategy selector changes recommendations not ra | 2026-07-30 | chat 2026-07-30, PM session |
 | [FR-063](FR-063-scarcity-depletion-warning-uses-the-next-pick-no.md) | Scarcity depletion warning uses the next pick no | 2026-07-30 | chat 2026-07-30, PM session, screenshot |
 | [FR-064](FR-064-look-and-feel-reads-dated-draft-rankings-pane-to.md) | Look and feel reads dated draft rankings pane to | 2026-07-30 | chat 2026-07-30, PM session |
 | [FR-065](FR-065-resizable-panes-and-pop-out-views-for-the-draft.md) | Resizable panes and pop out views for the draft | 2026-07-30 | chat 2026-07-30, PM session |
 | [FR-068](FR-068-player-profile-work-still-outstanding.md) | Player profile work still outstanding | 2026-07-30 | chat 2026-07-30, PM session |
-| [FR-069](FR-069-kill-the-24-preset-matrix-the-league-dropdown-is.md) | Kill the 24 preset matrix the league dropdown is | 2026-07-30 | chat 2026-07-30, PM session |
 | [FR-070](FR-070-calibration-mocks-cannot-use-my-real-league-sett.md) | Calibration mocks cannot use my real league sett | 2026-07-30 | chat 2026-07-30, PM session |
 | [FR-071](FR-071-a-simulate-feature-real-autopick-from-adp-with-w.md) | A simulate feature real autopick from adp with w | 2026-07-30 | chat 2026-07-30, PM session |
 | [FR-072](FR-072-thread-hygiene-process-is-failing-24-of-38-threa.md) | Thread hygiene process is failing 24 of 38 threa | 2026-07-30 | chat 2026-07-30, PM session |
 | [FR-074](FR-074-backfill-the-rest-of-historical-adp-across-ffc-f.md) | Backfill the rest of historical adp across ffc f | 2026-07-30 | chat 2026-07-30, PM session (feedback batch) |
-| [FR-075](FR-075-build-player-archetype-and-surface-it-high-on-th.md) | Build player archetype and surface it high on th | 2026-07-30 | chat 2026-07-30, PM session (feedback batch) |
 | [FR-078](FR-078-does-early-rb-underperformance-support-zero-rb.md) | Does early rb underperformance support zero rb | 2026-07-30 | chat 2026-07-30, PM session (feedback batch) |
 | [FR-080](FR-080-light-theme-is-too-bright-and-needs-shading.md) | Light theme is too bright and needs shading | 2026-07-30 | chat 2026-07-30, PM session (feedback batch) |
 | [FR-081](FR-081-news-feed-for-prep-and-in-season.md) | News feed for prep and in season | 2026-07-30 | chat 2026-07-30, PM session (feedback batch) |
@@ -73,6 +70,9 @@ Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests
 | [FR-113](FR-113-player-profile-information-order-and-density.md) | Player profile information order and density | 2026-07-30 | chat 2026-07-30, PM session (screenshot feedback) |
 | [FR-114](FR-114-remove-code-and-sourcing-clutter-across-the-site.md) | Remove code and sourcing clutter across the site | 2026-07-30 | chat 2026-07-30, PM session (screenshot feedback) |
 | [FR-115](FR-115-value-of-next-flex-te-over-suggested-by-pure-vbd.md) | Value of next flex te over suggested by pure vbd | 2026-07-30 | chat 2026-07-30, PM session (screenshot feedback) |
+| [FR-116](FR-116-bpa-on-expected-score-should-be-tested.md) | Bpa on expected score should be tested | 2026-07-30 | chat 2026-07-30, PM session |
+| [FR-117](FR-117-draft-strategies-need-roster-awareness-constrain.md) | Draft strategies need roster awareness constrain | 2026-07-30 | chat 2026-07-30, PM session |
+| [FR-118](FR-118-vbd-should-show-two-numbers-position-and-flex-aw.md) | Vbd should show two numbers position and flex aw | 2026-07-30 | chat 2026-07-30, PM session |
 
 ## SCOPING — 1
 
@@ -84,7 +84,7 @@ Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests
 
 _None._
 
-## IN PROGRESS — 9
+## IN PROGRESS — 12
 
 | ID | Subject | Raised | Source |
 |---|---|---|---|
@@ -93,8 +93,11 @@ _None._
 | [FR-029](FR-029-opponents-screen-must-be-functional-during-a-liv.md) | Opponents screen must be functional during a liv | 2026-07-29 | frontend session, dispatched as "FR-032" in the task brief |
 | [FR-043](FR-043-audit-for-capability-already-built-and-sitting-u.md) | Audit for capability already built and sitting u | 2026-07-29 | chat 2026-07-29, PM session |
 | [FR-048](FR-048-insights-from-research-must-reach-the-chatbot-an.md) | Insights from research must reach the chatbot an | 2026-07-29 | chat 2026-07-29, PM session |
+| [FR-061](FR-061-strategy-selector-changes-recommendations-not-ra.md) | Strategy selector changes recommendations not ra | 2026-07-30 | chat 2026-07-30, PM session |
 | [FR-062](FR-062-yahoo-league-connection-if-no-api-access-what-ar.md) | Yahoo league connection if no api access what ar | 2026-07-30 | chat 2026-07-30, PM session |
 | [FR-066](FR-066-availability-picks-do-not-change-when-the-draft.md) | Availability picks do not change when the draft | 2026-07-30 | chat 2026-07-30, PM session |
+| [FR-069](FR-069-kill-the-24-preset-matrix-the-league-dropdown-is.md) | Kill the 24 preset matrix the league dropdown is | 2026-07-30 | chat 2026-07-30, PM session |
+| [FR-075](FR-075-build-player-archetype-and-surface-it-high-on-th.md) | Build player archetype and surface it high on th | 2026-07-30 | chat 2026-07-30, PM session (feedback batch) |
 | [FR-079](FR-079-last-few-seasons-must-render-in-the-selected-sco.md) | Last few seasons must render in the selected sco | 2026-07-30 | chat 2026-07-30, PM session (feedback batch) |
 | [FR-092](FR-092-figure-out-the-coordinator-table-play-callers-is.md) | Figure out the coordinator table play callers is | 2026-07-30 | PM dispatch, data-ops session 2026-07-30 |
 
