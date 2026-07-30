@@ -3058,3 +3058,94 @@ to this change — not fixed here, not this thread's scope.
 **Evidence.** Commits `b567586` (fix + regression tests), plus this ADR and the
 `REVIEWED_TIMESTAMPS` update. Full test count in this session's `docs/status/` entry. Handoff thread
 opened to `strategist`/`pm` for item 3 above (the test-registry #44-46 figure).
+
+---
+
+## ADR-067 — #28 is NULL not HARMFUL, #29 is ungated and NULL, and the coordinator source is a preseason revision read
+
+**2026-07-30, ranker.** Supersedes the `factor-batch-1-results.md` §1(2) reading of registry #28 and
+the "GATED on coordinator data" status of #29/#30.
+
+### Decision 1 — registry #28 moves from BLOCKED to NULL, and batch 1's HARMFUL grade is retired as
+a data artifact
+
+Batch 1 could only measure vacated opportunity from a Week-1 **depth chart** and graded #28 HARMFUL
+at RB (+0.203 carries MAE). Re-run on `rosters_weekly` with everything else identical:
+
+| | V1 depth chart | V2 real rosters | V2 − V1, paired, 11 seasons |
+|---|---|---|---|
+| RB `carries` | +0.2031 HARMFUL | −0.0123 NULL | **−0.2154 [−0.3003, −0.1384], p = 0.0006** |
+| TE `targets` | +0.0448 HARMFUL | +0.0153 NULL | −0.0295 [−0.0552, −0.0043], p = 0.056 |
+| WR `targets` | +0.0818 NULL | +0.0284 NULL | −0.0534 [−0.1557, +0.0507], p = 0.362 |
+
+The V1 arm reproduces batch 1's published numbers to four decimals, so this is one harness measuring
+two data sources. The mechanism batch 1 predicted is confirmed by the split it proposed: the RB harm
+in the high-measured-vacancy bucket goes **+0.770 → +0.064**. The measures genuinely differ —
+|V2−V1| > 0.05 on 32–35% of player-seasons, with the depth chart systematically *over*-stating
+vacancy, exactly as predicted.
+
+**Both halves are true and the row must carry both:** the harm was an artifact of the data source,
+**and** the factor is NULL. Two further constructions (V3 absence share; V4 player-level
+opportunity-vacated-*above*-this-player, the first genuinely player-level vacancy feature this
+project has built) are also NULL. Nine cells, zero wins.
+
+### Decision 2 — #29 and #30 are no longer gated; the source is Wikipedia staff-navbox revisions, not PFR
+
+PFR remains 403 and is not the source. `experiments/bottomup/factors/coord_preseason.py` reads, per
+club-season, the season article's revision before Week 1 (to learn which live staff navbox it pointed
+at) and **that navbox page's own revision before the same kickoff**. Table
+`play_callers_preseason`: 2012–2024, all 32 clubs, 803 OC+DC rows.
+
+**Two things this establishes that were previously assumptions:**
+
+- **The `coach_id` join works across team moves** — 53 of 126 named OCs (42.1%) appear for 2+ clubs,
+  covering 243 of 400 club-seasons, **zero** same-season name collisions. `CLAUDE.md` §4's reservation
+  of `coach_id` as a first-class dimension is vindicated by data rather than by argument.
+- **Only 17.9% of OC changes bring in someone who was an OC elsewhere the prior season.** Any future
+  tendency-following signal can reach at most one change in six. This bounds #30 before it is built.
+
+**#29 itself is NULL**: WR −0.006 (p=0.71), TE −0.003 (p=0.87), RB +0.093 (p=0.29), with the
+ADP-board metric positive at all three. Not underpowered — the OC changes for 46–48% of board
+player-seasons.
+
+### Decision 3 — `play_callers` and `play_callers_preseason` stay separate tables
+
+`play_callers` stores `{{NFL final staff}}` — **end**-of-season. For a club that fired its OC in
+November it names the replacement, and the firing is *caused by* the season going badly, so using it
+as a preseason input contaminates in the **same direction as the hypothesis**. The only thing
+distinguishing the two tables is which is safe to use as a preseason input; merging them destroys
+exactly that. Schema ownership is data-ops' — thread
+`2026-07-30-play-callers-is-not-in-nfl-db-and-end-of-season`.
+
+### Decision 4 — the insight sentence the founder asked for is REFUSED for both factors
+
+`FR-2026-07-30-bottom-up-causal-insights` asks the model to say *"new OC, expect routes up"* and
+*"the starter from last year left."* The rule fixed before any result existed
+(`factor-batch-2-precommit.md` §7): a sentence renders only if the factor **graded** and the feature
+is **non-null for that player**. **Neither factor graded, so neither sentence renders.**
+
+The cost of the alternative is measurable: `new_oc` is true for **46–48% of every ADP board**
+(187/391 WR, 167/357 RB, 49/106 TE board player-seasons). Rendering it would have attached a
+NULL mechanism to half of every draft board — the same failure the recommendation card was caught
+committing, at ten times the surface area. Directional wording ("routes up") was never licensed:
+nothing here measures routes, and route participation is not in `nfl.db`.
+
+### A defect I introduced, disclosed rather than buried
+
+My own pre-committed 2%-of-primary-error "this looks too good" trigger fired on the M1 arm and the
+decomposition it forced overturned three arms including two SURVIVES. **95–97% of M1's effect is
+`move_known` ("this player is on some club's Week-1 roster"), not `moved_club`.** `moved_club` does
+nothing at any position (WR p=0.28, TE p=0.62, RB p=0.12). I added `move_known` as a companion flag
+by analogy with batch 1's `vac_team_known`, which was computed but never entered a model; here it
+entered the model and became the treatment. Registered grades stand as recorded with the correction
+attached; **no claim about player movement may be drawn from them.** How to record them is a
+`strategist` ruling, escalated on the open thread, not mine.
+
+**Residue worth someone else's attention:** "is this player on an NFL Week-1 roster" is worth
+**1.6–2.3% of component MAE** — larger than anything either factor batch produced — and the
+availability sub-model does not use it. Handed over, not claimed.
+
+**Evidence.** `docs/ranking/factor-batch-2-precommit.md` (content committed `851a6bb` before the
+first fit; two amendments dated inside it, both pre-fit), `docs/ranking/factor-batch-2-results.md`,
+commits `70bc893`, `fe3b66a`, `5d3e95e`, `df50e3b`, `da10906`, `dbc52a5`. 10 discipline tests
+including bit-for-bit reproduction of batch 1's feature frame. Sealed 2025 holdout not opened.

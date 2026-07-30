@@ -87,9 +87,9 @@ What a serious, well-read opponent has. Table stakes among the sharpest 2–3 ma
 | 25 | NFL draft capital (rookies) | Best rookie predictor | `nflverse` | L | Med | SPEC | — (not run) |
 | 26 | Breakout age / college dominator | Rookie projection | external | M | Med | NEW | — (not run) |
 | 27 | Contract year / free-agency status | Motivation & usage | `nflverse` (contracts) | L | Low | NEW | — (not run) |
-| 28 | Vacated targets & carries | Where opportunity actually opened | `derived` | M | High | NEW | **BLOCKED, not measured** — `nfl.db` has **no pre-season roster table**, so this ran on a Week-1 depth-chart PROXY. Vacancy arm HARMFUL at RB (+0.203 carries MAE) and TE, NULL at WR, with the harm concentrated in the high-measured-vacancy bucket the proxy is known to contaminate. Needs `nflreadpy.load_rosters_weekly()`. `factor-batch-1-results.md` |
-| 29 | Coordinator continuity | High OC turnover league-wide | `pfr` | L | **High** | **GATED on coordinator data** — PFR returns HTTP 403; head coach is NOT a substitute, see note | — (not run) |
-| 30 | First-time play-callers | Week-to-week volatility | `pfr` | L | Med | **GATED on coordinator data** — same | — (not run) |
+| 28 | Vacated targets & carries | Where opportunity actually opened | `derived` | M | High | SPEC | **NULL — re-tested on REAL pre-season rosters, 2026-07-30. The batch-1 HARM was a proxy artifact, confirmed directly.** Same harness, `rosters_weekly` instead of the Week-1 depth chart: RB **+0.203 → −0.012**, paired **V2−V1 = −0.2154 [−0.3003,−0.1384], p=0.0006**; TE +0.045 → +0.015; WR +0.082 → +0.028. In the high-vacancy bucket the RB harm goes +0.770 → +0.064 (92% gone), which is the mechanism batch 1 predicted. **But all three are NULL** — as are the two further constructions (V3 absence share; V4 player-level opportunity-vacated-*above*-this-player). Nine cells, zero wins. `factor-batch-2-results.md` |
+| 29 | Coordinator continuity | High OC turnover league-wide | `wikipedia` (was `pfr`) | L | **High** | SPEC | **UNGATED 2026-07-30, then NULL.** `play_callers_preseason` (pre-Week-1 Wikipedia navbox revisions, 2012–2024, all 32 clubs, 803 OC+DC rows) gives `oc_known` **0.995/0.992/0.997** on the ADP board. "This player's club has a new OC": WR −0.006 (p=0.71), TE −0.003 (p=0.87), RB +0.093 (p=0.29) — **all NULL, and E1b positive at all three**, i.e. slightly worse where drafts happen. **Not underpowered: the OC changes for 46–48% of board player-seasons.** `factor-batch-2-results.md` |
+| 30 | First-time play-callers | Week-to-week volatility | `wikipedia` (was `pfr`) | L | Med | **NO LONGER GATED** — `play_callers_preseason` carries OC/DC identity and head-coach name per club-season, 2012–2024. Note the ceiling before spending on it: only **17.9%** of OC changes bring in someone who was an OC elsewhere the prior season, so any prior-history signal can reach one change in six | — (not run) |
 | 29b | Head-coach continuity (separate, weaker candidate) | Cheap proxy, but not what #29/#30 test | `nflverse` (schedules) | L | Low-Med | **NEW** — data available 1999-2026, 100% populated | — (not run) |
 | 31 | Personnel package trends | Structural WR3 headwind | `nflverse:FTN` | L | Med | SPEC | — (not run) |
 | 32 | Pre-snap motion rates | Largely arbitraged league-wide | `nflverse:FTN` | L | **Low** | SPEC | — (not run) |
@@ -134,6 +134,21 @@ baseline it will beat trivially.
 
 **#29/#30 require the `coach_id` dimension**, not `team_id`. Coordinators change teams; tendency
 signal keyed to franchise breaks the moment someone moves.
+
+**#29/#30 UNGATED, 2026-07-30 — this supersedes the two paragraphs below.** PFR is still 403 and
+still not the source. The source is **pre-Week-1 revisions of each club's Wikipedia staff navbox**
+(`experiments/bottomup/factors/coord_preseason.py` → `play_callers_preseason`). Three things that
+were assumed and are now measured:
+
+- **The `coach_id` join works across team moves.** 53 of 126 named OCs (**42.1%**) appear for two or
+  more clubs, covering **243 of 400** club-seasons, with **zero** same-season name collisions. Greg
+  Roman SF→BUF→BAL→LAC; Nathaniel Hackett BUF→JAX→GB→NYJ.
+- **End-of-season staff cannot be used for either test, and the reason is not staleness.**
+  `play_callers` stores `{{NFL final staff}}`, which for a club that fired its OC in November names
+  the *replacement* — and the firing is caused by the season going badly, so the contamination points
+  the **same way as the hypothesis**. Two tables, two questions; they must not be merged.
+- **#29 itself is now NULL** (see the row above). #30 is unblocked but unrun, and its ceiling is
+  17.9% of changes.
 
 **#29/#30 status correction (2026-07-25).** `load_schedules` carries `home_coach`/`away_coach`
 (1999-2026, 100% populated, 177 coaches) and this was briefly noted as a partial substitute.

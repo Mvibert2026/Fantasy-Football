@@ -39,6 +39,38 @@ recommendation-card honesty fixes) that likely just need the markers stripped an
 kept, but that call belongs to whoever owns this merge, not to a session that arrived afterward
 for an unrelated reason. Flagged to `pm` (see `docs/ideas-inbox.md`, 2026-07-30 backend entry).
 
+**Last verified:** 2026-07-30, ranker session — **factor batch 2 (ADR-067): registry #28 is NULL not
+HARMFUL, registry #29 is no longer gated and is also NULL, and neither earns an insight sentence.**
+Batch 1's #28 HARMFUL grade was a **data artifact**, confirmed by direct head-to-head on one harness:
+swapping the Week-1 depth chart for `rosters_weekly`, RB goes **+0.203 → −0.012 carries MAE**, paired
+**V2−V1 = −0.2154 [−0.3003, −0.1384], p = 0.0006**, and the harm in the high-vacancy bucket the proxy
+contaminates goes **+0.770 → +0.064**. The V1 arm reproduces batch 1's published numbers to four
+decimals. **But V2 is NULL at all three positions**, as are absence-share and the first genuinely
+player-level vacancy feature this project has built (opportunity vacated *above* a player) — nine
+cells, zero wins. **#29 ungated**: `play_callers_preseason` (pre-Week-1 Wikipedia staff-navbox
+revisions, 2012–2024, all 32 clubs, 803 OC+DC rows, `experiments/bottomup/factors/coord_preseason.py`)
+gives `oc_known` 0.995/0.992/0.997 on the ADP board — far above the pre-committed 0.80 gate, so this
+is a real test, not a data failure. New OC: WR −0.006 (p=0.71), TE −0.003 (p=0.87), RB +0.093
+(p=0.29), all NULL, board metric positive at all three, and **not** underpowered — the OC changes for
+46–48% of board player-seasons. **The `coach_id` join works**: 53 of 126 named OCs (42.1%) appear for
+2+ clubs across 243 of 400 club-seasons with **zero** same-season name collisions; but only **17.9%**
+of OC changes bring in someone who was an OC elsewhere last year, which bounds #30 at one change in
+six before anyone spends on it. **`play_callers` itself is EMPTY in `data/nfl.db`** — not in
+`scripts/rebuild_database.py`, so the 19:39 rebuild dropped data-ops' 607 rows silently (thread to
+data-ops). **A defect I introduced and disclosed:** my own pre-committed 2%-of-primary-error trigger
+fired on my own M1 arm; the decomposition showed **95–97% of its effect is `move_known`** ("he is on
+some club's Week-1 roster"), not `moved_club`, which does nothing anywhere (p = 0.28/0.62/0.12) —
+registered grades stand as recorded with the correction attached, and how to record them is an open
+`strategist` ruling. Residue worth someone else's attention: `move_known` is worth **1.6–2.3% of
+component MAE**, larger than anything either factor batch produced, and the availability sub-model
+does not use it. **Founder-facing answer: the "new OC, expect routes up" sentence is REFUSED** —
+`new_oc` is true for 46–48% of every ADP board, so rendering it would attach a NULL mechanism to half
+the draft board, the same failure the recommendation card was caught committing at ten times the
+surface area. Commits `70bc893`, `fe3b66a`, `5d3e95e`, `df50e3b`, `da10906`, `dbc52a5`. 12 tests pass
+(10 new), including bit-for-bit reproduction of batch 1's feature frame. **Sealed 2025 holdout not
+opened.** Full account: `docs/ranking/factor-batch-2-results.md`,
+`docs/status/2026-07-30-ranker-factor-batch-2-vacated-opportunity-and-coordinators.md`.
+
 **Last verified:** 2026-07-30, backend session — fixed a defect in the backtest evaluation harness
 (`src/backtest.py`) found by strategist while ruling on the primary evaluation metric
 (`docs/adr-drafts/ADR-DRAFT-primary-evaluation-metric.md` §4.1). A ranked player with a resolved
