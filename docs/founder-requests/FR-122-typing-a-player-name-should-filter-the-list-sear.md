@@ -1,6 +1,6 @@
 ---
 ID: FR-122
-STATUS: NEW
+STATUS: SHIPPED
 SOURCE: PM session 2026-07-30, founder chat
 RAISED: 2026-07-30
 ---
@@ -45,3 +45,36 @@ Details worth getting right, none of which need a designer:
 already queued and rewrites that list's column structure. Building both in parallel means a merge
 conflict in one file for no gain. **Fold it into the item 6 dispatch** rather than dispatching it
 separately.
+
+## Resolution (2026-07-30, frontend)
+
+Built exactly as scoped, folded into the same item-6 dispatch as this file predicted. Reuses the
+existing pick-entry field (`query` state, `DraftRoom.tsx`, already there for RETROFIT-5's digit-key
+commit flow) rather than adding a second input — "one control, two jobs."
+
+- **New `ui/data/playerSearch.ts`**: `normalizeSearchTerm` (NFD-normalize, strip combining marks,
+  strip everything but letters/digits, lowercase — so `Ja'Marr`/`JaMarr`/`jamarr` and
+  `RB10`/`rb-10`/`RB 10` all reduce identically) and `matchesPlayerQuery`, matching against display
+  name, team, bare position, and `positionalLabel` (`RB10`) — the four fields this FR names.
+  `RB1` correctly substring-matches `RB1`/`RB10`–`RB19` (and `RB100`+, a safe superset, never a
+  narrower result than the FR's own example) because `positionalLabel` values start with it.
+- **Wired into the rankings pane's row list**, not just the existing 5-slot commit suggester (which
+  is untouched, still name-only, still exactly RETROFIT-5's own scope): a non-empty query searches
+  the **full** board, superseding — not additionally constrained by — whichever position tab is
+  selected, so `RB1` while the `QB` tab is active still finds running backs rather than "narrows to
+  nothing." Tier bands (position-scoped, see the code's own pre-existing ALL-tab reasoning) are
+  suppressed the same way they already are for the `ALL` tab, since a search result can span
+  positions.
+- **Does not auto-select or auto-commit.** Narrowing to exactly one row does nothing beyond
+  narrowing; committing still requires Enter, a digit shortcut, or a click, per the FR's own
+  explicit "wrong pick recorded in a live draft" caution.
+- **Honest states**: the row-count label switches from "`N` left" to "`N` match" while a search is
+  active (a different claim, not the same number relabelled), and a zero-match query renders
+  `No still-available player matches "…"` rather than a silently blank list.
+
+Verified against the real board (511 players): typing `RB1` narrows "508 left" to "78 match" and
+still surfaces `RB10`–`RB19` rows; a nonsense query renders the honest empty state. Screenshots:
+`frontend/e2e/artifacts/rankings-pane-05-search-before.png`,
+`rankings-pane-06-search-after-RB1.png`, `rankings-pane-07-search-no-match.png`. Tests:
+`ui/__tests__/playerSearch.test.ts` (9, pure matching-logic unit tests) and
+`ui/__tests__/draft-room-search-filter.test.tsx` (8, wired end-to-end against `DraftRoom`).

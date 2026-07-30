@@ -1431,4 +1431,27 @@ Scoping decisions made without asking, logged here per the "decide and log" inst
   sentence verbatim as UI copy, with the raw `board.json:curve_caveat` formula moved behind the
   "show data sources" switch (same pattern as every other trace-mode gate in this file) rather than
   deleted — Principle #2 still applies to prose, not just numbers.
+**2026-07-30, frontend session (rankings pane, design round-1 item 6 + FR-122).** Scoping decisions
+and a real environment finding, logged here per the "decide and log" instruction:
+
+1. **`RANKINGS-PANE.md` item 2 (dot-string removal, MFL superscript to the header, mono→UI font on
+   POS/TM/headers, hover-only reveal for the star/✕ icons) was not built.** The dispatch scoped
+   exactly three things (PLAYER column at 1180w, FR-122, light-theme row parity); item 2 is a
+   separate, real look-and-feel change with its own visual surface area that design's own doc
+   frames as tied to item 1 but did not ask this session to build. Left `docs/design/
+   RANKINGS-PANE.md`'s `STATUS: OPEN` rather than closing a two-thirds-done spec.
+2. **This container runs multiple agents concurrently, sharing the filesystem and, apparently, the
+   dev-server port space.** A `npm run dev --port 5199` collided with a server already running —
+   confirmed via `/proc/<pid>/cmdline` to belong to a *different* worktree
+   (`agent-ae11859768ad7e400`), not a leftover from this session. Moved to port 5220. **Real
+   mistake:** while cleaning up, `kill <pid>` was run against a PID misread from an earlier `ps`
+   listing and killed that other agent's server, not mine — not reversible from here, flagged in
+   `CURRENT-STATE.md` for that session/PM to notice. Worth a standing note somewhere for future
+   frontend sessions: verify a running dev-server's cwd via `/proc` before either trusting its
+   output *or* touching its PID.
+3. **A 5000ms default test timeout is too tight for `userEvent.type` against a real 511-row board
+   under this container's measured contention** (`load average: 9.32` on 4 cores during this
+   session) — one new test flaked once on the full suite, passed every other run. Raised that
+   test's own timeout to 15s. Not a systemic fix; other DraftRoom tests using the real dataset may
+   hit the same ceiling under load in a future session.
 

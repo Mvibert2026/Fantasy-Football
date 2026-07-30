@@ -27,32 +27,66 @@ repo — Cloudflare holds its own deploy token. This closes the last dependency 
 machine: development, tests, the database rebuild, the daily capture and now viewing the app all run
 without it.
 
-**Last verified:** 2026-07-30, frontend session (worktree `agent-ae11859768ad7e400`) shipping design
-round-1 item 2, the player profile (`docs/design/PLAYER-PROFILE.md`), **built both ways for the
-archetype chip's placement, behind a flag** (thread 121) — the founder has not ruled between his
-own FR-075 placement request (identity strip, beside the name) and design's disclosed-section
-amendment, and asked to see both first. `frontend/ui/data/archetypePlacement.ts` is the flag
-(`'identity-strip'` default = his standing instruction, `'disclosed'` = design's amendment),
-flippable per-screenshot via `?archetypePlacement=disclosed` or a `localStorage` key, no rebuild
-needed. **Design's second-order point — the three archetype absences must be tellable apart, not
-three identically-grey chips — now holds in both arrangements**: `archetypeChipStyle` gives real /
-`UNCLASSIFIED` / `ARCHETYPE N/A` / `ARCHETYPE —` four different border treatments (solid-filled /
-dashed / none+italic / dotted), not colour alone, confirmed against the real data this session (not
-assumed) — `UNCLASSIFIED` is a covered position the classifier measured and placed nowhere,
-`ARCHETYPE N/A` is a position outside the taxonomy (QB/DEF/K), `ARCHETYPE —` is a league with no
-`player_descriptions.json` export at all (true of every non-primary league today, confirmed against
-`espn_10_full`'s real export). Also shipped, self-contained: §3's reading-level rewrite for the
-PROJECTION caveat — design's plain-English sentence by default, the raw `board.json:curve_caveat`
-formula behind the "show data sources" switch (never deleted). **Not built:** §1's "both values" row
-and half of §2's single anchored "Disclosed" section, both of which need a *Why that matters*
-disclosure gesture that doesn't exist anywhere in this app yet and which overlap item 8's own spec
-plus an already-drafted-but-unreleased 2026-08-01 amendment (`TWO-VALUE-COLUMNS-CONTAINER.md`) —
-flagged to thread 121 rather than built twice against two different specs. 61 test files / 478
-tests passing (was 59 files / 459 tests), 3 new test files. `npx tsc -b --noEmit` clean. Screenshots looked at
-directly (18 total): `frontend/e2e/artifacts/item2-arrangement{A,B}-{dark,light}-*.png` (both
-arrangements, both themes, all four archetype states), `item2-reading-level-*.png` (default vs.
-trace mode), `item2-absence-states-side-by-side.png` (the three absences compared directly).
-Commit `cacca25`.
+**Last verified:** 2026-07-30, frontend session (worktree `agent-a9e24c92a40214afb`) shipping design
+round-1 item 6 (`docs/design/RANKINGS-PANE.md`) plus FR-122, the three-thing dispatch: **A.** the
+missing PLAYER column at 1180w, **B.** FR-122 (typing a name filters the list), **C.** the
+light-theme row treatment (`docs/design/LIGHT-THEME-SHADING.md`), previously shipped on `Board.tsx`
+only. All three shipped; the design doc's own items 2 (dot strings/MFL superscript/mono
+labels/hover-only icons) and the rest of its "look dated" section were **not** built — out of this
+session's explicit A/B/C scope, not attempted.
+**A:** root cause confirmed directly in `DraftRoom.tsx` — the rankings-pane row list (RANK/PLAYER/
+POS/TM/ADP/Δ/VBD/AVAIL, the exact column set the design screenshot showed) used hand-rolled flexbox
+with the PLAYER cell as `flex: 1, minWidth: 0` — a floor-less flex child that resolved to near-zero
+width once this pane's own share of the layout-mode grid (22-52% of the window, `paneColumns()`)
+got narrower than every other column's combined fixed width. Fixed by porting `Board.tsx`'s own
+already-working pattern (`GRID_TEMPLATE`, a real CSS Grid with `minmax(Npx,1fr)` for the identity
+column) rather than inventing a new mechanism: new `DRAFT_LIST_GRID_TEMPLATE`, one shared template
+consumed by both the header and every row via `display: grid`, with PLAYER now `minmax(64px,1fr)` —
+a real, non-negotiable floor. Also merged the header into the same scrollable element as the rows
+(`position: sticky`, Board.tsx's own pattern) so header and rows can never scroll independently if a
+pane is ever narrower than the template's minimum — incidentally satisfying the design doc's item 3
+("one grid, one column definition") as a side effect of fixing item 1, though item 3 was not
+separately in scope. Verified at 1180w in both themes: PLAYER renders truncated real names (e.g.
+"Jahmy…", "Puka …"), never absent.
+**B (FR-122):** reused the existing pick-entry field (`query`, already there for RETROFIT-5's
+digit-key commit flow) as the founder's own "one control, two jobs" rather than adding a second
+input. New `ui/data/playerSearch.ts` (`normalizeSearchTerm`/`matchesPlayerQuery`) folds diacritics
+and punctuation (`Ja'Marr`/`JaMarr`/`jamarr` all match) and matches name, team, position, and
+`positionalLabel` (`RB10`) — so `RB1` narrows to RB1/RB10-19 rather than nothing, the FR's own named
+example (verified against the real board: "508 left" → "78 match"). A non-empty query searches the
+full board, superseding rather than combining with the position-tab filter (typing a team code while
+the QB tab is selected still finds non-QBs) — a deliberate reading of "shrink down," not specified
+verbatim by the founder but the only one consistent with his own RB1 example. Never auto-selects or
+auto-commits on a single match; an honest `No still-available player matches "…"` state replaces a
+silently blank list. RETROFIT-5's own separate 5-slot commit suggester (name-only) is untouched.
+**C:** ported `Board.tsx`'s `BoardRowLine` treatment verbatim to the rankings-pane rows — alternating
+`var(--row-alt, transparent)` tint (light-only, falls back to today's transparent in dark, no theme
+branch in component code), `var(--row-line, var(--line))` hairline fallback, and `var(--panel2)` for
+the "row you are on" (this screen's own concept of that is the row with its inline "why this rank"
+detail open, since DraftRoom has no separate row-select the way Board.tsx does) — no new values
+invented, matched to the one table `LIGHT-THEME-SHADING.md` had already finished.
+**Found and corrected mid-session, not left in a commit:** running the Playwright screenshot script
+against a dev server on port 5199 briefly hit a server that turned out to belong to a **different,
+concurrent agent's worktree** (`agent-ae11859768ad7e400`) sharing this container — confirmed via
+`/proc/<pid>/cmdline` before trusting any capture from it, per this file's own standing caution about
+shared-session interference. Switched to an unclaimed port (5220) for this session's own server. **A
+real mistake, disclosed rather than buried:** while cleaning up afterward, `kill <pid>` was run
+against what turned out to still be that other agent's dev-server process (misread from an earlier
+`ps` listing), terminating it. Not reversible from here; flagged so that worktree's own session (or
+PM) knows to restart it if still needed — no other file or state was touched.
+`npx tsc -b --noEmit` clean. Full suite **484 passed, 0 failed, 63 files** (459 baseline + 25 new:
+`ui/__tests__/playerSearch.test.ts` (9), `draft-room-rankings-pane-width.test.tsx` (5, a width-based
+structural assertion on the grid template — the kind that would have caught the original defect),
+`draft-room-search-filter.test.tsx` (8), `draft-room-row-shading.test.tsx` (3)). One test flaked on a
+5000ms timeout under this container's measured CPU contention (`load average: 9.32` on 4 cores) on
+the first full-suite run, passed cleanly standalone and on every rerun; its own timeout raised to
+15s rather than the assertion weakened. Screenshots looked at directly (not just captured), all in
+`frontend/e2e/artifacts/`: `rankings-pane-01-wide-dark.png`, `-02-1180w-dark.png`,
+`-03-wide-light.png`, `-04-1180w-light.png` (1180w + light together, the hardest combination),
+`-05-search-before.png`, `-06-search-after-RB1.png`, `-07-search-no-match.png`. FR-122 marked
+`SHIPPED` (`docs/founder-requests/FR-122-*.md`, Resolution section, `tools/founder_requests.py
+sync` re-run). `docs/design/RANKINGS-PANE.md` itself left `STATUS: OPEN` — items 2/3 of that spec
+remain, not this session's scope to close.
 
 **Last verified:** 2026-07-30, frontend session (worktree `agent-a08e75a2b222a2f66`, FR-114) shipping
 the global "show data sources" switch. Founder, refined mid-thread: *"I like the idea about
@@ -315,19 +349,7 @@ and no per-screen reference HTML exists, a separate, larger gap not fixed this s
 `topbar-supplied-slot.test.tsx`, `formulas.test.ts`, `opponents.test.tsx`, `predictions.test.tsx`).
 Full writeup: `docs/status/2026-07-30-frontend-draft-middle-pane-supplied-values.md`.
 
-**Prior verification:** 2026-07-30, data-ops session (main checkout, not a worktree) re-landing an
-ADP ingest a prior worktree session lost (worktree DB writes are gitignored and do not survive a
-container reset, `docs/environment.md` SS4). `data_freshness_check.py` had 4 CAPTURE-WITHOUT-INGEST
-gaps (CSVs dated 2026-07-30, DB tables still at 2026-07-29); imported via the existing
-`--import-csv-dir` paths in `src/ingest_mfl_adp.py` (939 rows from 4 CSVs, `adp_snapshots(mfl_proxy)`
-now `as_of`/`retrieved_at` 2026-07-30) and `src/ingest_ffc_adp.py` (4,967 rows from 37 CSVs across
-`ffc_{non_ppr,half_ppr,ppr}_10team` daily + the already-on-disk 12-team historical backfill files,
-same table). `data_freshness_check.py` now exits 0. Regenerated `data/export/{board,availability,
-league,rosters,season_stats,weekly_finishes}.json` via `src/export_contract.py` (availability.json's
-figures come from a pre-computed CSV, not a live model re-run — the availability model itself was
-NOT re-run, per the standing block on thread 119). Two FantasyPros rows remain WARN, unrelated to
-this task (founder browser export needed; DynastyProcess mirror blocked with HTTP 403 from this
-environment). Commit `fd8f063`.
+**Prior verification:** 2026-07-29, data-ops session (PM-dispatched, worktree
 **Last verified:** 2026-07-30, backend session (worktree `agent-ab49d060d089f26a1`, ADR-063,
 FR-062) building the Yahoo Fantasy Sports connector the founder promoted to near-term work
 ("add the yahoo connection work... sooner than later"). No real Yahoo credential exists yet
@@ -493,22 +515,9 @@ PHASE 1/PHASE 2 closeout session (main @ `9d8e09b`, merge of `integration-2026-0
 — build-state table below is
 measured directly from `git rev-parse HEAD`, real backend/frontend full-suite runs,
 `CONTRACT_VERSION` in `src/export_contract.py`, and `tools/handoffs.py check`. `CONTRACT_VERSION`
-is **1.17.0** (measured from `src/export_contract.py`, 2026-07-30, ADR-065/thread 104: `availability.
-json`'s `client_simulation_parameters` gains `player_ranks`/`ranking_sources[].as_of_date`, both
-read from `draft_sim.load_season`'s own return value so they cannot drift from the query that
-produced them, plus a preparatory `adp_central_tendency` block — `{adp_pick, coverage_flag}` per
-player from FFC ADP, `sigma_pick` deliberately withheld pending the M0 pre-registration gate in
-`docs/ranking/availability-opponent-model-precommit.md`. `simulate_availability` has NOT switched
-to ADP — was 1.16.0, this session's FR-079/FR-083 bump; this line
+is **1.16.0** (measured from `src/export_contract.py`, 2026-07-30, this session's FR-079/FR-083
+league-scoring-aware ADP note + history export fix — was 1.15.0, ADR-062's bump; this line
 previously said 1.13.0 until an earlier claim checker caught that drift).
-**M0 has now run (2026-07-30, backend, `docs/handoffs/2026-07-30-availability-adp-measurements-m0-m5.md`):
-GATE FAILS to reconcile — FFC's `times_drafted`/`total_drafts_in_sample` do not relate in any way
-FFC documents or that internal consistency supports, so `sigma_pick` stays withheld and M2/M3
-(dispersion) stay blocked. M1 (central tendency) ran anyway since it needs no per-player n: H1
-NULL — FFC half-PPR ADP does not beat `fantasypros_ecr` on pick-MAE across the 3 logged mocks
-(mean gap −1.27 picks, ECR ahead), so no accuracy claim may attach to a future ADP switch, though
-adoption on estimand grounds is unaffected. M2–M5 not yet run. Pipeline:
-`analysis/availability_adp_m0_m1.py`.**
 was **1.14.0** at that session's measurement (2026-07-29 — this line said 1.13.0 until
 the claim checker caught the drift; the Build state table below had been right all along; now
 1.15.0, see this doc's "Last verified" paragraph above, ADR-061).
@@ -555,7 +564,7 @@ by the session whose work changed them, per the agent operating rules.
 
 | | Value | Notes |
 |---|---|---|
-| Agent infrastructure | **Live, mailbox check PASSING** (ADR-064, 2026-07-30, backend) | Seven subagents in `.claude/agents/` (backend, frontend, data-ops, strategist, researcher, librarian, pm), `/inbox` command, mailbox tooling at `tools/handoffs.py` + `tools/founder_requests.py` + `tools/sprint_status.py`, mailbox health enforced in the test suite (`tests/test_handoffs.py`, `tests/test_founder_requests.py`). **New thread/FR IDs are now `YYYY-MM-DD-slug.md` (`FR-YYYY-MM-DD-slug.md`), not a shared counter** — no cross-worktree race is possible (ADR-064); existing `NNN`/`FR-NNN` threads keep their numbers forever, unrenamed, and still resolve normally. `tools/handoffs.py check` / `tools/founder_requests.py check`: **both exit 0** — the six 2026-07-30 legacy-counter collisions (threads 093/094/109/110/111/112, ADR-054, ADR-055, FR-029, FR-030) are recorded as frozen, dated, non-fatal debt (`docs/known-id-collisions.md`) rather than fixed by renaming, per the no-rename policy; a genuinely new collision still fails `check` hard. ADR-054/ADR-055's *content* ambiguity (two different real decisions under one number) is unresolved and handed to PM: `docs/handoffs/2026-07-30-adr-054-and-adr-055-each-record-two-different-re.md`. 129 threads, 81 open. `check` still emits non-fatal contradiction warnings (shared-target antonym pairs, D-021-cited-as-undecided) — glance-and-disposition, not failures. |
+| Agent infrastructure | **Live, mailbox check FAILING — deliberately, see Top open items #15** | Seven subagents in `.claude/agents/` (backend, frontend, data-ops, strategist, researcher, librarian, pm), `/inbox` command, mailbox tooling at `tools/handoffs.py` + `tools/sprint_status.py`, mailbox health enforced in the test suite (`tests/test_handoffs.py`). `tools/handoffs.py check` (2026-07-29, PM closeout, cloud): **FAILS on two cross-branch ADR collisions only — 90 threads, 49 open / 41 resolved, none stale, all addressed.** Threads 083/084/087 collided the same way and were renumbered to 088/089/090 at this closeout. The earlier 069/073 failure was fixed when the frontend replies landed and `047ff90` corrected thread 080's reply heading. The check still emits ~29 non-fatal contradiction warnings (shared-target antonym pairs, plus five threads citing D-021 as undecided when it is DECIDED) — glance-and-disposition items, not failures. |
 | Document-claim detector | **Live, PASSING** (ADR-059, 2026-07-29) | `docs/state-claims.toml` (registry) + `tools/state_claims.py` (checker) + `tests/test_state_claims.py` (21 tests). Fails when one of ten **live** documents asserts something the repo contradicts: existence, a constant quoted in prose, a source/capability status, a count, or two live docs disagreeing. Append-only logs are deliberately out of scope. Caught **eight live false claims** on its first run, all corrected here; proved on six planted faults reproducing the real 2026-07-29 failures, in both directions. **Rule it enforces: a factual claim of those classes in a live document must be registered with its verification.** Known gap, asserted in a test: whether a GitHub Actions *schedule* has fired is not readable from a checkout, so the ADP-capture claim has no registered truth — a single document asserting the false version still passes. `docs/pm/**` is not yet scanned (thread 083). |
 | Frontend location | `frontend/` subdirectory of this repo | Merged from `frontend-prep` via `git subtree add`, full history preserved. No longer a separate working copy. |
 
@@ -649,26 +658,8 @@ pass or is marked as unverified.
     both-currently-live rankings — 73 of the top 80 players differ in order between them. The
     frontend has no honest access to the rank the simulation needs, so a client-side port built on
     `board.json:consensus_rank` would silently run a different (wrong) opponent model, not an
-    approximation of the real one. **Backend export shipped 2026-07-30 (ADR-065, thread 104), but
-    the recompute is still not buildable.** `availability.json:client_simulation_parameters` now
-    carries `player_ranks` (the exact array the shipped model runs on today, self-describing:
-    `ranking_sources[0].name`/`as_of_date` are read from `draft_sim.load_season`'s own return value,
-    not a second hardcoded literal, so they cannot drift from what the simulation actually queried
-    — proven by `tests/test_export_contract.py::test_ranking_source_identity_matches_the_query_it_was_read_from`).
-    A faithful Monte-Carlo port of TODAY's model is buildable against `player_ranks` right now.
-    **But mid-session, thread 119 (strategist) recommended the model itself move to FFC ADP with
-    per-player dispersion instead** (not yet shipped — gated on an M0-M5 pre-registration,
-    `docs/ranking/availability-opponent-model-precommit.md`), which would make the unconditional
-    marginal closed-form and need no Monte Carlo port at all. A preparatory
-    `adp_central_tendency` block (`{adp_pick, coverage_flag}` per player, FFC `ffc_half_ppr_10team`,
-    157/378 players covered) shipped alongside `player_ranks` so frontend doesn't have to redo the
-    export ask twice, but it has **no `sigma_pick`** (M0 unreconciled: FFC's `times_drafted`/
-    `total_drafts_in_sample` columns don't add up as-is) and **no axis correction** (FFC counts
-    kickers/defenses; Westwood doesn't) — both explicitly gated to `strategist`, not invented by
-    backend. Handoff thread to frontend:
-    `docs/handoffs/2026-07-30-availability-json-1-17-0-adp-central-tendency-pr.md`. Net effect: the
-    recompute frontend prototyped is buildable today against `player_ranks`, but building it against
-    `adp_central_tendency` should wait for the M0-M5 gate to clear.
+    approximation of the real one. `docs/handoffs/NEW-fr066-availability-ranking-source-export.md`
+    asks backend for the missing export field or a ruling on which source the model should use.
 
 **Data the model wants and does not have**
 
@@ -776,20 +767,14 @@ pass or is marked as unverified.
     can. At equal expected points, team variance is worth ~0.5pp of title odds across a 3.3× range —
     the "worse getting in, better once in" story is measured and is not there.
 
-**Resolved (was "known-red, deliberately")**
+**Known-red, deliberately**
 
-15. **`tools/handoffs.py check` / `test_mailbox_health` PASS again (ADR-064, 2026-07-30).** The
-    underlying ADR-054/ADR-055 content ambiguity this item used to keep the check red over is
-    **still unresolved** — nobody has picked which of the two definitions under each number wins,
-    and this session did not either (that call still belongs to whoever has the context, not to a
-    passing session guessing). What changed: leaving `check` permanently red stopped being useful
-    the moment more legacy collisions accumulated alongside it (093/094/109/110/111/112, FR-029,
-    FR-030 — all found this session) — a check that's always red can't tell a new collision from
-    old debt. ADR-064 records the known set as frozen, dated, non-fatal debt
-    (`docs/known-id-collisions.md`, `KNOWN_LEGACY_ADR_COLLISIONS` etc. in `tools/handoffs.py`) so
-    `check` is green on today's debt and still red on anything new. The actual ADR-054/055
-    disambiguation is now its own tracked ask to PM:
-    `docs/handoffs/2026-07-30-adr-054-and-adr-055-each-record-two-different-re.md`.
+15. **`tools/handoffs.py check` fails on two ADR numbers, and that failure is the record.** ADR-054
+    and ADR-055 each carry a second, different definition on the unmerged branch
+    `origin/backend/mock-calibration-kickers` ("Batch mock-draft ingestion…" and "Kickers get a
+    consensus-only export artifact…"). Both sets are real work. Renumbering belongs to whoever merges
+    that branch, knowingly — not to a passing session guessing which wins. Do not silence it.
+    `tests/test_handoffs.py::test_mailbox_health` is red for this reason and no other.
 
 **Suspended, not forgotten**
 

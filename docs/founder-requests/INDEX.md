@@ -9,7 +9,7 @@ Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests
 
 ---
 
-## NEW — 77
+## NEW — 76
 
 | ID | Subject | Raised | Source |
 |---|---|---|---|
@@ -74,7 +74,6 @@ Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests
 | [FR-118](FR-118-vbd-should-show-two-numbers-position-and-flex-aw.md) | Vbd should show two numbers position and flex aw | 2026-07-30 | chat 2026-07-30, PM session |
 | [FR-120](FR-120-frontend-changes-verified-locally-are-not-verifi.md) | Frontend changes verified locally are not verifi | 2026-07-30 | PM session 2026-07-30, founder chat |
 | [FR-121](FR-121-strategy-selector-should-be-a-collapsible-menu-n.md) | Strategy selector should be a collapsible menu n | 2026-07-30 | PM session 2026-07-30, founder chat |
-| [FR-122](FR-122-typing-a-player-name-should-filter-the-list-sear.md) | Typing a player name should filter the list sear | 2026-07-30 | PM session 2026-07-30, founder chat |
 | [FR-123](FR-123-archetypes-need-more-categories-the-35-rule-cann.md) | Archetypes need more categories the 35 rule cann | 2026-07-30 | PM session 2026-07-30, founder chat |
 | [FR-124](FR-124-news-feed-global-per-player-and-eventually-roste.md) | News feed global per player and eventually roste | 2026-07-30 | PM session 2026-07-30, founder chat |
 | [FR-125](FR-125-injury-status-at-a-glance-in-player-lists-and-on.md) | Injury status at a glance in player lists and on | 2026-07-30 | PM session 2026-07-30, founder chat |
@@ -89,7 +88,7 @@ Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests
 | [FR-136](FR-136-pivot-all-energy-to-the-three-model-questions-on.md) | Pivot all energy to the three model questions on | 2026-07-30 | PM session 2026-07-30, founder chat |
 | [FR-2026-07-30-price-the-fantasypros-paid-api-tier](FR-2026-07-30-price-the-fantasypros-paid-api-tier-terms-were-n.md) | Price the fantasypros paid api tier terms were n | 2026-07-30 | PM session 2026-07-30, founder chat |
 | [FR-2026-07-30-recommendation-logic-is-inverted](FR-2026-07-30-recommendation-logic-is-inverted-it-prefers-the.md) | Recommendation logic is inverted it prefers the | 2026-07-30 | PM session 2026-07-30, founder chat, live Draft-mode screenshot |
-| [FR-2026-07-30-the-recommender-contradicts-the-project-s-own-me](FR-2026-07-30-the-recommender-contradicts-the-project-s-own-me.md) | The recommender contradicts the project s own me | 2026-07-30 | PM session 2026-07-30, founder chat |
+| [FR-2026-07-30-recommender-contradicts-own-findings](FR-2026-07-30-the-recommender-contradicts-the-project-s-own-me.md) | The recommender contradicts the project s own me | 2026-07-30 | PM session 2026-07-30, founder chat |
 
 ## SCOPING — 1
 
@@ -119,7 +118,7 @@ _None._
 | [FR-092](FR-092-figure-out-the-coordinator-table-play-callers-is.md) | Figure out the coordinator table play callers is | 2026-07-30 | PM dispatch, data-ops session 2026-07-30 |
 | [FR-114](FR-114-remove-code-and-sourcing-clutter-across-the-site.md) | Remove code and sourcing clutter across the site | 2026-07-30 | chat 2026-07-30, PM session (screenshot feedback) |
 
-## SHIPPED — 19
+## SHIPPED — 20
 
 | ID | Subject | Raised | Source |
 |---|---|---|---|
@@ -142,6 +141,7 @@ _None._
 | [FR-083](FR-083-player-card-adp-shows-wrong-format-for-selected-.md) | Player card adp shows wrong format for selected  | 2026-07-30 | chat 2026-07-30, PM session (feedback batch) |
 | [FR-087](FR-087-show-draft-position-in-rounds-not-only-pick-numb.md) | Show draft position in rounds not only pick numb | 2026-07-30 | chat 2026-07-30, PM session (feedback batch) |
 | [FR-093](FR-093-historical-adp-get-the-rest-of-it-ffc-has-differ.md) | Historical adp get the rest of it ffc has differ | 2026-07-30 | PM dispatch, data-ops session 2026-07-30 |
+| [FR-122](FR-122-typing-a-player-name-should-filter-the-list-sear.md) | Typing a player name should filter the list sear | 2026-07-30 | PM session 2026-07-30, founder chat |
 
 ## DECLINED — 0
 
