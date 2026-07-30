@@ -944,3 +944,25 @@ in the current branch.
    coefficient is +0.135 [+0.108, +0.162], which reads as a strong SURVIVES. The interval bootstraps
    across walk-forward seasons with near-identical training sets, so effective n ~ 1. Reported as
    invalid, not as a finding.
+
+## 2026-07-30 — backend, FR-099 consensus-vs-ADP: FFC ADP has no 2025 coverage in any format
+
+Confirmed by direct query (all three FFC formats/team-counts): `ffc_adp_snapshots` covers 2018-2024
+only, plus a single current-day 2026 `mfl_proxy` snapshot. There is no completed-season ADP source
+for 2025 anywhere in this database. This was already known (thread 055) but the FR-099 dispatch's
+own framing assumed 5 seasons of ECR x ADP overlap (2021-2025); the true overlap is 4 (2021-2024).
+Any other doc or dispatch that assumes "5 seasons of consensus-vs-ADP coverage" should be checked
+against this before being trusted. Not itself a problem for the holdout (2025 was never reachable
+via this path to begin with), but worth a standing note so it isn't re-assumed. Full detail:
+`docs/analysis/consensus-vs-adp-2026-07-30.md` SS0.
+
+## 2026-07-30 — backend, FR-099: ECR as a third baseline in the bottom-up component-model eval, not done
+
+Assessed as not cheap within this session: adding `b4_ecr` to
+`experiments/bottomup/components/pos_eval.py`'s baseline comparison requires a new
+`ecr_baseline.py` loader (lower-effort than the ADP one -- ECR's `player_id` is already `gsis`,
+no mfl-id mapping needed) plus wiring into `Runner.run()`/`_baseline_columns()` and a re-run of
+the walk-forward evaluation for QB/RB/TE/WR. That infrastructure is `ranker`-owned and
+mid-methodology-review (`docs/handoffs/093-...md`, PR-004/PR-005) -- re-running it speculatively
+from another role's session risked colliding with that review rather than helping it. Logged as
+follow-on for `ranker` rather than attempted here.

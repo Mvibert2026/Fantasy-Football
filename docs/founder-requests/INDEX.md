@@ -9,7 +9,7 @@ Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests
 
 ---
 
-## NEW — 50
+## NEW — 49
 
 | ID | Subject | Raised | Source |
 |---|---|---|---|
@@ -62,7 +62,6 @@ Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests
 | [FR-096](FR-096-bust-candidate-flag-the-mirror-of-the-sleeper-sc.md) | Bust candidate flag the mirror of the sleeper sc | 2026-07-30 | chat 2026-07-30, PM session |
 | [FR-097](FR-097-are-injury-prediction-services-accurate-enough-t.md) | Are injury prediction services accurate enough t | 2026-07-30 | chat 2026-07-30, PM session |
 | [FR-098](FR-098-draft-guide-personalised-plus-full-factor-verdic.md) | Draft guide personalised plus full factor verdic | 2026-07-30 | chat 2026-07-30, PM session |
-| [FR-099](FR-099-is-consensus-or-adp-the-better-baseline-and-is-b.md) | Is consensus or adp the better baseline and is b | 2026-07-30 | chat 2026-07-30, PM session |
 
 ## SCOPING — 1
 
@@ -130,6 +129,7 @@ _None._
 | [FR-054](FR-054-the-bottom-up-model-should-output-component-proj.md) | The bottom up model should output component proj | `IN-PROGRESS` |
 | [FR-073](FR-073-adp-vs-production-analysis-run-on-12-team-mock-a.md) | Adp vs production analysis run on 12 team mock a | `DONE` |
 | [FR-091](FR-091-extend-the-bottom-up-component-model-to-rb-qb-an.md) | Extend the bottom up component model to rb qb an | `IN-PROGRESS` |
+| [FR-099](FR-099-is-consensus-or-adp-the-better-baseline-and-is-b.md) | Is consensus or adp the better baseline and is b | `ANSWERED` |
 | [FR-100](FR-100-rank-positions-by-volatility-per-roster-slot.md) | Rank positions by volatility per roster slot | `ANSWERED` |
 | [FR-101](FR-101-use-points-distribution-tails-for-volatility-rat.md) | Use points distribution tails for volatility rat | `ANSWERED` |
 
