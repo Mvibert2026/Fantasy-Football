@@ -157,6 +157,28 @@ class LeagueConfig:
         return self.league_id == PRIMARY_LEAGUE_ID
 
 
+def scoring_ruleset_note_for(cfg: "LeagueConfig") -> str:
+    """Plain-English description of WHICH ruleset `cfg.scoring` actually is,
+    shared by every artifact that describes a league's scoring so the prose
+    can never drift out of sync between them (FR-083/FR-079: `board.json`'s
+    `adp_source_note` and the historical-stats exports used to each carry
+    their own hand-written scoring claim, and the two disagreed with each
+    other and with reality for every non-primary league). Single source of
+    truth: `export_contract.build_league_json`'s `scoring_ruleset_note` and
+    `export_history.py`'s per-league envelope both call this."""
+    if cfg.is_primary:
+        return (
+            "Westwood's verified custom ruleset (stacking yardage bonuses, ADR-052) -- the "
+            "one real, confirmed league this project models."
+        )
+    # Imported lazily to avoid a circular import (standard_scoring.py imports
+    # nothing from this module, but keeping the lazy pattern consistent with
+    # `_current_league_scoring()` below avoids relitigating it later).
+    import standard_scoring
+
+    return standard_scoring.SCORING_RULESET_NOTE
+
+
 def _current_league_scoring() -> dict:
     # Imported lazily to avoid a circular import (scoring.py does not import
     # this module).

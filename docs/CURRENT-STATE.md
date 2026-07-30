@@ -27,6 +27,31 @@ repo — Cloudflare holds its own deploy token. This closes the last dependency 
 machine: development, tests, the database rebuild, the daily capture and now viewing the app all run
 without it.
 
+**Last verified:** 2026-07-30, backend session (worktree `agent-a3257055537f1be4e`) fixing the root
+cause behind FR-079/FR-083 (`docs/handoffs/NEW-adp-and-history-not-league-scoring-aware.md`,
+frontend's diagnosis). Two real defects, both making the app state something false about a
+league's scoring: (1) `board.json:adp_source_note` was hand-written prose hardcoding Westwood's
+half-PPR ruleset for every league — now `export_contract._adp_source_note(cfg, adp_snapshot)`
+derives the claim fresh from `cfg.scoring` every call (verified live against `espn_10_standard`,
+a real STANDARD/0-PPR preset: note no longer says "half-PPR", correctly says "standard (0-PPR...)"
+and states the real MFL fcount-vs-league-teams comparison instead of a hardcoded "(10-team,
+matching this league)"). (2) `weekly_finishes.json`/`season_stats.json` summed/ranked
+`player_weekly_stats.fantasy_points_ppr` — nflreadpy's own fixed full-PPR column, never this
+project's scoring engine, never league-aware, wrong for every league **including Westwood**, not
+just presets. Now re-scored per player-week via `scoring.score_offensive_game(stats,
+cfg.scoring)` (summed after per-game scoring, since yardage bonuses are game-level thresholds) and
+exported per-league (`export_contract.write_all` now calls `export_history.write_all` internally,
+same `export_dir_for(cfg.league_id)` pattern board.json already used) instead of a separate,
+unprefixed-only script. Verified same player/season scores differently under the two leagues
+(2022 QB: 283.2 Westwood vs 271.7 standard 0-PPR). **Contract 1.15.0 → 1.16.0**: `season_stats.
+json`'s `fantasy_points_ppr` field is renamed `fantasy_points` (not additive — old key gone) plus
+new `fantasy_points_available`; both history files gain `league_id`/`scoring_note`/
+`scoring_ruleset_note` (shared derivation with `league.json`'s field via new
+`league_config.scoring_ruleset_note_for`). Handoff to frontend appended in place (same thread,
+`STATUS: RESOLVED`) rather than a new thread — the ask and the fix are the same subject. Did not
+touch sub-ask 1b (wiring `ffc_half_ppr_10team` into Westwood's own ADP display) — real methodology
+call, logged not decided. Full writeup: `docs/status/2026-07-30-backend-adp-history-league-
+scoring-fix.md`.
 **Last verified:** 2026-07-30, backend session (worktree `agent-a3f0bc3cc3efb7185`, FR-072, thread
 096) running the founder's ADP-vs-production analysis ("look at ADP vs Production and try to
 establish patterns"). Full writeup `docs/analysis/adp-vs-production-2026-07-30.md`, script
@@ -281,8 +306,9 @@ PHASE 1/PHASE 2 closeout session (main @ `9d8e09b`, merge of `integration-2026-0
 — build-state table below is
 measured directly from `git rev-parse HEAD`, real backend/frontend full-suite runs,
 `CONTRACT_VERSION` in `src/export_contract.py`, and `tools/handoffs.py check`. `CONTRACT_VERSION`
-is **1.15.0** (measured from `src/export_contract.py`, 2026-07-29, this session's ADR-062 bump —
-was 1.14.0; this line previously said 1.13.0 until an earlier claim checker caught that drift).
+is **1.16.0** (measured from `src/export_contract.py`, 2026-07-30, this session's FR-079/FR-083
+league-scoring-aware ADP note + history export fix — was 1.15.0, ADR-062's bump; this line
+previously said 1.13.0 until an earlier claim checker caught that drift).
 The 1.13.0 bump, from the Phase 3 Chain 1 backend session (worktree
 `phase3-chain1-adp-and-exports`, thread 074 closed), added: `board.json` top level gained
 `snapshot_as_of_date`/`snapshot_age_days`/`snapshot_max_age_days`/`snapshot_stale`/

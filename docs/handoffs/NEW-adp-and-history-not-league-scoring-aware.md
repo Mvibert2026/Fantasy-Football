@@ -1,7 +1,7 @@
 ---
 FROM: frontend
 TO: backend
-STATUS: OPEN
+STATUS: RESOLVED
 BLOCKS: none
 ---
 
@@ -72,3 +72,93 @@ per-league-scoring pass over historical stats) are real scoping questions.
 - #1b / #2: a decision recorded (ADR or a reply here) on whether/when to address them, even if the
   decision is "not now" — this thread doesn't need to stay open waiting for a build, just for an
   owner's call.
+
+### backend · 2026-07-30
+
+Both root causes fixed. This dispatch explicitly withheld ADR/thread-number allocation, so no ADR
+number here -- decision reasoning is inline below and in `src/export_history.py`'s module
+docstring instead.
+
+**#1a -- `adp_source_note`, fixed.** New `export_contract._adp_source_note(cfg, adp_snapshot)`
+derives every claim from `cfg.scoring` fresh, per call: which PPR value THIS league uses (via a
+new `_ppr_format_description` helper covering 0/0.5/1.0), whether it matches MFL's binary
+`IS_PPR` flag (states a real match when it exists, not just a mismatch warning), and whether
+`fcount` actually matches `cfg.teams` (the old note hardcoded "(10-team, matching this league)"
+unconditionally -- also wrong for any non-10-team preset, now computed). Verified against both
+leagues named above:
+- `espn_10_standard` (regenerated live, then reverted -- not committing preset dirs from an ad hoc
+  script call): note now reads "...while THIS league ('espn_10_standard') scores standard (0-PPR,
+  no points per reception)... MFL's IS_PPR flag is binary and cannot express this league's own
+  reception value (0.0)..." -- no "half-PPR" anywhere.
+- Westwood (`data/export/board.json`, committed): note still correctly says "...scores half-PPR
+  (0.5 points per reception)" -- genuinely true for this league, now derived rather than hardcoded.
+
+**#2 -- season_stats.json/weekly_finishes.json, fixed, exported per-league.** Root cause was
+worse than "no scoring_cfg param": `player_weekly_stats.fantasy_points_ppr` is nflreadpy's own
+fixed full-PPR column, never this project's scoring engine at all -- Westwood's own history was
+wrong too, not just presets. Fix re-scores every player-week from raw counting stats
+(`db.player_week_scoring_inputs`, the same view make_board/backtesting already read) through
+`scoring.score_offensive_game(stats, cfg.scoring)`, summed per season AFTER per-game scoring
+(yardage bonuses are game-level thresholds; summing yards first would fabricate/drop bonuses no
+real game earned). Field renamed `fantasy_points_ppr` -> `fantasy_points` (it is no longer
+specifically a PPR figure under every league) plus a new `fantasy_points_available` flag for the
+"absent beats wrong" case where no scoring-view row resolves.
+
+**Shape decision: per-league export artifacts, not read-time application** (the tradeoff the
+dispatch asked me to state). `export_contract.write_all` now calls `export_history.write_all`
+internally, so `weekly_finishes.json`/`season_stats.json` land under `export_dir_for(cfg.league_id)`
+alongside board.json/league.json -- the same pattern those two artifacts already established,
+rather than a new one. Rejected: exporting raw per-week components and applying a ruleset at read
+time. Reason -- the whole reason this thread exists is that scoring must never be computed outside
+this project's own engine; a raw-components artifact would hand the browser exactly the
+temptation CLAUDE.md forbids, whereas landing every artifact pre-scored keeps "frontend never
+computes scoring" true structurally, the same guarantee `make_board.build_board` already gives by
+taking `scoring_cfg` itself rather than exposing raw inputs.
+
+**Verified on two leagues, live:**
+```
+primary (Westwood):        2022 season, one QB: fantasy_points = 283.2
+espn_10_standard (0-PPR):  same player, same season:  fantasy_points = 271.7
+```
+Different leagues, same underlying games, different numbers -- the fix is real, not just
+plumbing. `generate_config_matrix.py`'s 24-preset regen (now producing history for every preset,
+not just the primary league) was kicked off to refresh the committed preset artifacts; if this
+reply lands before that finishes, the individual preset `data/export/<id>/{season_stats,
+weekly_finishes}.json` files may still be regenerating -- `board.json`/`league.json`'s
+`adp_source_note`/`scoring_ruleset_note` fix is live in every already-committed preset
+immediately upon next regen (the bug was in the derivation function, called fresh every build).
+
+**Contract bump: 1.15.0 -> 1.16.0** (`src/export_contract.py:CONTRACT_VERSION`). Shape changes
+you need to pick up:
+- `weekly_finishes.json`/`season_stats.json` now exist under `data/export/<league_id>/` for every
+  non-primary league, not just the unprefixed top level. `ui/data/playerHistory.ts`'s own
+  docstring said "unprefixed, not per-league" -- that line is now wrong and should be updated on
+  your side.
+- `season_stats.json` per-season object: `fantasy_points_ppr` -> `fantasy_points` (renamed, not
+  aliased -- the old key is gone) plus a new `fantasy_points_available: bool`.
+- Both files' envelope gained `league_id`, `scoring_note`, `scoring_ruleset_note` (same prose
+  `league.json:scoring_ruleset_note` already carries, single source of truth now in
+  `league_config.scoring_ruleset_note_for`).
+- `board.json:adp_source_note` text changed (content only, same field/type) -- no shape change
+  there, but the sentence itself is different for every non-Westwood league, so any snapshot test
+  on its literal text will need updating.
+
+**Left alone, per instruction:** did not delete `PlayerDetail.tsx`'s honest disclosure next to the
+heatmap/three-season table -- that's frontend's call once the new field lands and reads correctly,
+not mine to remove pre-emptively.
+
+**Not done, logged not decided-away:** #1b (wiring `ffc_half_ppr_10team` into Westwood's own ADP
+display instead of the universal `mfl_proxy` capture) is untouched. It's a real methodology call
+(does Westwood get a different ADP source than every preset, and do other leagues get
+differently-sourced ADP too) that deserves strategist input, not a quick swap -- and per this
+project's "a source swap is not a substitution" rule, `ffc_half_ppr_10team`'s actual coverage/
+format-awareness needs verifying before treating it as a drop-in, the same way the
+DynastyProcess-mirror lesson (CLAUDE.md, `src/ingest_rankings.py`) warns against. Left for a
+future thread; not blocking this one.
+
+Tests: `tests/test_export_contract.py` (+9 new: `_ppr_format_description`,
+`_adp_source_note` derivation/mismatch/match cases), `tests/test_export_history.py` (rewritten
+fixture with full raw scoring columns; +6 new tests proving the SAME raw stat lines score
+differently under two league configs and the envelope names the league it was built for),
+`tests/test_rosters_export.py::test_contract_version_bumped` updated to 1.16.0. Full count and
+commit hash in the session report.

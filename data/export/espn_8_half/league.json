@@ -1,6 +1,6 @@
 {
-  "contract_version": "1.15.0",
-  "generated_utc": "2026-07-29T23:13:54.757712+00:00",
+  "contract_version": "1.16.0",
+  "generated_utc": "2026-07-30T05:32:36.902273+00:00",
   "league_id": "espn_8_half",
   "league_name": "ESPN-default, 8 teams, half scoring",
   "platform": "espn",

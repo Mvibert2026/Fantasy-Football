@@ -914,3 +914,21 @@ in the current branch.
    first would violate the "ask fully or don't ask" / no-half-specified-replies rule. Left for a
    dedicated session; noted in this session's final report rather than silently skipped.
 
+
+## 2026-07-30 — backend, FR-079/FR-083 root-cause fix (adp_source_note + history exports)
+
+1. **No ADR opened for this fix, on explicit dispatch instruction ("Do NOT allocate thread or ADR
+   numbers").** Real decisions were made (per-league export artifacts vs. read-time application
+   for `weekly_finishes.json`/`season_stats.json`; renaming `fantasy_points_ppr` -> `fantasy_points`
+   rather than aliasing) that would normally get an ADR per `CLAUDE.md`'s operating rules. Reasoning
+   is instead inline in `src/export_history.py`'s module docstring and
+   `docs/handoffs/NEW-adp-and-history-not-league-scoring-aware.md`'s backend reply. Flagging so a
+   future session with ADR-allocation privileges can backfill one from that reasoning if it turns
+   out worth a numbered citation elsewhere.
+2. **Sub-ask 1b (wire `ffc_half_ppr_10team` into Westwood's own ADP display instead of the
+   universal `mfl_proxy` capture) intentionally not built.** Real methodology call — which leagues
+   get which ADP source, if any — flagged for strategist input rather than a quick swap. Per
+   CLAUDE.md's "a source swap is not a substitution" rule, `ffc_half_ppr_10team`'s actual
+   coverage/format-awareness needs verifying before treating it as drop-in for `mfl_proxy`, the
+   same lesson the DynastyProcess-mirror incident (`src/ingest_rankings.py`) already cost this
+   project once.

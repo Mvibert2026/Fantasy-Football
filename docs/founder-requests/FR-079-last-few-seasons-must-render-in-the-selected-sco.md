@@ -39,3 +39,25 @@ not this league's own ruleset ... does not yet vary by league." Screenshot:
 Backend defect (the fixed-format gap itself) logged to `backend` for a real decision:
 `docs/handoffs/NEW-adp-and-history-not-league-scoring-aware.md` (pending PM's ID allocation).
 `npx tsc -b --noEmit` clean. Test count/commit: see session report in `docs/status/`.
+
+## Resolution (2026-07-30, backend)
+
+Root cause fixed. `player_weekly_stats.fantasy_points_ppr` was never this project's scoring
+engine at all -- nflreadpy's own fixed full-PPR column, wrong for every league including
+Westwood. `src/export_history.py` now re-scores every player-week from raw counting stats through
+`scoring.score_offensive_game(stats, cfg.scoring)`, summed after per-game scoring so yardage
+bonuses (game-level thresholds) are neither fabricated nor dropped. `season_stats.json`/
+`weekly_finishes.json` are now built by `export_contract.write_all` and land under
+`export_dir_for(cfg.league_id)` for every league, the same per-league pattern `board.json`
+already used -- no longer unprefixed-only. Verified: the same player's 2022 season scores 283.2
+under Westwood vs 271.7 under a standard 0-PPR preset.
+
+**Contract 1.15.0 -> 1.16.0.** `season_stats.json`'s `fantasy_points_ppr` field is renamed
+`fantasy_points` (not additive) plus a new `fantasy_points_available` bool. Full detail and the
+per-league-artifacts-vs-read-time-application tradeoff:
+`docs/handoffs/NEW-adp-and-history-not-league-scoring-aware.md` (backend's reply).
+
+**STATUS left at IN PROGRESS, not SHIPPED** -- backend's part is done and tested, but frontend's
+honest disclosure in `PlayerDetail.tsx` still needs to consume the renamed field and the new
+per-league path before this is founder-visible as fixed; per this session's own instruction, that
+disclosure was deliberately left in place rather than removed pre-emptively.
