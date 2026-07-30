@@ -125,7 +125,7 @@ not an omission. Start your session at your own heading.
 | [111](111-valuation-tests-35-36-results.md) | Valuation tests 35 36 results | `backend` | OPEN | 0d | none |
 | [112](112-preregistration-gates-need-a-decision-subset.md) | Preregistration gates need a decision subset | `ranker` | OPEN | 0d | every future pre-registration that gates on projection error |
 | [112](114-founder-mock-scoring-format-inference-needs-sepa.md) | Founder mock scoring format inference needs sepa | `data-ops` | OPEN | 0d | none |
-| [2026-07-30-pick-18-recommendation-defect-traced-reproduced](2026-07-30-pick-18-recommendation-defect-traced-reproduced.md) | Pick 18 recommendation defect traced reproduced | `ranker` | OPEN | 0d | none |
+| [2026-07-30-pick-18-recommendation-defect-traced-reproduced](2026-07-30-pick-18-recommendation-defect-traced-reproduced.md) | Pick 18 recommendation defect traced reproduced | `ranker` | OPEN | 0d | FR-2026-07-30-recommendation-logic-is-inverted (the correct-rule spec) |
 
 ### `researcher` — 4 waiting
 
