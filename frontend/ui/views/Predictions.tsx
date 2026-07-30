@@ -364,9 +364,24 @@ function PredictingUnder({
       {userSlot > 0 ? (
         <>
           your slot{' '}
-          <span style={{ color: overridden ? 'var(--acc)' : 'var(--txt)', fontWeight: 600 }}>{userSlot}</span>
+          {/* SUPPLIED-VALUES.md: this is the same overridden `user_draft_slot`
+              value the TopBar SLOT control shows -- same rule applies, so the
+              same fix applies: no semantic accent, a dotted underline marks
+              the supplied value. Text kept verbatim ("overridden, sourced N")
+              -- it already discloses the sourced value in the same control,
+              and predictions.test.tsx pins this exact phrase; only the colour
+              and the underline change here. */}
+          <span
+            style={{
+              color: 'var(--txt)',
+              fontWeight: 600,
+              borderBottom: overridden ? '1px dotted var(--line2)' : 'none',
+            }}
+          >
+            {userSlot}
+          </span>
           {overridden ? (
-            <span style={{ color: 'var(--acc)' }} title="Set locally via the SLOT control in the top bar, not from league.json.">
+            <span style={{ color: 'var(--dim2)' }} title="Set locally via the SLOT control in the top bar, not from league.json.">
               {' '}
               (overridden{sourcedSlot !== null ? `, sourced ${sourcedSlot}` : ''})
             </span>

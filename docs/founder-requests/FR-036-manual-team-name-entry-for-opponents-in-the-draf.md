@@ -61,3 +61,15 @@ Screenshots: `frontend/e2e/artifacts/fr036-opponents-prep-before.png`, `-prep-ty
 `-prep-after-reload.png`, `-draft-mode.png`. Tests: `ui/__tests__/opponentNames.test.ts` (10),
 `ui/__tests__/opponents.test.tsx` (+6). Commits `e54b83f`..`1775ac6` on branch
 `worktree-agent-ad3fc0f6ee64497b5`.
+
+## Update (2026-07-30, frontend) — colour fix per docs/design/SUPPLIED-VALUES.md
+
+Design flagged that the typed name rendered in `--acc` green with a bordered `TYPED` badge — the
+board's delta/"good" colour, which a typed name is not. Fixed: the name now renders in `--txt` with
+a dotted underline (the app's one and only "you put this here" marker), and the badge is now a plain
+lowercase `typed` label (monospace, no border/box), matching the "set by you"/"randomised" marker
+vocabulary the same design spec establishes for future supplied controls. The clear ("×") reversion
+to the sourced `opponents.json` name, or the honest "no team name supplied" placeholder, is
+unchanged. Tests: `ui/__tests__/opponents.test.tsx` (+1, asserts no `--acc` on the name or marker
+and the exact dotted-underline style). Screenshot:
+`frontend/e2e/artifacts/supplied-2-opponents-typed-name.png`.

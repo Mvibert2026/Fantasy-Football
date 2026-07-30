@@ -80,3 +80,16 @@ Screenshots: `frontend/e2e/artifacts/fr034-slot-selector-prep-before.png`,
 `-prep-overridden.png`, `-draft-mode.png`. Tests: `ui/__tests__/draftSlot.test.ts` (9),
 `ui/__tests__/league-override.test.ts` (9). Commits `e54b83f`..`1775ac6` on branch
 `worktree-agent-ad3fc0f6ee64497b5`.
+
+## Update (2026-07-30, frontend) — colour fix per docs/design/SUPPLIED-VALUES.md
+
+Design flagged that the overridden slot rendered in `--acc` green — the board's delta/"good" colour
+— which a self-selected slot is not. Fixed: the TopBar SLOT control's border, label and value no
+longer use `--acc` in the overridden state; the value carries a dotted underline instead (the app's
+one and only "you put this here" marker), and the disclosure text changed from "· sourced N" to
+"· set by you, league file says N" (same underlying `userSlotSourced` value, clearer wording). Same
+fix applied to `Predictions.tsx`'s own "your slot N (overridden, sourced M)" readout — a third place
+showing the identical value in the identical wrong colour, not named in the design spec but the same
+defect class. Tests: `ui/__tests__/topbar-supplied-slot.test.tsx` (2, new),
+`ui/__tests__/predictions.test.tsx` (+1). Screenshot:
+`frontend/e2e/artifacts/supplied-1-topbar-slot-overridden.png`.

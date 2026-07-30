@@ -32,8 +32,26 @@ export interface PositionScarcity {
    *  board data for the position at all. */
   expected: number | null;
   /** + = going faster than the market (consensus) expected. Null, not 0, when
-   *  there is no board data for the position. */
+   *  there is no board data for the position, OR when `paceSuppressedReason` is
+   *  set (see below) -- a suppressed pace is a real null, not a real number the
+   *  caller chooses not to show. */
   pace: number | null;
+  /**
+   * FR-045: non-null exactly when `hasAutoFillPlaceholders` was true for this
+   * call. `gone` counts only real players (`takenPlayerIds` filters out
+   * placeholder picks -- draft.ts), but `expected` is computed from
+   * `consensusRank.value < currentPick`, and `currentPick` advances on every
+   * logged pick, placeholder or real. So once placeholders exist, `gone` and
+   * `expected` are drawn from different populations and their difference
+   * (`pace`) is arithmetic noise, not a market signal -- confirmed against the
+   * founder's own screenshot, where every one of four positions read "behind
+   * pace" simultaneously, which is not possible if the picks driving the
+   * comparison were real. Per FR-045 option 1 (the recommended fix): suppress
+   * the number and say why, rather than option 2's rescaling (not implemented
+   * here -- a real, different fix, not attempted) or option 3 (rejected --
+   * inventing who a placeholder pick "really" was).
+   */
+  paceSuppressedReason: string | null;
   tier1Remaining: number | null;
   tier2Remaining: number | null;
   /** Count of remaining players under 50% to reach nextUserPick, per the real
@@ -44,6 +62,12 @@ export interface PositionScarcity {
   startablePool: number;
 }
 
+/** FR-045: the one sentence explaining why pace is withheld, shared between
+ *  the computation (so `pace` and the reason can never disagree about whether
+ *  suppression is active) and the render layer. */
+export const PACE_SUPPRESSED_REASON =
+  'not yet — auto-filled picks stand in for unknown opponents, so pace can\'t be compared to real picks taken';
+
 export function positionScarcity(
   data: Dataset,
   rows: BoardRow[],
@@ -53,6 +77,10 @@ export function positionScarcity(
   positions: readonly string[],
   startersByPosition: Record<string, number>,
   teams: number,
+  /** FR-045: true when `picks` contains at least one auto-filled placeholder
+   *  (DraftRoom.tsx's AUTO_FILL_PLACEHOLDER). Passed in rather than detected
+   *  here so this module stays free of DraftRoom's UI-layer constant. */
+  hasAutoFillPlaceholders = false,
 ): PositionScarcity[] {
   const taken = takenPlayerIds(picks);
 
@@ -86,7 +114,8 @@ export function positionScarcity(
       gone,
       dataAvailable,
       expected,
-      pace: dataAvailable && expected !== null ? gone - expected : null,
+      pace: dataAvailable && expected !== null && !hasAutoFillPlaceholders ? gone - expected : null,
+      paceSuppressedReason: dataAvailable && hasAutoFillPlaceholders ? PACE_SUPPRESSED_REASON : null,
       tier1Remaining,
       tier2Remaining,
       under50ByNext,
@@ -118,8 +147,14 @@ export function depletionWarning(s: PositionScarcity, nextUserPick: number | nul
  * Rendered as an explicit phrase rather than a bare `+2`/`-1` so the direction
  * of the claim never has to be inferred -- per the founder's own suggested
  * remedy ("label it, or render it as an explicit phrase").
+ *
+ * FR-045: `suppressedReason` takes priority over `pace` when set -- the caller
+ * passes `s.paceSuppressedReason`, and by construction (see positionScarcity
+ * above) `pace` is already null whenever that reason is non-null, so this is
+ * belt-and-braces, not a second source of truth.
  */
-export function paceLabel(pace: number | null): string {
+export function paceLabel(pace: number | null, suppressedReason: string | null = null): string {
+  if (suppressedReason) return suppressedReason;
   if (pace === null) return 'pace not yet computed';
   if (pace === 0) return 'on pace';
   return pace > 0 ? `${integer(pace)} ahead of pace` : `${integer(Math.abs(pace))} behind pace`;
