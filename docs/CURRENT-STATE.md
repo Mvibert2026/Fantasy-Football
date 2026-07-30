@@ -27,6 +27,47 @@ repo — Cloudflare holds its own deploy token. This closes the last dependency 
 machine: development, tests, the database rebuild, the daily capture and now viewing the app all run
 without it.
 
+**ESCALATED, NOT RESOLVED (2026-07-30, backend session):** the two "Last verified" entries
+immediately below are separated by live, unresolved `<<<<<<< HEAD` / `=======` / `>>>>>>>` git
+merge-conflict markers, left by a coordinator merge commit (`17d41a3`, "Merge recommendation-card
+honesty fixes, keeping item 6's grid layout") that resolved the underlying code conflict but not
+this doc's. Per this project's operating rules, a merge conflict is escalated, never resolved
+unilaterally by whichever session next needs to edit the file — so this entry was inserted above
+the conflict rather than inside it, and the conflict itself is untouched. Both sides read as
+genuine, non-contradictory frontend session narratives (RANKINGS-PANE/FR-122 vs the
+recommendation-card honesty fixes) that likely just need the markers stripped and both paragraphs
+kept, but that call belongs to whoever owns this merge, not to a session that arrived afterward
+for an unrelated reason. Flagged to `pm` (see `docs/ideas-inbox.md`, 2026-07-30 backend entry).
+
+**Last verified:** 2026-07-30, backend session — fixed a defect in the backtest evaluation harness
+(`src/backtest.py`) found by strategist while ruling on the primary evaluation metric
+(`docs/adr-drafts/ADR-DRAFT-primary-evaluation-metric.md` §4.1). A ranked player with a resolved
+position but zero weekly stat rows (retired/cut/season-ending injury/suspended) used to score
+exactly `0.0` VBD — replacement level — for the slot he consumed, instead of the true deficit
+`0 - replacement_points[pos]`. Fixed via a new `_slot_value` helper and `_vbd_lookup` now also
+returning per-position replacement point values; regression tests written first, confirmed failing
+pre-fix. **Evaluation-only change — no ranking logic, weight, or export field touched, no contract
+bump.** Re-ran ADR-025's board-vs-consensus `starter_vbd` figures under the fix: **unchanged**,
+delta exactly `0.0` in all four seasons (2022/2023/2024/2025-holdout) — no board- or
+raw-consensus-ranked player filling a top-15 starting slot in this DB snapshot had a completely
+empty season. The small drift from the originally-published 176.0/-34.7/113.4/83.8 to
+174.6/-27.68/94.1/79.54 is unrelated `nfl.db` re-ingestion drift since 2026-07-25, reproduced with
+the unmodified pre-fix code — not caused by this fix. The defect is real regardless: found a live
+instance on the weak `bpa_prior_season_points` arm (`vbd_sum` moved -114.7 in 2022, -139.1 in the
+2025 holdout). Flagged but **not re-run**: `docs/test-registry.md` #44-46's already-deprecated
+"-1,070 pts" headline uses the same defective path on the sealed 2025 season — escalated to
+`strategist`/`pm` (`docs/handoffs/2026-07-30-backtest-vbd-deficit-fix-landed-adr-025-confirme.md`)
+rather than re-run unilaterally, since it touches the holdout and ADR-026 cites the same evidence
+pattern. Full before/after table, blast-radius list, and holdout-access reasoning: ADR-066
+(`docs/decisions.md`). Regression tests:
+`tests/test_backtest.py::test_never_played_player_scores_the_replacement_deficit_not_zero_vbd`,
+`::test_never_played_player_in_starter_vbd_also_scores_the_deficit`. Commit `b567586` (fix); the
+ADR/blast-radius/holdout-review writeup landed via the shared session's coordinator merge commit
+`df50e3b` (content verified byte-identical against what this session wrote — empty diff, nothing to
+reconcile). `tests/test_backtest.py` 33/33 passing; `tests/test_holdout_audit.py`'s holdout-review
+test passing (its one remaining failure, `test_no_new_direct_sqlite_connections_in_src`, is
+pre-existing, from concurrent sessions' new ingestion scripts, unrelated to this change).
+
 <<<<<<< HEAD
 **Last verified:** 2026-07-30, frontend session (worktree `agent-a9e24c92a40214afb`) shipping design
 round-1 item 6 (`docs/design/RANKINGS-PANE.md`) plus FR-122, the three-thing dispatch: **A.** the

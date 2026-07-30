@@ -1630,3 +1630,18 @@ Every decision rule pre-committed before the numbers exist. Decided without aski
    mode `docs/operating-model.md`'s evidence-standards table exists to catch — worth a PM/Verifier
    look at whether that session's whole claimed diff landed anywhere, not just this one column.
 
+
+6. **(Backend, 2026-07-30, found while updating `docs/CURRENT-STATE.md` after the backtest
+   VBD-deficit fix, not resolved here.)** `docs/CURRENT-STATE.md` contains live, unresolved git
+   merge-conflict markers (`<<<<<<< HEAD` / `=======` / `>>>>>>> worktree-agent-a7446873495c871f2`)
+   spanning two frontend session narratives (the RANKINGS-PANE/FR-122 entry and the
+   recommendation-card-honesty-fixes entry), left by coordinator merge commit `17d41a3` ("Merge
+   recommendation-card honesty fixes, keeping item 6's grid layout") — the code conflict was
+   resolved, the doc conflict was not. Per the operating rules a merge conflict is escalated, never
+   resolved unilaterally by an unrelated session, so this session inserted its own entry above the
+   conflict rather than touching it. Both sides read as genuine, non-contradictory work and likely
+   just need the markers stripped with both paragraphs kept — but see item 5 above, filed the same
+   day by frontend, which independently found the RANKINGS-PANE side's own claimed
+   `DRAFT_LIST_GRID_TEMPLATE` diff may not actually exist in that worktree's history. Whoever
+   resolves this conflict should check item 5's finding first, not assume both sides are equally
+   real. Needs a `pm`/`verifier` look, not a mechanical marker-strip.
