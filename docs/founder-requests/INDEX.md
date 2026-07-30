@@ -5,11 +5,11 @@ Per-request files in this directory are the source of truth. Edit a request's ow
 `STATUS:` line, then re-run sync. Protocol: [`README.md`](README.md).
 Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests.md).
 
-**104 requests since freeze.**
+**105 requests since freeze.**
 
 ---
 
-## NEW — 60
+## NEW — 61
 
 | ID | Subject | Raised | Source |
 |---|---|---|---|
@@ -73,6 +73,7 @@ Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests
 | [FR-116](FR-116-bpa-on-expected-score-should-be-tested.md) | Bpa on expected score should be tested | 2026-07-30 | chat 2026-07-30, PM session |
 | [FR-117](FR-117-draft-strategies-need-roster-awareness-constrain.md) | Draft strategies need roster awareness constrain | 2026-07-30 | chat 2026-07-30, PM session |
 | [FR-118](FR-118-vbd-should-show-two-numbers-position-and-flex-aw.md) | Vbd should show two numbers position and flex aw | 2026-07-30 | chat 2026-07-30, PM session |
+| [FR-120](FR-120-frontend-changes-verified-locally-are-not-verifi.md) | Frontend changes verified locally are not verifi | 2026-07-30 | PM session 2026-07-30, founder chat |
 
 ## SCOPING — 1
 
