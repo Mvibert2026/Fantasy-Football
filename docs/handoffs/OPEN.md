@@ -4,7 +4,7 @@
 Threads are the source of truth. Change a thread's `STATUS:`, then re-run sync.
 Protocol: [`README.md`](README.md).
 
-**78 open** · 47 resolved
+**79 open** · 47 resolved
 
 ---
 
@@ -26,7 +26,7 @@ not an omission. Start your session at your own heading.
 | [106](106-fr090-bookkeeping-investigation-findings.md) | Fr090 bookkeeping investigation findings | `librarian` | OPEN | 0d | none |
 | [108](108-injury-prediction-services-buy-nothing.md) | Injury prediction services buy nothing | `researcher` | OPEN | 0d | FR-097 (injury-prediction-service buy decision); raises priority of open item 8 (T6 roster-status ingest) and the Sleeper daily snapshot job |
 | [118](118-fr-114-shipped-plus-a-suspicious-mid-task-messag.md) | Fr 114 shipped plus a suspicious mid task messag | `frontend` | OPEN | 0d | none |
-| [119](119-assistant-window-container-shipped-assistant-win.md) | Assistant window container shipped assistant win | `frontend` | OPEN | 0d | none |
+| [120](120-assistant-window-container-shipped-assistant-win.md) | Assistant window container shipped assistant win | `frontend` | OPEN | 0d | none |
 | [90](090-fr-043-audit-claude-md-ss5-staleness-built-but-u.md) | Fr 043 audit claude md ss5 staleness built but u | `librarian` | OPEN | 1d | none |
 
 ### `backend` — 30 waiting
