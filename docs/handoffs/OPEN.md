@@ -4,7 +4,7 @@
 Threads are the source of truth. Change a thread's `STATUS:`, then re-run sync.
 Protocol: [`README.md`](README.md).
 
-**99 open** · 54 resolved
+**100 open** · 54 resolved
 
 ---
 
@@ -98,7 +98,7 @@ not an omission. Start your session at your own heading.
 | [2026-07-30-four-selectable-ranking-sources-board-contract-s](2026-07-30-four-selectable-ranking-sources-board-contract-s.md) | Four selectable ranking sources board contract s | `backend` | OPEN | 0d | none |
 | [2026-07-30-wire-assistant-retrieval-to-docs-assistant-conte](2026-07-30-wire-assistant-retrieval-to-docs-assistant-conte.md) | Wire assistant retrieval to docs assistant conte | `librarian` | OPEN | 0d | none |
 
-### `data-ops` — 12 waiting
+### `data-ops` — 13 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
@@ -113,6 +113,7 @@ not an omission. Start your session at your own heading.
 | [113](113-rosters-weekly-blocks-vacated-opportunity.md) | Rosters weekly blocks vacated opportunity | `ranker` | OPEN | 0d | test-registry #28 (vacated targets & carries) |
 | [2026-07-30-ftn-charting-is-not-in-nfl-db-batch-5-fetched-it](2026-07-30-ftn-charting-is-not-in-nfl-db-batch-5-fetched-it.md) | Ftn charting is not in nfl db batch 5 fetched it | `ranker` | OPEN | 0d | none |
 | [2026-07-30-pbp-and-ngs-receiving-are-now-model-inputs-and-a](2026-07-30-pbp-and-ngs-receiving-are-now-model-inputs-and-a.md) | Pbp and ngs receiving are now model inputs and a | `ranker` | OPEN | 0d | none |
+| [2026-07-30-pbp-was-ingested-without-epa-cpoe-sack-and-ff-op](2026-07-30-pbp-was-ingested-without-epa-cpoe-sack-and-ff-op.md) | Pbp was ingested without epa cpoe sack and ff op | `ranker` | OPEN | 0d | none |
 | [2026-07-30-play-callers-is-not-in-nfl-db-and-end-of-season](2026-07-30-play-callers-is-not-in-nfl-db-and-end-of-season.md) | Play callers is not in nfl db and end of season | `ranker` | OPEN | 0d | none |
 
 ### `strategist` — 18 waiting

@@ -1,0 +1,115 @@
+panel: 26 seasons, 1999-2024 (2025 sealed)
+QB-efficiency rows: 2649 1999-2024
+xFP rows (REG only): 11112 2006-2024
+
+campaign family: batch 3: m=24, batch 6: m=23  ->  CAMPAIGN m = 47
+batch-local m = 23 (reported as SECONDARY only)
+primary QB: 869 player-seasons, 11 seasons, proxy reads 0
+primary RB: 1441 player-seasons, 11 seasons, proxy reads 0
+primary WR: 2271 player-seasons, 11 seasons, proxy reads 0
+primary TE: 1041 player-seasons, 11 seasons, proxy reads 0
+
+coverage ON THE ADP BOARD (gate = 0.80):
+  QB  qbeff_known 0.938  cpoe_known 0.938  xfp_known 0.938
+  RB  qbeff_known 0.110  cpoe_known 0.092  xfp_known 0.836
+  WR  qbeff_known 0.208  cpoe_known 0.206  xfp_known 0.897
+  TE  qbeff_known 0.076  cpoe_known 0.076  xfp_known 0.937
+[ 1/23] QB  P1 EPA per dropback                    E1a   -1.2183 ( -1.08%) p=0.0200 n=11  E1b   +0.6014  E2 -0.0128  proxy=0
+[ 2/23] QB  P2 ANY/A                               E1a   -1.4249 ( -1.26%) p=0.0013 n=11  E1b   -3.0581  E2 -0.0118  proxy=0
+[ 3/23] QB  P3 passer rating                       E1a   -0.9596 ( -0.85%) p=0.0010 n=11  E1b   -3.4531  E2 -0.0180  proxy=0
+[ 4/23] QB  P4 CPOE                                E1a   +0.0902 ( +0.08%) p=0.7505 n=11  E1b   +0.2312  E2 +0.0025  proxy=0
+[ 5/23] QB  P4c CPOE coverage CONTROL              E1a   +0.0000 ( +0.00%) p=0.3996 n=11  E1b   -0.0000  E2 +0.0000  proxy=0
+[ 6/23] QB  Pc QB-efficiency coverage CONTROL      E1a   +0.0000 ( +0.00%) p=0.3996 n=11  E1b   -0.0000  E2 +0.0000  proxy=0
+[ 7/23] QB  K1 sack rate per dropback              E1a   -0.5322 ( -0.47%) p=0.0380 n=11  E1b   +0.5719  E2 +0.0041  proxy=0
+[ 8/23] QB  X1 add xFP per game                    E1a   -1.0277 ( -0.91%) p=0.0473 n=11  E1b   +0.7303  E2 +0.0066  proxy=0
+[ 9/23] RB  X1 add xFP per game                    E1a   -0.4724 ( -0.95%) p=0.0468 n=11  E1b   +0.3757  E2 +0.0044  proxy=0
+[10/23] WR  X1 add xFP per game                    E1a   -0.0076 ( -0.03%) p=0.5986 n=11  E1b   +0.1011  E2 -0.0036  proxy=0
+[11/23] TE  X1 add xFP per game                    E1a   +0.0610 ( +0.31%) p=0.1400 n=11  E1b   -0.0468  E2 -0.0034  proxy=0
+[12/23] QB  X2 REPLACE ppg_w with xFP per game     E1a   +0.7763 ( +0.69%) p=0.0036 n=11  E1b   +1.3531  E2 -0.0060  proxy=0
+[13/23] RB  X2 REPLACE ppg_w with xFP per game     E1a   +0.7680 ( +1.55%) p=0.0001 n=11  E1b   +1.0695  E2 -0.0141  proxy=0
+[14/23] WR  X2 REPLACE ppg_w with xFP per game     E1a   +0.3947 ( +1.64%) p=0.0007 n=11  E1b   +0.3087  E2 -0.0101  proxy=0
+[15/23] TE  X2 REPLACE ppg_w with xFP per game     E1a   +0.1295 ( +0.66%) p=0.0272 n=11  E1b   +0.3047  E2 -0.0148  proxy=0
+[16/23] QB  X3 luck residual (actual - expected)   E1a   -0.6862 ( -0.61%) p=0.0770 n=11  E1b   +0.2360  E2 +0.0048  proxy=0
+[17/23] RB  X3 luck residual (actual - expected)   E1a   -0.4590 ( -0.93%) p=0.0106 n=11  E1b   +0.3445  E2 +0.0036  proxy=0
+[18/23] WR  X3 luck residual (actual - expected)   E1a   -0.0208 ( -0.09%) p=0.3131 n=11  E1b   +0.0089  E2 -0.0028  proxy=0
+[19/23] TE  X3 luck residual (actual - expected)   E1a   +0.0451 ( +0.23%) p=0.2791 n=11  E1b   +0.0097  E2 -0.0017  proxy=0
+[20/23] QB  X4c xFP coverage CONTROL               E1a   +0.0000 ( +0.00%) p=0.3996 n=11  E1b   -0.0000  E2 +0.0000  proxy=0
+[21/23] RB  X4c xFP coverage CONTROL               E1a   -0.0058 ( -0.01%) p=0.4369 n=11  E1b   -0.0162  E2 +0.0000  proxy=0
+[22/23] WR  X4c xFP coverage CONTROL               E1a   -0.0000 ( -0.00%) p=0.0386 n=11  E1b   +0.0000  E2 +0.0000  proxy=0
+[23/23] TE  X4c xFP coverage CONTROL               E1a   +0.0000 ( +0.00%) p=0.6537 n=11  E1b   -0.0000  E2 +0.0000  proxy=0
+
+========================================================================================================
+RESULTS -- E1a = full-universe component MAE (negative = better). BH q=0.10 at CAMPAIGN m=47
+========================================================================================================
+
+N10 passing efficiency
+  QB  P1 EPA per dropback                    E1a   -1.2183 [  -2.0181,  -0.4012] ( -1.08%) p=0.0200  E1b   +0.6014  E2 -0.0128  MARGINAL
+  QB  P2 ANY/A                               E1a   -1.4249 [  -2.0540,  -0.8436] ( -1.26%) p=0.0013  E1b   -3.0581  E2 -0.0118  PROJECTION-ONLY breakM=308
+  QB  P3 passer rating                       E1a   -0.9596 [  -1.3215,  -0.5477] ( -0.85%) p=0.0010  E1b   -3.4531  E2 -0.0180  PROJECTION-ONLY breakM=308
+  QB  P4 CPOE                                E1a   +0.0902 [  -0.4425,  +0.5785] ( +0.08%) p=0.7505  E1b   +0.2312  E2 +0.0025  NULL
+  QB  P4c CPOE coverage CONTROL              E1a   +0.0000 [  -0.0000,  +0.0000] ( +0.00%) p=0.3996  E1b   -0.0000  E2 +0.0000  NULL
+  QB  Pc QB-efficiency coverage CONTROL      E1a   +0.0000 [  -0.0000,  +0.0000] ( +0.00%) p=0.3996  E1b   -0.0000  E2 +0.0000  NULL
+
+N11 sack avoidance
+  QB  K1 sack rate per dropback              E1a   -0.5322 [  -0.9449,  -0.1118] ( -0.47%) p=0.0380  E1b   +0.5719  E2 +0.0041  MARGINAL
+
+#18 expected fantasy points
+  QB  X1 add xFP per game                    E1a   -1.0277 [  -1.8681,  -0.2097] ( -0.91%) p=0.0473  E1b   +0.7303  E2 +0.0066  MARGINAL
+  RB  X1 add xFP per game                    E1a   -0.4724 [  -0.8786,  -0.0870] ( -0.95%) p=0.0468  E1b   +0.3757  E2 +0.0044  MARGINAL
+  WR  X1 add xFP per game                    E1a   -0.0076 [  -0.0318,  +0.0209] ( -0.03%) p=0.5986  E1b   +0.1011  E2 -0.0036  NULL
+  TE  X1 add xFP per game                    E1a   +0.0610 [  -0.0018,  +0.1342] ( +0.31%) p=0.1400  E1b   -0.0468  E2 -0.0034  NULL
+  QB  X2 REPLACE ppg_w with xFP per game     E1a   +0.7763 [  +0.3877,  +1.1407] ( +0.69%) p=0.0036  E1b   +1.3531  E2 -0.0060  HARMFUL breakM=140
+  RB  X2 REPLACE ppg_w with xFP per game     E1a   +0.7680 [  +0.5641,  +0.9922] ( +1.55%) p=0.0001  E1b   +1.0695  E2 -0.0141  HARMFUL breakM=1721
+  WR  X2 REPLACE ppg_w with xFP per game     E1a   +0.3947 [  +0.2403,  +0.5446] ( +1.64%) p=0.0007  E1b   +0.3087  E2 -0.0101  HARMFUL breakM=308
+  TE  X2 REPLACE ppg_w with xFP per game     E1a   +0.1295 [  +0.0380,  +0.2229] ( +0.66%) p=0.0272  E1b   +0.3047  E2 -0.0148  MARGINAL-HARMFUL
+  QB  X3 luck residual (actual - expected)   E1a   -0.6862 [  -1.3596,  -0.0743] ( -0.61%) p=0.0770  E1b   +0.2360  E2 +0.0048  MARGINAL
+  RB  X3 luck residual (actual - expected)   E1a   -0.4590 [  -0.7439,  -0.1816] ( -0.93%) p=0.0106  E1b   +0.3445  E2 +0.0036  BOARD-NEUTRAL breakM=56
+  WR  X3 luck residual (actual - expected)   E1a   -0.0208 [  -0.0544,  +0.0204] ( -0.09%) p=0.3131  E1b   +0.0089  E2 -0.0028  NULL
+  TE  X3 luck residual (actual - expected)   E1a   +0.0451 [  -0.0101,  +0.1274] ( +0.23%) p=0.2791  E1b   +0.0097  E2 -0.0017  NULL
+  QB  X4c xFP coverage CONTROL               E1a   +0.0000 [  -0.0000,  +0.0000] ( +0.00%) p=0.3996  E1b   -0.0000  E2 +0.0000  NULL
+  RB  X4c xFP coverage CONTROL               E1a   -0.0058 [  -0.0208,  +0.0035] ( -0.01%) p=0.4369  E1b   -0.0162  E2 +0.0000  NULL
+  WR  X4c xFP coverage CONTROL               E1a   -0.0000 [  -0.0000,  -0.0000] ( -0.00%) p=0.0386  E1b   +0.0000  E2 +0.0000  MARGINAL
+  TE  X4c xFP coverage CONTROL               E1a   +0.0000 [  -0.0000,  +0.0000] ( +0.00%) p=0.6537  E1b   -0.0000  E2 +0.0000  NULL
+
+grade counts:
+grade
+NULL                10
+MARGINAL             6
+HARMFUL              3
+PROJECTION-ONLY      2
+MARGINAL-HARMFUL     1
+BOARD-NEUTRAL        1
+
+leak/overlap trigger (E1a better than 2.0% of primary error): 0 arm(s)
+
+========================================================================================================
+MANDATORY xFP OVERLAP DIAGNOSTIC (§5) -- a description, not a test
+========================================================================================================
+position  seasons        n  corr_xfp_ppg  corr_xfp_vol  corr_resid_ppg
+      QB       11  72.0000        0.9493        0.8865          0.4569
+      RB       11 118.6364        0.9608        0.8563          0.4653
+      TE       11  86.5455        0.9608        0.9849          0.3661
+      WR       11 188.0000        0.9636        0.9889          0.4701
+
+========================================================================================================
+DESCRIPTIVE SECONDARIES (§7) -- OUTSIDE THE FAMILY, NO CLAIM ATTACHED
+========================================================================================================
+
+YoY persistence of each raw QB metric, >=100 dropbacks both years:
+  metric  n_pairs  first  last  yoy_pearson  yoy_spearman
+  epa_db      782   1999  2023       0.4730        0.4596
+    anya      782   1999  2023       0.4223        0.4071
+   pratg      782   1999  2023       0.4707        0.4677
+    cpoe      562   2006  2023       0.4723        0.4504
+sackrate      782   1999  2023       0.4707        0.4840
+
+Lagged metric vs season-N QB points (this league), and vs the residual on consensus ADP:
+    metric  seasons    n  to_points  resid_adp   n_adp
+    anya_w       11 72.0     0.5600     0.1483 19.1429
+    cpoe_w       11 72.0     0.3555     0.1291 19.1429
+  epa_db_w       11 72.0     0.5185     0.1586 19.1429
+   pratg_w       11 72.0     0.5531     0.1206 19.1429
+sackrate_w       11 72.0    -0.1879    -0.0450 19.1429
+
+QBEFF_K0 = 100.0 dropbacks (fixed a priori, never tuned)
+wrote /home/user/Fantasy-Football/experiments/bottomup/results/factor_batch6_results.csv and three companions
