@@ -2883,3 +2883,72 @@ reproduces thread 076's exact scenario (two isolated worktrees, no shared state)
 collision; `test_new_thread_filename_dedupes_same_day_same_slug_deterministically` proves the
 same-slug-same-day case resolves deterministically rather than raising. Commit: see this session's
 `docs/status/` entry.
+
+## ADR-065 — `availability.json` exports the model's own consensus-rank provenance, plus a preparatory ADP block (2026-07-30, backend, thread 104/119)
+
+**Decision.** Thread 104 (FR-066's resolution) asked backend to unblock a browser-side Monte Carlo
+recompute of availability for an overridden draft slot, by exporting the per-player rank
+`simulate_availability` actually runs its opponent model and the user's own `strategy_bpa` pick
+against — a different, ECR-sourced ranking from `board.json:consensus_rank` (measured: 73 of the
+top 80 players differ in order). Mid-session, thread 119 resolved: strategist recommended the
+opponent model's central tendency move from `fantasypros_ecr` to FFC ADP
+(`ffc_half_ppr_10team`) with per-player dispersion, and reformulated thread 104's ask from the raw
+rank array to `{adp_pick, sigma_pick, coverage_flag}` per player — because with ADP + dispersion the
+unconditional marginal becomes closed-form and a browser recompute needs no Monte Carlo port at all.
+
+**What shipped, in `src/export_contract.py:build_availability_json` (now takes `conn`) and
+`src/draft_sim.py`:**
+
+1. `draft_sim.SeasonData` gains `consensus_rank_source`/`consensus_rank_as_of_date`, populated by
+   `load_season` from the exact rows `consensus_rank` was read from (new module constant
+   `CONSENSUS_RANK_SOURCE`, one edit point). `export_contract`'s `ranking_sources[0].name`/
+   `as_of_date` read these fields rather than a second hardcoded literal, so a future repoint of
+   `CONSENSUS_RANK_SOURCE` (e.g. thread 119's own recommendation, once it clears pre-registration)
+   updates the export automatically. Proven, not asserted:
+   `tests/test_export_contract.py::test_ranking_source_identity_matches_the_query_it_was_read_from`
+   and `tests/test_availability.py::test_load_season_provenance_matches_the_rows_it_actually_read`
+   independently re-query the DB and assert equality with what the export emitted.
+2. `client_simulation_parameters.player_ranks` (the ECR array thread 104 originally asked for) is
+   kept, not removed — it is still the accurate description of what the SHIPPED model runs on
+   today; `simulate_availability` has **not** switched to ADP.
+3. `client_simulation_parameters.adp_central_tendency` (new, additive) carries the reformulated
+   shape: per player, `{adp_pick, coverage_flag}`, keyed to `by_player`'s own keys, sourced from
+   `ffc_adp_snapshots` (adp_source `ffc_half_ppr_10team`, filtered to QB/RB/WR/TE, joined to the
+   same gsis-keyed player universe `load_season` uses via `player_ids.mfl_id`). `status:
+   "preparatory_switch_not_yet_shipped"` and an explicit `status_note` state that this is not yet
+   the model's input.
+4. **`sigma_pick` is deliberately NOT exported.** It is gated on M0
+   (`docs/ranking/availability-opponent-model-precommit.md`) — FFC's `times_drafted` and
+   `total_drafts_in_sample` columns do not reconcile on the committed snapshot (e.g. Bijan Robinson
+   `times_drafted=90` against `total_drafts_in_sample=1254` on every row) — so no per-player
+   sampling-variance weight is trustworthy yet. `sigma_pending_note` says so; no placeholder value
+   ships.
+5. **`adp_pick` is NOT axis-corrected (M4 in the precommit doc).** FFC's `average_pick` counts
+   kickers/defenses and its sampled drafts run deeper than this league's 16 rounds; the isotonic
+   calibration against `board.json` that fixes this is explicitly assigned to `strategist`, not
+   invented here. `axis_note` states this loudly rather than silently passing raw values through as
+   if they were Westwood pick numbers.
+6. `algorithm_note` corrected: it previously claimed the user's own BPA pick runs off
+   `board.json`'s unperturbed rank. It does not and never did — `ds.strategy_bpa` reads
+   `data.consensus_rank`, the same array the opponent model's `ranking_sources` draws from. This was
+   a real defect in the exported documentation, not a rewording.
+
+**Coverage, measured against the real DB (2026-07-30):** 157 of 378 season-universe players resolve
+an `ffc_half_ppr_10team` row (skill positions only); 79 of the 80 players actually tracked in
+`by_player` are covered (`Marvin Harrison Jr.` is the one gap — honest, not fabricated). Every
+`by_player` key has a corresponding `adp_central_tendency.by_player` entry with `coverage_flag`
+explicit; `adp_pick` is non-null iff `coverage_flag` is true.
+`tests/test_export_contract.py::test_adp_central_tendency_covers_every_by_player_key_honestly`
+guards this.
+
+**Contract version 1.16.0 → 1.17.0.** `docs/data-contract.md` updated in place (field table +
+changelog). Handoff thread opened to `frontend` describing the new field and its preparatory status.
+
+**Not done, and explicitly out of scope for this change:** the model itself has not switched to
+ADP; `sigma_pick` is not computed; the M4 axis correction is not performed. All three remain gated
+on the M0-M5 pre-registration in `docs/ranking/availability-opponent-model-precommit.md`, owned by
+`strategist`.
+
+**Evidence.** `data/export/availability.json`/`board.json`/`league.json`/`glossary.json`/
+`nulls.json`/`opponents.json` regenerated against `data/nfl.db` (2026-07-30). Full test count and
+commit hash in this session's `docs/status/` entry and the reply to thread 104.

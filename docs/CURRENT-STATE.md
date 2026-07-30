@@ -466,8 +466,13 @@ PHASE 1/PHASE 2 closeout session (main @ `9d8e09b`, merge of `integration-2026-0
 — build-state table below is
 measured directly from `git rev-parse HEAD`, real backend/frontend full-suite runs,
 `CONTRACT_VERSION` in `src/export_contract.py`, and `tools/handoffs.py check`. `CONTRACT_VERSION`
-is **1.16.0** (measured from `src/export_contract.py`, 2026-07-30, this session's FR-079/FR-083
-league-scoring-aware ADP note + history export fix — was 1.15.0, ADR-062's bump; this line
+is **1.17.0** (measured from `src/export_contract.py`, 2026-07-30, ADR-065/thread 104: `availability.
+json`'s `client_simulation_parameters` gains `player_ranks`/`ranking_sources[].as_of_date`, both
+read from `draft_sim.load_season`'s own return value so they cannot drift from the query that
+produced them, plus a preparatory `adp_central_tendency` block — `{adp_pick, coverage_flag}` per
+player from FFC ADP, `sigma_pick` deliberately withheld pending the M0 pre-registration gate in
+`docs/ranking/availability-opponent-model-precommit.md`. `simulate_availability` has NOT switched
+to ADP — was 1.16.0, this session's FR-079/FR-083 bump; this line
 previously said 1.13.0 until an earlier claim checker caught that drift).
 was **1.14.0** at that session's measurement (2026-07-29 — this line said 1.13.0 until
 the claim checker caught the drift; the Build state table below had been right all along; now
@@ -609,8 +614,26 @@ pass or is marked as unverified.
     both-currently-live rankings — 73 of the top 80 players differ in order between them. The
     frontend has no honest access to the rank the simulation needs, so a client-side port built on
     `board.json:consensus_rank` would silently run a different (wrong) opponent model, not an
-    approximation of the real one. `docs/handoffs/NEW-fr066-availability-ranking-source-export.md`
-    asks backend for the missing export field or a ruling on which source the model should use.
+    approximation of the real one. **Backend export shipped 2026-07-30 (ADR-065, thread 104), but
+    the recompute is still not buildable.** `availability.json:client_simulation_parameters` now
+    carries `player_ranks` (the exact array the shipped model runs on today, self-describing:
+    `ranking_sources[0].name`/`as_of_date` are read from `draft_sim.load_season`'s own return value,
+    not a second hardcoded literal, so they cannot drift from what the simulation actually queried
+    — proven by `tests/test_export_contract.py::test_ranking_source_identity_matches_the_query_it_was_read_from`).
+    A faithful Monte-Carlo port of TODAY's model is buildable against `player_ranks` right now.
+    **But mid-session, thread 119 (strategist) recommended the model itself move to FFC ADP with
+    per-player dispersion instead** (not yet shipped — gated on an M0-M5 pre-registration,
+    `docs/ranking/availability-opponent-model-precommit.md`), which would make the unconditional
+    marginal closed-form and need no Monte Carlo port at all. A preparatory
+    `adp_central_tendency` block (`{adp_pick, coverage_flag}` per player, FFC `ffc_half_ppr_10team`,
+    157/378 players covered) shipped alongside `player_ranks` so frontend doesn't have to redo the
+    export ask twice, but it has **no `sigma_pick`** (M0 unreconciled: FFC's `times_drafted`/
+    `total_drafts_in_sample` columns don't add up as-is) and **no axis correction** (FFC counts
+    kickers/defenses; Westwood doesn't) — both explicitly gated to `strategist`, not invented by
+    backend. Handoff thread to frontend:
+    `docs/handoffs/2026-07-30-availability-json-1-17-0-adp-central-tendency-pr.md`. Net effect: the
+    recompute frontend prototyped is buildable today against `player_ranks`, but building it against
+    `adp_central_tendency` should wait for the M0-M5 gate to clear.
 
 **Data the model wants and does not have**
 
