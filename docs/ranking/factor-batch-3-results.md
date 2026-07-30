@@ -7,7 +7,7 @@ batch 2.
 
 Design fixed in `docs/ranking/factor-batch-3-precommit.md`, content committed **`1c452a1` before any
 arm was fitted**. 24 registered tests, **BH at the campaign level, m = 24**, q = 0.10. Sealed 2025
-holdout **not opened**. Results `c7161ce`, post-hoc diagnostics `b9d1a47`.
+holdout **not opened**. Results `c7161ce`, post-hoc diagnostics `bda27ea`.
 
 Reproduce:
 

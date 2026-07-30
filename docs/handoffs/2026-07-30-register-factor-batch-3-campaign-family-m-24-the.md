@@ -96,5 +96,5 @@ that before `fable` finds it.
 
 Artifacts: `docs/ranking/factor-batch-3-precommit.md` (`1c452a1`),
 `docs/ranking/factor-batch-3-results.md`, `experiments/bottomup/results/factor_batch3_results.csv`
-and `factor_batch3_diagnostics.csv` (`c7161ce`, `b9d1a47`). You have no database access by design;
+and `factor_batch3_diagnostics.csv` (`c7161ce`, `bda27ea`). You have no database access by design;
 every number you need is in those two documents and two CSVs.

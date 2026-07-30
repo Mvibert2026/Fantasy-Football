@@ -11,7 +11,7 @@ OPENED: 2026-07-30
 
 Attack `docs/ranking/factor-batch-3-results.md` at maximum effort. Pre-commitment is
 `docs/ranking/factor-batch-3-precommit.md`, content committed `1c452a1` **before any arm was fitted**;
-results `c7161ce`; post-hoc diagnostics `b9d1a47`. Raw numbers in
+results `c7161ce`; post-hoc diagnostics `bda27ea`. Raw numbers in
 `experiments/bottomup/results/factor_batch3_results.csv` and `factor_batch3_diagnostics.csv`.
 
 **Five places I think it is weakest, offered so you can go somewhere else if you disagree.**

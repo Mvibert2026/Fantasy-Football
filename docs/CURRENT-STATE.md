@@ -106,7 +106,49 @@ three that is a genuinely independent re-ranking, not just a re-scoring of the s
 No code changed this session — `simulate_availability`'s source stays gated on thread
 `2026-07-30-availability-adp-measurements-m0-m5` per this file's instruction not to fix it here.
 
-**Last verified:** 2026-07-30, ranker session — **factor batch 2 (ADR-067): registry #28 is NULL not
+**Last verified:** 2026-07-30, ranker session — **factor batch 3: 24 registered tests, nothing
+grades SURVIVES, registry #29 is now DEAD on both specifications, and the most valuable result in the
+batch is post-hoc and has not been shipped.** Design `docs/ranking/factor-batch-3-precommit.md`
+committed `1c452a1` **before any arm was fitted**; results `c7161ce`; post-hoc `bda27ea`. BH at the
+**campaign level, m = 24**. **Sealed 2025 holdout not opened.** Every coverage gate passed on the ADP
+board before any result was read (NGS 0.826 WR / 0.850 TE, explosive rush 0.836 RB, OC tenure
+0.962–0.984). **The best finding is a missing wire inside our own model, not a factor from anyone's
+sweep:** lagged **yards per carry**, offered to the RB *carry-volume* spec it has never been offered
+to, is **−0.9331 carries MAE (−1.88%), E1b −0.7200** — beating the registered explosive-rush arm on
+both endpoints (−0.7508 / −1.51% / −0.0264). The model already fits YPC and uses it only for the
+yards channel; `_RB_CARRY_VOLUME` holds no efficiency term, and the same wire is missing at every
+position. **It is post-hoc, it is registered with `strategist`, and it has not been run
+confirmatorily or merged.** Registered arms: **QB rushing block ablation +1.8065 carries MAE
+(+14.4%), EARNS-ITS-PLACE** — the first ablation of any QB feature here, and it tripped the
+pre-committed too-good trigger, decomposed and escalated rather than celebrated (all 11 seasons worse;
+the ablation leaves only availability and age on a volume model). **QB rushing → passing volume
+−1.4679 attempts MAE (−1.30%), p = 0.0068, PROJECTION-ONLY** — a rushing quarterback throws
+measurably less, which nothing in the registry recorded. **Explosive rush rate −0.7508 (own) and
+−0.4593 (club-relative), both PROJECTION-ONLY**, both with a null control, and a binomial placebo
+proves the empirical-Bayes geometry contributes nothing (+0.0063, p = 0.87). **The pre-registered
+VOID rule fired**: NGS separation at WR cleared BH and then lost its interpretation because its
+control arm is **92% of the treatment** — batch 2's `move_known` defect caught mechanically in the
+same run instead of retrospectively. **TE separation is the one clean unresolved number** (−0.1462,
+control at 3%, 7 seasons, MARGINAL). **Registry #29 is closed:** batch 3 added the two arms batch 2
+could not — change at QB (−0.0660, p = 0.274) and *tenure* at four positions (QB −0.2427 p = 0.106,
+WR/TE/RB all null) — so across two batches it is **seven arms, two specifications, one model,
+nothing**; the source floor is measured at **2010** (Wikipedia staff navboxes do not exist earlier —
+96 of 192 team-seasons empty on a 2004–2009 backfill) with censoring at **3.1%**, so the nulls are
+not artefacts of truncation. **The researcher's highest-EV pick is wrong here:** prior points *per
+game played* is a **worse** baseline than prior season total at all four positions on the full
+universe (−0.021 to −0.030 Spearman, all BH-significant), though the sign flips on the ADP board at
+QB/RB/TE — `CLAUDE.md` §6.5 baseline #2 stands. **A defect I introduced and disclosed:** four of my
+own 24 registered tests (`ppg_1 × gshare_1`) are algebraically `pts_1/season_len` and were
+**structurally incapable of differing from the incumbent** (residual 1.776e-15); m held at 24, ruling
+requested from `strategist`. **Batch 4 (the founder's RB workload thresholds) is registered and
+deliberately NOT run** — ≥350 carries is 26 player-seasons since 1999 and **two** in the harness's
+window, ≥400 is **zero**, so two of his three thresholds are undefined rather than underpowered, and
+the fix changes his question rather than the method. 20 tests pass (10 new, plus batch 2's 10 still
+green including bit-for-bit reproduction). Full account: `docs/ranking/factor-batch-3-results.md`,
+`docs/ranking/factor-batch-4-precommit.md`,
+`docs/status/2026-07-30-ranker-factor-batch-3.md`.
+
+**Superseded, retained for the batch-2 record:** 2026-07-30, ranker session — **factor batch 2 (ADR-067): registry #28 is NULL not
 HARMFUL, registry #29 is no longer gated and is also NULL, and neither earns an insight sentence.**
 Batch 1's #28 HARMFUL grade was a **data artifact**, confirmed by direct head-to-head on one harness:
 swapping the Week-1 depth chart for `rosters_weekly`, RB goes **+0.203 → −0.012 carries MAE**, paired

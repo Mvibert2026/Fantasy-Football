@@ -1662,3 +1662,31 @@ ingest, Sleeper projections, Yahoo credentials, the `test_no_new_direct_sqlite_c
 list already documented as pre-existing in ADR-066). **None touch `experiments/bottomup/`,
 `docs/ranking/`, or anything this session wrote** — `tests/test_factor_batch2_features.py` is
 10/10 green and `tests/test_bottomup_prototype.py` is unaffected.
+
+**2026-07-30, ranker — factor batch 3 (24 registered tests). Decisions made and logged, not asked.**
+
+- **The efficiency→volume wire is the best thing in the batch and it is post-hoc.** Lagged YPC added
+  to the RB carry-volume spec beats the registered explosive-rate arm on both endpoints (−0.9331 /
+  −1.88% / E1b −0.7200 against −0.7508 / −1.51% / E1b −0.0264). The model already computes YPC and
+  uses it only for the yards channel. **The same wire is missing at every position** — `ypr` and
+  `catch_rate` are never offered to `tpg`, `ypa` is never offered to `att_pg`. Registered with
+  `strategist` before anything is run confirmatorily; not shipped, not merged, not claimed.
+- **Coverage flags must be registered as control arms, always, from now on.** Batch 2 lost three arms
+  to `move_known` after the fact. Batch 3 registered three controls in the family with a numeric VOID
+  rule at 50% and **it fired**, on NGS separation at WR (control 92% of treatment). The cost is
+  m going from 13 to 16; the benefit is that a coverage artifact cannot read as a win. This should be
+  a standing rule, not a batch-3 habit.
+- **A gate is a functional form nobody here has tested.** Batch 4 (`factor-batch-4-precommit.md`)
+  registers the founder's RB workload thresholds *on top of* a smooth term in the same quantity, so
+  the answer is gate-vs-weight rather than workload-vs-nothing. If gates work where weights do not,
+  that is worth more than any factor on the list.
+- **Untested and now cheap: NGS `avg_cushion`, `avg_intended_air_yards` and
+  `percent_share_of_intended_air_yards`** are in the same `ngs_receiving` rows the separation arm
+  already reads, and `avg_yac_above_expectation` is there too. The panel accessor exists; each is one
+  column. **TE separation was MARGINAL with a clean control on 7 seasons and is the one unresolved
+  thing in the batch** — it should be rerun with a proper power calculation before it is called
+  anything.
+- **`pbp` has 25 columns and is a fraction of nflverse's play-by-play.** `xpass`, `wp`,
+  `score_differential`, `half_seconds_remaining` and `yardline_100` are all present and all unused —
+  neutral-situation pass rate (N20), red-zone usage (#10) and PROE (#22) are each now one query away,
+  and the registry still records the last two as blocked on "there is no PBP table."

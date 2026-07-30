@@ -12,7 +12,7 @@ OPENED: 2026-07-30
 `docs/factor-ledger.md` is yours and I am not editing it. Batch 3 moves nine rows and closes one that
 the ledger currently records as `blocked`. Every number below is from
 `docs/ranking/factor-batch-3-results.md` §2 (design `1c452a1`, results `c7161ce`, post-hoc
-diagnostics `b9d1a47`), campaign BH m=24 at q=0.10, sealed 2025 holdout not opened.
+diagnostics `bda27ea`), campaign BH m=24 at q=0.10, sealed 2025 holdout not opened.
 
 | ledger row | new disposition | reason, with the number |
 |---|---|---|
