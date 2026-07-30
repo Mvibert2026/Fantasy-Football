@@ -178,3 +178,57 @@ founder's bar or falls short of it.
 
 He has asked repeatedly to be told when he is wrong. This is the question where enthusiasm beats
 evidence unless someone names it — including his enthusiasm, and including the PM's.
+
+---
+
+## M4 — Consistency. Added 2026-07-30 at the founder's direction.
+
+His words, after catching the recommender suggesting a player it had just explained was *more*
+likely to still be available later:
+
+> "just odd recommendation model is suggestiong things that don't agree with other findings, we need
+> consistency, again, this is what fable will need to tear into"
+
+**This section is not about the inverted pick logic.** That defect is already traced (ranker) and a
+correct rule is being specified (strategist) — see
+`docs/founder-requests/FR-2026-07-30-recommendation-logic-is-inverted-it-prefers-the.md`. Do not
+re-derive it and do not spend the mandate on it.
+
+**It is about the class.** The product contradicted itself on one screen, in its own voice: the
+assistant told the founder that reaching for a quarterback in the first three rounds was the single
+most costly strategy this project has tested — negative in all 12 scenarios, worst case −115.4
+points — while the recommender was recommending exactly that. Two surfaces, same product, opposite
+answers, and nothing anywhere noticed.
+
+### The hypothesis to attack
+
+**Findings live in markdown; the model lives in code; nothing connects them.** Measured results are
+written into `docs/`, ADRs and thread replies, and then the model is free to contradict every one of
+them, because no test asserts that a finding is respected.
+
+Attack that framing as well as the tool. It is PM's hypothesis, it is convenient, and a convenient
+structural explanation is exactly the kind of thing this mandate exists to disbelieve. Possibilities
+worth taking seriously: the findings may be narrower than their summaries; two findings may
+genuinely conflict and the recommender picked one; or the "contradiction" may be an artifact of the
+assistant paraphrasing a result it retrieved rather than a real inconsistency.
+
+### Specific things to check
+
+1. **Read the early-QB result at source**, not via the assistant's summary. How many scenarios, what
+   league shape, what pick range, what confidence? Establish whether pick 18 is genuinely inside its
+   support or whether the assistant overreached.
+2. **Enumerate what the recommender actually encodes** versus what this project has measured. The
+   four candidates on file: early-QB cost; the dead variance-preference (CLAUDE.md §7, tested four
+   ways); archetype fall-through frequency; and H1 NULL on ADP accuracy, measured 2026-07-30.
+3. **Ask whether "consistency" is even the right goal.** A model forced to obey every prior finding
+   cannot learn that one was wrong. What is the honest version — a hard constraint, a flagged
+   warning, or a test that fails only when a *live* recommendation contradicts a *holdout-validated*
+   result? The founder asked for consistency; the right answer may be narrower than his word.
+4. **The three defects in the same screenshot** — the garbled self-correcting sentence shipped to
+   production, and two different availability numbers for the same player on one screen. Are these
+   the same root cause as the inconsistency, or three unrelated failures that happened to co-occur?
+
+### The bar
+
+This is question 3 of his three model questions, observed failing in the surface he would use on
+7 September. Treat it accordingly.
