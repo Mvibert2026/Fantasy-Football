@@ -1,6 +1,6 @@
 {
-  "contract_version": "1.17.0",
-  "generated_utc": "2026-07-30T18:29:05.696664+00:00",
+  "contract_version": "1.18.0",
+  "generated_utc": "2026-07-30T20:53:07.127961+00:00",
   "league_id": "primary",
   "preamble": "Findings we tested and did NOT confirm. Published draft guides rarely show these, which is precisely why they are here: a claim that has survived a real test is worth more than one that was never tested.",
   "findings": [

@@ -4,6 +4,7 @@ from pathlib import Path
 import pytest
 
 import export_contract
+import make_board
 
 EXPORT = Path(__file__).resolve().parent.parent / "data" / "export"
 
@@ -143,6 +144,108 @@ def test_single_consensus_source_is_declared_not_implied_as_a_blend():
     board = _load("board.json")
     assert board["consensus_source_count"] == 1
     assert "not" in board["consensus_source_note"].lower()
+
+
+# --------------------- ranking_source_selection (FR-2026-07-30) -----------
+#
+# Sanity checks written BEFORE the implementation. board.json must carry
+# which of the four founder-facing sources it was built from, and switching
+# the selection must produce a DIFFERENT, honestly labeled artifact -- never
+# a silent fallback to the default.
+
+
+@pytest.mark.requires_db
+def test_default_board_json_selection_is_expert_adjusted():
+    board = _load("board.json")
+    assert board["ranking_source_selection"] == "expert_adjusted"
+    assert board["ranking_source_built"] is True
+    assert board["ranking_source_row_count"] == len(board["players"])
+
+
+@pytest.mark.requires_db
+def test_proprietary_selection_is_explicitly_not_built_never_falls_back():
+    import db as dbmod
+    import export_contract as ec
+
+    conn = dbmod.connect()
+    try:
+        out = ec.build_board_json(conn, ranking_source_selection="proprietary")
+    finally:
+        conn.close()
+    assert out["ranking_source_built"] is False
+    assert out["players"] == []
+    assert "not built" in out["ranking_source_note"].lower()
+    assert out["contract_version"] == ec.CONTRACT_VERSION
+
+
+@pytest.mark.requires_db
+def test_expert_raw_and_expert_adjusted_boards_differ_in_order():
+    import db as dbmod
+    import export_contract as ec
+
+    conn = dbmod.connect()
+    try:
+        adjusted = ec.build_board_json(conn, ranking_source_selection="expert_adjusted")
+        raw = ec.build_board_json(conn, ranking_source_selection="expert_raw")
+    finally:
+        conn.close()
+    assert raw["ranking_source_selection"] == "expert_raw"
+    adjusted_order = [p["player"] for p in adjusted["players"]]
+    raw_order = [p["player"] for p in raw["players"]]
+    assert adjusted_order != raw_order, (
+        "expert_raw must not silently reproduce the VBD-reordered board"
+    )
+    raw_ranks = [p["consensus_rank"] for p in raw["players"]]
+    assert raw_ranks == sorted(raw_ranks)
+
+
+@pytest.mark.requires_db
+def test_market_adp_board_has_its_own_as_of_date_and_row_count():
+    import db as dbmod
+    import export_contract as ec
+
+    conn = dbmod.connect()
+    try:
+        adp = ec.build_board_json(conn, ranking_source_selection="market_adp")
+    finally:
+        conn.close()
+    assert adp["ranking_source_selection"] == "market_adp"
+    assert len(adp["players"]) > 20
+    assert len(adp["players"]) < 300  # thinner than the expert board, honestly
+
+
+@pytest.mark.requires_db
+def test_unknown_ranking_source_selection_raises():
+    import db as dbmod
+    import export_contract as ec
+
+    conn = dbmod.connect()
+    try:
+        with pytest.raises(ValueError):
+            ec.build_board_json(conn, ranking_source_selection="bogus")
+    finally:
+        conn.close()
+
+
+@pytest.mark.requires_db
+def test_ranking_sources_json_catalogs_all_four_never_hides_the_unbuilt_one():
+    import db as dbmod
+    import export_contract as ec
+
+    conn = dbmod.connect()
+    try:
+        catalog = ec.build_ranking_sources_json(conn)
+    finally:
+        conn.close()
+    selections = {s["ranking_source_selection"] for s in catalog["sources"]}
+    assert selections == set(make_board.RANKING_SOURCE_SELECTIONS)
+    by_sel = {s["ranking_source_selection"]: s for s in catalog["sources"]}
+    assert by_sel["proprietary"]["built"] is False
+    assert by_sel["expert_adjusted"]["built"] is True
+    assert by_sel["expert_raw"]["built"] is True
+    assert by_sel["market_adp"]["built"] is True
+    assert catalog["board_files"]["proprietary"] is None
+    assert catalog["board_files"]["expert_adjusted"] == "board.json"
 
 
 @pytest.mark.requires_db

@@ -33,7 +33,7 @@ export interface TraceField {
 }
 
 /** The contract version the registry below is pinned against. */
-export const TRACE_CONTRACT = '1.17.0';
+export const TRACE_CONTRACT = '1.18.0';
 
 /**
  * Changes to the user-visible trace surface, newest first.
@@ -47,6 +47,18 @@ export const TRACE_CHANGELOG: ReadonlyArray<{
   kind: 'rename' | 'value' | 'added' | 'removed';
   summary: string;
 }> = [
+  {
+    version: '1.18.0',
+    kind: 'added',
+    summary:
+      'Pin moves 1.17.0 -> 1.18.0 (2026-07-30 backend, FR-2026-07-30-four-selectable-ranking-' +
+      'sources). The board gains `ranking_source_selection` and a new `ranking_sources.json` ' +
+      'artifact: the founder asked for the app to run off any of four sources at a user toggle ' +
+      '-- Consensus adjusted (what shipped before, and still the default when no selection is ' +
+      'passed), Consensus, ADP, and Proprietary bottom-up. The fourth is CATALOGUED BUT NOT ' +
+      'BUILT and raises rather than silently serving another source. Additive; an existing ' +
+      'reader that ignores the new field sees byte-identical behaviour.',
+  },
   {
     version: '1.17.0',
     kind: 'added',
