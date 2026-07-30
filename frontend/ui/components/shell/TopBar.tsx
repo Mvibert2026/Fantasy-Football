@@ -260,7 +260,11 @@ export function TopBar({
             maxWidth: 130,
             overflow: 'hidden',
             textOverflow: 'ellipsis',
-            background: 'transparent',
+            // See the slot <select> below for why this is a token and not
+            // `transparent`: an author background of `transparent` makes Chrome
+            // draw the popup list in the system default rather than following
+            // :root's `color-scheme`.
+            background: 'var(--panel2)',
             border: 0,
             color: 'var(--dim)',
             fontFamily: 'var(--font-num)',
@@ -269,7 +273,7 @@ export function TopBar({
           }}
         >
           {leagues.map((l) => (
-            <option key={l.id} value={l.id}>
+            <option key={l.id} value={l.id} style={{ background: 'var(--panel2)', color: 'var(--txt)' }}>
               {trackMarker(l.track)}
               {l.label}
             </option>
@@ -450,7 +454,15 @@ function DraftSlotControl({
         onChange={(e) => onSelectSlot(Number(e.target.value))}
         style={{
           flex: 'none',
-          background: 'transparent',
+          // NOT `transparent`. Chrome renders a <select>'s popup list using the
+          // author background when one is set, and a transparent author
+          // background resolves to the system default -- a white list on a dark
+          // page, which is what the founder reported 2026-07-30 (light mode
+          // looked correct, which is the tell: :root's `color-scheme: dark` was
+          // being overridden by the author background, not missing). An explicit
+          // panel token makes the closed control read the same as before and the
+          // popup follow the theme.
+          background: 'var(--panel2)',
           // Dotted underline is the one and only "you put this here" signal
           // in this app (SUPPLIED-VALUES.md) -- applied to the select itself
           // since there's no separate span to underline around a live control.
@@ -463,7 +475,9 @@ function DraftSlotControl({
         }}
       >
         {options.map((n) => (
-          <option key={n} value={n}>
+          // Options need the background too: Chrome inherits the select's, but
+          // Firefox does not and falls back to the system list colours.
+          <option key={n} value={n} style={{ background: 'var(--panel2)', color: 'var(--txt)' }}>
             {n}
           </option>
         ))}
