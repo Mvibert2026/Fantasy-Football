@@ -4,7 +4,7 @@
 Threads are the source of truth. Change a thread's `STATUS:`, then re-run sync.
 Protocol: [`README.md`](README.md).
 
-**82 open** · 48 resolved
+**82 open** · 49 resolved
 
 ---
 
@@ -32,7 +32,7 @@ not an omission. Start your session at your own heading.
 | [2026-07-30-no-allocator-exists-for-pr-0nn-pre-registration](2026-07-30-no-allocator-exists-for-pr-0nn-pre-registration.md) | No allocator exists for pr 0nn pre registration | `backend` | OPEN | 0d | none |
 | [90](090-fr-043-audit-claude-md-ss5-staleness-built-but-u.md) | Fr 043 audit claude md ss5 staleness built but u | `librarian` | OPEN | 1d | none |
 
-### `backend` — 31 waiting
+### `backend` — 30 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
@@ -55,7 +55,6 @@ not an omission. Start your session at your own heading.
 | [067](067-t1-multiformat-consensus-rescope.md) | T1 multiformat consensus rescope | `pm` | OPEN | 3d | T1 completion for leagues 2/3, board correctness for the non-primary leagues |
 | [071](071-global-tier-field-for-all-tab-board-grouping.md) | Global tier field for all tab board grouping | `frontend` | OPEN | 3d | 058 section B1 (design fidelity) |
 | [072](072-sim-staleness-fields-for-league-identity-current.md) | Sim staleness fields for league identity current | `frontend` | OPEN | 3d | 058 section C3 (design fidelity) |
-| [076](076-structural-gap-thread-id-allocator-race-across-c.md) | Structural gap thread id allocator race across c | `pm` | OPEN | 3d | none |
 | [077](077-adp-backfill-scheduled-task-landed-frontend-test.md) | Adp backfill scheduled task landed frontend test | `data-ops` | OPEN | 3d | none |
 | [079](079-mock-draft-capture-work-is-uncommitted-in-a-work.md) | Mock draft capture work is uncommitted in a work | `pm` | OPEN | 1d | none |
 | [094](094-sleeper-projection-ingest-landed-red-against-the.md) | Sleeper projection ingest landed red against the | `ranker` | OPEN | 1d | a clean suite; the "known-red is exactly one test" claim in CURRENT-STATE item 15 |
@@ -68,7 +67,7 @@ not an omission. Start your session at your own heading.
 | [2026-07-30-availability-adp-measurements-m0-m5](2026-07-30-availability-adp-measurements-m0-m5.md) | Availability adp measurements m0 m5 | `strategist` | OPEN | 0d | FR-131, FR-066, thread 104, FR-128, thread 114 (partially) |
 | [88](088-pr-004-f-bottomup-core-run-the-confirmatory-bott.md) | Pr 004 f bottomup core run the confirmatory bott | `strategist` | OPEN | 1d | none |
 
-### `frontend` — 20 waiting
+### `frontend` — 21 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
@@ -91,6 +90,7 @@ not an omission. Start your session at your own heading.
 | [110](109-opponents-and-liveopponents-have-diverged.md) | Opponents and liveopponents have diverged | `frontend` | OPEN | 0d | none |
 | [110](110-opponents-and-liveopponents-have-diverged.md) | Opponents and liveopponents have diverged | `frontend` | OPEN | 0d | none |
 | [116](116-vs-your-options-contract-answer-client-computati.md) | Vs your options contract answer client computati | `backend` | OPEN | 0d | none |
+| [2026-07-30-availability-json-1-17-0-adp-central-tendency-pr](2026-07-30-availability-json-1-17-0-adp-central-tendency-pr.md) | Availability json 1 17 0 adp central tendency pr | `backend` | OPEN | 0d | none |
 | [2026-07-30-draft-board-reference-axis-unanimous-snake-never](2026-07-30-draft-board-reference-axis-unanimous-snake-never.md) | Draft board reference axis unanimous snake never | `researcher` | OPEN | 0d | none |
 
 ### `data-ops` — 9 waiting
@@ -212,6 +212,7 @@ _Nothing waiting on you._
 | [073](073-board-json-contract-1-12-0-suspension-fields.md) | Board json contract 1 12 0 suspension fields | `backend` → `frontend` |
 | [074](074-export-t5-freshness-result-onto-board-json.md) | Export t5 freshness result onto board json | `frontend` → `backend` |
 | [075](075-defect-fabricated-reconstruction-of-thread-067-u.md) | Defect fabricated reconstruction of thread 067 u | `pm` → `pm` |
+| [076](076-structural-gap-thread-id-allocator-race-across-c.md) | Structural gap thread id allocator race across c | `pm` → `backend` |
 | [078](078-pick-level-adp-velocity-capture-blocked-mfl-has.md) | Pick level adp velocity capture blocked mfl has | `data-ops` → `pm` |
 | [080](080-commit-the-three-unreproducible-artifacts-before.md) | Commit the three unreproducible artifacts before | `data-ops` → `backend` |
 | [082](082-adp-fields-on-board-json-contract-1-14-0.md) | Adp fields on board json contract 1 14 0 | `backend` → `frontend` |
