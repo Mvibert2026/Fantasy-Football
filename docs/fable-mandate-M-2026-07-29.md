@@ -232,3 +232,53 @@ assistant paraphrasing a result it retrieved rather than a real inconsistency.
 
 This is question 3 of his three model questions, observed failing in the surface he would use on
 7 September. Treat it accordingly.
+
+---
+
+## The audit trail — added 2026-07-30, because the founder asked whether you can review all of this
+
+His question: *"And all these tests and outcomes will be reviewable by fable right?"*
+
+**Yes, and this section exists so you do not have to go looking.** Everything below was built or
+extended on 2026-07-30. Nothing here is a summary — each is the primary artifact.
+
+| Artifact | What it is | Count |
+|---|---|---|
+| `docs/factor-ledger.md` | **Every factor considered, with disposition and reason.** This is the multiple-comparisons **denominator**, written down. Without it, "we tested N factors" is unverifiable | 92 rows |
+| `docs/preregistration/*.md` | Pre-registrations, hypotheses and thresholds fixed before measurement | 9 |
+| `docs/ranking/factor-batch-*-precommit.md` | Per-batch pre-commitments, dated, with amendments dated separately | 4 |
+| `docs/preregistration/test_run_log.jsonl` | Which registered tests were actually executed | 63 entries |
+| `docs/preregistration/holdout_access_log.jsonl` | **Every touch of the sealed 2025 holdout** | 19 entries |
+| `experiments/bottomup/results/*.csv` | Raw per-arm output, not prose | 29 files |
+| `experiments/bottomup/factors/run_factors*.py`, `head_to_head.py`, `analysis/*.py` | Reproduction scripts — re-run any result rather than trusting the write-up | 8 |
+
+### What to attack in it, specifically
+
+**1 — The campaign-level denominator is the weakest claim in the whole apparatus.** Five factor
+batches ran *concurrently* on 2026-07-30, each instructed to register into one shared campaign family
+rather than correct within itself. **Verify that actually happened.** If each batch corrected locally,
+every individual correction is defensible and the campaign is not — roughly 25 arms in flight, and a
+false positive or two arriving exactly on schedule while looking real. This is the single most likely
+place for the day's work to be quietly wrong.
+
+**2 — Pre-registration numbering has no allocator.** `PR-0NN` ids are still hand-assigned; three
+separate sessions raised it (`docs/handoffs/2026-07-30-no-allocator-exists-for-pr-0nn-*.md`). Thread
+and ADR numbering was fixed today precisely because hand-numbering collided. **Check whether any
+pre-registration was renumbered, duplicated, or written after the fact.** A pre-registration whose
+identity is mutable is not a pre-registration.
+
+**3 — Post-hoc versus pre-registered.** Agents were told to label post-hoc diagnostics as such, and at
+least one did so in its own commit title while demoting its own best result. **Verify the labelling
+holds everywhere**, and that no post-hoc finding has drifted into a results table as though it were
+registered.
+
+**4 — The results are overwhelmingly NULL, which is the correct thing to be suspicious of from the
+other direction.** A campaign returning nulls is what an honest campaign looks like — and it is also
+what a campaign with an underpowered harness or a broken metric looks like. `backtest.py` had a defect
+found the same day that under-penalised injury risk. **Ask whether these nulls are findings or
+symptoms.**
+
+**5 — Two scope traps are already known to have been misread once each.** Registry #13's NULL is about
+target-share *stability*, not target share; #28's harm was a **proxy artifact**. Both are now labelled.
+Check whether any *other* result is being read wider than its scope supports — that failure mode has
+occurred twice and is unlikely to have occurred only twice.
