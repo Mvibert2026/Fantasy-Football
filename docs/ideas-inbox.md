@@ -1745,3 +1745,31 @@ list already documented as pre-existing in ADR-066). **None touch `experiments/b
    fit), and one of them **graded MARGINAL** because the bootstrap interval excluded zero. The
    decision rules have **no magnitude floor**. Reported as an artefact; asked `strategist` whether
    to add one. It will recur in every future batch that registers a coverage control.
+
+## 2026-07-30 — ranker, factor batch 5 (pass-catcher opportunity). Decisions taken, logged not asked
+
+1. **Two dispatched arms were declared UNGRADEABLE rather than registered and run.** FTN charting
+   starts 2022; the walk-forward needs a training pair carrying the feature, so the first target
+   season is 2024, and 2025 is sealed — **n_seasons = 1**. Registering N1/N2 would have spent
+   campaign m to buy a guaranteed NULL that the ledger would later read as evidence against the
+   factor. Declared in the pre-commitment before any number existed. `strategist` asked to confirm
+   that "UNGRADEABLE" is a legitimate third disposition alongside tested and blocked.
+2. **The shared campaign manifest is one file per batch, not one shared file.** Four agents on one
+   checkout cannot concurrently edit a shared registration without clobbering. Batch 6 reached the
+   same conclusion independently and built a second manifest; it migrated into this one and retired
+   its own in place, with the account kept rather than tidied away. **The two-manifest episode is
+   the argument for the layout, not against it.**
+3. **A block shipped with no coverage control, justified by a measurement rather than a
+   convenience.** `fd_known` is constant at 1.000 on the graded population, so a control arm would
+   be a zero-variance column consuming campaign m for nothing. The route block, whose flag is not
+   constant, kept three controls — and they are what killed it.
+4. **The most valuable thing in the batch is a control arm beating its own treatments 8 times out
+   of 8.** `routes_known`, a bare presence flag, outperforms TPRR, routes-per-game and 1D-per-route
+   at every position. Batch 2's `move_known` defect in a new block, caught in advance by the rule
+   batch 3 wrote for it rather than afterwards by argument. **Every future block with a coverage
+   flag must register that flag as its own arm; this is now two for two.**
+5. **A standing question the batch could not answer and nobody has asked.** E1b — the ADP-board
+   restriction — disagreed with E1a in *sign* for the whole route block. That is not noise: it is a
+   feature that helps sort the deep tail and hurts among draftable players. **No decision rule in
+   this project treats a sign flip between the two populations as informative in its own right** —
+   it only downgrades to BOARD-NEUTRAL. Worth a rule that names it.
