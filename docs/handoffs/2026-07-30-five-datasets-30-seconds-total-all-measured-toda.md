@@ -15,7 +15,7 @@ wall clock.
 
 | # | call | measured | why it is needed |
 |---|---|---|---|
-| 1 | `nflreadpy.load_pbp(range(2009, 2026))` | **816,856 rows, 20.4 s** | There is **no play-by-play table in `nfl.db` at all.** `CLAUDE.md` §5 says "most Tier 0/Tier 1 factors derive from this." Unblocks test-registry **#10 red-zone/goal-line**, **#18 xFP**, **#21 team pace**, **#22 PROE** — four factors currently listed as unbuildable, three tagged High edge |
+| 1 | `nflreadpy.load_pbp(range(2009, 2026))` | **816,856 rows, 20.4 s** | There is **no play-by-play table in `nfl.db` at all.** `CLAUDE.md` §5 says "most Tier 0/Tier 1 factors derive from this." Unblocks test-registry **#10 red-zone/goal-line** (edge Low), **#18 xFP** (**High**), **#21 team pace** (Med), **#22 PROE** (Med). Precisely: the registry lists them `SPEC`/`NEW` with a `Source` of `nflverse`/`derived` — it implies the data is on hand. It is not in `nfl.db` |
 | 2 | `nflreadpy.load_rosters_weekly(...)` | **46,849 rows for 2025 alone, 1.0 s** | `status` ∈ {ACT, CUT, DEV, EXE, INA, **RES**, RET, TRC, TRD}. `RES` = injured reserve. This is the source `component-model-rb-qb-te-pass-1.md` §5.2 already commissioned from you — the **only** source found that marks season-ending IR and suspension, which the `injuries` table provably cannot see (2.5–4.8% coverage of absences of 9+ games) |
 | 3 | `nflreadpy.load_injuries([2025])` | **6,068 rows, 0.5 s** | `injuries` in the DB **stops at 2024** — zero 2025 rows. Any N−1 injury feature for a 2026 projection does not exist today |
 | 4 | `nflreadpy.load_depth_charts([2025])` | **554,215 rows, 0.7 s** | `depth_charts_weekly` **stops at 2024** — same gap, same consequence |
@@ -52,9 +52,10 @@ not need reconstructing.
 
 ## Why
 
-Four Tier-1 factors marked High edge in `docs/test-registry.md` are recorded as unbuildable. They
-are not. They are gated behind a 20-second download that nobody has run. That is a finding about the
-project, not about the data, and it is the single highest-leverage item in
+Four Tier-1 factors in `docs/test-registry.md` (#10, #18, #21, #22 — one High edge, two Med, one
+Low) carry a `Source` column implying the data is on hand. It is not in `nfl.db`: there is no
+play-by-play table at all. They are gated behind a 20-second download that nobody has run. That is a
+finding about the project, not about the data, and it is the single highest-leverage item in
 `docs/ranking/fr136-q1-bottom-up-assessment.md` §5.0.
 
 Separately, `injuries` and `depth_charts_weekly` both stopping at 2024 means **no N−1 availability

@@ -673,8 +673,9 @@ pass or is marked as unverified.
    0.5 s) — commissioned to `data-ops`, thread
    `2026-07-30-five-datasets-30-seconds-total-all-measured-toda`.
 9a. **There is no play-by-play table in `nfl.db` at all** (`ranker` 2026-07-30, measured). `CLAUDE.md`
-   §5 says most Tier 0/Tier 1 factors derive from PBP; test-registry **#10 red-zone/goal-line, #18
-   xFP, #21 team pace, #22 PROE** are all consequently unbuildable, three of them tagged High edge.
+   §5 says most Tier 0/Tier 1 factors derive from PBP; test-registry **#10 red-zone/goal-line** (edge
+   Low), **#18 xFP** (**High**), **#21 team pace** (Med) and **#22 PROE** (Med) all carry a `Source`
+   of `nflverse`/`derived` implying the data is on hand, and none of them can be built from `nfl.db`.
    **Cost measured, not estimated: `load_pbp(2009…2025)` is 816,856 rows in 20.4 s, slimming to
    15.2 MB of parquet for the 24 columns those four factors need, `xpass` included.** Four High-edge
    factors are gated behind half a minute of downloading that nobody ran. Same thread as item 9.
