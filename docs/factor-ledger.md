@@ -40,18 +40,22 @@ the two overstates what is live.
 
 ## Summary
 
+**92 rows.** Not padded to reach the founder's suggested 100 — see the note at the top of this
+document. Counted mechanically from the tables below (excludes the two navigation tables in this
+Summary section itself).
+
 | Disposition | Count |
 |---|---|
-| included | 21 |
+| included | 9 |
 | excluded | 9 |
-| untested | 46 |
-| blocked | 13 |
-| rejected-with-evidence | 12 |
-| **Total** | **101** |
+| untested | 49 |
+| blocked | 17 |
+| rejected-with-evidence | 8 |
+| **Total** | **92** |
 
-(Counts finalized after all sections are written; see bottom of document for the as-built total,
-which should match this table — if it does not, the table below is stale and the bottom count
-governs.)
+By section: Tier 0 table stakes 12 · Tier 1 standard analytics 21 (incl. #29b) · Tier 2
+league-specific 10 · Tier 5 rejected-without-measurement 6 · external analyst sweep N1–N34 34 ·
+sweep definition-only 8 · yardage-bonus variance hypothesis 1 = **92**.
 
 ---
 
@@ -140,5 +144,84 @@ than `rejected-with-evidence`.
 | Beat-writer sentiment scoring | excluded | High effort, low signal, hard to validate. Judgment call, no number. | internal — `test-registry.md` Tier 5 | No |
 | Nash-equilibrium drafting | excluded | Elegant, but opponents in this league aren't optimizing, so equilibrium is the wrong model for them. Judgment call, no number. | internal — `test-registry.md` Tier 5 | No |
 | Coaching scheme fit (zone vs. gap) | excluded | Real effect in principle, judged too noisy to act on at draft time. Cross-check: external N26 (run-concept mix, McFarland 2016–2025) measured outside zone at 0.48 PPR/att, inside zone 0.47 — a near-tie that arguably supports this rejection, though it measures a narrower slice (run-concept mix, not zone-vs-gap scheme fit generally). | internal — `test-registry.md` Tier 5; external — `analyst-factor-sweep-2026-07-30.md` N26 [VERIFIED] (partial cross-check only) | No (as originally framed) |
+
+---
+
+## Section 5 — External analyst sweep, new rows (`docs/research/analyst-factor-sweep-2026-07-30.md`, N1–N34)
+
+Commissioned by `FR-2026-07-30-widen-the-ranking-input-list`. ~25 fetches across 11 named analytics
+shops. **Sample-quality caution that applies to every row in this section**: effective independence
+across the 11 shops is ~6 (some share underlying datasets); every headline correlation in the source
+material is measured on **survivors** (stated filters like "≥30 targets in consecutive seasons"),
+which are upper bounds under `CLAUDE.md` §6.2, not our expected effect; and **not one of the 11 shops
+publishes a comparison against market ADP** — a claim of r=0.79 can still be fully priced into ADP
+already. None of these have been run in this project; "Computable here" in the source doc is not the
+same as "run," and disposition is `untested` throughout this section unless noted otherwise.
+
+| # | Factor | Disposition | Reason | Provenance | Ever run? |
+|---|---|---|---|---|---|
+| N1 | First-read target share (proxy: FTN `read_thrown` × PBP `receiver_player_id`) | untested | External: YoY self-corr 0.78, to next-season PPR FPG 0.79 (Heath, Fantasy Points). Contested by Hoopes (4for4): 23 rate stats topped out at YPRR 0.59, with prior-FPG itself the ceiling at 0.68 — a direct numerical contradiction with N1's 0.79. Computable as a proxy only, 2022–2025 (4 seasons), must be labelled proxied, not identical to Heath's charted definition. | external — `analyst-factor-sweep-2026-07-30.md` N1 [VERIFIED]; contest in §3 | No |
+| N2 | Catchable target share / rate | untested | External: catchable-target share → fantasy points 0.948 vs. raw target share 0.944 — "essentially no gain" at share level, per the same shop's own number. Catchable *rate* YoY 0.41. FTN `is_catchable_ball`, 2022+. | external — N2 [VERIFIED] | No |
+| N3 | Targets per route run (TPRR) | untested | External ×3 independent framings: Heath YoY 0.65 (R²=0.36 to next-season targets); Hoopes 0.53 to next-season FPG; Borgognoni — 92% of top-24 WR finishers since 2006 had TPRR ≥20%. Needs routes via `load_participation()` proxy, 2016+. | external — N3 [VERIFIED]×3 | No |
+| N4 | First downs / route, and 1D-per-route-run | untested | External: 1D/RR 0.57 to next-season FPG — above TPRR (0.53), below YPRR (0.59), per Hoopes. First-downs component is directly computable now: PBP `first_down_pass`, 1999+, zero new joins (once PBP is ingested — see T0-10). | external — N4 [VERIFIED] | No |
+| N5 | NGS average separation | untested | External: Heath's PASS self-corr 0.687, claimed more predictive than YPRR/1D-RR without counting stats. Reference table: target share 0.773, rec yards 0.693, total FP 0.686, YPRR 0.613, PASS 0.612. **Already in `nfl.db`**, `ngs_receiving` 2016–2025, 26,723 rows, **untouched by any model in this project.** | external — N5 [VERIFIED]; internal confirmation — `fr136-q1-bottom-up-assessment.md` §3.3 | No |
+| N6 | Designed-target (screen) share | untested | External, and **the shop contradicts itself**: ~1.7 fantasy points each at 91.4% success, YoY 0.629 — but elsewhere the same shop calls designed targets "basically no relationship to fantasy points." FTN `is_screen_pass`, 2022+. | external — N6 [VERIFIED, self-contradictory] | No |
+| N7 | Contested-catch rate, created receptions, drop rate | excluded | External, listed so we can decline with a citation rather than test: contested catches have "basically no value" per the shop's own finding; MTF/YAC "weak, positive." A reasoned decline backed by a cited (not our own) measurement — not run here. | external — N7 [VERIFIED] | No |
+| N8 | Tight-window target rate | blocked | Named as a QB-model input by Hoopes (4for4) but no number was published for its contribution. Needs paid window-charting data. | external — N8 [VERIFIED use]/[GAP contribution] | No |
+| N9 | QB rushing attempts per game | untested | External: 0.576 to next-season FPG — strongest single QB stat found; each of the top-9 most predictive QB stats measures rushing in whole or part, first pure passing metric (pass TDs) ranks 10th. **Computable today, zero new ingest** — carries already in `player_weekly_stats`. Researcher's #1-ranked recommendation: the board's 12 largest top-100 disagreements with consensus are all QB/TE, with no QB-specific input behind that tilt. | external — N9 [VERIFIED]; internal — `analyst-factor-sweep-2026-07-30.md` §5 rank 1 | No |
+| N10 | Passing efficiency over volume (passer rating / EPA-per-dropback vs. attempts) | untested | External ×2: Heath — passer rating beats total attempts, completion% near bottom at 0.154; Bruchhaus (SumerSports) — EPA/dropback "stickiest QB stat since 2021," r≈0.60. Partly computable: `passing_cpoe` only 11% populated in `nfl.db`; EPA needs PBP ingest. | external — N10 [VERIFIED]×2 | No |
+| N11 | Sack-avoidance rate | untested | External: r≈0.50 YoY, second-stickiest QB stat (SumerSports). Computable via PBP or `load_pfr_advstats` (2018+). | external — N11 [VERIFIED] | No |
+| N12 | Game total / team spread as player-model features | blocked | External: team spread ranked 4th most important, game total 7th, in Hoopes's RB model. Same blocker as T0-11 — no odds table — and the whole team-environment channel is oracle-bounded at ≤ +0.055 τ_b. | external — N12 [VERIFIED]; internal ceiling — `fr136-q1-bottom-up-assessment.md` §6.6 | No |
+| N13 | Explosive rush rate (≥10/15-yd share) | untested | External: "best balance of stickiness and predictive value" among RB efficiency stats (McFarland) — contrast, YAC-after-contact and MTF are stickiest but *lowest* correlation to next-season points. Computable, PBP, 1999+ (once ingested). Researcher's #4-ranked recommendation: RB is the one position where the internal component-model experiment has demonstrated statistical power (+0.134 [+0.043,+0.223] vs. ADP heuristic) and where the model itself is currently negative vs. ADP (−0.052) — power plus a deficit. | external — N13 [VERIFIED]; internal — `fr136-q1-bottom-up-assessment.md` §1.4, `analyst-factor-sweep-2026-07-30.md` §5 rank 4 | No |
+| N14 | Red-zone / inside-10 / inside-5 **snap** rate (distinct from T0-10, which is red-zone *touches*) | blocked | External: "snap share in the red zone correlates better to raw fantasy points than any receiving usage stat" (Barfield). Needs `load_participation()` × PBP `yardline_100`, 2016+ — PBP not yet ingested. | external — N14 [VERIFIED] | No |
+| N15 | Inside-5 TD conversion vs. base rate | untested | External: NFL average 43.0% inside the five (Smola, DraftSharks). Overlaps `load_ff_opportunity` (see T1-18). **Not** the same as T1-19 (TD-rate shrinkage), which was measured HARMFUL when discarded — this is base-rate context, a different question. | external — N15 [VERIFIED] | No |
+| N16 | YAC per reception (RB) | untested | External: "clear best efficiency stat for RBs in the pass game" (Barfield); separate summary r=0.421. Computable, PBP `yards_after_catch`. | external — N16 [VERIFIED qual]/[SNIPPET number] | No |
+| N17 | Receiving share of an RB's own points | untested | External: league-winner RB seasons 2016–2025, McFarland — receiving-heavy (≥50%) 32%, dual-threat (40–49%) 38%, balanced 15%, pure-rushing 15%; 70% of league-winning RB seasons came from ≥40% receiving share. Computable, re-scored under this league's rules. Interacts with archetype work outside this ledger's scope. | external — N17 [VERIFIED] | No |
+| N18 | Snap-share persistence at threshold | untested | External: 72 of 128 (56%) RBs repeated ≥60% snap share YoY (McFarland). `snap_counts` 2013–2025, 324,611 rows, **unused** — same underlying data as T0-9. | external — N18 [VERIFIED]; internal — same gap as T0-9 | No |
+| N19 | Late-season role trajectory by draft round / career year | untested | External: Day-2/rounds 4–5 rookies, +19% PPG and +14% snap share late-season; year 2–3, +1%; year 8–9, −5%; year 10+, −11% (McFarland). Computable from weekly stats + `draft_picks`. A late-season-weighting factor with no registry analogue. | external — N19 [VERIFIED] | No |
+| N20 | Neutral-situation pass rate | untested | External: 2023 59.01%, 2024 57.30%, 2025 57.44% (Bodiford/PFF, Hoopes/4for4). **Distinct from T1-22 (PROE)** — a situational filter, not a model residual; cheaper and more interpretable. Computable via PBP once ingested. | external — N20 [VERIFIED] | No |
+| N21 | Play-caller portability of tendency | blocked | External evidence is anecdote-only — "no R², no correlation, no stability number published" (Hoopes, asserted with two examples). `play_callers` table has zero rows in `nfl.db`. | external — N21 [SNIPPET]/anecdote | No |
+| N22 | Coordinator-change effect | blocked | External: universally asserted "one of the most underpriced edges" by 5+ shops, but "not a single public backtest found" — a [GAP], not a finding. Same internal gate as T1-29/T1-30 (coordinator data unobtainable, PFR 403). Directly undermines registry's "High edge" rating for T1-29/T1-30, which is prior, not evidence. | external — N22 [GAP] | No |
+| N23 | Pre-snap motion, player level | blocked | See T1-32 — this is the same finding, sourced. WRs in motion +45% PPR/route (McFarland); league-average motion rate 52%. Unresolvable at player level with free data (FTN `is_motion` has no player attribution). | external — N23 [VERIFIED] | No |
+| N24 | Play-action rate | blocked (player level) | External ×2: McFarland — WRs +23% PPR/route on play-action; PFF — +0.054 EPA/play vs. −0.031, YPA 6.72→7.76. Computable team-level, 2022+; same player-attribution problem as N23 blocks a player-level version. | external — N24 [VERIFIED]×2 | No |
+| N25 | 2-WR (heavy) personnel rate | untested | External: WRs +29% PPR vs. 3-WR personnel plays; league average 25%, top staffs 43–55% (McFarland). Inverse framing of T1-31 (personnel package trends), with a number attached that T1-31 lacks. Computable via `load_participation()` `offense_personnel`, 2016+. | external — N25 [VERIFIED] | No |
+| N26 | Run-concept mix (zone vs. gap) | excluded | External: outside zone 0.48 PPR/att, inside zone 0.47 — gap concepts beat both (McFarland, 2016–2025). Registry Tier 5 already rejected the broader "coaching scheme fit" as too noisy; this specific 0.48-vs-0.47 near-tie arguably supports that rejection. Not from nflverse as a ready-made column. | external — N26 [VERIFIED]; cross-ref — Tier 5 "Coaching scheme fit" row above | No |
+| N27 | Adjusted Line Yards / Adjusted Sack Rate | untested | External ×2: Edwards (4for4), team-level 2025 — ALY R²=0.431, ASR 0.384, YBC 0.324, blown-block 0.245, pressure 0.182, penalties 0.114, **OL continuity only 0.04** (see N28). Composite 0.462 (0.591 top/bottom-10 only). Smola (DraftSharks): ALY → RB rushing 0.314, "strongest between any pair of stats" in his pull. ALY is a public formula over PBP (once ingested) — same correction as T1-23. | external — N27 [VERIFIED]×2 | No |
+| N28 | O-line continuity | rejected-with-evidence | External, and the evidence contradicts the shops' own prose: all assert it matters, but 4for4's own published table gives it **R²=0.04, the weakest of seven** O-line-adjacent stats tested. "Record the prior as ~zero." | external — N28 [VERIFIED — number contradicts prose in the same article] | No (this is a citation of an external measurement, not a run in this project) |
+| N29 | Team passing-volume floor as a gate (not a weight) | untested | External: on teams at 200–224 passing YPG, only 3 of 108 WRs (3%) finished top-12; even at 24%+ target share, only 3 of 23 (13%) reached 16+ PPG (McFarland). A functional-form hypothesis (threshold gate) this project has never tested in any form. | external — N29 [VERIFIED] | No |
+| N30 | Team win quality → elite-RB hit rate | untested | External: 11+ wins 40%, 9–10 32%, 7–8 27%, 5–6 9%, 0–4 wins 0% (McFarland, 2016–2025); no gradient found for mid-RB1. Realised wins are computable now as an **oracle upper bound only** (not a forecast); implied wins is odds-blocked, same as T0-11/N12. | external — N30 [VERIFIED] | No |
+| N31 | Age as a bust hazard, not a decline curve | untested | External: on 100 retired top-50 RB/WR, exactly 50% declined in their final relevant season; only 17% showed two consecutive declines; survivor value almost completely flat across ages (Harstad, Footballguys). Argues aging curves are contaminated by survivorship. **This challenges T0-7's functional form directly** — registry frames age as "decline curves," which is precisely the specification this evidence argues against. A functional-form hypothesis, not a new variable. | external — N31 [VERIFIED]; cross-ref — T0-7 above | No |
+| N32 | Multi-year games-missed model | untested | External: RMSE 3.6 games (1yr), 5.9 (2yr), 7.1 (3yr); top features slot snap%, snaps blocking, age, points/snap, ST snaps, snaps in motion, projected snaps, routes run, games missed past 3yrs, snaps hit (Chris Lee, Sports Info Solutions). Partly computable: age, ST snaps, projected snaps, games-missed history — yes; charting features — no. **The researcher's own caution travels with this row**: no naive baseline was published by the source; "everyone plays 17" must be beaten before 3.6 games RMSE means anything. | external — N32 [VERIFIED] | No |
+| N33 | Team adjusted games lost | untested | External: YoY correlation 0.33 back to 2010 (Football Outsiders via PFF). Exact FO definition not obtained — secondary source only. | external — N33 [SECONDARY] | No |
+| N34 | Combine athleticism (Speed Score, Burst, Agility) | untested | External: formulas published (PlayerProfiler, Barnwell); **no predictive evidence published for any of them.** Computable free via `load_combine()`. "Enter with no prior" — cheap to compute is not evidence it works. | external — N34 [VERIFIED formulas]/[GAP predictiveness] | No |
+
+### Section 5b — Definition-only, evidence-absent (analyst sweep §2f)
+
+Listed individually so none is mistaken for a tested factor. All eight are PlayerProfiler
+proprietary metrics with published formulas and **no published validation of any kind**. Several
+are cheaply computable; the source document is explicit that none should be tested before the
+evidence-bearing N-rows above.
+
+| Factor | Disposition | Reason | Provenance | Ever run? |
+|---|---|---|---|---|
+| Target Premium | untested | Definition published, no predictive evidence published anywhere reached. | external — `analyst-factor-sweep-2026-07-30.md` §2f [GAP] | No |
+| Weighted Opportunities | untested | Same. | external — §2f [GAP] | No |
+| True Yards Per Carry | untested | Same. | external — §2f [GAP] | No |
+| Production Premium | untested | Same. | external — §2f [GAP] | No |
+| Lifetime Value | untested | Same. | external — §2f [GAP] | No |
+| Value Over Stream | untested | Same. | external — §2f [GAP] | No |
+| Juke Rate | untested | Same. | external — §2f [GAP] | No |
+| Breakout Rating | untested | Same. | external — §2f [GAP] | No |
+
+---
+
+## Section 6 — Yardage-bonus ceiling/variance preference (`CLAUDE.md` §7)
+
+A single hypothesis tested four independent ways, kept as one row rather than four to avoid
+inflating the multiplicity denominator with restatements of the same claim.
+
+| Factor | Disposition | Reason | Provenance | Ever run? |
+|---|---|---|---|---|
+| Do the stacking yardage bonuses imply a variance/ceiling preference that should influence how rankings value volatility? | rejected-with-evidence | **Four independent instruments, all NULL, at the bonus structure's most favourable measurement setting.** (1) WR ceiling ablation: perfect foresight of every WR's bonus points would improve rank correlation by only +0.026 — the hard ceiling on the whole idea; the model actually built to capture it achieved +0.0002. (2) RB stacking-bonus transfer: worth 0.57%–2.39% of realised points, moves only 3 players by ≥3 rank positions across 4,792 player-seasons. (3) Per-player dispersion in the exceedance curve: NULL at every threshold, family, and shrinkage setting tested — with both arms given the *realised* mean, the most favourable setting available. (4) Skewness and kurtosis (the founder's own proposed mechanism): fails upstream — shape does not persist year to year, six of six NULL; empirical-Bayes τ̂² driven to exactly zero (no between-player variance in true shape beyond sampling noise); an oracle arm using the target season's own shape makes bonus error *worse*. Per `CLAUDE.md` §7: "Do not re-derive a variance preference from the bonus structure. It has been tested four ways, including at its most favourable setting, and there is nothing there." | internal — `CLAUDE.md` §7; `docs/ranking/component-model-wr-pass-1.md` §6.2; `docs/ranking/component-model-rb-qb-te-pass-1.md` §6; `docs/ranking/fr086-volatility.md` §3.4; `docs/strategic-insights.md` §5b | Yes, four times |
 
 ---

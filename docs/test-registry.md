@@ -75,14 +75,14 @@ What a serious, well-read opponent has. Table stakes among the sharpest 2–3 ma
 | 13 | Target share **stability** YoY | Separates real role from one-year noise | `nflverse` | M | Med | SPEC | **NULL** — S1 stability arm: −0.035 targets MAE full universe (BH-sig at WR only), **0.02% on the ADP board**, no ranking effect anywhere. YoY persistence of target share measured: WR +0.652 [+0.624,+0.680], TE +0.632, RB +0.548 — role-tier, just below snap share +0.707. `factor-batch-1-results.md` |
 | 14 | Air yards, aDOT | Big-play vs. volume profile | `nflverse` | M | Med | NEW | — (not run) |
 | 15 | WOPR | Best single opportunity metric for WR | `derived` | M | Med | NEW | — (not run) |
-| 16 | Yards per route run | Efficiency independent of volume | `nflverse:FTN` | M | Med | NEW — check FTN columns first | — (not run) |
-| 17 | Route participation rate | Distinguishes starters from rotational | `nflverse:FTN` | M | High | NEW — check FTN columns first | — (not run) |
-| 18 | **Expected fantasy points (xFP) vs. actual** | Isolates luck from skill | `derived` | H | **High** | NEW | — (not run) |
+| 16 | Yards per route run | Efficiency independent of volume | `load_participation()` (2016+) | M | Med | NEW — check FTN columns first | — (not run) |
+| 17 | Route participation rate | Distinguishes starters from rotational | `load_participation()` (2016+) | M | High | NEW — check FTN columns first | — (not run) |
+| 18 | **Expected fantasy points (xFP) vs. actual** | Isolates luck from skill | `derived` (`nflreadpy.load_ff_opportunity()`, prebuilt) | L | **High** | NEW | — (not run) |
 | 19 | TD-rate regression | Best-known regression signal | `derived` | M | **High** | SPEC | **HARMFUL as framed / already solved** — discarding own TD rate for the pooled mean (arm T2) is worse at **all four positions**: WR +0.0251, TE +0.0180, RB +0.0182, **QB +0.2295 pass TDs MAE**. Existing empirical-Bayes shrinkage already extracts the signal; a volume-conditional prior adds 0.8% full-universe and **nothing on the ADP board**. `factor-batch-1-results.md` |
 | 20 | Opportunity share (carries+targets / team total) | Single best RB metric | `nflverse` | M | High | SPEC | **NULL at RB** — the position the row names. Ablating carry share costs −0.017 carries MAE [−0.050,+0.003]; share×pace reparameterisation −0.086 [−0.272,+0.068]. **At WR share does earn its place**: removing it costs +0.196 targets MAE on the ADP board (+0.6%). `factor-batch-1-results.md` |
 | 21 | Team pace / plays per game | Volume multiplier | `nflverse` | M | Med | NEW | — (not run) |
 | 22 | Pass rate over expectation (PROE) | Scheme tilt | `nflverse` | M | Med | NEW | — (not run) |
-| 23 | O-line run-block & pass-block rankings | RB efficiency, QB time | external | L | Med | SPEC | — (not run) |
+| 23 | O-line run-block & pass-block rankings | RB efficiency, QB time | `derived` (Adjusted Line Yards, public formula over PBP) / `nflverse` (`load_pfr_advstats()`, 2018+) | L | Med | SPEC | — (not run) |
 | 24 | QB quality for pass catchers | Ceiling constraint | `derived` | L | Med | SPEC | — (not run) |
 | 25 | NFL draft capital (rookies) | Best rookie predictor | `nflverse` | L | Med | SPEC | — (not run) |
 | 26 | Breakout age / college dominator | Rookie projection | external | M | Med | NEW | — (not run) |
@@ -93,6 +93,22 @@ What a serious, well-read opponent has. Table stakes among the sharpest 2–3 ma
 | 29b | Head-coach continuity (separate, weaker candidate) | Cheap proxy, but not what #29/#30 test | `nflverse` (schedules) | L | Low-Med | **NEW** — data available 1999-2026, 100% populated | — (not run) |
 | 31 | Personnel package trends | Structural WR3 headwind | `nflverse:FTN` | L | Med | SPEC | — (not run) |
 | 32 | Pre-snap motion rates | Largely arbitraged league-wide | `nflverse:FTN` | L | **Low** | SPEC | — (not run) |
+
+**Four cost/source corrections, 2026-07-30 (external analyst sweep,
+`docs/research/analyst-factor-sweep-2026-07-30.md` §1, all `[VERIFIED]`). None of these change any
+result or edge rating — only the facts about what it costs and where it comes from.**
+
+- **#18 xFP, re-costed `H` → `L`.** It was listed as the "highest-value unbuilt Tier 1 item" at
+  effort `H`. `nflreadpy.load_ff_opportunity()` is a free, prebuilt, versioned xgboost xFP model
+  over nflverse PBP, 2006–current — a download, not a build.
+- **#16 YPRR and #17 route participation, re-tagged `nflverse:FTN` → `load_participation()`,
+  2016+.** FTN charting has **no per-player columns at all** — 28 columns, play-level only, no
+  receiver ID, no routes-run. It cannot supply either factor. The real source is
+  `load_participation()`'s `offense_players` per play, which gives **ten seasons, not four.** The
+  wrong tag has been suppressing both tests.
+- **#23 O-line, re-tagged `external` → `derived` / `nflverse`.** Adjusted Line Yards is a public
+  formula over play-by-play, and `load_pfr_advstats()` (2018+) ships yards-before-contact, broken
+  tackles, drops, and pressure/hurry/blitz rates for free — no PFR scrape, no HTTP 403 risk.
 
 **The `Measured verdict` column (added 2026-07-30).** `Status` records whether a factor is *built*.
 It has never recorded what a factor turned out to be *worth*, which is the only thing that should
