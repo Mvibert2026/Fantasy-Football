@@ -5,7 +5,7 @@ Per-request files in this directory are the source of truth. Edit a request's ow
 `STATUS:` line, then re-run sync. Protocol: [`README.md`](README.md).
 Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests.md).
 
-**76 requests since freeze.**
+**78 requests since freeze.**
 
 ---
 
@@ -75,7 +75,7 @@ Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests
 
 _None._
 
-## IN PROGRESS — 6
+## IN PROGRESS — 7
 
 | ID | Subject | Raised | Source |
 |---|---|---|---|
@@ -85,8 +85,9 @@ _None._
 | [FR-043](FR-043-audit-for-capability-already-built-and-sitting-u.md) | Audit for capability already built and sitting u | 2026-07-29 | chat 2026-07-29, PM session |
 | [FR-048](FR-048-insights-from-research-must-reach-the-chatbot-an.md) | Insights from research must reach the chatbot an | 2026-07-29 | chat 2026-07-29, PM session |
 | [FR-062](FR-062-yahoo-league-connection-if-no-api-access-what-ar.md) | Yahoo league connection if no api access what ar | 2026-07-30 | chat 2026-07-30, PM session |
+| [FR-092](FR-092-figure-out-the-coordinator-table-play-callers-is.md) | Figure out the coordinator table play callers is | 2026-07-30 | PM dispatch, data-ops session 2026-07-30 |
 
-## SHIPPED — 12
+## SHIPPED — 13
 
 | ID | Subject | Raised | Source |
 |---|---|---|---|
@@ -102,6 +103,7 @@ _None._
 | [FR-055](FR-055-draft-mode-board-needs-column-headers.md) | Draft mode board needs column headers | 2026-07-29 | chat 2026-07-29, PM session |
 | [FR-056](FR-056-personal-use-confirmed-get-the-component-project.md) | Personal use confirmed get the component project | 2026-07-29 | chat 2026-07-29, PM session |
 | [FR-058](FR-058-the-recommendation-must-explain-itself-whenever.md) | The recommendation must explain itself whenever | 2026-07-29 | chat 2026-07-29, PM session |
+| [FR-093](FR-093-historical-adp-get-the-rest-of-it-ffc-has-differ.md) | Historical adp get the rest of it ffc has differ | 2026-07-30 | PM dispatch, data-ops session 2026-07-30 |
 
 ## DECLINED — 0
 
@@ -120,6 +122,6 @@ _None._
 | [FR-039](FR-039-late-round-te-is-the-draft-strategy-expression-o.md) | Late round te is the draft strategy expression o | `ANSWERED` |
 | [FR-042](FR-042-presets-must-use-standard-scoring-only-westwood.md) | Presets must use standard scoring only westwood | `DONE` |
 | [FR-054](FR-054-the-bottom-up-model-should-output-component-proj.md) | The bottom up model should output component proj | `IN-PROGRESS` |
-| [FR-072](FR-072-extend-the-bottom-up-component-model-to-rb-qb-an.md) | Extend the bottom up component model to rb qb an | `IN-PROGRESS` |
 | [FR-073](FR-073-adp-vs-production-analysis-run-on-12-team-mock-a.md) | Adp vs production analysis run on 12 team mock a | `DONE` |
+| [FR-091](FR-091-extend-the-bottom-up-component-model-to-rb-qb-an.md) | Extend the bottom up component model to rb qb an | `IN-PROGRESS` |
 

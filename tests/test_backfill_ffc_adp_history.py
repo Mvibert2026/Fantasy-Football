@@ -44,6 +44,25 @@ def test_non_ppr_seasons_are_2013_through_2024_minus_exclusions():
     assert bf.NON_PPR_SEASONS == expected
 
 
+def test_ppr_seasons_are_2013_through_2024_minus_exclusions():
+    """Added 2026-07-30 (FR-087): PPR shares the non-PPR season-level gate
+    (kickoff dates are format-independent) plus its own independently
+    re-verified content-validity exclusion for 2010."""
+    excluded = set(bf.PPR_GATE_FAIL) | set(bf.PPR_CONTENT_INVALID)
+    expected = [y for y in range(2013, 2025) if y not in excluded]
+    assert bf.PPR_SEASONS == expected
+
+
+def test_ppr_content_invalid_2010_excluded_despite_passing_date_gate():
+    assert 2010 not in bf.PPR_SEASONS
+    assert 2010 in bf.PPR_CONTENT_INVALID
+
+
+def test_ppr_format_key_is_registered():
+    assert "ppr" in bf.FORMAT_SLUGS
+    assert bf.FORMAT_SLUGS["ppr"] == "ppr"
+
+
 _SAMPLE_HTML = """
 <table class="table adp freeze2">
     <tr>

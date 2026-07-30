@@ -104,7 +104,26 @@ NON_PPR_CONTENT_INVALID = {
 NON_PPR_SEASONS = [y for y in range(2013, 2025) if y not in NON_PPR_GATE_FAIL and y not in NON_PPR_CONTENT_INVALID]
 HALF_PPR_SEASONS = list(range(2018, 2025))  # no half-PPR archive before 2018 (empty shell)
 
-FORMAT_SLUGS = {"non_ppr": "standard", "half_ppr": "half-ppr"}
+# PPR, added 2026-07-30 (FR-087) closing the gap this module's docstring left open
+# ("FFC PPR, 12-team: 2010 verified; 2011-2024 not probed [GAP]",
+# docs/research/historical-adp-availability-2026-07-29.md SS1). Kickoff-date gate
+# is season-level, not format-level, so the same GATE_FAIL/MARGINAL seasons
+# (2011 window ends after kickoff, 2012 window ends same day) apply unchanged.
+# Content-validity was NOT assumed to transfer -- independently re-verified
+# 2026-07-30 by fetching the PPR archive directly: 2010 PPR reproduces the exact
+# same migration-artifact failure as non-PPR 2010 (26 rows, DEF/QB-heavy, no real
+# RB1 of that season -- e.g. no Adrian Peterson/Chris Johnson/Arian Foster), so it
+# is excluded on the same basis. 2013 PPR spot-checked sane (42 rows, real top
+# players: Jimmy Graham, A.J. Green, Julio Jones, Aaron Rodgers in plausible
+# order) -- same "thin but valid" pattern as non-PPR's early years.
+PPR_GATE_FAIL = NON_PPR_GATE_FAIL
+PPR_CONTENT_INVALID = {
+    2010: "date gate passes but board is garbled (DEF/QB/PK-heavy, missing every real "
+          "RB1 of 2010), same failure mode as non-PPR 2010 -- excluded, see module docstring",
+}
+PPR_SEASONS = [y for y in range(2013, 2025) if y not in PPR_GATE_FAIL and y not in PPR_CONTENT_INVALID]
+
+FORMAT_SLUGS = {"non_ppr": "standard", "half_ppr": "half-ppr", "ppr": "ppr"}
 
 
 def _cache_path(format_key: str, season: int) -> Path:
@@ -188,7 +207,12 @@ def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--db", type=Path, default=DEFAULT_DB)
     ap.add_argument("--refresh", action="store_true", help="Re-fetch even if a cached HTML file exists.")
-    ap.add_argument("--format-key", choices=sorted(FORMAT_SLUGS), default=None)
+    ap.add_argument(
+        "--format-key",
+        choices=sorted(FORMAT_SLUGS),
+        default=None,
+        help="Default: run all three (non_ppr, half_ppr, ppr).",
+    )
     args = ap.parse_args()
 
     plan = []
@@ -196,6 +220,8 @@ def main() -> None:
         plan += [("half_ppr", y) for y in HALF_PPR_SEASONS]
     if args.format_key in (None, "non_ppr"):
         plan += [("non_ppr", y) for y in NON_PPR_SEASONS]
+    if args.format_key in (None, "ppr"):
+        plan += [("ppr", y) for y in PPR_SEASONS]
 
     conn = sqlite3.connect(args.db)
     conn.execute(ffc._CREATE_SQL)
@@ -223,6 +249,10 @@ def main() -> None:
         print(f"  non_ppr {y}: GATE FAIL -- {reason}")
     for y, reason in sorted(NON_PPR_CONTENT_INVALID.items()):
         print(f"  non_ppr {y}: CONTENT INVALID -- {reason}")
+    for y, reason in sorted(PPR_GATE_FAIL.items()):
+        print(f"  ppr {y}: GATE FAIL -- {reason}")
+    for y, reason in sorted(PPR_CONTENT_INVALID.items()):
+        print(f"  ppr {y}: CONTENT INVALID -- {reason}")
 
     stored_total = sum(r.get("stored", 0) for r in results)
     quarantined_total = sum(r.get("quarantined", 0) for r in results)

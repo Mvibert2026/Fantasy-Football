@@ -60,7 +60,12 @@ CREATE TABLE IF NOT EXISTS "{TABLE_NAME}" (
     confidence TEXT NOT NULL,
     source TEXT,
     retrieved_at TEXT,
-    PRIMARY KEY (team, season, start_week)
+    -- title included 2026-07-30 (FR-087-adjacent, ingest_coordinators_wikipedia.py):
+    -- OC and DC are both stored as separate rows for the same (team, season,
+    -- start_week) once a source distinguishes them, and title is what
+    -- distinguishes them. Safe to widen -- this table had zero rows in
+    -- production when the change was made.
+    PRIMARY KEY (team, season, start_week, title)
 )
 """
 
