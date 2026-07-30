@@ -513,7 +513,6 @@ Full detail, plus the resolved ESPN-scoring docstring self-contradiction and the
 job-queue-API contradiction between `SETTINGS-EDITOR-SPEC.md` and the current Cloudflare Worker
 deploy: `docs/specs/FR-040-custom-league-settings-costing.md`.
 
-<<<<<<< HEAD
 ## 2026-07-29 — ranker, FR-054 WR component model: the ceiling channel is closed at WR
 
 Built the per-player component projection (games, targets, receptions, receiving yards, receiving
@@ -560,7 +559,6 @@ bonus-points-per-game on its own lag, controlling for *prior-season* yards per g
 controlling for *current* ypg — prior bonus rate is just a second noisy measure of yardage level.
 Against the model's own projected ypg it drops to +0.089, and what survives is information about
 the yardage *mean* the volume model missed, not about ceiling.
-=======
 ---
 
 ## 2026-07-29 — ranker, pass 3: the rank-curve slope collapse, priced
@@ -606,4 +604,3 @@ file (ADR-057). Full evidence `docs/ranking/bottom-up-research-pass-3.md`, threa
 8. **Flagged, not claimed:** mean attenuation ratio is 0.686 / 0.702 / 0.693 / 0.691 across
    QB/RB/WR/TE. Four positions agreeing to 0.016. Too neat; escalated in thread 093, not
    celebrated.
->>>>>>> worktree-agent-a6a66f81024b4b520

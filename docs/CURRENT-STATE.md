@@ -24,7 +24,6 @@ repo — Cloudflare holds its own deploy token. This closes the last dependency 
 machine: development, tests, the database rebuild, the daily capture and now viewing the app all run
 without it.
 
-<<<<<<< HEAD
 **Last verified:** 2026-07-29, data-ops session (PM-dispatched, worktree
 `agent-a1bcc65cbaf0f88d7`), closing thread 055: historical FFC ADP is no longer absent from
 `nfl.db`. Backfilled 2,467 rows across 19 season-formats into new `adp_source` values
@@ -44,7 +43,6 @@ documented team-defense `no_name_match` ceiling):
 replied and `STATUS: RESOLVED`.
 
 **Last verified:** 2026-07-29, backend session (PM-dispatched, worktree
-=======
 **Last verified:** 2026-07-29, frontend session (worktree `agent-a2ac0a9c4c8191c5e`) shipping
 FR-055/FR-050/FR-058 together — the same draft-room screen, the same founder complaint ("the
 numbers do not explain themselves"). Confirmed FR-055's premise first: the Draft-mode board list
@@ -78,7 +76,6 @@ carry `STATUS: SHIPPED` with a `## Resolution` section. Full test count and comm
 `docs/status/2026-07-29-frontend-fr050-055-058.md`.
 
 Prior verification: 2026-07-29, backend session (PM-dispatched, worktree
->>>>>>> worktree-agent-a2ac0a9c4c8191c5e
 `agent-a2a7e52225b3a7db0`, ADR-060) closing a real gap: contract 1.14.0 (thread 082) put real ADP
 fields on the board but defined the term nowhere reachable — 13-term glossary, zero mentions in
 Methodology. Added an `ADP` glossary term (`src/export_static.py`, folding
