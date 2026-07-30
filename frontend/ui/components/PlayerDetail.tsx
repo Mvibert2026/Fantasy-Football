@@ -420,7 +420,7 @@ export function PlayerDetail({
                 rank -- WHY OUR RANK DIFFERS above already covers that
                 relationship for consensus; a second, differently-defined
                 delta here would read as the same signal. */}
-            <AdpBlock row={row} board={data.board} />
+            <AdpBlock row={row} board={data.board} league={league} />
 
             {/* 6. Archetype -- permanently absent, no field in any export, ever.
                 Previously collapsed with section 9 into one shared line under
@@ -665,8 +665,31 @@ function Dots({ value }: { value: number }) {
  * formatter rather than reusing `percent()` -- and the same real-zero /
  * genuinely-small / genuinely-absent three-way distinction Principle #2
  * requires applies here too.
+ *
+ * FR-083 ("Why do player notes cards not show adp for the correct format for
+ * the league selected?"). Traced, not assumed: `board.json:adp_source` is
+ * `mfl_proxy` for every league export, always -- `src/export_contract.py`'s
+ * `_load_adp_snapshot` takes no `cfg` argument and defaults to that one
+ * source regardless of which league built the board. `adp_source_note`
+ * itself (rendered below, verbatim from the export) even says so in its own
+ * prose for the primary league ("MFL's IS_PPR flag is binary and this league
+ * scores half-PPR") -- text that is factually WRONG when read on any
+ * non-Westwood league export, since it hardcodes Westwood's ruleset rather
+ * than reading `cfg.scoring`. This is a real backend defect (flagged to
+ * `backend` via a handoff thread, not fixed here -- `src/export_contract.py`
+ * is backend's file and this worktree has no `nfl.db` to verify a fix
+ * against), not a frontend routing bug: `row.adp` already traces correctly
+ * to whichever league's `board.json` is currently loaded (`ui/data/board.ts`
+ * reads it straight off `data.board.players[i].adp`, no caching across a
+ * league switch) -- the SOURCE itself just isn't league-aware yet. Per this
+ * project's absent-not-inert rule, the fix here is not to silently rewrite
+ * or suppress the backend's (currently wrong-for-non-Westwood) note, but to
+ * put the league's own real, per-league-correct scoring ruleset
+ * (`league.json:scoring_ruleset_note`, contract 1.15.0, always accurate --
+ * unlike `adp_source_note` it DOES vary correctly by league) right next to
+ * it, so a reader can see the two don't necessarily describe the same thing.
  */
-function AdpBlock({ row, board }: { row: BoardRow; board: RawBoard }) {
+function AdpBlock({ row, board, league }: { row: BoardRow; board: RawBoard; league: LeagueConfig }) {
   const sourceLabel =
     row.adpSource === 'mfl_proxy'
       ? 'MyFantasyLeague proxy, full PPR -- not this league\'s own ADP'
@@ -708,8 +731,17 @@ function AdpBlock({ row, board }: { row: BoardRow; board: RawBoard }) {
             {board.adp_source_note}
           </p>
         ) : null}
+        {/* FR-083: this league's own real scoring ruleset, so a reader can check
+            it against the ADP note above -- see this function's doc comment for
+            why that note's own prose is not reliably about THIS league. */}
+        {league.scoringRulesetNote.kind === 'present' ? (
+          <p className="notice" style={{ marginTop: 8, fontSize: 11 }}>
+            This league's scoring ruleset: {league.scoringRulesetNote.value}
+          </p>
+        ) : null}
         <div className="num" style={{ marginTop: 6, fontSize: 9, color: 'var(--dim2)' }}>
           board.json:players[].adp{board.adp_as_of_date ? ` · snapshot as of ${board.adp_as_of_date}` : ''}
+          {league.scoringRulesetNote.kind === 'present' ? ' · league.json:scoring_ruleset_note' : ''}
         </div>
       </div>
     </div>
@@ -868,6 +900,24 @@ function WeeklyFinishesHeatmap({
         Darker = better positional finish that week.
         {startableLabel ? ` Orange bottom rule = finished worse than this league's ${startableLabel} startable line.` : ''}
       </div>
+      {/* FR-079 ("Last few seasons should be in correct fomat as well").
+          Traced, not assumed: `src/export_history.py::build_weekly_finishes`
+          ranks positional finish by `player_weekly_stats.fantasy_points_ppr`
+          -- a fixed, standard-PPR figure computed once, with no `scoring_cfg`
+          argument at all (unlike `make_board.build_board`, which does take
+          one). weekly_finishes.json is also not exported per league -- it
+          lives unprefixed at the top level, never under `leagues/<id>/`
+          (confirmed: `data/export/espn_10_standard/` etc. carry no copy) --
+          so switching leagues cannot change this number even in principle
+          yet. This is a genuine export-contract gap, not a frontend routing
+          bug: converting it in the browser would mean re-deriving fantasy
+          points from raw stats client-side, which this project's rule
+          against approximating scoring outside the pipeline forbids. Say so
+          plainly instead. Flagged to `backend` via a handoff thread. */}
+      <p className="notice" style={{ marginTop: 6, fontSize: 10.5 }}>
+        Ranked by standard PPR scoring, not this league's own ruleset (see MARKET ADP above) --
+        weekly_finishes.json does not yet vary by league.
+      </p>
       <div className="num" style={{ marginTop: 5, fontSize: 9, color: 'var(--dim2)' }}>
         weekly_finishes.json:players[].seasons[{seasonKey}].weeks
       </div>
@@ -1005,6 +1055,15 @@ function ThreeSeasonTable({ player }: { player: RawSeasonStatsPlayer }) {
           Not shown as its own column for that reason.
         </p>
       ) : null}
+      {/* FR-079: same fixed-format gap as WeeklyFinishesHeatmap's own note above
+          (`src/export_history.py::build_season_stats` sums the same
+          `player_weekly_stats.fantasy_points_ppr`, no `scoring_cfg`, not
+          exported per league) -- PPR PTS is real historical PPR scoring, not
+          a claim about this league's own ruleset. */}
+      <p className="notice" style={{ marginTop: 8, fontSize: 10.5 }}>
+        PPR PTS is standard PPR scoring, not this league's own ruleset (see MARKET ADP above) --
+        season_stats.json does not yet vary by league.
+      </p>
       <div className="num" style={{ marginTop: 6, fontSize: 9, color: 'var(--dim2)' }}>
         season_stats.json:players[].seasons
       </div>
