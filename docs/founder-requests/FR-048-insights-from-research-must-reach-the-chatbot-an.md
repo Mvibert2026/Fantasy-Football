@@ -1,6 +1,6 @@
 ---
 ID: FR-048
-STATUS: NEW
+STATUS: IN PROGRESS
 SOURCE: chat 2026-07-29, PM session
 RAISED: 2026-07-29
 ---
@@ -178,4 +178,49 @@ conclusion came from a program that fitted curves, bootstrapped intervals and ra
 assistant given the same question and no such artifact would produce something that sounds identical
 and is invented. **The persona rules (`docs/assistant-persona.md`) stay exactly as they are; what
 changes is the corpus underneath them.**
+## Update (2026-07-30) — item 1 (retrieval) built, frontend
+
+**`frontend/ui/assistant/retrieval.ts`** (new file). A BM25-style lexical scorer over one corpus
+built from every artifact `ui/data/load.ts`'s `Dataset` carries: `board.json` player rows (identity
++ structural attribution, one doc pair per player), `glossary.json` terms, `strategies.json`
+(per-strategy summaries plus the power-floor and not-compositional caveats, now *attached*
+whenever a strategy result is shown rather than dumped unconditionally), `league.json` (split into
+~6 topic docs — scoring, roster shape, replacement levels, flex split, playoff/trade/FAAB), and
+`nulls.json` findings. `player_descriptions.json` **is now loaded into `Dataset` at all** (it
+wasn't before — `ui/data/types.ts`, `ui/data/load.ts`) so it's part of the corpus too, primary
+league only. No embedding model added — the corpus is ~1,300 short documents, keyword scoring
+handles it fine and the ticket's own instruction was not to add a dependency without a strong
+reason. `ui/assistant/reasoning.ts`'s old two-tier matcher (exact substring, else an unconditional
+dump of every `strategies.json`/`nulls.json` item regardless of relevance) is fully replaced —
+that unconditional-dump fallback was itself a rule-3 violation the ticket flagged
+("wider retrieval must not become licence to guess"), just arrived at from the opposite direction.
+
+**Rule 3 verified, not just kept.** `retrieveContext(data, rows, 'zzz qqq xyzzy')` returns `[]` —
+tested in `ui/__tests__/retrieval.test.ts`.
+
+**Confidence is scored, not assumed**: `high` only for an exact player-name/glossary-term match or
+a deterministically-attached caveat; `medium`/`low` for lexical matches, graded by how many
+independently-distinctive words the query and the document actually share (a single shared rare
+word — e.g. "wide" matching the glossary's *confidence interval* entry, "wide means we are
+guessing", against a "wide receivers" question — turned out to be a real false-positive risk with
+plain BM25; fixed by requiring 2+ independently-distinctive shared tokens, not just a high score).
+
+**Tested against the three questions this ticket named, verbatim** (real dataset, `npx vitest`
+harness, see session report for full transcripts):
+- *"why is Josh Allen ranked 6th"* → high-confidence board identity + structural-attribution docs,
+  exact name match.
+- *"what's my gap versus consensus for Bijan Robinson"* → same, plus his `player_descriptions.json`
+  archetype and related nulls findings.
+- *"when should I take a tight end"* → **does NOT come back empty**, contrary to this ticket's own
+  prediction. It finds `nulls.json` PR-003-elite-te ("reaching for a top tight end in the first
+  three rounds cost roughly 3-5%") and several TE archetype blurbs — real, sourced, already-shipped
+  content that is honestly responsive to the question. Suppressing it to match the prediction would
+  have been the "confidence must be honest" failure this ticket itself warns against. The founder's
+  *new* finding (picks 75-113, `findings.json`) is correctly still absent — that corpus doesn't
+  exist yet, out of scope per this ticket's own boundary.
+
+**Not done — items 2 and the original ask (surfacing at the point of decision) are unchanged.**
+`findings.json` does not exist; nothing here builds it. Full write-up:
+`docs/ideas-inbox.md` 2026-07-29 entry "frontend, FR-048 retrieval rebuild: decided without
+asking".
 
