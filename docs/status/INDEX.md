@@ -4630,16 +4630,20 @@ both got an `## Update`/note pointing at this work.
 
 # 2026-07-30 — ranker — FR-085 Zero RB, FR-086 volatility
 
-Worktree `agent-a2668c91115660701`. Commits `a9e3b2b`, `6fcfdb4`, `be684a8`.
+Worktree `agent-a2668c91115660701`. Commits `a9e3b2b`, `6fcfdb4`, `be684a8`, `e06459d`, `HEAD`.
 Suite: **844 passed, 6 failed** — all six pre-existing and none in code I own (see §5).
 
 ## What was asked
 
 Two founder research questions. FR-085: does early-round RB underperformance support Zero RB?
-FR-086: rank player types by week-to-week volatility. Three mid-task course corrections arrived and
+FR-086: rank player types by week-to-week volatility. Four mid-task course corrections arrived and
 were folded in: (a) name which factor families were carried over from WR per position, (b) test a
 per-player dispersion term in the exceedance curve, (c) surface positional volatility as a named
-deliverable with a per-roster-slot view, plus the archetype history-weighting question.
+deliverable with a per-roster-slot view, plus the archetype history-weighting question, and
+(d) **a correction to (b)** — the founder's "the curve has a shape with tails" had been relayed as
+*dispersion*; he meant **skewness and kurtosis**. That is a different covariate (two players can
+share a mean AND an SD while one has a long right tail) and was run as a separate test with separate
+arms, not a re-run.
 
 ## What was built
 
@@ -4651,7 +4655,8 @@ deliverable with a per-roster-slot view, plus the archetype history-weighting qu
 | `experiments/strategy/sim.py` | draft simulator: random slot, measured per-player σ, real H2H season with this league's playoff structure |
 | `experiments/strategy/run_strategies.py` | driver, paired-by-season bootstrap + exact sign test |
 | `experiments/volatility/volatility.py` | FR-086 position/type volatility, per-slot view, persistence, structural variance value |
-| `experiments/volatility/exceedance_dispersion.py` | does measured dispersion improve the exceedance curve beyond the mean |
+| `experiments/volatility/exceedance_dispersion.py` | does measured dispersion (2nd moment) improve the exceedance curve beyond the mean |
+| `experiments/volatility/exceedance_shape.py` | **skewness and excess kurtosis (3rd/4th moments)**, separate and combined arms, plus an oracle bound |
 | `experiments/volatility/dimension_stability.py` | stable-trait vs situational-role autocorrelation for archetype dimensions |
 | `docs/ranking/fr085-zero-rb.md`, `docs/ranking/fr086-volatility.md` | the two reports |
 
@@ -4670,6 +4675,15 @@ Raw output: `data/qa/fr085-residuals-*.json`, `fr085-strategy-sim-r16.json`, `-r
   Whether it has moved over time is not answerable at seven seasons.
 - **Dispersion adds nothing to the exceedance curve** — null everywhere, in the most favourable
   setting that exists.
+- **Neither do skewness or kurtosis, and that one is bounded rather than merely unfound.** Six of six
+  shape-persistence correlations NULL; empirical Bayes puts the between-player variance in true skew
+  at exactly zero in 2 of 5 cells; every downstream arm NULL including at the top thresholds; and the
+  oracle — given the target season's own shape — buys at most 0.0024 log-loss per game-trial while
+  making bonus-point accuracy worse.
+- **The dead zone did not stop being a thing.** RB13-24 late-minus-early is −13.4 NULL, pointing the
+  wrong way. **RB37+ improved by +48.3 [+21.6, +75.1] SURVIVES** against matched WRs — a different
+  claim from the one the founder remembers, and test-registry #43 has never been run, so there is no
+  prior internal measurement he could be recalling.
 - **Per player WR is most volatile; per roster slot TE is, by 67%.** The ordering inverts.
 - **Role is more persistent than skill** — snap share r=+0.707, yards per carry r=+0.175. The
   hypothesised stable/situational column assignment is close to backwards, though the recommended

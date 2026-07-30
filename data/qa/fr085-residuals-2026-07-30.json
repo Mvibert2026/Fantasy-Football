@@ -709,6 +709,78 @@
         "mean_overall_rank_wr": 119.94964028776978
       }
     },
+    "q2a3_era_shift": {
+      "RB1-6": {
+        "late_minus_early": {
+          "mean": 20.08555555555553,
+          "lo": -16.683333333333344,
+          "hi": 58.557777777777744,
+          "grade": "NULL"
+        },
+        "rb_minus_wr_gap_late_minus_early": {
+          "mean": 29.387777777777778,
+          "lo": -8.905555555555523,
+          "hi": 67.68111111111108,
+          "grade": "NULL"
+        }
+      },
+      "RB7-12": {
+        "late_minus_early": {
+          "mean": -1.9911111111111026,
+          "lo": -43.978888888888854,
+          "hi": 38.4222222222222,
+          "grade": "NULL"
+        },
+        "rb_minus_wr_gap_late_minus_early": {
+          "mean": -5.426666666666662,
+          "lo": -74.14333333333332,
+          "hi": 63.29,
+          "grade": "NULL"
+        }
+      },
+      "RB13-24": {
+        "late_minus_early": {
+          "mean": -13.441666666666666,
+          "lo": -45.71333333333332,
+          "hi": 21.566111111111105,
+          "grade": "NULL"
+        },
+        "rb_minus_wr_gap_late_minus_early": {
+          "mean": -2.2494444444444364,
+          "lo": -61.04499999999999,
+          "hi": 68.62944444444443,
+          "grade": "NULL"
+        }
+      },
+      "RB25-36": {
+        "late_minus_early": {
+          "mean": 7.513888888888898,
+          "lo": -19.173888888888893,
+          "hi": 31.180555555555575,
+          "grade": "NULL"
+        },
+        "rb_minus_wr_gap_late_minus_early": {
+          "mean": 11.710000000000008,
+          "lo": -9.898333333333337,
+          "hi": 33.31833333333334,
+          "grade": "NULL"
+        }
+      },
+      "RB37+": {
+        "late_minus_early": {
+          "mean": 40.13068723702665,
+          "lo": 7.070731707317023,
+          "hi": 87.32534562211983,
+          "grade": "MARGINAL"
+        },
+        "rb_minus_wr_gap_late_minus_early": {
+          "mean": 48.33700253296496,
+          "lo": 21.59765183268484,
+          "hi": 75.07635323324509,
+          "grade": "SURVIVES"
+        }
+      }
+    },
     "q2b_early_rb_minus_wr_trend": {
       "per_season": {
         "2018": -61.68125000000002,
@@ -1685,5 +1757,5 @@
       "grade": "NULL"
     }
   },
-  "n_interval_tests": 141
+  "n_interval_tests": 151
 }

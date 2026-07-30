@@ -21,7 +21,8 @@ Code: `experiments/volatility/`. Reproduce with
 
 ```
 .venv/bin/python -m experiments.volatility.volatility
-.venv/bin/python -m experiments.volatility.exceedance_dispersion
+.venv/bin/python -m experiments.volatility.exceedance_dispersion   # 2nd moment
+.venv/bin/python -m experiments.volatility.exceedance_shape        # 3rd + 4th moments
 .venv/bin/python -m experiments.volatility.dimension_stability
 ```
 
@@ -29,9 +30,10 @@ Code: `experiments/volatility/`. Reproduce with
 
 ## 0. Read this before any number below
 
-**222 interval tests across this document** (94 volatility, 55 exceedance, 73 dimension stability).
-At the 5% level that is **about 11 false "clears zero" results by chance alone.** Grades are pass-1
-§0's, unchanged: **SURVIVES** / **MARGINAL** (a hypothesis, not evidence) / **NULL**.
+**348 interval tests across this document** (94 volatility, 55 exceedance-dispersion, 126
+exceedance-shape, 73 dimension stability). At the 5% level that is **about 17 false "clears zero"
+results by chance alone.** Grades are pass-1 §0's, unchanged: **SURVIVES** / **MARGINAL** (a
+hypothesis, not evidence) / **NULL**.
 
 ---
 
@@ -200,6 +202,16 @@ strong showing here should be read as a workload proxy, not as the route metric 
 
 > *"why not use points for volatility, you have an average, and the curve has a shape with tails that
 > should naturally figure this out for you"*
+>
+> and, on being told the first test measured dispersion: **"for curve I was talking about skewness
+> and kurtosis"**
+
+**The correction is real and it landed after the first test was run.** "The curve has a shape with
+tails" was relayed to me as *dispersion*; I tested the **second** moment and returned a decisive
+null. He meant the **third and fourth**. That is a genuinely different covariate — two players can
+share a mean *and* a standard deviation while one is symmetric and the other carries a long right
+tail, and a threshold bonus is paid on the upper tail, which SD cannot see. §3.2 is the dispersion
+test as originally run. **§3.4 is the test he actually asked for**, and it is the one that matters.
 
 He is describing the exceedance-curve machinery in the component model, and he is right that it is
 the correct mechanism. **The problem is that it currently cannot do what he assumes it does.**
@@ -224,7 +236,7 @@ of threshold crossings, order ten events a season, extremely noisy. **This asks 
 measured dispersion of yards, estimated from every game he played rather than from the handful that
 crossed a line, predicts clearance beyond his mean.** Within-player, continuous, far lower-noise.
 
-### 3.1 Design
+### 3.2 Design — the dispersion (second-moment) test
 
 Prior-season dispersion only — using the target season's own dispersion to predict its own clearance
 is circular and would look spectacular. Feature is excess log SD in season N−1, fitted within
@@ -239,7 +251,7 @@ season.
 which can only make an added term work harder. If dispersion does not help here it cannot help in the
 shipped pipeline.
 
-### 3.2 Result — null, and decisively so
+### 3.3 Result — null, and decisively so
 
 Out-of-sample binomial log-loss per game-trial. **Negative delta = the dispersion arm is better.**
 Primary shrinkage k=8:
@@ -286,6 +298,130 @@ how it was measured — this one is.
 **Consistency with what was already known.** This does not contradict PR-002 (0 of 36 correlations
 survived BH) or pass-1 §6.1 (excess clearance ≈ 0 at WR rec, RB rush, TE rec). It is the third and
 lowest-noise instrument to return the same answer, which is worth more than any one of them alone.
+
+### 3.4 Skewness and kurtosis — the test the founder actually asked for
+
+Code: `experiments/volatility/exceedance_shape.py`. Raw:
+`data/qa/fr086-exceedance-shape-2026-07-30.json`.
+
+**The prior for this was better than for the dispersion test, and the coordinator was right to say
+so.** If the mean fully determined the exceedance curve, dispersion would have been redundant —
+which is exactly what §3.3 measured. But right skew puts mass above a high threshold that a
+symmetric distribution with identical mean and SD does not. Skew is the moment that could still
+carry information the mean does not already contain, and the **top threshold** in each family (200
+rushing/receiving, 400 passing) is where it should show up first, because that is where shape
+matters more than centre.
+
+**Estimators, named.** Primary is **G1/G2, the adjusted Fisher–Pearson coefficients** (the
+bias-corrected forms; `scipy.stats.skew/kurtosis(bias=False)`, SAS/Excel `SKEW`/`KURT`), with
+**excess kurtosis on the Fisher convention — Gaussian = 0, not 3**. At n ≈ 17 the bias in the
+sample coefficients g1/g2 is not negligible *and scales with n*, which would make the covariate
+partly a games-played proxy. g1/g2 run as a declared sensitivity and both are reported.
+
+**Shrinkage, derived rather than chosen.** Two steps. First residualise each moment against
+log(mean ypg) within (family, position, season) — yardage is bounded below by zero, so a low-volume
+player is right-skewed almost mechanically, and without this the covariate would re-encode the mean
+that is already in the design. Then **empirical-Bayes shrink toward zero** with
+`w = τ²/(τ² + v_i)`, where `v_i` is the exact normal-theory sampling variance of that estimator at
+that player's n and `τ² = max(0, Var(residual) − mean(v_i))` is estimated from the data. **No
+hand-picked constant.** The `n/(n+k)` form used in §3.3 runs as a sensitivity over k ∈ {0, 8, 16, 32}.
+
+Arms: `base` · `skew` · `kurt` · `both` (run separately as well as together, so that "skew works and
+kurtosis does not" would be visible) · and **`oracle`**, which is given the *target season's own*
+skew and kurtosis. The oracle is circular on purpose. It is not a result, it is a **bound**: if
+perfect foresight of the season's own shape cannot buy much, no honest version can.
+
+#### The upstream check settles it before the model is even fitted
+
+Does a player's *shape* residual in season N−1 predict his shape residual in season N?
+
+| family : moment | r(N, N+1) | 95% CI | n | grade |
+|---|---|---|---|---|
+| rec : skew | +0.014 | [−0.029, +0.058] | 2,038 | **NULL** |
+| rec : kurtosis | −0.004 | [−0.049, +0.043] | 2,038 | **NULL** |
+| rush : skew | +0.049 | [−0.013, +0.108] | 821 | **NULL** |
+| rush : kurtosis | −0.031 | [−0.089, +0.030] | 821 | **NULL** |
+| pass : skew | +0.071 | [−0.026, +0.158] | 566 | **NULL** |
+| pass : kurtosis | −0.000 | [−0.076, +0.076] | 566 | **NULL** |
+
+**Six of six NULL, every point estimate ≤ 0.071, two of six negative.** For comparison, the second
+moment — the one that failed downstream — persists at r ≈ 0.08–0.11 and reaches SURVIVES at RB and
+WR. **The third and fourth moments persist even less than the second.** From ~17 games they are
+close to pure noise, which is what the sampling variances (≈6/n and ≈24/n) predict.
+
+**The empirical-Bayes procedure says the same thing in its own currency, and this is the cleanest
+form of the result.** The weight it puts on a player's own estimate:
+
+| family : position | skew weight (τ²) | kurtosis weight (τ²) |
+|---|---|---|
+| rush : RB | **0.000** (τ² = 0.0000) | 0.535 |
+| rec : TE | **0.000** (τ² = 0.0000) | 0.560 |
+| rec : WR | 0.027 (τ² = 0.0099) | 0.542 |
+| pass : QB | 0.109 (τ² = 0.0440) | 0.152 |
+| rec : RB | 0.138 (τ² = 0.0558) | 0.703 |
+
+**Given no hand-picked constant, the estimator concludes there is no detectable between-player
+variance in true skewness at all** in two of five cells — τ̂² is exactly zero, the covariate becomes
+identically zero, and the skew arm collapses onto the base arm. On the g1/g2 sensitivity that
+happens for **skew in all five cells and kurtosis in three of five**. That is not a failed test; it
+is the answer, delivered by a procedure that had every opportunity to find something.
+
+#### And downstream, nothing
+
+Out-of-sample log-loss per game-trial, walk-forward, primary estimator and primary shrinkage.
+**Negative = the shape arm is better.**
+
+| family | threshold | base | skew | kurtosis | both | **oracle** |
+|---|---|---|---|---|---|---|
+| rec | ≥100 | 0.29321 | +0.000028 NULL | +0.000026 NULL | +0.000035 NULL | −0.000645 MARGINAL |
+| rec | ≥150 | 0.07413 | +0.000044 NULL | +0.000058 NULL | +0.000079 NULL | −0.002163 SURVIVES |
+| **rec** | **≥200** | 0.01426 | **+0.000036 NULL** | **+0.000034 NULL** | +0.000071 NULL | −0.000517 NULL |
+| rush | ≥100 | 0.34144 | +0.000000 NULL | +0.000033 NULL | +0.000033 NULL | +0.000177 NULL |
+| rush | ≥150 | 0.08800 | +0.000000 NULL | +0.000046 NULL | +0.000046 NULL | −0.001204 SURVIVES |
+| **rush** | **≥200** | 0.01839 | **+0.000000 NULL** | **+0.000067 NULL** | +0.000067 NULL | −0.001744 SURVIVES |
+| pass | ≥300 | 0.50266 | +0.000095 NULL | +0.000035 NULL | +0.000134 NULL | −0.001414 MARGINAL |
+| pass | ≥350 | 0.28857 | +0.000092 NULL | −0.000057 NULL | +0.000054 NULL | −0.000012 NULL |
+| **pass** | **≥400** | 0.11883 | **−0.000041 NULL** | **+0.000168 NULL** | +0.000088 NULL | −0.002378 MARGINAL |
+
+Expected **bonus points** MAE per player-season, walk-forward:
+
+| family | base | skew | kurtosis | both | oracle |
+|---|---|---|---|---|---|
+| rec | 0.8016 | −0.00042 NULL | −0.00030 NULL | +0.00018 NULL | +0.02334 NULL |
+| rush | 0.9352 | +0.00000 NULL | +0.00122 NULL | +0.00122 NULL | +0.01960 MARGINAL — **worse** |
+| pass | 1.7694 | −0.00568 NULL | +0.00790 NULL | +0.00689 NULL | +0.08681 MARGINAL — **worse** |
+
+**Every honest arm is NULL at every threshold in every family, including at the top thresholds where
+the effect was predicted to appear first.** Stable across the whole `n/(n+k)` sweep and across both
+estimator conventions. Bonus-point deltas are ±0.0004 to ±0.008 on errors of 0.80 to 1.77.
+
+**The oracle is the part that makes this a bound rather than a shrug.** Given the target season's
+own shape — perfect, impossible foresight — log-loss improves by at most **0.0024 per game-trial**,
+and **bonus-point accuracy gets worse at every family** (+0.023, +0.020, +0.087). So shape does
+carry some information about that season's own exceedance, and it is (a) tiny even then and (b) not
+predictable a year in advance. **Both halves of the ceiling case fail, and they fail independently.**
+
+#### Two honest notes on the shrinkage, one of which strengthens the null
+
+The normal-theory sampling variances `v_i` assume normality, and per-game yardage distributions are
+emphatically not normal — for heavy-tailed data the true sampling variance of G1/G2 is **larger**
+than the normal-theory value. So `τ̂² = Var(residual) − mean(v_i)` is **over**-estimated, the
+weights are too high, and I am **under**-shrinking. That biases the test *toward* finding an effect.
+It still finds none. The kurtosis weights of 0.53–0.70 above are almost certainly too generous, and
+the kurtosis arm is null anyway.
+
+The fitted coefficients printed by the module (e.g. rec skew +4.64 at the 200-yard threshold) carry
+intervals that are **invalid for the same reason §3.3's were** — they bootstrap across walk-forward
+target seasons with near-identical training sets, so effective n ≈ 1. They are in the raw JSON for
+completeness and are not evidence.
+
+#### What this closes
+
+**`CLAUDE.md` §7's operational clause now has four independent instruments against it**, at
+increasing resolution: PR-002 (categorical), pass-1 §6.1 (clearance-count residual), §3.3 (second
+moment), and §3.4 (third and fourth moments, plus an oracle bound). The scoring rules reward ceiling
+— that is in the rulebook and is not in dispute. **The exploitable consequence is measured at zero,
+and the founder's own proposed mechanism is now the one that has been tested most carefully.**
 
 ---
 
@@ -487,8 +623,13 @@ rate, YAC — the reverse holds and pooling helps by +0.03 to +0.06. Opened as a
   question gets a negative answer on its interesting half.
 - **Not claiming volatility can be a player-level archetype label.** §5 — it persists at r ≈ 0.10 and
   it must not.
-- **Not claiming the exceedance curve should get a dispersion term.** §3 — null in the most
-  favourable possible setting, and two of eleven results point the wrong way.
+- **Not claiming the exceedance curve should get a dispersion, skewness or kurtosis term.** §3.3
+  and §3.4 — null in the most favourable possible setting, at every threshold, and the oracle
+  bounds how much any version could ever buy at 0.0024 log-loss per game-trial while making
+  bonus-point accuracy worse.
+- **Not claiming shape carries no information at all.** The oracle arm shows it carries a little
+  about the season it is measured in. It is not predictable a year ahead (r = −0.004 to +0.071,
+  six of six NULL), which is the part that would be needed.
 - **Not claiming the snap-share results are route participation.** They are labelled `[PROXY]`
   throughout and a blocking TE is indistinguishable from a route-running one in that data.
 - **Not claiming the per-slot calculation covers correlated risk.** It assumes within-position
@@ -509,7 +650,10 @@ rate, YAC — the reverse holds and pooling helps by +0.03 to +0.06. Opened as a
 3. **`backend` should not use career-mean usage in the FR-094 sleeper screen.** §7. `NEW-` handoff
    opened.
 4. **`strategist` should decide whether §3's null is worth writing into `CLAUDE.md` §7.** The scoring
-   rules do reward ceiling; the exploitable consequence is now measured at zero through three
-   independent instruments. That is a change to the standing spec and therefore not mine to make.
+   rules do reward ceiling; the exploitable consequence is now measured at zero through **four**
+   independent instruments, the last of which (§3.4) is the founder's own proposed mechanism tested
+   at its most favourable. That is a change to the standing spec and therefore not mine to make.
+6. **Do not spend more effort on the ceiling channel.** §3.4 closes it on an oracle bound rather
+   than on a failure to find something, which is the stronger form. Four instruments is enough.
 5. **Route participation remains the named gap.** Snap share is the proxy and it is doing real work
    here; the real metric would be worth having. `CLAUDE.md` §5 already names it.

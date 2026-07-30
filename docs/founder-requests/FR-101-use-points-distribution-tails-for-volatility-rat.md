@@ -16,6 +16,16 @@ both this and FR-072-rank-positions-by-volatility-per-roster-slot. Same failure 
 > "why not use points for volatility, you have an average, and the curve has a shape with tails that
 > should naturally figure this out for you"
 
+and, correcting a mis-relay of the above in the same session:
+
+> **"for curve I was talking about skewness and kurtosis"**
+
+**The correction is load-bearing and is recorded here so the first answer cannot be mistaken for the
+second.** "Shape with tails" was relayed to the ranker as *dispersion* — the second moment — and
+tested as such. He meant the **third and fourth** moments. Two players can share a mean AND a
+standard deviation while one is symmetric and the other carries a long right tail; a threshold bonus
+is paid on that tail, and SD cannot distinguish them. Both were tested; both are null.
+
 ## Why it matters
 
 He is describing the exceedance-curve machinery already in the component model, and he is right that
