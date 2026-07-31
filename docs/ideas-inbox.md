@@ -1796,3 +1796,10 @@ list already documented as pre-existing in ADR-066). **None touch `experiments/b
 4. **Did not edit `docs/ranking/factor-batch-3-*`** despite finding that one of its published control
    arms has the same defect as one of mine. Registered as a claim to `strategist` instead. I do not
    grade other agents' work any more than my own.
+6. **Suite state seen in passing, not caused by batch 5 and not fixed here.** `pytest tests/`:
+   **929 passed, 12 failed, 8 skipped** (468s). All twelve assert on files batch 5 never touched —
+   `src/ingest_*.py` sqlite allowlist, export/contract version 1.17.0 vs 1.18.0, freshness, FFC ADP
+   ingest, Yahoo providers, team codes, and three stale claims in `docs/CURRENT-STATE.md` at lines
+   101/842/978 (none of them the batch-5 block). Logged so the count is on the record rather than
+   rediscovered; whoever owns `test_state_claims`'s three violations should note two of them are one
+   contract bump away from green.
