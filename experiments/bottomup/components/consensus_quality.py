@@ -349,6 +349,34 @@ def prediction_test(table: pd.DataFrame, players: pd.DataFrame, position: str,
     return out
 
 
+_BASELINE_IDX = {"market_adp": 0, "expert_ecr": 1}
+_POSITION_IDX = {"QB": 0, "RB": 1, "WR": 2, "TE": 3}
+
+
+def hash_free_index(baseline: str, position: str) -> int:
+    """Deterministic small integer offset for seed derivation. NOT Python's
+    builtin `hash()` -- that is per-process salted and guardrails SS11
+    forbids it for anything whose seed must be recorded and reproduced."""
+    return _BASELINE_IDX[baseline] * 4 + _POSITION_IDX[position]
+
+
+def spread_ci(gaps: np.ndarray, seed: int, reps: int = NULL_REPS) -> Tuple[float, float, float]:
+    """PR-009 outcome (i)'s second clause: season-level bootstrap CI on the
+    SPREAD (sample std) of rho_crowd - rho_B3 across seasons, at one position.
+    Season-level resample (each season's already-computed gap is one unit),
+    per PR-009 SS8's binding rule that every interval outside SS4's player-level
+    null band is season-level, never player-level."""
+    g = gaps[np.isfinite(gaps)]
+    n = len(g)
+    if n < 3:
+        return float(np.std(g, ddof=1)) if n >= 2 else np.nan, np.nan, np.nan
+    rng = np.random.default_rng(seed)
+    boots = np.array([np.std(rng.choice(g, size=n, replace=True), ddof=1)
+                       for _ in range(reps)])
+    lo, hi = np.percentile(boots, [2.5, 97.5])
+    return float(np.std(g, ddof=1)), float(lo), float(hi)
+
+
 # ------------------------------------------------------------------ driver
 def run_log_append(entries: List[Dict]) -> None:
     ts = dt.datetime.now(dt.timezone.utc).isoformat()
@@ -443,6 +471,32 @@ def main() -> None:
         })
     run_log_append(log_entries)
     print(f"\nappended {len(log_entries)} rows to {RUN_LOG}")
+
+    # -------------------------------------------------- SS5 outcome verdict
+    print("\n\n" + "=" * 78)
+    print("SS5 OUTCOME -- POOR count and season-level spread CI, per baseline x position")
+    print("=" * 78)
+    summary_rows = []
+    for (baseline, pos), t in all_tables.items():
+        sub = t.dropna(subset=["gap_vs_b3"])
+        n_cells = len(sub)
+        n_poor = int(sub["poor"].sum())
+        n_strong = int(sub["strong"].sum())
+        gaps = sub["gap_vs_b3"].to_numpy()
+        seed = SEED + 2000 + hash_free_index(baseline, pos)
+        sd, lo, hi = spread_ci(gaps, seed=seed)
+        width = (hi - lo) if np.isfinite(hi) else np.nan
+        summary_rows.append(dict(baseline=baseline, position=pos, n_cells=n_cells,
+                                  n_poor=n_poor, n_strong=n_strong,
+                                  mean_gap=float(np.mean(gaps)) if len(gaps) else np.nan,
+                                  spread_sd=sd, spread_ci_lo=lo, spread_ci_hi=hi,
+                                  spread_ci_width=width,
+                                  spread_narrow_lt_0p10=(width < 0.10) if np.isfinite(width) else None))
+    summ = pd.DataFrame(summary_rows)
+    print(summ.round(4).to_string(index=False))
+    summ_out = str(RESULTS_DIR / "pr009_outcome_summary.csv")
+    summ.to_csv(summ_out, index=False)
+    print(f"\nwrote {summ_out}")
 
 
 if __name__ == "__main__":
