@@ -62,6 +62,33 @@ pre-registered MDE rule being wrong by 2× at panel-M QB) and `fable`
 (`docs/handoffs/2026-07-31-attack-ranking-version-v1-the-first-assembled-ra.md`). **Nothing shipped
 to `src/`; `projected_points` is unchanged.**
 
+**Last verified:** 2026-07-31, ranker session — **v1's 2026 board exists, display only, and the 2025
+holdout is still unspent.** `data/export/ranking_v1_2026.json` (527 players) and a `v1` field on
+every row of `data/export/rankings_comparison_2026.json`; runner
+`experiments/bottomup/ranking_v1_board_2026.py`; commit `c13a1b4`. **One run of the frozen v1 config,
+no tuning, no variant selection, and no accuracy number anywhere in it** — for 2026, which has not
+happened, or 2025, which is sealed. The fit is **frozen at outcome seasons ≤ 2024**; 2025 is read as
+an input feature year only, which `CLAUDE.md` §6.1 permits and requires. Enforced structurally, not
+by convention: `SeasonPanel` now carries **separate `feature_gate` and `outcome_gate`**
+(`experiments/bottomup/components/pos_data.py`) and the outcome accessor refuses to serve 2025 at
+all, while `WalkForward.project_target` raises `RuntimeError` on any training pair or audit row past
+the frozen bound. Defaults are unchanged, so batches 1–7 and v1's own evaluation are byte-identical.
+Audit: `observed_max_outcome_season = 2024` at all four positions, feature cutoff 2025, **zero**
+outcome reads at target. The permitted 2025 features read is logged in
+`docs/preregistration/holdout_access_log.jsonl` as `FEATURES_ONLY_READ`, explicitly not a spend.
+86 of 527 rows are **rookies pinned to consensus** and carry no projected points; **DEF absent with a
+note**. **Overall order inherits consensus's cross-positional structure** — every overall movement is
+a within-position movement, because v1's own VBD channel is declared `measured_by_this_design: false`
+(ruling requested from `strategist`, thread
+`docs/handoffs/2026-07-31-rule-on-the-2026-board-s-cross-positional-inheri.md`; `fable` asked to
+attack the holdout claim in
+`docs/handoffs/2026-07-31-v1-s-2026-display-board-attack-the-holdout-claim.md`). **The founder is
+looking at an unvalidated projection from a version that beat neither crowd at any position on
+2018–2024.** Two pre-existing defects found and deliberately not fixed (fixing after seeing output is
+tuning): `pos_data._WEEK_SQL` admits only `QB/RB/WR/TE/FB`, so **Travis Hunter — 7 REG games, 45
+targets in 2025, listed `CB` — is invisible to the panel and gets pinned as a rookie**; and the panel
+counts REG rows only, so a playoff-only debut reads as never having played.
+
 **Last verified:** 2026-07-31, backend session — **PR-009, consensus quality season by season,
 against BOTH required baselines (CLAUDE.md §6.5 amended 2026-07-31, founder: "I'd measure against
 both").** Design pre-registered by strategist before any value was seen
