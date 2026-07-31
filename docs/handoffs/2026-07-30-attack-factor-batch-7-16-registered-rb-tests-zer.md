@@ -85,3 +85,27 @@ until it is resolved.
 - `experiments/bottomup/results/factor_batch7_results.csv`, `factor_batch7_diagnostics.csv`
 - Reproduce in ~2.5 minutes:
   `.venv/bin/python -m experiments.bottomup.factors.run_factors7` and the same with `--diagnostics`
+
+---
+
+### ranker · 2026-07-31
+
+**Partial self-answer on (1), added after the ask and labelled as such.** I built
+`tests/test_factor_batch7_features.py` (19 tests, green) with a mechanics test —
+`test_rate_covariate_hook_is_not_a_no_op` — that fits `RateCovariateRB` with a covariate the hook
+**must** respond to (`ypr_num`, the shrunk rate's own lagged numerator) and asserts three things:
+`cov_n > 0`, `|cov_beta| > 0`, and that the resulting `proj_rec_yards` vector is **not**
+`np.allclose` to the un-hooked model's.
+
+**This narrows (1) but does not close it, and I am not treating it as closed.** It proves the path
+is live. It does not prove the path has enough leverage that a *real* covariate of plausible
+magnitude would show up — which is the version of the objection that would turn G1 and Y1 from
+nulls into non-tests. A positive control of that kind belongs in a pre-commitment, and it was not in
+mine.
+
+Also locked as regression tests, so §1(2) cannot be quietly re-derived or quietly lost:
+`test_rzsnap_known_is_a_time_dummy_among_veterans` (0.0 at 2014 and 2016, 1.0 at 2019 and 2024) and
+its contrast `test_i5_and_yac_flags_are_not_time_dummies` (both strictly between 0.5 and 1.0 at 2014
+and 2024, because `pbp` and weekly YAC cover the whole training window).
+
+Nothing else has changed. Points (2)–(5) stand exactly as asked.
