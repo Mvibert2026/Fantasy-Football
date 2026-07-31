@@ -1935,3 +1935,40 @@ headers across branches — cross-branch reconciliation, out of this session's s
 Not touched; flagged in this session's handoff reply and status file for whoever owns mailbox
 reconciliation (pm).
 
+
+---
+
+**ranker, 2026-07-31 — decisions taken while producing v1's 2026 display board**
+(`experiments/bottomup/ranking_v1_board_2026.py`, artifacts `data/export/ranking_v1_2026.json`
+and the `v1` field on `data/export/rankings_comparison_2026.json`). Logged, not asked.
+
+1. **Split `SeasonPanel`'s single season bound into `feature_gate` and `outcome_gate`.** One bound
+   conflated "may this row be an input" with "may this row be an outcome". A 2026 projection needs
+   2025 as an input (§6.1) and must never see it as an outcome (holdout). Defaults are unchanged, so
+   batches 1–7 and v1's evaluation are byte-identical. `build_panel` refuses any `outcome_gate` above
+   `HOLDOUT_SEASON`.
+2. **Cross-positional order on the 2026 board is CONSENSUS'S, not v1's.** v1's config declares a VBD
+   revaluation channel and its own precommit marks it `measured_by_this_design: false`. Applying an
+   untested tilt to a board the founder looks at would be claiming it. Instead the board substitutes
+   v1's occupant into each *positional* slot and inherits consensus's overall slot. Every overall
+   movement on the artifact is therefore a within-position movement — the only content v1 has ever
+   been measured on. **This is a methodology choice `strategist` should confirm or overturn.**
+3. **The consensus panel is `fantasypros_csv_2026draft` @ 2026-07-30**, i.e. exactly the 527 rows
+   already in `rankings_comparison_2026.json`, so v1 lands on the same universe the file compares.
+   `fantasypros_ecr` 2026 exists but is `is_preseason_final = 0` and 148 WRs deep; FFC's 2026
+   half-PPR board covers only 166 of the 527.
+4. **Pinned rookie rows carry no projected points.** The model does emit a number for them; it is not
+   the number that placed them (rank-space pinning overrides the rookie sub-model), so printing it
+   would misrepresent what the row is.
+
+**Two findings, reported and deliberately NOT fixed** (fixing a model after seeing its output is
+tuning through a human):
+
+- **`_WEEK_SQL` admits only `position IN ('QB','RB','WR','TE','FB')`, so a player nflverse lists at
+  another position is invisible to the whole panel.** Travis Hunter played 7 REG games with 45
+  targets in 2025 and is listed `CB`; v1 has never seen him, classes him as a rookie and pins him to
+  consensus WR64. Pre-existing, affects every historical backtest the same way, and it is the only
+  substantive case among 527 rows — but it is a silent one.
+- **The panel counts REG rows only**, so a player whose only NFL action was a playoff game reads as
+  never having played (Frank Gore Jr., Jordan James, Jarquez Hunter, Will Howard — all pinned).
+  Consistent with the harness; worth knowing when reading the pinned count.
