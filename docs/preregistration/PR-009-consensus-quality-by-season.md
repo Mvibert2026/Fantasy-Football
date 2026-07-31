@@ -1,5 +1,5 @@
 ---
-id: PR-DRAFT-consensus-quality-by-season
+id: PR-009-consensus-quality-by-season
 title: How good is consensus ADP, season by season, and is its bad years identifiable in advance
 hypothesis: >
   Consensus market ADP's rank-correlation to realised outcomes varies materially across seasons
@@ -16,8 +16,7 @@ confirmation_threshold: >
   -- additionally requires a walk-forward predictive signal with AUC interval excluding 0.50 AND a
   predicted-POOR vs predicted-not-POOR gap of at least 0.134 in rho_ADP - rho_B3.
 status: REGISTERED
-number: NOT YET ALLOCATED -- assign the next free PR-<nnn> at registration time; do not reuse this
-  filename's DRAFT slug in the run log.
+number: PR-009
 registered_by: strategist
 registered: 2026-07-31
 answers: docs/founder-requests/FR-2026-07-31-separate-edge-over-consensus-from-absolute-ranki.md
