@@ -5,11 +5,11 @@ Per-request files in this directory are the source of truth. Edit a request's ow
 `STATUS:` line, then re-run sync. Protocol: [`README.md`](README.md).
 Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests.md).
 
-**138 requests since freeze.**
+**139 requests since freeze.**
 
 ---
 
-## NEW — 86
+## NEW — 85
 
 | ID | Subject | Raised | Source |
 |---|---|---|---|
@@ -97,7 +97,6 @@ Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests
 | [FR-2026-07-30-recommender-contradicts-own-findings](FR-2026-07-30-the-recommender-contradicts-the-project-s-own-me.md) | The recommender contradicts the project s own me | 2026-07-30 | PM session 2026-07-30, founder chat |
 | [FR-2026-07-30-target-share-adot-route-participation](FR-2026-07-30-target-share-adot-route-participation-named-as-i.md) | Target share adot route participation named as i | 2026-07-30 | PM session 2026-07-30, founder chat |
 | [FR-2026-07-30-widen-the-ranking-input-list](FR-2026-07-30-widen-the-ranking-input-list-research-what-leadi.md) | Widen the ranking input list research what leadi | 2026-07-30 | PM session 2026-07-30, founder chat |
-| [FR-2026-07-31-holdout-stays-sealed-until-fable-has-run](FR-2026-07-31-holdout-stays-sealed-until-fable-has-run.md) | Holdout stays sealed until fable has run | 2026-07-31 | PM session 2026-07-31, founder chat |
 | [FR-2026-07-31-separate-edge-from-absolute-quality](FR-2026-07-31-separate-edge-over-consensus-from-absolute-ranki.md) | Separate edge over consensus from absolute ranki | 2026-07-31 | PM session 2026-07-31, founder chat |
 
 ## SCOPING — 1
@@ -184,4 +183,6 @@ _None._
 | [FR-132](FR-132-archetype-placement-show-both-arrangements-befor.md) | Archetype placement show both arrangements befor | `IN-PROGRESS` |
 | [FR-2026-07-30-four-selectable-ranking-sources](FR-2026-07-30-four-selectable-ranking-sources-driving-every-fe.md) | Four selectable ranking sources driving every fe | `IN-PROGRESS` |
 | [FR-2026-07-31-both-baselines](FR-2026-07-31-ruling-measure-against-both-market-adp-and-exper.md) | Ruling measure against both market adp and exper | `RESOLVED — FOUNDER RULED` |
+| [FR-2026-07-31-do-whatever-testing-is-needed-to-build-a-competi](FR-2026-07-31-do-whatever-testing-is-needed-to-build-a-competi.md) | Do whatever testing is needed to build a competi | `IN-PROGRESS` |
+| [FR-2026-07-31-holdout-gated-on-fable](FR-2026-07-31-holdout-stays-sealed-until-fable-has-run.md) | Holdout stays sealed until fable has run | `RESOLVED — FOUNDER RULING, NOW A STANDING RULE` |
 

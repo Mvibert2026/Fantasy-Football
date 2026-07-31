@@ -1858,3 +1858,49 @@ decision rule would convert a pre-registration into a post-hoc rationalisation.
 **Predicted on the record, discounted per the standing calibration prior:** Ruling 4 returns
 **outcome (iii)** — consensus quality does vary across seasons, and **no pre-season signal predicts
 which seasons**, which kills the "target the bad years" line rather than opening it.
+
+---
+
+## 2026-07-31 · ranker · ranking version v1, assembled and tested end to end
+
+**Decided and logged, not asked.** Five calls made inside this pass, each recorded here so the
+reasoning is auditable rather than reconstructed:
+
+1. **Only pre-committed feature blocks enter v1.** That admits table stakes #7 (age) and #8 (prior
+   share); puts #6 (injury, arm B) in a declared secondary `v1b`; and **excludes #5 (depth-chart
+   role)** because arms D/E are post-hoc by their own source comment. Same rule excludes the
+   **lagged-YPC → RB volume** wire — I searched all of `docs/preregistration/` including
+   `families/*.yaml` and **no registration exists**, so it is out per the dispatch.
+2. **Rookies pinned in rank space, not projected through a curve.** Changed before the first run
+   (git history proves the order). Pinning *is* the stated intent — on rookie rows v1 equals the
+   crowd it is compared against — where the curve only approximated it, and it deletes a fitted
+   object.
+3. **`extra_universe_fn` added to `pos_eval.WalkForward`**, default `None`, so the expert board can
+   define an evaluation universe without duplicating the audited harness. Believed bit-for-bit inert;
+   `fable` asked to verify rather than accept.
+4. **A new baseline loader for §6.5 baseline #2.** Expert consensus had never had one — the entire
+   factor campaign's "consensus" was market ADP. `components/ecr_baseline.py`.
+5. **Depth-matched panel E run and labelled post-hoc.** It flips WR from a significant loss to
+   parity, which is exactly why I did not let it into the verdict. Ruling requested from
+   `strategist`.
+
+**The finding, in one line:** v1 is a genuinely independent ranking (ρ 0.54–0.71 with consensus, vs
+the shipped board's 0.972) and it **beats neither crowd at any position**, while beating both trivial
+baselines at RB and WR.
+
+**Predicted on the record, discounted per the standing calibration prior:** the four untested blocks
+(snaps, NGS, PBP red-zone/xFP, recency weighting) will move v1 by **less than 0.05 ρ in total**, and
+the largest single gain will come from **per-position recency weighting**, not from a new feature —
+because the per-season table shows swings of 0.3–0.5 ρ that no feature in the model is trying to
+explain.
+
+**One methodological defect found in my own pre-registration and reported rather than dropped:** the
+MDE rule I committed to uses a baseline-vs-baseline proxy contrast, and at panel-M QB it understates
+the real resolution by 2× (0.085 vs 0.170). Replacement proposed to `strategist`; accepting it makes
+my own result *less* conclusive, not more.
+
+**One bug worth generalising:** `pd.DataFrame(columns=[...])` yields object-dtype columns, which
+promoted `season` to object on concat and made every downstream merge match zero rows — producing an
+entirely NaN expert panel that read exactly like "the design cannot answer the question." **A silent
+zero-match join is indistinguishable from a null result.** Every merge in this campaign that feeds a
+headline number should assert its match count.

@@ -4,7 +4,7 @@
 Threads are the source of truth. Change a thread's `STATUS:`, then re-run sync.
 Protocol: [`README.md`](README.md).
 
-**110 open** · 54 resolved
+**111 open** · 54 resolved
 
 ---
 
@@ -179,13 +179,14 @@ not an omission. Start your session at your own heading.
 |---|---|---|---|---|---|
 | [035](035-frontend-catchup-runbook.md) | Frontend catchup runbook | `pm` | OPEN | 5d | 003, 027, 028, 029, 030, 031, and every future frontend thread |
 
-### `fable` — 3 waiting
+### `fable` — 4 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
 | [2026-07-30-attack-factor-batch-3-24-registered-tests-one-vo](2026-07-30-attack-factor-batch-3-24-registered-tests-one-vo.md) | Attack factor batch 3 24 registered tests one vo | `ranker` | OPEN | 1d | none |
 | [2026-07-30-attack-factor-batch-7-16-registered-rb-tests-zer](2026-07-30-attack-factor-batch-7-16-registered-rb-tests-zer.md) | Attack factor batch 7 16 registered rb tests zer | `ranker` | OPEN | 1d | none |
 | [2026-07-31-attack-factor-batch-5-the-control-arm-beat-its-o](2026-07-31-attack-factor-batch-5-the-control-arm-beat-its-o.md) | Attack factor batch 5 the control arm beat its o | `ranker` | OPEN | 0d | none |
+| [2026-07-31-attack-ranking-version-v1-the-first-assembled-ra](2026-07-31-attack-ranking-version-v1-the-first-assembled-ra.md) | Attack ranking version v1 the first assembled ra | `ranker` | OPEN | 0d | the 2025 holdout (CLAUDE.md 6.3: does not open until fable has run); any decision to invest further in bottom-up before 7 September |
 
 ### `ranker` — 4 waiting
 

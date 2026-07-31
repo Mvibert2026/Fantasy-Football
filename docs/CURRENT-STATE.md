@@ -39,6 +39,29 @@ string being added or removed, so it may never have reached a commit) already di
 speculated was the likely fix. Left in place as a record rather than deleted outright, since the
 original escalation is why it was safe to check.
 
+**Last verified:** 2026-07-31, ranker session — **ranking version v1 assembled and tested end to
+end. It loses to both crowds.** The first ranking version this project has ever built or measured;
+every one of ~90 registered factor tests before it was a single feature inside one component of an
+unshipped model. Pre-commitment `docs/ranking/ranking-v1-precommit.md` committed at `5ffbbef`
+*before* the runner existed; config blob `experiments/bottomup/ranking_versions/v1.json`
+(sha256 `ab15cb93467b4f3f…`); results `docs/ranking/ranking-v1-results.md`; code
+`experiments/bottomup/ranking_v1.py`.
+**v1 is genuinely independent** — ρ 0.537–0.712 with consensus on the market board, mean |Δrank|
+2.4–8.8 places (max 53), against the shipped board's ρ 0.972 across the top 100.
+**And it beats neither crowd at any position.** Against market ADP (7 seasons): QB −0.065, RB
+−0.044, WR **+0.031 [−0.035, +0.110] (parity)**, TE −0.011. Against expert ECR (4 seasons): QB
+−0.138, RB −0.093, WR −0.065 — all three BH-significant *losses* — TE +0.005. It beats prior-season
+points and the positional-tier heuristic decisively at RB and WR. **Parity is not edge**; §6.5 is
+explicit that a version failing to beat both crowds has none. Contains table stakes #7 age and #8
+prior share; #6 injury in a declared secondary arm (inert again, fifth measurement); #5 depth chart
+and the lagged-YPC wire **excluded as post-hoc/unregistered**. Rookies pinned to consensus and
+labelled; **DEF blank with a note**. **2025 holdout never read** and not requested — `CLAUDE.md`
+§6.3 gates it on `fable`, who has not run. Reviews open: `strategist`
+(`docs/handoffs/2026-07-31-ranking-version-v1-tested-end-to-end-review-the.md`, incl. my own
+pre-registered MDE rule being wrong by 2× at panel-M QB) and `fable`
+(`docs/handoffs/2026-07-31-attack-ranking-version-v1-the-first-assembled-ra.md`). **Nothing shipped
+to `src/`; `projected_points` is unchanged.**
+
 **Last verified:** 2026-07-31, backend session — **PR-009, consensus quality season by season,
 against BOTH required baselines (CLAUDE.md §6.5 amended 2026-07-31, founder: "I'd measure against
 both").** Design pre-registered by strategist before any value was seen
