@@ -421,14 +421,14 @@ Where real differentiation likely lives.
 | 61 | Bye-week clustering cost | 6 bench spots; 4 starters on one bye is avoidable | `nflverse` | L | NEW |
 | 62 | In-season acquisition share of championship rosters | If most winning points come post-draft, draft optimization is worth less than we think | `league` | M | NEW |
 | 63 | FAAB market efficiency in 10-team | What do winning bids actually cost? | `league` | M | NEW |
-| 64 | Best-ball vs. redraft ADP divergence | Best-ball ADP is pure points-value; redraft includes startability bias. **The gap is itself a signal.** | `adp` | M | **BLOCKED** — no ADP source exists (ADR-018) |
-| 65 | Auction values as continuous value proxy | Finer-grained than ordinal ADP | `adp` | L | **BLOCKED** — no ADP source exists (ADR-018) |
-| 66 | ADP momentum (July→August rate of change) | Rising players often keep rising past fair value | `adp` | L | **BLOCKED** — no ADP source exists (ADR-018) |
+| 64 | Best-ball vs. redraft ADP divergence | Best-ball ADP is pure points-value; redraft includes startability bias. **The gap is itself a signal.** | `adp` | M | **UNBLOCKED, not yet run (corrected 2026-07-31).** ADR-018's "no ADP source exists" is superseded — FFC ADP is ingested (`src/ingest_ffc_adp.py`, ADR unblocking it 2026-07-29, `docs/decisions.md`) and MFL ADP since ADR-035. Neither is best-ball-specific, so this test still needs a best-ball ADP source (FFC's own best-ball boards, or Underdog) before it can run; general redraft ADP alone does not answer it. |
+| 65 | Auction values as continuous value proxy | Finer-grained than ordinal ADP | `adp` | L | **UNBLOCKED, not yet run (corrected 2026-07-31).** Same ADR-018 correction as #64. FFC/MFL ADP are ordinal, not auction values — this test still needs an auction-value source specifically. |
+| 66 | ADP momentum (July→August rate of change) | Rising players often keep rising past fair value | `adp` | L | **UNBLOCKED, not yet run (corrected 2026-07-31).** ADR-018's blocker is gone (see #64) and the daily ADP capture (`.github/workflows/adp-snapshot.yml`, running since 2026-07-29) is now building the dated snapshot history this test needs — but only from that date forward, so a July→August comparison needs at least one more season's capture before it is runnable, not immediately. |
 | 67 | Historical consensus-error analysis | Where has the market been *systematically* wrong? | ~~`adp`~~ `derived` | H | **PARTIAL — runnable now.** Not ADP-blocked; see note |
 | 68 | Positional run / cascade modeling | If I take X, how does the room respond? | `league` | H | **IMPLEMENTED (ADR-045)** — `live_availability.py`'s `R(p)`; `delta=0.10` is an unvalidated prior, needs mocks with per-pick draft state (SS5(b), not built) |
 | 69 | Weeks 16–17 availability risk | Clinched teams rest starters; eliminated teams play backups | `nflverse` | M | NEW |
 | 70 | Unsupervised tier clustering | Cluster on projected points + variance instead of eyeballing breaks | `derived` | M | NEW |
-| 71 | Ensemble ADP weighted by historical accuracy | Which source has actually predicted best? | `adp` | M | **BLOCKED** — needs ≥2 ADP sources; zero exist (ADR-018) |
+| 71 | Ensemble ADP weighted by historical accuracy | Which source has actually predicted best? | `adp` | M | **PARTIALLY UNBLOCKED, not yet run (corrected 2026-07-31).** ADR-018's "zero ADP sources exist" is stale — FFC and MFL are both ingested now, so ≥2 sources exist. Still needs the historical-accuracy comparison itself, and how well MFL's proxy role (never blended, per ADR-035) fits an "ensemble weighted by accuracy" design is an open methodology question, not yet resolved. |
 | 72 | Value-of-information ranking | Which uncertainties are worth resolving before draft day? Meta-test that prioritizes everything else. | `derived` | M | NEW |
 
 **#55 and #58 are the two highest-value items in the registry.**
@@ -443,8 +443,11 @@ highest-EV strategy in the abstract may not be the highest-EV strategy in practi
 models this.
 
 **#67 and #71 are the strongest arguments for ADP snapshot discipline.** Both require historical
-ADP with correct `as_of_date` values. Without dated snapshots, neither can ever be run. Start
-capturing now even though the analysis is far off — this data cannot be reconstructed later.
+ADP with correct `as_of_date` values. **Capture is no longer "start now" — it started 2026-07-29**
+(`.github/workflows/adp-snapshot.yml`, daily, running unattended off-machine; FFC's own historical
+backfill also landed separately, 2,467 rows 2013–2024). The remaining gap is duration: same-season
+`as_of_date` coverage only goes back to when the daily capture began, so #66's within-season
+momentum question specifically still needs another season to accumulate before it is runnable.
 
 ---
 
