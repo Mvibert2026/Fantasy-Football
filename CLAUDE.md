@@ -43,12 +43,29 @@ what actually happened — and did it beat the market?"*
 **These are this-season questions.** A previous PM framed them as off-season design work and was
 overruled in those words. Do not re-frame them.
 
-**They are a chain, not a list — founder's ordering, 2026-07-31:** *rankings → availability →
-recommender.* Both later stages consume the first: availability simulates a draft over *some*
-ranking, and the recommender's opportunity-cost term is value over a fallback, which is a ranking
-output. **A wrong ranking makes both downstream models confidently wrong.** As of 2026-07-31 the
-shipped board's within-position ordering is identical to consensus, so that risk is live, not
-theoretical.
+**Ordering, and a correction the founder made the same day — 2026-07-31.** PM first wrote these as a
+strict chain, *rankings → availability → recommender*, with both later stages blocked on the first.
+**That is half wrong, and the wrong half matters.**
+
+- **Availability is not blocked on our rankings.** It predicts *drafter behaviour*, so its inputs are
+  what drafters actually use — **ADP and expert consensus** — not our proprietary view. Both are in
+  the database and current. Founder's words: *"Availability can be done with ADP and consensus. Both
+  probably impact drafters."* Building it against our own board would model opponents as drafting off
+  a ranking they have never seen.
+- **The recommender takes a ranking as a *parameter*, not a prerequisite.** Founder: *"could use any
+  rankings as inputs to the decision engine which would consider who may be at the next pick and my
+  own roster construction."* It can run on consensus, ADP, or ours — which is exactly what the four
+  selectable sources (ADR-068) exist to allow.
+- **What a wrong ranking actually corrupts** is the recommender's *value* judgement — the
+  opportunity-cost term is value over a fallback. It does not corrupt availability, and it does not
+  block either model from being built and tested.
+
+So the three can proceed **in parallel**, and only the recommender's value term depends on ranking
+quality. As of 2026-07-31 the shipped board's within-position ordering is identical to consensus, so
+that dependency is a live risk for the recommender specifically — not a reason to stall the other two.
+
+Availability's own inputs, in the founder's order: **ADP, then how the draft has actually fallen,
+then opponents' needs.**
 
 Availability's own inputs, in his order: **ADP, then how the draft has actually fallen, then
 opponents' needs.** The middle one is what justifies simulating at all — with ADP plus per-player
