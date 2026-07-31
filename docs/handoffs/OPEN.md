@@ -4,7 +4,7 @@
 Threads are the source of truth. Change a thread's `STATUS:`, then re-run sync.
 Protocol: [`README.md`](README.md).
 
-**111 open** · 54 resolved
+**111 open** · 55 resolved
 
 ---
 
@@ -260,6 +260,7 @@ _Nothing waiting on you._
 | [104](104-fr066-availability-ranking-source-export.md) | Fr066 availability ranking source export | `frontend` → `backend` |
 | [117](117-prepared-answers-to-the-2026-08-01-handoff-held.md) | Prepared answers to the 2026 08 01 handoff held | `pm` → `design` |
 | [119](119-availability-opponent-model-adp-as-the-central-t.md) | Availability opponent model adp as the central t | `pm` → `strategist` |
+| [121](121-wire-assistant-retrieval-to-docs-assistant-conte.md) | Wire assistant retrieval to docs assistant conte | `pm` → `frontend` |
 | [2026-07-30-five-datasets-30-seconds-total-all-measured-toda](2026-07-30-five-datasets-30-seconds-total-all-measured-toda.md) | Five datasets 30 seconds total all measured toda | `ranker` → `data-ops` |
 | [2026-07-30-fr-136-q1-the-primary-metric-cannot-see-the-boar](2026-07-30-fr-136-q1-the-primary-metric-cannot-see-the-boar.md) | Fr 136 q1 the primary metric cannot see the boar | `ranker` → `strategist` |
 | [2026-07-30-pick-18-recommendation-defect-traced-reproduced](2026-07-30-pick-18-recommendation-defect-traced-reproduced.md) | Pick 18 recommendation defect traced reproduced | `ranker` → `strategist` |

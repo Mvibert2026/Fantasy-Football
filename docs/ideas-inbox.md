@@ -1904,3 +1904,34 @@ promoted `season` to object on concat and made every downstream merge match zero
 entirely NaN expert panel that read exactly like "the design cannot answer the question." **A silent
 zero-match join is indistinguishable from a null result.** Every merge in this campaign that feeds a
 headline number should assert its match count.
+## 2026-07-31 — frontend, wire assistant retrieval to docs/assistant-context.md: decided without asking
+
+Dispatch (thread 121, opened this session — the exact filename originally named,
+`2026-07-30-wire-assistant-retrieval-to-docs-assistant-conte.md`, did not exist anywhere in this
+worktree) said "fix it if the fix is contained... if it needs a contract change, stop and report."
+Found the assistant never read `docs/assistant-context.md` at all, on either path (zero references
+in `frontend/`/`worker/`). Judged this containable — no `data/export/`, no
+`src/export_contract.py`, no contract version touched, purely a new frontend-side corpus source —
+and built the fix rather than stopping at the report, per that instruction's own stated condition.
+Decided the chunking granularity myself (whole `##` section for prose, one document per bullet for
+a bulleted list) by reading the source file's own stated convention ("one paragraph per settled
+decision") rather than inventing a rule, and added a `stripBoldMarkers` cleanup step after finding
+(via the debug probe, not assumed) that the chunker's bullet-splitting left stray, unpaired `**`
+markers at chunk boundaries.
+
+Separately: this session's very first read of `docs/CURRENT-STATE.md` returned a much longer
+(reported 1252-line) version with content (a ranker "v1" session, PR-009, several factor-batch
+sessions) that a later re-read and `git show HEAD:...` both showed does not exist at the commit
+this worktree's HEAD was on throughout the session (`5e82225`, unchanged) — the actual, git-
+consistent file is 724 lines. Treated the git-verified on-disk version as ground truth rather than
+trying to reconcile against the earlier read (no diff against HEAD, no destructive git action
+taken); noted in this session's own status file
+(`docs/status/2026-07-31-frontend-wire-assistant-context-retrieval.md`) rather than escalated,
+since it did not block the task and nothing was lost or overwritten.
+
+Also found, not caused: `python tools/handoffs.py check` fails on a cluster of pre-existing
+duplicate thread IDs (093, 094, 109, 110, 111, 114) and two ADRs (054, 055) with conflicting
+headers across branches — cross-branch reconciliation, out of this session's single-thread scope.
+Not touched; flagged in this session's handoff reply and status file for whoever owns mailbox
+reconciliation (pm).
+

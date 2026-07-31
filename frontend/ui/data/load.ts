@@ -32,6 +32,31 @@ import type {
 
 const BASE = 'data';
 
+/**
+ * `assistant_context.md` (raw text, not JSON) -- `scripts/sync-exports.mjs`'s copy
+ * of `docs/assistant-context.md`. Absence is a real, expected state (a worktree
+ * whose sync predates the copy step, or a moment where the source file doesn't
+ * exist), not a load error, exactly like `fetchRostersOrNull`/
+ * `fetchPlayerDescriptionsOrNull` below -- resolves to `null` rather than
+ * throwing and taking the whole dataset load down with it. Project-wide, not
+ * per-league: always fetched from the unprefixed path regardless of which
+ * league is loaded, since the source doc has no league concept.
+ */
+async function fetchAssistantContextOrNull(): Promise<string | null> {
+  try {
+    const res = await fetch(`${BASE}/assistant_context.md`, { cache: 'no-store' });
+    const contentType = res.headers.get('content-type') ?? '';
+    // Same Vite-SPA-fallback trap fetchJson guards against: a missing file
+    // resolves to index.html at 200, not a 404, so content-type is what
+    // actually distinguishes "found" from "not found" here.
+    if (!res.ok || contentType.includes('html')) return null;
+    const text = await res.text();
+    return text.trim().length > 0 ? text : null;
+  } catch {
+    return null;
+  }
+}
+
 async function fetchJson<T>(name: string, pathPrefix: string): Promise<T> {
   const res = await fetch(`${BASE}/${pathPrefix}${name}.json`, { cache: 'no-store' });
   // Vite's dev server answers any unmatched GET with index.html at 200 (SPA
@@ -87,6 +112,17 @@ export interface Dataset {
    * corpus (`ui/assistant/retrieval.ts`); nothing else reads it yet.
    */
   playerDescriptions: RawPlayerDescriptions | null;
+  /**
+   * `docs/assistant-context.md`, raw markdown text, copied verbatim by
+   * `scripts/sync-exports.mjs`. Not part of the six-artifact per-league set (it
+   * has no `league_id`, no `contract_version` -- it is librarian's curated
+   * "why" summary, not an export), so it is fetched once, project-wide, and is
+   * null whenever the file wasn't synced (older worktree, or the copy step
+   * skipped it) rather than a load failure. Consumed by the assistant's
+   * retrieval corpus (`ui/assistant/retrieval.ts`'s `assistantContextDocs`);
+   * nothing else reads it.
+   */
+  assistantContextMd: string | null;
 }
 
 /**
@@ -129,11 +165,13 @@ async function fetchPlayerDescriptionsOrNull(pathPrefix: string): Promise<RawPla
 /** `{ artifactName: league_id }` for everything that must match, skipping the feed
  *  (legitimately absent for every league today), strategies when it wasn't
  *  fetched at all for this league (see the Dataset.strategies doc comment),
- *  rosters when this league predates contract 1.8.0 (see Dataset.rosters), and
+ *  rosters when this league predates contract 1.8.0 (see Dataset.rosters),
  *  playerDescriptions -- primary-league-only, and the artifact carries no
- *  `league_id` field at all to check (see Dataset.playerDescriptions). */
+ *  `league_id` field at all to check (see Dataset.playerDescriptions) -- and
+ *  assistantContextMd, project-wide rather than per-league and carrying no
+ *  `league_id` concept at all (see Dataset.assistantContextMd). */
 function leagueIdsOf(
-  d: Omit<Dataset, 'manifest' | 'feed' | 'playerDescriptions'>,
+  d: Omit<Dataset, 'manifest' | 'feed' | 'playerDescriptions' | 'assistantContextMd'>,
 ): Record<string, string | null | undefined> {
   return {
     board: d.board.league_id,
@@ -149,7 +187,7 @@ function leagueIdsOf(
 
 function assertLeagueMatches(
   leagueId: string,
-  data: Omit<Dataset, 'manifest' | 'feed' | 'playerDescriptions'>,
+  data: Omit<Dataset, 'manifest' | 'feed' | 'playerDescriptions' | 'assistantContextMd'>,
 ): void {
   const mismatches = Object.entries(leagueIdsOf(data))
     .filter(([, got]) => got !== leagueId)
@@ -184,19 +222,31 @@ export async function loadDataset(leagueId: string = DEFAULT_LEAGUE_ID): Promise
     hasStrategies = 'strategies' in entry.artifacts;
   }
 
-  const [board, league, glossary, nulls, strategies, availability, opponents, rosters, feed, playerDescriptions] =
-    await Promise.all([
-      fetchJson<RawBoard>('board', pathPrefix),
-      fetchJson<RawLeague>('league', pathPrefix),
-      fetchJson<RawGlossary>('glossary', pathPrefix),
-      fetchJson<RawNulls>('nulls', pathPrefix),
-      hasStrategies ? fetchJson<RawStrategies>('strategies', pathPrefix) : Promise.resolve(null),
-      fetchJson<RawAvailability>('availability', pathPrefix),
-      fetchJson<RawOpponents>('opponents', pathPrefix),
-      fetchRostersOrNull(pathPrefix),
-      fetchFeedOrEmpty(pathPrefix),
-      fetchPlayerDescriptionsOrNull(pathPrefix),
-    ]);
+  const [
+    board,
+    league,
+    glossary,
+    nulls,
+    strategies,
+    availability,
+    opponents,
+    rosters,
+    feed,
+    playerDescriptions,
+    assistantContextMd,
+  ] = await Promise.all([
+    fetchJson<RawBoard>('board', pathPrefix),
+    fetchJson<RawLeague>('league', pathPrefix),
+    fetchJson<RawGlossary>('glossary', pathPrefix),
+    fetchJson<RawNulls>('nulls', pathPrefix),
+    hasStrategies ? fetchJson<RawStrategies>('strategies', pathPrefix) : Promise.resolve(null),
+    fetchJson<RawAvailability>('availability', pathPrefix),
+    fetchJson<RawOpponents>('opponents', pathPrefix),
+    fetchRostersOrNull(pathPrefix),
+    fetchFeedOrEmpty(pathPrefix),
+    fetchPlayerDescriptionsOrNull(pathPrefix),
+    fetchAssistantContextOrNull(),
+  ]);
 
   const data = { board, league, glossary, nulls, strategies, availability, opponents, rosters };
 
@@ -211,7 +261,7 @@ export async function loadDataset(leagueId: string = DEFAULT_LEAGUE_ID): Promise
     assertLeagueMatches(leagueId, data);
   }
 
-  return { manifest, ...data, feed, playerDescriptions };
+  return { manifest, ...data, feed, playerDescriptions, assistantContextMd };
 }
 
 /** Looks up the run id the assistant cites alongside any value from this artifact. */

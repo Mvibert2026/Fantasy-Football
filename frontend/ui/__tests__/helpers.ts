@@ -21,6 +21,7 @@ function read<T>(name: string): T {
 export function loadDatasetFromDisk(): Dataset {
   const rostersPath = join(DATA_DIR, 'rosters.json');
   const playerDescriptionsPath = join(DATA_DIR, 'player_descriptions.json');
+  const assistantContextPath = join(DATA_DIR, 'assistant_context.md');
   return {
     manifest: read('_manifest'),
     board: read('board'),
@@ -36,6 +37,8 @@ export function loadDatasetFromDisk(): Dataset {
     feed: { contract_version: 'absent', generated_utc: 'never', items: [] },
     // Primary league only (see Dataset.playerDescriptions).
     playerDescriptions: existsSync(playerDescriptionsPath) ? read('player_descriptions') : null,
+    // Raw text, not JSON (see Dataset.assistantContextMd) -- read() can't be used.
+    assistantContextMd: existsSync(assistantContextPath) ? readFileSync(assistantContextPath, 'utf8') : null,
   } as Dataset;
 }
 

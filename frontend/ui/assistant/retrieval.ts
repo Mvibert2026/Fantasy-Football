@@ -574,6 +574,100 @@ function playerDescriptionDocs(data: Dataset): RetrievalDoc[] {
   }));
 }
 
+/**
+ * `docs/assistant-context.md` -- librarian's curated, current-state-only "why"
+ * summary (the file's own header: "the ONLY project document the in-app
+ * assistant should read for 'why' questions"). Before this function existed,
+ * nothing in `frontend/` or `worker/` referenced the file at all -- confirmed by
+ * grep across `ui/`, `server/`, and `worker/index.js`, zero hits -- so librarian's
+ * work curating an interval, an effective n and a stated scope onto every finding
+ * never reached the model; the reasoning lane answered from whatever board rows,
+ * glossary, strategies, league.json, nulls.json and player_descriptions.json
+ * happened to say instead, which is a materially different (and sometimes empty)
+ * set of facts. `docs/handoffs/2026-07-31-wire-assistant-retrieval-to-docs-assistant-conte.md`.
+ *
+ * CHUNKING, and why it follows the source file's own structure rather than
+ * inventing one: the file's own house rule is "one paragraph per settled
+ * decision, current state only" (its header, verbatim). A `##` section that is
+ * plain prose (e.g. "What the board is") is kept whole -- splitting it further
+ * risks severing an interval from the sentence stating what it's an interval on.
+ * A `##` section that is itself a bulleted list of independent findings (e.g.
+ * "Registered nulls", "Known data traps") is split one document per bullet,
+ * because that IS the file's own paragraph-per-decision unit at that point --
+ * keeping the whole list as one document would mean an unrelated bullet's
+ * vocabulary always rides along with the one that actually matched, and BM25
+ * would score the combined blob against the query rather than the specific claim.
+ * Either way, a chunk is never truncated and never re-summarized -- the full
+ * heading plus the full paragraph or bullet text, verbatim, every time.
+ */
+/** Strips markdown bold markers (`**text**`) so a doc built from a mid-sentence
+ *  chunk boundary (a bullet split off from the sentence its closing `**` was
+ *  in, or vice versa) never carries a stray, unpaired `**` into what the model
+ *  reads as plain prose. Other retrieval sources (nulls.json, glossary.json)
+ *  are already written as clean prose with no markdown emphasis; this keeps
+ *  assistant-context.md's docs consistent with them rather than leaking its
+ *  markdown-source formatting into the corpus. Backticked field names
+ *  (`` `board.json` ``, `` `evaluative_adjustment` ``) are left alone -- they
+ *  read fine as plain text and the backticks are never split across a chunk
+ *  boundary the way a bold span can be. */
+function stripBoldMarkers(text: string): string {
+  return text.replace(/\*\*/g, '');
+}
+
+export function assistantContextDocs(md: string | null): RetrievalDoc[] {
+  if (!md || !md.trim()) return [];
+
+  // Split on `##` (not `#`, the file has exactly one `#` title) headings, so each
+  // chunk carries its own heading as context for what the paragraph is about --
+  // "expected fantasy points" means nothing on its own if it lands next to a
+  // heading like "Why alpha detection is closed for 2026" versus "What the board
+  // is"; keeping the heading in the text is what lets a differently-phrased
+  // question still connect the paragraph to its own topic.
+  const sections = md.split(/\n(?=## )/g).filter((s) => s.trim().startsWith('## '));
+
+  const docs: RetrievalDoc[] = [];
+  for (const section of sections) {
+    const lines = section.split('\n');
+    const heading = lines[0]!.replace(/^##\s*/, '').trim();
+    const slug = heading
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)/g, '');
+    const body = lines.slice(1).join('\n').trim();
+    if (!body) continue;
+
+    // A section made entirely of top-level `- ` bullets (no intervening prose
+    // paragraph) is a list of independent settled decisions -- split one doc per
+    // bullet. `### ` sub-headings inside a section (none exist today, but a
+    // future one shouldn't silently merge into the prior bullet) are treated as
+    // their own bullet-equivalent unit too.
+    const bulletLines = body.split(/\n(?=- \*\*|- [^\n]|### )/g).filter((b) => b.trim());
+    const isBulletList = bulletLines.every((b) => /^-\s|^###\s/.test(b.trim()));
+
+    if (isBulletList && bulletLines.length > 1) {
+      bulletLines.forEach((bullet, i) => {
+        const text = stripBoldMarkers(bullet.trim().replace(/^-\s*/, '').replace(/^###\s*/, '')).trim();
+        if (!text) return;
+        docs.push({
+          id: `assistant_context.${slug}.${i}`,
+          text: `${heading}: ${text}`,
+          source_path: `docs/assistant-context.md#${slug}`,
+          identifiers: [],
+        });
+      });
+    } else {
+      docs.push({
+        id: `assistant_context.${slug}`,
+        text: `${heading}: ${stripBoldMarkers(body)}`,
+        source_path: `docs/assistant-context.md#${slug}`,
+        identifiers: [],
+      });
+    }
+  }
+
+  return docs;
+}
+
 export function buildCorpus(data: Dataset, rows: readonly BoardRow[]): RetrievalDoc[] {
   return [
     ...boardDocs(rows),
@@ -582,5 +676,6 @@ export function buildCorpus(data: Dataset, rows: readonly BoardRow[]): Retrieval
     ...leagueDocs(data),
     ...nullsDocs(data),
     ...playerDescriptionDocs(data),
+    ...assistantContextDocs(data.assistantContextMd),
   ];
 }
