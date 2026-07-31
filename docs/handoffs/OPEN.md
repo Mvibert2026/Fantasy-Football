@@ -4,7 +4,7 @@
 Threads are the source of truth. Change a thread's `STATUS:`, then re-run sync.
 Protocol: [`README.md`](README.md).
 
-**111 open** · 55 resolved
+**113 open** · 55 resolved
 
 ---
 
@@ -118,7 +118,7 @@ not an omission. Start your session at your own heading.
 | [2026-07-30-play-callers-is-not-in-nfl-db-and-end-of-season](2026-07-30-play-callers-is-not-in-nfl-db-and-end-of-season.md) | Play callers is not in nfl db and end of season | `ranker` | OPEN | 1d | none |
 | [2026-07-30-three-measured-data-facts-from-batch-7-participa](2026-07-30-three-measured-data-facts-from-batch-7-participa.md) | Three measured data facts from batch 7 participa | `ranker` | OPEN | 1d | none |
 
-### `strategist` — 21 waiting
+### `strategist` — 22 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
@@ -143,6 +143,7 @@ not an omission. Start your session at your own heading.
 | [2026-07-30-register-factor-batch-6-and-the-rate-channel-spe](2026-07-30-register-factor-batch-6-and-the-rate-channel-spe.md) | Register factor batch 6 and the rate channel spe | `ranker` | OPEN | 1d | none |
 | [2026-07-30-register-factor-batch-7-campaign-m-80-and-rule-o](2026-07-30-register-factor-batch-7-campaign-m-80-and-rule-o.md) | Register factor batch 7 campaign m 80 and rule o | `ranker` | OPEN | 1d | batch 7's grades standing at m=80; whether batch 3's S1 VOID ruling was reached for the right reason; how every concurrent batch should build a coverage control |
 | [2026-07-31-ranking-version-v1-tested-end-to-end-review-the](2026-07-31-ranking-version-v1-tested-end-to-end-review-the.md) | Ranking version v1 tested end to end review the | `ranker` | OPEN | 0d | any confirmatory registration of a bottom-up ranking; whether the depth-matched sensitivity is admissible |
+| [2026-07-31-rule-on-the-2026-board-s-cross-positional-inheri](2026-07-31-rule-on-the-2026-board-s-cross-positional-inheri.md) | Rule on the 2026 board s cross positional inheri | `ranker` | OPEN | 0d | none |
 
 ### `researcher` — 5 waiting
 
@@ -179,7 +180,7 @@ not an omission. Start your session at your own heading.
 |---|---|---|---|---|---|
 | [035](035-frontend-catchup-runbook.md) | Frontend catchup runbook | `pm` | OPEN | 5d | 003, 027, 028, 029, 030, 031, and every future frontend thread |
 
-### `fable` — 4 waiting
+### `fable` — 5 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
@@ -187,6 +188,7 @@ not an omission. Start your session at your own heading.
 | [2026-07-30-attack-factor-batch-7-16-registered-rb-tests-zer](2026-07-30-attack-factor-batch-7-16-registered-rb-tests-zer.md) | Attack factor batch 7 16 registered rb tests zer | `ranker` | OPEN | 1d | none |
 | [2026-07-31-attack-factor-batch-5-the-control-arm-beat-its-o](2026-07-31-attack-factor-batch-5-the-control-arm-beat-its-o.md) | Attack factor batch 5 the control arm beat its o | `ranker` | OPEN | 0d | none |
 | [2026-07-31-attack-ranking-version-v1-the-first-assembled-ra](2026-07-31-attack-ranking-version-v1-the-first-assembled-ra.md) | Attack ranking version v1 the first assembled ra | `ranker` | OPEN | 0d | the 2025 holdout (CLAUDE.md 6.3: does not open until fable has run); any decision to invest further in bottom-up before 7 September |
+| [2026-07-31-v1-s-2026-display-board-attack-the-holdout-claim](2026-07-31-v1-s-2026-display-board-attack-the-holdout-claim.md) | V1 s 2026 display board attack the holdout claim | `ranker` | OPEN | 0d | none |
 
 ### `ranker` — 4 waiting
 
