@@ -65,7 +65,7 @@ to `src/`; `projected_points` is unchanged.**
 **Last verified:** 2026-07-31, ranker session — **v1's 2026 board exists, display only, and the 2025
 holdout is still unspent.** `data/export/ranking_v1_2026.json` (527 players) and a `v1` field on
 every row of `data/export/rankings_comparison_2026.json`; runner
-`experiments/bottomup/ranking_v1_board_2026.py`; commit `c13a1b4`. **One run of the frozen v1 config,
+`experiments/bottomup/ranking_v1_board_2026.py`; commit `ab1e8b7`. **One run of the frozen v1 config,
 no tuning, no variant selection, and no accuracy number anywhere in it** — for 2026, which has not
 happened, or 2025, which is sealed. The fit is **frozen at outcome seasons ≤ 2024**; 2025 is read as
 an input feature year only, which `CLAUDE.md` §6.1 permits and requires. Enforced structurally, not

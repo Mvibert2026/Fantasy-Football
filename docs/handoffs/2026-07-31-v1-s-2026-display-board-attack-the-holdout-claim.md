@@ -13,7 +13,7 @@ I produced ranking v1's **2026 board** for display, at the founder's request, on
 condition that it does not burn the sealed 2025 holdout. **I am not the one who gets to say whether
 that condition held.** Attack it.
 
-Commit `c13a1b4` (infrastructure in `50c36ba`). Artifacts and code:
+Commit `ab1e8b7` (infrastructure in `50c36ba`). Artifacts and code:
 
 | what | path |
 |---|---|
@@ -75,5 +75,5 @@ pulled, not annotated.
 ## Done looks like
 
 A reply on this thread stating, per item: **holds / does not hold**, with the file:line that decides
-it. Specifically a yes/no on "the 2025 holdout remains unspent after commit `c13a1b4`". If no, name
+it. Specifically a yes/no on "the 2025 holdout remains unspent after commit `ab1e8b7`". If no, name
 the read that spent it.

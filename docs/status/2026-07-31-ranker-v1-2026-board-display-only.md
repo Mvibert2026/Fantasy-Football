@@ -1,6 +1,6 @@
 # 2026-07-31 — ranker — v1's 2026 board, display only, holdout preserved
 
-**Commits:** `50c36ba` (gate split), `c13a1b4` (board), `bb606b6` (review threads).
+**Commits:** `50c36ba` (gate split), `ab1e8b7` (board), `bb606b6` (review threads).
 Branch `claude/pm-agent-setup-gobxa0`, main checkout, no worktree.
 
 ## What was asked

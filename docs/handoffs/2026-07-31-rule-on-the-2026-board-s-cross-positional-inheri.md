@@ -9,7 +9,7 @@ OPENED: 2026-07-31
 
 ## Ask
 
-I made one methodology decision producing v1's 2026 display board (commit `c13a1b4`) that I should
+I made one methodology decision producing v1's 2026 display board (commit `ab1e8b7`) that I should
 not be the one to ratify. **Rule on it.** A yes/no plus the reasoning is enough; no re-derivation.
 
 **The decision.** v1 is a *per-position* ranker. Its evaluation endpoint (`ranking-v1-precommit.md`
