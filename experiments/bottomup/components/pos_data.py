@@ -54,6 +54,26 @@ FIRST_USAGE_SEASON = 2009      # targets / air yards become real here
 FIRST_INJURY_SEASON = 2010     # measured: 2009 has 17 rows, i.e. nothing
 DEFAULT_DB = Path(__file__).resolve().parents[3] / "data" / "nfl.db"
 
+# ---------------------------------------------------------------------------
+# TWO GATES, NOT ONE.  Added 2026-07-31 for the 2026 production board and for
+# nothing else.  Every loader and every panel accessor below took a single
+# implicit bound -- `HOLDOUT_SEASON` -- which conflated two different questions:
+#
+#   "may this row be read as an INPUT?"     -> the feature gate
+#   "may this row be read as an OUTCOME?"   -> the outcome gate
+#
+# For every backtest in batches 1-7 and for ranking v1's evaluation the two
+# answers coincide at 2025 and DEFAULTS BELOW REPRODUCE THAT EXACTLY -- a caller
+# that passes nothing gets byte-identical behaviour to before this change.
+#
+# They diverge in exactly one situation: projecting a season that has not been
+# played.  `CLAUDE.md` §6.1 permits season N-1 stats as inputs to a season-N
+# projection, so a 2026 board MUST read 2025 as a feature year; it must equally
+# never see 2025 as a training outcome, which would burn the sealed holdout.
+# That is `feature_gate=2026, outcome_gate=2025`, and the split is enforced by
+# the accessors themselves rather than by the caller remembering.
+# ---------------------------------------------------------------------------
+
 
 def season_length(season: int) -> int:
     """Regular-season length. Known before Week 1, so legal as an input."""
@@ -110,15 +130,22 @@ def _bonus(yards: float, table) -> float:
     return sum(b for t, b in table if yards >= t)
 
 
-def load_weekly(db_path: Path = DEFAULT_DB) -> pd.DataFrame:
-    """Every REG-season offensive player-week strictly before the holdout."""
+def load_weekly(db_path: Path = DEFAULT_DB,
+                max_season: int = HOLDOUT_SEASON) -> pd.DataFrame:
+    """Every REG-season offensive player-week strictly before `max_season`.
+
+    `max_season` defaults to the holdout, i.e. unchanged behaviour. It is raised
+    to 2026 by the production-board runner alone, so that 2025 is available as a
+    FEATURE year; the outcome gate on `SeasonPanel` is what keeps 2025 out of
+    training.
+    """
     conn = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True)
     try:
-        wk = pd.read_sql_query(_WEEK_SQL, conn, params=(HOLDOUT_SEASON,))
+        wk = pd.read_sql_query(_WEEK_SQL, conn, params=(max_season,))
     finally:
         conn.close()
-    if (wk["season"] >= HOLDOUT_SEASON).any():
-        raise HoldoutViolation("holdout rows leaked past the SQL gate")
+    if (wk["season"] >= max_season).any():
+        raise HoldoutViolation("rows leaked past the SQL gate")
     stats = wk[list(_SCORING_KEYS)].to_dict("records")
     wk["points"] = [score_offensive_game(s) for s in stats]
     wk["rec_bonus"] = [_bonus(y, YDS_BONUS) for y in wk["receiving_yards"]]
@@ -203,7 +230,8 @@ WHERE game_type = 'REG' AND gsis_id IS NOT NULL AND gsis_id <> ''
 """
 
 
-def load_injury_seasons(db_path: Path = DEFAULT_DB) -> pd.DataFrame:
+def load_injury_seasons(db_path: Path = DEFAULT_DB,
+                        max_season: int = HOLDOUT_SEASON) -> pd.DataFrame:
     """Per (player, season): how many REG weeks carried an injury report, and how
     many carried one that ruled the player out.
 
@@ -219,11 +247,11 @@ def load_injury_seasons(db_path: Path = DEFAULT_DB) -> pd.DataFrame:
     """
     conn = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True)
     try:
-        inj = pd.read_sql_query(_INJ_SQL, conn, params=(HOLDOUT_SEASON,))
+        inj = pd.read_sql_query(_INJ_SQL, conn, params=(max_season,))
     finally:
         conn.close()
-    if len(inj) and (inj["season"] >= HOLDOUT_SEASON).any():
-        raise HoldoutViolation("injury holdout rows leaked past the SQL gate")
+    if len(inj) and (inj["season"] >= max_season).any():
+        raise HoldoutViolation("injury rows leaked past the SQL gate")
     inj["is_out"] = inj["report_status"].isin(["Out", "Doubtful"]).astype(int)  # noqa: E501
     # distinct weeks: a traded player can appear twice in a week under two teams
     wk = inj.groupby(["player_id", "season", "week"], sort=False)["is_out"].max()
@@ -243,7 +271,8 @@ WHERE game_type = 'REG' AND gsis_id IS NOT NULL AND gsis_id <> ''
 """
 
 
-def load_depth_seasons(db_path: Path = DEFAULT_DB) -> pd.DataFrame:
+def load_depth_seasons(db_path: Path = DEFAULT_DB,
+                       max_season: int = HOLDOUT_SEASON) -> pd.DataFrame:
     """Per (player, season): weeks the player appeared on his team's REG-season
     depth chart, and weeks he was listed first at his position.
 
@@ -261,11 +290,11 @@ def load_depth_seasons(db_path: Path = DEFAULT_DB) -> pd.DataFrame:
     """
     conn = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True)
     try:
-        dc = pd.read_sql_query(_DEPTH_SQL, conn, params=(HOLDOUT_SEASON,))
+        dc = pd.read_sql_query(_DEPTH_SQL, conn, params=(max_season,))
     finally:
         conn.close()
-    if len(dc) and (dc["season"] >= HOLDOUT_SEASON).any():
-        raise HoldoutViolation("depth-chart holdout rows leaked past the SQL gate")
+    if len(dc) and (dc["season"] >= max_season).any():
+        raise HoldoutViolation("depth-chart rows leaked past the SQL gate")
     dc["is_first"] = (dc["depth_team"].astype(str) == "1").astype(int)
     wk = dc.groupby(["player_id", "season", "week"], sort=False)["is_first"].max()
     wk = wk.reset_index()
@@ -306,10 +335,21 @@ class SeasonPanel:
     _ngs: pd.DataFrame = field(default_factory=pd.DataFrame)
     _rush: pd.DataFrame = field(default_factory=pd.DataFrame)
     access_log: List[tuple] = field(default_factory=list)
+    #: exclusive upper bound on what may be read as an INPUT. Default is the
+    #: holdout, i.e. unchanged. Raised to 2026 by the production-board runner
+    #: alone, because CLAUDE.md 6.1 permits season N-1 stats as inputs to a
+    #: season-N projection.
+    feature_gate: int = HOLDOUT_SEASON
+    #: exclusive upper bound on what may be read as an OUTCOME. NEVER raised.
+    #: This is the gate that keeps 2025 realised points out of any training set,
+    #: and it is deliberately a SEPARATE number from `feature_gate` so that
+    #: raising one cannot silently raise the other.
+    outcome_gate: int = HOLDOUT_SEASON
 
     def _gate(self, cutoff: int) -> None:
-        if cutoff >= HOLDOUT_SEASON:
-            raise HoldoutViolation(f"cutoff {cutoff} reaches the sealed holdout")
+        if cutoff >= self.feature_gate:
+            raise HoldoutViolation(
+                f"feature cutoff {cutoff} reaches the gate {self.feature_gate}")
 
     def before(self, cutoff: int) -> pd.DataFrame:
         self._gate(cutoff)
@@ -437,9 +477,16 @@ class SeasonPanel:
 
     def outcomes(self, season: int) -> pd.DataFrame:
         """Realised season-N results. ONLY for evaluation and for training on
-        seasons strictly earlier than the one being projected."""
-        if season >= HOLDOUT_SEASON:
-            raise HoldoutViolation(f"season {season} is sealed")
+        seasons strictly earlier than the one being projected.
+
+        `outcome_gate` is checked, not `feature_gate`. On the production-board
+        panel the two differ (2025 vs 2026) and this method is the reason: 2025
+        box scores are legal INPUTS to a 2026 projection and are never legal
+        TRAINING OUTCOMES, because the 2025 outcome is the sealed holdout.
+        """
+        if season >= self.outcome_gate:
+            raise HoldoutViolation(
+                f"season {season} outcomes are sealed (gate {self.outcome_gate})")
         self.access_log.append(("outcome", season))
         return self._frame[self._frame["season"] == season].copy()
 
@@ -502,7 +549,8 @@ WHERE game_type = 'REG' AND week IS NOT NULL AND week <= 3
 """
 
 
-def load_week1_rosters(db_path: Path = DEFAULT_DB) -> pd.DataFrame:
+def load_week1_rosters(db_path: Path = DEFAULT_DB,
+                       max_season: int = HOLDOUT_SEASON) -> pd.DataFrame:
     """Season-N Week-1 club membership, from the depth chart. PROXY -- see
     `SeasonPanel.week1_roster` for exactly what it is and is not.
 
@@ -513,13 +561,13 @@ def load_week1_rosters(db_path: Path = DEFAULT_DB) -> pd.DataFrame:
     """
     conn = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True)
     try:
-        dc = pd.read_sql_query(_WK1_SQL, conn, params=(HOLDOUT_SEASON,))
+        dc = pd.read_sql_query(_WK1_SQL, conn, params=(max_season,))
     finally:
         conn.close()
     if not len(dc):
         return pd.DataFrame(columns=["player_id", "season", "team"])
-    if (dc["season"] >= HOLDOUT_SEASON).any():
-        raise HoldoutViolation("week-1 roster holdout rows leaked past the SQL gate")
+    if (dc["season"] >= max_season).any():
+        raise HoldoutViolation("week-1 roster rows leaked past the SQL gate")
     dc["team"] = dc["club_code"].astype(str).replace(_CLUB_ALIAS)
     first = dc.groupby(["season", "team"], sort=False)["week"].transform("min")
     dc = dc[dc["week"] == first]
@@ -559,19 +607,20 @@ WHERE week = 1 AND game_type = 'REG' AND season < ?
 """
 
 
-def load_preseason_rosters(db_path: Path = DEFAULT_DB) -> pd.DataFrame:
+def load_preseason_rosters(db_path: Path = DEFAULT_DB,
+                           max_season: int = HOLDOUT_SEASON) -> pd.DataFrame:
     """Season-N Week-1 club membership WITH STATUS. See
     `SeasonPanel.preseason_roster` for exactly what it is and is not."""
     conn = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True)
     try:
-        r = pd.read_sql_query(_ROSTER_SQL, conn, params=(HOLDOUT_SEASON,))
+        r = pd.read_sql_query(_ROSTER_SQL, conn, params=(max_season,))
     finally:
         conn.close()
     if not len(r):
         return pd.DataFrame(columns=["player_id", "season", "team", "status",
                                      "under_contract", "available"])
-    if (r["season"] >= HOLDOUT_SEASON).any():
-        raise HoldoutViolation("roster holdout rows leaked past the SQL gate")
+    if (r["season"] >= max_season).any():
+        raise HoldoutViolation("roster rows leaked past the SQL gate")
     r["team"] = r["team"].astype(str).replace(_CLUB_ALIAS)
     s = r["status"].astype(str).str.upper().str.strip()
     r["status"] = s
@@ -598,22 +647,23 @@ WHERE season < ? AND title = 'OC'
 """
 
 
-def load_preseason_coordinators(db_path: Path = DEFAULT_DB) -> pd.DataFrame:
+def load_preseason_coordinators(db_path: Path = DEFAULT_DB,
+                                max_season: int = HOLDOUT_SEASON) -> pd.DataFrame:
     """Pre-Week-1 offensive coordinator per club. Empty frame (not an error) if
     the research table has not been built -- an arm that needs it then produces
     all-null features and says so, rather than silently using something else."""
     conn = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True)
     try:
         try:
-            co = pd.read_sql_query(_COORD_SQL, conn, params=(HOLDOUT_SEASON,))
+            co = pd.read_sql_query(_COORD_SQL, conn, params=(max_season,))
         except Exception:
             return pd.DataFrame(columns=["team", "season", "title", "coach_id",
                                          "head_coach", "as_of_date"])
     finally:
         conn.close()
     if len(co):
-        if (co["season"] >= HOLDOUT_SEASON).any():
-            raise HoldoutViolation("coordinator holdout rows leaked past the SQL gate")
+        if (co["season"] >= max_season).any():
+            raise HoldoutViolation("coordinator rows leaked past the SQL gate")
         co["team"] = co["team"].astype(str).replace(_CLUB_ALIAS)
     return co
 
@@ -628,7 +678,8 @@ WHERE season_type = 'REG' AND week = 0 AND season < ?
 """
 
 
-def load_ngs_receiving(db_path: Path = DEFAULT_DB) -> pd.DataFrame:
+def load_ngs_receiving(db_path: Path = DEFAULT_DB,
+                       max_season: int = HOLDOUT_SEASON) -> pd.DataFrame:
     """Next Gen Stats season-level receiving tracking, 2016+.
 
     `week = 0` is nflverse's season-aggregate row. THIS TABLE IS QUALIFIED --
@@ -641,11 +692,11 @@ def load_ngs_receiving(db_path: Path = DEFAULT_DB) -> pd.DataFrame:
     """
     conn = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True)
     try:
-        n = pd.read_sql_query(_NGS_SQL, conn, params=(HOLDOUT_SEASON,))
+        n = pd.read_sql_query(_NGS_SQL, conn, params=(max_season,))
     finally:
         conn.close()
-    if len(n) and (n["season"] >= HOLDOUT_SEASON).any():
-        raise HoldoutViolation("NGS holdout rows leaked past the SQL gate")
+    if len(n) and (n["season"] >= max_season).any():
+        raise HoldoutViolation("NGS rows leaked past the SQL gate")
     return n
 
 
@@ -661,7 +712,8 @@ GROUP BY season, posteam, rusher_player_id
 """
 
 
-def load_rush_explosive(db_path: Path = DEFAULT_DB) -> pd.DataFrame:
+def load_rush_explosive(db_path: Path = DEFAULT_DB,
+                        max_season: int = HOLDOUT_SEASON) -> pd.DataFrame:
     """Per (player, season, club): carries and the count that gained >= 10 (and
     >= 15) yards, straight from play-by-play.
 
@@ -673,24 +725,44 @@ def load_rush_explosive(db_path: Path = DEFAULT_DB) -> pd.DataFrame:
     """
     conn = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True)
     try:
-        r = pd.read_sql_query(_RUSH_SQL, conn, params=(HOLDOUT_SEASON,))
+        r = pd.read_sql_query(_RUSH_SQL, conn, params=(max_season,))
     finally:
         conn.close()
-    if len(r) and (r["season"] >= HOLDOUT_SEASON).any():
-        raise HoldoutViolation("pbp holdout rows leaked past the SQL gate")
+    if len(r) and (r["season"] >= max_season).any():
+        raise HoldoutViolation("pbp rows leaked past the SQL gate")
     if len(r):
         r["team"] = r["team"].astype(str).replace(_CLUB_ALIAS)
     return r
 
 
-def build_panel(db_path: Path = DEFAULT_DB) -> SeasonPanel:
-    wk = load_weekly(db_path)
+def build_panel(db_path: Path = DEFAULT_DB,
+                feature_gate: int = HOLDOUT_SEASON,
+                outcome_gate: int = HOLDOUT_SEASON) -> SeasonPanel:
+    """The panel. Defaults are the batches 1-7 / ranking-v1 configuration exactly.
+
+    `feature_gate > outcome_gate` is the production-board configuration and the
+    ONLY one in which they differ. `outcome_gate` may never exceed
+    `HOLDOUT_SEASON`; that is asserted here rather than trusted, so a caller
+    cannot open the holdout by passing a number.
+    """
+    if outcome_gate > HOLDOUT_SEASON:
+        raise HoldoutViolation(
+            f"outcome_gate {outcome_gate} would open the sealed holdout "
+            f"{HOLDOUT_SEASON}; refusing")
+    if feature_gate < outcome_gate:
+        raise ValueError("feature_gate below outcome_gate makes no sense")
+    wk = load_weekly(db_path, max_season=feature_gate)
     return SeasonPanel(
-        aggregate_seasons(wk), team_context(wk), load_injury_seasons(db_path),
-        load_depth_seasons(db_path), load_birthdates(db_path), load_draft(db_path),
-        load_week1_rosters(db_path), load_preseason_rosters(db_path),
-        load_preseason_coordinators(db_path), load_ngs_receiving(db_path),
-        load_rush_explosive(db_path))
+        aggregate_seasons(wk), team_context(wk),
+        load_injury_seasons(db_path, max_season=feature_gate),
+        load_depth_seasons(db_path, max_season=feature_gate),
+        load_birthdates(db_path), load_draft(db_path),
+        load_week1_rosters(db_path, max_season=feature_gate),
+        load_preseason_rosters(db_path, max_season=feature_gate),
+        load_preseason_coordinators(db_path, max_season=feature_gate),
+        load_ngs_receiving(db_path, max_season=feature_gate),
+        load_rush_explosive(db_path, max_season=feature_gate),
+        feature_gate=feature_gate, outcome_gate=outcome_gate)
 
 
 # ---------------------------------------------------------------- universe
