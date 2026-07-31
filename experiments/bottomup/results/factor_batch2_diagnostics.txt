@@ -1,0 +1,85 @@
+============================================================================================
+1. #28 -- does the batch-1 harm pattern survive REAL ROSTERS?
+   Batch 1 §4: harm concentrated in the high-measured-vacancy bucket,
+   which is exactly where the depth-chart proxy is contaminated.
+============================================================================================
+
+  RB carries -- by MEASURED vacancy tercile (each arm split on ITS OWN vacancy measure)
+                 arm bucket   n  primary  arm_mae  delta
+V1 depth-chart proxy    low 476   49.418   49.393 -0.025
+V1 depth-chart proxy    mid 475   42.160   42.018 -0.142
+V1 depth-chart proxy   high 475   56.568   57.338  0.770
+     V2 real rosters    low 476   52.012   51.942 -0.070
+     V2 real rosters    mid 475   40.933   40.901 -0.032
+     V2 real rosters   high 475   55.196   55.260  0.064
+  ADP board only (n=357): primary 64.753 | V1 +64.640 (-0.1124) | V2 64.707 (-0.0455)
+
+  RB -- how much do the two vacancy measures DISAGREE?
+    V2 - V1 per player-season: mean -0.0441, sd 0.1527, 10th -0.1937, 90th +0.0000, |diff| > 0.05 for 32.0% of rows
+    'moved club': proxy says 172, rosters say 251, they disagree on 85 of 1441 player-seasons
+
+  WR targets -- by MEASURED vacancy tercile (each arm split on ITS OWN vacancy measure)
+                 arm bucket   n  primary  arm_mae  delta
+V1 depth-chart proxy    low 756   24.330   24.303 -0.027
+V1 depth-chart proxy    mid 756   21.192   21.170 -0.021
+V1 depth-chart proxy   high 756   26.625   26.920  0.295
+     V2 real rosters    low 756   25.210   25.095 -0.115
+     V2 real rosters    mid 756   21.618   21.564 -0.054
+     V2 real rosters   high 756   25.318   25.565  0.247
+  ADP board only (n=391): primary 31.423 | V1 +31.401 (-0.0218) | V2 31.460 (+0.0377)
+
+  WR -- how much do the two vacancy measures DISAGREE?
+    V2 - V1 per player-season: mean -0.0349, sd 0.1122, 10th -0.1508, 90th +0.0108, |diff| > 0.05 for 34.5% of rows
+    'moved club': proxy says 301, rosters say 425, they disagree on 140 of 2271 player-seasons
+
+  TE targets -- by MEASURED vacancy tercile (each arm split on ITS OWN vacancy measure)
+                 arm bucket   n  primary  arm_mae  delta
+V1 depth-chart proxy    low 347   19.045   19.041 -0.004
+V1 depth-chart proxy    mid 346   19.151   19.144 -0.007
+V1 depth-chart proxy   high 347   20.439   20.584  0.145
+     V2 real rosters    low 347   20.670   20.663 -0.007
+     V2 real rosters    mid 346   17.485   17.495  0.010
+     V2 real rosters   high 347   20.475   20.515  0.040
+  ADP board only (n=106): primary 28.384 | V1 +28.444 (+0.0601) | V2 28.371 (-0.0131)
+
+  TE -- how much do the two vacancy measures DISAGREE?
+    V2 - V1 per player-season: mean -0.0365, sd 0.1061, 10th -0.1511, 90th +0.0055, |diff| > 0.05 for 34.8% of rows
+    'moved club': proxy says 129, rosters say 191, they disagree on 66 of 1041 player-seasons
+
+============================================================================================
+3. HOW MANY PLAYERS WOULD AN INSIGHT SENTENCE FIRE FOR?
+   A factor that moves nobody cannot support a sentence however it grades.
+============================================================================================
+
+  WR
+ season  on_board  oc_known  new_oc  moved  high_vac
+   2018        46        46      30      5        21
+   2019        53        53      30      5        20
+   2020        57        57      22      5        17
+   2021        64        64      26      8        28
+   2022        43        43      20      8        21
+   2023        67        67      29     10        29
+   2024        61        59      30      6        17
+  totals: 391 board player-seasons, new_oc fires for 187 (47.8%), moved for 47 (12.0%)
+
+  RB
+ season  on_board  oc_known  new_oc  moved  high_vac
+   2018        38        38      24      1        19
+   2019        45        45      22      6        20
+   2020        56        56      21      5        16
+   2021        64        64      23     12        25
+   2022        43        43      22      2        26
+   2023        58        58      27      9        23
+   2024        53        52      28     14        20
+  totals: 357 board player-seasons, new_oc fires for 167 (46.8%), moved for 49 (13.7%)
+
+  TE
+ season  on_board  oc_known  new_oc  moved  high_vac
+   2018        12        12       9      1         6
+   2019        11        11       6      0         5
+   2020        16        16       7      2         4
+   2021        19        19       8      3         7
+   2022        12        12       5      0         7
+   2023        19        19       8      3         7
+   2024        17        16       6      0         4
+  totals: 106 board player-seasons, new_oc fires for 49 (46.2%), moved for 9 (8.5%)

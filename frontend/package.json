@@ -13,6 +13,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "smoke": "node e2e/smoke.mjs",
+    "reference-screenshots": "node e2e/reference-screenshots.mjs",
     "typecheck": "tsc -b --noEmit",
     "build:standalone": "node scripts/build-standalone-data.mjs && vite build --config vite.standalone.config.ts && node scripts/finalize-standalone.mjs"
   },

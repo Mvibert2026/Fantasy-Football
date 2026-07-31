@@ -1,6 +1,6 @@
 {
   "export_version": "2.0.0",
-  "generated_utc": "2026-07-30T16:45:26.074158+00:00",
+  "generated_utc": "2026-07-30T20:51:55.255778+00:00",
   "league_id": "primary",
   "note": "Real historical player_weekly_stats data (data/nfl.db), not the sample/mock data the prototype used. Targets are present in the source data for 2003-2008 but are a known charting-coverage gap, not a real measurement -- those seasons carry target_data_unavailable: true and targets is null, never 0, for that range. Every season from 2009 onward is unaffected.",
   "scoring_note": "fantasy_points (weekly_finishes.json's ranking basis and season_stats.json's season total) is computed by THIS project's own scoring engine (scoring.score_offensive_game) under THIS league's cfg.scoring, scored per game and then summed -- NOT nflreadpy's fixed fantasy_points_ppr column, which is nflverse's own full-PPR convention and does not vary by league. See league_id/scoring_ruleset_note in this envelope for exactly which ruleset was applied. Yardage bonuses are game-level thresholds, so scoring happens before summing across a season, never after (a summed-then-scored season could fabricate or drop a bonus no single game actually earned).",

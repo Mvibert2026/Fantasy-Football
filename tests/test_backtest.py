@@ -280,6 +280,64 @@ def test_starter_vbd_budget_k_binds():
     assert backtest.top_k_starter_vbd(ranking, actuals, vbd, {}, k=2) == pytest.approx(190.0)
 
 
+# ----------------------- never-played players are not replacement-level -----------------------
+#
+# Regression test for the defect the strategist found while ruling on the primary
+# metric (docs/adr-drafts/ADR-DRAFT-primary-evaluation-metric.md SS4.1): a ranked
+# player with a resolved position but NO weekly row at all (retired, cut, a
+# season-ending injury) is absent from `_season_actuals`, so `vbd.get(pid, 0.0)`
+# silently scored him as exactly replacement level instead of the true disaster
+# value `0 - replacement_points[pos]`.
+
+
+def test_never_played_player_scores_the_replacement_deficit_not_zero_vbd():
+    """A first-round RB who never takes a snap must score as a wasted pick
+    (0 points - the RB replacement level), not as a merely-average, easily
+    replaced player (0.0 VBD)."""
+    # Only rb2 (a lesser player) has a real weekly row; rb1 (the disaster pick)
+    # never appears in `actuals` at all, but IS resolved to RB via `positions`
+    # -- exactly what build_position_lookup's "rankings win" query does for a
+    # ranked player absent from the season's stat rows.
+    actuals = _actuals([("rb2", 40.0, "RB")])
+    levels = ReplacementLevels()
+    vbd, replacement_points = backtest._vbd_lookup(actuals, levels)
+    positions = {"rb1": "RB", "rb2": "RB"}
+    ranking = {"rb1": 1, "rb2": 2}
+
+    total = backtest._vbd_sum_for_ranking(
+        ranking, actuals, vbd, levels, positions, replacement_points
+    )
+
+    rb2_contribution = vbd["rb2"]
+    disaster_contribution = total - rb2_contribution
+
+    # The defective version contributed exactly 0.0 for rb1 (replacement
+    # level). The fix must contribute the true deficit: 0 points minus the RB
+    # replacement level, i.e. a negative number equal to -replacement_points.
+    assert disaster_contribution != pytest.approx(0.0)
+    assert disaster_contribution == pytest.approx(-replacement_points["RB"])
+    assert disaster_contribution < 0
+
+
+def test_never_played_player_in_starter_vbd_also_scores_the_deficit():
+    actuals = _actuals([("rb2", 40.0, "RB")])
+    levels = ReplacementLevels()
+    vbd, replacement_points = backtest._vbd_lookup(actuals, levels)
+    positions = {"rb1": "RB", "rb2": "RB"}
+    # rb1 ranked ahead of rb2 and consumes the first starting RB slot despite
+    # never appearing in `actuals`.
+    ranking = {"rb1": 1, "rb2": 2}
+
+    total = backtest.top_k_starter_vbd(
+        ranking, actuals, vbd, positions, k=2, replacement_points=replacement_points
+    )
+
+    # rb1 fills one dedicated RB slot, rb2 fills the other (STARTER_SLOTS has
+    # 2 RB slots) -- both consume a slot, so the total must reflect rb1's true
+    # deficit added to rb2's real vbd, not rb1 contributing nothing.
+    assert total == pytest.approx(vbd["rb2"] - replacement_points["RB"])
+
+
 # ----------------------------- integration -----------------------------
 
 

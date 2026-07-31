@@ -1,6 +1,6 @@
 # Front-End Data Contract
 
-**Version 1.16.0** · generated into `data/export/` · authored 2026-07-30
+**Version 1.18.0** · generated into `data/export/` · authored 2026-07-30
 
 The UI reads these files and **never** touches `data/nfl.db`. Every artifact carries
 `contract_version` and `generated_utc`. Breaking changes bump the major version and are
@@ -88,6 +88,12 @@ either, for the same reason DEF has never had one (no scoring data ingested).
 | Field | Type | Notes |
 |---|---|---|
 | `contract_version`, `generated_utc`, `season` | str | |
+| `ranking_source_selection` | str | **New in 1.18.0.** One of `"expert_adjusted"` \| `"expert_raw"` \| `"market_adp"` \| `"proprietary"` (CLAUDE.md §4's `ranking_source` enum, FR-2026-07-30). Which of the four founder-facing sources drove THIS file. `board.json` itself is always `"expert_adjusted"` — the historical default, unchanged in name/shape. `board.expert_raw.json` and `board.market_adp.json` are the same shape with this field (and player order) different. See `ranking_sources.json` for the catalog of all four, including the unbuilt `proprietary` |
+| `ranking_source_label` | str | Human label: "Consensus adjusted" / "Consensus" / "ADP" / "Proprietary bottom-up" |
+| `ranking_source_built` | bool | `true` on every board file that exists. A request for `proprietary`'s (absent) board via `build_board_json(ranking_source_selection="proprietary")` returns this as `false` with `players: []` rather than raising — see `ranking_sources.json` |
+| `ranking_source_as_of_date` | str\|null | This SOURCE's own as_of_date — never shared across sources. For `market_adp` this is `ffc_adp_snapshots`' own date, not `rankings`' |
+| `ranking_source_row_count` | int | `len(players)` for this specific file. `market_adp` is honestly thinner (~160-170 vs ~554) — FFC's own sampled depth, not a bug |
+| `ranking_source_note` | str | Explains whether board order is our VBD (`expert_adjusted`) or the source's own unmodified rank (`expert_raw`/`market_adp` — never re-derived from VBD, CLAUDE.md §4 never-blend) |
 | `snapshot_as_of_date` | str\|null | **New in 1.13.0.** The rankings snapshot's `as_of_date` (`FreshnessResult`, `src/freshness.py`), NOT when this file was written — see `generated_utc` for that. `null` only if the source/season has no rows at all |
 | `snapshot_age_days` | int\|null | **New in 1.13.0.** Days between build time and `snapshot_as_of_date`. `null` iff `snapshot_as_of_date` is `null` |
 | `snapshot_max_age_days` | int | **New in 1.13.0.** The threshold this league's config (`freshness_max_age_days`) was checked against |
@@ -142,6 +148,32 @@ component-level projections (test-registry #2), which no accessible source provi
 **UI implication:** do not build a "we disagree with the experts about this player" view. The
 board does not currently support that claim. It supports "this player is worth more *in this
 league's format*", which is a different and better-founded statement.
+
+---
+
+## `ranking_sources.json` (new, 1.18.0)
+
+The picker's catalog. **Not `league_id`-scoped** — one file, shared across every board variant.
+
+```
+{
+  "contract_version", "generated_utc", "season",
+  "sources": [
+    {"ranking_source_selection", "label", "built", "source_table", "as_of_date", "row_count", "note"},
+    ... one entry per RANKING_SOURCE_SELECTIONS value, including "proprietary" with built=false ...
+  ],
+  "board_files": {
+    "expert_adjusted": "board.json",
+    "expert_raw": "board.expert_raw.json",
+    "market_adp": "board.market_adp.json",
+    "proprietary": null
+  }
+}
+```
+
+Render the disabled/unavailable `proprietary` entry using its `note` — do not hide it from the
+picker. This file is the only place a client needs to look to render the full four-way toggle;
+each `board*.json` file only knows about itself.
 
 ---
 
@@ -246,16 +278,21 @@ instead of reading these.
 
 | Field | Notes |
 |---|---|
-| `ranking_sources[]` | `{name, weight}`. Today: one entry, `fantasypros_ecr`, weight 1.0. A second entry (MFL ADP, ADR-035) extends this list, not the algorithm |
+| `ranking_sources[]` | `{name, weight, as_of_date}`. Today: one entry — `src.draft_sim.CONSENSUS_RANK_SOURCE` (currently `fantasypros_ecr`), weight 1.0, `as_of_date` the most recent `rankings.as_of_date` among the rows that ranking was read from. Read from `ds.load_season`'s own return value at export time, never hardcoded, so it cannot name a source the simulation didn't actually run on. A second entry (MFL ADP, ADR-035) extends this list, not the algorithm |
+| `player_ranks` | **Added 1.17.0.** `{player_name: rank}`, keyed to match `by_player`'s own keys. This is the exact `consensus_rank` array `simulate_availability` runs its opponent model AND the user's own `strategy_bpa` pick against — see `player_ranks_note` in the export itself. **Not the same ranking as `board.json:consensus_rank`** — measured 73/80 top players in different order (thread 104) — do not substitute one for the other in a client-side recompute |
 | `mechanical_need_targets` | Per position, the count past which a team is no longer preferred toward that position. `STARTERS[pos] + FLEX_SLOTS` for flex-eligible positions — see `mechanical_need_targets_note` for why this is an upper bound, not a partition |
 | `max_at_position` | Hard cap; a team at this count never takes another of that position |
 | `need_penalty_per_surplus` | Additive rank penalty per player beyond `mechanical_need_targets`, applied before ranking |
 | `room_noise_drawn_once_per_draft` | `true`. One noise draw per player, shared by the whole room for a single simulated draft — not per pick, not per team |
-| `algorithm_note` | The full per-draft procedure in plain English, referencing `league.json` for roster/pick-order fields it does not duplicate |
+| `algorithm_note` | The full per-draft procedure in plain English, referencing `league.json` for roster/pick-order fields it does not duplicate. **Corrected 2026-07-30 (thread 104):** previously claimed the user's own pick runs against `board.json`'s unperturbed rank; it actually runs against `player_ranks`/`ranking_sources[0]` above, the same array the opponent model uses — `ds.strategy_bpa` was never wired to `board.json` |
 
-Player pool, positions and consensus ranks come from `board.json`; roster structure, team count,
-rounds and draft slot come from `league.json`. This block supplies only what belongs to the
-**opponent model** itself, so nothing is duplicated across artifacts.
+**`player_ranks` (added 1.17.0) is this block's own consensus rank, not `board.json`'s.**
+`board.json`'s rank comes from a separately-sourced, separately-scored board
+(`fantasypros_csv_2026draft`); `client_simulation_parameters` is now fully self-contained for a
+faithful recompute — it no longer needs anything read from `board.json` for the ranking itself.
+Roster structure, team count, rounds and draft slot still come from `league.json`. This block
+supplies only what belongs to the **opponent model** (and the user's own BPA pick) itself, so
+nothing is duplicated across artifacts except by the deliberate self-containment above.
 
 ---
 
@@ -439,6 +476,9 @@ as QB10). It is still withheld, because publishing a rank invites a downstream V
 
 ## Changelog
 
+| 1.18.0 | 2026-07-30 | **Additive (FR-2026-07-30, ADR-068).** Four selectable ranking sources. Every `board*.json` gains `ranking_source_selection`/`_label`/`_built`/`_as_of_date`/`_row_count`/`_note`. Two new per-league files, same shape as `board.json`, different source and (for `expert_raw`/`market_adp`) different player order — never re-derived from our VBD: `board.expert_raw.json` (unmodified expert consensus order), `board.market_adp.json` (FFC half-PPR/10-team ADP order, ~160-170 players, honestly thinner than the ~554-row expert boards). New non-`league_id`-scoped catalog file `ranking_sources.json` listing all four (including the unbuilt `proprietary`, which returns an explicit `ranking_source_built: false` shape rather than a missing file or a silent fallback). `simulate_availability`/`availability.json` NOT wired to this selection yet — deliberately, gated on the open M0-M5 availability-opponent-model thread; every board file's per-player `availability` block still describes the same single-source simulation regardless of which board it's embedded in. |
+
+| 1.17.0 | 2026-07-30 | **Additive (thread 104, FR-066 unblock).** `availability.json:client_simulation_parameters` gains `player_ranks` (`{player_name: rank}`, keyed to `by_player`'s existing keys) and `ranking_sources[].as_of_date`. Both are read from `ds.load_season`'s own return value at export time (`src/export_contract.py:build_availability_json`, now takes `conn`) — never hardcoded — so a future repoint of `draft_sim.CONSENSUS_RANK_SOURCE` (thread 119, e.g. to ADP) updates both automatically with zero export-side edits. This is the rank `simulate_availability` actually runs its opponent model and the user's own `strategy_bpa` pick against; it is a **different ranking from `board.json:consensus_rank`** (73/80 top players differ in order — confirmed, not assumed). Unblocks a real browser-side Monte Carlo recompute for an overridden draft slot without approximating on the wrong source. Also corrects `algorithm_note`'s prior claim that the user's own pick runs off `board.json` (it does not, and never did) — see `docs/handoffs/104-fr066-availability-ranking-source-export.md`. |
 | Version | Date | Change |
 |---|---|---|
 | 1.16.0 | 2026-07-30 | **VALUE CHANGE + shape change (FR-079/FR-083).** Root-caused the founder's "player card ADP/history doesn't match the selected league's format" complaint to two defects. (1) `board.json:adp_source_note` was hand-written prose hardcoding Westwood's half-PPR ruleset, unchanged for every league — a real STANDARD/0-PPR preset carried the sentence "this league scores half-PPR" verbatim. Now derived per-call from `cfg.scoring` (`export_contract._adp_source_note`), including an honest "these match" case when a league's PPR value happens to equal MFL's `IS_PPR` flag, and a real `fcount`-vs-`cfg.teams` comparison (was hardcoded "(10-team, matching this league)" for every fcount). (2) `weekly_finishes.json`/`season_stats.json` summed/ranked `player_weekly_stats.fantasy_points_ppr` — nflreadpy's own fixed full-PPR column, never this project's scoring engine, never league-aware — wrong for every league including Westwood. Now re-scored per player-week from raw counting stats through `scoring.score_offensive_game(stats, cfg.scoring)` and exported per-league via `export_contract.write_all` (previously a separate, unprefixed-only script). `season_stats.json`'s `fantasy_points_ppr` field is renamed `fantasy_points` (plus new `fantasy_points_available`) — not additive, existing frontend readers of that key break. Both history files' envelopes gain `league_id`/`scoring_note`/`scoring_ruleset_note`. See `docs/handoffs/NEW-adp-and-history-not-league-scoring-aware.md` for the full reasoning and the per-league shape tradeoff. |

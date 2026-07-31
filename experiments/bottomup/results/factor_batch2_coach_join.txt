@@ -1,0 +1,61 @@
+play_callers_preseason OC: 414 rows, 2012-2024, 32 clubs
+
+--- coverage per season (32 clubs is full) ---
+        clubs  oc_named  hc_called  median_days_before_kickoff
+season                                                        
+2012       31        31          0                        31.3
+2013       32        32          0                        30.8
+2014       32        31          1                       128.9
+2015       32        32          0                        96.3
+2016       32        30          2                        87.6
+2017       32        32          0                        78.1
+2018       32        31          1                        52.8
+2019       32        31          1                        72.2
+2020       32        29          3                        37.3
+2021       32        31          1                        55.0
+2022       32        29          3                        47.0
+2023       32        31          1                        45.4
+2024       31        30          1                        43.2
+
+--- 1. can a coordinator be followed ACROSS a team move? ---
+distinct named OCs: 126
+OCs appearing for 2+ clubs: 53 (42.1%)
+club-seasons whose OC is one of those movers: 243 of 400
+
+top 10 by number of clubs:
+  Greg Roman                 4 clubs   SF2012, SF2013, SF2014, BUF2015, BUF2016, BAL2019, BAL2020, BAL2021, BAL2022, LAC2024
+  Dowell Loggains            4 clubs   TEN2013, CHI2016, CHI2017, MIA2018, NYJ2019, NYJ2020
+  Kyle Shanahan              4 clubs   WAS2012, WAS2013, CLE2014, ATL2015, ATL2016, SF2017, SF2018, SF2019
+  Nathaniel Hackett          4 clubs   BUF2013, BUF2014, JAX2017, JAX2018, GB2019, GB2020, GB2021, NYJ2023, NYJ2024
+  Bill Musgrave              3 clubs   MIN2012, MIN2013, LV2015, LV2016, DEN2018
+  Darrell Bevell             3 clubs   SEA2012, SEA2013, SEA2014, SEA2015, SEA2016, SEA2017, DET2019, DET2020, JAX2021
+  Rick Dennison              3 clubs   HOU2012, HOU2013, DEN2015, DEN2016, BUF2017
+  Pat Shurmur                3 clubs   PHI2013, PHI2014, PHI2015, MIN2017, DEN2020, DEN2021
+  Marty Mornhinweg           3 clubs   PHI2012, NYJ2013, NYJ2014, BAL2017, BAL2018
+  John DeFilippo             3 clubs   CLE2015, MIN2018, JAX2019
+
+--- 2. name-collision risk (the known weakness of a name-as-id) ---
+same name as OC of 2+ clubs in the SAME season: 0
+  (a nonzero count is either a genuine name collision or a parse error; either way the name is not a safe key)
+
+--- 3. how many OC changes are there to detect, and are they traceable? ---
+ season  clubs_comparable  oc_changed  change_rate  new_oc_was_an_oc_elsewhere
+   2013                31          14        0.452                           0
+   2014                32          13        0.406                           2
+   2015                32          15        0.469                           5
+   2016                32          14        0.438                           2
+   2017                32          13        0.406                           2
+   2018                32          20        0.625                           5
+   2019                32          18        0.562                           4
+   2020                32          12        0.375                           1
+   2021                32          13        0.406                           2
+   2022                32          15        0.469                           0
+   2023                32          16        0.500                           4
+   2024                31          16        0.516                           5
+
+mean OC change rate: 0.469 (179 changes over 382 comparable club-seasons)
+of 179 changes, 32 brought in someone who was an OC elsewhere the prior season (17.9%) -- the rest are promotions, position coaches, or returns from outside the OC pool, and carry NO prior OC-level history in this table
+
+--- 4. the honest as_of ---
+days before Week 1: median 45, 10th pct 7, min 0, max 237
+rows dated fewer than 14 days before kickoff: 76 of 414 -- these are the ones closest to being post-draft information

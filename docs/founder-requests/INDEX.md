@@ -1,15 +1,15 @@
 # Founder requests — combined view
 
-**Generated 2026-07-30 by `tools/founder_requests.py sync` — do not hand-edit.**
+**Generated 2026-07-31 by `tools/founder_requests.py sync` — do not hand-edit.**
 Per-request files in this directory are the source of truth. Edit a request's own file's
 `STATUS:` line, then re-run sync. Protocol: [`README.md`](README.md).
 Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests.md).
 
-**116 requests since freeze.**
+**141 requests since freeze.**
 
 ---
 
-## NEW — 70
+## NEW — 87
 
 | ID | Subject | Raised | Source |
 |---|---|---|---|
@@ -74,7 +74,6 @@ Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests
 | [FR-118](FR-118-vbd-should-show-two-numbers-position-and-flex-aw.md) | Vbd should show two numbers position and flex aw | 2026-07-30 | chat 2026-07-30, PM session |
 | [FR-120](FR-120-frontend-changes-verified-locally-are-not-verifi.md) | Frontend changes verified locally are not verifi | 2026-07-30 | PM session 2026-07-30, founder chat |
 | [FR-121](FR-121-strategy-selector-should-be-a-collapsible-menu-n.md) | Strategy selector should be a collapsible menu n | 2026-07-30 | PM session 2026-07-30, founder chat |
-| [FR-122](FR-122-typing-a-player-name-should-filter-the-list-sear.md) | Typing a player name should filter the list sear | 2026-07-30 | PM session 2026-07-30, founder chat |
 | [FR-123](FR-123-archetypes-need-more-categories-the-35-rule-cann.md) | Archetypes need more categories the 35 rule cann | 2026-07-30 | PM session 2026-07-30, founder chat |
 | [FR-124](FR-124-news-feed-global-per-player-and-eventually-roste.md) | News feed global per player and eventually roste | 2026-07-30 | PM session 2026-07-30, founder chat |
 | [FR-125](FR-125-injury-status-at-a-glance-in-player-lists-and-on.md) | Injury status at a glance in player lists and on | 2026-07-30 | PM session 2026-07-30, founder chat |
@@ -83,6 +82,24 @@ Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests
 | [FR-129](FR-129-the-league-dropdown-is-messy-and-the-slot-select.md) | The league dropdown is messy and the slot select | 2026-07-30 | PM session 2026-07-30, founder chat with screenshots |
 | [FR-130](FR-130-data-freshness-is-unmonitored-the-site-can-silen.md) | Data freshness is unmonitored the site can silen | 2026-07-30 | PM session 2026-07-30, founder chat |
 | [FR-131](FR-131-availability-should-model-adp-not-expert-consens.md) | Availability should model adp not expert consens | 2026-07-30 | PM session 2026-07-30, founder chat |
+| [FR-133](FR-133-leagues-are-hardcoded-and-availability-is-comput.md) | Leagues are hardcoded and availability is comput | 2026-07-30 | PM session 2026-07-30, founder chat |
+| [FR-134](FR-134-test-campaign-prove-the-bottom-up-ranking-and-av.md) | Test campaign prove the bottom up ranking and av | 2026-07-30 | PM session 2026-07-30, founder chat |
+| [FR-135](FR-135-traditional-draft-board-teams-across-the-top-fil.md) | Traditional draft board teams across the top fil | 2026-07-30 | PM session 2026-07-30, founder chat |
+| [FR-136](FR-136-pivot-all-energy-to-the-three-model-questions-on.md) | Pivot all energy to the three model questions on | 2026-07-30 | PM session 2026-07-30, founder chat |
+| [FR-2026-07-30-bottom-up-causal-insights](FR-2026-07-30-bottom-up-must-produce-causal-insights-new-oc-de.md) | Bottom up must produce causal insights new oc de | 2026-07-30 | PM session 2026-07-30, founder chat |
+| [FR-2026-07-30-bottom-up-first](FR-2026-07-30-bottom-up-first-availability-is-adp-plus-draft-s.md) | Bottom up first availability is adp plus draft s | 2026-07-30 | PM session 2026-07-30, founder chat |
+| [FR-2026-07-30-bottom-up-must-include-table-stakes](FR-2026-07-30-bottom-up-must-include-all-tier-0-table-stakes-n.md) | Bottom up must include all tier 0 table stakes n | 2026-07-30 | PM session 2026-07-30, founder chat |
+| [FR-2026-07-30-coordinator-continuity-tenure-and-qb](FR-2026-07-30-coordinator-continuity-as-tenure-not-new-oc-bina.md) | Coordinator continuity as tenure not new oc bina | 2026-07-30 | PM session 2026-07-30, founder chat |
+| [FR-2026-07-30-lots-of-components-in-the-rankings-proprietary-a](FR-2026-07-30-lots-of-components-in-the-rankings-proprietary-a.md) | Lots of components in the rankings proprietary a | 2026-07-30 | ranker session 2026-07-30, relayed in PM brief for FR-136 Q1 |
+| [FR-2026-07-30-price-the-fantasypros-paid-api-tier](FR-2026-07-30-price-the-fantasypros-paid-api-tier-terms-were-n.md) | Price the fantasypros paid api tier terms were n | 2026-07-30 | PM session 2026-07-30, founder chat |
+| [FR-2026-07-30-rb-workload-hangover](FR-2026-07-30-rb-workload-hangover-decline-after-350-375-400-c.md) | Rb workload hangover decline after 350 375 400 c | 2026-07-30 | PM session 2026-07-30, founder chat |
+| [FR-2026-07-30-recommendation-logic-is-inverted](FR-2026-07-30-recommendation-logic-is-inverted-it-prefers-the.md) | Recommendation logic is inverted it prefers the | 2026-07-30 | PM session 2026-07-30, founder chat, live Draft-mode screenshot |
+| [FR-2026-07-30-recommender-contradicts-own-findings](FR-2026-07-30-the-recommender-contradicts-the-project-s-own-me.md) | The recommender contradicts the project s own me | 2026-07-30 | PM session 2026-07-30, founder chat |
+| [FR-2026-07-30-target-share-adot-route-participation](FR-2026-07-30-target-share-adot-route-participation-named-as-i.md) | Target share adot route participation named as i | 2026-07-30 | PM session 2026-07-30, founder chat |
+| [FR-2026-07-30-widen-the-ranking-input-list](FR-2026-07-30-widen-the-ranking-input-list-research-what-leadi.md) | Widen the ranking input list research what leadi | 2026-07-30 | PM session 2026-07-30, founder chat |
+| [FR-2026-07-31-availability-and-qb-tilt](FR-2026-07-31-two-defects-spotted-by-eye-v1-mishandles-availab.md) | Two defects spotted by eye v1 mishandles availab | 2026-07-31 | PM session 2026-07-31, founder chat — spotted by eye from the rankings chart |
+| [FR-2026-07-31-separate-edge-from-absolute-quality](FR-2026-07-31-separate-edge-over-consensus-from-absolute-ranki.md) | Separate edge over consensus from absolute ranki | 2026-07-31 | PM session 2026-07-31, founder chat |
+| [FR-2026-07-31-sequencing-fable-runs-first-next-week-after-the](FR-2026-07-31-sequencing-fable-runs-first-next-week-after-the.md) | Sequencing fable runs first next week after the | 2026-07-31 | PM session 2026-07-31, founder chat |
 
 ## SCOPING — 1
 
@@ -94,7 +111,7 @@ Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests
 
 _None._
 
-## IN PROGRESS — 13
+## IN PROGRESS — 14
 
 | ID | Subject | Raised | Source |
 |---|---|---|---|
@@ -111,8 +128,9 @@ _None._
 | [FR-079](FR-079-last-few-seasons-must-render-in-the-selected-sco.md) | Last few seasons must render in the selected sco | 2026-07-30 | chat 2026-07-30, PM session (feedback batch) |
 | [FR-092](FR-092-figure-out-the-coordinator-table-play-callers-is.md) | Figure out the coordinator table play callers is | 2026-07-30 | PM dispatch, data-ops session 2026-07-30 |
 | [FR-114](FR-114-remove-code-and-sourcing-clutter-across-the-site.md) | Remove code and sourcing clutter across the site | 2026-07-30 | chat 2026-07-30, PM session (screenshot feedback) |
+| [FR-2026-07-30-assistant-access-to-factor-tests](FR-2026-07-30-the-assistant-should-have-access-to-the-factor-t.md) | The assistant should have access to the factor t | 2026-07-30 | PM session 2026-07-30, founder chat |
 
-## SHIPPED — 19
+## SHIPPED — 21
 
 | ID | Subject | Raised | Source |
 |---|---|---|---|
@@ -135,6 +153,8 @@ _None._
 | [FR-083](FR-083-player-card-adp-shows-wrong-format-for-selected-.md) | Player card adp shows wrong format for selected  | 2026-07-30 | chat 2026-07-30, PM session (feedback batch) |
 | [FR-087](FR-087-show-draft-position-in-rounds-not-only-pick-numb.md) | Show draft position in rounds not only pick numb | 2026-07-30 | chat 2026-07-30, PM session (feedback batch) |
 | [FR-093](FR-093-historical-adp-get-the-rest-of-it-ffc-has-differ.md) | Historical adp get the rest of it ffc has differ | 2026-07-30 | PM dispatch, data-ops session 2026-07-30 |
+| [FR-122](FR-122-typing-a-player-name-should-filter-the-list-sear.md) | Typing a player name should filter the list sear | 2026-07-30 | PM session 2026-07-30, founder chat |
+| [FR-2026-07-30-factor-ledger](FR-2026-07-30-deliverable-a-ledger-of-every-factor-considered.md) | Deliverable a ledger of every factor considered | 2026-07-30 | PM session 2026-07-30, founder chat |
 
 ## DECLINED — 0
 
@@ -162,4 +182,9 @@ _None._
 | [FR-109](FR-109-the-vbd-arm-in-the-zero-rb-sim-may-be-wrong-and-.md) | The vbd arm in the zero rb sim may be wrong and  | `ANSWERED — RANKER 2026-07-30; TWO FOLLOW-UPS ROUTED TO STRATEGIST (SEE RESPONSE)` |
 | [FR-119](FR-119-record-product-behaviour-explanations-plan-for-a.md) | Record product behaviour explanations plan for a | `PARTIAL` |
 | [FR-127](FR-127-displayed-abbreviations-are-unexplainable-the-as.md) | Displayed abbreviations are unexplainable the as | `IN-BUILD` |
+| [FR-132](FR-132-archetype-placement-show-both-arrangements-befor.md) | Archetype placement show both arrangements befor | `IN-PROGRESS` |
+| [FR-2026-07-30-four-selectable-ranking-sources](FR-2026-07-30-four-selectable-ranking-sources-driving-every-fe.md) | Four selectable ranking sources driving every fe | `IN-PROGRESS` |
+| [FR-2026-07-31-both-baselines](FR-2026-07-31-ruling-measure-against-both-market-adp-and-exper.md) | Ruling measure against both market adp and exper | `RESOLVED — FOUNDER RULED` |
+| [FR-2026-07-31-do-whatever-testing-is-needed-to-build-a-competi](FR-2026-07-31-do-whatever-testing-is-needed-to-build-a-competi.md) | Do whatever testing is needed to build a competi | `IN-PROGRESS` |
+| [FR-2026-07-31-holdout-gated-on-fable](FR-2026-07-31-holdout-stays-sealed-until-fable-has-run.md) | Holdout stays sealed until fable has run | `RESOLVED — FOUNDER RULING, NOW A STANDING RULE` |
 

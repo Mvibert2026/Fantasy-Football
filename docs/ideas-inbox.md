@@ -1363,3 +1363,612 @@ Scoping decisions made without asking, logged here per the "decide and log" inst
    the header/input pinned) but cannot prove scrollbar-track *visibility* — that half of the
    spec's ask needs a founder look at the real app, not a headless screenshot.
 
+- 2026-07-30 · (strategist, thread 119 / FR-131) **Decided, not escalated — five calls, all reasoned
+  in the thread-119 reply.** (a) **Agreed with the founder's conclusion and rejected his reason.**
+  Switching the availability opponent model to FFC ADP is right on *estimand* grounds — ADP measures
+  realised pick position, in picks, with an uncertainty; expert consensus measures analyst opinion,
+  ordinally, with none — not because ADP "fits the mocks better," which has never been measured
+  against the incumbent and is what guardrails §5 requires. (b) **Refused the framing "is FFC
+  representative of a Yahoo room?"** It is unanswerable: n = 2 rooms, resampling unit is the room,
+  Yahoo mock lobbies carry an unknown autopick-bot fraction, and Westwood itself has zero logged
+  drafts. Replaced with a question that has an answer (M1: ADP vs ECR on realised-pick MAE, per mock,
+  no pooling, no CI). (c) **Refused FFC's raw per-player `std_dev` as the shipped sigma**, and
+  attacked FR-131's own evidence with FR-131's own source: between the committed 07-29 and 07-30
+  snapshots, Kamara moved 26.2 → **19.0** (−27%, n = 28), Hunter Henry 28.0 → 24.8, Kittle 26.9 →
+  24.9, McPherson 39.2 → 36.4 — the four "the room does not agree" exhibits are exactly the four with
+  the smallest n and the largest one-day drift, while Gibbs/Bijan/Chase did not move at all. Also
+  found a **gating data-semantics defect**: `total_drafts_in_sample` is 1254 on every row while
+  Bijan Robinson (an every-draft pick-2) shows `times_drafted` 90, and Ja'Marr Chase's count *fell*
+  189 → 175 while the total *rose*. Until that reconciles, no per-player n, SE or shrinkage weight is
+  founded. (d) **Named the quiet error before it happens:** FFC `std_dev` is the dispersion of a
+  *realised* pick (an output); the simulator's sigma is a *latent board perturbation* whose variance
+  the mechanics then add to. Substituting one for the other over-disperses and *looks like humility*
+  while doing it. Calibrate through the simulator (M3), never substitute. (e) **Pre-committed a
+  directional prediction: `lambda_hat < 10`** — i.e. current availability numbers for top-80 players
+  are systematically too close to 0.5. Hand-computed from committed files: the 10-team Yahoo mock's
+  mean |pick − ADP| is **1.12 / 3.66 / 8.22** picks over rounds 1–3 against the ~8 a flat sigma = 10
+  implies in every round, and over ADP 1–90 the typical FFC `std_dev` is ~4–5, not the ~9.7 median
+  quoted over all 180 rows including kickers. Noting for my own calibration record that this is an
+  *arithmetic* prediction, not a situation story — the category that has held up.
+  **Worth a PM call, second time raised:** PR ids are still hand-picked filenames with no allocator
+  (`tools/handoffs.py` covers threads and ADRs only), and an ADR-C registration additionally needs a
+  computed `content_hash`, so a no-shell role cannot write a valid one at all. I wrote the design as
+  `docs/ranking/availability-opponent-model-precommit.md` and left the `PR-0NN` file to backend
+  rather than hand-typing a number. Same gap flagged by strategist on 2026-07-29 (PR-006/PR-007).
+  **No shell in this session, by design** — nothing committed, nothing allocated. Staged:
+  `docs/handoffs/NEW-availability-adp-measurements-m0-m5.md` (needs `python tools/handoffs.py sync`)
+  and `docs/adr-drafts/ADR-DRAFT-availability-opponent-model-source-and-dispersion.md` (needs
+  `python tools/handoffs.py adr next`). `OPEN.md` hand-edited minimally and flagged as
+  sync-authoritative.
+
+
+- 2026-07-30, backend (ADR-064 session): `tools/founder_requests.py check` (cross-branch FR
+  collision detector, same shape as `tools/handoffs.py check`) is not wired into the automated
+  test suite the way `tools/handoffs.py check` is via `test_mailbox_health`. It currently only
+  runs if someone invokes it by hand. Found while auditing FR-029/FR-030's pre-existing collision
+  for ADR-064 — would have caught it sooner if it ran in CI. Low effort to add
+  (`tests/test_founder_requests.py` already has the fixture machinery); not fixed this session
+  because it's outside this session's actual ask.
+## 2026-07-30 — frontend, item 2 player profile / archetype dual-build (thread 121): decided without asking
+
+- **The visual encoding for the three archetype absence states was not specified by design and had
+  to be invented.** `PLAYER-PROFILE.md` §4 says the three states "must render differently and
+  legibly" and names them, but gives no treatment. Chose border STYLE (solid-filled / dashed / none
+  + italic / dotted) rather than colour, specifically so the distinction survives both themes and
+  colour-blindness — consistent with how the rest of this app avoids colour-only signals (e.g. the
+  weekly-finishes heat-map's redundant bottom rule). Not escalated: this is exactly the kind of
+  presentational judgment call the dispatch authorized deciding-and-logging rather than asking about.
+  If design has a stronger opinion once they see the screenshots, `archetypeChipStyle` in
+  `PlayerDetail.tsx` is one function, easy to swap.
+- **`PLAYER-PROFILE.md` §1 (the "Both values" row) and half of §2 (one anchored Disclosed section
+  behind a *Why that matters* gesture) were left unbuilt, not attempted.** Both require a disclosure
+  gesture that doesn't exist anywhere in this app yet, and both overlap `docs/design/
+  TWO-VALUE-COLUMNS.md` (item 8) plus a **2026-08-01** amendment already sitting in the repo
+  (`TWO-VALUE-COLUMNS-CONTAINER.md`) that further redesigns that exact gesture for the ADP caveat.
+  Building a competing version now risked shipping something design would have to immediately
+  redesign around once that round is released. Logged to thread 121 rather than guessed at.
+- **§3's reading-level rewrite (the PROJECTION caveat) WAS built**, using design's exact specified
+  sentence verbatim as UI copy, with the raw `board.json:curve_caveat` formula moved behind the
+  "show data sources" switch (same pattern as every other trace-mode gate in this file) rather than
+  deleted — Principle #2 still applies to prose, not just numbers.
+**2026-07-30, frontend session (rankings pane, design round-1 item 6 + FR-122).** Scoping decisions
+and a real environment finding, logged here per the "decide and log" instruction:
+
+1. **`RANKINGS-PANE.md` item 2 (dot-string removal, MFL superscript to the header, mono→UI font on
+   POS/TM/headers, hover-only reveal for the star/✕ icons) was not built.** The dispatch scoped
+   exactly three things (PLAYER column at 1180w, FR-122, light-theme row parity); item 2 is a
+   separate, real look-and-feel change with its own visual surface area that design's own doc
+   frames as tied to item 1 but did not ask this session to build. Left `docs/design/
+   RANKINGS-PANE.md`'s `STATUS: OPEN` rather than closing a two-thirds-done spec.
+2. **This container runs multiple agents concurrently, sharing the filesystem and, apparently, the
+   dev-server port space.** A `npm run dev --port 5199` collided with a server already running —
+   confirmed via `/proc/<pid>/cmdline` to belong to a *different* worktree
+   (`agent-ae11859768ad7e400`), not a leftover from this session. Moved to port 5220. **Real
+   mistake:** while cleaning up, `kill <pid>` was run against a PID misread from an earlier `ps`
+   listing and killed that other agent's server, not mine — not reversible from here, flagged in
+   `CURRENT-STATE.md` for that session/PM to notice. Worth a standing note somewhere for future
+   frontend sessions: verify a running dev-server's cwd via `/proc` before either trusting its
+   output *or* touching its PID.
+3. **A 5000ms default test timeout is too tight for `userEvent.type` against a real 511-row board
+   under this container's measured contention** (`load average: 9.32` on 4 cores during this
+   session) — one new test flaked once on the full suite, passed every other run. Raised that
+   test's own timeout to 15s. Not a systemic fix; other DraftRoom tests using the real dataset may
+   hit the same ceiling under load in a future session.
+
+## 2026-07-30 — strategist, suggested-pick rule (FR-...recommendation-logic-is-inverted): decided without asking
+
+- **Classified the founder's "the logic is backwards" as a STRUCTURAL error, not a sign error, and
+  refused a sign fix in writing.** `recommendation.ts:64-72`/`:82-97` take
+  `(row, round, unfilledPositions)` — no `Dataset`, no `LeagueConfig`, no pick log — so
+  `availability.json` is unreachable from the ordering function and there is no coefficient to
+  invert. Anyone "flipping the sign" would add availability as an additive VBD-points term, which is
+  the wrong object: survival enters as a multiplier ($q = 1-p$) on an opportunity cost. Decided
+  rather than asked, because the distinction determines whether the fix is correct or merely
+  differently wrong.
+- **Split the FR into two threads rather than one, against the "one thread per subject" default
+  reading.** Three of the four defects (false causal sentence at `DraftRoom.tsx:1005`, unconditional
+  "only" at `:961`, board `AVAIL` reading the wrong pick at `:1915`) need no statistic and are
+  shippable today; the ordering change needs a registered simulation. Bundling them would have held
+  three honesty fixes behind a multi-session measurement. Staged as
+  `NEW-recommendation-card-states-a-rule-the-code-does-not-run.md` (frontend) and
+  `NEW-suggested-pick-rule-measure-qg-against-plain-vbd.md` (backend).
+- **Attacked the founder's own replacement rule, not just the tool's.** "Always take the one less
+  likely to last" ranks by $q$ alone and would draft a 1%-survival replacement-level player ahead of
+  a 60%-survival star. Adopted his diagnosis of the sign, refused his rule, in writing (ADR-draft
+  §3.4 / §7 D-7).
+- **Did not treat thread 111's "VONA underperforms plain BPA by −110 to −126" as settling the
+  question.** That arm hardcoded $q \equiv 1$ (deterministic `gap × share`), which is the same error
+  the shipped recommender makes, in the opposite direction. Nobody has run the version with both
+  terms. Registered it rather than asserting the correction wins.
+- **Left the fallback-estimator bias sign explicitly unpredicted** (A1). Within-position survivals
+  are positively correlated through a positional run and negatively through fixed pick supply; the
+  net sign is not knowable a priori and guessing it would have been a situation story.
+- **Named a NEW look-ahead risk this design creates**, rather than leaving it to be discovered: $u_f$
+  is an expectation over who will still be available, so an implementation that reads the historical
+  season's realised draft order leaks the answer into the decision. Required as an executed,
+  printed assertion, not a review convention.
+- **Refused to amend PR-007 to absorb the new arms** (an amendment after data demotes it to
+  exploratory). Separate family, separate registration, same batch, same CRN seeds. Also flagged
+  that PR-007 itself has still never run — thread 093 open since 2026-07-29.
+
+
+- **2026-07-30, ranker (FR-136 Q1).** The shipped board's within-position ordering is identical to
+  consensus at all four positions, so `backtest.py`'s primary metric (per-position τ_b) returns
+  exactly 0.000000 between the board arm and the consensus arm, 12 of 12 position-seasons. Decided
+  without asking: report it as a blocking methodology defect to `strategist` rather than choosing a
+  replacement metric myself. A ranker who picks the ruler that scores the ranker is the failure the
+  role split exists to prevent. Thread `2026-07-30-fr-136-q1-the-primary-metric-cannot-see-the-boar`.
+- **2026-07-30, ranker.** Measured, not estimated: all 17 seasons of nflverse play-by-play fetch in
+  **20.4 s** and slim to **15.2 MB** for the 24 columns that red-zone usage, PROE, team pace and xFP
+  need. Four Tier-1 factors marked unbuildable in `docs/test-registry.md` are gated behind a
+  20-second download nobody ran. Commissioned to `data-ops` rather than designed around.
+- **2026-07-30, ranker.** `injuries` and `depth_charts_weekly` both stop at **2024**. No N−1
+  availability feature can be built for a 2026 projection today. Found by inventory, not by failure.
+- **2026-07-30, ranker.** Oracle ladder (exploratory, unregistered): perfect foresight of games
+  played alone, with zero knowledge of talent, beats expert consensus at all four positions. Logged
+  as a hypothesis about where to look; sent to `strategist` to register or reject, not acted on.
+- **2026-07-30, backend.** Ran fr136 §6.2 step 1: component models vs incumbent `projected_points`
+  on projection error (MAE, season points), same universe (FFC ADP 2018-24), same units
+  (`pos_model.score_components()`), 6 walk-forward seasons, 2025 untouched. Component model loses
+  at all four positions (significant at RB, TE). Decided without asking: do not wire, per the
+  mandate's own conditional. `docs/ranking/component-model-vs-incumbent-headtohead.md`,
+  `experiments/bottomup/head_to_head.py`. Thread
+  `2026-07-30-component-model-vs-incumbent-head-to-head-compon` to `ranker`.
+
+## 2026-07-30 — strategist, FR-136 Q1 five rulings: decided without asking
+
+Thread `2026-07-30-fr-136-q1-the-primary-metric-cannot-see-the-boar`, now `RESOLVED`. Five ADR drafts
+in `docs/adr-drafts/`: `ADR-DRAFT-primary-evaluation-metric.md`, `-market-rank-curve-source.md`,
+`-component-projection-display.md`, `-oracle-ladder-disposition.md`, `-table-stakes-multiplicity.md`.
+Every decision rule pre-committed before the numbers exist. Decided without asking:
+
+- **The metric is a pair, not a replacement** (ranker's own mid-thread amendment, accepted).
+  Cross-position primary `top_k_starter_vbd`, within-position primary τ_b **retained** with a regime
+  rule, projection primary a **skill score** against a frozen constant predictor rather than the raw
+  MAE that was offered — raw MAE is minimised by shrinking to the positional mean, which would have
+  made "beat the bar by shrinking" a winning move. **ADR-B stands unamended**; it pre-authorised this
+  exact exception itself (external, frozen weights; an addition alongside per-position reporting).
+- **Attacked the framing, not just the numbers, as instructed.** The 12-of-12 zeros are **one
+  algebraic identity printed twelve times** (τ_b is invariant under any monotone within-position
+  transform, and the board is one), not twelve measurements — so they are *zero* evidence that τ_b is
+  a poor instrument. Ruled that **the board is wrong, not the metric**: τ_b correctly reported that the
+  board asserts nothing at the player level. The harness defect is narrower — nothing was ever pointed
+  at the board's one real claim.
+- **Found a real defect in the metric being promoted, by reading the code**, and made fixing it
+  blocking: `backtest.py:487`/`:443` score a ranked player who never takes a snap at **0.0 VBD, i.e.
+  exactly replacement level**, instead of `0 − replacement_points`. Retained-at-zero-*points* (what
+  guardrails §2 and ADR-B:57 require) is not retained-at-zero-*VBD*. It systematically
+  under-penalises rankings that take injury risk — the exact channel the oracle ladder calls largest.
+  ADR-025's published +176.0/−34.7/+113.4/+83.8 were computed under it and need restating.
+- **NO to the FFC curve refit as proposed** — it changes the estimand rather than buying power, it is
+  a train/serve mismatch (fit on FFC, served on FantasyPros), and the bias lands on the four slopes
+  that are the board's *entire* proprietary content, worst at QB because in a 1-QB league ADP encodes
+  when people take quarterbacks while ECR encodes what they are worth. Replaced with a cheap
+  exchangeability measurement and a pre-committed rule (≤2.0 induced rank places at every position,
+  derived from the board's own published tilt, or permanent rejection). Registered the prediction that
+  `Δb(QB)` will be the largest of the four, so the ADR can be falsified rather than patched.
+- **Component projections: NO to `projected_points`** (it is load-bearing — `compute_vbd` reads it),
+  **conditional YES to a new non-load-bearing field**. Backend's head-to-head landed the same day and
+  **fails condition (a) at all four positions**, so the answer today is NO everywhere. Named the
+  failure mode being guarded against: *"displayed-only" as a laundering channel.*
+- **Oracle ladder REJECTED as a pre-registration** — neither arm bounds a forecastable quantity, so no
+  outcome changes a decision, and registering twelve inert tests would dilute every real test in the
+  family. **Found the defect in the startling claim that ranker did not catch on itself:**
+  `games = 0 ⟹ points = 0` is an identity, so on a bust-retaining board the games oracle scores a
+  block of pairs correct for free. Claim (b) is substantially "being told the outcome's zero set,"
+  not "durability beats talent." Also: **two unrelated things are both called "availability"** in this
+  project (draft availability vs player durability) and were one careless read from being conflated.
+- **Ratified the PM's table-stakes multiplicity argument** (no selection event ⇒ no denominator
+  contribution) with three amendments, the load-bearing one being that **post-fit removal of any
+  feature converts the block into a selection procedure** and requires a new id with BH recomputed.
+  Resolved the `CLAUDE.md` §11 tension **without amending `CLAUDE.md`**: construction-grounds inclusion
+  is legitimate only where the fit can shrink the feature to zero and no human hand-sets its weight.
+- **Refused to relax the power floor.** Pre-committed, before any number: below 6 usable evaluation
+  seasons, nothing may be published as "beats the market" or any directional claim. These are
+  build-decision gates, not publication instruments — nothing available before 2027 answers whether
+  the board has edge, and choosing a nicer ruler does not change that.
+- Registered two predictions against myself: skill score +0.05 to +0.20 everywhere (possibly negative
+  at QB), and **the Tier 0 table-stakes block fails its single holdout evaluation**.
+- **Could not commit or allocate any id** — no Bash, by design. Backend measurements staged at
+  `docs/handoffs/STAGED-strategist-fr136-q1-measurements.md` for `tools/handoffs.py new`; the
+  `F-DURABILITY` successor registration is drafted inside the oracle ADR rather than hand-numbered
+  into `docs/preregistration/`, because no `PR-0NN` allocator exists (three sessions have hit this).
+
+---
+
+## 2026-07-30 — ranker, factor batch 2 side-findings
+
+**Untested ideas generated while building #28/#29. None of these is a finding; each is a candidate.**
+
+- **"Who left" may be worth more than "how much left."** Batch 1 §4 saw the team-change *flag*
+  helping while the vacancy *magnitude* hurt. Batch 2 registers the flag (M1) but only at the level
+  of "this player moved." The untested version is the other direction: *which* departed player
+  vacated the opportunity — a 250-touch back leaving is not the same event as three 30-touch backs
+  leaving, and the share feature cannot tell them apart. A concentration measure (HHI of the
+  departed opportunity) is cheap and nobody has run it.
+
+- **Vacated opportunity has a competitor term the model never sees: arrivals.** Every vacancy
+  feature in this project counts who *left*. None counts who *came in* — a club that loses 200
+  carries and signs a 250-carry back has vacated nothing in practice. `rosters_weekly` plus prior
+  production supports "incoming prior-season volume" as directly as it supports departures. This
+  may be why every vacancy arm so far reads as noise.
+
+- **The head coach is a play-caller and the schema treats him as a missing value.** 17 of 416
+  team-seasons in the preseason navbox data have no OC line because the HC called plays. That is a
+  *regime*, not a gap, and "HC calls plays" plausibly behaves differently from "OC calls plays"
+  independent of continuity. Registry #30 (first-time play-callers) is adjacent and still gated.
+
+- **Coordinator tenure length, not just change.** #29 asks whether the OC changed. It does not ask
+  how long the incumbent has been there. `play_callers_preseason` supports run-length directly, and
+  year-2-of-a-system is a different claim from year-1.
+
+- **The navbox data carries DC as well as OC, and nothing in this project uses defence at all.**
+  Team defence is a roster slot in this league (1 DEF). No DEF projection exists anywhere in the
+  model. Continuity of the *defensive* coordinator is the obvious first input for one, and the data
+  is already sitting there at zero marginal cost.
+
+- **`days_before_kickoff` is an unexploited honesty signal.** Every preseason coordinator row knows
+  how stale it is (median 31–129 days depending on season). A row dated 130 days before Week 1 is
+  strictly better evidence for a draft-time feature than one dated 3 days before. Nothing uses it;
+  it could weight or filter.
+4. **(Frontend, 2026-07-30, decide-and-log per thread 2026-07-30-recommendation-card-states-a-rule-the-code-does-.)**
+   The thread left "same treatment for the other `nextUserPick` availability consumers" as the
+   fixing agent's own call. Decided: fix all three named consumers (`watchRows`, `queueRows`,
+   `PeriodicTableGrid.tsx`'s `underHalf`), not just the board `AVAIL` column the thread required —
+   same defect (a survival probability read against a pick the user can already see resolved
+   while on the clock), same one-line fix, and leaving some on the old target would have left two
+   different survival concepts under one label on different tabs of the same screen. No model
+   change, no new field, purely a target-pick swap already validated by the required fix.
+
+5. **(Frontend, 2026-07-30, found while verifying the same thread, not investigated further.)**
+   `docs/CURRENT-STATE.md` (as read from the shared checkout at session start) attributes a
+   `DRAFT_LIST_GRID_TEMPLATE` CSS-grid port of `DraftRoom.tsx`'s row list to a prior frontend
+   session (worktree `agent-a9e24c92a40214afb`), claiming it fixed the exact `flex: 1, minWidth: 0`
+   PLAYER-column defect this session found still present, unfixed, in the code it edited. No
+   `DRAFT_LIST_GRID_TEMPLATE` identifier (or any `display: grid` row-list port) exists anywhere in
+   `git log --all` from that worktree. This is the "reported complete, thing did not exist" failure
+   mode `docs/operating-model.md`'s evidence-standards table exists to catch — worth a PM/Verifier
+   look at whether that session's whole claimed diff landed anywhere, not just this one column.
+
+
+6. **(Backend, 2026-07-30, found while updating `docs/CURRENT-STATE.md` after the backtest
+   VBD-deficit fix, not resolved here.)** `docs/CURRENT-STATE.md` contains live, unresolved git
+   merge-conflict markers (`<<<<<<< HEAD` / `=======` / `>>>>>>> worktree-agent-a7446873495c871f2`)
+   spanning two frontend session narratives (the RANKINGS-PANE/FR-122 entry and the
+   recommendation-card-honesty-fixes entry), left by coordinator merge commit `17d41a3` ("Merge
+   recommendation-card honesty fixes, keeping item 6's grid layout") — the code conflict was
+   resolved, the doc conflict was not. Per the operating rules a merge conflict is escalated, never
+   resolved unilaterally by an unrelated session, so this session inserted its own entry above the
+   conflict rather than touching it. Both sides read as genuine, non-contradictory work and likely
+   just need the markers stripped with both paragraphs kept — but see item 5 above, filed the same
+   day by frontend, which independently found the RANKINGS-PANE side's own claimed
+   `DRAFT_LIST_GRID_TEMPLATE` diff may not actually exist in that worktree's history. Whoever
+   resolves this conflict should check item 5's finding first, not assume both sides are equally
+   real. Needs a `pm`/`verifier` look, not a mechanical marker-strip.
+
+**2026-07-30, ranker — two pre-existing repo defects seen in passing, neither mine, neither fixed here.**
+
+- `tests/test_state_claims.py` fails on `docs/CURRENT-STATE.md`'s Availability Explorer line, which
+  says the view "is not built" while `frontend/ui/views/Availability.tsx` exists. The line predates
+  this session (it was at :653 before this session's edits pushed it to :752). Doc fix, not a code
+  fix — belongs to whoever owns that paragraph.
+- `tests/test_team_codes.py` fails on `adp_snapshots.team = 'SDC'` having no crosswalk entry. That
+  is an ADP-ingest row, not a ranking one; `src/team_codes.py` needs the mapping rather than the
+  caller special-casing it, which is what the test already says.
+
+Full-suite state at the end of this session: **904 passed, 11 failed, 8 skipped.** All 11 failures
+are from other concurrent sessions in this shared container (export-contract version bump, FFC ADP
+ingest, Sleeper projections, Yahoo credentials, the `test_no_new_direct_sqlite_connections_in_src`
+list already documented as pre-existing in ADR-066). **None touch `experiments/bottomup/`,
+`docs/ranking/`, or anything this session wrote** — `tests/test_factor_batch2_features.py` is
+10/10 green and `tests/test_bottomup_prototype.py` is unaffected.
+
+**2026-07-30, ranker — factor batch 3 (24 registered tests). Decisions made and logged, not asked.**
+
+- **The efficiency→volume wire is the best thing in the batch and it is post-hoc.** Lagged YPC added
+  to the RB carry-volume spec beats the registered explosive-rate arm on both endpoints (−0.9331 /
+  −1.88% / E1b −0.7200 against −0.7508 / −1.51% / E1b −0.0264). The model already computes YPC and
+  uses it only for the yards channel. **The same wire is missing at every position** — `ypr` and
+  `catch_rate` are never offered to `tpg`, `ypa` is never offered to `att_pg`. Registered with
+  `strategist` before anything is run confirmatorily; not shipped, not merged, not claimed.
+- **Coverage flags must be registered as control arms, always, from now on.** Batch 2 lost three arms
+  to `move_known` after the fact. Batch 3 registered three controls in the family with a numeric VOID
+  rule at 50% and **it fired**, on NGS separation at WR (control 92% of treatment). The cost is
+  m going from 13 to 16; the benefit is that a coverage artifact cannot read as a win. This should be
+  a standing rule, not a batch-3 habit.
+- **A gate is a functional form nobody here has tested.** Batch 4 (`factor-batch-4-precommit.md`)
+  registers the founder's RB workload thresholds *on top of* a smooth term in the same quantity, so
+  the answer is gate-vs-weight rather than workload-vs-nothing. If gates work where weights do not,
+  that is worth more than any factor on the list.
+- **Untested and now cheap: NGS `avg_cushion`, `avg_intended_air_yards` and
+  `percent_share_of_intended_air_yards`** are in the same `ngs_receiving` rows the separation arm
+  already reads, and `avg_yac_above_expectation` is there too. The panel accessor exists; each is one
+  column. **TE separation was MARGINAL with a clean control on 7 seasons and is the one unresolved
+  thing in the batch** — it should be rerun with a proper power calculation before it is called
+  anything.
+- **`pbp` has 25 columns and is a fraction of nflverse's play-by-play.** `xpass`, `wp`,
+  `score_differential`, `half_seconds_remaining` and `yardline_100` are all present and all unused —
+  neutral-situation pass rate (N20), red-zone usage (#10) and PROE (#22) are each now one query away,
+  and the registry still records the last two as blocked on "there is no PBP table."
+## 2026-07-30 — frontend, FR-135 traditional draft board: worktree behind main + a pre-existing
+   rosterSlots.ts gap surfaced, neither fixed here
+
+1. **This worktree (`agent-aaac1fbaf22827f67`) branched from `main` at commit `5e82225`, which
+   predates several sessions' merged work still visible on the shared/outer checkout at
+   `/home/user/Fantasy-Football`** — confirmed directly: `docs/founder-requests/FR-135-*.md`,
+   `docs/design/research/draft-board/FINDINGS.md`, and the researcher's own handoff thread
+   (`docs/handoffs/2026-07-30-draft-board-reference-axis-unanimous-snake-never.md`) all exist on
+   the outer checkout (read from there, successfully, at session start) but do **not** exist
+   anywhere in this worktree's own git history. Most consequentially, **the outer checkout's
+   `DraftRoom.tsx` carries a RANKINGS-PANE session's changes (a `DRAFT_LIST_GRID_TEMPLATE`,
+   `rankings-pane-header-row` testid, etc.) that this worktree's copy of the same file does not
+   have** — and this session also edits `DraftRoom.tsx` (the new Draft Board hub tab). PM should
+   expect a real merge to reconcile at merge time, not a fast-forward; not resolved unilaterally
+   here per the standing rule that a merge conflict is escalated, not resolved by whichever
+   session hits it. This session built entirely from its own worktree's actual file contents
+   (re-verified after the mismatch was caught, not assumed from the outer checkout's docs) and
+   never touched the outer checkout's files.
+2. **`ui/data/rosterSlots.ts`'s `buildRosterSlots` silently skips any pick with `playerId ===
+   null`** (typed/off-board picks, and the auto-fill placeholder) — its own fill loop's first line
+   is `if (pick.playerId === null) continue;`, so such a pick never occupies a roster slot at all,
+   on **every** screen that already calls this function (`LiveOpponents.tsx`'s MY ROSTER and
+   opponent cards, now also this session's new roster-slot draft-board view). A team that spent a
+   real pick on an off-board player therefore shows one fewer filled slot than picks actually
+   made — not a fabrication (nothing false is shown), but an understatement, found by screenshot
+   inspection during this session (a "Local Waiver Pickup" pick vanished entirely from the
+   roster-slot view instead of landing on a bench row the way the function's own dead
+   `target.slot = "BN (name)"` rename branch implies it should). Not fixed here — out of scope for
+   a board-layout dispatch, and a fix to a function three existing screens depend on deserves its
+   own verification pass, not a side-effect patch. This session's own new view renders the honest
+   current behaviour (a plain dash, never a guess) and has a regression test pinning it
+   (`ui/__tests__/traditional-draft-board.test.tsx`, "an off-board pick occupies no slot").
+
+
+**2026-07-30, ranker — factor batch 6, four decisions made and logged rather than escalated.**
+
+1. **A shared campaign family manifest now exists** (`docs/preregistration/families/F-FACTOR-CAMPAIGN-2026-07-30.yaml`).
+   Four factor batches ran concurrently against the same harness on the same day; each correcting
+   inside its own m is four independent chances at a false positive with no record of the real
+   denominator. Batches register m there before fitting and BH is applied at the sum. **Batch 3
+   graded against its own m=24 before this existed and is not campaign-corrected** — flagged to
+   `strategist`, not silently re-graded by me.
+2. **The breaking-m device.** A batch cannot see a concurrent batch's m at run time, so every
+   surviving arm reports the largest campaign denominator at which it would still clear BH q=0.10.
+   Only one batch-6 arm is fragile (X3-RB, breaking m 56).
+3. **The dispatch's data premise was wrong and I corrected it before fitting rather than working
+   around it.** `passing_cpoe` is 99.9% populated on QB rows with ≥10 attempts (the "11%" figure
+   counted wide receivers), `passing_epa` is 100% populated 1999–2025, and `pbp` as ingested has no
+   `epa`/`cpoe`/`sack` column at all. EPA/dropback moved from "blocked, derive from pbp" to a
+   deep-sample arm.
+4. **A grading-rule defect worth fixing before batch 7.** Three coverage controls returned |E1a| ≈
+   2×10⁻¹⁴ (perfect collinearity with `present_1`/`evidence`, so least squares returns an identical
+   fit), and one of them **graded MARGINAL** because the bootstrap interval excluded zero. The
+   decision rules have **no magnitude floor**. Reported as an artefact; asked `strategist` whether
+   to add one. It will recur in every future batch that registers a coverage control.
+
+## 2026-07-30 — ranker, factor batch 5 (pass-catcher opportunity). Decisions taken, logged not asked
+
+1. **Two dispatched arms were declared UNGRADEABLE rather than registered and run.** FTN charting
+   starts 2022; the walk-forward needs a training pair carrying the feature, so the first target
+   season is 2024, and 2025 is sealed — **n_seasons = 1**. Registering N1/N2 would have spent
+   campaign m to buy a guaranteed NULL that the ledger would later read as evidence against the
+   factor. Declared in the pre-commitment before any number existed. `strategist` asked to confirm
+   that "UNGRADEABLE" is a legitimate third disposition alongside tested and blocked.
+2. **The shared campaign manifest is one file per batch, not one shared file.** Four agents on one
+   checkout cannot concurrently edit a shared registration without clobbering. Batch 6 reached the
+   same conclusion independently and built a second manifest; it migrated into this one and retired
+   its own in place, with the account kept rather than tidied away. **The two-manifest episode is
+   the argument for the layout, not against it.**
+3. **A block shipped with no coverage control, justified by a measurement rather than a
+   convenience.** `fd_known` is constant at 1.000 on the graded population, so a control arm would
+   be a zero-variance column consuming campaign m for nothing. The route block, whose flag is not
+   constant, kept three controls — and they are what killed it.
+4. **The most valuable thing in the batch is a control arm beating its own treatments 8 times out
+   of 8.** `routes_known`, a bare presence flag, outperforms TPRR, routes-per-game and 1D-per-route
+   at every position. Batch 2's `move_known` defect in a new block, caught in advance by the rule
+   batch 3 wrote for it rather than afterwards by argument. **Every future block with a coverage
+   flag must register that flag as its own arm; this is now two for two.**
+5. **A standing question the batch could not answer and nobody has asked.** E1b — the ADP-board
+   restriction — disagreed with E1a in *sign* for the whole route block. That is not noise: it is a
+   feature that helps sort the deep tail and hurts among draftable players. **No decision rule in
+   this project treats a sign flip between the two populations as informative in its own right** —
+   it only downgrades to BOARD-NEUTRAL. Worth a rule that names it.
+
+**2026-07-30, ranker — factor batch 7 (RB usage and efficiency), decisions taken and logged.**
+
+1. **Created `docs/ranking/factor-campaign-manifest.md`** because the dispatch required registration
+   into a shared campaign family and none existed. Campaign BH denominator registered at **m = 80**
+   (four concurrent batches × 20 tests) with a one-directional rule: if the realised total exceeds
+   80 every grade is recomputed at the realised total; if it comes in under 80 nothing is relaxed.
+   Batches 4–6 have placeholder sections to append to. Confirmation asked of `strategist`; nothing in
+   batch 7 turns on the answer, since nothing passes at any denominator.
+2. **Built a rate-covariate hook as a batch-local subclass** rather than editing `pos_model.py`, which
+   three other factor agents were working the same checkout. Two of batch 7's six factors are
+   efficiency claims whose hypotheses live in a shrunk rate, not a volume spec; adding them to
+   `carries_pg` would have tested a proposition nobody made. Flagged to `fable` as the piece of new
+   machinery I graded my own nulls with, and as the place I failed to register a positive control.
+3. **Did not resolve another session's merge conflict.** A concurrent agent left `docs/CURRENT-STATE.md`,
+   `docs/ideas-inbox.md`, `docs/status/INDEX.md` and `frontend/ui/views/DraftRoom.tsx` unmerged in this
+   shared checkout, which blocks any commit repo-wide. Per `docs/handoffs/README.md` rule 8 I waited
+   rather than merging over someone else's work; it cleared in 30 seconds. **Worth noting as a
+   structural hazard: four agents on one working tree means any one of them mid-merge freezes commits
+   for all four.**
+4. **Did not edit `docs/ranking/factor-batch-3-*`** despite finding that one of its published control
+   arms has the same defect as one of mine. Registered as a claim to `strategist` instead. I do not
+   grade other agents' work any more than my own.
+6. **Suite state seen in passing, not caused by batch 5 and not fixed here.** `pytest tests/`:
+   **929 passed, 12 failed, 8 skipped** (468s). All twelve assert on files batch 5 never touched —
+   `src/ingest_*.py` sqlite allowlist, export/contract version 1.17.0 vs 1.18.0, freshness, FFC ADP
+   ingest, Yahoo providers, team codes, and three stale claims in `docs/CURRENT-STATE.md` at lines
+   101/842/978 (none of them the batch-5 block). Logged so the count is on the record rather than
+   rediscovered; whoever owns `test_state_claims`'s three violations should note two of them are one
+   contract bump away from green.
+
+## 2026-07-31 — strategist, FR-2026-07-31 (separate edge from absolute quality): four rulings
+
+Rulings in `docs/adr-drafts/ADR-DRAFT-edge-vs-absolute-quality.md`; the Ruling-4 design in
+`docs/preregistration/PR-DRAFT-consensus-quality-by-season.md`; handoff body staged (unallocated) at
+`docs/handoffs/STAGED-strategist-consensus-quality-by-season.md`. No shell in this role by design, so
+no thread id and no PR number were hand-typed — the exact `tools/handoffs.py new` command is in the
+staged body.
+
+**Decided, not escalated — five calls.**
+
+1. **Ruled the FR's own premise wrong, on both halves, rather than building on it.** It states `E1a`
+   measures absolute quality and `E1b`/`E2` measure edge over consensus. Checked against five
+   pre-commits: `E1b` is *the same component MAE restricted to the ADP-board universe* (a population
+   filter, model-vs-model) and `E2` is *ADP-board Spearman, **arm − primary*** (model-vs-model). The
+   only §6.5-shaped endpoint in the whole campaign is **`E4`**, and it appears in **one batch of
+   seven**. `E2` is labelled "the bar that matters, `CLAUDE.md` §6.5" in five consecutive pre-commits
+   and that label is attached to the wrong object.
+2. **Inverted three of the FR's four example rows.** ANY/A `E2` = −0.0118 and passer rating
+   `E2` = −0.0180 [−0.0350, −0.0005] are *arm − primary model*: those arms made the ranking **worse
+   than the incumbent model's own ranking**, with the interval excluding zero on the harmful side.
+   Consensus never entered either grade. They are not suppressed wins; they are measured degradations
+   the FR has re-read as wins.
+3. **Declined to amend `CLAUDE.md` §6.5.** It governs *ranking versions*; a component-projection arm
+   is not one, so §6.5 was never binding on batches 1–7 and the defect is misapplication, not the
+   rule. Amending it in response to one day of nulls is bar-moving under null pressure and is refused
+   on the record.
+4. **Adopted the founder's wisdom-of-crowds point in its weak form and refused the strong form.**
+   Weak (true): a predictor drawn from the pool that forms the consensus should not be expected to
+   beat it, so the campaign's nulls are the expected result and reporting each as a failure did
+   misrepresent them. Strong ("consensus is unbeatable") refused — ADP's effective independence across
+   11 shops is ~6 (correlated errors do not average away), the 2026-07-30 ADP-vs-production analysis
+   already measured a systematic era-robust early-round RB mispricing, and **no ranking version has
+   ever been tested**: every arm in batches 1–7 was one feature inside one component of an unshipped
+   model. Named the failure mode: **the efficient-market lullaby.**
+5. **Moved the campaign's FDR endpoint from `C1` (full universe) to `C2` (draft-relevant universe)
+   from batch 8**, answering batch 7 §1(3)'s own open question in the affirmative — three batches,
+   three positions and four sources found every arm improving the full universe degrading the draft
+   board. **No batch 1–7 grade, number or q-value changes**, and `M_campaign = 80` is untouched.
+
+**ESCALATING — a contradiction between two documents, not resolved here.** `CLAUDE.md` §6.5 and
+`docs/statistical-guardrails.md` §5 state **different required baseline sets** (§6.5: market ADP /
+prior points / tier heuristic; guardrails §5: BPA / market ADP / **FantasyPros expert consensus**).
+It is load-bearing, not cosmetic: the founder's sentence is about **analysts** (expert consensus,
+which is what the shipped board runs off, `draft_sim.py:120`) while every measured "consensus" figure
+in the campaign is **market** ADP (FFC half-PPR 12-team, `adp_baseline.py:1-14`). Different crowds.
+Which is "the bar" is a founder call and it changes the Ruling-4 design.
+
+**Deliberately did not read** `experiments/bottomup/results/*_components_metrics.csv`, which already
+contains the per-season `adpsub_rho_b1_adp` values Ruling 4 measures. Reading them before fixing the
+decision rule would convert a pre-registration into a post-hoc rationalisation.
+
+**Predicted on the record, discounted per the standing calibration prior:** Ruling 4 returns
+**outcome (iii)** — consensus quality does vary across seasons, and **no pre-season signal predicts
+which seasons**, which kills the "target the bad years" line rather than opening it.
+
+---
+
+## 2026-07-31 · ranker · ranking version v1, assembled and tested end to end
+
+**Decided and logged, not asked.** Five calls made inside this pass, each recorded here so the
+reasoning is auditable rather than reconstructed:
+
+1. **Only pre-committed feature blocks enter v1.** That admits table stakes #7 (age) and #8 (prior
+   share); puts #6 (injury, arm B) in a declared secondary `v1b`; and **excludes #5 (depth-chart
+   role)** because arms D/E are post-hoc by their own source comment. Same rule excludes the
+   **lagged-YPC → RB volume** wire — I searched all of `docs/preregistration/` including
+   `families/*.yaml` and **no registration exists**, so it is out per the dispatch.
+2. **Rookies pinned in rank space, not projected through a curve.** Changed before the first run
+   (git history proves the order). Pinning *is* the stated intent — on rookie rows v1 equals the
+   crowd it is compared against — where the curve only approximated it, and it deletes a fitted
+   object.
+3. **`extra_universe_fn` added to `pos_eval.WalkForward`**, default `None`, so the expert board can
+   define an evaluation universe without duplicating the audited harness. Believed bit-for-bit inert;
+   `fable` asked to verify rather than accept.
+4. **A new baseline loader for §6.5 baseline #2.** Expert consensus had never had one — the entire
+   factor campaign's "consensus" was market ADP. `components/ecr_baseline.py`.
+5. **Depth-matched panel E run and labelled post-hoc.** It flips WR from a significant loss to
+   parity, which is exactly why I did not let it into the verdict. Ruling requested from
+   `strategist`.
+
+**The finding, in one line:** v1 is a genuinely independent ranking (ρ 0.54–0.71 with consensus, vs
+the shipped board's 0.972) and it **beats neither crowd at any position**, while beating both trivial
+baselines at RB and WR.
+
+**Predicted on the record, discounted per the standing calibration prior:** the four untested blocks
+(snaps, NGS, PBP red-zone/xFP, recency weighting) will move v1 by **less than 0.05 ρ in total**, and
+the largest single gain will come from **per-position recency weighting**, not from a new feature —
+because the per-season table shows swings of 0.3–0.5 ρ that no feature in the model is trying to
+explain.
+
+**One methodological defect found in my own pre-registration and reported rather than dropped:** the
+MDE rule I committed to uses a baseline-vs-baseline proxy contrast, and at panel-M QB it understates
+the real resolution by 2× (0.085 vs 0.170). Replacement proposed to `strategist`; accepting it makes
+my own result *less* conclusive, not more.
+
+**One bug worth generalising:** `pd.DataFrame(columns=[...])` yields object-dtype columns, which
+promoted `season` to object on concat and made every downstream merge match zero rows — producing an
+entirely NaN expert panel that read exactly like "the design cannot answer the question." **A silent
+zero-match join is indistinguishable from a null result.** Every merge in this campaign that feeds a
+headline number should assert its match count.
+## 2026-07-31 — frontend, wire assistant retrieval to docs/assistant-context.md: decided without asking
+
+Dispatch (thread 121, opened this session — the exact filename originally named,
+`2026-07-30-wire-assistant-retrieval-to-docs-assistant-conte.md`, did not exist anywhere in this
+worktree) said "fix it if the fix is contained... if it needs a contract change, stop and report."
+Found the assistant never read `docs/assistant-context.md` at all, on either path (zero references
+in `frontend/`/`worker/`). Judged this containable — no `data/export/`, no
+`src/export_contract.py`, no contract version touched, purely a new frontend-side corpus source —
+and built the fix rather than stopping at the report, per that instruction's own stated condition.
+Decided the chunking granularity myself (whole `##` section for prose, one document per bullet for
+a bulleted list) by reading the source file's own stated convention ("one paragraph per settled
+decision") rather than inventing a rule, and added a `stripBoldMarkers` cleanup step after finding
+(via the debug probe, not assumed) that the chunker's bullet-splitting left stray, unpaired `**`
+markers at chunk boundaries.
+
+Separately: this session's very first read of `docs/CURRENT-STATE.md` returned a much longer
+(reported 1252-line) version with content (a ranker "v1" session, PR-009, several factor-batch
+sessions) that a later re-read and `git show HEAD:...` both showed does not exist at the commit
+this worktree's HEAD was on throughout the session (`5e82225`, unchanged) — the actual, git-
+consistent file is 724 lines. Treated the git-verified on-disk version as ground truth rather than
+trying to reconcile against the earlier read (no diff against HEAD, no destructive git action
+taken); noted in this session's own status file
+(`docs/status/2026-07-31-frontend-wire-assistant-context-retrieval.md`) rather than escalated,
+since it did not block the task and nothing was lost or overwritten.
+
+Also found, not caused: `python tools/handoffs.py check` fails on a cluster of pre-existing
+duplicate thread IDs (093, 094, 109, 110, 111, 114) and two ADRs (054, 055) with conflicting
+headers across branches — cross-branch reconciliation, out of this session's single-thread scope.
+Not touched; flagged in this session's handoff reply and status file for whoever owns mailbox
+reconciliation (pm).
+
+
+---
+
+**ranker, 2026-07-31 — decisions taken while producing v1's 2026 display board**
+(`experiments/bottomup/ranking_v1_board_2026.py`, artifacts `data/export/ranking_v1_2026.json`
+and the `v1` field on `data/export/rankings_comparison_2026.json`). Logged, not asked.
+
+1. **Split `SeasonPanel`'s single season bound into `feature_gate` and `outcome_gate`.** One bound
+   conflated "may this row be an input" with "may this row be an outcome". A 2026 projection needs
+   2025 as an input (§6.1) and must never see it as an outcome (holdout). Defaults are unchanged, so
+   batches 1–7 and v1's evaluation are byte-identical. `build_panel` refuses any `outcome_gate` above
+   `HOLDOUT_SEASON`.
+2. **Cross-positional order on the 2026 board is CONSENSUS'S, not v1's.** v1's config declares a VBD
+   revaluation channel and its own precommit marks it `measured_by_this_design: false`. Applying an
+   untested tilt to a board the founder looks at would be claiming it. Instead the board substitutes
+   v1's occupant into each *positional* slot and inherits consensus's overall slot. Every overall
+   movement on the artifact is therefore a within-position movement — the only content v1 has ever
+   been measured on. **This is a methodology choice `strategist` should confirm or overturn.**
+3. **The consensus panel is `fantasypros_csv_2026draft` @ 2026-07-30**, i.e. exactly the 527 rows
+   already in `rankings_comparison_2026.json`, so v1 lands on the same universe the file compares.
+   `fantasypros_ecr` 2026 exists but is `is_preseason_final = 0` and 148 WRs deep; FFC's 2026
+   half-PPR board covers only 166 of the 527.
+4. **Pinned rookie rows carry no projected points.** The model does emit a number for them; it is not
+   the number that placed them (rank-space pinning overrides the rookie sub-model), so printing it
+   would misrepresent what the row is.
+
+**Two findings, reported and deliberately NOT fixed** (fixing a model after seeing its output is
+tuning through a human):
+
+- **`_WEEK_SQL` admits only `position IN ('QB','RB','WR','TE','FB')`, so a player nflverse lists at
+  another position is invisible to the whole panel.** Travis Hunter played 7 REG games with 45
+  targets in 2025 and is listed `CB`; v1 has never seen him, classes him as a rookie and pins him to
+  consensus WR64. Pre-existing, affects every historical backtest the same way, and it is the only
+  substantive case among 527 rows — but it is a silent one.
+- **The panel counts REG rows only**, so a player whose only NFL action was a playoff game reads as
+  never having played (Frank Gore Jr., Jordan James, Jarquez Hunter, Will Howard — all pinned).
+  Consistent with the harness; worth knowing when reading the pinned count.

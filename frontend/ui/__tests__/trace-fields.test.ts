@@ -76,3 +76,15 @@ describe('trace-field registry', () => {
     expect(found?.label).toContain('replacement');
   });
 });
+
+// EXPECTED_CONTRACT sat two versions behind the exports (1.16.0 against 1.18.0)
+// and the whole suite stayed green, because nothing pinned it -- while the app's
+// own staleness banner would have flagged every export as stale to the founder.
+// TRACE_CONTRACT had its own pin test and was correct; this constant did not.
+describe('EXPECTED_CONTRACT', () => {
+  it('matches the contract version the committed exports actually carry', async () => {
+    const { EXPECTED_CONTRACT } = await import('../data/contract');
+    const data = await loadDatasetFromDisk();
+    expect(EXPECTED_CONTRACT).toBe(data.board.contract_version);
+  });
+});

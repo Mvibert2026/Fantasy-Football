@@ -164,3 +164,41 @@ def test_ensure_schema_is_idempotent():
     )
     ifc.ensure_schema(conn)
     ifc.ensure_schema(conn)  # must not raise "duplicate column"
+
+
+class TestLatestExportCsv:
+    """The default CSV path must follow the founder's newest export.
+
+    He re-exports by hand and each pull lands in its own dated directory. A
+    hardcoded default silently keeps ingesting the stale file, which is a
+    freshness bug that looks like a successful run.
+    """
+
+    FILENAME = "FantasyPros_2026_Draft_ALL_Rankings.csv"
+
+    def _export(self, root, date):
+        d = root / date
+        d.mkdir(parents=True)
+        (d / self.FILENAME).write_text("RK,PLAYER NAME\n1,Test Player\n")
+        return d / self.FILENAME
+
+    def test_picks_the_newest_dated_export(self, tmp_path):
+        self._export(tmp_path, "2026-07-27")
+        newest = self._export(tmp_path, "2026-08-03")
+        self._export(tmp_path, "2026-07-30")
+        assert ifc.latest_export_csv(tmp_path) == newest
+
+    def test_ignores_dated_dirs_missing_the_csv(self, tmp_path):
+        real = self._export(tmp_path, "2026-07-27")
+        (tmp_path / "2026-08-09").mkdir(parents=True)  # dated, but no CSV in it
+        assert ifc.latest_export_csv(tmp_path) == real
+
+    def test_ignores_non_iso_directory_names(self, tmp_path):
+        real = self._export(tmp_path, "2026-07-27")
+        latest = tmp_path / "latest"
+        latest.mkdir()
+        (latest / self.FILENAME).write_text("RK\n1\n")
+        assert ifc.latest_export_csv(tmp_path) == real
+
+    def test_falls_back_when_nothing_matches(self, tmp_path):
+        assert ifc.latest_export_csv(tmp_path).parent.name == "2026-07-27"

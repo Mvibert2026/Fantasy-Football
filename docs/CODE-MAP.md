@@ -6,6 +6,16 @@ Read-only survey, 2026-07-29. Every claim carries a `file:line`. Nothing was ref
 write this, and nothing here is a recommendation — where something looks wrong, it is reported
 as it is, with a pointer to the doc that already tracks it.
 
+**Partially stale, corrected in place 2026-07-31 (librarian pass).** `CONTRACT_VERSION` below was
+last measured at 1.13.0; it is now `1.18.0` (§4 updated). §1's "two ranking sources" is now four —
+see the note added to §1. Several modules that landed since 2026-07-29 are not yet described
+anywhere in this file: `src/ingest_pbp.py` (play-by-play ingestion), the batch factor-testing
+modules under `experiments/bottomup/factors/` (`factor_features2.py`...`factor_features7.py`,
+`run_factors2.py`...`run_factors7.py`, `coord_preseason.py`, `coord_join_diagnostic.py`), and
+`frontend/ui/components/TraditionalDraftBoard.tsx` — each is named where it fits below, but this
+file has not been given a full re-survey pass and should not be trusted as exhaustive for anything
+that landed after 2026-07-29 beyond what is noted here.
+
 Five questions, one section each.
 
 ---
@@ -22,6 +32,21 @@ The JSON the app actually consumes is built separately by
 |---|---|---|
 | `SOURCE` | `fantasypros_csv_2026draft` | The live 2026 board. Half-PPR-native, from the founder's manual export |
 | `TRAINING_SOURCE` | `fantasypros_ecr` | The multi-season mirror. The **only** source with pre-2026 history |
+
+**As of ADR-068 (2026-07-30), the exported *board* itself is selectable across four sources**, a
+separate axis from the training/live split above: `RANKING_SOURCE_SELECTIONS` at
+`src/make_board.py:129` (`expert_adjusted` default/unchanged-byte-identical, `expert_raw`,
+`market_adp`, `proprietary`) drives `build_board`/`export_contract.build_board_json`'s
+`ranking_source_selection` parameter. `expert_raw` orders by the source's own consensus;
+`market_adp` orders by FFC half-PPR/10-team ADP (`_consensus_board_market_adp`,
+`src/make_board.py:229`); `proprietary` has no implementation and deliberately raises
+`RankingSourceNotBuilt` (`src/make_board.py:147`) rather than falling back silently. VBD/
+projected_points/tiers are still computed under every selection except that only
+`expert_adjusted` re-derives board order from our own VBD. **`simulate_availability`/
+`draft_sim.load_season` are NOT wired to this selector** — both the opponent model and the
+availability figures still run off the single hardcoded `fantasypros_ecr` regardless of the
+board's selected source (`src/draft_sim.py:120`, `CONSENSUS_RANK_SOURCE`); see
+`docs/CURRENT-STATE.md`'s 2026-07-30 backend "Follow-up audit" entry for the full consumer list.
 
 The split matters: the 2026 source is format-correct but has one season; the training source has
 2021–2025 but is *not* half-PPR (`src/ingest_rankings.py:25-37` explains why the swap was not
@@ -49,6 +74,20 @@ exported fields at contract 1.13.0.
 and `board_as_ranking` (`:437`).
 
 ---
+
+**Play-by-play ingestion, landed 2026-07-30, not otherwise described in this file's original
+survey.** `src/ingest_pbp.py`: `fetch_pbp` (`:64`) pulls nflverse play-by-play via `nflreadpy`,
+`ingest` (`:105`) upserts into `nfl.db`, CLI `main` (`:119`). Coverage starts **2009, not 1999**,
+and the table has **no `yards_after_catch` column** — both discovered and recorded during factor
+batch 7 (`docs/CURRENT-STATE.md`'s 2026-07-30 ranker "factor batch 7" entry), not assumptions.
+
+**The factor-testing campaign's own code**, batches 2 through 7, lives under
+`experiments/bottomup/factors/` — not `src/`, deliberately (this is experimental/methodology code,
+not shipped product code). One `factor_features{N}.py` / `run_factors{N}.py` pair per batch
+(`factor_features2.py`...`factor_features7.py`), plus `coord_preseason.py` (the Wikipedia
+staff-navbox coordinator scrape feeding registry #29/#30) and `coord_join_diagnostic.py`. Each
+batch's actual registered arms, results, and grades are in `docs/ranking/factor-batch-N-precommit.md`
+/ `-results.md`, not in the code — read those, not this file, for what a batch found.
 
 ## 2. Where does league configuration enter, and where is it bypassed?
 
@@ -127,10 +166,13 @@ re-run per config. That is a known limitation, not a bug.
 
 ## 4. What is in the export contract, and who reads each field?
 
-**`CONTRACT_VERSION = "1.13.0"`** at `src/export_contract.py:45`. The frontend pins the same
-string at `frontend/ui/data/contract.ts:17` (`EXPECTED_CONTRACT`). **These two lines must move
-together** — a contract change requires a version bump *and* a handoff thread to `frontend`, per
-the agent operating rules.
+**`CONTRACT_VERSION = "1.18.0"`** at `src/export_contract.py:48` (measured 2026-07-31; was 1.13.0
+when this section was last written 2026-07-29 — six bumps landed between the two dates, latest
+ADR-068's four selectable ranking sources, new files `board.expert_raw.json`,
+`board.market_adp.json`, `ranking_sources.json`). The frontend pins the same string at
+`frontend/ui/data/contract.ts:17` (`EXPECTED_CONTRACT`) — not re-verified this pass; check it
+matches before trusting either number. **These two lines must move together** — a contract change
+requires a version bump *and* a handoff thread to `frontend`, per the agent operating rules.
 
 **Builders → artifacts:**
 
@@ -157,6 +199,12 @@ Static artifacts come from `src/export_static.py`: `glossary.json` (`:43`), `nul
 - Five snapshot-freshness fields (`snapshot_as_of_date`, `snapshot_age_days`,
   `snapshot_max_age_days`, `snapshot_stale`, `snapshot_freshness_note`) — thread 074, 1.13.0.
   Previously computed on every call and only printed to the build console.
+
+**A fourth hub tab, `frontend/ui/components/TraditionalDraftBoard.tsx` (FR-135, 2026-07-30), reads
+board/rosters/league exports the same way `Board.tsx` and `DraftRoom.tsx` do** — additive, wired
+into `DraftRoom.tsx` alongside Board/Opponents/Predictions, no new export fields and no contract
+change. Two views (pick-order snake, and by-roster-slot) over the same underlying pick data; see
+`docs/design/research/draft-board/FINDINGS.md` for the design spec it was built against.
 
 **Readers.** The app entry is `frontend/ui/App.tsx`; `frontend/server/autoSync.ts` moves exports
 into `frontend/public/data/`. Field-level consumption is registered in

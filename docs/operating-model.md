@@ -16,8 +16,30 @@ this file tells you how the work is run.
 | **Design** | Claude Design (no repo access) | n/a | Tokens, components, screen specs |
 | **Strategist** | Chat, **no database access** | Opus, effort 4 | Independent statistical red-team, validation protocols, pre-registration |
 | **Researcher** | Chat, web enabled | Opus, effort 4–5 | Competitive, platform, and voice-of-customer research |
-| **PM / Chief of Staff** | Cowork chat | Sonnet | Dispatch, verification gatekeeping, budget calibration, Fable briefings |
+| **PM / Chief of Staff** | Cowork chat | Sonnet | Dispatch, budget calibration, Fable briefings |
+| **Verifier** | Claude Code, **read-only** | Sonnet, effort 2 | Checks a finished branch against the dispatch that produced it, before PM merges |
+| **Operator** | Claude Code, **read-only** | Sonnet, effort 1 | "Is the live site current and correct" — deploy-vs-`main`, data freshness, capture-vs-ingest, export staleness |
 | **Fable** | Weekly, outside review | Heaviest tier | Framework-level questions: VONA, opponent model, proprietary ranking, data-source audit |
+
+### Why Verifier and Operator exist, and why both are read-only
+
+Added 2026-07-30, founder-approved, after a day in which **every failure lived in a seam rather than
+inside a role**.
+
+**Verifier** was named as a gate in `CLAUDE.md` §8 from the project's start — *"every build task ends
+with Verifier"* — and no such agent existed. The gate therefore never ran, and PM absorbed it, meaning
+the role that dispatched the work also signed it off. That is precisely the arrangement the gate was
+written to prevent.
+
+**Operator** owns the question that sat between data-ops (capture) and backend (exports): *did today's
+capture actually reach the database, and is the site serving it?* On 2026-07-30 four independent
+staleness problems accumulated unnoticed, each observable for days, each one command away — found only
+because the founder happened to ask.
+
+**Neither may fix what it finds.** Both have read-only tool sets, deliberately. An agent that edits
+what it just reviewed is reviewing its own work. Findings go back to the owning role as threads, and a
+finding that exists only in a chat summary is a finding nobody will act on — that is how the four
+staleness problems stayed invisible.
 
 **Strategist's lack of database access is deliberate.** It exists to be a second, independent set
 of eyes on Backend's statistics. Granting it DB access would collapse it into an extension of

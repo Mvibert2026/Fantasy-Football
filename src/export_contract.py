@@ -45,7 +45,7 @@ import team_codes as tc
 from config import DEFAULT_CONFIG
 from scoring import LEAGUE, ReplacementLevels
 
-CONTRACT_VERSION = "1.16.0"
+CONTRACT_VERSION = "1.18.0"
 SEASON = 2026
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 EXPORT_DIR = DATA_DIR / "export"
@@ -290,13 +290,53 @@ def _adp_source_note(cfg: lc.LeagueConfig, adp_snapshot: dict) -> str:
     )
 
 
+def _not_built_board_json(cfg: lc.LeagueConfig, selection: str, desc: dict) -> dict:
+    """FR-2026-07-30: a named source with no implementation returns an
+    explicit, honest 'not built' shape -- never a silent fallback to another
+    source's board. See make_board.RankingSourceNotBuilt."""
+    return {
+        "contract_version": CONTRACT_VERSION,
+        "generated_utc": datetime.now(timezone.utc).isoformat(),
+        "league_id": cfg.league_id,
+        "season": SEASON,
+        "ranking_source_selection": selection,
+        "ranking_source_label": desc["label"],
+        "ranking_source_built": False,
+        "ranking_source_note": desc["note"],
+        "ranking_source_as_of_date": None,
+        "ranking_source_row_count": None,
+        "players": [],
+    }
+
+
 def build_board_json(
     conn: sqlite3.Connection,
     cfg: lc.LeagueConfig = lc.CURRENT_LEAGUE,
     enforce_freshness: bool = True,
     freshness_today=None,
     suspensions_path: Path = SUSPENSIONS_PATH,
+    ranking_source_selection: str = "expert_adjusted",
 ) -> dict:
+    """`ranking_source_selection` (FR-2026-07-30, default "expert_adjusted"
+    -- byte-identical to this function's pre-existing behavior when the
+    caller does not pass it) picks which of the four founder-facing sources
+    drives this board. See make_board.RANKING_SOURCE_SELECTIONS.
+
+    'proprietary' returns an explicit not-built shape (see
+    _not_built_board_json) rather than raising or falling back -- the
+    caller/CLI decides what a client should see for an unbuilt source, this
+    function never silently substitutes a different one under that label."""
+    if ranking_source_selection not in make_board.RANKING_SOURCE_SELECTIONS:
+        raise ValueError(
+            f"unknown ranking_source_selection {ranking_source_selection!r}; "
+            f"must be one of {make_board.RANKING_SOURCE_SELECTIONS}"
+        )
+    if ranking_source_selection == "proprietary":
+        return _not_built_board_json(
+            cfg, ranking_source_selection,
+            make_board.describe_ranking_source(conn, SEASON, ranking_source_selection),
+        )
+
     # T5 (fable-draft-day-premortem-2026-07-27.md finding #2): refuse to
     # build the live board from a snapshot older than
     # cfg.freshness_max_age_days, and always print the age -- even when
@@ -306,35 +346,84 @@ def build_board_json(
     # (none currently do; kept for the same reason require_fresh/
     # check_freshness are two functions in freshness.py rather than one with
     # a raise flag).
-    checker = fr.require_fresh if enforce_freshness else fr.check_freshness
-    freshness_check = checker(
-        conn, SEASON, make_board.SOURCE, cfg.freshness_max_age_days,
-        today=freshness_today,
-    )
-    print(
-        f"[freshness] {make_board.SOURCE} as_of={freshness_check['as_of_date']} "
-        f"age={freshness_check['age_days']}d "
-        f"(max {freshness_check['max_age_days']}d) stale={freshness_check['stale']}"
-    )
+    #
+    # Freshness enforcement is only wired against `rankings`-table sources
+    # (expert_adjusted/expert_raw) -- freshness.py has no analogous gate for
+    # ffc_adp_snapshots (market_adp) yet. market_adp's own as_of_date/row
+    # count is still reported honestly below via describe_ranking_source;
+    # it is just not a hard build-time cutoff the way the expert sources are.
+    if ranking_source_selection == "market_adp":
+        source_desc = make_board.describe_ranking_source(conn, SEASON, ranking_source_selection)
+        freshness_check = {
+            "as_of_date": source_desc["as_of_date"], "age_days": None,
+            "max_age_days": cfg.freshness_max_age_days, "stale": None,
+        }
+        print(f"[freshness] market_adp as_of={source_desc['as_of_date']} (no enforcement gate)")
+    else:
+        checker = fr.require_fresh if enforce_freshness else fr.check_freshness
+        freshness_check = checker(
+            conn, SEASON, make_board.SOURCE, cfg.freshness_max_age_days,
+            today=freshness_today,
+        )
+        print(
+            f"[freshness] {make_board.SOURCE} as_of={freshness_check['as_of_date']} "
+            f"age={freshness_check['age_days']}d "
+            f"(max {freshness_check['max_age_days']}d) stale={freshness_check['stale']}"
+        )
 
     levels, flex_split_measured = ReplacementLevels.from_league_config(cfg)
     ours, curves = make_board.build_board(
-        conn, SEASON, levels=levels, n_bootstrap=2000, scoring_cfg=cfg.scoring
+        conn, SEASON, levels=levels, n_bootstrap=2000, scoring_cfg=cfg.scoring,
+        ranking_source_selection=ranking_source_selection,
     )
     published, _ = make_board.build_board(
-        conn, SEASON, levels=PUBLISHED_LEVELS, n_bootstrap=0, scoring_cfg=cfg.scoring
+        conn, SEASON, levels=PUBLISHED_LEVELS, n_bootstrap=0, scoring_cfg=cfg.scoring,
+        ranking_source_selection=ranking_source_selection,
     )
     pub_rank = {r.player: r.overall_rank for r in published}
 
-    # Must match the source `ours`/`published` were built from (make_board.SOURCE)
-    # -- these rows feed team_of/pos_rank (positional_rank, positional_label,
-    # team) for the SAME players `ours` ranks. Using a different, stale source
-    # here would silently desync team/positional-rank display from the board's
-    # actual player set (thread 053/067 rewire finding).
-    meta = conn.execute(
-        "SELECT player_name, team, position, adp_rank, scoring_format FROM rankings "
-        "WHERE source=? AND season=?", (make_board.SOURCE, SEASON)
-    ).fetchall()
+    # Must match the source `ours`/`published` were built from -- these rows
+    # feed team_of/pos_rank (positional_rank, positional_label, team) for the
+    # SAME players `ours` ranks. Using a different, stale source here would
+    # silently desync team/positional-rank display from the board's actual
+    # player set (thread 053/067 rewire finding).
+    if ranking_source_selection == "market_adp":
+        # ffc_adp_snapshots has no scoring_format column -- unlike the
+        # rankings-table sources, never fabricate one here (see
+        # board_scoring_format below, left None for this selection).
+        latest = conn.execute(
+            "SELECT MAX(retrieved_at) FROM ffc_adp_snapshots WHERE adp_source=?",
+            (make_board.MARKET_ADP_SOURCE,),
+        ).fetchone()[0]
+        meta = conn.execute(
+            "SELECT player_name, team, position, NULL AS scoring_format "
+            "FROM ffc_adp_snapshots WHERE adp_source=? AND retrieved_at=? "
+            "AND position IN ('QB','RB','WR','TE')",
+            (make_board.MARKET_ADP_SOURCE, latest),
+        ).fetchall() if latest else []
+        # market_adp's positional order must come from the SAME resolved,
+        # ADP-ordered rows the board itself used (average_pick order), not a
+        # second independent read of ffc_adp_snapshots -- otherwise an
+        # unresolved player could silently reappear in pos_rank/team_of
+        # while being absent from `ours`.
+        adp_rows, _as_of, _n_resolved, _n_total = make_board._consensus_board_market_adp(
+            conn, SEASON
+        )
+        by_pos_source = adp_rows
+    else:
+        # as_of_date filter: `rankings` now holds MULTIPLE dated snapshots per source
+        # (2026-07-27 and 2026-07-30 as of this writing). Without it every player
+        # appears once per snapshot -- 1037 rows for 574 distinct ranks, caught by
+        # test_consensus_rank_is_unique_across_players. History stays in the table
+        # deliberately; CLAUDE.md §6.1 needs as-of-date-correct reads for backtesting.
+        # The *current* board always takes the newest.
+        meta = conn.execute(
+            "SELECT player_name, team, position, adp_rank, scoring_format FROM rankings "
+            "WHERE source=? AND season=? AND as_of_date = "
+            "  (SELECT MAX(as_of_date) FROM rankings WHERE source=? AND season=?)",
+            (make_board.SOURCE, SEASON, make_board.SOURCE, SEASON),
+        ).fetchall()
+        by_pos_source = meta
     # scoring_format is a column the old fantasypros_ecr mirror never carried
     # (NULL for every row); the new CSV source has a real value per row
     # (thread 053, ingest_fantasypros_csv.py). Read it from the data rather
@@ -347,9 +436,11 @@ def build_board_json(
     team_of = {r["player_name"]: r["team"] for r in meta}
     byes = _bye_weeks(SEASON)
 
-    # positional rank by consensus order
+    # positional rank by this SOURCE's own order (by_pos_source, not `meta` --
+    # for market_adp `meta` has no adp_rank column at all; by_pos_source is
+    # always the rows the board itself was built from).
     by_pos: Dict[str, List] = defaultdict(list)
-    for r in sorted(meta, key=lambda x: x["adp_rank"]):
+    for r in sorted(by_pos_source, key=lambda x: x["adp_rank"]):
         by_pos[r["position"]].append(r["player_name"])
     pos_rank = {n: i + 1 for pos, names in by_pos.items() for i, n in enumerate(names)}
 
@@ -529,6 +620,24 @@ def build_board_json(
         ),
         "league_id": cfg.league_id,
         "season": SEASON,
+        # FR-2026-07-30 (four selectable ranking sources): which of the four
+        # founder-facing sources drove THIS board, and this source's OWN
+        # as_of_date/row count -- never a shared or blended one. See
+        # make_board.RANKING_SOURCE_SELECTIONS / describe_ranking_source.
+        "ranking_source_selection": ranking_source_selection,
+        "ranking_source_label": make_board.RANKING_SOURCE_LABELS[ranking_source_selection],
+        "ranking_source_built": True,
+        "ranking_source_as_of_date": freshness_check["as_of_date"],
+        "ranking_source_row_count": len(players),
+        "ranking_source_note": (
+            "Board order is our VBD curve applied to this source's positional ranks -- our "
+            "value judgement, re-scored into this league's structure."
+            if ranking_source_selection == "expert_adjusted" else
+            "Board order is this source's own unmodified rank, never re-derived from our VBD "
+            "curve. projected_points/vbd are still shown (our value curve applied to this "
+            "order) for comparison, but never change which player is ranked where "
+            "(CLAUDE.md sec4 never-blend)."
+        ),
         "board_source": (
             "fantasypros_csv_2026draft re-scored into league positional value structure"
         ),
@@ -652,8 +761,117 @@ def _all_slot_pick_numbers(cfg: lc.LeagueConfig) -> Dict[str, List[int]]:
     return out
 
 
-def build_availability_json(cfg: lc.LeagueConfig = lc.CURRENT_LEAGUE) -> dict:
+def _load_ffc_skill_adp(
+    conn: sqlite3.Connection, season_data: "ds.SeasonData", adp_source: str = "ffc_half_ppr_10team"
+) -> Dict[str, object]:
+    """FFC ADP (thread 119/FR-131), restricted to QB/RB/WR/TE and joined to the
+    SAME player universe `ds.load_season` returned -- so its keys line up with
+    `by_player`'s by construction, exactly like the consensus-rank block above.
+
+    NOT the model's input today. `simulate_availability` has not switched to
+    ADP (that switch is gated on the M0-M5 pre-registration,
+    docs/ranking/availability-opponent-model-precommit.md); this is a
+    preparatory export for the reformulated shape thread 119's strategist
+    reply asked for (thread 104), read fresh from the DB every call so it
+    cannot go stale relative to whatever snapshot is actually live.
+
+    Two things are DELIBERATELY NOT done here, both out of a backend
+    engineer's scope and explicitly assigned elsewhere in the precommit doc:
+      - No axis recalibration (M4(a)): FFC's `average_pick` counts kickers and
+        defenses and its sampled drafts run deeper than this league's 16
+        rounds, so raw values are on a different axis than a Westwood pick
+        number. The precommit doc calls for an isotonic fit against board.json
+        to fix this ("returns to strategist before shipping" if material) --
+        not invented here. `axis_note` in the caller states this loudly
+        instead.
+      - No sigma (M0/M2/M3 gate): FFC's `times_drafted` and
+        `total_drafts_in_sample` columns do not reconcile (Bijan Robinson
+        times_drafted=90 against total_drafts_in_sample=1254 on every row),
+        so no per-player sampling-variance weight is trustworthy yet. Nothing
+        resembling a sigma value is exported.
+
+    Returns {"by_gsis": {gsis: {"adp_pick": float, "std_dev": float|None,
+    "times_drafted": int|None}}, "as_of_date": str|None,
+    "sample_window": str|None, "n_skill_rows": int, "adp_source": str}.
+    Empty/None throughout if the source has not been ingested -- never raises.
+    """
+    row = conn.execute(
+        "SELECT MAX(retrieved_at) FROM ffc_adp_snapshots WHERE adp_source=?", (adp_source,)
+    ).fetchone()
+    latest = row[0] if row else None
+    if not latest:
+        return {
+            "by_gsis": {}, "as_of_date": None, "sample_window": None,
+            "n_skill_rows": 0, "adp_source": adp_source,
+        }
+    rows = conn.execute(
+        "SELECT f.player_name, f.average_pick, f.std_dev, f.times_drafted, "
+        "f.as_of_date, f.sample_window, p.source_id AS gsis "
+        "FROM ffc_adp_snapshots f "
+        "LEFT JOIN player_ids p ON p.mfl_id = f.mfl_id AND p.source='gsis' "
+        "WHERE f.adp_source=? AND f.retrieved_at=? "
+        "AND f.position IN ('QB','RB','WR','TE')",
+        (adp_source, latest),
+    ).fetchall()
+    by_gsis: Dict[str, dict] = {}
+    as_of_dates = set()
+    windows = set()
+    for r in rows:
+        if r["gsis"]:
+            by_gsis[r["gsis"]] = {
+                "adp_pick": float(r["average_pick"]) if r["average_pick"] is not None else None,
+                "std_dev": float(r["std_dev"]) if r["std_dev"] is not None else None,
+                "times_drafted": r["times_drafted"],
+            }
+        if r["as_of_date"]:
+            as_of_dates.add(r["as_of_date"])
+        if r["sample_window"]:
+            windows.add(r["sample_window"])
+    return {
+        "by_gsis": by_gsis,
+        "as_of_date": max(as_of_dates) if as_of_dates else None,
+        "sample_window": next(iter(windows)) if len(windows) == 1 else None,
+        "n_skill_rows": len(rows),
+        "adp_source": adp_source,
+    }
+
+
+def build_availability_json(
+    conn: sqlite3.Connection, cfg: lc.LeagueConfig = lc.CURRENT_LEAGUE
+) -> dict:
     payload = _load_availability_csv(avail_csv_for(cfg.league_id))
+    # Thread 104 (FR-066 resolution): the per-player rank simulate_availability
+    # actually runs its opponent model AND the user's own strategy_bpa pick
+    # against -- read via the SAME call (ds.load_season) the simulation itself
+    # uses, so this cannot name a source or as_of_date the simulation didn't
+    # actually run on. If thread 119 repoints ds.CONSENSUS_RANK_SOURCE at ADP,
+    # this follows with zero edits here -- see draft_sim.py's constant
+    # docstring. Keyed by data.names[i], the SAME name list run_availability.py
+    # writes into the CSV's "player" column, so this lines up with by_player's
+    # existing keys by construction, not by convention.
+    season_data = ds.load_season(conn, SEASON)
+    consensus_ranks_by_name: Dict[str, float] = {
+        season_data.names[i]: float(season_data.consensus_rank[i])
+        for i in range(len(season_data.names))
+    }
+    # Thread 119 reformulated thread 104's ask mid-flight: the raw ECR array
+    # above is NOT what a client-side recompute should be built against once
+    # the opponent model's central tendency moves to ADP (recommended,
+    # pending the M0-M5 pre-registration). adp_by_gsis/adp_by_name below is
+    # the `{adp_pick, coverage_flag}` shape strategist asked for -- sigma is
+    # withheld, not placeholdered, because M0 (times_drafted/
+    # total_drafts_in_sample reconciliation) has not cleared. Every key in
+    # by_player gets an entry here, coverage_flag True or False, never a
+    # silently-missing key -- see docs/handoffs/104-fr066-availability-ranking-source-export.md.
+    ffc_adp = _load_ffc_skill_adp(conn, season_data)
+    adp_by_name: Dict[str, dict] = {}
+    for i, pid in enumerate(season_data.player_ids):
+        hit = ffc_adp["by_gsis"].get(pid)
+        adp_by_name[season_data.names[i]] = {
+            "adp_pick": hit["adp_pick"] if hit else None,
+            "coverage_flag": hit is not None,
+        }
+    n_covered = sum(1 for v in adp_by_name.values() if v["coverage_flag"])
     is_primary = cfg.is_primary
     engine = None if is_primary else ds.DraftEngine(cfg)
     user_picks = ds.user_pick_numbers() if is_primary else engine.user_pick_numbers()
@@ -721,11 +939,98 @@ def build_availability_json(cfg: lc.LeagueConfig = lc.CURRENT_LEAGUE) -> dict:
         # structure; this block adds only what belongs to the OPPONENT MODEL
         # itself.
         "client_simulation_parameters": {
-            # Mirrors av.default_ranking_sources(): single source today. Not
-            # computed from a live SeasonData here (this function only reads the
-            # CSV) -- if a second source (MFL ADP, ADR-035) is wired into
-            # run_availability.py, update this list in the same commit.
-            "ranking_sources": [{"name": "fantasypros_ecr", "weight": 1.0}],
+            # Mirrors av.default_ranking_sources(): single source today. Name
+            # and as_of_date are READ from season_data (ds.load_season's own
+            # provenance fields, see above), not hardcoded here -- if a second
+            # source (MFL ADP, ADR-035) is wired into run_availability.py, or
+            # thread 119 repoints ds.CONSENSUS_RANK_SOURCE, this list updates
+            # itself; only the weight (still a single source) needs a look.
+            "ranking_sources": [{
+                "name": season_data.consensus_rank_source,
+                "weight": 1.0,
+                "as_of_date": season_data.consensus_rank_as_of_date,
+            }],
+            # FR-066/thread 104: the ECR-sourced rank the opponent model AND
+            # the user's own strategy_bpa pick actually run on TODAY (ds.load_
+            # season's consensus_rank), keyed by player name to match
+            # by_player's existing keys. This is NOT board.json:consensus_rank
+            # -- those are two different rankings from two different sources
+            # (measured: 73 of the top 80 players differ in order, see thread
+            # 104). This is what simulate_availability actually runs on right
+            # now -- see adp_central_tendency below for what a FUTURE client
+            # recompute should be built against instead, once that switch
+            # ships.
+            "player_ranks": consensus_ranks_by_name,
+            "player_ranks_note": (
+                "Keyed by player name (matches by_player's keys). Value is the "
+                "same consensus_rank ds.load_season/simulate_availability run "
+                "the opponent model and the user's own best-available pick "
+                "against today -- read from ranking_sources[0] "
+                "(name+as_of_date above), NOT from board.json:consensus_rank, "
+                "which is a different ranking from a different source (73 of "
+                "the top 80 players differ in order). Superseded as the basis "
+                "for a NEW client-side recompute by adp_central_tendency below "
+                "(thread 119) -- kept here because it is still what the SHIPPED "
+                "model runs on until that switch clears its pre-registration."
+            ),
+            # Thread 119 (strategist reply to thread 104, 2026-07-30):
+            # reformulated ask, {adp_pick, sigma_pick, coverage_flag} per
+            # player, on the recommendation that the opponent model's central
+            # tendency move to FFC ADP with per-player dispersion, at which
+            # point the unconditional Prep-mode marginal becomes closed-form
+            # (P(available at p) = 1 - F_i(p)) and a browser needs no Monte
+            # Carlo port at all -- only (adp, sigma, coverage) per player. NOT
+            # YET the model's input; see status_note.
+            "adp_central_tendency": {
+                "status": "preparatory_switch_not_yet_shipped",
+                "status_note": (
+                    "simulate_availability has NOT switched to ADP. It still runs "
+                    "entirely on ranking_sources[0] (fantasypros_ecr) above; "
+                    "player_ranks is still the accurate description of today's "
+                    "shipped model. This block is exported ahead of the switch "
+                    "(recommended by strategist, thread 119, pending the M0-M5 "
+                    "pre-registration at "
+                    "docs/ranking/availability-opponent-model-precommit.md) so a "
+                    "client build does not have to be redone once it ships. Do "
+                    "not use adp_pick to recompute today's availability.json "
+                    "numbers -- they do not reflect it."
+                ),
+                "adp_source": ffc_adp["adp_source"],
+                "as_of_date": ffc_adp["as_of_date"],
+                "sample_window": ffc_adp["sample_window"],
+                "n_players_covered": n_covered,
+                "n_players_total": len(adp_by_name),
+                "axis_note": (
+                    "adp_pick is FFC's raw average_pick, UNCORRECTED. FFC's pick "
+                    "axis counts kickers and defenses (Westwood has no kicker "
+                    "slot) and its sampled drafts run deeper than this league's "
+                    "16 rounds (FFC low_pick reaches ~18.0), so an FFC pick "
+                    "number is not directly comparable to a Westwood pick number "
+                    "-- most divergent in the back half of the draft. The M4 "
+                    "axis correction (isotonic calibration against board.json) "
+                    "has not been run; do not treat adp_pick as a Westwood pick "
+                    "number without it."
+                ),
+                "sigma_pending_note": (
+                    "No per-player dispersion (sigma_pick) is exported. It is "
+                    "gated on M0: FFC's times_drafted and total_drafts_in_sample "
+                    "columns do not reconcile as-is (e.g. Bijan Robinson "
+                    "times_drafted=90 against total_drafts_in_sample=1254 on "
+                    "every row of the same snapshot), so no per-player sampling-"
+                    "variance weight is trustworthy yet. A placeholder sigma is "
+                    "deliberately withheld rather than shipped -- see M0 in the "
+                    "precommit doc."
+                ),
+                "coverage_note": (
+                    "by_player carries entries for every player in "
+                    "adp_central_tendency.by_player, coverage_flag true or "
+                    "false -- never a missing key. adp_pick is present (non-"
+                    "null) only when coverage_flag is true; a player outside "
+                    "the FFC skill-position snapshot gets adp_pick=null, never "
+                    "a fabricated value."
+                ),
+                "by_player": adp_by_name,
+            },
             "mechanical_need_targets": need_targets,
             "mechanical_need_targets_note": (
                 "Per position: STARTERS[pos] + (FLEX_SLOTS if pos is flex-eligible else 0). "
@@ -759,7 +1064,11 @@ def build_availability_json(cfg: lc.LeagueConfig = lc.CURRENT_LEAGUE) -> dict:
                 "effective-rank available player, with mechanical_need_targets applied as an "
                 "additive rank penalty (need_penalty_per_surplus per player beyond target, "
                 "infinite at max_at_position); (6) the user is assumed to draft best-available "
-                "off the TRUE consensus board (unperturbed) -- see board.json."
+                "off THIS SAME unperturbed consensus rank (player_ranks above / "
+                "ranking_sources[0]) -- corrected 2026-07-30 (thread 104): this previously said "
+                "board.json, which is wrong and was never wired that way; ds.strategy_bpa reads "
+                "data.consensus_rank, the identical array the opponent model's ranking_sources "
+                "draws from, not board.json's separately-sourced rank."
             ),
         },
     })
@@ -1067,6 +1376,34 @@ def build_rosters_json(
     }
 
 
+def build_ranking_sources_json(conn: sqlite3.Connection) -> dict:
+    """FR-2026-07-30: a catalog of all four founder-facing ranking sources --
+    label, whether each is actually built, and its own as_of_date/row count.
+    Exists so a client can render the full picker (including the disabled
+    'proprietary' option) from ONE file, without probing each board variant
+    to discover what exists. Never blends across sources -- see
+    make_board.describe_ranking_source's per-source note field."""
+    return {
+        "contract_version": CONTRACT_VERSION,
+        "generated_utc": datetime.now(timezone.utc).isoformat(),
+        "season": SEASON,
+        "sources": [
+            make_board.describe_ranking_source(conn, SEASON, sel)
+            for sel in make_board.RANKING_SOURCE_SELECTIONS
+        ],
+        # Filename each BUILT selection's per-source board.json variant is
+        # exported under (write_all). 'expert_adjusted' is board.json itself
+        # -- the default/primary artifact every existing consumer already
+        # reads, unchanged in name so nothing breaks without a code change.
+        "board_files": {
+            "expert_adjusted": "board.json",
+            "expert_raw": "board.expert_raw.json",
+            "market_adp": "board.market_adp.json",
+            "proprietary": None,
+        },
+    }
+
+
 def write_all(
     out_dir: Path, conn: sqlite3.Connection, strategies: Optional[dict] = None,
     cfg: lc.LeagueConfig = lc.CURRENT_LEAGUE,
@@ -1075,9 +1412,17 @@ def write_all(
     written = []
     artifacts = {
         "board.json": build_board_json(conn, cfg),
-        "availability.json": build_availability_json(cfg),
+        "availability.json": build_availability_json(conn, cfg),
         "league.json": build_league_json(cfg),
         "rosters.json": build_rosters_json(conn, cfg),
+        # FR-2026-07-30: the other two BUILT sources, as separate,
+        # never-blended files -- same shape as board.json, different
+        # ranking_source_selection. 'proprietary' is deliberately absent from
+        # this dict (no file to write) -- ranking_sources.json is where a
+        # client learns it exists and is not built.
+        "board.expert_raw.json": build_board_json(conn, cfg, ranking_source_selection="expert_raw"),
+        "board.market_adp.json": build_board_json(conn, cfg, ranking_source_selection="market_adp"),
+        "ranking_sources.json": build_ranking_sources_json(conn),
     }
     if strategies is not None:
         artifacts["strategies.json"] = strategies

@@ -1,0 +1,585 @@
+{
+  "results": [
+    {
+      "key": "board",
+      "label": "Board (Prep)",
+      "width": 1600,
+      "theme": "dark",
+      "file": null,
+      "ok": false,
+      "reason": "locator.click: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: 'Board', exact: true }).first()\u001b[22m\n"
+    },
+    {
+      "key": "board-player-detail",
+      "label": "Board with player detail panel open (Prep)",
+      "width": 1600,
+      "theme": "dark",
+      "file": "board-player-detail_1600px_dark.png",
+      "ok": true
+    },
+    {
+      "key": "settings-panel",
+      "label": "Settings panel open (Prep, over Board)",
+      "width": 1600,
+      "theme": "dark",
+      "file": "settings-panel_1600px_dark.png",
+      "ok": true
+    },
+    {
+      "key": "assistant-panel",
+      "label": "Assistant dock open (Prep, over Board)",
+      "width": 1600,
+      "theme": "dark",
+      "file": "assistant-panel_1600px_dark.png",
+      "ok": true
+    },
+    {
+      "key": "availability",
+      "label": "Availability (Prep)",
+      "width": 1600,
+      "theme": "dark",
+      "file": "availability_1600px_dark.png",
+      "ok": true
+    },
+    {
+      "key": "opponents-prep",
+      "label": "Opponents (Prep)",
+      "width": 1600,
+      "theme": "dark",
+      "file": "opponents-prep_1600px_dark.png",
+      "ok": true
+    },
+    {
+      "key": "predictions-prep",
+      "label": "Predictions (Prep)",
+      "width": 1600,
+      "theme": "dark",
+      "file": "predictions-prep_1600px_dark.png",
+      "ok": true
+    },
+    {
+      "key": "strategy-guide",
+      "label": "Strategy Guide (Prep)",
+      "width": 1600,
+      "theme": "dark",
+      "file": "strategy-guide_1600px_dark.png",
+      "ok": true
+    },
+    {
+      "key": "methodology",
+      "label": "Methodology (Prep)",
+      "width": 1600,
+      "theme": "dark",
+      "file": "methodology_1600px_dark.png",
+      "ok": true
+    },
+    {
+      "key": "glossary",
+      "label": "Glossary (Prep)",
+      "width": 1600,
+      "theme": "dark",
+      "file": "glossary_1600px_dark.png",
+      "ok": true
+    },
+    {
+      "key": "draft-recommend",
+      "label": "Draft -- Board hub, Recommend pane (default)",
+      "width": 1600,
+      "theme": "dark",
+      "file": "draft-recommend_1600px_dark.png",
+      "ok": true
+    },
+    {
+      "key": "draft-scarcity",
+      "label": "Draft -- Board hub, Scarcity pane",
+      "width": 1600,
+      "theme": "dark",
+      "file": "draft-scarcity_1600px_dark.png",
+      "ok": true
+    },
+    {
+      "key": "draft-queue",
+      "label": "Draft -- Board hub, Queue pane",
+      "width": 1600,
+      "theme": "dark",
+      "file": "draft-queue_1600px_dark.png",
+      "ok": true
+    },
+    {
+      "key": "draft-insights",
+      "label": "Draft -- Board hub, Insights pane",
+      "width": 1600,
+      "theme": "dark",
+      "file": "draft-insights_1600px_dark.png",
+      "ok": true
+    },
+    {
+      "key": "draft-grid",
+      "label": "Draft -- Board hub, Grid pane",
+      "width": 1600,
+      "theme": "dark",
+      "file": "draft-grid_1600px_dark.png",
+      "ok": true
+    },
+    {
+      "key": "draft-opponents",
+      "label": "Draft -- Opponents hub tab",
+      "width": 1600,
+      "theme": "dark",
+      "file": "draft-opponents_1600px_dark.png",
+      "ok": true
+    },
+    {
+      "key": "draft-predictions",
+      "label": "Draft -- Predictions hub tab",
+      "width": 1600,
+      "theme": "dark",
+      "file": "draft-predictions_1600px_dark.png",
+      "ok": true
+    },
+    {
+      "key": "season",
+      "label": "Season mode (not built)",
+      "width": 1600,
+      "theme": "dark",
+      "file": "season_1600px_dark.png",
+      "ok": true
+    },
+    {
+      "key": "board",
+      "label": "Board (Prep)",
+      "width": 1600,
+      "theme": "light",
+      "file": null,
+      "ok": false,
+      "reason": "locator.click: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: 'Board', exact: true }).first()\u001b[22m\n"
+    },
+    {
+      "key": "board-player-detail",
+      "label": "Board with player detail panel open (Prep)",
+      "width": 1600,
+      "theme": "light",
+      "file": "board-player-detail_1600px_light.png",
+      "ok": true
+    },
+    {
+      "key": "settings-panel",
+      "label": "Settings panel open (Prep, over Board)",
+      "width": 1600,
+      "theme": "light",
+      "file": "settings-panel_1600px_light.png",
+      "ok": true
+    },
+    {
+      "key": "assistant-panel",
+      "label": "Assistant dock open (Prep, over Board)",
+      "width": 1600,
+      "theme": "light",
+      "file": "assistant-panel_1600px_light.png",
+      "ok": true
+    },
+    {
+      "key": "availability",
+      "label": "Availability (Prep)",
+      "width": 1600,
+      "theme": "light",
+      "file": "availability_1600px_light.png",
+      "ok": true
+    },
+    {
+      "key": "opponents-prep",
+      "label": "Opponents (Prep)",
+      "width": 1600,
+      "theme": "light",
+      "file": "opponents-prep_1600px_light.png",
+      "ok": true
+    },
+    {
+      "key": "predictions-prep",
+      "label": "Predictions (Prep)",
+      "width": 1600,
+      "theme": "light",
+      "file": "predictions-prep_1600px_light.png",
+      "ok": true
+    },
+    {
+      "key": "strategy-guide",
+      "label": "Strategy Guide (Prep)",
+      "width": 1600,
+      "theme": "light",
+      "file": "strategy-guide_1600px_light.png",
+      "ok": true
+    },
+    {
+      "key": "methodology",
+      "label": "Methodology (Prep)",
+      "width": 1600,
+      "theme": "light",
+      "file": "methodology_1600px_light.png",
+      "ok": true
+    },
+    {
+      "key": "glossary",
+      "label": "Glossary (Prep)",
+      "width": 1600,
+      "theme": "light",
+      "file": "glossary_1600px_light.png",
+      "ok": true
+    },
+    {
+      "key": "draft-recommend",
+      "label": "Draft -- Board hub, Recommend pane (default)",
+      "width": 1600,
+      "theme": "light",
+      "file": "draft-recommend_1600px_light.png",
+      "ok": true
+    },
+    {
+      "key": "draft-scarcity",
+      "label": "Draft -- Board hub, Scarcity pane",
+      "width": 1600,
+      "theme": "light",
+      "file": "draft-scarcity_1600px_light.png",
+      "ok": true
+    },
+    {
+      "key": "draft-queue",
+      "label": "Draft -- Board hub, Queue pane",
+      "width": 1600,
+      "theme": "light",
+      "file": "draft-queue_1600px_light.png",
+      "ok": true
+    },
+    {
+      "key": "draft-insights",
+      "label": "Draft -- Board hub, Insights pane",
+      "width": 1600,
+      "theme": "light",
+      "file": "draft-insights_1600px_light.png",
+      "ok": true
+    },
+    {
+      "key": "draft-grid",
+      "label": "Draft -- Board hub, Grid pane",
+      "width": 1600,
+      "theme": "light",
+      "file": "draft-grid_1600px_light.png",
+      "ok": true
+    },
+    {
+      "key": "draft-opponents",
+      "label": "Draft -- Opponents hub tab",
+      "width": 1600,
+      "theme": "light",
+      "file": "draft-opponents_1600px_light.png",
+      "ok": true
+    },
+    {
+      "key": "draft-predictions",
+      "label": "Draft -- Predictions hub tab",
+      "width": 1600,
+      "theme": "light",
+      "file": "draft-predictions_1600px_light.png",
+      "ok": true
+    },
+    {
+      "key": "season",
+      "label": "Season mode (not built)",
+      "width": 1600,
+      "theme": "light",
+      "file": "season_1600px_light.png",
+      "ok": true
+    },
+    {
+      "key": "board",
+      "label": "Board (Prep)",
+      "width": 1180,
+      "theme": "dark",
+      "file": null,
+      "ok": false,
+      "reason": "locator.click: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: 'Board', exact: true }).first()\u001b[22m\n"
+    },
+    {
+      "key": "board-player-detail",
+      "label": "Board with player detail panel open (Prep)",
+      "width": 1180,
+      "theme": "dark",
+      "file": "board-player-detail_1180px_dark.png",
+      "ok": true
+    },
+    {
+      "key": "settings-panel",
+      "label": "Settings panel open (Prep, over Board)",
+      "width": 1180,
+      "theme": "dark",
+      "file": "settings-panel_1180px_dark.png",
+      "ok": true
+    },
+    {
+      "key": "assistant-panel",
+      "label": "Assistant dock open (Prep, over Board)",
+      "width": 1180,
+      "theme": "dark",
+      "file": "assistant-panel_1180px_dark.png",
+      "ok": true
+    },
+    {
+      "key": "availability",
+      "label": "Availability (Prep)",
+      "width": 1180,
+      "theme": "dark",
+      "file": "availability_1180px_dark.png",
+      "ok": true
+    },
+    {
+      "key": "opponents-prep",
+      "label": "Opponents (Prep)",
+      "width": 1180,
+      "theme": "dark",
+      "file": "opponents-prep_1180px_dark.png",
+      "ok": true
+    },
+    {
+      "key": "predictions-prep",
+      "label": "Predictions (Prep)",
+      "width": 1180,
+      "theme": "dark",
+      "file": "predictions-prep_1180px_dark.png",
+      "ok": true
+    },
+    {
+      "key": "strategy-guide",
+      "label": "Strategy Guide (Prep)",
+      "width": 1180,
+      "theme": "dark",
+      "file": "strategy-guide_1180px_dark.png",
+      "ok": true
+    },
+    {
+      "key": "methodology",
+      "label": "Methodology (Prep)",
+      "width": 1180,
+      "theme": "dark",
+      "file": "methodology_1180px_dark.png",
+      "ok": true
+    },
+    {
+      "key": "glossary",
+      "label": "Glossary (Prep)",
+      "width": 1180,
+      "theme": "dark",
+      "file": "glossary_1180px_dark.png",
+      "ok": true
+    },
+    {
+      "key": "draft-recommend",
+      "label": "Draft -- Board hub, Recommend pane (default)",
+      "width": 1180,
+      "theme": "dark",
+      "file": "draft-recommend_1180px_dark.png",
+      "ok": true
+    },
+    {
+      "key": "draft-scarcity",
+      "label": "Draft -- Board hub, Scarcity pane",
+      "width": 1180,
+      "theme": "dark",
+      "file": "draft-scarcity_1180px_dark.png",
+      "ok": true
+    },
+    {
+      "key": "draft-queue",
+      "label": "Draft -- Board hub, Queue pane",
+      "width": 1180,
+      "theme": "dark",
+      "file": "draft-queue_1180px_dark.png",
+      "ok": true
+    },
+    {
+      "key": "draft-insights",
+      "label": "Draft -- Board hub, Insights pane",
+      "width": 1180,
+      "theme": "dark",
+      "file": "draft-insights_1180px_dark.png",
+      "ok": true
+    },
+    {
+      "key": "draft-grid",
+      "label": "Draft -- Board hub, Grid pane",
+      "width": 1180,
+      "theme": "dark",
+      "file": "draft-grid_1180px_dark.png",
+      "ok": true
+    },
+    {
+      "key": "draft-opponents",
+      "label": "Draft -- Opponents hub tab",
+      "width": 1180,
+      "theme": "dark",
+      "file": "draft-opponents_1180px_dark.png",
+      "ok": true
+    },
+    {
+      "key": "draft-predictions",
+      "label": "Draft -- Predictions hub tab",
+      "width": 1180,
+      "theme": "dark",
+      "file": "draft-predictions_1180px_dark.png",
+      "ok": true
+    },
+    {
+      "key": "season",
+      "label": "Season mode (not built)",
+      "width": 1180,
+      "theme": "dark",
+      "file": "season_1180px_dark.png",
+      "ok": true
+    },
+    {
+      "key": "board",
+      "label": "Board (Prep)",
+      "width": 1180,
+      "theme": "light",
+      "file": null,
+      "ok": false,
+      "reason": "locator.click: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: 'Board', exact: true }).first()\u001b[22m\n"
+    },
+    {
+      "key": "board-player-detail",
+      "label": "Board with player detail panel open (Prep)",
+      "width": 1180,
+      "theme": "light",
+      "file": "board-player-detail_1180px_light.png",
+      "ok": true
+    },
+    {
+      "key": "settings-panel",
+      "label": "Settings panel open (Prep, over Board)",
+      "width": 1180,
+      "theme": "light",
+      "file": "settings-panel_1180px_light.png",
+      "ok": true
+    },
+    {
+      "key": "assistant-panel",
+      "label": "Assistant dock open (Prep, over Board)",
+      "width": 1180,
+      "theme": "light",
+      "file": "assistant-panel_1180px_light.png",
+      "ok": true
+    },
+    {
+      "key": "availability",
+      "label": "Availability (Prep)",
+      "width": 1180,
+      "theme": "light",
+      "file": "availability_1180px_light.png",
+      "ok": true
+    },
+    {
+      "key": "opponents-prep",
+      "label": "Opponents (Prep)",
+      "width": 1180,
+      "theme": "light",
+      "file": "opponents-prep_1180px_light.png",
+      "ok": true
+    },
+    {
+      "key": "predictions-prep",
+      "label": "Predictions (Prep)",
+      "width": 1180,
+      "theme": "light",
+      "file": "predictions-prep_1180px_light.png",
+      "ok": true
+    },
+    {
+      "key": "strategy-guide",
+      "label": "Strategy Guide (Prep)",
+      "width": 1180,
+      "theme": "light",
+      "file": "strategy-guide_1180px_light.png",
+      "ok": true
+    },
+    {
+      "key": "methodology",
+      "label": "Methodology (Prep)",
+      "width": 1180,
+      "theme": "light",
+      "file": "methodology_1180px_light.png",
+      "ok": true
+    },
+    {
+      "key": "glossary",
+      "label": "Glossary (Prep)",
+      "width": 1180,
+      "theme": "light",
+      "file": "glossary_1180px_light.png",
+      "ok": true
+    },
+    {
+      "key": "draft-recommend",
+      "label": "Draft -- Board hub, Recommend pane (default)",
+      "width": 1180,
+      "theme": "light",
+      "file": "draft-recommend_1180px_light.png",
+      "ok": true
+    },
+    {
+      "key": "draft-scarcity",
+      "label": "Draft -- Board hub, Scarcity pane",
+      "width": 1180,
+      "theme": "light",
+      "file": "draft-scarcity_1180px_light.png",
+      "ok": true
+    },
+    {
+      "key": "draft-queue",
+      "label": "Draft -- Board hub, Queue pane",
+      "width": 1180,
+      "theme": "light",
+      "file": "draft-queue_1180px_light.png",
+      "ok": true
+    },
+    {
+      "key": "draft-insights",
+      "label": "Draft -- Board hub, Insights pane",
+      "width": 1180,
+      "theme": "light",
+      "file": "draft-insights_1180px_light.png",
+      "ok": true
+    },
+    {
+      "key": "draft-grid",
+      "label": "Draft -- Board hub, Grid pane",
+      "width": 1180,
+      "theme": "light",
+      "file": "draft-grid_1180px_light.png",
+      "ok": true
+    },
+    {
+      "key": "draft-opponents",
+      "label": "Draft -- Opponents hub tab",
+      "width": 1180,
+      "theme": "light",
+      "file": "draft-opponents_1180px_light.png",
+      "ok": true
+    },
+    {
+      "key": "draft-predictions",
+      "label": "Draft -- Predictions hub tab",
+      "width": 1180,
+      "theme": "light",
+      "file": "draft-predictions_1180px_light.png",
+      "ok": true
+    },
+    {
+      "key": "season",
+      "label": "Season mode (not built)",
+      "width": 1180,
+      "theme": "light",
+      "file": "season_1180px_light.png",
+      "ok": true
+    }
+  ],
+  "generatedAt": "2026-07-30T18:31:58.221Z"
+}

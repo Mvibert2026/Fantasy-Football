@@ -48,22 +48,197 @@ nothing to compute a level from. `league.json` states this explicitly
 (`positions_without_replacement_levels: ["DEF"]`) rather than leaving DEF's absence to look like
 an oversight — it is a decision, and it is not going to change without new data being ingested.
 
-## Registered nulls — things tested and found absent, not just untested
+## Factor test results — cite with the number, interval, effective n, and scope attached
 
-- **Spike-week ability is not a persistent player trait.** Whether a player clears the 100-yard
-  bonus threshold more often than his volume predicts does not carry from one season to the next.
-  Project the yards; the bonuses follow automatically. There is no "ceiling player" to draft for
-  at equal projected volume.
-- **Hero RB has no measurable edge over drafting best-available.** Simulated result is
-  essentially a coin flip in either direction.
-- **Reaching early for an elite TE or QB is consistently costly** — negative in every
-  season/opponent-behavior combination tested, roughly 3–5% of total roster points. This is the
-  one strategy result that is *not* a coin flip, even though the sample is too small to call it
-  statistically significant.
-- **The league-format board (structural re-scoring + corrected replacement levels) is
-  directionally better than raw consensus** in most tested seasons, but this is **not
-  statistically established** — there are only four seasons to test it against, and the smallest
-  possible result the statistics can report is "suggestive," never "proven."
+**Rule for this section, not optional.** Never state one of these as a verdict word alone ("NULL",
+"harmful", "worst case"). State the number, its interval, how many independent data points it
+actually rests on (not how many cells or arms were run over that data), and the exact question the
+test answered — a test can be scoped narrower than its plain-English name suggests, and reading
+past that scope states a stronger claim than the evidence supports. Full detail and all sources:
+`docs/factor-ledger.md`.
+
+**One terminology caution, live as a proposed ruling since 2026-07-31
+(`docs/adr-drafts/ADR-DRAFT-edge-vs-absolute-quality.md`), not yet adopted into `CLAUDE.md`.** In
+the factor-batch result documents, an arm's "ranking correlation" or "board Spearman" figure
+(labelled `E2` in batches 1–7) compares that arm's ranking against **its own batch's primary
+model** — not against consensus — even though five consecutive batches' pre-commit text calls it
+"the bar that matters, `CLAUDE.md` §6.5." Only a figure explicitly labelled "vs. market ADP" or
+"vs. consensus" (labelled `E4`, appearing in one batch so far) is a real §6.5 comparison. Read a
+negative or positive `E2`-type number as "this arm's ranking is worse/better than the model's own
+existing ranking," never as "this arm beat or lost to consensus."
+
+- **Pass-catcher route and receiving first-down features (batch 5) are null; the one large effect
+  is a presence flag whose mechanism is contested.** All 17 registered tests (target-per-route-run,
+  routes/game, 1st-downs-per-route-run, receiving-first-down rate) at WR/TE/RB — zero BH-significant
+  at the campaign denominator (m=80) or the batch-local one (m=17; smallest p=0.0084 against a
+  0.0059 threshold). **Effective n = 7 seasons** for route arms (2018–2024, the `participation`
+  table's usable floor) and **11 seasons** for first-down arms (2014–2024) — the two are not
+  comparable without stating which. The only large, statistically live effect is the *control* arm:
+  a bare 0/1 "we have evidence this player ran routes" flag beat every route treatment in all 8
+  treatment cells (e.g. WR control −0.0544 [−0.0895, −0.0210], 4.1–19.7× its best treatment) and
+  voided their interpretation under the pre-registered 50%-of-effect rule. **Batch 5 read this as a
+  coverage artifact; batch 7, run the same day, found the identical flag geometry on a different
+  position and argues instead that a coverage flag whose source starts *inside* the training window
+  is a disguised pre/post-2017 time dummy, not a coverage confound.** Both readings condemn the
+  treatments equally, so no conclusion here is at risk, but which mechanism is correct is
+  **unresolved and flagged to strategist** — state both explanations together, never just one.
+  Nothing here licenses any board-facing sentence about routes. Ever run: **yes** (`factor-batch-5-results.md`).
+
+- **xFP (registry #18) is rejected at all four positions, with the pre-registered overlap
+  diagnostic explaining why — and QB gets its first inputs that improve a projection component
+  without improving the ranking.** Swapping realised prior points/game for a prebuilt xFP model's
+  expected points/game costs the model's own error everywhere: RB +1.55% [pts MAE +0.564,+0.992],
+  WR +1.64% [+0.240,+0.545], QB +0.69% [+0.388,+1.141], TE +0.66% [+0.038,+0.223] — three of four
+  BH-significant, and worse on the draft board at all four, with the arm-vs-primary board ordering
+  negative at RB/TE (intervals excluding zero). **Effective n = 11 seasons** (2014–2024). Reason:
+  xFP correlates **0.949–0.964** with points/game already in the model (the pre-committed >0.95
+  restatement rule fired at WR/RB/TE) and 86–99% with lagged volume — it is not an independent
+  signal. **Separately: ANY/A and passer rating are the first QB-specific arms that ever improved a
+  projection component and cleared the board-direction check** (ANY/A −1.26% attempts MAE / −2.23%
+  on the board; passer rating −0.85% / −2.52%; both breakM 308, robust to any plausible campaign
+  size). **Neither is a ranking improvement.** Both are PROJECTION-ONLY: the arm-vs-primary ordering
+  delta is negative for both, and passer rating's interval excludes zero on the harmful side
+  (−0.0180 [−0.0350, −0.0005]). Projecting QB attempts better did not rank quarterbacks better.
+  Ever run: **yes** (`factor-batch-6-results.md`).
+
+- **Nothing tested closes the RB deficit against consensus.** All 16 registered RB tests (red-zone
+  and inside-5 snap share, inside-5 TD conversion, YAC per reception, receiving points share,
+  snap-share persistence, late-season role trajectory) — zero BH-significant at the campaign (m=80)
+  or batch (m=16) denominator. The RB board's own deficit against market ADP is **−0.0523**
+  (**effective n = 7 seasons**); the batch's best arm moves it to −0.0515, the worst to −0.0572 —
+  the entire 16-arm spread (±0.005) sits inside season-to-season noise of that quantity.
+  Individual-arm effective n ranges 7–11 seasons depending on data source, stated per row in the
+  source doc. Prior-snap-share is a **restatement, not a null**: R²=0.9014 against columns the model
+  already holds (`cshare_w`, `gshare_w`, `carries_pg_w`), measured before its p-value was read — the
+  information is already in the model by another route. Two externally-cited claims point the wrong
+  direction when tested directly: McFarland's ≥40%-receiving-share-among-league-winners threshold,
+  tested as a predictor, is +0.0224 to +0.0295 targets MAE (both intervals exclude zero on the
+  harmful side, though neither clears BH — likely because his statistic conditions on the outcome,
+  not on pre-season information). Barfield's YAC-per-reception claim is flat null (+0.0028
+  [−0.1082, +0.1027]). Same contested coverage-flag-as-time-dummy question as the batch-5 entry
+  above. Ever run: **yes** (`factor-batch-7-results.md`).
+
+- **Consensus ADP shows zero POOR seasons under the pre-registered rule, at any position, under
+  either crowd — but the two crowds were measured on different, non-comparable windows.** Market
+  ADP: 0 POOR of 28 season-position cells (**effective n = 7 seasons**, 2018–2024 — the data
+  format's own floor, not the design's nominal 2013 start). Expert consensus (FantasyPros ECR): 0
+  POOR of 16 cells (**effective n = 4 seasons**, 2021–2024). **These two numbers are not comparable
+  head-to-head.** The "consensus is stable" sub-clause (spread 95% CI narrower than 0.10) only
+  clears at RB/WR under market ADP (fails at QB/TE) and at RB/WR/TE under expert ECR (fails at QB) —
+  the executing session attributes this to small `n_covered` in thin years, not an established
+  quality swing, but it is not a uniform pass across positions. The companion prediction test (does
+  a pre-Week-1 signal predict a bad season) is **structurally unanswerable on this run**: zero POOR
+  seasons means no positive class exists, so every AUC cell is undefined by construction — report
+  this as "could not run," never as "no predictive signal found." **This result directly contradicts
+  the pre-registering strategist's own written prediction** (outcome (iii): at least one POOR season
+  at every position, including RB, and unpredictable) — recorded before the number existed
+  specifically so it could be checked, and it was wrong. A pre-registration that was wrong is
+  stronger evidence of an honest process than one that happened to be right. Ever run: **yes**
+  (`docs/preregistration/PR-009-consensus-quality-by-season.md`,
+  `docs/status/2026-07-31-backend-pr009-consensus-quality-both-baselines.md`).
+
+- **Ranking v1 is in progress; no result is accepted yet.** The first ranking version ever
+  assembled end-to-end and tested against consensus exists
+  (`docs/ranking/ranking-v1-results.md`, config `experiments/bottomup/ranking_versions/v1.json`),
+  but four methodology questions sit open on a thread to `strategist`
+  (`docs/handoffs/2026-07-31-ranking-version-v1-tested-end-to-end-review-the.md`, **STATUS: OPEN**)
+  — including whether the pre-registered minimum-detectable-effect rule understates a QB effect by
+  roughly 2×, and whether a post-hoc "depth-matched" re-analysis is admissible (it would flip WR
+  from a significant loss to parity). **Do not cite any v1 number as settled.** The preliminary,
+  not-yet-independently-checked report states v1 beats both trivial §6.5 baselines at RB/WR and
+  loses to both consensus crowds at QB/RB/WR with parity at WR — but that is the ranker's own read
+  of his own work, pending exactly the independent check the project's structure requires before it
+  counts as a finding.
+
+- **Spike-week bonus clearance is not a persistent player trait.** Receiving-100 WR YoY residual
+  r = +0.041, 95% CI [−0.018, +0.099]; rushing-100 RB r = +0.063, CI [−0.001, +0.124]. **Effective
+  n = 26 seasons** of year-over-year pairs (1,541 WR player-season pairs / 404 players — the pairs
+  count is not the effective n; seasons are). Zero of 24 testable correlations survived
+  Benjamini-Hochberg correction. **Scope:** this tests whether a player clears 100/150/200-yard
+  thresholds *more often than his projected volume alone implies* — it does not say the bonuses
+  are worth nothing; project the yards and the bonuses follow mechanically. Ever run: **yes**
+  (PR-002, `factor-ledger.md` T2-38).
+
+- **Hero RB has no measurable edge over best-available drafting.** Margin −13.3 points vs. BPA,
+  95% CI [−98.1, +65.0] — the interval spans zero by a wide margin. **Effective n = 4 seasons**
+  (2 of 4 positive; a 4-season sign test cannot reach significance in either direction, p floors
+  at 0.125–1.000 depending on split). Ever run: **yes** (PR-003 draft simulation).
+
+- **Reaching early for an elite TE or QB is directionally costly, and the QB arm has the interval
+  attached, not a "worst case" label.** `qb_early` point estimate **−115.4** points vs. BPA, 95%
+  CI **[−176.3, −54.4]** at σ=10 — the interval, not the point estimate, is the honest range;
+  never call −115.4 a worst case, the true worst case within this measurement is −176.3.
+  `elite_te_early` **−96.1**, reported as a ±6-point seed-noise band (ADR-028), not a season
+  bootstrap CI — a narrower kind of uncertainty than the QB number, do not treat them as
+  equivalent precision. Both negative in every cell tested. **Effective n = 4 seasons** — the
+  design also varies one guessed opponent-behavior parameter across 3 settings, giving 12 cells,
+  but the cells are not independent draws; do not describe this as "12 scenarios." Not
+  statistically significant at this sample size (sign-test floor 0.125). Ever run: **yes** (PR-003).
+
+- **The league-format board (re-scoring + corrected replacement levels) shows a directionally
+  positive margin over raw expert consensus, not a proven edge.** Development seasons: mean
+  +84.9 VBD, 2 of 3 positive, sign-test p=1.000 (power floor 0.250). With the sealed 2025 holdout
+  included: +84.6, 3 of 4 positive, p=0.625 (power floor 0.125). **Effective n = 4 seasons** — a
+  4-season sign test cannot reach p<0.05 at any effect size; that is a design limit, not a weak
+  result being undersold. Ever run: **yes** (ADR-025).
+
+- **Scope trap 1 — a target-share *stability* test, not a test of target share.** A
+  stability-weighted reweighting of target share was measured against the plain share the model
+  already uses: −0.035 targets MAE full-universe (BH-significant at WR only), but only **0.02% of
+  the model's own error on the ADP board** (7 seasons) and no effect on any ranking. **This is not
+  a finding about target share itself** — target share as an input is separate, unimplemented in
+  the shipped board, and its own year-over-year persistence (a different, descriptive measurement)
+  is +0.548 to +0.652 depending on position, 15 seasons of consecutive pairs. Do not answer "is
+  target share useful" with this NULL — answer only "does reweighting it by stability help,"
+  which it does not. Ever run: **yes**, scoped as above.
+
+- **Scope trap 2 — a proxy-contamination finding, not a verdict on vacated opportunity.** Testing
+  whether departed teammates' opportunity predicts a player's own targets/carries ran on a
+  **Week-1 depth-chart proxy**, because no pre-season roster table exists in the database. Result:
+  harmful at RB (+0.2031 carries MAE, 95% CI [+0.1150, +0.2963]) and TE, null at WR — but the harm
+  concentrates entirely in the bucket the proxy is known to mislabel (a Week-1-inactive player
+  counted as "departed"). **This experiment cannot distinguish "vacated opportunity doesn't
+  matter" from "the proxy used to measure it is broken."** State it as blocked, pending
+  `load_rosters_weekly()`, never as a settled null. Effective n = 11 seasons (component-error
+  measurement). Ever run: **yes**, but not answerable as designed.
+
+- **A player's own touchdown rate carries real signal; discarding it for the position average is
+  worse, not neutral.** Replacing a player's own TD-rate history with the pooled positional mean
+  costs +0.0251 to +0.2295 MAE depending on position (worst at QB: +0.2295 pass-TD MAE, 95% CI
+  [+0.1256, +0.3253], +4.0% of the position's own error), harmful at all four positions,
+  BH-significant at three. **This means the model's existing shrinkage is already extracting the
+  signal** — it is not an unbuilt opportunity. Effective n = 11 seasons. Ever run: **yes**.
+
+- **Team-relative opportunity share (carries+targets ÷ team total) is not the "single best RB
+  metric"; at RB it measures as doing nothing.** Ablating it costs −0.0168 carries MAE, 95% CI
+  [−0.0498, +0.0029] — CI spans zero, NULL. **At WR the same construct does earn its place**:
+  removing it costs +0.196 of 31.4 on the ADP board (+0.6%), 95% CI on the full-universe version
+  [+0.0132, +0.1547]. State the position when citing this — the RB and WR results point opposite
+  directions on the same feature. Effective n = 11 seasons (component), 7 seasons (ADP board).
+  Ever run: **yes**.
+
+- **A single global flex-eligible replacement level (~80th rank) shows no advantage over the
+  current per-position scheme.** Realised-points margin +1.7, 95% CI [−67.6, +74.8] at one noise
+  setting, −6.7 CI [−51.2, +37.8] at another — sign flips between settings, both CIs wide around
+  zero. **Effective n = 4 seasons** — this is the binding constraint, not the 300 simulations run
+  per cell. No change made to the shipped replacement levels. Ever run: **yes** (PR-006).
+
+- **Pick-gap-aware VONA changes which player gets drafted without reliably changing roster
+  quality.** Realised-points margin −37.2, 95% CI [−118.8, +36.0] — NULL, CI spans zero.
+  **Separately, and this is the more decision-relevant finding:** the gap-aware and gap-blind
+  versions of the same valuation method select a *different full roster* in 100% of paired
+  simulated drafts, across all 8 season×noise-setting cells tested. **Effective n = 4 seasons.**
+  Not wired into any live strategy. Ever run: **yes** (PR-008).
+
+- **The yardage-bonus stacking structure does not support a variance/ceiling preference in
+  rankings, tested four separate ways, all null at the bonus structure's most favorable
+  measurement setting.** Perfect foresight of every WR's bonus points would move rank correlation
+  by only +0.026 — the ceiling on the entire idea. A model built to capture it achieved +0.0002.
+  Per-player shape (skewness/kurtosis, the originally proposed mechanism) does not persist
+  year-to-year: empirical-Bayes between-player variance estimate driven to exactly zero, six of
+  six tests null. **Do not re-derive a variance preference from the bonus structure** — it has
+  been tested at its most favorable setting and there is nothing there (`CLAUDE.md` §7). Ever
+  run: **yes**, four independent instruments.
 
 ## Why alpha detection is closed for 2026
 

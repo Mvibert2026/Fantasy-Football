@@ -21,7 +21,7 @@ Usage
 """
 
 from __future__ import annotations
-import argparse, datetime, pathlib, re, subprocess, sys
+import argparse, datetime, os, pathlib, re, subprocess, sys
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 FR_DIR = ROOT / "docs" / "founder-requests"
@@ -30,6 +30,14 @@ ARCHIVE = ROOT / "docs" / "founder-requests.md"
 
 FIELD = re.compile(r"^([A-Z_]+):\s*(.*)$")
 STATUS_VALUES = ["NEW", "SCOPING", "SPECCED", "IN PROGRESS", "SHIPPED", "DECLINED", "DEFERRED"]
+
+# W3 (mirrors tools/handoffs.py -- see its DATE_ID_RE comment for the full reasoning):
+# new requests are named FR-YYYY-MM-DD-slug.md, not FR-NNN-slug.md. The "FR-" prefix is
+# kept so every existing "FR-NNN" citation convention in prose/CLAUDE.md/docs still
+# reads naturally for new IDs too -- only the number becomes a date+slug. Existing
+# FR-NNN-slug.md files are NEVER renamed.
+LEGACY_ID_RE = re.compile(r"^FR-\d{3}-")
+DATE_ID_RE = re.compile(r"^FR-\d{4}-\d{2}-\d{2}-")
 
 
 def _rel(path: pathlib.Path) -> str:
@@ -70,9 +78,11 @@ class Request:
     def source(self) -> str: return self.meta.get("SOURCE", "?")
     @property
     def subject(self) -> str:
-        # stem is "FR-NNN-slug"; strip the "FR-NNN-" prefix, not just the first hyphen.
-        m = re.match(r"^FR-\d{3}-(.+)$", self.path.stem)
-        slug = m.group(1) if m else self.path.stem
+        # stem is "FR-NNN-slug" or (W3) "FR-YYYY-MM-DD-slug"; strip the ID prefix, not
+        # just the first hyphen.
+        stem = self.path.stem
+        m = re.match(r"^FR-\d{4}-\d{2}-\d{2}-(.+)$", stem) or re.match(r"^FR-\d{3}-(.+)$", stem)
+        slug = m.group(1) if m else stem
         return slug.replace("-", " ").capitalize()
 
 
@@ -83,7 +93,10 @@ def _slugify(text: str) -> str:
 def load() -> list[Request]:
     if not FR_DIR.exists():
         return []
-    files = sorted(p for p in FR_DIR.glob("FR-*.md") if re.match(r"^FR-\d{3}-", p.name))
+    files = sorted(
+        p for p in FR_DIR.glob("FR-*.md")
+        if LEGACY_ID_RE.match(p.name) or DATE_ID_RE.match(p.name)
+    )
     return [Request(p) for p in files]
 
 
@@ -135,9 +148,11 @@ def _git_tree_filenames(ref: str, subdir: str) -> list[str]:
 
 
 def next_free_id() -> int:
-    """W1-style allocation (see tools/handoffs.py): scan filenames on disk, never frontmatter --
-    a file's own ID: field can be wrong or missing. Floor is the archive's highest number so new
-    FRs never collide with the frozen file.
+    """LEGACY (superseded by W3, see DATE_ID_RE comment above). Still answers "highest
+    legacy FR-NNN claimed" honestly and is kept tested for that, but as of W3 it is NOT
+    used to allocate new FR filenames -- new_request_filename() replaces it for that,
+    the same way tools/handoffs.py's next_free_id() was superseded there. Do not wire
+    this back into cmd_new/ingest_pending.
 
     Widened (2026-07-29): also scans docs/founder-requests/ as committed on every local +
     remote-tracking branch, so an FR number claimed on a parallel branch isn't handed out
@@ -152,9 +167,29 @@ def next_free_id() -> int:
     return max(nums) + 1
 
 
+def new_request_filename(date: str, slug: str) -> pathlib.Path:
+    """W3: claim docs/founder-requests/FR-{date}-{slug}[-N].md atomically, with no
+    shared counter and no git ref scan -- see tools/handoffs.py's new_thread_filename()
+    for the full reasoning, which applies identically here."""
+    FR_DIR.mkdir(parents=True, exist_ok=True)
+    base = f"FR-{date}-{slug}"
+    n = 1
+    while True:
+        candidate = base if n == 1 else f"{base}-{n}"
+        path = FR_DIR / f"{candidate}.md"
+        try:
+            fd = os.open(str(path), os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+            os.close(fd)
+            return path
+        except FileExistsError:
+            n += 1
+
+
 def find_fr_collisions() -> list[str]:
     """Backstop: same FR-NNN claimed for a different subject/slug on different branches.
-    Detection only -- does not renumber anything."""
+    Detection only -- does not renumber anything. Legacy-only (`FR-\\d{3}-`) on purpose:
+    W3's FR-YYYY-MM-DD-slug.md requests have no equivalent gap to backstop -- see
+    tools/handoffs.py's find_thread_id_collisions() docstring for why."""
     by_id: dict[str, set[str]] = {}
     if FR_DIR.exists():
         for p in FR_DIR.glob("FR-*.md"):
@@ -179,7 +214,8 @@ def _pending_new_files() -> list[pathlib.Path]:
     return sorted(FR_DIR.glob("NEW-*.md"))
 
 
-def _stamp(text: str, nid: int, today: str) -> str:
+def _stamp(text: str, id_str: str, today: str) -> str:
+    """`id_str` is written verbatim (e.g. `FR-018` legacy or `FR-2026-07-30-slug` W3)."""
     if not text.startswith("---"):
         raise SystemExit("founder_requests sync: file has no frontmatter block, refusing to stamp it")
     _, fm, body = text.split("---", 2)
@@ -189,7 +225,7 @@ def _stamp(text: str, nid: int, today: str) -> str:
     for line in lines:
         stripped = line.strip()
         if stripped.upper().startswith("ID:"):
-            out_lines.append(f"ID: FR-{nid:03d}")
+            out_lines.append(f"ID: {id_str}")
             has_id = True
         elif stripped.upper().startswith("RAISED:"):
             out_lines.append(f"RAISED: {today}")
@@ -197,28 +233,22 @@ def _stamp(text: str, nid: int, today: str) -> str:
         else:
             out_lines.append(line)
     if not has_id:
-        out_lines.insert(0, f"ID: FR-{nid:03d}")
+        out_lines.insert(0, f"ID: {id_str}")
     if not has_raised:
         out_lines.append(f"RAISED: {today}")
     return "---\n" + "\n".join(out_lines) + "\n---" + body
 
 
-def _ingest_one(src: pathlib.Path, nid: int, today: str) -> pathlib.Path:
-    """Allocate a single pending file to a specific ID. Split out from ingest_pending() so the
-    hard-fail-on-collision behaviour is testable as a defense-in-depth property in its own
-    right (mirrors tools/handoffs.py's _ingest_one, same reasoning: thread 076 -- two
-    worktrees can each compute a locally-valid "next free" number that collides at merge)."""
+def _ingest_one(src: pathlib.Path, today: str) -> pathlib.Path:
+    """Allocate a single pending file to docs/founder-requests/FR-{today}-{slug}[-N].md
+    via new_request_filename() (W3). Split out from ingest_pending() so the allocate-
+    plus-stamp step is independently testable (mirrors tools/handoffs.py's _ingest_one)."""
     stem = src.stem
     raw_slug = stem[4:] if stem.upper().startswith("NEW-") else stem
     slug = _slugify(raw_slug)
-    dest = FR_DIR / f"FR-{nid:03d}-{slug}.md"
-    if dest.exists():
-        raise SystemExit(
-            f"founder_requests sync: refusing to overwrite existing "
-            f"{_rel(dest)} while ingesting {_rel(src)}"
-        )
+    dest = new_request_filename(today, slug)
     text = src.read_text(encoding="utf-8")
-    dest.write_text(_stamp(text, nid, today), encoding="utf-8")
+    dest.write_text(_stamp(text, dest.stem, today), encoding="utf-8")
     src.unlink()
     return dest
 
@@ -227,8 +257,7 @@ def ingest_pending(today: str | None = None) -> list[pathlib.Path]:
     today = today or datetime.date.today().isoformat()
     ingested = []
     for src in _pending_new_files():
-        nid = next_free_id()
-        ingested.append(_ingest_one(src, nid, today))
+        ingested.append(_ingest_one(src, today))
     return ingested
 
 
@@ -305,15 +334,29 @@ def cmd_sync(_args) -> int:
     return 0
 
 
+# Pre-existing debt: legacy-scheme collisions frozen at 2026-07-30 (ADR-064). Mirrors
+# tools/handoffs.py's KNOWN_LEGACY_ID_COLLISIONS -- see its comment and
+# docs/known-id-collisions.md for the full reasoning. Never grow this set for a new
+# collision; test_known_legacy_fr_collisions_registry_is_frozen pins it.
+KNOWN_LEGACY_FR_COLLISIONS = frozenset({"FR-029", "FR-030"})
+
+
 def cmd_check(_args) -> int:
     problems = find_fr_collisions()
-    if problems:
+    hard = [p for p in problems if not any(p.startswith(f"{fid} ") for fid in KNOWN_LEGACY_FR_COLLISIONS)]
+    debt = [p for p in problems if p not in hard]
+    if hard:
         print("founder-requests check FAILED:\n")
-        for p in problems:
+        for p in hard:
             print(f"  - {p}")
         print("\nDetection only -- do not renumber. Escalate; this is a merge-time collision.")
         return 1
-    print(f"founder-requests check OK — {len(load())} requests, no cross-branch ID collisions.")
+    print(f"founder-requests check OK — {len(load())} requests, no NEW cross-branch ID collisions.")
+    if debt:
+        print(f"({len(debt)} known pre-existing legacy collisions, frozen 2026-07-30 / ADR-064, "
+              f"see docs/known-id-collisions.md -- not new):")
+        for p in debt:
+            print(f"  - {p}")
     return 0
 
 

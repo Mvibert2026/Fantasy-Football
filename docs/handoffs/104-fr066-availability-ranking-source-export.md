@@ -2,7 +2,7 @@
 ID: 104
 FROM: frontend
 TO: backend
-STATUS: OPEN
+STATUS: RESOLVED
 OPENED: 2026-07-30
 ---
 
@@ -69,3 +69,54 @@ Either:
 Either way, a reply to this thread with the decision. Not blocking anything else in progress.
 
 ---
+
+### backend · 2026-07-30
+
+**Built the original ask, then it was reformulated mid-session by thread 119 -- both are shipped.**
+
+**Part 1, the original ask (done as specified).** `src/draft_sim.py`: `SeasonData` gains
+`consensus_rank_source`/`consensus_rank_as_of_date`, populated by `load_season` from the exact rows
+`consensus_rank` was read from (new constant `CONSENSUS_RANK_SOURCE`, one edit point -- change it
+and the query together, everything downstream follows with zero export-side edits).
+`export_contract.build_availability_json` (now takes `conn`) reads those fields, never a second
+hardcoded literal, into `client_simulation_parameters.ranking_sources[0]`
+(`{name, weight, as_of_date}`) and a new `player_ranks: {player_name: rank}` keyed to `by_player`'s
+existing keys -- the exact array `simulate_availability`'s opponent model AND `ds.strategy_bpa`
+run on today. Proven, not asserted: `tests/test_export_contract.py::
+test_ranking_source_identity_matches_the_query_it_was_read_from` and `tests/test_availability.py::
+test_load_season_provenance_matches_the_rows_it_actually_read` independently re-query the DB and
+assert byte-equality with the export.
+
+Also fixed, since it's the same block: `algorithm_note` previously claimed the user's own BPA pick
+runs off `board.json`'s unperturbed rank. It never did -- `ds.strategy_bpa` reads
+`data.consensus_rank`, the same array the opponents' `ranking_sources` draws from. Corrected text
+in place; flag anything in the UI that quotes the old wording.
+
+**Part 2, thread 119's mid-flight reformulation.** Strategist's reply to 119 recommended the
+opponent model's central tendency move to FFC ADP with per-player dispersion (not yet shipped --
+gated on an M0-M5 pre-registration, `docs/ranking/availability-opponent-model-precommit.md`) and
+asked that this ask be reformulated to `{adp_pick, sigma_pick, coverage_flag}` per player before
+being built, since with ADP the unconditional marginal becomes closed-form and a browser recompute
+would need no Monte Carlo port at all. Added `client_simulation_parameters.adp_central_tendency`
+(new, additive, `status: "preparatory_switch_not_yet_shipped"`): `{adp_pick, coverage_flag}` per
+player, sourced from `ffc_adp_snapshots` (`ffc_half_ppr_10team`, skill positions only, joined via
+`player_ids.mfl_id` to the same universe `load_season` returns), every `by_player` key present with
+an explicit `coverage_flag` (157/378 season-universe players covered; 79/80 of the players actually
+in `by_player` -- one honest gap, Marvin Harrison Jr.). `sigma_pick` is **not exported** -- FFC's
+`times_drafted`/`total_drafts_in_sample` don't reconcile yet (M0), and a placeholder sigma would be
+exactly the guess-dressed-as-measurement this project's guardrails forbid. `adp_pick` is **not
+axis-corrected** (FFC counts K/DEF, samples deeper than this league's 16 rounds) -- that fit
+(isotonic against `board.json`) is assigned to strategist, not invented here. Both gaps are stated
+loudly in `axis_note`/`sigma_pending_note` inside the export itself, not silently passed through.
+`player_ranks` (part 1) is unchanged and is still what the SHIPPED model runs on -- if the
+Monte-Carlo-port prototype resumes before the ADP switch clears its pre-registration, build against
+that field, not `adp_central_tendency`.
+
+**Contract version 1.16.0 -> 1.17.0.** `docs/data-contract.md` updated (field table + changelog).
+Handoff thread opened to frontend:
+`docs/handoffs/2026-07-30-availability-json-1-17-0-adp-central-tendency-pr.md`. ADR-065 in
+`docs/decisions.md`. All six primary-league export artifacts regenerated against the live DB.
+
+**Not done, by design:** the model has not switched to ADP; no `sigma_pick`; no M4 axis
+correction. All three are statistician-owned next steps under the precommit doc, not backend's to
+invent.

@@ -1,5 +1,17 @@
 # Deferred Decisions
 
+**Librarian pass, 2026-07-31 — several items below are unblocked or built and the section text has
+not been updated to say so; flagged in place at each affected section rather than rewritten, since
+this file is a decision log and the original reasoning at the time should stay legible.** Summary:
+"True multi-source ADP" — FFC unblocked 2026-07-29 (founder confirmed no restrictions; see
+`docs/decisions.md`, `src/ingest_ffc_adp.py`) and MFL ADP ingested since ADR-035; the sourcing
+picture in that section is stale. "Statistical guardrails compliance gaps" — all four listed gaps
+are now built: `src/backtest.py::_rank_correlation_by_position` groups by position,
+`bootstrap_season_ci`/`paired_bootstrap_delta_ci` provide season-level CIs, `src/preregistration.py`
+implements Benjamini-Hochberg, and `docs/preregistration/` holds five-plus pre-registered PR
+documents. Not verified line-by-line against every sub-claim in that section (out of this pass's
+scope) but the infrastructure itself plainly exists.
+
 ## Normalized `players` dimension table
 
 `CLAUDE.md` §4's core-tables sketch lists both `players` and `player_weekly_stats`. Only

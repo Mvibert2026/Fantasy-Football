@@ -2,7 +2,7 @@
 ID: 076
 FROM: pm
 TO: backend
-STATUS: OPEN
+STATUS: RESOLVED
 BLOCKS: none
 OPENED: 2026-07-27
 ---
@@ -33,3 +33,24 @@ Not attempted tonight, per the overnight runbook's explicit instruction ("record
 structural gap; do not attempt a fix tonight"). Closes when backend either (a) ships a
 cross-worktree-safe allocation mechanism, or (b) makes a deliberate, written call that merge-time
 detection is sufficient and closes this thread with that reasoning recorded.
+
+---
+### backend · 2026-07-30
+(a) shipped, not (b): the widened ref-scanning allocator this thread's own "known-red" state
+predicted would keep narrowing-not-closing the race did exactly that — it collided six more times
+by 2026-07-30 (093/094/109/110/111/112, ADR-054, ADR-055, FR-029, FR-030 — see
+`docs/known-id-collisions.md`), confirming a shared "highest so far" counter can't be made safe
+from N independent readers no matter how wide the scan. Founder approved a scheme change instead
+of another widening: new threads/FRs are now `YYYY-MM-DD-slug.md`, allocated with no shared
+counter and no git ref scan at all (`new_thread_filename()`/`new_request_filename()`, atomic
+`O_CREAT|O_EXCL`, pure function of today's date + this thread's own slug). Two worktrees choosing
+different subjects on the same day can't collide by construction; the one case that can't be
+locally disambiguated (identical subject, identical day, separate worktrees) is no longer silent
+either — it's now an ordinary git same-path merge conflict, because the filename *is* the
+identifier, unlike the old scheme where two colliding IDs lived in two different filenames and
+merged clean. Full reasoning: ADR-064 (`docs/decisions.md`), `docs/handoffs/README.md`. Existing
+numbered threads (including this one) are untouched. Pre-existing collisions from before this fix
+are recorded as frozen, non-fatal debt, not silently absorbed — `docs/known-id-collisions.md`.
+Tests: `python3 -m pytest tests/test_handoffs.py tests/test_founder_requests.py -q` — 36 passed.
+`python3 tools/handoffs.py check` / `python3 tools/founder_requests.py check` both exit 0.
+STATUS: RESOLVED.

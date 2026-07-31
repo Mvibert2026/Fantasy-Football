@@ -178,3 +178,107 @@ founder's bar or falls short of it.
 
 He has asked repeatedly to be told when he is wrong. This is the question where enthusiasm beats
 evidence unless someone names it — including his enthusiasm, and including the PM's.
+
+---
+
+## M4 — Consistency. Added 2026-07-30 at the founder's direction.
+
+His words, after catching the recommender suggesting a player it had just explained was *more*
+likely to still be available later:
+
+> "just odd recommendation model is suggestiong things that don't agree with other findings, we need
+> consistency, again, this is what fable will need to tear into"
+
+**This section is not about the inverted pick logic.** That defect is already traced (ranker) and a
+correct rule is being specified (strategist) — see
+`docs/founder-requests/FR-2026-07-30-recommendation-logic-is-inverted-it-prefers-the.md`. Do not
+re-derive it and do not spend the mandate on it.
+
+**It is about the class.** The product contradicted itself on one screen, in its own voice: the
+assistant told the founder that reaching for a quarterback in the first three rounds was the single
+most costly strategy this project has tested — negative in all 12 scenarios, worst case −115.4
+points — while the recommender was recommending exactly that. Two surfaces, same product, opposite
+answers, and nothing anywhere noticed.
+
+### The hypothesis to attack
+
+**Findings live in markdown; the model lives in code; nothing connects them.** Measured results are
+written into `docs/`, ADRs and thread replies, and then the model is free to contradict every one of
+them, because no test asserts that a finding is respected.
+
+Attack that framing as well as the tool. It is PM's hypothesis, it is convenient, and a convenient
+structural explanation is exactly the kind of thing this mandate exists to disbelieve. Possibilities
+worth taking seriously: the findings may be narrower than their summaries; two findings may
+genuinely conflict and the recommender picked one; or the "contradiction" may be an artifact of the
+assistant paraphrasing a result it retrieved rather than a real inconsistency.
+
+### Specific things to check
+
+1. **Read the early-QB result at source**, not via the assistant's summary. How many scenarios, what
+   league shape, what pick range, what confidence? Establish whether pick 18 is genuinely inside its
+   support or whether the assistant overreached.
+2. **Enumerate what the recommender actually encodes** versus what this project has measured. The
+   four candidates on file: early-QB cost; the dead variance-preference (CLAUDE.md §7, tested four
+   ways); archetype fall-through frequency; and H1 NULL on ADP accuracy, measured 2026-07-30.
+3. **Ask whether "consistency" is even the right goal.** A model forced to obey every prior finding
+   cannot learn that one was wrong. What is the honest version — a hard constraint, a flagged
+   warning, or a test that fails only when a *live* recommendation contradicts a *holdout-validated*
+   result? The founder asked for consistency; the right answer may be narrower than his word.
+4. **The three defects in the same screenshot** — the garbled self-correcting sentence shipped to
+   production, and two different availability numbers for the same player on one screen. Are these
+   the same root cause as the inconsistency, or three unrelated failures that happened to co-occur?
+
+### The bar
+
+This is question 3 of his three model questions, observed failing in the surface he would use on
+7 September. Treat it accordingly.
+
+---
+
+## The audit trail — added 2026-07-30, because the founder asked whether you can review all of this
+
+His question: *"And all these tests and outcomes will be reviewable by fable right?"*
+
+**Yes, and this section exists so you do not have to go looking.** Everything below was built or
+extended on 2026-07-30. Nothing here is a summary — each is the primary artifact.
+
+| Artifact | What it is | Count |
+|---|---|---|
+| `docs/factor-ledger.md` | **Every factor considered, with disposition and reason.** This is the multiple-comparisons **denominator**, written down. Without it, "we tested N factors" is unverifiable | 92 rows |
+| `docs/preregistration/*.md` | Pre-registrations, hypotheses and thresholds fixed before measurement | 9 |
+| `docs/ranking/factor-batch-*-precommit.md` | Per-batch pre-commitments, dated, with amendments dated separately | 4 |
+| `docs/preregistration/test_run_log.jsonl` | Which registered tests were actually executed | 63 entries |
+| `docs/preregistration/holdout_access_log.jsonl` | **Every touch of the sealed 2025 holdout** | 19 entries |
+| `experiments/bottomup/results/*.csv` | Raw per-arm output, not prose | 29 files |
+| `experiments/bottomup/factors/run_factors*.py`, `head_to_head.py`, `analysis/*.py` | Reproduction scripts — re-run any result rather than trusting the write-up | 8 |
+
+### What to attack in it, specifically
+
+**1 — The campaign-level denominator is the weakest claim in the whole apparatus.** Five factor
+batches ran *concurrently* on 2026-07-30, each instructed to register into one shared campaign family
+rather than correct within itself. **Verify that actually happened.** If each batch corrected locally,
+every individual correction is defensible and the campaign is not — roughly 25 arms in flight, and a
+false positive or two arriving exactly on schedule while looking real. This is the single most likely
+place for the day's work to be quietly wrong.
+
+**2 — Pre-registration numbering has no allocator.** `PR-0NN` ids are still hand-assigned; three
+separate sessions raised it (`docs/handoffs/2026-07-30-no-allocator-exists-for-pr-0nn-*.md`). Thread
+and ADR numbering was fixed today precisely because hand-numbering collided. **Check whether any
+pre-registration was renumbered, duplicated, or written after the fact.** A pre-registration whose
+identity is mutable is not a pre-registration.
+
+**3 — Post-hoc versus pre-registered.** Agents were told to label post-hoc diagnostics as such, and at
+least one did so in its own commit title while demoting its own best result. **Verify the labelling
+holds everywhere**, and that no post-hoc finding has drifted into a results table as though it were
+registered.
+
+**4 — The results are overwhelmingly NULL, which is the correct thing to be suspicious of from the
+other direction.** A campaign returning nulls is what an honest campaign looks like — and it is also
+what a campaign with an underpowered harness or a broken metric looks like. `backtest.py` had a defect
+found the same day that under-penalised injury risk. **Ask whether these nulls are findings or
+symptoms.**
+
+**5 — Two scope traps are already known to have been misread once each.** Registry #13's NULL is about
+target-share *stability*, not target share; #28's harm was a **proxy artifact**. Both are now labelled.
+Check whether any *other* result is being read wider than its scope supports — that failure mode has
+occurred twice and is unlikely to have occurred only twice.

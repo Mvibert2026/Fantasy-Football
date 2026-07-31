@@ -146,6 +146,13 @@ class WalkForward:
     #: preseason-proxy reads happened, so an arm that did not declare the proxy
     #: is provably clean rather than merely believed to be.
     allow_preseason_proxy: bool = False
+    #: ranking v1 only. `(target_season, position) -> iterable of player_id`, added
+    #: to the TARGET season's universe alongside the ADP board. Exists so a second
+    #: pre-kickoff consensus board (expert ECR) can define the evaluation universe
+    #: without duplicating this audited harness. Default None reproduces batches
+    #: 1-7 bit-for-bit. The caller owns the look-ahead property of what it returns;
+    #: anything derived from season-N RESULTS here is survivorship contamination.
+    extra_universe_fn: Optional[Callable[[int, str], Sequence[str]]] = None
     audit: List[Dict] = field(default_factory=list)
     _cache: Dict = field(default_factory=dict, repr=False)
 
@@ -202,6 +209,91 @@ class WalkForward:
             out.append(m.predict(tf[tf["season"] == s]))
         return pd.concat(out, ignore_index=True) if out else None
 
+    def project_target(self, target: int, train_outcome_max: int,
+                       extra_ids: Optional[Sequence[str]] = None
+                       ) -> Tuple[pd.DataFrame, Dict]:
+        """Project ONE unplayed season. No evaluation, no outcome read at target.
+
+        `run()` is for backtesting: it trains on every outcome season strictly
+        before the target and then reads the target's realised results to score
+        itself. Pointed at 2026 it would train on **2025 outcomes**, which is the
+        sealed holdout, and it would try to read a season that has not happened.
+
+        This method is the production path and it differs in exactly two ways:
+
+        1. `train_outcome_max` is REQUIRED and is asserted, so the fit is frozen
+           at a season the caller names rather than at `target - 1` implicitly.
+           Passing 2024 with target 2026 is what keeps 2025 out of training.
+        2. It never calls `outcome_components` at the target. There is no score,
+           no rho, no accuracy number -- by construction, not by discipline.
+
+        Features still run to `target - 1`, which is what `CLAUDE.md` §6.1
+        permits and requires. The panel's own `outcome_gate` is the structural
+        backstop: on a production panel it refuses to serve any outcome at or
+        after 2025, so a training pair carrying a 2025 outcome cannot be built
+        even if this method were called wrongly.
+        """
+        if train_outcome_max >= target:
+            raise RuntimeError(
+                f"train_outcome_max {train_outcome_max} is not before target {target}")
+        self.panel.reset_audit()
+        tf, to = self._pairs(self.position, train_outcome_max + 1)
+
+        # THE ASSERTION THIS WHOLE RUN EXISTS TO CARRY. Tighter than the audit's
+        # `max_outcome_season < season`: it pins the fit to a named season, so a
+        # 2026 target cannot quietly train on 2025.
+        got_out = int(to["season"].max())
+        got_feat = int(tf["season"].max())
+        if got_out > train_outcome_max:
+            raise RuntimeError(
+                f"{self.position}: a training pair carries outcome season "
+                f"{got_out} > frozen fit bound {train_outcome_max}")
+        if got_feat > train_outcome_max:
+            raise RuntimeError(
+                f"{self.position}: a training feature row is dated {got_feat} > "
+                f"frozen fit bound {train_outcome_max}")
+        if to["season"].nunique() < self.min_train_seasons:
+            raise RuntimeError(f"{self.position}: too few training seasons")
+
+        pool = None
+        if self.pool_position:
+            pf, po = self._pairs(self.pool_position, train_outcome_max + 1)
+            if int(po["season"].max()) > train_outcome_max:
+                raise RuntimeError("rate-pool outcome season past the frozen fit bound")
+            pool = (pf, po)
+
+        u = universe_for(self.panel, target, self.position,
+                         extra_ids=(list(extra_ids) if extra_ids else None))
+        f = self.feature_fn(self.panel, u, target)
+
+        model = self._make_model()
+        model.fit(tf, to, rate_pool=pool)
+        if self.calibrate_bonus:
+            oos = self._oos_training_projections(tf, to, pool)
+            if oos is not None and len(oos) > 150:
+                model.refit_bonus_on_projections(oos, to)
+
+        a = self.panel.audit(target)
+        a.update(season=target, phase="projection_only",
+                 train_outcome_max=train_outcome_max,
+                 train_outcome_seasons=int(to["season"].nunique()),
+                 observed_max_outcome_season=got_out)
+        if a["max_feature_cutoff"] >= target or a["max_outcome_season"] >= target:
+            raise RuntimeError(f"look-ahead: target {target} saw {a}")
+        if a["max_outcome_season"] > train_outcome_max:
+            raise RuntimeError(
+                f"audit says an outcome at {a['max_outcome_season']} was read; "
+                f"the fit is frozen at {train_outcome_max}")
+        if not self.allow_preseason_proxy and a["n_preseason_proxy_reads"]:
+            raise RuntimeError(f"undeclared preseason proxy read at target {target}: {a}")
+
+        proj = model.predict(f)
+        carry = [c for c in _CARRY if c in f.columns]
+        proj = proj.merge(f[["player_id"] + carry], on="player_id", how="left")
+        proj["position"] = self.position   # already set by predict(); pinned again
+        self.audit = [a]
+        return proj, a
+
     def run(self) -> Tuple[pd.DataFrame, pd.DataFrame]:
         rows, metrics = [], []
         self.audit = []
@@ -215,8 +307,11 @@ class WalkForward:
 
             board = adp.load_adp(target, position=self.position)
             extra = (board.loc[~board["unmatched"], "player_id"].tolist()
-                     if len(board) else None)
-            u = universe_for(self.panel, target, self.position, extra_ids=extra)
+                     if len(board) else [])
+            if self.extra_universe_fn is not None:
+                extra = list(extra) + list(self.extra_universe_fn(target, self.position))
+            u = universe_for(self.panel, target, self.position,
+                             extra_ids=(extra or None))
             f = self.feature_fn(self.panel, u, target)
 
             model = self._make_model()
@@ -297,12 +392,22 @@ def _season_metrics(d: pd.DataFrame, season: int, position: str) -> Dict:
             out[f"adpsub_pts_top_{name}"] = mean_actual_of_top_k(p, a, k)
     # component accuracy against naive persistence -- last season's own total,
     # the honest zero-work baseline for a component projection
+    #
+    # `adpsub_mae_*` added 2026-07-30 (factor batch 2). Batch 1's own §1(3) found
+    # its committed E1 gate was blind to WHERE a gain sits: two arms cleared it on
+    # movement among players nobody drafts. This is the same MAE restricted to the
+    # players who actually appear on the consensus board, so a gate can be written
+    # on the decision-relevant subset instead of the whole universe. Purely
+    # additive -- every pre-existing column is untouched and batch 1 still
+    # reproduces bit-for-bit.
     for pcol, acol, ncol in COMPONENT_LEDGER[position]:
         if pcol not in d.columns:
             continue
         e = d[pcol].to_numpy(dtype=float) - d[acol].to_numpy(dtype=float)
         out[f"mae_{acol}"] = float(np.mean(np.abs(e)))
         out[f"bias_{acol}"] = float(np.mean(e))
+        if has_adp.sum() >= 10:
+            out[f"adpsub_mae_{acol}"] = float(np.mean(np.abs(e[has_adp])))
         if ncol in d.columns:
             en = d[ncol].fillna(0.0).to_numpy(dtype=float) - d[acol].to_numpy(dtype=float)
             out[f"mae_naive_{acol}"] = float(np.mean(np.abs(en)))

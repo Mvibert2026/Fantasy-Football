@@ -1,0 +1,21 @@
+=== base rates of the two columns M1 bundles ===
+WR: 2268 player-seasons | move_known==0 for 773 (34.1%) | moved_club==1 for 425 (18.7%)
+TE: 1040 player-seasons | move_known==0 for 292 (28.1%) | moved_club==1 for 191 (18.4%)
+RB: 1426 player-seasons | move_known==0 for 487 (34.2%) | moved_club==1 for 251 (17.6%)
+
+=== decomposition, same harness, E1a full universe / E1b ADP board ===
+
+WR (targets)  primary MAE 24.081
+  M1  moved_club + move_known (REGISTERED)   E1a  -0.5783 (-2.40%) [-0.7534,-0.4338] p=0.0001   E1b  -0.1584
+  M1a move_known ONLY                        E1a  -0.5510 (-2.29%) [-0.7383,-0.3964] p=0.0001   E1b  -0.1440
+  M1b moved_club ONLY                        E1a  -0.0104 (-0.04%) [-0.0284,+0.0045] p=0.2775   E1b  -0.0027
+
+TE (targets)  primary MAE 19.598
+  M1  moved_club + move_known (REGISTERED)   E1a  -0.3395 (-1.73%) [-0.4813,-0.2249] p=0.0006   E1b  -0.1261
+  M1a move_known ONLY                        E1a  -0.3174 (-1.62%) [-0.4641,-0.2152] p=0.0010   E1b  -0.0070
+  M1b moved_club ONLY                        E1a  +0.0137 (+0.07%) [-0.0343,+0.0665] p=0.6162   E1b  -0.1058
+
+RB (carries)  primary MAE 49.600
+  M1  moved_club + move_known (REGISTERED)   E1a  -0.9477 (-1.91%) [-1.2586,-0.6872] p=0.0001   E1b  -0.3547
+  M1a move_known ONLY                        E1a  -0.9036 (-1.82%) [-1.1919,-0.6732] p=0.0001   E1b  -0.1345
+  M1b moved_club ONLY                        E1a  +0.0991 (+0.20%) [-0.0148,+0.2045] p=0.1210   E1b  -0.1500

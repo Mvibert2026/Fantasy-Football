@@ -16,17 +16,17 @@ repo (ADRs, handoff threads, reviews), unlike a session-log entry nothing else p
 just *where*. If the founder expresses a want, a constraint, a preference, or a "wouldn't it be
 good if" in any session, it gets an entry before that session ends.
 
-**2. Nobody types the ID.** Same reasoning as `docs/handoffs/README.md` §"nobody types the
-number" — hand-computed numbering already collided four times in this project (threads
-043/049/053, ADR-048). To open a request:
+**2. Nobody types the ID.** Same reasoning as `docs/handoffs/README.md` — hand-computed and even
+counter-based numbering collided repeatedly in this project (threads 043/049/053, ADR-048, and
+more found 2026-07-30 — see `docs/known-id-collisions.md`, ADR-064). To open a request:
 
 ```
 python tools/founder_requests.py new --raised-by "cowork chat" --subject "Research/comparison section for prep mode"
 ```
 
 This writes `NEW-<slug>.md` with no `ID:` field, then runs `sync`, which allocates the real
-`FR-NNN` immediately (seeded past the archive's highest number, so it can never collide with
-FR-001..FR-017).
+`FR-YYYY-MM-DD-slug` filename immediately — no shared counter, so no cross-worktree race is
+possible (ADR-064). Requests opened before 2026-07-30 keep their `FR-NNN` numbers unchanged.
 
 **3. Status changes are edits to the request's own file, not a shared log.** Change the `STATUS:`
 line in `FR-NNN-slug.md` directly — `NEW` → `SCOPING` → `SPECCED` → `IN PROGRESS` →
@@ -48,7 +48,12 @@ directory. Never hand-edit `INDEX.md` — fix the request's own file and re-sync
 
 ## Filename format
 
-`FR-NNN-slug.md`, zero-padded, allocated by `sync` — never hand-typed, never reused. Numbering
-continues from the archive: the first request opened here is `FR-018` (archive tops out at
-`FR-017`; note the archive itself has a pre-existing duplicate `FR-015` heading, left as-is since
-this directory doesn't rewrite the archive).
+**`FR-YYYY-MM-DD-slug.md` (ADR-064, 2026-07-30 onward)**, allocated by `sync` — never hand-typed.
+No shared counter: allocation is a pure function of (today's date, this request's own slug),
+claimed atomically, so two worktrees can't race the same "next number." Same-day-same-slug within
+one working tree gets a deterministic `-2`/`-3` suffix.
+
+Requests opened before 2026-07-30 keep their old `FR-NNN-slug.md` filenames forever — **never
+renamed** (`FR-018` through the last one allocated under the old scheme; archive `FR-001..FR-017`
+tops out at `FR-017`, with a pre-existing duplicate `FR-015` heading, left as-is since this
+directory doesn't rewrite the archive). Both filename shapes load and resolve identically.

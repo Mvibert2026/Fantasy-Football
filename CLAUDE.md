@@ -32,6 +32,42 @@ Phase 1 is done when: given a candidate ranking configuration, the system can an
 *"if I had ranked players this way going into season N, how would it have performed against
 what actually happened — and did it beat the market?"*
 
+### The founder's bar — this outranks everything else in the backlog
+
+> "If I don't have those three things in place, I don't want to use the tool for my real draft."
+
+1. The best **bottom-up rankings**
+2. The best **availability prediction**
+3. The best **suggested-pick model** — his roster, opponents' rosters, availability, live
+
+**These are this-season questions.** A previous PM framed them as off-season design work and was
+overruled in those words. Do not re-frame them.
+
+**Ordering, and a correction the founder made the same day — 2026-07-31.** PM first wrote these as a
+strict chain, *rankings → availability → recommender*, with both later stages blocked on the first.
+**That is half wrong, and the wrong half matters.**
+
+- **Availability is not blocked on our rankings.** It predicts *drafter behaviour*, so its inputs are
+  what drafters actually use — **ADP and expert consensus** — not our proprietary view. Both are in
+  the database and current. Founder's words: *"Availability can be done with ADP and consensus. Both
+  probably impact drafters."* Building it against our own board would model opponents as drafting off
+  a ranking they have never seen.
+- **The recommender takes a ranking as a *parameter*, not a prerequisite.** Founder: *"could use any
+  rankings as inputs to the decision engine which would consider who may be at the next pick and my
+  own roster construction."* It can run on consensus, ADP, or ours — which is exactly what the four
+  selectable sources (ADR-068) exist to allow.
+- **What a wrong ranking actually corrupts** is the recommender's *value* judgement — the
+  opportunity-cost term is value over a fallback. It does not corrupt availability, and it does not
+  block either model from being built and tested.
+
+So the three can proceed **in parallel**, and only the recommender's value term depends on ranking
+quality. As of 2026-07-31 the shipped board's within-position ordering is identical to consensus, so
+that dependency is a live risk for the recommender specifically — not a reason to stall the other two.
+
+Availability's own inputs, in the founder's order: **ADP, then how the draft has actually fallen,
+then opponents' needs.** The middle one is what justifies simulating at all — with ADP plus
+per-player dispersion the unconditional marginal is nearly closed-form.
+
 ---
 
 ## 3. Build order
@@ -140,6 +176,12 @@ Roughly 200–300 fantasy-relevant players per season, heavily autocorrelated ac
 (the same players recur), against ~30+ candidate factors. This is a textbook overfitting setup.
 
 - Hold out seasons. Tune on training seasons only; touch the holdout once.
+- **The sealed 2025 holdout does not open until fable has run. Founder's ruling, 2026-07-31.**
+  It can be spent exactly once, and spending it before adversarial review means spending it on
+  whatever the project believed at the time. Any agent that thinks a result warrants the holdout
+  **stops and escalates to the founder** — no agent opens it on its own authority, including on a
+  result it considers decisive. Every access is logged in
+  `docs/preregistration/holdout_access_log.jsonl`.
 - Testing ~30 factors at p<0.05 yields ~1.5 false positives by chance. Correct for it, or
   treat single-factor "significance" as a hypothesis rather than a finding.
 - Prefer simple, transparent, few-parameter models. **Start with weighted/regression
@@ -163,12 +205,26 @@ shifts mean older seasons may be actively misleading rather than merely less rel
 comparison — never the raw accuracy number.**
 
 Required baselines:
-1. Consensus market ADP
-2. Prior-season fantasy points, ranked
-3. Simple positional-tier heuristic
+1. **Market ADP** — what drafters actually did
+2. **Expert consensus** — what analysts said (FantasyPros ECR)
+3. Prior-season fantasy points, ranked
+4. Simple positional-tier heuristic
 
-If a version does not beat consensus ADP on a holdout season, it has no edge, regardless of
-how good its correlation looks in isolation. Report it as a failure and say so plainly.
+**Baselines 1 and 2 are both required — founder's ruling, 2026-07-31.** This file previously named
+only market ADP while `docs/statistical-guardrails.md` §5 named only expert consensus, and the two
+were used interchangeably for a full campaign. **They are different crowds.** Market ADP is the
+empirical distribution of drafter behaviour; expert consensus is analyst opinion, and it is what the
+shipped board and the availability model actually run on. A version can beat one and lose to the
+other, and which it beat is the finding.
+
+If a version does not beat **both** on a holdout season, it has no edge, regardless of how good its
+correlation looks in isolation. Report it as a failure and say so plainly. If it beats one and not
+the other, report exactly that — not the flattering half.
+
+**Scope, ruled 2026-07-31:** §6.5 binds a *ranking version*. A single feature tested inside one
+component of an unshipped model is not a ranking version and is not bound by it — that
+misapplication ran through seven factor batches, labelling an arm-vs-primary-model comparison as the
+consensus bar.
 
 ### 6.6 Evaluation metrics
 
@@ -237,19 +293,34 @@ including at its most favourable setting, and there is nothing there. Sources:
 The goal is low human touch with real checkpoints — not zero oversight. Bad assumptions
 compound silently; the gates exist to catch them without requiring the user to review every step.
 
+The roster is the agent definitions in `.claude/agents/`. That directory is the source of truth for
+each role's pinned model and effort; this table says what each is *for*.
+
 | Agent | Role | Model |
 |---|---|---|
-| **Builder** | Writes ingestion, scoring, harness, and model code | Sonnet |
-| **Verifier** | Reviews Builder output against this spec before anything is marked done; runs tests | Sonnet |
-| **Statistician** | Designs and reviews methodology, weighting, backtest validity | Opus |
-| **Red-team** | Actively attacks assumptions: look-ahead leakage, survivorship, overfitting, over-engineering, unearned confidence | Opus |
+| **pm** | Sequencing, dispatch, merges, the founder's interface | Opus |
+| **ranker** | The proprietary bottom-up ranking — the product's core | Opus |
+| **strategist** | Methodology, formula specs, pre-registration. **No database access, deliberately** | Opus |
+| **researcher** | External verification, competitive analysis, source audits | Opus |
+| **fable** | Adversarial review on a separate weekly budget | Fable |
+| **frontend** | The React app | Sonnet |
+| **backend** | Python, exports, tests, statistics | Sonnet |
+| **librarian** | What is true, where it lives, what was already decided | Sonnet |
+| **data-ops** | Capture, ingestion, snapshots | Sonnet |
+| **verifier** | Checks a finished branch against the dispatch that produced it. Read-only | Sonnet |
+| **operator** | Owns "is the live site current and correct" — the seam no specialist owns. Read-only | Sonnet |
 
-**Gates run at checkpoints, not continuously.** Every build task ends with Verifier. Every
-methodology decision and every completed milestone ends with Statistician + Red-team.
+**Gates run at checkpoints, not continuously.** Every build task ends with **verifier**. Every
+methodology decision and every completed milestone ends with **strategist + fable**. **operator**
+runs at session start, after any merge, and before the founder is told anything is live.
 
-**Red-team has standing authority to block.** If it identifies a leakage or bias problem, the
-work does not advance until resolved. Red-team's mandate explicitly includes flagging
-over-engineering — building infrastructure with no current consumer is a finding, not a virtue.
+**fable has standing authority to block.** If it identifies a leakage or bias problem, the work does
+not advance until resolved. Its mandate explicitly includes flagging over-engineering — building
+infrastructure with no current consumer is a finding, not a virtue.
+
+**Neither verifier nor operator may fix what it finds.** Both are read-only by design. An agent that
+edits what it just reviewed is reviewing its own work, which is the arrangement the gate exists to
+prevent. Findings go back to the owning role as threads.
 
 **Escalate to the user when:** a gate fails twice on the same issue, a decision changes anything
 in this file, scope expands beyond Phase 1, or a result looks too good (that is usually leakage,
@@ -306,6 +377,9 @@ tier is ambiguous, say which tier you think it is and why before starting.
 | `docs/status.md` | **Frozen 2026-07-28**, historical archive only. New session narratives: `docs/status/` (one dated file per session, `tools/status_log.py sync` generates `docs/status/INDEX.md`) |
 | `docs/statistical-guardrails.md` | Methodology reference expanding §6 into concrete, checkable procedures. Read before running any backtest; every backtest report must state which checks were applied |
 | `docs/product-explanations.md` | Why the product behaves the way it does, in founder-facing language, one idea per entry, each tagged with the surface it would appear on (tour / tooltip / hover). Append to it whenever a session explains a behaviour in chat — chat is discarded, this is not. Source content for the eventual in-app product tour and tooltips (FR-119; **do not build the tour**, the founder deferred it) |
+| `docs/factor-ledger.md` | **Every factor considered, with disposition and reason** — 92 rows as of 2026-07-31. This is the multiple-comparisons denominator, written down: without it "we tested N factors" is unverifiable. Check it before testing anything, so a dispositioned factor is not re-run |
+| `docs/ranking/factor-campaign-manifest/` | One file per factor batch, sharded so concurrent agents cannot clobber each other. The campaign-level `M` lives here — corrections are computed against the **campaign**, never the batch, or every local correction is defensible while the campaign is not |
+| `docs/design/reference-screenshots/` | Standing screenshots of every key surface, regenerated on merge, at two widths in both themes. Design has read access and no running app — this is how it sees current reality instead of speccing against whatever capture someone remembered to take |
 | `docs/assistant-context.md` | Curated, current-state-only summary for the in-app assistant's "why" questions. One paragraph per settled decision, no history, no superseded numbers. Edited in place when an ADR supersedes something in it — never appended to. The assistant must read this instead of `decisions.md`/`test-registry.md`, both of which contain figures later entries overwrote |
 
 Keep this file lean. When a section outgrows a paragraph or two, move it to a companion doc and
@@ -342,10 +416,12 @@ expensively and expensive work cheaply.
 All of it goes through `docs/handoffs/`. Protocol in `docs/handoffs/README.md`. Never rely on a
 human to relay a message between agents — assume no human is in the loop.
 
-**Thread IDs and ADR numbers are never hand-typed or computed by reading a directory and adding
-one.** They come from `tools/handoffs.py new` / `sync` / `adr next` only. Hand-computed numbering
-has already caused collisions (threads 043, 049, 053; ADR-048) — full protocol in
-`docs/handoffs/README.md`.
+**Thread IDs, FR IDs, and ADR numbers are never hand-typed.** New threads/FRs are
+`YYYY-MM-DD-slug.md`, allocated by `tools/handoffs.py new`/`sync` (`tools/founder_requests.py` for
+FRs) with no shared counter — collisions on new items are structurally near-impossible (ADR-064).
+Existing `NNN`-numbered threads/FRs keep their numbers forever, never renamed. ADR numbers still
+come from `tools/handoffs.py adr next` only — hand-computed numbering caused ADR-048's collision;
+full protocol in `docs/handoffs/README.md`.
 
 - Need something from another role? Open a thread. Specify it fully; a half-specified ask costs a
   full session, not a minute.

@@ -1,0 +1,49 @@
+{
+  "contract_version": "1.18.0",
+  "generated_utc": "2026-07-30T20:51:52.629894+00:00",
+  "season": 2026,
+  "sources": [
+    {
+      "ranking_source_selection": "expert_adjusted",
+      "label": "Consensus adjusted",
+      "built": true,
+      "source_table": "rankings[fantasypros_csv_2026draft]",
+      "as_of_date": "2026-07-30",
+      "row_count": 554,
+      "note": "Board order is our VBD curve applied to this source's positional ranks -- our value judgement, re-scored into this league's structure."
+    },
+    {
+      "ranking_source_selection": "expert_raw",
+      "label": "Consensus",
+      "built": true,
+      "source_table": "rankings[fantasypros_csv_2026draft]",
+      "as_of_date": "2026-07-30",
+      "row_count": 554,
+      "note": "Board order is this source's own unmodified consensus rank, never re-derived from VBD. projected_points/vbd are still shown (our value curve applied to this order) for comparison, but never change which player is ranked where."
+    },
+    {
+      "ranking_source_selection": "market_adp",
+      "label": "ADP",
+      "built": true,
+      "source_table": "ffc_adp_snapshots[ffc_half_ppr_10team]",
+      "as_of_date": "2026-07-30",
+      "row_count": 158,
+      "note": "158 of 167 FFC half-PPR/10-team ADP rows (QB/RB/WR/TE) resolved to a gsis player id via the mfl_id crosswalk; unresolved rows are dropped, never guessed. Coverage is much thinner than the expert sources -- beyond FFC's sampled depth this source has no opinion at all, and the board built from it will be shorter."
+    },
+    {
+      "ranking_source_selection": "proprietary",
+      "label": "Proprietary bottom-up",
+      "built": false,
+      "source_table": null,
+      "as_of_date": null,
+      "row_count": null,
+      "note": "Not built. Component models measured worse than the incumbent board at all four positions (2026-07-30). This slot is named and catalogued so a client can show it as explicitly unavailable, never silently fall back to another source under this label -- see docs/founder-requests/FR-2026-07-30-four-selectable-ranking-sources-driving-every-fe.md."
+    }
+  ],
+  "board_files": {
+    "expert_adjusted": "board.json",
+    "expert_raw": "board.expert_raw.json",
+    "market_adp": "board.market_adp.json",
+    "proprietary": null
+  }
+}

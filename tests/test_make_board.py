@@ -1,4 +1,5 @@
 import csv
+import dataclasses
 import math
 import sqlite3
 
@@ -229,6 +230,132 @@ def test_real_2026_board_builds_and_is_position_complete():
     assert all(c.slope_log_rank < 0 for c in curves.values())
     # no kicker in this league -- K must never reach the board
     assert all(r.position in make_board.BOARD_POSITIONS for r in board)
+
+
+# --------------------- ranking_source_selection (FR-2026-07-30) -----------
+#
+# Sanity checks written BEFORE the implementation (CLAUDE.md non-negotiable).
+# Four selectable sources: expert_adjusted (current VBD-reordered board,
+# default -- must stay byte-identical to pre-existing callers),
+# expert_raw (same rows, board order is the source's OWN rank, never our
+# VBD), market_adp (FFC half-PPR/10-team ADP order), proprietary (does not
+# exist -- must raise a named, catalogued exception, never silently fall
+# back to another source).
+
+
+def test_ranking_source_selections_enum_matches_claude_md_four_sources():
+    assert make_board.RANKING_SOURCE_SELECTIONS == (
+        "expert_adjusted", "expert_raw", "market_adp", "proprietary",
+    )
+
+
+def test_default_selection_is_expert_adjusted_byte_identical_to_old_default(seeded_conn):
+    """A caller that never learns about ranking_source_selection must see
+    EXACTLY today's behavior -- no silent change to the primary board."""
+    old, _ = make_board.build_board(seeded_conn, 2025, n_bootstrap=0, source=make_board.TRAINING_SOURCE)
+    new, _ = make_board.build_board(
+        seeded_conn, 2025, n_bootstrap=0, source=make_board.TRAINING_SOURCE,
+        ranking_source_selection="expert_adjusted",
+    )
+    def _norm(rows):
+        out = []
+        for r in rows:
+            d = dataclasses.asdict(r)
+            for k in ("vbd_lo", "vbd_hi"):
+                if isinstance(d[k], float) and math.isnan(d[k]):
+                    d[k] = "NAN"
+            out.append(d)
+        return out
+
+    assert _norm(old) == _norm(new)
+
+
+def test_expert_raw_board_order_is_the_sources_own_rank_not_our_vbd(seeded_conn):
+    board, _ = make_board.build_board(
+        seeded_conn, 2025, n_bootstrap=0, source=make_board.TRAINING_SOURCE,
+        ranking_source_selection="expert_raw",
+    )
+    ranks = [r.consensus_rank for r in board]
+    assert ranks == sorted(ranks), (
+        "expert_raw must be ordered by the source's own consensus_rank, never re-derived "
+        "from VBD (CLAUDE.md sec4 never-blend)"
+    )
+
+
+def test_proprietary_selection_raises_not_built_never_falls_back(seeded_conn):
+    with pytest.raises(make_board.RankingSourceNotBuilt):
+        make_board.build_board(
+            seeded_conn, 2025, n_bootstrap=0, source=make_board.TRAINING_SOURCE,
+            ranking_source_selection="proprietary",
+        )
+
+
+def test_unknown_selection_raises_value_error(seeded_conn):
+    with pytest.raises(ValueError):
+        make_board.build_board(
+            seeded_conn, 2025, n_bootstrap=0, source=make_board.TRAINING_SOURCE,
+            ranking_source_selection="bogus",
+        )
+
+
+def test_describe_ranking_source_proprietary_is_explicitly_not_built(seeded_conn):
+    desc = make_board.describe_ranking_source(seeded_conn, 2025, "proprietary")
+    assert desc["built"] is False
+    assert desc["row_count"] is None
+    assert "not built" in desc["note"].lower()
+
+
+def test_describe_ranking_source_expert_reports_real_row_count_and_as_of(seeded_conn):
+    desc = make_board.describe_ranking_source(
+        seeded_conn, 2025, "expert_raw", source=make_board.TRAINING_SOURCE,
+    )
+    assert desc["built"] is True
+    assert desc["row_count"] == 12  # seeded_conn: 12 RB rows per season
+    assert desc["as_of_date"] == "2024-08-30"
+
+
+@pytest.mark.requires_db
+def test_describe_ranking_source_market_adp_is_thinner_than_expert_and_never_guesses():
+    conn = dbmod.connect()
+    try:
+        desc = make_board.describe_ranking_source(conn, 2026, "market_adp")
+    finally:
+        conn.close()
+    assert desc["built"] is True
+    # Real coverage measured 2026-07-30: 158 of 167 FFC QB/RB/WR/TE rows resolved
+    # to a gsis id. Assert the honest shape (thin, resolved <= total), not the
+    # exact figure, since the daily capture will move it.
+    assert 0 < desc["row_count"]
+    assert desc["row_count"] < 300  # far thinner than the ~554-row expert board
+
+
+@pytest.mark.requires_db
+def test_market_adp_board_orders_by_adp_not_our_vbd():
+    conn = dbmod.connect()
+    try:
+        board, _ = make_board.build_board(conn, 2026, n_bootstrap=0, ranking_source_selection="market_adp")
+    finally:
+        conn.close()
+    assert len(board) > 30
+    ranks = [r.consensus_rank for r in board]
+    assert ranks == sorted(ranks)
+
+
+@pytest.mark.requires_db
+def test_market_adp_and_expert_adjusted_boards_disagree_materially():
+    """The founder's own measurement (thread 119): the two live sources
+    disagree on 73 of the top 80 players. If this ever comes back near-zero,
+    suspect the two sources silently collapsed onto one input."""
+    conn = dbmod.connect()
+    try:
+        adp_board, _ = make_board.build_board(conn, 2026, n_bootstrap=0, ranking_source_selection="market_adp")
+        expert_board, _ = make_board.build_board(conn, 2026, n_bootstrap=0, ranking_source_selection="expert_adjusted")
+    finally:
+        conn.close()
+    adp_top = [r.player for r in adp_board[:50]]
+    expert_top = {r.player for r in expert_board[:50]}
+    disagreements = sum(1 for p in adp_top if p not in expert_top)
+    assert disagreements > 5
 
 
 @pytest.mark.requires_db

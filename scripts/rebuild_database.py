@@ -1,10 +1,17 @@
 """Rebuild `data/nfl.db` from a clean checkout, in one command, no credentials.
 
 Run in this exact order, measured end-to-end against this database path in this session
-(2026-07-29):
+(2026-07-29; step 1b added 2026-07-30, see
+docs/handoffs/2026-07-30-five-datasets-30-seconds-total-all-measured-toda.md):
 
   1. ingest_weekly_stats.py
-  2. ingest_reference.py
+  1b. ingest_pbp.py                 -- play-by-play, 2009-present, slimmed to 24 columns
+                                       (see its module docstring). 816,856 rows, ~35s cold /
+                                       ~10s warm cache. season/week granularity, no as_of_date
+                                       column exists in the source.
+  2. ingest_reference.py            -- also carries rosters_weekly (status incl. RES/EXE,
+                                       2002-present) and schedules (incl. 2026, unplayed)
+                                       as of 2026-07-30.
   3. ingest_league_metrics.py
   4. ingest_rankings.py            -- 2021-2026, re-pulls identically to the committed
                                        rescue CSV (see docs/can-we-rebuild-the-database.md)
@@ -25,6 +32,14 @@ Run in this exact order, measured end-to-end against this database path in this 
                                        point-in-time CSVs; a live --force pull only ever
                                        gets *today's* rolling aggregate, never a past date.
                                        Order-independent relative to the rest.
+
+NOTE on `injuries` and 2025: `load_injuries` returns 2025 rows, but every one of them has a
+NULL `date_modified` upstream (verified 2026-07-30, not assumed) -- `ingest_reference.py`
+correctly drops rows missing their as_of column (CLAUDE.md Sec6.1: reject, never default) rather
+than inventing a date. This means `injuries` has zero 2025 rows in `nfl.db` by design, not by
+bug. If a downstream consumer wants a season/week-only substitute for 2025 injury status,
+that is a methodology decision for backend/statistician, not something this ingester should
+silently do on its own authority.
 
 `identity.py` HAS NO --db FLAG. Any doc that shows one for it is wrong; this script accounts
 for that by calling its `build_identity_tables(conn)` function directly against a connection
@@ -85,6 +100,9 @@ EXPECTED_MOCK_PICKS = 145
 EXPECTED_MOCK_QUARANTINE = 15
 MIN_RANKINGS_2021_2025_ROWS = 2540  # re-pull may exceed this if the mirror gains rows; never less
 MIN_ADP_SNAPSHOT_DATES = 2  # at least the two pre-existing committed CSVs, growing daily
+MIN_PBP_ROWS = 800_000  # 2009-2025 measured at 816,856 rows 2026-07-30; grows each season
+MIN_ROSTERS_WEEKLY_ROWS = 850_000  # 2002-2025 measured at 888,786 rows 2026-07-30
+MIN_SCHEDULES_ROWS = 7_500  # 1999-2026 measured at 7,548 rows 2026-07-30
 
 
 class RebuildFailure(RuntimeError):
@@ -134,23 +152,27 @@ def _print_counts(db_path: Path) -> dict[str, int]:
 def run_public_ingestion(db_path: Path, python_exe: str) -> None:
     _run(
         [python_exe, str(SRC_DIR / "ingest_weekly_stats.py"), "--db", str(db_path)],
-        "1/8 ingest_weekly_stats.py",
+        "1/9 ingest_weekly_stats.py",
+    )
+    _run(
+        [python_exe, str(SRC_DIR / "ingest_pbp.py"), "--db", str(db_path)],
+        "1b/9 ingest_pbp.py",
     )
     _run(
         [python_exe, str(SRC_DIR / "ingest_reference.py"), "--db", str(db_path)],
-        "2/8 ingest_reference.py",
+        "2/9 ingest_reference.py",
     )
     _run(
         [python_exe, str(SRC_DIR / "ingest_league_metrics.py"), "--db", str(db_path)],
-        "3/8 ingest_league_metrics.py",
+        "3/9 ingest_league_metrics.py",
     )
     _run(
         [python_exe, str(SRC_DIR / "ingest_rankings.py"), "--db", str(db_path)],
-        "4/8 ingest_rankings.py",
+        "4/9 ingest_rankings.py",
     )
     _run(
         [python_exe, str(SRC_DIR / "ingest_fantasypros_csv.py"), "--db", str(db_path)],
-        "5/8 ingest_fantasypros_csv.py",
+        "5/9 ingest_fantasypros_csv.py",
     )
 
 
@@ -248,6 +270,21 @@ def assert_restored(db_path: Path) -> None:
             "adp_snapshots (distinct captured dates)",
             scalar("SELECT COUNT(DISTINCT substr(retrieved_at, 1, 10)) FROM adp_snapshots"),
             MIN_ADP_SNAPSHOT_DATES, ">=",
+        ))
+        checks.append((
+            "pbp (2009-present)",
+            scalar("SELECT COUNT(*) FROM pbp"),
+            MIN_PBP_ROWS, ">=",
+        ))
+        checks.append((
+            "rosters_weekly (2002-present)",
+            scalar("SELECT COUNT(*) FROM rosters_weekly"),
+            MIN_ROSTERS_WEEKLY_ROWS, ">=",
+        ))
+        checks.append((
+            "schedules (1999-present)",
+            scalar("SELECT COUNT(*) FROM schedules"),
+            MIN_SCHEDULES_ROWS, ">=",
         ))
     finally:
         conn.close()

@@ -136,3 +136,26 @@ def test_te_t1_at_23_lands_in_the_predeclared_sanity_bracket():
     p = res.tier_avail["TE"]["T1"].get(23)
     assert p is not None
     assert 0.0 <= p <= 0.62, f"TE T1 @23 = {p}, outside the pre-declared sanity bracket"
+
+
+@pytest.mark.requires_db
+def test_load_season_provenance_matches_the_rows_it_actually_read():
+    """SeasonData.consensus_rank_source/consensus_rank_as_of_date must be
+    read from the SAME rows consensus_rank came from, not a second constant
+    that could drift -- this is what export_contract's ranking_sources
+    identity (thread 104) is built on. Cross-checked here against a direct
+    query, independent of load_season's own internals."""
+    import db as dbmod
+
+    conn = dbmod.connect()
+    try:
+        data = ds.load_season(conn, 2026)
+        row = conn.execute(
+            "SELECT MAX(as_of_date) FROM rankings WHERE source=? AND season=?",
+            (ds.CONSENSUS_RANK_SOURCE, 2026),
+        ).fetchone()
+    finally:
+        conn.close()
+    assert data.consensus_rank_source == ds.CONSENSUS_RANK_SOURCE
+    assert data.consensus_rank_as_of_date == row[0]
+    assert data.consensus_rank_as_of_date is not None

@@ -36,6 +36,26 @@ REVIEWED_TIMESTAMPS = {
     "2026-07-25T21:48:28.622372+00:00",  # FINAL_EVALUATION_OPENED (no prereg id)
     "2026-07-25T21:48:28.623402+00:00",  # ALLOWED (same cycle)
     "2026-07-25T21:48:33.520512+00:00",  # FINAL_EVALUATION_CLOSED (same cycle)
+
+    # Reviewed 2026-07-30 (ADR-066, backend). Recomputation of the ADR-025
+    # board-vs-consensus starter_vbd figures under the corrected
+    # never-played-player VBD-deficit fix (src/backtest.py, commit
+    # b567586), plus diagnostic blast-radius measurement of the same
+    # metric on the bpa_prior_season_points arm. Per the strategist's own
+    # ruling (ADR-DRAFT-primary-evaluation-metric.md SS4.1), recomputing an
+    # already-spent holdout number under a corrected metric is not a fresh
+    # spend -- the 2025 season was already unsealed for this exact
+    # decomposition at 2026-07-25T21:48:28Z (the entry above). No new
+    # registration id exists because this is not a new pre-registered
+    # test. See ADR-066 for the full before/after table.
+    "2026-07-30T20:01:04.112359+00:00",  # FINAL_EVALUATION_OPENED
+    "2026-07-30T20:01:27.233086+00:00",  # FINAL_EVALUATION_OPENED
+    "2026-07-30T20:02:46.420513+00:00",  # FINAL_EVALUATION_OPENED
+    "2026-07-30T20:03:43.258999+00:00",  # FINAL_EVALUATION_OPENED
+    "2026-07-30T20:04:16.545826+00:00",  # FINAL_EVALUATION_OPENED
+    "2026-07-30T20:04:32.669170+00:00",  # FINAL_EVALUATION_OPENED (debug re-check)
+    "2026-07-30T20:06:08.053367+00:00",  # FINAL_EVALUATION_OPENED (re-verify after commit reshuffle)
+    "2026-07-30T20:06:36.879318+00:00",  # FINAL_EVALUATION_OPENED (re-verify after commit reshuffle)
 }
 
 AUDITED_EVENTS = {

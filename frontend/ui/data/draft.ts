@@ -168,6 +168,20 @@ export function teamSlotAtPick(overallPick: number, teams: number): number {
   return round % 2 === 1 ? positionInRound : teams - positionInRound + 1;
 }
 
+/**
+ * FR-135 (traditional draft board): the exact inverse of `teamSlotAtPick` in
+ * the other direction -- given a (round, team slot) address, the overall pick
+ * number that address occupies under this league's snake order. The board
+ * needs this to number every cell (made or not) from `round.pick` addresses
+ * alone, before any pick exists to look up. Kept as the single source of the
+ * round/slot<->overallPick formula; `pickNumbersForSlot` below is defined in
+ * terms of it rather than re-deriving the same arithmetic a second time.
+ */
+export function overallPickForRoundSlot(round: number, slot: number, teams: number): number {
+  const positionInRound = round % 2 === 1 ? slot : teams - slot + 1;
+  return (round - 1) * teams + positionInRound;
+}
+
 /** The overall pick number every one of this league's rounds lands on for one
  *  team slot -- used both for "your next pick" and to build the full user-picks
  *  list independent of league.json:pick_sequence (which only covers the real
@@ -175,8 +189,7 @@ export function teamSlotAtPick(overallPick: number, teams: number): number {
 export function pickNumbersForSlot(teams: number, slot: number, rounds: number): number[] {
   const out: number[] = [];
   for (let round = 1; round <= rounds; round++) {
-    const positionInRound = round % 2 === 1 ? slot : teams - slot + 1;
-    out.push((round - 1) * teams + positionInRound);
+    out.push(overallPickForRoundSlot(round, slot, teams));
   }
   return out;
 }

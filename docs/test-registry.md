@@ -75,24 +75,42 @@ What a serious, well-read opponent has. Table stakes among the sharpest 2–3 ma
 | 13 | Target share **stability** YoY | Separates real role from one-year noise | `nflverse` | M | Med | SPEC | **NULL** — S1 stability arm: −0.035 targets MAE full universe (BH-sig at WR only), **0.02% on the ADP board**, no ranking effect anywhere. YoY persistence of target share measured: WR +0.652 [+0.624,+0.680], TE +0.632, RB +0.548 — role-tier, just below snap share +0.707. `factor-batch-1-results.md` |
 | 14 | Air yards, aDOT | Big-play vs. volume profile | `nflverse` | M | Med | NEW | — (not run) |
 | 15 | WOPR | Best single opportunity metric for WR | `derived` | M | Med | NEW | — (not run) |
-| 16 | Yards per route run | Efficiency independent of volume | `nflverse:FTN` | M | Med | NEW — check FTN columns first | — (not run) |
-| 17 | Route participation rate | Distinguishes starters from rotational | `nflverse:FTN` | M | High | NEW — check FTN columns first | — (not run) |
-| 18 | **Expected fantasy points (xFP) vs. actual** | Isolates luck from skill | `derived` | H | **High** | NEW | — (not run) |
+| 16 | Yards per route run | Efficiency independent of volume | `load_participation()` (2016+), **confirmed: FTN cannot supply it** | M | Med | RUN | **NULL — and the route block's whole content is a coverage flag.** Batch 5 ran the per-route family (TPRR, routes/game, 1D/RR) at WR/TE/RB over 7 target seasons. Nothing BH-significant at the campaign denominator or the batch one; largest effect 0.80% of primary error. **8 of 8 treatment cells graded VOID — COVERAGE ARTIFACT**: the bare `routes_known` flag alone beats every feature built on it (WR 4.1×/3.7×/19.7×, TE 3.2×/1.06×/7.1×, RB 2.7×/1.3×). E1b confirms independently — route arms are **worse** on the ADP board (TE routes/game **+1.59** targets MAE) while neutral on the full universe, the signature of "is this an NFL pass-catcher" rather than a rate. `factor-batch-5-results.md` §1–2 |
+| 17 | Route participation rate | Distinguishes starters from rotational | `load_participation()` (2016+) | M | High | RUN | **NULL, same family as #16.** The row's own rationale — "distinguishes starters from rotational" — is exactly what the measurement found, and it is the problem rather than the edge: the model already knows who the starters are. Descriptively (F3, outside the family), TPRR reaches ρ=+0.476 to next-season FPG on a survivor-filtered WR population against **prior FPG's +0.612 on the same rows** — below the incumbent, and 4for4's published ordering YPRR (0.535) > 1D/RR (0.528) > TPRR (0.476) replicates exactly. **Per the pre-commitment's stopping condition, do not re-specify a third time on the grounds the sample was short** — 7 target seasons off a 10-season source is what the corrected tag buys. `factor-batch-5-results.md` §2–3 |
+| 18 | **Expected fantasy points (xFP) vs. actual** | Isolates luck from skill | `derived` (`nflreadpy.load_ff_opportunity()`, prebuilt) | L | **High** | RUN | **REJECTED with evidence, in its strongest form (batch 6, 2026-07-30).** Swapping realised prior PPG for the xFP model's *expected* prior PPG is **HARMFUL at RB/WR/QB** (+1.55%/+1.64%/+0.69% of the position's own error, BH-sig at campaign m=80, breaking m 1721/308/140) and MARGINAL-HARMFUL at TE — worse on the ADP board too, all four with negative board Spearman. Adding xFP/game as a supplementary feature (X1) is at best MARGINAL and negative-signed at QB/RB. The xFP luck-residual (actual − expected) is MARGINAL at RB/QB, NULL at WR/TE. **Zero SURVIVES across all three constructions, all four positions.** `factor-batch-6-results.md` §2 |
 | 19 | TD-rate regression | Best-known regression signal | `derived` | M | **High** | SPEC | **HARMFUL as framed / already solved** — discarding own TD rate for the pooled mean (arm T2) is worse at **all four positions**: WR +0.0251, TE +0.0180, RB +0.0182, **QB +0.2295 pass TDs MAE**. Existing empirical-Bayes shrinkage already extracts the signal; a volume-conditional prior adds 0.8% full-universe and **nothing on the ADP board**. `factor-batch-1-results.md` |
 | 20 | Opportunity share (carries+targets / team total) | Single best RB metric | `nflverse` | M | High | SPEC | **NULL at RB** — the position the row names. Ablating carry share costs −0.017 carries MAE [−0.050,+0.003]; share×pace reparameterisation −0.086 [−0.272,+0.068]. **At WR share does earn its place**: removing it costs +0.196 targets MAE on the ADP board (+0.6%). `factor-batch-1-results.md` |
 | 21 | Team pace / plays per game | Volume multiplier | `nflverse` | M | Med | NEW | — (not run) |
 | 22 | Pass rate over expectation (PROE) | Scheme tilt | `nflverse` | M | Med | NEW | — (not run) |
-| 23 | O-line run-block & pass-block rankings | RB efficiency, QB time | external | L | Med | SPEC | — (not run) |
+| 23 | O-line run-block & pass-block rankings | RB efficiency, QB time | `derived` (Adjusted Line Yards, public formula over PBP) / `nflverse` (`load_pfr_advstats()`, 2018+) | L | Med | SPEC | — (not run) |
 | 24 | QB quality for pass catchers | Ceiling constraint | `derived` | L | Med | SPEC | — (not run) |
 | 25 | NFL draft capital (rookies) | Best rookie predictor | `nflverse` | L | Med | SPEC | — (not run) |
 | 26 | Breakout age / college dominator | Rookie projection | external | M | Med | NEW | — (not run) |
 | 27 | Contract year / free-agency status | Motivation & usage | `nflverse` (contracts) | L | Low | NEW | — (not run) |
-| 28 | Vacated targets & carries | Where opportunity actually opened | `derived` | M | High | NEW | **BLOCKED, not measured** — `nfl.db` has **no pre-season roster table**, so this ran on a Week-1 depth-chart PROXY. Vacancy arm HARMFUL at RB (+0.203 carries MAE) and TE, NULL at WR, with the harm concentrated in the high-measured-vacancy bucket the proxy is known to contaminate. Needs `nflreadpy.load_rosters_weekly()`. `factor-batch-1-results.md` |
-| 29 | Coordinator continuity | High OC turnover league-wide | `pfr` | L | **High** | **GATED on coordinator data** — PFR returns HTTP 403; head coach is NOT a substitute, see note | — (not run) |
-| 30 | First-time play-callers | Week-to-week volatility | `pfr` | L | Med | **GATED on coordinator data** — same | — (not run) |
+| 28 | Vacated targets & carries | Where opportunity actually opened | `derived` | M | High | SPEC | **NULL — re-tested on REAL pre-season rosters, 2026-07-30. The batch-1 HARM was a proxy artifact, confirmed directly.** Same harness, `rosters_weekly` instead of the Week-1 depth chart: RB **+0.203 → −0.012**, paired **V2−V1 = −0.2154 [−0.3003,−0.1384], p=0.0006**; TE +0.045 → +0.015; WR +0.082 → +0.028. In the high-vacancy bucket the RB harm goes +0.770 → +0.064 (92% gone), which is the mechanism batch 1 predicted. **But all three are NULL** — as are the two further constructions (V3 absence share; V4 player-level opportunity-vacated-*above*-this-player). Nine cells, zero wins. `factor-batch-2-results.md` |
+| 29 | Coordinator continuity | High OC turnover league-wide | `wikipedia` (was `pfr`) | L | ~~High~~ **DEAD** | **CLOSED 2026-07-30** | **DEAD ON BOTH SPECIFICATIONS — do not re-specify a third time.** Batch 3 added the two arms batch 2 could not: *change at QB* (C1Q −0.0660, p=0.274, NULL) and *tenure*, the founder's own correction, at four positions (QB −0.2427 p=0.106 · WR +0.0140 p=0.179 · TE −0.1227 p=0.052 · RB +0.0492 p=0.244 — **nothing clears BH at campaign m=24**). QB tenure is the best number in the family and its own registered control arm is **46% of it**, a rounding error from the pre-declared VOID threshold. **Seven arms, two batches, two specifications, one model, nothing.** Source floor measured at 2010 (Wikipedia staff navboxes do not exist earlier; 96/192 team-seasons empty 2004–2009), censoring 3.1%, so the nulls are not artefacts of a truncated source. `factor-batch-3-results.md`. Batch 2's original finding, retained: **UNGATED 2026-07-30, then NULL.** `play_callers_preseason` (pre-Week-1 Wikipedia navbox revisions, 2012–2024, all 32 clubs, 803 OC+DC rows) gives `oc_known` **0.995/0.992/0.997** on the ADP board. "This player's club has a new OC": WR −0.006 (p=0.71), TE −0.003 (p=0.87), RB +0.093 (p=0.29) — **all NULL, and E1b positive at all three**, i.e. slightly worse where drafts happen. **Not underpowered: the OC changes for 46–48% of board player-seasons.** `factor-batch-2-results.md` |
+| 30 | First-time play-callers | Week-to-week volatility | `wikipedia` (was `pfr`) | L | Med | **NO LONGER GATED** — `play_callers_preseason` carries OC/DC identity and head-coach name per club-season, 2012–2024. Note the ceiling before spending on it: only **17.9%** of OC changes bring in someone who was an OC elsewhere the prior season, so any prior-history signal can reach one change in six | — (not run) |
+| 29c | **QB rushing volume as an input to PASSING volume** (new row, batch 3) | A rushing quarterback throws measurably less, and no QB-specific input exists anywhere in the shipped board | `nflverse` (already in `player_weekly_stats`) | L | Med | **MEASURED 2026-07-30** | **PROJECTION-ONLY.** Adding lagged rushing carries/game to the QB attempt-volume spec: **−1.4679 attempts MAE (−1.30%) [−2.276,−0.688], p = 0.0068**, BH-significant at campaign m=24, and better on the ADP board (E1b −3.03). E2 −0.016, so it does not yet improve the ranking. Separately, ABLATING the QB rushing block costs **+1.8065 carries MAE, +14.4% of the position's own error**, all 11 seasons worse — the first ablation of any QB feature in this project. `factor-batch-3-results.md` |
+| 29d | **Efficiency offered to the VOLUME channel** (new row, batch 3, post-hoc) | The model fits yards-per-carry and uses it only for the yards channel; nothing connects a back's efficiency to how much work he gets next year | `derived` (already in the model) | **L — a wiring change, no new data** | **High** | **POST-HOC, registered with strategist, NOT RUN confirmatorily** | Lagged YPC added to the RB carry-volume spec: **−0.9331 carries MAE (−1.88%), E1b −0.7200** — better than the registered explosive-rate arm on both endpoints (−0.7508 / −0.0264). **Not a result. A hypothesis with a measurement attached**; it needs a `strategist` registration and a `backend` handoff before it means anything. `factor-batch-3-results.md` §1(1) |
 | 29b | Head-coach continuity (separate, weaker candidate) | Cheap proxy, but not what #29/#30 test | `nflverse` (schedules) | L | Low-Med | **NEW** — data available 1999-2026, 100% populated | — (not run) |
 | 31 | Personnel package trends | Structural WR3 headwind | `nflverse:FTN` | L | Med | SPEC | — (not run) |
 | 32 | Pre-snap motion rates | Largely arbitraged league-wide | `nflverse:FTN` | L | **Low** | SPEC | — (not run) |
+
+**Four cost/source corrections, 2026-07-30 (external analyst sweep,
+`docs/research/analyst-factor-sweep-2026-07-30.md` §1, all `[VERIFIED]`). None of these change any
+result or edge rating — only the facts about what it costs and where it comes from.**
+
+- **#18 xFP, re-costed `H` → `L`.** It was listed as the "highest-value unbuilt Tier 1 item" at
+  effort `H`. `nflreadpy.load_ff_opportunity()` is a free, prebuilt, versioned xgboost xFP model
+  over nflverse PBP, 2006–current — a download, not a build.
+- **#16 YPRR and #17 route participation, re-tagged `nflverse:FTN` → `load_participation()`,
+  2016+.** FTN charting has **no per-player columns at all** — 28 columns, play-level only, no
+  receiver ID, no routes-run. It cannot supply either factor. The real source is
+  `load_participation()`'s `offense_players` per play, which gives **ten seasons, not four.** The
+  wrong tag has been suppressing both tests.
+- **#23 O-line, re-tagged `external` → `derived` / `nflverse`.** Adjusted Line Yards is a public
+  formula over play-by-play, and `load_pfr_advstats()` (2018+) ships yards-before-contact, broken
+  tackles, drops, and pressure/hurry/blitz rates for free — no PFR scrape, no HTTP 403 risk.
 
 **The `Measured verdict` column (added 2026-07-30).** `Status` records whether a factor is *built*.
 It has never recorded what a factor turned out to be *worth*, which is the only thing that should
@@ -118,6 +136,21 @@ baseline it will beat trivially.
 
 **#29/#30 require the `coach_id` dimension**, not `team_id`. Coordinators change teams; tendency
 signal keyed to franchise breaks the moment someone moves.
+
+**#29/#30 UNGATED, 2026-07-30 — this supersedes the two paragraphs below.** PFR is still 403 and
+still not the source. The source is **pre-Week-1 revisions of each club's Wikipedia staff navbox**
+(`experiments/bottomup/factors/coord_preseason.py` → `play_callers_preseason`). Three things that
+were assumed and are now measured:
+
+- **The `coach_id` join works across team moves.** 53 of 126 named OCs (**42.1%**) appear for two or
+  more clubs, covering **243 of 400** club-seasons, with **zero** same-season name collisions. Greg
+  Roman SF→BUF→BAL→LAC; Nathaniel Hackett BUF→JAX→GB→NYJ.
+- **End-of-season staff cannot be used for either test, and the reason is not staleness.**
+  `play_callers` stores `{{NFL final staff}}`, which for a club that fired its OC in November names
+  the *replacement* — and the firing is caused by the season going badly, so the contamination points
+  the **same way as the hypothesis**. Two tables, two questions; they must not be merged.
+- **#29 itself is now NULL** (see the row above). #30 is unblocked but unrun, and its ceiling is
+  17.9% of changes.
 
 **#29/#30 status correction (2026-07-25).** `load_schedules` carries `home_coach`/`away_coach`
 (1999-2026, 100% populated, 177 coaches) and this was briefly noted as a partial substitute.
@@ -388,14 +421,14 @@ Where real differentiation likely lives.
 | 61 | Bye-week clustering cost | 6 bench spots; 4 starters on one bye is avoidable | `nflverse` | L | NEW |
 | 62 | In-season acquisition share of championship rosters | If most winning points come post-draft, draft optimization is worth less than we think | `league` | M | NEW |
 | 63 | FAAB market efficiency in 10-team | What do winning bids actually cost? | `league` | M | NEW |
-| 64 | Best-ball vs. redraft ADP divergence | Best-ball ADP is pure points-value; redraft includes startability bias. **The gap is itself a signal.** | `adp` | M | **BLOCKED** — no ADP source exists (ADR-018) |
-| 65 | Auction values as continuous value proxy | Finer-grained than ordinal ADP | `adp` | L | **BLOCKED** — no ADP source exists (ADR-018) |
-| 66 | ADP momentum (July→August rate of change) | Rising players often keep rising past fair value | `adp` | L | **BLOCKED** — no ADP source exists (ADR-018) |
+| 64 | Best-ball vs. redraft ADP divergence | Best-ball ADP is pure points-value; redraft includes startability bias. **The gap is itself a signal.** | `adp` | M | **UNBLOCKED, not yet run (corrected 2026-07-31).** ADR-018's "no ADP source exists" is superseded — FFC ADP is ingested (`src/ingest_ffc_adp.py`, ADR unblocking it 2026-07-29, `docs/decisions.md`) and MFL ADP since ADR-035. Neither is best-ball-specific, so this test still needs a best-ball ADP source (FFC's own best-ball boards, or Underdog) before it can run; general redraft ADP alone does not answer it. |
+| 65 | Auction values as continuous value proxy | Finer-grained than ordinal ADP | `adp` | L | **UNBLOCKED, not yet run (corrected 2026-07-31).** Same ADR-018 correction as #64. FFC/MFL ADP are ordinal, not auction values — this test still needs an auction-value source specifically. |
+| 66 | ADP momentum (July→August rate of change) | Rising players often keep rising past fair value | `adp` | L | **UNBLOCKED, not yet run (corrected 2026-07-31).** ADR-018's blocker is gone (see #64) and the daily ADP capture (`.github/workflows/adp-snapshot.yml`, running since 2026-07-29) is now building the dated snapshot history this test needs — but only from that date forward, so a July→August comparison needs at least one more season's capture before it is runnable, not immediately. |
 | 67 | Historical consensus-error analysis | Where has the market been *systematically* wrong? | ~~`adp`~~ `derived` | H | **PARTIAL — runnable now.** Not ADP-blocked; see note |
 | 68 | Positional run / cascade modeling | If I take X, how does the room respond? | `league` | H | **IMPLEMENTED (ADR-045)** — `live_availability.py`'s `R(p)`; `delta=0.10` is an unvalidated prior, needs mocks with per-pick draft state (SS5(b), not built) |
 | 69 | Weeks 16–17 availability risk | Clinched teams rest starters; eliminated teams play backups | `nflverse` | M | NEW |
 | 70 | Unsupervised tier clustering | Cluster on projected points + variance instead of eyeballing breaks | `derived` | M | NEW |
-| 71 | Ensemble ADP weighted by historical accuracy | Which source has actually predicted best? | `adp` | M | **BLOCKED** — needs ≥2 ADP sources; zero exist (ADR-018) |
+| 71 | Ensemble ADP weighted by historical accuracy | Which source has actually predicted best? | `adp` | M | **PARTIALLY UNBLOCKED, not yet run (corrected 2026-07-31).** ADR-018's "zero ADP sources exist" is stale — FFC and MFL are both ingested now, so ≥2 sources exist. Still needs the historical-accuracy comparison itself, and how well MFL's proxy role (never blended, per ADR-035) fits an "ensemble weighted by accuracy" design is an open methodology question, not yet resolved. |
 | 72 | Value-of-information ranking | Which uncertainties are worth resolving before draft day? Meta-test that prioritizes everything else. | `derived` | M | NEW |
 
 **#55 and #58 are the two highest-value items in the registry.**
@@ -410,8 +443,11 @@ highest-EV strategy in the abstract may not be the highest-EV strategy in practi
 models this.
 
 **#67 and #71 are the strongest arguments for ADP snapshot discipline.** Both require historical
-ADP with correct `as_of_date` values. Without dated snapshots, neither can ever be run. Start
-capturing now even though the analysis is far off — this data cannot be reconstructed later.
+ADP with correct `as_of_date` values. **Capture is no longer "start now" — it started 2026-07-29**
+(`.github/workflows/adp-snapshot.yml`, daily, running unattended off-machine; FFC's own historical
+backfill also landed separately, 2,467 rows 2013–2024). The remaining gap is duration: same-season
+`as_of_date` coverage only goes back to when the daily capture began, so #66's within-season
+momentum question specifically still needs another season to accumulate before it is runnable.
 
 ---
 

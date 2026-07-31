@@ -79,9 +79,9 @@ def test_sync_renames_new_file_and_stamps_id_and_opened(hf):
     ingested = hf.ingest_pending(today="2026-07-27")
     assert len(ingested) == 1
     dest = ingested[0]
-    assert dest.name == "001-some-thread.md"
+    assert dest.name == "2026-07-27-some-thread.md"
     text = dest.read_text(encoding="utf-8")
-    assert "ID: 001" in text
+    assert "ID: 2026-07-27-some-thread" in text
     assert "OPENED: 2026-07-27" in text
     assert not (hf.HANDOFFS / "NEW-some-thread.md").exists()
 
@@ -90,7 +90,7 @@ def test_sync_ingests_pm_outbox_files(hf):
     _write(hf.PM_OUTBOX / "founder-csv-request.md", frm="pm", to="backend")
     ingested = hf.ingest_pending(today="2026-07-27")
     assert len(ingested) == 1
-    assert ingested[0].name == "001-founder-csv-request.md"
+    assert ingested[0].name == "2026-07-27-founder-csv-request.md"
     assert not (hf.PM_OUTBOX / "founder-csv-request.md").exists()
     # outbox README-style files (if any) are never swept up
     (hf.PM_OUTBOX / "README.md").write_text("only write surface", encoding="utf-8")
@@ -107,14 +107,73 @@ def test_sync_idempotent_on_empty_outbox(hf):
     assert (hf.HANDOFFS / "001-existing.md").exists()
 
 
-def test_ingest_refuses_to_overwrite_existing_path(hf):
-    _write(hf.HANDOFFS / "004-conflict.md")  # occupies the slot ingestion will be forced onto
+# --- W3: date+slug allocation (supersedes the NNN counter for NEW threads) --------------
+
+def test_new_thread_filename_has_no_shared_counter_and_no_git_dependency(hf, monkeypatch):
+    """The core W3 property: allocating a new thread filename never reads git refs or
+    any 'highest so far' state -- it is a pure function of (date, slug). Prove it by
+    making any git call blow up and confirming allocation still works."""
+    def _boom(*a, **kw):
+        raise AssertionError("new_thread_filename must not touch git")
+    monkeypatch.setattr(hf, "_git_ref_names", _boom)
+    monkeypatch.setattr(hf.subprocess, "run", _boom)
+    path = hf.new_thread_filename("2026-07-30", "availability-opponent-model")
+    assert path.name == "2026-07-30-availability-opponent-model.md"
+    assert path.exists()  # claimed atomically
+
+
+def test_new_thread_filename_dedupes_same_day_same_slug_deterministically(hf):
+    """Two threads opened on the same day with the same subject, in the SAME working
+    tree, must not collide -- and must not require a human to pick a number. The
+    second call gets a deterministic -2 suffix instead of overwriting or raising."""
+    p1 = hf.new_thread_filename("2026-07-30", "sprint-4-runbook")
+    p2 = hf.new_thread_filename("2026-07-30", "sprint-4-runbook")
+    p3 = hf.new_thread_filename("2026-07-30", "sprint-4-runbook")
+    assert {p1.name, p2.name, p3.name} == {
+        "2026-07-30-sprint-4-runbook.md",
+        "2026-07-30-sprint-4-runbook-2.md",
+        "2026-07-30-sprint-4-runbook-3.md",
+    }
+
+
+def test_two_worktrees_different_subjects_same_day_cannot_collide(hf, tmp_path, monkeypatch):
+    """Reproduces thread 076's actual scenario under the NEW scheme: two isolated
+    worktrees (simulated as two separate HANDOFFS directories, standing in for two
+    working trees neither of which can see the other's in-flight file) each allocate a
+    thread on the same day. Under the OLD counter scheme this is exactly the case that
+    collided (both worktrees compute the same 'next free number' from what they can
+    see). Under the date+slug scheme, allocation needs no visibility into the other
+    worktree at all -- the filenames differ because the *subjects* differ, which is
+    already known locally with nothing to race."""
+    tree_a = tmp_path / "worktree-a" / "docs" / "handoffs"
+    tree_b = tmp_path / "worktree-b" / "docs" / "handoffs"
+    tree_a.mkdir(parents=True)
+    tree_b.mkdir(parents=True)
+
+    monkeypatch.setattr(hf, "HANDOFFS", tree_a)
+    path_a = hf.new_thread_filename("2026-07-30", hf._slugify("Availability opponent model"))
+
+    monkeypatch.setattr(hf, "HANDOFFS", tree_b)
+    path_b = hf.new_thread_filename("2026-07-30", hf._slugify("Sprint 4 runbook"))
+
+    # Different subjects -> different filenames -> a merge of both worktrees is a
+    # clean two-file add, never a collision. (Under the old NNN scheme, both worktrees
+    # would independently have computed the SAME next number here.)
+    assert path_a.name != path_b.name
+    assert path_a.name == "2026-07-30-availability-opponent-model.md"
+    assert path_b.name == "2026-07-30-sprint-4-runbook.md"
+
+
+def test_ingest_never_raises_on_same_day_same_slug_pm_outbox_race(hf):
+    """The old scheme's collision test (`test_ingest_refuses_to_overwrite_existing_path`,
+    an artifact of counter-based allocation) is gone: under W3 there is nothing left to
+    hard-fail on. Two pending files that would slugify to the same name on the same day
+    both ingest successfully, deterministically disambiguated."""
     _write(hf.HANDOFFS / "NEW-conflict.md")
-    src = hf.HANDOFFS / "NEW-conflict.md"
-    with pytest.raises(SystemExit):
-        hf._ingest_one(src, nid=4, today="2026-07-27")
-    # the pending file must survive a refused ingestion, not be half-consumed
-    assert src.exists()
+    _write(hf.PM_OUTBOX / "conflict.md")
+    ingested = hf.ingest_pending(today="2026-07-27")
+    assert len(ingested) == 2
+    assert {p.name for p in ingested} == {"2026-07-27-conflict.md", "2026-07-27-conflict-2.md"}
 
 
 def test_check_flags_stale_unallocated_new_file(hf, monkeypatch):
@@ -286,3 +345,46 @@ def test_flag_stale_decision_refs_detects_reference_to_decided_d_number(hf, tmp_
     flagged_files = {t.path.name for t, _ in flags}
     assert "010-touches-decided.md" in flagged_files
     assert "011-touches-open.md" not in flagged_files
+
+
+# --- Pre-existing legacy debt carve-out (frozen 2026-07-30, ADR-064) --------------------
+
+def test_known_legacy_collisions_registry_is_frozen():
+    """Pins the exact contents of the debt registries so a future session can't quietly
+    grow them to hide a NEW collision. Growing this set is a real edit that must be
+    visible in review, not something check silently absorbs."""
+    mod = _load_module()
+    assert mod.KNOWN_LEGACY_ID_COLLISIONS == frozenset({"093", "094", "109", "110", "111", "112"})
+    assert mod.KNOWN_LEGACY_ADR_COLLISIONS == frozenset({"ADR-054", "ADR-055"})
+
+
+def test_check_passes_on_real_repo_only_via_known_legacy_debt():
+    """The real docs/handoffs/ mailbox check must be green -- and specifically because
+    its existing collisions are all accounted for in the frozen registry, not because
+    the detectors stopped working. If this ever fails, either a genuinely new collision
+    appeared (fix it) or one of the debt entries above was quietly resolved (shrink the
+    registry and update docs/known-id-collisions.md, don't just leave it stale)."""
+    mod = _load_module()
+    threads = mod.load()
+    seen: dict[str, str] = {}
+    dup_problems = []
+    for t in threads:
+        if t.id in seen:
+            dup_problems.append(f"{t.path.name}: duplicate ID {t.id} (also {seen[t.id]})")
+        seen[t.id] = t.path.name
+    dup_problems += mod.find_adr_collisions()
+    dup_problems += mod.find_thread_id_collisions()
+    hard = [p for p in dup_problems if not mod._is_known_legacy_debt(p)]
+    assert hard == [], f"unaccounted-for collision(s), not in the frozen debt registry: {hard}"
+
+
+def test_is_known_legacy_debt_does_not_match_new_ids():
+    """A collision on a number NOT in the frozen registry must still be treated as hard
+    -- the carve-out names specific pre-existing numbers, it is not a blanket exemption
+    for anything shaped like a legacy id."""
+    mod = _load_module()
+    assert mod._is_known_legacy_debt("999-some-thread.md: duplicate ID 999 (also 998-other.md)") is False
+    assert mod._is_known_legacy_debt("thread 999 claimed for conflicting subjects across branches: a, b") is False
+    assert mod._is_known_legacy_debt("ADR-999 has 2 conflicting headers across branches: a | b") is False
+    # sanity: a real frozen entry does match
+    assert mod._is_known_legacy_debt("093-x.md: duplicate ID 093 (also 093-y.md)") is True

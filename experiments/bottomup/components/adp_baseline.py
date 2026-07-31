@@ -95,7 +95,13 @@ def load_adp(season: int, fmt: str = "half_ppr_12team",
     xw = _mfl_to_gsis(db_path)
     df["mfl_id"] = df["mfl_id"].astype(str).str.strip()
     m = df.merge(xw, on="mfl_id", how="left").rename(columns={"gsis_id": "player_id"})
-    out = m[["player_id", "player_name", "position", "average_pick", "rank"]].copy()
+    cols = ["player_id", "player_name", "position", "average_pick", "rank"]
+    # PR-009 S2: FFC's own published dispersion of pick, dropped here until
+    # 2026-07-31 -- retained now so a season's crowd disagreement can be
+    # measured directly rather than reconstructed from ranks.
+    if "std_dev" in m.columns:
+        cols.append("std_dev")
+    out = m[cols].copy()
     out = out.rename(columns={"rank": "overall_rank"})
     out["unmatched"] = out["player_id"].isna()
     out["season"] = season

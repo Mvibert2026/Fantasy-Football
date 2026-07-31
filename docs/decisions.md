@@ -2810,3 +2810,428 @@ correctly in the committed artifact. No code change; confirmed by reading the re
 Full suite and commit hash in this session's `docs/status/` entry. Contract version 1.15.0 (was
 1.14.0) — handoff thread 093 opened to frontend with the field-level contract and required
 frontend-side change (read `picks_by_slot[str(slot)]` instead of assuming the founder's own).
+
+## ADR-064 — Thread/FR IDs move to date+slug (`YYYY-MM-DD-slug`), retiring counter-based
+allocation for new items (2026-07-30, backend, founder-approved)
+
+**The counter is not the bug; the scheme is.** `tools/handoffs.py` and `tools/founder_requests.py`
+allocated new IDs as `max(existing) + 1`, later widened to scan every local + remote-tracking git
+ref (2026-07-29, thread 079/081) so a number claimed on an unmerged branch wouldn't be handed out
+again. That widening narrowed the race; it could not close it, because two worktrees can each
+compute a locally-valid "next free" number in the same window and only find out they collided when
+someone reads the merged result — and because the two colliding files have *different filenames*
+(`093-a.md` and `093-b.md`, say), git happily merges both with no conflict, so the collision does
+not even fail loudly. It waits to be noticed. Six ID collisions happened this way on 2026-07-30
+alone (threads 043/049/053, ADR-048, and — found by this session, not before it — 093/094/109/
+110/111/112, ADR-054, ADR-055, FR-029, FR-030).
+
+**Decision: new threads and founder requests are named `{date}-{slug}.md`
+(`docs/founder-requests/` keeps the `FR-` prefix: `FR-{date}-{slug}.md`), not `{NNN}-{slug}.md`.**
+No shared counter, no git ref scan, needed to allocate one — `new_thread_filename()` /
+`new_request_filename()` (`tools/handoffs.py`, `tools/founder_requests.py`) claim
+`docs/handoffs/{date}-{slug}[-N].md` via `os.O_CREAT | os.O_EXCL`, purely from (today's date, this
+thread's own slugified subject), both already known locally with nothing to coordinate. Two agents
+naming *different* things on the same day get different filenames for free. The one case that
+can't be locally disambiguated — two separate worktrees independently choosing the identical
+subject on the identical day — no longer collides silently either: the filename **is** the
+identifier now, so two worktrees writing different content to the same path is an ordinary git
+same-path merge conflict, which blocks the merge and forces a human/agent to resolve it, instead of
+merging clean and hiding in the `ID:` field the way the old scheme's collisions did.
+
+**Clock source: system clock, not passed in.** All worktrees for this project run in one
+environment (`docs/environment.md`) with one clock; a day-granularity date has no meaningful skew
+risk here. If this project ever runs across real timezone-separated machines, revisit — a UTC-day
+boundary crossed mid-session could put two genuinely-same-day threads one calendar day apart, which
+is a cosmetic ordering annoyance, not a correctness bug (filenames still never collide from it).
+
+**Existing files are never renamed or renumbered.** ~135 numbered threads and ~120 numbered FRs are
+cited by number throughout the repo (prose, commits, other threads, `CLAUDE.md` itself). All
+`NNN-slug.md` / `FR-NNN-slug.md` files keep their filenames and their `ID:` frontmatter exactly as
+they are; `load()` in both tools now matches either the legacy `\d{3}-` or the new
+`\d{4}-\d{2}-\d{2}-` filename shape so old numeric threads keep resolving (`docs/handoffs/
+119-*.md` still loads, sorts, and appears in `inbox`/`sync`/`check` output unchanged). Sorting by
+`id` (a plain string sort) puts every legacy `NNN` thread before every date-shaped one, which is
+also the correct chronological order in this repo's history.
+
+**`next_free_id()` in both tools is kept, not deleted, but no longer used to allocate new IDs.**
+It still answers "what's the highest legacy number anyone has claimed" honestly (still tested), and
+`adr_next()` (ADR numbering, a separate, smaller space with far fewer concurrent allocators) is
+**out of scope for this change** — it keeps its existing counter-plus-ref-scan-plus-backstop
+design; this ADR does not touch it.
+
+**Pre-existing collisions from before this change are not fixed, only accounted for.** `check` in
+both tools now carries a frozen, dated exception registry (`KNOWN_LEGACY_ID_COLLISIONS` /
+`KNOWN_LEGACY_ADR_COLLISIONS` / `KNOWN_LEGACY_FR_COLLISIONS`) naming the exact pre-existing
+duplicates found while building this — full account, including the ADR-054/ADR-055 case (two
+different real decisions recorded under one number, a content problem no filename fix can resolve)
+in `docs/known-id-collisions.md`. This was the coordinator's addition mid-task, confirmed correct:
+without it, `check` could never go green again regardless of this fix, and a genuinely new
+collision would be lost in the noise of six already-known ones. The registries are pinned by test
+(`test_known_legacy_collisions_registry_is_frozen`, `test_known_legacy_fr_collisions_registry_is_
+frozen`) so growing them to hide a *new* collision is a visible diff, not a silent absorption — and
+they match only on the specific pre-existing numbers, never on the new `YYYY-MM-DD-slug` shape,
+which structurally can't produce the same failure mode in the first place.
+
+**Evidence.** `python3 -m pytest tests/test_handoffs.py tests/test_founder_requests.py -q` — 36
+passed (was 27/9 before this session's edits — some pre-existing tests describing the old counter
+allocation behavior for *new* IDs were rewritten to describe the new date+slug behavior instead;
+none of the legacy-ID-resolution or cross-branch-backstop tests changed). `python3 tools/
+handoffs.py check` and `python3 tools/founder_requests.py check` both exit 0 against the real repo
+(previously both failed — verified pre-existing via `git stash`, not introduced by this session).
+Concurrency proven directly: `test_two_worktrees_different_subjects_same_day_cannot_collide`
+reproduces thread 076's exact scenario (two isolated worktrees, no shared state) and asserts no
+collision; `test_new_thread_filename_dedupes_same_day_same_slug_deterministically` proves the
+same-slug-same-day case resolves deterministically rather than raising. Commit: see this session's
+`docs/status/` entry.
+
+## ADR-065 — `availability.json` exports the model's own consensus-rank provenance, plus a preparatory ADP block (2026-07-30, backend, thread 104/119)
+
+**Decision.** Thread 104 (FR-066's resolution) asked backend to unblock a browser-side Monte Carlo
+recompute of availability for an overridden draft slot, by exporting the per-player rank
+`simulate_availability` actually runs its opponent model and the user's own `strategy_bpa` pick
+against — a different, ECR-sourced ranking from `board.json:consensus_rank` (measured: 73 of the
+top 80 players differ in order). Mid-session, thread 119 resolved: strategist recommended the
+opponent model's central tendency move from `fantasypros_ecr` to FFC ADP
+(`ffc_half_ppr_10team`) with per-player dispersion, and reformulated thread 104's ask from the raw
+rank array to `{adp_pick, sigma_pick, coverage_flag}` per player — because with ADP + dispersion the
+unconditional marginal becomes closed-form and a browser recompute needs no Monte Carlo port at all.
+
+**What shipped, in `src/export_contract.py:build_availability_json` (now takes `conn`) and
+`src/draft_sim.py`:**
+
+1. `draft_sim.SeasonData` gains `consensus_rank_source`/`consensus_rank_as_of_date`, populated by
+   `load_season` from the exact rows `consensus_rank` was read from (new module constant
+   `CONSENSUS_RANK_SOURCE`, one edit point). `export_contract`'s `ranking_sources[0].name`/
+   `as_of_date` read these fields rather than a second hardcoded literal, so a future repoint of
+   `CONSENSUS_RANK_SOURCE` (e.g. thread 119's own recommendation, once it clears pre-registration)
+   updates the export automatically. Proven, not asserted:
+   `tests/test_export_contract.py::test_ranking_source_identity_matches_the_query_it_was_read_from`
+   and `tests/test_availability.py::test_load_season_provenance_matches_the_rows_it_actually_read`
+   independently re-query the DB and assert equality with what the export emitted.
+2. `client_simulation_parameters.player_ranks` (the ECR array thread 104 originally asked for) is
+   kept, not removed — it is still the accurate description of what the SHIPPED model runs on
+   today; `simulate_availability` has **not** switched to ADP.
+3. `client_simulation_parameters.adp_central_tendency` (new, additive) carries the reformulated
+   shape: per player, `{adp_pick, coverage_flag}`, keyed to `by_player`'s own keys, sourced from
+   `ffc_adp_snapshots` (adp_source `ffc_half_ppr_10team`, filtered to QB/RB/WR/TE, joined to the
+   same gsis-keyed player universe `load_season` uses via `player_ids.mfl_id`). `status:
+   "preparatory_switch_not_yet_shipped"` and an explicit `status_note` state that this is not yet
+   the model's input.
+4. **`sigma_pick` is deliberately NOT exported.** It is gated on M0
+   (`docs/ranking/availability-opponent-model-precommit.md`) — FFC's `times_drafted` and
+   `total_drafts_in_sample` columns do not reconcile on the committed snapshot (e.g. Bijan Robinson
+   `times_drafted=90` against `total_drafts_in_sample=1254` on every row) — so no per-player
+   sampling-variance weight is trustworthy yet. `sigma_pending_note` says so; no placeholder value
+   ships.
+5. **`adp_pick` is NOT axis-corrected (M4 in the precommit doc).** FFC's `average_pick` counts
+   kickers/defenses and its sampled drafts run deeper than this league's 16 rounds; the isotonic
+   calibration against `board.json` that fixes this is explicitly assigned to `strategist`, not
+   invented here. `axis_note` states this loudly rather than silently passing raw values through as
+   if they were Westwood pick numbers.
+6. `algorithm_note` corrected: it previously claimed the user's own BPA pick runs off
+   `board.json`'s unperturbed rank. It does not and never did — `ds.strategy_bpa` reads
+   `data.consensus_rank`, the same array the opponent model's `ranking_sources` draws from. This was
+   a real defect in the exported documentation, not a rewording.
+
+**Coverage, measured against the real DB (2026-07-30):** 157 of 378 season-universe players resolve
+an `ffc_half_ppr_10team` row (skill positions only); 79 of the 80 players actually tracked in
+`by_player` are covered (`Marvin Harrison Jr.` is the one gap — honest, not fabricated). Every
+`by_player` key has a corresponding `adp_central_tendency.by_player` entry with `coverage_flag`
+explicit; `adp_pick` is non-null iff `coverage_flag` is true.
+`tests/test_export_contract.py::test_adp_central_tendency_covers_every_by_player_key_honestly`
+guards this.
+
+**Contract version 1.16.0 → 1.17.0.** `docs/data-contract.md` updated in place (field table +
+changelog). Handoff thread opened to `frontend` describing the new field and its preparatory status.
+
+**Not done, and explicitly out of scope for this change:** the model itself has not switched to
+ADP; `sigma_pick` is not computed; the M4 axis correction is not performed. All three remain gated
+on the M0-M5 pre-registration in `docs/ranking/availability-opponent-model-precommit.md`, owned by
+`strategist`.
+
+**Evidence.** `data/export/availability.json`/`board.json`/`league.json`/`glossary.json`/
+`nulls.json`/`opponents.json` regenerated against `data/nfl.db` (2026-07-30). Full test count and
+commit hash in this session's `docs/status/` entry and the reply to thread 104.
+
+## ADR-066 — Never-played ranked players in the backtest harness score the replacement deficit, not zero VBD (2026-07-30, backend, strategist finding on the primary-metric ruling)
+
+**The defect.** `src/backtest.py`'s `_vbd_sum_for_ranking` and `top_k_starter_vbd` accumulated a
+ranked player's contribution with `vbd.get(pid, 0.0)`. `vbd` is built by `_vbd_lookup` only over
+players present in `_season_actuals` — i.e. players with at least one weekly stat row. A ranked
+player with a resolved position but **zero weekly rows at all** (retired, cut, a season-ending
+preseason injury, suspended for the year) still consumes a starting slot via
+`build_position_lookup`'s "rankings win" query, and used to contribute exactly `0.0` — replacement
+level. His true contribution is `0 − replacement_points[pos]`: he consumed a starting slot and
+returned nothing, which is a materially worse outcome than "as good as the waiver wire." Found by
+strategist while ruling on the primary evaluation metric
+(`docs/adr-drafts/ADR-DRAFT-primary-evaluation-metric.md` §4.1), not by backend.
+
+**The fix.** `_vbd_lookup` now also returns `replacement_points`, the per-position POINT value at
+the replacement baseline (same index arithmetic `scoring.compute_vbd` already uses internally,
+duplicated locally since `compute_vbd` does not expose it — this is an evaluation-harness change,
+not a change to `scoring.py` or any ranking logic). A new `_slot_value(pid, pos, vbd,
+replacement_points)` helper returns the real `vbd[pid]` when the player has one, otherwise
+`-replacement_points[pos]`. Used by both `_vbd_sum_for_ranking` and `top_k_starter_vbd`.
+Regression tests (`test_never_played_player_scores_the_replacement_deficit_not_zero_vbd`,
+`test_never_played_player_in_starter_vbd_also_scores_the_deficit`) were written first, confirmed to
+fail against the pre-fix code, then the fix landed. Commit `b567586`.
+
+**Re-run of ADR-025.** ADR-025's published board-vs-consensus `starter_vbd` figures (+176.0 / −34.7
+/ +113.4 / +83.8 for 2022-2025) were recomputed under the fix, both dev seasons and the sealed 2025
+holdout (holdout access logged as a recomputation, not a fresh spend — see below):
+
+| Season | Original (published, ADR-025) | Recomputed, current DB, same defective code | Recomputed, current DB, fixed code | Fix delta |
+|---|---|---|---|---|
+| 2022 | +176.0 | +174.60 | +174.60 | **0.0** |
+| 2023 | −34.7 | −27.68 | −27.68 | **0.0** |
+| 2024 | +113.4 | +94.10 | +94.10 | **0.0** |
+| 2025 (holdout) | +83.8 | +79.54 | +79.54 | **0.0** |
+
+**Two separate findings, not one.** (1) The fix itself changes **none** of these four numbers: zero
+board- or raw-consensus-ranked players who filled a top-15 starting slot in 2022-2025 had zero
+recorded games that season, so `_slot_value`'s new branch is never exercised for this specific
+comparison. Directly verified by diffing the pre-fix and post-fix code against the same DB snapshot
+and ranking objects (delta exactly `0.0` in all four seasons, both arms). (2) Separately, and
+**not caused by this fix**, the numbers no longer exactly match ADR-025's originally published
+values (174.60 vs 176.0, etc.) — this is `data/nfl.db` drift since 2026-07-25 (the DB is gitignored
+and rebuilt/re-ingested repeatedly across sessions), confirmed by reproducing the drift with the
+*unmodified* pre-fix code. **ADR-025's qualitative conclusion is unaffected either way**: 3 of 4
+seasons positive, board advantage not statistically established at n=3/4 (CLAUDE.md §6.5,
+§6.3) — unchanged in direction and magnitude class.
+
+**The defect is real regardless — found a live instance.** `bpa_prior_season_points` (the weak
+prior-season-points arm), which is exactly the class of backward-looking ranking most likely to
+promote an injury-risk player, changed on `vbd_sum` (the deeper per-position metric, not
+`starter_vbd`) by **−114.7 in 2022** and **−139.1 in 2025 holdout** — one player each season who
+consumed a per-position slot with zero games, now correctly scored as a deficit instead of 0.0.
+`starter_vbd` (top-15 budget) for this same arm was unaffected in all four seasons — the disaster
+player in each case fell outside the top-15 picks, inside the deeper per-position cutoff. This
+confirms the mechanism is real and fires exactly where predicted (weak/naive arms), just not on
+the specific board-vs-consensus `starter_vbd` comparison ADR-025 reports.
+
+**Blast radius — other results computed through this path:**
+
+1. **ADR-025 board-vs-consensus `starter_vbd`** (the table above): re-run, unaffected by the fix.
+2. **`bpa_prior_season_points` vs board, `vbd_sum`** (printed in the standard backtest report's
+   DELTAS section, not previously published as a standalone headline in `docs/decisions.md`):
+   changes materially (~$100-140 pts in 2 of 4 seasons) — the verdict was already "LOSES" against
+   the board pre-fix; post-fix it loses by more. Direction unchanged, magnitude understated before.
+3. **`docs/test-registry.md` #44/#45/#46 "headline" (−1,070 pts, BPA-by-2024-VBD vs FantasyPros
+   consensus, scored on the real 2025 season via `src/candidate_rankings.py` +
+   `_vbd_sum_for_ranking`)** — the same class of backward-looking arm shown in (2) to be sensitive to
+   this defect, evaluated on the sealed holdout. **Not re-run here**: no committed script reproduces
+   the original run, it reads the sealed 2025 season, and `docs/strategic-insights.md` already
+   marks this exact figure "Discarded as superseded... do not cite" for unrelated methodological
+   reasons (no CI, predates required per-position baselines). Flagging it as *additionally*
+   contaminated by this defect, on top of already being deprecated, rather than re-running it
+   myself. Escalated to `strategist`/`pm` — see handoff thread — since ADR-026 (alpha track closure)
+   cites the same general ratio-of-evidence pattern this number was one input to.
+4. **`docs/adr-drafts/ADR-DRAFT-oracle-ladder-disposition.md`'s planned durability test** was
+   already blocked on this exact precondition (its own §"blocked on" cites precondition A by name).
+   This fix unblocks it; no re-run needed since it never ran.
+5. Everything else referencing `starter_vbd`/`vbd_sum` in the repo (`PR-002`, `PR-003`,
+   `docs/deferred.md`, `docs/status.md`) restates the ADR-025 or ADR-020 figures above rather than
+   reporting an independent number — not separately affected.
+
+**Holdout access.** Recomputing ADR-025's figures under the fix reads the sealed 2025 season again.
+Per the strategist's own ruling (§4.1): *"Re-computing an already-spent holdout number under a
+corrected metric does not constitute a second holdout access... Log it as a recomputation with that
+reason, do not treat it as a fresh spend."* The 2025 season was already unsealed for exactly this
+decomposition (`docs/preregistration/holdout_access_log.jsonl` line 1, 2026-07-25, reviewed in
+`tests/test_holdout_audit.py::REVIEWED_TIMESTAMPS`). This session's recomputation and diagnostic
+re-verification (after an unrelated commit reshuffle by the shared session's other concurrent
+agents required repeating the diff against the correct pre-fix parent commit) produced eight new
+`FINAL_EVALUATION_OPENED` log entries, all citing this same recomputation reason. Added to
+`REVIEWED_TIMESTAMPS` in `tests/test_holdout_audit.py` with this ADR as the justification note, per
+that test file's own required procedure — no new registration id exists for this because it is a
+recomputation of an already-reviewed access, not a new pre-registered test. No decision was made
+from the holdout that was not already made in ADR-025; the fix is evaluation-only and this
+recomputation confirmed rather than changed ADR-025's conclusion.
+
+**Not in scope, deliberately.** No ranking logic, weight, or export field was touched — this is an
+evaluation-harness-only fix. `test_no_new_direct_sqlite_connections_in_src`'s current failures
+(`ingest_combine.py`, `ingest_contracts.py`, `ingest_ff_opportunity.py`, `ingest_officials.py`,
+`ingest_participation.py`, `ingest_pbp.py`, `ingest_pfr_advstats.py`, `ingest_sleeper_projections.py`,
+`ingest_trades.py`) are pre-existing, from concurrent sessions sharing this container, and unrelated
+to this change — not fixed here, not this thread's scope.
+
+**Evidence.** Commits `b567586` (fix + regression tests), plus this ADR and the
+`REVIEWED_TIMESTAMPS` update. Full test count in this session's `docs/status/` entry. Handoff thread
+opened to `strategist`/`pm` for item 3 above (the test-registry #44-46 figure).
+
+---
+
+## ADR-067 — #28 is NULL not HARMFUL, #29 is ungated and NULL, and the coordinator source is a preseason revision read
+
+**2026-07-30, ranker.** Supersedes the `factor-batch-1-results.md` §1(2) reading of registry #28 and
+the "GATED on coordinator data" status of #29/#30.
+
+### Decision 1 — registry #28 moves from BLOCKED to NULL, and batch 1's HARMFUL grade is retired as
+a data artifact
+
+Batch 1 could only measure vacated opportunity from a Week-1 **depth chart** and graded #28 HARMFUL
+at RB (+0.203 carries MAE). Re-run on `rosters_weekly` with everything else identical:
+
+| | V1 depth chart | V2 real rosters | V2 − V1, paired, 11 seasons |
+|---|---|---|---|
+| RB `carries` | +0.2031 HARMFUL | −0.0123 NULL | **−0.2154 [−0.3003, −0.1384], p = 0.0006** |
+| TE `targets` | +0.0448 HARMFUL | +0.0153 NULL | −0.0295 [−0.0552, −0.0043], p = 0.056 |
+| WR `targets` | +0.0818 NULL | +0.0284 NULL | −0.0534 [−0.1557, +0.0507], p = 0.362 |
+
+The V1 arm reproduces batch 1's published numbers to four decimals, so this is one harness measuring
+two data sources. The mechanism batch 1 predicted is confirmed by the split it proposed: the RB harm
+in the high-measured-vacancy bucket goes **+0.770 → +0.064**. The measures genuinely differ —
+|V2−V1| > 0.05 on 32–35% of player-seasons, with the depth chart systematically *over*-stating
+vacancy, exactly as predicted.
+
+**Both halves are true and the row must carry both:** the harm was an artifact of the data source,
+**and** the factor is NULL. Two further constructions (V3 absence share; V4 player-level
+opportunity-vacated-*above*-this-player, the first genuinely player-level vacancy feature this
+project has built) are also NULL. Nine cells, zero wins.
+
+### Decision 2 — #29 and #30 are no longer gated; the source is Wikipedia staff-navbox revisions, not PFR
+
+PFR remains 403 and is not the source. `experiments/bottomup/factors/coord_preseason.py` reads, per
+club-season, the season article's revision before Week 1 (to learn which live staff navbox it pointed
+at) and **that navbox page's own revision before the same kickoff**. Table
+`play_callers_preseason`: 2012–2024, all 32 clubs, 803 OC+DC rows.
+
+**Two things this establishes that were previously assumptions:**
+
+- **The `coach_id` join works across team moves** — 53 of 126 named OCs (42.1%) appear for 2+ clubs,
+  covering 243 of 400 club-seasons, **zero** same-season name collisions. `CLAUDE.md` §4's reservation
+  of `coach_id` as a first-class dimension is vindicated by data rather than by argument.
+- **Only 17.9% of OC changes bring in someone who was an OC elsewhere the prior season.** Any future
+  tendency-following signal can reach at most one change in six. This bounds #30 before it is built.
+
+**#29 itself is NULL**: WR −0.006 (p=0.71), TE −0.003 (p=0.87), RB +0.093 (p=0.29), with the
+ADP-board metric positive at all three. Not underpowered — the OC changes for 46–48% of board
+player-seasons.
+
+### Decision 3 — `play_callers` and `play_callers_preseason` stay separate tables
+
+`play_callers` stores `{{NFL final staff}}` — **end**-of-season. For a club that fired its OC in
+November it names the replacement, and the firing is *caused by* the season going badly, so using it
+as a preseason input contaminates in the **same direction as the hypothesis**. The only thing
+distinguishing the two tables is which is safe to use as a preseason input; merging them destroys
+exactly that. Schema ownership is data-ops' — thread
+`2026-07-30-play-callers-is-not-in-nfl-db-and-end-of-season`.
+
+### Decision 4 — the insight sentence the founder asked for is REFUSED for both factors
+
+`FR-2026-07-30-bottom-up-causal-insights` asks the model to say *"new OC, expect routes up"* and
+*"the starter from last year left."* The rule fixed before any result existed
+(`factor-batch-2-precommit.md` §7): a sentence renders only if the factor **graded** and the feature
+is **non-null for that player**. **Neither factor graded, so neither sentence renders.**
+
+The cost of the alternative is measurable: `new_oc` is true for **46–48% of every ADP board**
+(187/391 WR, 167/357 RB, 49/106 TE board player-seasons). Rendering it would have attached a
+NULL mechanism to half of every draft board — the same failure the recommendation card was caught
+committing, at ten times the surface area. Directional wording ("routes up") was never licensed:
+nothing here measures routes, and route participation is not in `nfl.db`.
+
+### A defect I introduced, disclosed rather than buried
+
+My own pre-committed 2%-of-primary-error "this looks too good" trigger fired on the M1 arm and the
+decomposition it forced overturned three arms including two SURVIVES. **95–97% of M1's effect is
+`move_known` ("this player is on some club's Week-1 roster"), not `moved_club`.** `moved_club` does
+nothing at any position (WR p=0.28, TE p=0.62, RB p=0.12). I added `move_known` as a companion flag
+by analogy with batch 1's `vac_team_known`, which was computed but never entered a model; here it
+entered the model and became the treatment. Registered grades stand as recorded with the correction
+attached; **no claim about player movement may be drawn from them.** How to record them is a
+`strategist` ruling, escalated on the open thread, not mine.
+
+**Residue worth someone else's attention:** "is this player on an NFL Week-1 roster" is worth
+**1.6–2.3% of component MAE** — larger than anything either factor batch produced — and the
+availability sub-model does not use it. Handed over, not claimed.
+
+**Evidence.** `docs/ranking/factor-batch-2-precommit.md` (content committed `851a6bb` before the
+first fit; two amendments dated inside it, both pre-fit), `docs/ranking/factor-batch-2-results.md`,
+commits `70bc893`, `fe3b66a`, `5d3e95e`, `df50e3b`, `da10906`, `dbc52a5`. 10 discipline tests
+including bit-for-bit reproduction of batch 1's feature frame. Sealed 2025 holdout not opened.
+
+## ADR-068 — Four selectable ranking sources: board order runs off any of three built sources, never blended; availability/opponent-model wiring deliberately deferred (2026-07-30, backend, FR-2026-07-30)
+
+**Decision.** `docs/founder-requests/FR-2026-07-30-four-selectable-ranking-sources-driving-every-fe.md`:
+"The draft board should be able to be fully functional off of consensus or my own rankings... App
+should run based on any at user toggle." `ranking_source` (CLAUDE.md §4) already named the four
+values; this wires the board layer onto it.
+
+**`make_board.py`** gains `RANKING_SOURCE_SELECTIONS = ("expert_adjusted", "expert_raw",
+"market_adp", "proprietary")` and a `ranking_source_selection` parameter on `build_board()`,
+default `"expert_adjusted"` — regression-tested byte-identical to the pre-existing default
+(`test_default_selection_is_expert_adjusted_byte_identical_to_old_default`). The value curve
+(`fit_rank_curves`/`bootstrap_vbd_intervals`, fitted once on `TRAINING_SOURCE`) is applied under
+every selection — it is a source-independent valuation lens, not itself a fifth blended source —
+but board **order** is selection-specific and never re-derived from our VBD except under
+`expert_adjusted`:
+
+| Selection | Board order | Rows from |
+|---|---|---|
+| `expert_adjusted` (default) | our VBD, desc | `rankings[fantasypros_csv_2026draft]` |
+| `expert_raw` | the source's own consensus rank, asc | same table, same rows |
+| `market_adp` | FFC half-PPR/10-team ADP, asc by `average_pick` | `ffc_adp_snapshots`, resolved to gsis via the `player_ids` mfl_id↔gsis crosswalk (measured: 158/167 QB/RB/WR/TE rows resolve; unresolved rows dropped, never guessed) |
+| `proprietary` | — | does not exist; `build_board()` raises `RankingSourceNotBuilt`, never falls back |
+
+FFC half-PPR/10-team, not MFL proxy, is the `market_adp` source: it is the only ADP source whose
+*format* matches this league (half-PPR, 10 teams) — see `ingest_ffc_adp.py`'s own docstring. MFL
+proxy stays a display-only per-player field (`board.json:adp`/`adp_source`), unchanged, never
+driving order — CLAUDE.md §4 forbids blending it with FFC into one "ADP" figure.
+
+**Coverage is honestly thin for `market_adp`**: 158-167 rows vs. ~554 on the expert board. Reported,
+not hidden — `describe_ranking_source()`'s `row_count`/`note`, and
+`board.market_adp.json`'s own `ranking_source_row_count`.
+
+**`export_contract.py` (contract 1.17.0 → 1.18.0):** `build_board_json()` gains the same
+`ranking_source_selection` parameter and a `ranking_source_selection`/`_label`/`_built`/
+`_as_of_date`/`_row_count`/`_note` field set on every board artifact — **each source carries its
+own as_of_date and row count**, per the founder's explicit ask ("a user switching sources is
+entitled to know what they switched to"). `_not_built_board_json()` gives `proprietary` an
+explicit, empty, honestly-labeled shape (`ranking_source_built: false`, `players: []`) rather than
+raising past the export boundary or silently substituting another source. New
+`build_ranking_sources_json()` catalogs all four (built or not) in one file so a client can render
+the full picker without probing each variant. `write_all()` now writes `board.json` (unchanged
+name/default, `expert_adjusted`), `board.expert_raw.json`, `board.market_adp.json`, and
+`ranking_sources.json` for the primary league. Non-primary league directories (the 24-config
+matrix) are unchanged by this session — regenerating all of them for the two new sources was out
+of scope; they still carry only the pre-existing `board.json`.
+
+**What still runs off a single hardcoded source, and why that is not fixed here.**
+`simulate_availability` (`src/availability.py`) drives both the opponent model's central tendency
+and the user's own `strategy_bpa` pick off `draft_sim.load_season`'s single `CONSENSUS_RANK_SOURCE
+= "fantasypros_ecr"` — confirmed live in this session, matching the founder's own diagnosis
+(FR-2026-07-30: "the two live sources disagree on 73 of the top 80 players"). This is a **real,
+audited silent-fallback gap**, not an oversight: an **open, unresolved thread**
+(`docs/handoffs/2026-07-30-availability-adp-measurements-m0-m5.md`, strategist → backend) is
+mid-flight on exactly this code path, gates M0-M5, and says explicitly *"Do not implement the
+change yet — M0 is a gate and can stop half of it."* M0 already found FFC's `times_drafted` field
+does not reconcile against its own documented denominator, and M1 found FFC ADP does **not** beat
+the incumbent ECR baseline on MAE in 2 of 3 real mock drafts. Wiring `market_adp` into the
+Monte Carlo's central tendency in this session — even behind an explicit user toggle — would ship
+availability numbers under an "ADP" label with no calibrated dispersion (M2/M3 unmet), exactly the
+"looks plausible while over-dispersing" failure M3 names. **Decided and logged, not escalated**:
+availability/opponent-model wiring stays out of this pass; the board layer (order, VBD, tiers,
+projected_points — everything `export_contract.build_board_json` drives) is fully wired across all
+three built sources, and this gap is reported to the M0-M5 thread and to `docs/CURRENT-STATE.md`
+by name rather than left implicit.
+
+**Recommender fallback value.** `recommendation.ts`'s `g` term (value over the realistic fallback)
+reads its ranking inputs from `board.json` — no server-side recommender code exists in `src/`. Once
+frontend requests the source-matched board file (`board.json` / `board.expert_raw.json` /
+`board.market_adp.json`) per the toggle, the recommender follows automatically; no backend change
+was needed or made here.
+
+**Tests.** `tests/test_make_board.py` +10 (ranking_source_selection enum, byte-identical default,
+raw-order monotonicity, `RankingSourceNotBuilt` never-falls-back, `describe_ranking_source` for all
+three built sources, the founder's own 73-of-80-disagreement measurement reproduced as a >5-player
+floor against live data). `tests/test_export_contract.py` +6 (default selection field, proprietary
+explicit-absence, raw vs. adjusted order differs, market_adp's own as_of/count, unknown-selection
+`ValueError`, `ranking_sources.json` never hides the unbuilt option). Written before the
+implementation (sanity-checks-first), confirmed failing pre-implementation, all pass now.
+
+**Sealed 2025 holdout not touched** — this is export/contract plumbing over the live 2026 board,
+no backtest or historical season read.
+
+**Handoff:** `frontend` thread describing the new fields/files (contract version bump, per
+CLAUDE.md's contract-change rule); reply appended to the M0-M5 availability thread noting the
+interaction and this session's scope decision.
