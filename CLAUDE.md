@@ -65,11 +65,8 @@ quality. As of 2026-07-31 the shipped board's within-position ordering is identi
 that dependency is a live risk for the recommender specifically — not a reason to stall the other two.
 
 Availability's own inputs, in the founder's order: **ADP, then how the draft has actually fallen,
-then opponents' needs.**
-
-Availability's own inputs, in his order: **ADP, then how the draft has actually fallen, then
-opponents' needs.** The middle one is what justifies simulating at all — with ADP plus per-player
-dispersion the unconditional marginal is nearly closed-form.
+then opponents' needs.** The middle one is what justifies simulating at all — with ADP plus
+per-player dispersion the unconditional marginal is nearly closed-form.
 
 ---
 
