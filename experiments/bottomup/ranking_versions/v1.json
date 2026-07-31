@@ -1,0 +1,98 @@
+{
+  "version_id": "bottom-up-v1",
+  "created": "2026-07-31",
+  "owner": "ranker",
+  "status": "experimental",
+  "precommit": "docs/ranking/ranking-v1-precommit.md",
+  "immutable": true,
+  "_note": "Config blob per CLAUDE.md S4: ranking weights live in versioned config files, never hardcoded. The runner (experiments/bottomup/ranking_v1.py) reads every knob from this file. Editing this file after the run invalidates the result; make a v2.",
+
+  "engine": {
+    "module": "experiments.bottomup.components.pos_eval",
+    "class": "WalkForward",
+    "avail_arm": "A",
+    "calibrate_bonus": true,
+    "first_target": 2018,
+    "last_target": 2024,
+    "min_train_seasons": 2,
+    "feature_fn": "build_features",
+    "model_kwargs": {},
+    "_note": "arm A is the pre-committed primary of component-model-multipos-precommit.md S4. Arms D/E are post-hoc by their own source comment and are excluded. Lagged-YPC volume override is excluded: unregistered."
+  },
+
+  "positions": ["QB", "RB", "WR", "TE"],
+  "def_supported": false,
+  "def_note": "DEF is a starting slot in this league with zero coverage in nfl.db. v1 emits no DEF ranking. Blank with a note; no fabricated number.",
+
+  "table_stakes": {
+    "rule": "only pre-committed feature blocks enter v1",
+    "included": {
+      "tier0_7_age": ["age", "age2"],
+      "tier0_8_prior_share": ["tshare_w", "cshare_w"]
+    },
+    "secondary_arm_only": {
+      "tier0_6_injury": ["inj_missed_share_1", "unexp_missed_share_1"]
+    },
+    "excluded": {
+      "tier0_5_depth_chart": {
+        "features": ["rostered_absent_share_1", "offroster_share_1", "depth_first_share_1"],
+        "reason": "arms D/E are post-hoc (pos_features.py:37-41) and measured NULL on ranking"
+      },
+      "lagged_ypc_rb_volume": {
+        "reason": "post-hoc winner from factor batch 6; no registration exists in docs/preregistration/"
+      }
+    }
+  },
+
+  "rookies": {
+    "policy": "consensus_fallback",
+    "label": "consensus_fallback",
+    "curve": "a + b*ln(consensus_positional_rank)",
+    "fit_window": "strictly prior seasons of the same consensus source",
+    "override_model_rookie_submodel": true,
+    "_note": "Rookie draft capital is an eliminated edge channel. v1 holds no opinion on rookies; on rookie rows v1 equals the crowd it is compared against."
+  },
+
+  "cross_positional": {
+    "channel": "VBD replacement ranks (QB10/RB30/WR40/TE10, 10-team half-PPR)",
+    "measured_by_this_design": false,
+    "_note": "The per-position rank-correlation endpoint is blind to this channel. It is in the config for completeness and must not be claimed as tested."
+  },
+
+  "secondary_versions": {
+    "v1b": {
+      "avail_arm": "B",
+      "adds": "tier0_6_injury",
+      "status": "declared secondary, reported alongside"
+    }
+  },
+
+  "evaluation": {
+    "endpoint": "spearman_rho_vs_realised_season_points",
+    "endpoint_population": "C2 (board-restricted, draft-relevant universe)",
+    "panels": {
+      "M": {"crowd": "market", "universe": "ffc_half_ppr_12team_adp", "seasons": [2018, 2024], "primary": true},
+      "E": {"crowd": "expert", "universe": "fantasypros_ecr_preseason_final", "seasons": [2021, 2024], "primary": false}
+    },
+    "baselines": ["b1_market_adp", "b2_expert_ecr", "b3_prior_points", "b4_tier_heuristic", "b3w_wavg_ppg_informational"],
+    "topk": {"QB": 10, "RB": 20, "WR": 30, "TE": 10},
+    "bootstrap": {"unit": "season", "reps": 4000, "seed": 20260731},
+    "fdr": {"family": "F-RANKING-V1", "n_tests": 8, "method": "BH", "q": 0.10},
+    "mde_rule": {
+      "contrast": "b1_market_adp - b3w_wavg_ppg (panel M); b2_expert_ecr - b3w_wavg_ppg (panel E)",
+      "threshold_rho": 0.10,
+      "action_if_exceeded": "declare CANNOT ANSWER at that position, not NULL"
+    },
+    "decision_thresholds": {
+      "edge": "CI lower bound > 0 against both crowds",
+      "parity_floor_rho": -0.02,
+      "loses": "CI upper bound < 0, or delta < -0.02 with CI containing 0"
+    }
+  },
+
+  "holdout": {
+    "season": 2025,
+    "sealed": true,
+    "touched": false
+  }
+}

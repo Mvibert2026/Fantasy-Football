@@ -162,7 +162,31 @@ because a verdict cannot be read off positions the design cannot resolve.
 - **Metrics §6.6** — rank correlation is the primary and it is a proxy for roster quality; top-k
   capture is reported alongside and the gap is stated.
 - **Holdout** — **2025 is sealed and is not touched.** `HOLDOUT_SEASON = 2025` asserted in the runner.
-  If v1 warrants spending it, that is escalated to the founder, not decided here.
+  See §2.7a: it is a hard gate with a named condition, not a judgement call.
+
+### 2.7a The holdout gate — founder's ruling, 2026-07-31, now `CLAUDE.md` §6.3
+
+> *"We won't unlock the holdout until after fable has a chance to run."*
+
+**Fable has never run.** Until it has, 2025 does not open — not for a decisive result, not as a
+tie-breaker, not to settle whether v1 is competitive. This pre-commitment therefore adds a rule that
+would otherwise be tempting to break at exactly the moment the result comes back ambiguous:
+
+> **If v1's answer on the training seasons is ambiguous, the report says "ambiguous on the available
+> evidence." It does not say "needs the holdout to settle it."** What the holdout *would* settle is
+> stated; the holdout stays sealed.
+
+The reasoning, recorded so it is applied rather than merely obeyed. Adversarial review overturned
+three things today that would otherwise have been carried into a holdout test:
+
+| overturned today | what it was |
+|---|---|
+| the 12-of-12-zeros framing | one algebraic identity printed twelve times |
+| four arms read as consensus-suppressed improvements | `E1b`/`E2` never touched consensus, and two of the four were **degradations** |
+| the oracle-ladder headline | the games-played oracle shares its zero set with the outcome |
+
+Any of those could have justified opening 2025 a day ago. **All three were wrong by today.** The
+holdout is spendable once; a day of review is cheaper than the thing it protects.
 
 ### 2.8 Independent checks — named now, per claim
 
