@@ -32,6 +32,28 @@ Phase 1 is done when: given a candidate ranking configuration, the system can an
 *"if I had ranked players this way going into season N, how would it have performed against
 what actually happened — and did it beat the market?"*
 
+### The founder's bar — this outranks everything else in the backlog
+
+> "If I don't have those three things in place, I don't want to use the tool for my real draft."
+
+1. The best **bottom-up rankings**
+2. The best **availability prediction**
+3. The best **suggested-pick model** — his roster, opponents' rosters, availability, live
+
+**These are this-season questions.** A previous PM framed them as off-season design work and was
+overruled in those words. Do not re-frame them.
+
+**They are a chain, not a list — founder's ordering, 2026-07-31:** *rankings → availability →
+recommender.* Both later stages consume the first: availability simulates a draft over *some*
+ranking, and the recommender's opportunity-cost term is value over a fallback, which is a ranking
+output. **A wrong ranking makes both downstream models confidently wrong.** As of 2026-07-31 the
+shipped board's within-position ordering is identical to consensus, so that risk is live, not
+theoretical.
+
+Availability's own inputs, in his order: **ADP, then how the draft has actually fallen, then
+opponents' needs.** The middle one is what justifies simulating at all — with ADP plus per-player
+dispersion the unconditional marginal is nearly closed-form.
+
 ---
 
 ## 3. Build order
@@ -341,6 +363,8 @@ tier is ambiguous, say which tier you think it is and why before starting.
 | `docs/status.md` | **Frozen 2026-07-28**, historical archive only. New session narratives: `docs/status/` (one dated file per session, `tools/status_log.py sync` generates `docs/status/INDEX.md`) |
 | `docs/statistical-guardrails.md` | Methodology reference expanding §6 into concrete, checkable procedures. Read before running any backtest; every backtest report must state which checks were applied |
 | `docs/product-explanations.md` | Why the product behaves the way it does, in founder-facing language, one idea per entry, each tagged with the surface it would appear on (tour / tooltip / hover). Append to it whenever a session explains a behaviour in chat — chat is discarded, this is not. Source content for the eventual in-app product tour and tooltips (FR-119; **do not build the tour**, the founder deferred it) |
+| `docs/factor-ledger.md` | **Every factor considered, with disposition and reason** — 92 rows as of 2026-07-31. This is the multiple-comparisons denominator, written down: without it "we tested N factors" is unverifiable. Check it before testing anything, so a dispositioned factor is not re-run |
+| `docs/ranking/factor-campaign-manifest/` | One file per factor batch, sharded so concurrent agents cannot clobber each other. The campaign-level `M` lives here — corrections are computed against the **campaign**, never the batch, or every local correction is defensible while the campaign is not |
 | `docs/design/reference-screenshots/` | Standing screenshots of every key surface, regenerated on merge, at two widths in both themes. Design has read access and no running app — this is how it sees current reality instead of speccing against whatever capture someone remembered to take |
 | `docs/assistant-context.md` | Curated, current-state-only summary for the in-app assistant's "why" questions. One paragraph per settled decision, no history, no superseded numbers. Edited in place when an ADR supersedes something in it — never appended to. The assistant must read this instead of `decisions.md`/`test-registry.md`, both of which contain figures later entries overwrote |
 

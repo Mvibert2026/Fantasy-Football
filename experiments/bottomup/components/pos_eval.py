@@ -146,6 +146,13 @@ class WalkForward:
     #: preseason-proxy reads happened, so an arm that did not declare the proxy
     #: is provably clean rather than merely believed to be.
     allow_preseason_proxy: bool = False
+    #: ranking v1 only. `(target_season, position) -> iterable of player_id`, added
+    #: to the TARGET season's universe alongside the ADP board. Exists so a second
+    #: pre-kickoff consensus board (expert ECR) can define the evaluation universe
+    #: without duplicating this audited harness. Default None reproduces batches
+    #: 1-7 bit-for-bit. The caller owns the look-ahead property of what it returns;
+    #: anything derived from season-N RESULTS here is survivorship contamination.
+    extra_universe_fn: Optional[Callable[[int, str], Sequence[str]]] = None
     audit: List[Dict] = field(default_factory=list)
     _cache: Dict = field(default_factory=dict, repr=False)
 
@@ -215,8 +222,11 @@ class WalkForward:
 
             board = adp.load_adp(target, position=self.position)
             extra = (board.loc[~board["unmatched"], "player_id"].tolist()
-                     if len(board) else None)
-            u = universe_for(self.panel, target, self.position, extra_ids=extra)
+                     if len(board) else [])
+            if self.extra_universe_fn is not None:
+                extra = list(extra) + list(self.extra_universe_fn(target, self.position))
+            u = universe_for(self.panel, target, self.position,
+                             extra_ids=(extra or None))
             f = self.feature_fn(self.panel, u, target)
 
             model = self._make_model()
