@@ -5,11 +5,11 @@ Per-request files in this directory are the source of truth. Edit a request's ow
 `STATUS:` line, then re-run sync. Protocol: [`README.md`](README.md).
 Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests.md).
 
-**136 requests since freeze.**
+**137 requests since freeze.**
 
 ---
 
-## NEW — 85
+## NEW — 86
 
 | ID | Subject | Raised | Source |
 |---|---|---|---|
@@ -97,7 +97,8 @@ Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests
 | [FR-2026-07-30-recommender-contradicts-own-findings](FR-2026-07-30-the-recommender-contradicts-the-project-s-own-me.md) | The recommender contradicts the project s own me | 2026-07-30 | PM session 2026-07-30, founder chat |
 | [FR-2026-07-30-target-share-adot-route-participation](FR-2026-07-30-target-share-adot-route-participation-named-as-i.md) | Target share adot route participation named as i | 2026-07-30 | PM session 2026-07-30, founder chat |
 | [FR-2026-07-30-widen-the-ranking-input-list](FR-2026-07-30-widen-the-ranking-input-list-research-what-leadi.md) | Widen the ranking input list research what leadi | 2026-07-30 | PM session 2026-07-30, founder chat |
-| [FR-2026-07-31-separate-edge-over-consensus-from-absolute-ranki](FR-2026-07-31-separate-edge-over-consensus-from-absolute-ranki.md) | Separate edge over consensus from absolute ranki | 2026-07-31 | PM session 2026-07-31, founder chat |
+| [FR-2026-07-31-ruling-measure-against-both-market-adp-and-exper](FR-2026-07-31-ruling-measure-against-both-market-adp-and-exper.md) | Ruling measure against both market adp and exper | 2026-07-31 | PM session 2026-07-31, founder chat |
+| [FR-2026-07-31-separate-edge-from-absolute-quality](FR-2026-07-31-separate-edge-over-consensus-from-absolute-ranki.md) | Separate edge over consensus from absolute ranki | 2026-07-31 | PM session 2026-07-31, founder chat |
 
 ## SCOPING — 1
 

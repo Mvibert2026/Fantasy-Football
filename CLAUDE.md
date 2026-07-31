@@ -163,12 +163,26 @@ shifts mean older seasons may be actively misleading rather than merely less rel
 comparison — never the raw accuracy number.**
 
 Required baselines:
-1. Consensus market ADP
-2. Prior-season fantasy points, ranked
-3. Simple positional-tier heuristic
+1. **Market ADP** — what drafters actually did
+2. **Expert consensus** — what analysts said (FantasyPros ECR)
+3. Prior-season fantasy points, ranked
+4. Simple positional-tier heuristic
 
-If a version does not beat consensus ADP on a holdout season, it has no edge, regardless of
-how good its correlation looks in isolation. Report it as a failure and say so plainly.
+**Baselines 1 and 2 are both required — founder's ruling, 2026-07-31.** This file previously named
+only market ADP while `docs/statistical-guardrails.md` §5 named only expert consensus, and the two
+were used interchangeably for a full campaign. **They are different crowds.** Market ADP is the
+empirical distribution of drafter behaviour; expert consensus is analyst opinion, and it is what the
+shipped board and the availability model actually run on. A version can beat one and lose to the
+other, and which it beat is the finding.
+
+If a version does not beat **both** on a holdout season, it has no edge, regardless of how good its
+correlation looks in isolation. Report it as a failure and say so plainly. If it beats one and not
+the other, report exactly that — not the flattering half.
+
+**Scope, ruled 2026-07-31:** §6.5 binds a *ranking version*. A single feature tested inside one
+component of an unshipped model is not a ranking version and is not bound by it — that
+misapplication ran through seven factor batches, labelling an arm-vs-primary-model comparison as the
+consensus bar.
 
 ### 6.6 Evaluation metrics
 
