@@ -1803,3 +1803,58 @@ list already documented as pre-existing in ADR-066). **None touch `experiments/b
    101/842/978 (none of them the batch-5 block). Logged so the count is on the record rather than
    rediscovered; whoever owns `test_state_claims`'s three violations should note two of them are one
    contract bump away from green.
+
+## 2026-07-31 — strategist, FR-2026-07-31 (separate edge from absolute quality): four rulings
+
+Rulings in `docs/adr-drafts/ADR-DRAFT-edge-vs-absolute-quality.md`; the Ruling-4 design in
+`docs/preregistration/PR-DRAFT-consensus-quality-by-season.md`; handoff body staged (unallocated) at
+`docs/handoffs/STAGED-strategist-consensus-quality-by-season.md`. No shell in this role by design, so
+no thread id and no PR number were hand-typed — the exact `tools/handoffs.py new` command is in the
+staged body.
+
+**Decided, not escalated — five calls.**
+
+1. **Ruled the FR's own premise wrong, on both halves, rather than building on it.** It states `E1a`
+   measures absolute quality and `E1b`/`E2` measure edge over consensus. Checked against five
+   pre-commits: `E1b` is *the same component MAE restricted to the ADP-board universe* (a population
+   filter, model-vs-model) and `E2` is *ADP-board Spearman, **arm − primary*** (model-vs-model). The
+   only §6.5-shaped endpoint in the whole campaign is **`E4`**, and it appears in **one batch of
+   seven**. `E2` is labelled "the bar that matters, `CLAUDE.md` §6.5" in five consecutive pre-commits
+   and that label is attached to the wrong object.
+2. **Inverted three of the FR's four example rows.** ANY/A `E2` = −0.0118 and passer rating
+   `E2` = −0.0180 [−0.0350, −0.0005] are *arm − primary model*: those arms made the ranking **worse
+   than the incumbent model's own ranking**, with the interval excluding zero on the harmful side.
+   Consensus never entered either grade. They are not suppressed wins; they are measured degradations
+   the FR has re-read as wins.
+3. **Declined to amend `CLAUDE.md` §6.5.** It governs *ranking versions*; a component-projection arm
+   is not one, so §6.5 was never binding on batches 1–7 and the defect is misapplication, not the
+   rule. Amending it in response to one day of nulls is bar-moving under null pressure and is refused
+   on the record.
+4. **Adopted the founder's wisdom-of-crowds point in its weak form and refused the strong form.**
+   Weak (true): a predictor drawn from the pool that forms the consensus should not be expected to
+   beat it, so the campaign's nulls are the expected result and reporting each as a failure did
+   misrepresent them. Strong ("consensus is unbeatable") refused — ADP's effective independence across
+   11 shops is ~6 (correlated errors do not average away), the 2026-07-30 ADP-vs-production analysis
+   already measured a systematic era-robust early-round RB mispricing, and **no ranking version has
+   ever been tested**: every arm in batches 1–7 was one feature inside one component of an unshipped
+   model. Named the failure mode: **the efficient-market lullaby.**
+5. **Moved the campaign's FDR endpoint from `C1` (full universe) to `C2` (draft-relevant universe)
+   from batch 8**, answering batch 7 §1(3)'s own open question in the affirmative — three batches,
+   three positions and four sources found every arm improving the full universe degrading the draft
+   board. **No batch 1–7 grade, number or q-value changes**, and `M_campaign = 80` is untouched.
+
+**ESCALATING — a contradiction between two documents, not resolved here.** `CLAUDE.md` §6.5 and
+`docs/statistical-guardrails.md` §5 state **different required baseline sets** (§6.5: market ADP /
+prior points / tier heuristic; guardrails §5: BPA / market ADP / **FantasyPros expert consensus**).
+It is load-bearing, not cosmetic: the founder's sentence is about **analysts** (expert consensus,
+which is what the shipped board runs off, `draft_sim.py:120`) while every measured "consensus" figure
+in the campaign is **market** ADP (FFC half-PPR 12-team, `adp_baseline.py:1-14`). Different crowds.
+Which is "the bar" is a founder call and it changes the Ruling-4 design.
+
+**Deliberately did not read** `experiments/bottomup/results/*_components_metrics.csv`, which already
+contains the per-season `adpsub_rho_b1_adp` values Ruling 4 measures. Reading them before fixing the
+decision rule would convert a pre-registration into a post-hoc rationalisation.
+
+**Predicted on the record, discounted per the standing calibration prior:** Ruling 4 returns
+**outcome (iii)** — consensus quality does vary across seasons, and **no pre-season signal predicts
+which seasons**, which kills the "target the bad years" line rather than opening it.

@@ -72,3 +72,39 @@ seasons, then:
 
 Route to `strategist` before any further factor testing is graded, because it changes what the grades
 mean. Then measure consensus's own year-to-year variance against realised outcomes.
+
+---
+
+## Strategist ruling, 2026-07-31
+
+Full rulings: `docs/adr-drafts/ADR-DRAFT-edge-vs-absolute-quality.md`. Ruling-4 design:
+`docs/preregistration/PR-DRAFT-consensus-quality-by-season.md`. Handoff to `backend` staged
+(unallocated, no shell in this role): `docs/handoffs/STAGED-strategist-consensus-quality-by-season.md`.
+
+**The founder's underlying point is accepted. This document's diagnosis of the mechanism is not, and
+the correction runs the opposite way.**
+
+1. **The two goals are not separated — but `E1a` is not the absolute-quality metric this document
+   takes it for, and `E1b`/`E2` are not edge metrics at all.** `E1b` is the same component MAE
+   *restricted to the ADP-board universe* (a population filter); `E2` is ADP-board Spearman
+   **arm − primary model**. Consensus appears in neither. The only §6.5-shaped endpoint in the whole
+   campaign is `E4`, present in one batch of seven.
+2. **Three of the four rows in this document's own table invert.** ANY/A (`E2` −0.0118) and passer
+   rating (`E2` −0.0180 [−0.0350, −0.0005]) did not lose to consensus — they made the ranking **worse
+   than the incumbent model's own ranking**, the second with the interval excluding zero on the
+   harmful side. They are measured degradations, not suppressed wins.
+3. **`CLAUDE.md` §6.5 is not amended.** It governs *ranking versions*; a component arm is not one, so
+   it never bound batches 1–7. **One escalation for the founder:** §6.5 and
+   `docs/statistical-guardrails.md` §5 list *different* required baselines, and it matters here —
+   his sentence is about **analysts** (expert consensus, what the shipped board runs off), while every
+   measured "consensus" number in the campaign is **market** ADP. Different crowds; which is the bar
+   is his call.
+4. **"No edge over consensus" is the expected outcome in the weak form and the campaign has been
+   misreporting it — accepted.** "Consensus is unbeatable" is refused: ADP's effective independence
+   across 11 shops is ~6, a systematic era-robust early-round RB mispricing is already measured, and
+   **no ranking version has ever been tested.**
+5. **`ρ = +0.668` does not support this document's argument.** That is prior points per game —
+   baseline #2 — measured against ten *rate statistics*. **Consensus ADP is not in that table.**
+
+**Status: ruling issued; the measurement is specified and unrun.** PM: re-run
+`python tools/founder_requests.py sync` if the status field is advanced.

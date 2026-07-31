@@ -4,7 +4,7 @@
 Threads are the source of truth. Change a thread's `STATUS:`, then re-run sync.
 Protocol: [`README.md`](README.md).
 
-**108 open** · 54 resolved
+**109 open** · 54 resolved
 
 ---
 
@@ -35,7 +35,7 @@ not an omission. Start your session at your own heading.
 | [2026-07-30-operator-standing-check-2026-07-30-handoffs-py-r](2026-07-30-operator-standing-check-2026-07-30-handoffs-py-r.md) | Operator standing check 2026 07 30 handoffs py r | `operator` | OPEN | 1d | none |
 | [90](090-fr-043-audit-claude-md-ss5-staleness-built-but-u.md) | Fr 043 audit claude md ss5 staleness built but u | `librarian` | OPEN | 2d | none |
 
-### `backend` — 30 waiting
+### `backend` — 31 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
@@ -68,6 +68,7 @@ not an omission. Start your session at your own heading.
 | [111](111-sleeper-screen-use-recent-usage-not-career-mean.md) | Sleeper screen use recent usage not career mean | `ranker` | OPEN | 1d | nothing; changes a feature choice in the FR-094 sleeper screen before it ships |
 | [2026-07-30-availability-adp-measurements-m0-m5](2026-07-30-availability-adp-measurements-m0-m5.md) | Availability adp measurements m0 m5 | `strategist` | OPEN | 1d | FR-131, FR-066, thread 104, FR-128, thread 114 (partially) |
 | [2026-07-30-suggested-pick-rule-measure-qg-against-plain-vbd](2026-07-30-suggested-pick-rule-measure-qg-against-plain-vbd.md) | Suggested pick rule measure qg against plain vbd | `strategist` | OPEN | 1d | FR-2026-07-30-recommendation-logic-is-inverted (question 3 of the founder's bar), FR-051, FR-115 |
+| [2026-07-31-consensus-quality-season-by-season-plus-the-comp](2026-07-31-consensus-quality-season-by-season-plus-the-comp.md) | Consensus quality season by season plus the comp | `strategist` | OPEN | 0d | none |
 | [88](088-pr-004-f-bottomup-core-run-the-confirmatory-bott.md) | Pr 004 f bottomup core run the confirmatory bott | `strategist` | OPEN | 2d | none |
 
 ### `frontend` — 23 waiting
