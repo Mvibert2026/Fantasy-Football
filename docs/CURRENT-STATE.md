@@ -27,6 +27,35 @@ repo — Cloudflare holds its own deploy token. This closes the last dependency 
 machine: development, tests, the database rebuild, the daily capture and now viewing the app all run
 without it.
 
+**Last verified:** 2026-07-31, frontend session (thread
+`docs/handoffs/121-wire-assistant-retrieval-to-docs-assistant-conte.md`) — **the assistant's
+retrieval pipeline never read `docs/assistant-context.md` at all, on either path. Fixed.** Grep
+across `frontend/` and `worker/` found zero references before this session; `buildCorpus`
+(`ui/assistant/retrieval.ts`) assembled its corpus from board/glossary/strategies/league/nulls/
+player_descriptions only, and `scripts/sync-exports.mjs` copied `data/export/*.json` only — a
+different directory from `docs/`, so librarian's curated intervals/effective-n/scope never reached
+the model on either the local Vite-plugin path or the hosted Worker path (both are pure
+passthroughs that relay whatever `context` array the already-built client code sends — this was a
+shared failure, not a local/hosted divergence). Confirmed structurally empty before the fix:
+`retrieveContext(data, rows, 'is alpha detection happening for 2026')` — a question the file
+answers in full and nothing else in the corpus does — returned `[]`. **Fix, contained, no
+contract/export-shape change:** `sync-exports.mjs` now also copies `docs/assistant-context.md` ->
+`public/data/assistant_context.md` verbatim (raw text, not JSON, not part of the six-artifact set,
+absence non-fatal); new `Dataset.assistantContextMd`; new `assistantContextDocs()` chunks the file
+on its own `##` headings (kept whole for a prose section so an interval is never severed from what
+it applies to; split one document per bullet for a section that is itself a bulleted list of
+independent findings, matching the file's own "one paragraph per settled decision" convention),
+added to `buildCorpus`. Verified two ways: unit-level (6 new tests) and a **real Chromium browser**
+driven via Playwright (`frontend/e2e/verify-assistant-context-retrieval.mjs`) that opened the
+assistant dock, asked the same question, and captured the actual `POST /__reasoning` request body
+— one `assistant_context.*` item, full interval/scope text intact ("2021-2025... one of those five
+seasons held back... around 2028"), no markdown artifacts. No live model response was obtainable
+(no `ANTHROPIC_API_KEY` in this container, documented pre-existing gap); the UI correctly showed
+the designed "no_key" unavailable state, screenshotted. `docs/assistant-context.md` itself was not
+edited (librarian is actively rewriting it). 465 tests passing (was 459), 59 files; `tsc`/`build`
+clean; `dist/data/assistant_context.md` confirmed present in the production bundle. Full account
+and evidence: thread 121.
+
 **Last verified:** 2026-07-30, frontend session (worktree `agent-a08e75a2b222a2f66`, FR-114) shipping
 the global "show data sources" switch. Founder, refined mid-thread: *"I like the idea about
 traceablity ... I just want to be able to see a version with and without them."* Not a deletion —

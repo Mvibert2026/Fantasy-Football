@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { buildRows } from '../data/board';
+import { assistantContextDocs } from '../assistant/retrieval';
 import { retrieveContext } from '../assistant/reasoning';
 import { loadDatasetFromDisk } from './helpers';
 
@@ -123,5 +124,96 @@ describe('retrieval', () => {
         expect(item.text.trim()).not.toBe('');
       }
     }
+  });
+});
+
+/**
+ * docs/handoffs/2026-07-31-wire-assistant-retrieval-to-docs-assistant-conte.md:
+ * before `assistantContextDocs` existed, nothing in `frontend/` or `worker/`
+ * referenced `docs/assistant-context.md` at all -- confirmed by grep, zero hits.
+ * Librarian's curated intervals, effective n and stated scope never reached the
+ * reasoning lane. These tests cover the two properties that matter: the file's
+ * content is genuinely reachable through the same retrieval path as every other
+ * artifact, and a chunk boundary never severs an interval from the sentence
+ * stating what it applies to (or leaves a stray, unpaired markdown `**`).
+ */
+describe('assistant-context.md retrieval (FR/thread: wire assistant retrieval)', () => {
+  it('null (not synced, or file absent) yields no documents -- not a crash, not an empty placeholder claim', () => {
+    expect(assistantContextDocs(null)).toEqual([]);
+  });
+
+  it('a prose section is kept as one document, heading plus full body verbatim, not truncated', () => {
+    const md = [
+      '# Assistant Context',
+      '',
+      '## Why alpha detection is closed for 2026',
+      '',
+      'Market-consensus data only exists for 2021-2025, and one of those five seasons',
+      'is held back as an honest test. No further work is planned until roughly 2028.',
+    ].join('\n');
+    const docs = assistantContextDocs(md);
+    expect(docs).toHaveLength(1);
+    expect(docs[0]!.text).toContain('Why alpha detection is closed for 2026');
+    // The interval/scope detail must survive whole, in the same chunk as the
+    // headline claim -- not split off into a separate document that could be
+    // retrieved (or dropped) independently of the claim it qualifies.
+    expect(docs[0]!.text).toContain('2021-2025');
+    expect(docs[0]!.text).toContain('2028');
+    expect(docs[0]!.source_path).toBe('docs/assistant-context.md#why-alpha-detection-is-closed-for-2026');
+  });
+
+  it('a bulleted section splits one document per bullet, each a self-contained settled decision', () => {
+    const md = [
+      '# Assistant Context',
+      '',
+      '## Registered nulls',
+      '',
+      '- **Spike-week ability is not a persistent player trait.** r is near zero across 26 seasons.',
+      '- **Hero RB has no measurable edge.** Coin flip in either direction.',
+    ].join('\n');
+    const docs = assistantContextDocs(md);
+    expect(docs).toHaveLength(2);
+    expect(docs.map((d) => d.id)).toEqual(['assistant_context.registered-nulls.0', 'assistant_context.registered-nulls.1']);
+    expect(docs[0]!.text).toContain('Spike-week ability is not a persistent player trait');
+    expect(docs[0]!.text).toContain('26 seasons');
+    expect(docs[1]!.text).toContain('Hero RB has no measurable edge');
+    // Neither bullet's text should leak the other's content.
+    expect(docs[0]!.text).not.toContain('Hero RB');
+    expect(docs[1]!.text).not.toContain('Spike-week');
+  });
+
+  it('never leaves a stray, unpaired markdown bold marker in a chunk -- a chunk boundary can split a bold span', () => {
+    const md = ['# Assistant Context', '', '## Some section', '', '- **Bold claim.** Rest of the sentence.'].join(
+      '\n',
+    );
+    const docs = assistantContextDocs(md);
+    expect(docs[0]!.text).not.toContain('**');
+  });
+
+  it('empty or absent sections produce no phantom documents', () => {
+    const md = ['# Assistant Context', '', '## Empty section', '', '## Real section', '', 'Some real content.'].join(
+      '\n',
+    );
+    const docs = assistantContextDocs(md);
+    expect(docs).toHaveLength(1);
+    expect(docs[0]!.text).toContain('Some real content');
+  });
+
+  it('end to end: a question the real assistant-context.md answers, and nothing else in the corpus does, retrieves it with the interval/scope intact', () => {
+    if (!data.assistantContextMd) {
+      throw new Error(
+        'fixture expected public/data/assistant_context.md to exist -- run node scripts/sync-exports.mjs first',
+      );
+    }
+    const items = retrieveContext(data, rows, 'is alpha detection happening for 2026');
+    const hit = items.find((i) => i.id.startsWith('assistant_context.'));
+    expect(hit).toBeDefined();
+    expect(hit!.source_path).toMatch(/^docs\/assistant-context\.md#/);
+    // The scope (which seasons, why the number is what it is) must ride along
+    // with the verdict -- exactly what the dispatch's "does it survive intact"
+    // question is checking, not just the word "closed".
+    expect(hit!.text).toContain('2021');
+    expect(hit!.text).toContain('2025');
+    expect(hit!.text).not.toContain('**');
   });
 });

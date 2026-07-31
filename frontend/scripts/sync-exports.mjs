@@ -35,6 +35,17 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 // same commit so it cannot silently come back as a second source of truth.
 const srcDir = join(root, '..', 'data', 'export');
 const outDir = join(root, 'public', 'data');
+// docs/assistant-context.md -- NOT part of data/export/ and NOT contract-versioned.
+// It is librarian's curated "why" summary for the assistant's reasoning lane
+// (docs/handoffs/2026-07-31-wire-assistant-retrieval-to-docs-assistant-conte.md).
+// Before this, nothing in frontend/ or worker/ referenced it at all -- grep
+// confirmed zero hits across ui/, server/, and worker/index.js -- so the careful
+// interval/scope/effective-n structure librarian writes into it never reached the
+// model. Copied as raw text, not JSON: this file has no contract_version and is
+// not part of the six-artifact per-league set, so it is fetched and handled as
+// its own optional thing (see ui/data/load.ts's fetchAssistantContextOrNull),
+// never folded into _manifest.json's artifact map.
+const docsAssistantContextSrc = join(root, '..', 'docs', 'assistant-context.md');
 
 /** Bare non-JSON numeric tokens, only where they sit in a JSON value position. */
 const BAD_TOKEN = /(^|[\s:,[])(-?Infinity|NaN)(?=[\s,\]}]|$)/;
@@ -163,6 +174,8 @@ export function syncExports({ quiet = false } = {}) {
     log(`[sync-exports] ${leagueDirs.length} additional league(s) copied. Manifest: public/data/_leagues.json`);
   }
 
+  copyAssistantContextDoc(log);
+
   return manifest;
 }
 
@@ -194,6 +207,25 @@ function readLabelAndTrack(to, fallbackId) {
     // a genuine parse error, so reaching here just means "no metadata available".
   }
   return { label, track };
+}
+
+/**
+ * Copies docs/assistant-context.md -> public/data/assistant_context.md verbatim
+ * (raw text -- it's markdown, not JSON, so none of copyJsonDir's parsing/validation
+ * applies). Absence is a real, non-fatal state: unlike data/export/, this file is
+ * not a required artifact, and a worktree that predates it (or a moment where
+ * librarian has it mid-rewrite/renamed) must not take down the whole sync. Logged
+ * either way so a silent miss is still visible in the sync output.
+ */
+function copyAssistantContextDoc(log) {
+  if (!existsSync(docsAssistantContextSrc)) {
+    log(`[sync-exports] docs/assistant-context.md not found -- skipping (assistant retrieval will treat it as absent).`);
+    return;
+  }
+  const raw = readFileSync(docsAssistantContextSrc, 'utf8');
+  mkdirSync(outDir, { recursive: true });
+  writeFileSync(join(outDir, 'assistant_context.md'), raw);
+  log(`[sync-exports] docs/assistant-context.md -> public/data/assistant_context.md (${raw.length} bytes)`);
 }
 
 /** Reads the manifest already in public/data/, or null on a cold start. */
