@@ -205,11 +205,20 @@ def build_frames(cfg: Dict, arm: str) -> pd.DataFrame:
         players["ffc_pos_rank"] = players.groupby("season")["average_pick"].rank(
             method="first")
         # expert rank
-        eb = pd.concat([ecr.load_ecr(s, pos) for s in
-                        sorted(players["season"].unique())], ignore_index=True)
+        seasons = [int(s) for s in sorted(players["season"].unique())]
+        eb = pd.concat([ecr.load_ecr(s, pos) for s in seasons], ignore_index=True)
+        eb["season"] = eb["season"].astype("int64")
+        players["season"] = players["season"].astype("int64")
         players = players.merge(
             eb[["player_id", "season", "ecr_pos_rank"]],
             on=["player_id", "season"], how="left")
+        # A merge that silently matches nothing looks exactly like a null result.
+        # Assert the join actually landed on every season ECR covers.
+        for s in seasons:
+            if s in ecr.ecr_seasons() and s < HOLDOUT_SEASON:
+                got = int(players.loc[players.season == s, "ecr_pos_rank"].notna().sum())
+                assert got >= 10, (f"ECR merge matched {got} rows for {pos} {s}; "
+                                   f"a zero-match join is a bug, not a null")
         players["position"] = pos
         frames.append(players)
     return pd.concat(frames, ignore_index=True)

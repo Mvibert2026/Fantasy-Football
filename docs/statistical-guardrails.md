@@ -138,17 +138,39 @@ and whether that sample spans any known rule or scheme discontinuities.
 **Rule:** no ranking version's performance may be reported without a baseline comparison. The
 baseline comparison *is* the result — a raw accuracy number in isolation is not.
 
-**Required baselines for every backtest:**
-1. Best Player Available (BPA) — rank by standard VBD using our scoring engine and our
-   replacement levels.
-2. Consensus market ADP.
-3. FantasyPros / expert consensus preseason ranking.
+**Required baselines for every backtest — aligned to `CLAUDE.md` §6.5, corrected 2026-07-31.**
+This section previously named a different, three-item list (BPA-via-own-VBD, consensus market ADP,
+FantasyPros/expert consensus) than `CLAUDE.md` §6.5 did, and the two were used interchangeably
+across a full factor-testing campaign before the founder ruled on it (`CLAUDE.md` §6.5, "both
+baselines required — founder's ruling, 2026-07-31"). The canonical list is now `CLAUDE.md`'s:
 
-**Interpretation rule:** if a candidate ranking does not beat all three baselines by a margin that
+1. **Market ADP** — what drafters actually did.
+2. **Expert consensus** — what analysts said (FantasyPros ECR).
+3. Prior-season fantasy points, ranked.
+4. Simple positional-tier heuristic.
+
+**Baselines 1 and 2 are both required, not either/or** — they are different crowds (empirical
+drafter behaviour vs. analyst opinion), and a version can beat one and lose to the other. Report
+which one, if either, was beaten; do not report the flattering half.
+
+**Best Player Available (BPA) via our own VBD/replacement levels, this section's former baseline
+#1, is not one of `CLAUDE.md`'s four** and is not a market or expert baseline at all — it scores a
+candidate ranking against a value computed from the candidate's own scoring engine, which is a
+useful internal sanity check but not an external honesty check. Retained here as a *supplementary*
+comparison where useful, never as a substitute for baselines 1–4 above, and never reported as if it
+were one of the required four.
+
+**Interpretation rule:** if a candidate ranking does not beat baselines 1 and 2 by a margin that
 exceeds the uncertainty in the estimate (see §7, confidence intervals), the honest conclusion is
 that the candidate has no demonstrated edge. Report this plainly. A negative or null result is a
 legitimate, useful output of this project — it is not a failure to hide or re-run until it looks
 better.
+
+**Scope — this section binds a *ranking version*, same as `CLAUDE.md` §6.5.** A single feature or
+factor tested inside one component of an unshipped model is not a ranking version and this section
+does not bind it; labelling a single-arm-vs-primary-model comparison as "the consensus bar" is a
+misapplication, not a stricter reading. See `CLAUDE.md` §6.5's own scope paragraph and
+`docs/adr-drafts/ADR-DRAFT-edge-vs-absolute-quality.md`.
 
 ---
 
@@ -199,7 +221,9 @@ Before reporting a backtest result, answer these explicitly:
 4. If multiple factors or configurations were tested, was a multiple-comparisons correction
    applied?
 5. Does the result include a confidence interval, or just a point estimate?
-6. Does the result include all three required baselines (BPA, ADP, expert consensus)?
+6. Does the result include the baselines `CLAUDE.md` §6.5 requires — market ADP **and** expert
+   consensus, both, not either? (BPA-via-own-VBD is a useful supplementary check, per §5 above,
+   but does not substitute for either required baseline.)
 7. If the result looks unusually good, what is the most likely leakage explanation, and has it
    been ruled out? **An unusually strong result is evidence of a bug more often than it is evidence
    of a good model.** Treat surprising positive results with more scrutiny, not less.
@@ -211,7 +235,8 @@ Before reporting a backtest result, answer these explicitly:
 ## 9. What this looks like in practice for the current backtest queue
 
 - Tests #44, #45, #46 (Hero RB, Elite TE, QB spread): each needs a pre-registered hypothesis and
-  metric before running, a holdout season untouched during any tuning, and all three baselines.
+  metric before running, a holdout season untouched during any tuning, and both required baselines
+  (market ADP and expert consensus, per `CLAUDE.md` §6.5).
 - Test #53 (WR/TE breakout patterns): explicitly named in `test-registry.md` as a multiple-
   comparisons trap. Pre-registration is mandatory here, not optional.
 - Tier 1 tests using FTN data (#16, #17, #31, #32): report sample size (4 seasons) alongside any

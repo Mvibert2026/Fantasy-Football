@@ -63,8 +63,18 @@ def load_ecr(season: int, position: Optional[str] = None,
     finally:
         conn.close()
     if not len(df):
-        return pd.DataFrame(columns=["player_id", "ecr_overall_rank",
-                                     "ecr_pos_rank", "season"])
+        # DTYPES MATTER. A bare `pd.DataFrame(columns=[...])` yields object-dtype
+        # columns; concatenating one of these with real seasons silently promotes
+        # `season` to object and every downstream merge then matches ZERO rows
+        # while looking perfectly healthy. That bug produced a fake all-NaN
+        # expert-consensus panel on the first v1 run.
+        return pd.DataFrame({
+            "player_id": pd.Series(dtype="object"),
+            "player_name": pd.Series(dtype="object"),
+            "position": pd.Series(dtype="object"),
+            "ecr_overall_rank": pd.Series(dtype="float64"),
+            "ecr_pos_rank": pd.Series(dtype="float64"),
+            "season": pd.Series(dtype="int64")})
 
     ts = pd.to_datetime(df["as_of_date"], errors="coerce")
     cutoff = kickoff_dates(db_path).get(season, pd.Timestamp(f"{season}-09-01"))
