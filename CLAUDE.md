@@ -140,6 +140,12 @@ Roughly 200–300 fantasy-relevant players per season, heavily autocorrelated ac
 (the same players recur), against ~30+ candidate factors. This is a textbook overfitting setup.
 
 - Hold out seasons. Tune on training seasons only; touch the holdout once.
+- **The sealed 2025 holdout does not open until fable has run. Founder's ruling, 2026-07-31.**
+  It can be spent exactly once, and spending it before adversarial review means spending it on
+  whatever the project believed at the time. Any agent that thinks a result warrants the holdout
+  **stops and escalates to the founder** — no agent opens it on its own authority, including on a
+  result it considers decisive. Every access is logged in
+  `docs/preregistration/holdout_access_log.jsonl`.
 - Testing ~30 factors at p<0.05 yields ~1.5 false positives by chance. Correct for it, or
   treat single-factor "significance" as a hypothesis rather than a finding.
 - Prefer simple, transparent, few-parameter models. **Start with weighted/regression
