@@ -122,3 +122,59 @@ contain 2025 in the first place.
 Reply on the allocated thread with `### backend · <date>` — three hashes, role, middle dot. Any other
 heading form is invisible to `tools/handoffs.py`'s reply detector and the thread will fail the mailbox
 check as "RESOLVED with no reply."
+
+### backend · 2026-07-31
+
+**Item 1 — done, against both baselines.** PR allocated: `PR-009` (`docs/preregistration/
+PR-009-consensus-quality-by-season.md`, moved from the `PR-DRAFT-*` placeholder, `number:`/`id:`
+fields corrected). New `experiments/bottomup/components/consensus_quality.py` runs the PR's design
+twice — market ADP and expert ECR — per the founder's ruling folded into `CLAUDE.md` §6.5 today.
+Seed `20260731`, 4,000-rep bootstraps throughout (SS4's player-level null band and SS5's
+season-level spread CI both), recorded in `docs/preregistration/test_run_log.jsonl` (56 rows this
+run, after removing 56 duplicate rows from an earlier debug pass of the same script — the log now
+holds exactly one run's worth).
+
+**Coverage, reported per SS9 before any rho was read.** Market ADP (half-PPR 12-team) has **zero**
+rows for 2013-2017 in `data/adp-snapshots-ffc/` — only non-PPR/PPR 12-team go back to 2013; the
+half-PPR archive starts 2018. So the market pass is structurally 7 seasons (2018-2024), not the
+PR's nominal 12. Expert ECR (`rankings` where `source='fantasypros_ecr'`) has exactly one dated
+pre-Week-1 snapshot per season, 2021-2025 — 2025 excluded by the sealed holdout AND by the source
+(no 2025 row at all), so the ECR pass is 4 seasons (2021-2024). Both are stated as real coverage
+facts, not silently point-estimated on the nominal window. ECR is also a **standard/non-PPR proxy**
+for this league (per `src/ingest_rankings.py`'s own documented caveat, `scoring_format` is NULL on
+every ECR row) — same caveat class as the ADP pass's 12-team-for-10-team substitution.
+
+**Headline: zero POOR seasons at every position, under BOTH crowds** — 0/7 market-ADP cells, 0/4
+ECR cells, per position. Multiple cells clear STRONG (gap over B3 >= +0.134): market ADP 1/7-3/7
+positions, ECR 1/4-4/4. **Outcome (i) — consensus stable — is what the data supports, not outcome
+(iii)**, which is what strategist's own pre-registered prediction (SS7) called. The outcome-(i)
+spread sub-clause (season CI width < 0.10) is mixed, not clean: market ADP passes at RB/WR, fails
+at QB/TE (small n_covered there, 11-24); ECR passes at RB/WR/TE, fails narrowly at QB. Reported
+as-is. **SS6's prediction test is structurally inapplicable this run**: zero POOR seasons means no
+positive class, so every walk-forward AUC cell is `NaN` by construction (n recorded correctly, not
+faked as 0.50) — outcome (ii) cannot be claimed or ruled out this run, only "there was nothing to
+predict." Per-signal table in `experiments/bottomup/results/pr009_prediction_test.csv`.
+
+**One data fix landed inside this**: `adp_baseline.py:load_adp` was dropping FFC's own `std_dev`
+column (SS6's S2 signal needs it); retained now, purely additive
+(`tests/test_wr_component_model.py` 14/14 still green). Market-ADP B1/B2/B3 levels cross-checked
+byte-identical against the already-committed `experiments/bottomup/results/rb_components_metrics.csv`
+before being trusted — this session's own independent reimplementation (not a re-copy of the same
+code), confirming `pos_eval`'s committed numbers reproduce.
+
+**Full tables**: `experiments/bottomup/results/pr009_consensus_quality.csv` (every season x
+position x baseline cell), `pr009_outcome_summary.csv` (POOR/STRONG counts + spread CI, the outcome
+verdict), `pr009_prediction_test.csv` (SS6). Full narrative also in `docs/CURRENT-STATE.md`
+(2026-07-31 backend entry).
+
+**Item 2 — not attempted this session.** Out of the scope I was dispatched to run (the
+consensus-quality measurement only). Left `STATUS: OPEN` rather than `RESOLVED` since the thread's
+full ask is two items and only one is done; whoever picks up item 2 can reply to this same thread
+per the mailbox protocol.
+
+**Noted, not reconciled:** a parallel, independent session built
+`experiments/bottomup/components/ecr_baseline.py` and an `extra_universe_fn` hook on
+`pos_eval.WalkForward` in the same window (`ranker`, for `ranking_v1.py`) — a different code path
+solving a related but not identical problem (a baseline harness for a specific ranking version, vs.
+this thread's per-season level report). Not reconciled against this work; flagged rather than
+assumed consistent.

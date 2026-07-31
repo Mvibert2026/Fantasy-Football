@@ -27,17 +27,64 @@ repo — Cloudflare holds its own deploy token. This closes the last dependency 
 machine: development, tests, the database rebuild, the daily capture and now viewing the app all run
 without it.
 
-**ESCALATED, NOT RESOLVED (2026-07-30, backend session):** the two "Last verified" entries
-immediately below are separated by live, unresolved `<<<<<<< HEAD` / `=======` / `>>>>>>>` git
-merge-conflict markers, left by a coordinator merge commit (`17d41a3`, "Merge recommendation-card
-honesty fixes, keeping item 6's grid layout") that resolved the underlying code conflict but not
-this doc's. Per this project's operating rules, a merge conflict is escalated, never resolved
-unilaterally by whichever session next needs to edit the file — so this entry was inserted above
-the conflict rather than inside it, and the conflict itself is untouched. Both sides read as
-genuine, non-contradictory frontend session narratives (RANKINGS-PANE/FR-122 vs the
-recommendation-card honesty fixes) that likely just need the markers stripped and both paragraphs
-kept, but that call belongs to whoever owns this merge, not to a session that arrived afterward
-for an unrelated reason. Flagged to `pm` (see `docs/ideas-inbox.md`, 2026-07-30 backend entry).
+**RESOLVED as of this librarian session (2026-07-31), verified not assumed.** The escalation
+below described live, unresolved `<<<<<<< HEAD` / `=======` / `>>>>>>>` git merge-conflict markers
+separating the two "Last verified" entries that follow, left by coordinator merge commit
+`17d41a3` ("Merge recommendation-card honesty fixes, keeping item 6's grid layout"). `git grep
+"<<<<<<<"` against this file today finds no literal markers anywhere in it, and both frontend
+narratives this note predicted would need to coexist — the RANKINGS-PANE/FR-122 entry and the
+recommendation-card honesty-fixes entry — are both present in full below, sequential and
+non-overlapping. Someone (unclear which session; no commit in this file's history shows the marker
+string being added or removed, so it may never have reached a commit) already did what this note
+speculated was the likely fix. Left in place as a record rather than deleted outright, since the
+original escalation is why it was safe to check.
+
+**Last verified:** 2026-07-31, backend session — **PR-009, consensus quality season by season,
+against BOTH required baselines (CLAUDE.md §6.5 amended 2026-07-31, founder: "I'd measure against
+both").** Design pre-registered by strategist before any value was seen
+(`docs/preregistration/PR-009-consensus-quality-by-season.md`, allocated from the `PR-DRAFT-*`
+placeholder this session), run via new `experiments/bottomup/components/consensus_quality.py`
+(seed `20260731`, 4,000-rep bootstraps throughout, run log
+`docs/preregistration/test_run_log.jsonl`). **Market ADP** (FFC half-PPR 12-team) is usable only
+2018-2024 — 2013-2017 has **zero** rows in this format in `data/adp-snapshots-ffc/` (non-PPR/PPR
+12-team go back to 2013; half-PPR does not), so the PR's nominal 2013-2024 window is **structurally
+2018-2024** for this baseline, reported explicitly rather than silently point-estimated on 5 fewer
+seasons than named. **Expert consensus** (`fantasypros_ecr`, `rankings` table) is usable
+**2021-2024 only** (4 seasons) — one dated pre-Week-1 snapshot per season, 2025 excluded by the
+sealed holdout and by the source itself (no 2025 row). Per `src/ingest_rankings.py`'s own
+documented caveat, this ECR source has **no half-PPR variant** (`scoring_format` is NULL on every
+row) — a standard/non-PPR proxy for this league's own scoring, same caveat class as the ADP pass's
+12-team-for-10-team substitution, stated at every use. **Headline: zero POOR seasons at every
+position under BOTH crowds** — 0/7 (market ADP) and 0/4 (expert ECR) per position, against the
+PR's pre-committed decision rule (rho_crowd < rho_B3 AND the gap exceeds a player-level bootstrap
+null band representing single-season sampling noise). Multiple seasons clear STRONG (gap ≥ +0.134):
+1/7–3/7 positions under market ADP, 1/4–4/4 under ECR — **consensus, both crowds, routinely beats
+the weighted-PPG heuristic and never measurably loses to it** in this window. **Outcome (i)
+(consensus stable) is what the data supports** — not outcome (iii), which strategist's own
+pre-registered prediction called (written in advance specifically so it could be wrong; it was).
+The season-level-spread sub-clause of outcome (i)'s test (95% bootstrap CI narrower than 0.10) is
+mixed rather than clean: market ADP passes at RB/WR, fails at QB/TE (driven by n_covered as low as
+11-24 there, not by an established quality swing); ECR passes at RB/WR/TE, fails narrowly at QB.
+Reported as-is rather than rounded into a tidier verdict. **SS6 prediction test could not be run
+meaningfully**: with zero POOR seasons at any position under either baseline, there is no positive
+class for the walk-forward AUC to discriminate — every AUC cell is `NaN` by construction (`n`
+correctly recorded, not fabricated as 0.5). This makes outcome (ii) structurally unreachable this
+run, not merely unproven. **One data fix landed as part of this**: `adp_baseline.py`'s `load_adp`
+was dropping FFC's own published `std_dev` column (PR §6's S2 signal needs it); now retained,
+purely additive, `tests/test_wr_component_model.py` (14/14) still green after the change. Market-ADP
+B1/B2/B3 rho levels cross-checked byte-identical against the already-committed
+`experiments/bottomup/results/rb_components_metrics.csv` before being trusted (this session's own
+independent reimplementation, not a copy). **A parallel, independent effort landed in the same
+window**: `ranker` built `experiments/bottomup/components/ecr_baseline.py` and wired an ECR
+extra-universe option into `pos_eval.WalkForward` for `ranking_v1.py` — a different code path
+solving a related but not identical problem (v1's own baseline harness vs. this thread's per-season
+level report); not reconciled against each other, flagged here rather than silently assumed
+consistent. Full design, both tables, and the outcome writeup:
+`docs/preregistration/PR-009-consensus-quality-by-season.md`,
+`experiments/bottomup/results/pr009_consensus_quality.csv`,
+`experiments/bottomup/results/pr009_outcome_summary.csv`,
+`experiments/bottomup/results/pr009_prediction_test.csv`. Reply and thread status:
+`docs/handoffs/2026-07-31-consensus-quality-season-by-season-plus-the-comp.md`.
 
 **Last verified:** 2026-07-30, backend session — **four selectable ranking sources, board layer
 (ADR-068, FR-2026-07-30).** `make_board.build_board`/`export_contract.build_board_json` now take
