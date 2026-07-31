@@ -47,10 +47,11 @@
   "rookies": {
     "policy": "consensus_fallback",
     "label": "consensus_fallback",
-    "curve": "a + b*ln(consensus_positional_rank)",
-    "fit_window": "strictly prior seasons of the same consensus source",
+    "assembly": "rank_space_pinning",
+    "definition": "entry == 'rookie' -- no prior NFL season in the panel",
     "override_model_rookie_submodel": true,
-    "_note": "Rookie draft capital is an eliminated edge channel. v1 holds no opinion on rookies; on rookie rows v1 equals the crowd it is compared against."
+    "_note": "Rookie draft capital is an eliminated edge channel. v1 holds no opinion on rookies; on rookie rows v1 equals the crowd it is compared against, contributing zero differential information in either direction.",
+    "_amended_2026-07-31_before_first_run": "Was 'a + b*ln(consensus_positional_rank)' fitted on strictly prior seasons. Replaced with rank-space pinning BEFORE any v1 number was computed (git history is the proof). Three reasons, all pre-run: (1) pinning delivers the stated intent exactly -- a rookie sits at its consensus slot -- where the curve only approximated it; (2) it removes a fitted object and therefore a look-ahead surface; (3) the curve cannot be fitted for the first panel-M season (2018 has no prior FFC season), which would have needed a special case invented after seeing which seasons broke."
   },
 
   "cross_positional": {

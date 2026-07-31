@@ -33,7 +33,16 @@ run, SHA-256 recorded in the results doc. No weight is hardcoded in the runner.
 | **Output** | `proj_points` — full season points, this league's ruleset incl. stacking bonuses, via `pos_model.score_components()` | Already in the league's own units |
 | **Positions** | QB, RB, WR, TE | — |
 | **DEF** | **blank, with a note** | Zero coverage in `nfl.db`. No fabricated number |
-| **Rookies** | **fall back to consensus and are labelled** | `entry == "rookie"` rows take the walk-forward-fitted curve `a + b·ln(consensus positional rank)` on the panel's own consensus source, fit on strictly prior seasons only. The model's internal rookie sub-model (draft capital) is **overridden** — draft capital is an already-eliminated edge channel |
+| **Rookies** | **fall back to consensus and are labelled** | **Rank-space pinning** (amended below). `entry == "rookie"` rows stay at exactly their consensus positional slot; the remaining slots are filled by veterans re-ordered by `proj_points`. The model's internal rookie sub-model (draft capital) is **overridden** — draft capital is an already-eliminated edge channel |
+
+> **Amendment, 2026-07-31, made BEFORE the first run — git history is the proof.** The rookie
+> fallback was originally specified as a walk-forward curve `a + b·ln(consensus positional rank)`
+> fitted on strictly prior seasons. It is replaced by **rank-space pinning**, for three reasons all
+> available without seeing a result: (1) pinning *is* the stated intent — "on rookie rows v1 equals
+> the crowd it is compared against" — where the curve only approximated it; (2) it deletes a fitted
+> object and therefore a look-ahead surface; (3) the curve is unfittable for the first Panel M season
+> (2018 has no prior FFC season), which would have forced a special case invented after seeing which
+> seasons broke. Recorded rather than silently applied.
 | **Cross-positional revaluation** | in the config, **not measured by this design** | The endpoint is per-position rank correlation (ADR-B forbids a cross-position aggregate). v1's positional-tilt channel is untested here and must not be claimed |
 
 ### 1.1 Table stakes — what is in, what is out, and why

@@ -98,7 +98,7 @@ three that is a genuinely independent re-ranking, not just a re-scoring of the s
   `src/run_pr007.py` — all fixed to `fantasypros_ecr`/`TRAINING_SOURCE` **by design**: these are
   historical-backtest/methodology-validation artifacts over pre-2026 `DEV_SEASONS`, not live
   per-toggle app features, so "hardcoded" here is correct, not a gap.
-- Recommender (`frontend/ui/.../recommendation.ts`), predictions/opponents/grid views — frontend
+- Recommender (`frontend/ui/data/recommendation.ts`), predictions/opponents/grid views — frontend
   surfaces reading whichever board file is requested; no separate backend export exists for them.
 - Assistant — no backend data pipeline reads a ranking source directly; it reads
   `docs/assistant-context.md` via frontend/librarian's retrieval layer (separate open threads
@@ -840,10 +840,11 @@ PHASE 1/PHASE 2 closeout session (main @ `9d8e09b`, merge of `integration-2026-0
 — build-state table below is
 measured directly from `git rev-parse HEAD`, real backend/frontend full-suite runs,
 `CONTRACT_VERSION` in `src/export_contract.py`, and `tools/handoffs.py check`. `CONTRACT_VERSION`
-is **1.17.0** (measured from `src/export_contract.py`, 2026-07-30, the trace-contract bump in
-commit ee5cae2; the FR-079/FR-083
-league-scoring-aware ADP note + history export fix — was 1.15.0, ADR-062's bump; this line
-previously said 1.13.0 until an earlier claim checker caught that drift).
+is **1.18.0** (measured from `src/export_contract.py`, 2026-07-31, librarian session correcting a
+stale 1.17.0 figure caught by `tests/test_state_claims.py`; the bump to 1.18.0 is the four
+selectable ranking sources change, ADR-068 — see this file's "Last verified" entry above; prior
+values in order: 1.17.0 (trace-contract bump, commit `ee5cae2`), 1.15.0 (ADR-062, FR-079/FR-083
+league-scoring-aware ADP note + history export fix), 1.13.0 (superseded)).
 was **1.14.0** at that session's measurement (2026-07-29 — this line said 1.13.0 until
 the claim checker caught the drift; the Build state table below had been right all along; now
 1.15.0, see this doc's "Last verified" paragraph above, ADR-061).
@@ -974,8 +975,9 @@ pass or is marked as unverified.
 7. **Duplicate founder-request ids.** FR-029 and FR-030 each name two different requests, so a
    status update to one is invisible in the other. `tools/dashboard.py` now flags this on every run.
 17. **FR-066 (availability picks not changing on slot override) — the founder-visible defect is
-    fixed, 2026-07-30 frontend; the browser-side recompute he approved is not built and is blocked
-    on backend.** The Availability Explorer (`ui/views/Availability.tsx`) now reads
+    fixed, 2026-07-30 frontend; the browser-side recompute he approved remains blocked, pending
+    backend work.** The Availability Explorer (`ui/views/Availability.tsx`) exists, is built, and
+    now reads
     `league.pickSequence` for its pick selector instead of `availability.json:metadata.user_picks`
     (FR-034's own seam, previously not wired to this one screen at all — it took no `league` prop),
     and shows a standing banner naming both slots whenever a slot override is active and unrecomputed
