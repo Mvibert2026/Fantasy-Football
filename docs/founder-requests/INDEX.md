@@ -1,15 +1,15 @@
 # Founder requests — combined view
 
-**Generated 2026-07-30 by `tools/founder_requests.py sync` — do not hand-edit.**
+**Generated 2026-07-31 by `tools/founder_requests.py sync` — do not hand-edit.**
 Per-request files in this directory are the source of truth. Edit a request's own file's
 `STATUS:` line, then re-run sync. Protocol: [`README.md`](README.md).
 Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests.md).
 
-**135 requests since freeze.**
+**136 requests since freeze.**
 
 ---
 
-## NEW — 84
+## NEW — 85
 
 | ID | Subject | Raised | Source |
 |---|---|---|---|
@@ -92,11 +92,12 @@ Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests
 | [FR-2026-07-30-coordinator-continuity-tenure-and-qb](FR-2026-07-30-coordinator-continuity-as-tenure-not-new-oc-bina.md) | Coordinator continuity as tenure not new oc bina | 2026-07-30 | PM session 2026-07-30, founder chat |
 | [FR-2026-07-30-lots-of-components-in-the-rankings-proprietary-a](FR-2026-07-30-lots-of-components-in-the-rankings-proprietary-a.md) | Lots of components in the rankings proprietary a | 2026-07-30 | ranker session 2026-07-30, relayed in PM brief for FR-136 Q1 |
 | [FR-2026-07-30-price-the-fantasypros-paid-api-tier](FR-2026-07-30-price-the-fantasypros-paid-api-tier-terms-were-n.md) | Price the fantasypros paid api tier terms were n | 2026-07-30 | PM session 2026-07-30, founder chat |
-| [FR-2026-07-30-rb-workload-hangover-decline-after-350-375-400-c](FR-2026-07-30-rb-workload-hangover-decline-after-350-375-400-c.md) | Rb workload hangover decline after 350 375 400 c | 2026-07-30 | PM session 2026-07-30, founder chat |
+| [FR-2026-07-30-rb-workload-hangover](FR-2026-07-30-rb-workload-hangover-decline-after-350-375-400-c.md) | Rb workload hangover decline after 350 375 400 c | 2026-07-30 | PM session 2026-07-30, founder chat |
 | [FR-2026-07-30-recommendation-logic-is-inverted](FR-2026-07-30-recommendation-logic-is-inverted-it-prefers-the.md) | Recommendation logic is inverted it prefers the | 2026-07-30 | PM session 2026-07-30, founder chat, live Draft-mode screenshot |
 | [FR-2026-07-30-recommender-contradicts-own-findings](FR-2026-07-30-the-recommender-contradicts-the-project-s-own-me.md) | The recommender contradicts the project s own me | 2026-07-30 | PM session 2026-07-30, founder chat |
 | [FR-2026-07-30-target-share-adot-route-participation](FR-2026-07-30-target-share-adot-route-participation-named-as-i.md) | Target share adot route participation named as i | 2026-07-30 | PM session 2026-07-30, founder chat |
 | [FR-2026-07-30-widen-the-ranking-input-list](FR-2026-07-30-widen-the-ranking-input-list-research-what-leadi.md) | Widen the ranking input list research what leadi | 2026-07-30 | PM session 2026-07-30, founder chat |
+| [FR-2026-07-31-separate-edge-over-consensus-from-absolute-ranki](FR-2026-07-31-separate-edge-over-consensus-from-absolute-ranki.md) | Separate edge over consensus from absolute ranki | 2026-07-31 | PM session 2026-07-31, founder chat |
 
 ## SCOPING — 1
 
