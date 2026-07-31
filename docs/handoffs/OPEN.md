@@ -4,7 +4,7 @@
 Threads are the source of truth. Change a thread's `STATUS:`, then re-run sync.
 Protocol: [`README.md`](README.md).
 
-**109 open** · 54 resolved
+**110 open** · 54 resolved
 
 ---
 
@@ -118,7 +118,7 @@ not an omission. Start your session at your own heading.
 | [2026-07-30-play-callers-is-not-in-nfl-db-and-end-of-season](2026-07-30-play-callers-is-not-in-nfl-db-and-end-of-season.md) | Play callers is not in nfl db and end of season | `ranker` | OPEN | 1d | none |
 | [2026-07-30-three-measured-data-facts-from-batch-7-participa](2026-07-30-three-measured-data-facts-from-batch-7-participa.md) | Three measured data facts from batch 7 participa | `ranker` | OPEN | 1d | none |
 
-### `strategist` — 20 waiting
+### `strategist` — 21 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
@@ -142,6 +142,7 @@ not an omission. Start your session at your own heading.
 | [2026-07-30-register-factor-batch-3-campaign-family-m-24-the](2026-07-30-register-factor-batch-3-campaign-family-m-24-the.md) | Register factor batch 3 campaign family m 24 the | `ranker` | OPEN | 1d | none |
 | [2026-07-30-register-factor-batch-6-and-the-rate-channel-spe](2026-07-30-register-factor-batch-6-and-the-rate-channel-spe.md) | Register factor batch 6 and the rate channel spe | `ranker` | OPEN | 1d | none |
 | [2026-07-30-register-factor-batch-7-campaign-m-80-and-rule-o](2026-07-30-register-factor-batch-7-campaign-m-80-and-rule-o.md) | Register factor batch 7 campaign m 80 and rule o | `ranker` | OPEN | 1d | batch 7's grades standing at m=80; whether batch 3's S1 VOID ruling was reached for the right reason; how every concurrent batch should build a coverage control |
+| [2026-07-31-ranking-version-v1-tested-end-to-end-review-the](2026-07-31-ranking-version-v1-tested-end-to-end-review-the.md) | Ranking version v1 tested end to end review the | `ranker` | OPEN | 0d | any confirmatory registration of a bottom-up ranking; whether the depth-matched sensitivity is admissible |
 
 ### `researcher` — 5 waiting
 
