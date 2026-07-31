@@ -106,7 +106,48 @@ three that is a genuinely independent re-ranking, not just a re-scoring of the s
 No code changed this session — `simulate_availability`'s source stays gated on thread
 `2026-07-30-availability-adp-measurements-m0-m5` per this file's instruction not to fix it here.
 
-**Last verified:** 2026-07-30, ranker session — **factor batch 5 (pass-catcher opportunity): 17
+**Last verified:** 2026-07-30, ranker session — **factor batch 7 (RB usage and efficiency): 16
+registered tests, 0 survive, 0 close the RB deficit, and the coverage flag that beats its own
+treatments turns out to be a TIME DUMMY.** Design `docs/ranking/factor-batch-7-precommit.md`
+committed `fb7627a` **before any arm was fitted**; results `2d7a6e2`; post-hoc `f8d7757`. All 16
+arms at RB — the one position where the experiment has demonstrated power (ADP − heuristic +0.134
+[+0.043, +0.223]) and the model has a measured deficit. Graded at campaign **M = 80** (C2 floor;
+Σ m_b = 56, so the floor binds and the denominator changed no grade — **nothing passes at the batch
+m = 16 either**, smallest p = 0.021). **Sealed 2025 holdout not opened; every arm made ZERO
+season-N reads, asserted as a `RuntimeError`; the primary reproduces batch 3's RB primary
+`mae_carries` to `+0.000000e+00`.** 11 NULL, 2 MARGINAL, 2 MARGINAL-HARMFUL, 1 RESTATEMENT.
+**The RB board deficit vs ADP is −0.0523 and the whole 16-arm spread is ±0.005 around it** — best
+−0.0515, worst −0.0572. **Nothing moves it.** Two findings are worth more than the arms. **(1) A
+`*_known` coverage-flag control is a time dummy whenever its source starts inside the training
+window:** `rzsnap_known` is **0.000 for veterans in target seasons 2012–2016 and 1.000 from 2018**
+(`participation` starts 2016, `first_feature_season` is 2012), and it returned −0.1239, **215% of
+the treatment it was controlling**. Every control whose source covers the window is null
+(`expl_known`, `i5_known`, `yac_known`); every one that starts inside it is not (`sep_known_1`,
+`routes_known`, `rzsnap_known`). **Batch 5's `routes_known` is the same source and the same
+geometry** — it read the result as coverage, batch 7's D2 says the mechanism is the calendar, and
+the fix differs accordingly (restrict the **training** window, not only the target window). This
+touches batch 3's *published* VOID ruling on NGS separation, so it is **registered to `strategist`
+as a claim and no batch-3 document was edited**. **(2) Every arm that improved the full universe
+degraded the ADP board**, same sign, across three unrelated sources including one with full
+coverage — Z1 board **+1.35% worse** / off-board −1.73% better on 51 vs 80 players a season. With
+batch 5's independent finding at WR/TE that is three batches, three positions, four sources:
+**it is what a usage feature does by default**, and it asks whether E1a should remain the FDR
+endpoint at all. **Two of the sweep's own claims point the wrong way when tested directly:** N17
+receiving share is MARGINAL-**HARMFUL** on both parameterisations including McFarland's own ≥40%
+cut (+0.0295 and +0.0224, both CIs excluding zero on the harmful side), and N16 YAC per reception
+is **+0.0028 [−0.1082, +0.1027], p = 0.962** against a published r = 0.421. **N18 is a
+RESTATEMENT at R² = 0.9014** against the model's own columns — `snap_counts`' 324,611 rows are
+unused because the information is already in the model by another route. **N19 is the opposite and
+is the cleaner negative:** 4.0% explained by the whole model, **0.95% by age and experience** —
+genuinely new, independent, and null anyway. **Three data corrections:** `pbp` has **no
+`yards_after_catch` column** and starts **2009, not 1999**; `player_weekly_stats.receiving_yards_after_catch`
+is **identically zero for 2000–2005** and real from 2006; `snap_counts` is keyed on **PFR ids** and
+joins to gsis at 99.34% of RB player-seasons. **Nothing was blocked — all six sweep factors were
+computable from `nfl.db` with no new ingest.** **Nothing ships.** Full account:
+`docs/ranking/factor-batch-7-results.md`,
+`docs/status/2026-07-30-ranker-factor-batch-7-rb-usage-and-efficiency.md`.
+
+**Superseded, retained for the batch-5 record:** 2026-07-30, ranker session — **factor batch 5 (pass-catcher opportunity): 17
 registered tests, 0 survive, and a bare coverage flag beats every route feature built on top of
 it.** Design `docs/ranking/factor-batch-5-precommit.md` committed `c857c67` **before any arm was
 fitted**; results `0c727a4`. BH at the **campaign** denominator, `M_campaign = max(Σ_b m_b, 80) =

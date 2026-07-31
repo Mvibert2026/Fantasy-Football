@@ -7,8 +7,15 @@ N19 late-season role trajectory.**
 
 Design fixed in `docs/ranking/factor-batch-7-precommit.md`, content committed **`fb7627a` before any
 arm was fitted**. **16 registered tests, all at RB. BH at the CAMPAIGN level, m = 80** — registered in
-the shared `docs/ranking/factor-campaign-manifest.md`, not a batch-local family. Sealed 2025 holdout
-**not opened**. Results `2d7a6e2`, post-hoc diagnostics `f8d7757`.
+the shared campaign family `docs/ranking/factor-campaign-manifest/batch-7.md`, not a batch-local
+one. Sealed 2025 holdout **not opened**. Results `2d7a6e2`, post-hoc diagnostics `f8d7757`.
+
+> **On the denominator.** Batch 7 registered m = 80 in its own pre-commitment before fitting, in a
+> single-file manifest it created because none was visible. Batch 5 had already opened campaign C2
+> as a *directory*, one file per batch — a better design, and its floor is **also 80**, derived
+> independently from the same premises. Batch 7 migrated into C2; `M_campaign = max(Σ m_b, 80)` and
+> Σ m_b = 56, so the floor binds and **no batch-7 grade changes**. Batch 7's single-file manifest is
+> retired in place rather than deleted.
 
 Reproduce:
 
@@ -81,12 +88,20 @@ clothes, and it beat both treatments.
 |---|---|---|---|---|
 | 3 | `sep_known_1` (NGS separation) | 2016 | **no** | **+0.0584, p = 0.056, MARGINAL-HARMFUL** — and it VOIDed S1 |
 | 3 | `expl_known` (pbp explosive rush) | 2009 | **yes** | **−0.0058, p = 0.44, NULL** — the control behaving correctly |
+| **5** | **`routes_known` (participation)** | **2016** | **no** | **beats every route treatment by 1.06×–19.7×; 8 of 8 route cells VOID** |
 | 7 | `rzsnap_known` (participation) | 2016 | **no** | **−0.1239, p = 0.038** — the largest effect in its family |
 | 7 | `snap_known` (snap_counts) | 2013 | **nearly** (0.00 in 2012–13, 0.99 from 2014) | −0.0478, p = 0.12, and it voids P1 |
 | 7 | `i5_known`, `yac_known` (pbp 2009, weekly 2006) | 2009 / 2006 | **yes** | +0.0005 and −0.0029, both NULL |
 
 **The pattern is exact: every flag whose source covers the training window is null; every flag whose
 source starts inside it is not.** That is a property of the calendar, not of the football.
+
+**Batch 5, running concurrently and without sight of this, found the same thing on the same source.**
+Its `routes_known` — a 0/1 "we have evidence he ran routes" flag, also built on `participation`,
+also 2016+ — beat every route feature at every position and voided 8 of 8 treatment cells. **Batch 5
+read that as a coverage artifact. D2 says the mechanism is the calendar.** Both readings condemn the
+treatments, so no batch-5 conclusion is at risk — but the *reason* differs and so does the fix, and
+that is why this is registered to `strategist` rather than filed as a duplicate.
 
 **What follows, and it is a design change I am not making unilaterally.** Batch 3's registered rule
 "first target season = source first season + 2" guarantees the arm differs from the primary in at
@@ -109,8 +124,10 @@ where it physically sits. **Same sign for every arm, across three unrelated sour
 
 L2's source covers the whole training window, so **this is a separate defect from (2)** and it is not
 explained by the era dummy. Batch 1 §1(3) found this shape once and batch 2 gave it the name
-BOARD-NEUTRAL. **Batch 7 finds it is not an occasional trap — it is what a usage feature does at RB
-by default.** A snap-share or red-zone-presence variable sharpens the model where role is uncertain,
+BOARD-NEUTRAL. **Batch 5, concurrently, found it again at WR and TE** — E1b worse for every route arm
+while E1a is neutral, which it calls "the signature of a feature that sorts a 200-player universe and
+hurts among the ~50 a draft chooses between." **Three batches, three positions, four sources.
+It is not an occasional trap — it is what a usage feature does by default.** A snap-share or red-zone-presence variable sharpens the model where role is uncertain,
 which is exactly the population a ten-team draft never reaches, and adds noise where role is already
 known, which is exactly the fifty players it does.
 

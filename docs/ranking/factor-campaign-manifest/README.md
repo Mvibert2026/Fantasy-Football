@@ -52,14 +52,21 @@ campaign opened. Their m stands as recorded.
 |---|---|---|---|---|
 | 5 | ranker | **17** | 2026-07-30, before fitting | `docs/ranking/factor-batch-5-precommit.md` |
 | 6 | ranker | **23** | 2026-07-30, before fitting (in a duplicate manifest, migrated here) | `docs/ranking/factor-batch-6-precommit.md` |
+| 7 | ranker | **16** | 2026-07-30, before fitting (in a duplicate manifest, migrated here) | `docs/ranking/factor-batch-7-precommit.md` |
 
 *(Other batches: add your row and your `batch-<n>.md` file. If your row is missing at grading
 time, the floor is what protects the campaign.)*
 
-**Σ m_b = 40 as of 2026-07-30, so the FLOOR of 80 is what bound for both batches 5 and 6.** That
-is the floor doing exactly the job it was put there for: batches 4 and 7 ran concurrently and had
-not registered when either batch graded. Neither batch's grades change if they register later —
+**Σ m_b = 56 as of 2026-07-30, so the FLOOR of 80 is what bound for batches 5, 6 and 7.** That
+is the floor doing exactly the job it was put there for: batch 4 ran concurrently and had
+not registered when any of the three graded. No batch's grades change if it registers later —
 80 already exceeds any plausible Σ.
+
+**Batch 7 reached the same floor independently, a third time.** Its pre-commitment (`fb7627a`, §4)
+registered m = 16 at a campaign denominator of 80 with the identical one-directional rule, before
+seeing this directory, and graded at 80. Adding its 16 does not move `max(Σ m_b, 80)`, so nothing is
+re-graded. Three agents deriving the same denominator from the same premises is convergence, not
+coordination, and it is recorded rather than tidied away — see `batch-7.md`.
 
 **The duplicate-manifest episode is recorded, not tidied away.** Batches 5 and 6 independently
 reached the same conclusion about campaign-level correction and each built a manifest without
