@@ -5,11 +5,11 @@ Per-request files in this directory are the source of truth. Edit a request's ow
 `STATUS:` line, then re-run sync. Protocol: [`README.md`](README.md).
 Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests.md).
 
-**140 requests since freeze.**
+**141 requests since freeze.**
 
 ---
 
-## NEW — 86
+## NEW — 87
 
 | ID | Subject | Raised | Source |
 |---|---|---|---|
@@ -97,8 +97,9 @@ Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests
 | [FR-2026-07-30-recommender-contradicts-own-findings](FR-2026-07-30-the-recommender-contradicts-the-project-s-own-me.md) | The recommender contradicts the project s own me | 2026-07-30 | PM session 2026-07-30, founder chat |
 | [FR-2026-07-30-target-share-adot-route-participation](FR-2026-07-30-target-share-adot-route-participation-named-as-i.md) | Target share adot route participation named as i | 2026-07-30 | PM session 2026-07-30, founder chat |
 | [FR-2026-07-30-widen-the-ranking-input-list](FR-2026-07-30-widen-the-ranking-input-list-research-what-leadi.md) | Widen the ranking input list research what leadi | 2026-07-30 | PM session 2026-07-30, founder chat |
+| [FR-2026-07-31-availability-and-qb-tilt](FR-2026-07-31-two-defects-spotted-by-eye-v1-mishandles-availab.md) | Two defects spotted by eye v1 mishandles availab | 2026-07-31 | PM session 2026-07-31, founder chat — spotted by eye from the rankings chart |
 | [FR-2026-07-31-separate-edge-from-absolute-quality](FR-2026-07-31-separate-edge-over-consensus-from-absolute-ranki.md) | Separate edge over consensus from absolute ranki | 2026-07-31 | PM session 2026-07-31, founder chat |
-| [FR-2026-07-31-two-defects-spotted-by-eye-v1-mishandles-availab](FR-2026-07-31-two-defects-spotted-by-eye-v1-mishandles-availab.md) | Two defects spotted by eye v1 mishandles availab | 2026-07-31 | PM session 2026-07-31, founder chat, reading the rankings chart |
+| [FR-2026-07-31-sequencing-fable-runs-first-next-week-after-the](FR-2026-07-31-sequencing-fable-runs-first-next-week-after-the.md) | Sequencing fable runs first next week after the | 2026-07-31 | PM session 2026-07-31, founder chat |
 
 ## SCOPING — 1
 
