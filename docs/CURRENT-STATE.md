@@ -39,6 +39,42 @@ string being added or removed, so it may never have reached a commit) already di
 speculated was the likely fix. Left in place as a record rather than deleted outright, since the
 original escalation is why it was safe to check.
 
+**Last verified:** 2026-08-01, ranker C1 session — **the factor inclusion test has now been run
+against v2 for the first time, and all six candidate factors returned NULL.** The founder's
+correction (`FR-2026-08-01-need-an-inclusion-test-run-candidate-factors-as`) was that the ~90 nulls
+from batches 1–7 were measured against a consensus-derived board and say almost nothing about
+inclusion in v2. Registered before compute (`docs/ranking/factor-campaign-manifest/batch-C1.md`
++ Amendment 1, m_b=38, campaign M=130); results `docs/ranking/batch-C1-results.md`; code
+`experiments/bottomup/v2/{factors_c1,run_c1,placebo_replication,c1_report}.py`; artifacts
+`experiments/bottomup/results/factor_c1_*`. Commits `29410c1`→`8b6b84a`.
+
+**Snap share (`snap_counts` 2013+), red-zone inside-20 usage share (`pbp` 2009+), xFP
+(`ff_opportunity` 2006+), NGS separation, route participation/TPRR and steeper recency weighting
+all return NULL** at 92–100% coverage on the full available window — the four most often named in
+this repo as "in the database and untouched" among them. Snap share HARMs at TE. Registered
+hit-rate band was 2–5 WIN cells of 19; **observed 0 of 19**. Control was pinned to **games arm G0**
+throughout (G2a's ruling is ADMIT-WITH-CONDITION, conditions unsatisfied — no re-grade owed); three
+matched controls, one per feature window; every arm asserted zero season-N proxy reads; 2025 never
+read.
+
+**The registered WIN rule is broken and the registered placebo caught it on arm one.** A seeded
+noise column returned a BH-robust WIN at TE (+0.0303, p=0.0002) and the inclusion rule graded the
+placebo `INCLUDE`. Across **34 independent noise draws** the harness's false-positive rate is
+**9.6% of cells against a nominal 2.5%** (QB 14.7%, RB 11.8%, TE 11.8%, WR 0%): the season-block
+bootstrap is miscalibrated at n=7 because per-season Spearman on 10–19 players is discrete and
+mostly contributes exact zeros, and adding any regressor carries a small upward bias scaling with
+1/n. **It cannot have manufactured an inclusion here** — it inflates false positives and C1 produced
+none — but it binds the next batch, and `strategist` owns the replacement rule (thread
+`2026-08-01-c1-the-registered-win-rule-has-a-14-6-false-posi`, BLOCKED-ON-YOU). A second defect,
+caught by Amendment 1's coverage-indicator control: an arm graded a BH-robust WIN on a mean delta of
+**3.97×10⁻¹⁷**; fixed by snapping |Δ|<1e−9 to zero, which cleared three spurious wins.
+
+**Two hypotheses survive the placebo null and neither is included:** xFP at **RB** (+0.0186,
+p=0.059, vs placebo q95 +0.0054) and steeper recency at **QB** (+0.0266 vs q95 +0.0110, sign pattern
+across positions exactly as registered). Both await a strategist-registered confirmatory design.
+The factor ledger gains **Section 0** recording these as the first dispositions measured against v2,
+and warning that Sections 1–6 were assigned under the old frame.
+
 **Last verified:** 2026-08-01, fable B1 session — **ranking v2 built, run 2018–2024, graded; the
 games repair splits cleanly in two.** First build mandate ever issued to fable
 (`docs/fable-mandate-B1-2026-08-01.md`, ADR-069 binding: no consensus input in the ordering path,
