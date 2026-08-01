@@ -16,12 +16,17 @@
 > suspended pending a `strategist` ruling on a replacement rule; a thread is open. Arms continue to
 > **run and record** — the per-season deltas are estimator-independent and re-grading is mechanical.
 
-> **RUNNING COUNT OF INCLUDED FACTORS: 0 — 2 of 6 candidate factors measured.**
+> **RUNNING COUNT OF INCLUDED FACTORS: 0 — 3 of 6 candidate factors measured.**
 > **F1 offensive snap share: NULL at RB and WR, HARM at TE.** The single most-cited untouched factor
 > in the ledger (T0-9 / N18), in `nfl.db` at **99.8–100% coverage** — it does not improve v2 anywhere.
-> **F2 red-zone (inside-20) usage share: NULL at all three positions**, on the full 2009+ PBP window
-> at 98.5–100% coverage. The registered downside was the outcome: red-zone share is largely a
-> monotone function of volume the model already holds.
+> **F2 red-zone (inside-20) usage share: NULL at all three positions**, on the full 2009+ PBP window.
+> The registered downside was the outcome: red-zone share is largely a monotone function of volume
+> the model already holds.
+> **F3 expected fantasy points (xFP) + luck residual: NULL at all four positions** — but it is the
+> strongest candidate so far and the only one worth a second look. RB **+0.0186** (CI
+> [−0.0003, +0.0404], p = 0.059) misses the bar by a hair and sits above the RB placebo maximum
+> (+0.0085); TE +0.0263 also clears the TE placebo maximum on a wide interval. **Reported as a
+> hypothesis, not a finding** — which is what `CLAUDE.md` §6.3 requires of a near-miss.
 
 > **A second harness defect, found by the Amendment 1 control arm.** `F2k` — the coverage indicator
 > alone — graded a **BH-robust WIN at TE on a mean delta of 3.97 × 10⁻¹⁷**, i.e. on float64
@@ -178,6 +183,14 @@ batch and I do not re-grade another agent's registered work.
 | F2k | RB | 7 | 0.985 | 0.4398 | 0.4399 | +0.0002 | [+0.0000, +0.0005] | inside | NULL | — |
 | F2k | TE | 7 | 1.000 | 0.3966 | 0.3966 | +0.0000 | [+0.0000, +0.0000] | inside | NULL (no change) | — |
 | F2k | WR | 7 | 0.994 | 0.5602 | 0.5600 | -0.0002 | [-0.0007, +0.0000] | inside | NULL | — |
+| F3 | QB | 7 | 1.000 | 0.2450 | 0.2484 | +0.0034 | [-0.0300, +0.0371] | inside | NULL | — |
+| F3 | RB | 7 | 0.993 | 0.4398 | 0.4584 | +0.0186 | [-0.0003, +0.0404] | **clears** | NULL | — |
+| F3 | TE | 7 | 1.000 | 0.3966 | 0.4229 | +0.0263 | [-0.0133, +0.0709] | **clears** | NULL | — |
+| F3 | WR | 7 | 1.000 | 0.5602 | 0.5594 | -0.0008 | [-0.0076, +0.0048] | inside | NULL | — |
+| F3k | QB | 7 | 1.000 | 0.2450 | 0.2450 | +0.0000 | [+0.0000, +0.0000] | inside | NULL (no change) | — |
+| F3k | RB | 7 | 0.993 | 0.4398 | 0.4399 | +0.0001 | [+0.0000, +0.0003] | inside | NULL | — |
+| F3k | TE | 7 | 1.000 | 0.3966 | 0.3966 | +0.0000 | [+0.0000, +0.0000] | inside | NULL (no change) | — |
+| F3k | WR | 7 | 1.000 | 0.5602 | 0.5602 | +0.0000 | [+0.0000, +0.0000] | inside | NULL (no change) | — |
 
 ### Factor verdicts
 
@@ -186,8 +199,9 @@ batch and I do not re-grade another agent's registered work.
 | **F0** PLACEBO (seeded N(0,1) noise) | **HARNESS DEFECT — not a factor verdict** | TE | 4 cells graded |
 | **F1** offensive snap share, recency-weighted | **NULL** | — | 3 cells graded |
 | **F2** red-zone (inside-20) usage share of team | **NULL** | — | 3 cells graded |
+| **F3** expected fantasy points per game + realised-minus-expected residual | **NULL** | — | 4 cells graded |
 
-**Included factors: 0. Candidate factors measured: 2 of 6.**
+**Included factors: 0. Candidate factors measured: 3 of 6.**
 <!--C1-TABLE-END-->
 
 ## The hazard watch
