@@ -16,8 +16,10 @@
 > suspended pending a `strategist` ruling on a replacement rule; a thread is open. Arms continue to
 > **run and record** — the per-season deltas are estimator-independent and re-grading is mechanical.
 
-> **RUNNING COUNT OF INCLUDED FACTORS: 0.** One arm graded (the placebo). No candidate factor has
-> been measured yet.
+> **RUNNING COUNT OF INCLUDED FACTORS: 0 — 1 of 6 candidate factors measured.**
+> **F1 offensive snap share: NULL at RB and WR, HARM at TE.** The single most-cited untouched factor
+> in the ledger (T0-9 / N18), present in `nfl.db` at **99.8–100% coverage**, and it does not improve
+> v2 anywhere. Registered prediction was a WIN at RB; it did not deliver one.
 
 Registration: `docs/ranking/factor-campaign-manifest/batch-C1.md` (+ Amendment 1), committed before
 any arm was fitted. Control: **v2 with games arm G0**, pinned — the `strategist` G2a ruling is
@@ -36,28 +38,30 @@ a nominal 2.5%. `strategist` owns the replacement rule; thread
 `docs/handoffs/2026-08-01-c1-the-registered-win-rule-has-a-146-false-posi.md`. **Do not grade any
 factor INCLUDE until that lands.**
 
-**Next arm to run:** `F1` and its paired control `F1k` — offensive snap share, positions RB/WR/TE,
-against **CTRL-B** (`first_feature_season=2015`, targets 2018–2024).
+**Next arm to run:** `F2` and its paired control `F2k` — red-zone (inside-20) usage share of
+team, positions RB/WR/TE, against **CTRL-A** (`first_feature_season=2012`, targets 2018–2024).
 
 **Command:**
 
 ```
-.venv/bin/python -m experiments.bottomup.v2.run_c1 --arms F1,F1k
+.venv/bin/python -m experiments.bottomup.v2.run_c1 --arms F2,F2k
 ```
 
 **Threshold registered for it:** as batch-C1 §"Endpoint" — WIN = paired season-block bootstrap 95%
 CI of the per-season Spearman delta > 0, 4,000 reps, seed 20260801, BH at `M_campaign` = 130,
-q = 0.10 — **plus the interim empirical calibration below, which is what any WIN must actually
-clear.** Registered prediction: WIN at RB, NULL at WR/TE; control arm `F1k` predicted NULL.
+q = 0.10 — **plus the interim placebo-null floor below, which is what any WIN must actually clear.**
+Registered prediction: NULL-to-WIN at RB, NULL at WR/TE, with the registered downside that red-zone
+share is largely a monotone function of volume the model already holds. Control `F2k` predicted NULL.
 
 **Primary config it grades against:** v2, games arm **G0**,
 `experiments/bottomup/ranking_versions/v2.json`.
 
-**Interim calibration to apply to every cell (pending the strategist ruling):** a cell counts as a
-candidate WIN only if its delta exceeds the **position-specific placebo null**, measured in
-`experiments/bottomup/results/factor_c1_placebo_replication.csv`. From 12 draws the observed placebo
-maxima are **QB +0.0092, RB +0.0085, TE +0.0197, WR +0.0012**. A larger replication is running to
-give a stable 95th percentile; until it lands, treat the observed maximum as the floor.
+**Interim calibration applied to every cell (pending the strategist ruling):** a cell counts as a
+candidate WIN only if its delta exceeds the **position-specific placebo null** in
+`experiments/bottomup/results/factor_c1_placebo_replication.csv` — the `vs placebo null` column of
+the results table does this automatically. From 12 draws the observed placebo maxima are
+**QB +0.0092, RB +0.0085, TE +0.0197, WR +0.0012**; a 40-draw replication is running to give a
+stable 95th percentile.
 
 **Then, in order:** `F2,F2k` · `F3,F3k` · `F4,F4k` · `F5,F5k` · `F6`. Each `*k` is the paired
 coverage-indicator control from Amendment 1 and **must be run before its treatment arm's WIN may be
@@ -146,22 +150,33 @@ batch and I do not re-grade another agent's registered work.
 
 ---
 
-## Results table
+## Results and verdicts
 
-| factor | position | n | coverage | control ρ | arm ρ | Δ | 95% CI | verdict | BH |
-|---|---|---|---|---|---|---|---|---|---|
-| F0 PLACEBO | QB | 7 | — | 0.2450 | 0.2585 | +0.0135 | [−0.0043, +0.0394] | NULL | — |
-| F0 PLACEBO | RB | 7 | — | 0.4398 | 0.4405 | +0.0007 | [−0.0007, +0.0020] | NULL | — |
-| F0 PLACEBO | WR | 7 | — | 0.5602 | 0.5606 | +0.0005 | [−0.0005, +0.0016] | NULL | — |
-| F0 PLACEBO | TE | 7 | — | 0.3966 | 0.4269 | +0.0303 | [+0.0134, +0.0459] | **WIN — see above** | yes |
+<!--C1-TABLE-START-->
+### Results table
 
-## Factor verdicts
+| factor | position | n | coverage | control ρ | arm ρ | Δ | 95% CI | vs placebo null | verdict | BH |
+|---|---|---|---|---|---|---|---|---|---|---|
+| F0 PLACEBO | QB | 7 | — | 0.2450 | 0.2585 | +0.0135 | [-0.0043, +0.0394] | **clears** | NULL | — |
+| F0 PLACEBO | RB | 7 | — | 0.4398 | 0.4405 | +0.0007 | [-0.0007, +0.0020] | inside | NULL | — |
+| F0 PLACEBO | TE | 7 | — | 0.3966 | 0.4269 | +0.0303 | [+0.0134, +0.0459] | **clears** | WIN | yes |
+| F0 PLACEBO | WR | 7 | — | 0.5602 | 0.5606 | +0.0005 | [-0.0005, +0.0016] | inside | NULL | — |
+| F1 | RB | 7 | 0.998 | 0.4314 | 0.4342 | +0.0027 | [-0.0030, +0.0085] | inside | NULL | — |
+| F1 | TE | 7 | 1.000 | 0.4003 | 0.3717 | -0.0285 | [-0.0547, -0.0052] | **below** | HARM | — |
+| F1 | WR | 7 | 1.000 | 0.5493 | 0.5468 | -0.0025 | [-0.0091, +0.0030] | inside | NULL | — |
+| F1k | RB | 7 | 0.998 | 0.4314 | 0.4319 | +0.0005 | [-0.0023, +0.0033] | inside | NULL | — |
+| F1k | TE | 7 | 1.000 | 0.4003 | 0.4003 | +0.0000 | [+0.0000, +0.0000] | inside | NULL | — |
+| F1k | WR | 7 | 1.000 | 0.5493 | 0.5493 | +0.0000 | [+0.0000, +0.0000] | inside | NULL | — |
 
-| factor | verdict | basis |
-|---|---|---|
-| **F0 PLACEBO** | **HARNESS DEFECT — not a factor verdict** | Won at TE, BH-robust, on a column that cannot carry signal. Replication puts the harness's false-positive rate at 14.6% vs a nominal 2.5%. |
+### Factor verdicts
 
-**Included factors: 0. Excluded: 0. Null: 0. Candidate factors measured: 0 of 6.**
+| factor | verdict | positions won | basis |
+|---|---|---|---|
+| **F0** PLACEBO (seeded N(0,1) noise) | **HARNESS DEFECT — not a factor verdict** | TE | 4 cells graded |
+| **F1** offensive snap share, recency-weighted | **NULL** | — | 3 cells graded |
+
+**Included factors: 0. Candidate factors measured: 1 of 6.**
+<!--C1-TABLE-END-->
 
 ## The hazard watch
 
