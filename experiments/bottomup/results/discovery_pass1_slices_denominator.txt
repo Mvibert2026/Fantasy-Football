@@ -1,0 +1,7 @@
+Section 1 slice denominator
+Slice variables: 10 (['position', 'entry', 'age_bucket', 'prior_games_bucket', 'workload_tier', 'depth_role', 'prior_injury_tier', 'unexpected_absence_tier', 'evidence_tier', 'wk1_injury_report'])
+Real slice cells with n>=15: 30
+Noise slice cells with n>=15 (negative control): 30
+Noise slice max |t|: 1.898 (position=RB)
+Noise slice cells with |t| > 2: 0 of 30
+Real slice cells with |t| > 2: 13 of 30
