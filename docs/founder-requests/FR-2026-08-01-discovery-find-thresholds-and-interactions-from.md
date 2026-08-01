@@ -1,11 +1,25 @@
 ---
 ID: FR-2026-07-31-reverse-discovery
-STATUS: NEW — registered, not started
+STATUS: DISCOVERY PASS 1 COMPLETE — hypothesis generation done, confirmation not started
 SOURCE: PM session 2026-07-31, founder chat
 RAISED: 2026-07-31
 PRIORITY: HIGH — changes how the whole campaign generates hypotheses
-NEEDS: strategist (the search/test split), then ranker
+NEEDS: strategist (pre-register the candidates below as arms on 2022-2024 confirmation
+  seasons, then ranker to build if they survive)
 ---
+
+## Update, 2026-08-01 (backend session) — discovery pass 1 delivered
+
+`docs/ranking/discovery-pass-1.md`. Residual analysis + systematic screening (630 tests) +
+GBM-as-generator on v2's `ranking_v2_G0_players.csv`, discovery sample = 2018-2021 only,
+2022-2024 loaded but untouched, negative control run in every section. Top candidates: (1/2)
+v2's games/points channel under-reverts toward the mean on prior-season games-played and
+unexpected-absence share — the population-scale version of the founder's Burrow/Hill by-eye
+finding; (3) Week-1 depth-chart starter status, found only by the tree-based generator as an
+interaction the linear screen missed. All three are hypotheses only — not tested, not
+registered, not adopted. Next: `strategist` pre-registers a confirmatory design on 2022-2024
+per the method's own discipline (search/confirm split); the sealed 2025 holdout is not
+touched by that step either.
 
 ## Request
 
