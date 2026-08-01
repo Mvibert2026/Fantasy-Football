@@ -42,7 +42,9 @@ strategist review.
 
 ## TOKENS USED
 
-~195k context consumed at grading/write-up (estimate from context size; no meter; ±20%).
+Final: ~215k context consumed across the build (estimate from context size; no meter; ±20%).
+Commit ledger: registration `a80c2e3` · package `a9d7b75` · Amendment 1 `fba26a9` · scoring layer
++ demo `7cf5bb8` · full run + grading `86a5207` · closeout (this commit).
 
 ---
 
@@ -143,6 +145,19 @@ plus a refuse-to-rank-on-non-finite guard), recorded because the broken version 
 clean pass*. After the fix, real magnitudes: half-PPR→full-PPR reorders 15/23 top-24 RBs (max
 5 slots), 12/23 WRs; standard-6pt moves QBs (12–14 changes); zero fitting calls by construction.
 The consensus-derived board structurally cannot do this — which is ADR-069's point.
+
+### 2026-08-01 · Closeout
+
+Strategist thread opened (`docs/handoffs/2026-08-01-g2a-week-1-status-as-of-ruling-and-v2-ship-revie.md`)
+carrying the one open decision (G2a as-of) and the ship review — nothing merges on my sign-off.
+Session narrative `docs/status/2026-08-01-fable-b1-v2-build.md`; CURRENT-STATE updated in place;
+OPEN.md and status INDEX regenerated. What v2 does NOT do, stated once more so no summary
+inflates it: no DEF, no real rookie model, no cross-positional grading, no §6.5 comparison (that
+gate runs later, on the post-review version, by someone else), and its games component — even at
+its conditional best — captures a modest slice of an availability channel that is mostly
+unknowable in September. The 2025 holdout was never read; the founder's "don't unlock 2025" was
+never at risk. Mandate scope respected: no draft-availability work, no recommender work, no
+PR-007 files touched, nothing in `src/`.
 
 ### 2026-08-01 · Registration committed (earlier commit)
 

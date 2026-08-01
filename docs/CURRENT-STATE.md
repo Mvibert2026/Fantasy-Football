@@ -39,6 +39,26 @@ string being added or removed, so it may never have reached a commit) already di
 speculated was the likely fix. Left in place as a record rather than deleted outright, since the
 original escalation is why it was safe to check.
 
+**Last verified:** 2026-08-01, fable B1 session — **ranking v2 built, run 2018–2024, graded; the
+games repair splits cleanly in two.** First build mandate ever issued to fable
+(`docs/fable-mandate-B1-2026-08-01.md`, ADR-069 binding: no consensus input in the ordering path,
+absolute quality as the steering metric, stat lines not points). Registered before compute
+(`docs/ranking/factor-campaign-manifest/batch-B1.md`, m_b=20 incl. Amendment 1, campaign M=92).
+Results (`experiments/bottomup/results/ranking_v2_*`, code `experiments/bottomup/v2/`, commits
+`a80c2e3`→`86a5207`): the end-of-N−1 timing repair (G1/G1a) **rejected by its own registered
+rules** — 0 WIN, 1 BH-robust WR HARM downstream each; the mandate's beats-naive-persistence bar
+earned at RB only (+0.084 BH-robust). **The week-1 roster-status arm G2a passed 3 WIN / 0 HARM**
+(RB +0.072, WR +0.048 BH-robust; absolute steering ρ RB 0.440→0.519, WR 0.560→0.595) and is the
+only arm beating naive games MAE — **its adoption pends strategist's as-of ruling** (wk-1 status ≈
+late-August cutdown; thread `2026-08-01-g2a-week-1-status-as-of-ruling-and-v2-ship-revie`); until
+then v2's default games arm is G0. Scoring portability demonstrated: same stat lines under
+half-PPR / full-PPR / standard-6pt reorder 15/23 top-24 RBs with zero refits (after fixing a
+false-PASS NaN defect, recorded in `docs/fable/v2-build-log.md`). Absolute games-ordering skill
+tops out ≤0.27 — most of M2-1's oracle gap is irreducible from September information. **2025 never
+read; §6.5 four-baseline release gate deliberately unrun** (later, not by fable). Open defects
+named: board-veteran games level bias ~−2.6 (G0/G1/G1a), rookies on the crude sub-model, DEF
+absent, cross-positional replacement ungraded.
+
 **Last verified:** 2026-07-31, ranker session — **ranking version v1 assembled and tested end to
 end. It loses to both crowds.** The first ranking version this project has ever built or measured;
 every one of ~90 registered factor tests before it was a single feature inside one component of an
@@ -56,7 +76,8 @@ explicit that a version failing to beat both crowds has none. Contains table sta
 prior share; #6 injury in a declared secondary arm (inert again, fifth measurement); #5 depth chart
 and the lagged-YPC wire **excluded as post-hoc/unregistered**. Rookies pinned to consensus and
 labelled; **DEF blank with a note**. **2025 holdout never read** and not requested — `CLAUDE.md`
-§6.3 gates it on `fable`, who has not run. Reviews open: `strategist`
+§6.3 gated it on `fable`, whose M2 review has since run (2026-08-01, `docs/fable/M2-findings.md`)
+— the holdout stays sealed, founder restated it the same day. Reviews open: `strategist`
 (`docs/handoffs/2026-07-31-ranking-version-v1-tested-end-to-end-review-the.md`, incl. my own
 pre-registered MDE rule being wrong by 2× at panel-M QB) and `fable`
 (`docs/handoffs/2026-07-31-attack-ranking-version-v1-the-first-assembled-ra.md`). **Nothing shipped
