@@ -1,0 +1,9 @@
+arm,name,control,endpoint,metric,position,delta,lo,hi,n_seasons,p,ctrl_mean,arm_mean,verdict,bh_reject_campaign,vs_placebo
+A3,roster status N-1: resolved vs ongoing absence,CTRL-D,E1,rho_points vs G0,QB,,,,0,,,,NO DATA,False,
+A3,roster status N-1: resolved vs ongoing absence,naive,E2,rho_games vs naive persistence,QB,,,,0,,,,NO DATA,False,
+A3,roster status N-1: resolved vs ongoing absence,CTRL-D,E1,rho_points vs G0,RB,,,,0,,,,NO DATA,False,
+A3,roster status N-1: resolved vs ongoing absence,naive,E2,rho_games vs naive persistence,RB,,,,0,,,,NO DATA,False,
+A3,roster status N-1: resolved vs ongoing absence,CTRL-D,E1,rho_points vs G0,WR,,,,0,,,,NO DATA,False,
+A3,roster status N-1: resolved vs ongoing absence,naive,E2,rho_games vs naive persistence,WR,,,,0,,,,NO DATA,False,
+A3,roster status N-1: resolved vs ongoing absence,CTRL-D,E1,rho_points vs G0,TE,-0.0030232667206117393,-0.08627450980392157,0.08022797636269809,5,0.8485,0.347995554500474,0.3449722877798623,NULL,False,
+A3,roster status N-1: resolved vs ongoing absence,naive,E2,rho_games vs naive persistence,TE,0.06104208749200456,-0.06198267127685251,0.1705583915673732,5,0.3375,0.05437660125173609,0.11541868874374066,NULL,False,
