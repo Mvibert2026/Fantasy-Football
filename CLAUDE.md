@@ -100,6 +100,22 @@ full-PPR room. Half-PPR, the stacking yardage bonuses, and 10-team replacement l
 the ordering through a consensus-derived board at all. Scoring portability is therefore not a
 nice-to-have bolted on later — it is only achievable by building independently in the first place.
 
+**Deviation from consensus is a diagnostic, not an objective — founder's clarification, 2026-08-01.**
+
+> "Don't take that bar literally. But we need to be respectable. If we have too many major
+> differences from consensus it's probably a red flag."
+
+This does **not** reopen (2) above. The distinction is load-bearing and both halves bind:
+
+- **Never a penalty to minimize.** Scoring the model on closeness to consensus rebuilds a
+  consensus-derived board by the back door and kills scoring portability with it (see below).
+- **Always a flag to investigate.** A board that disagrees violently and cannot say *why* has a bug.
+  Every large deviation should have a stated reason; the ones that do not are the queue.
+
+**This method has a 2-for-2 record here already, both times found by the founder by eye:** Taysom
+Hill (ours 25, consensus 171) and Burrow at QB26 — both real defects in the games channel, not real
+disagreements. The requirement is therefore an explained-deviation report, not a deviation budget.
+
 **The hard part, named in advance so it is not discovered late.** v1's rate projections are already
 at or better than market parity; its entire measured deficit sits in one channel — **projected
 games** (Fable M2-1). That is also the channel where consensus's advantage is real: what consensus
