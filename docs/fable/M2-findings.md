@@ -71,9 +71,47 @@ recommender) is correct. Interim: run PR-007 as registered — it is the founder
 ("we need to test those adjustments"), it has sat unrun for three days while ~90 factor tests
 ran, and it is powered to delete. Log §M2-3.
 
+**7 · M2-4/5/6 in one paragraph each.** *Campaign correction (M2-4):* the manifest device worked
+where applied (batch 6 self-caught, conservative direction) — but "the campaign" as cited (~90
+tests) has never been one corrected family: batches 1–3's 62 tests are excluded by C2's own
+no-retroactive rule, and the implemented procedure (each batch ranking only its own p-values
+against the shared M=80) is *more conservative* than a true pooled BH — under pooled BH at the
+campaign's own floor, 7 cells clear, all of them already-recognised ablations/baselines/
+PROJECTION-ONLY arms plus one MARGINAL (TE first-downs-per-target) that dies again at the honest
+full denominator (M≈118). **No suppressed edge, no false survivor — conclusions are robust to the
+procedure defect, which is why this is a finding and not a block.** *Nulls (M2-5):* the ~90 nulls
+are real findings at the component level — the instrument demonstrably detects effects of the
+size that matters (it caught its own artifacts at 2× treatment size) — and symptoms only of the
+wrong *question* (F-ruling); the backtest.py zero-VBD defect lives in `src/`, not in the
+experiments harness that produced the nulls, so it contaminates none of them. The three
+coverage-flag stories collapse into one mechanism: batch 7's time-dummy explanation subsumes
+batch 5's "coverage artifact" (same source, same geometry — `participation` starts 2016, inside
+every training window), and batch 3's NGS-separation VOID has the same geometry (NGS starts
+2016). All VOID verdicts stand; the *mechanism* sentence changes; the fix is batch 7's (restrict
+the training window, not the target window). *PR-009 (M2-6):* zero-POOR is **real for expert ECR
+and rule geometry for market ADP.** Against ECR the heuristic genuinely never wins a cell (0 of
+16 negative gaps). Against market ADP the crowd's gap is *negative in 13 of 28 cells* (46%) —
+never outside a noise band whose median half-width is **±0.26**, twice the fixed +0.134 STRONG
+threshold, and one STRONG cell sits *inside its own band*. "Consensus routinely beats the
+heuristic and never measurably loses" over-reads the market half; the symmetric statement is
+"5 up-band, 0 down-band, 23 unresolved." Same power wall as F5, seen from the other side.
+
+**8 · The founder's three questions and 7 September, consolidated.** (1) *Best bottom-up
+rankings:* demonstrated edge over both crowds — **not earnable**; a games-repaired v1.1 at
+measured market parity with non-harmful deviations — earnable. (2) *Best availability:*
+calibrated-to-Westwood — **not earnable** (first Westwood data arrives draft day); fitted to N
+logged Yahoo rooms with honest labels — earnable in days (M3 + closed-form prep mode). (3) *Best
+suggested-pick:* a recommender demonstrably beating plain VBD — earnable only if PR-007 → M3 →
+registered VONA test all run clean, in that order; an honest VBD recommender with no unfitted
+constants — earnable in under a week. **What still requires the founder:** the holdout decision
+(§4); the §6.5 baseline-crowd escalation strategist filed (ADR-draft §2.4); and detection — he
+remains the only sensor that has caught live product defects (Burrow, the inverted card), and
+nothing built this week replaces him. The substitute detector is the acceptance harness plus the
+registered-test discipline, and it has caught exactly one defect unaided. Do not remove him yet.
+
 ## TOKENS USED
 
-~390k of context consumed at this update (estimate from context size; no meter; ±20%).
+~450k of context consumed at this update (estimate from context size; no meter; ±20%).
 
 ## STATUS
 
@@ -83,9 +121,9 @@ ran, and it is powered to delete. Log §M2-3.
 | M2-1 rankings | **DONE** — log §M2-1, recommendations §M2-1-REC |
 | M2-2 availability | **DONE** — log §M2-2 |
 | M2-3 recommender | **DONE** — log §M2-3 |
-| M2-4 campaign correction | starting next |
-| M2-5 nulls: findings or symptoms | not started (frame ruling covers most) |
-| M2-6 the clean PR-009 result | not started |
+| M2-4 campaign correction | **DONE** — log §M2-4 |
+| M2-5 nulls: findings or symptoms | **DONE** — log §M2-5 |
+| M2-6 the clean PR-009 result | **DONE** — log §M2-6 |
 
 ---
 
@@ -478,3 +516,82 @@ availability it does not use; step (3) is what makes it actually use it.
 run clean on the first pass — tight but real. A recommender that is *honest* (VBD order, no
 unfitted constants, correctly-labelled availability) is earnable in under a week and is already
 strictly better than what ships.
+
+### 2026-08-01 · M2-4 — did the campaign-level correction actually happen?
+
+**Verified from the manifest files and the committed per-batch CSVs (not the write-ups).**
+Manifest holds batches 5 (m=17), 6 (m=23), 7 (m=16) → Σ=56, floor 80 binds. Batch 6's
+self-caught late registration is accurately recorded in its own manifest file, with breaking-m
+per arm — the device worked, one grade moved, conservative direction. **Three structural facts
+the write-ups do not state:**
+
+1. **Batches 1–3 (23 + 15 + 24 = 62 tests) are outside the family by C2's explicit
+   "no retroactive re-grading" rule.** So the "~90-test campaign" has never had a single unified
+   multiplicity treatment; the floor-80 was a patch covering the manifest-era batches only.
+2. **The implemented procedure is not BH over the family.** Each batch ranks only its own
+   p-values against M=80; a rank cannot exceed the batch's own m, so the effective threshold is
+   far stricter than pooled BH at the same M. Pooled BH over the 57 p-values I could extract
+   (batches 3/5/7; 1/2/6 use different CSV schemas) at the campaign's own M=80 passes **7 cells**:
+   the QB-rush ablation (already EARNS-ITS-PLACE), three BASELINE-WORSE cells (B2r per-game at
+   WR/TE/QB), both explosive-rush PROJECTION-ONLY arms and the QB-rush→passing arm — and **one
+   grade that would improve: batch 5's TE first-downs-per-target (p=0.00837, MARGINAL), which is
+   also the family my F4 re-count found improving both universes.** At the honest full
+   denominator (M≈118 with batches 1–3 counted; ≈134 with my 16) the pooled threshold tightens to
+   p≤0.0025/0.0011 and only the ablation, one baseline cell, and explosive-rush survive — all
+   already recognised.
+3. **Net: no suppressed edge and no false survivor either way.** The conclusions are robust to
+   the correction's defects. Recorded as a defect anyway, because next time the campaign might
+   not be lucky: per-batch-at-shared-M is conservative (power lost on a power-starved campaign),
+   and an uncorrected 62-test remainder is exposure in the other direction.
+
+**Recommendation:** strategist folds a one-page campaign-closure note into the manifest README:
+the family's final composition, one pooled BH pass over every extractable p at the final M, and
+the statement that batches 1–3 sit outside it by rule. Not a re-grade — a record.
+
+### 2026-08-01 · M2-5 — are the nulls findings or symptoms?
+
+**Findings, at the component level; symptoms only of the wrong question.** Three specifics:
+
+1. **The backtest defect does not touch them.** The zero-stat-player VBD bug lived in
+   `src/backtest.py` (ADR-066); the ~90 nulls ran in `experiments/bottomup` on component MAE and
+   board Spearman — a disjoint code path. Its own re-run showed board figures unchanged. The
+   "symptom" hypothesis via that defect is dead.
+2. **The instrument has demonstrated power at the effect sizes that matter.** It detected the QB
+   rushing ablation (+14.4%, p=4e-6), lagged YPC (−1.9%), and its own coverage-flag artifacts at
+   215% of treatment size. A harness that detects its artifacts that clearly is not underpowered
+   for effects of that size; the nulls mean "no effect ≥ ~1–2% of component error," which is a
+   finding. What it cannot see is the crowd question (F-ruling) and sub-1% effects.
+3. **The coverage-flag trilogy is one mechanism, and the ruling is batch 7's.** `routes_known`
+   (batch 5) and `rzsnap_known` (batch 7) share source (`participation`, starts 2016) and
+   geometry (source begins inside the training window) — both are time dummies, not coverage
+   effects. Batch 3's NGS-separation VOID (control = 92% of treatment; NGS starts 2016) has the
+   same geometry. **All VOID/artifact verdicts stand** — a time dummy is just as fatal to a
+   treatment's interpretation as a coverage artifact — but the mechanism sentence in batch 5's
+   results should be corrected by reference (no document edit by me; routed via PM), and the fix
+   for future arms is batch 7's: restrict the *training* window so the flag is constant, rather
+   than only gating target-season coverage.
+
+### 2026-08-01 · M2-6 — the suspiciously clean PR-009 result
+
+**Computed from the committed `pr009_consensus_quality.csv` this run (44 covered cells).**
+
+| crowd | cells | gap<0 (crowd behind heuristic) | POOR | STRONG | STRONG inside own noise band | gap>0 outside band | median null half-width |
+|---|---|---|---|---|---|---|---|
+| expert ECR | 16 | **0** | 0 | 12 | 0 | 12 | 0.097 |
+| market ADP | 28 | **13 (46%)** | 0 | 6 | **1** | 5 | **0.262** |
+
+**Ruling: zero-POOR is a real quality statement for expert ECR and a power statement for market
+ADP.** Against ECR the heuristic never takes a cell even on point estimate — consensus quality is
+genuine there. Against the market, the crowd's point estimate is *behind the three-line
+heuristic in nearly half the cells*, and "zero POOR" holds only because the single-season noise
+band (median ±0.26) is enormous — nothing clears it in either direction, while the STRONG label
+needs only a fixed +0.134, *below* the band, and one STRONG cell sits inside its own band. The
+asymmetry is in the registered rule (band-clearance for POOR, fixed constant for STRONG), so the
+process was honest and the prediction-contradiction real — but the headline sentence
+("consensus... routinely beats the weighted-PPG heuristic and never measurably loses") prices the
+two labels as if they cost the same, and they do not. **Symmetric restatement for the record:
+ECR 12 up-band / 0 down-band / 4 unresolved; market ADP 5 up-band / 0 down-band / 23
+unresolved.** This is F5's power wall measured from the other side, by the same instrument class,
+and it is consistent with everything else this run found: single-season, single-position crowd
+comparisons at this sample size mostly cannot resolve, and any decision rule that appears to
+resolve them routinely should be checked for asymmetric label prices first.
