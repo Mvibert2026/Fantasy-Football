@@ -5,35 +5,55 @@ Run started 2026-08-01 (end-of-week slot, before the Monday reset). Mandate:
 
 ## CONCLUSIONS SO FAR
 
-**1 · The frame ruling (founder's question): he is right about the record, and the honest count
-is this — "can we beat consensus" has been asked with an object capable of winning exactly twice,
-not ~90 times.** The ~90 factor nulls are real answers to a different question ("does feature X
-improve our own component model"), mislabelled through six consecutive pre-commits as the §6.5
-consensus bar. They carry near-zero information about whether consensus is beatable. But the
-correction cuts both ways: it does not resurrect a single dead factor. Full ruling in the log,
-§F1–F7.
+**1 · The frame ruling (founder's question): he is right about the record.** "Can we beat
+consensus" has been asked with an object capable of winning exactly **twice**, not ~90 times. The
+~90 factor nulls answer a different question ("does feature X improve our own component model"),
+mislabelled through six consecutive pre-commits as the §6.5 consensus bar. They carry near-zero
+information about whether consensus is beatable — and the correction cuts both ways: it
+resurrects no dead factor. Log §F1–F7.
 
-**2 · The right frame** (short form): §6.5 unchanged as the gate; component MAE demoted to
-engineering diagnostic (strategist's rename — endorse, still unapplied); C2 universe as endpoint
-(endorse); and add a **disagreement-conditional win rate** as the working progress metric —
-pre-registered below and computed this run — because full-board per-position ρ vs the crowd is
-power-walled at 3 of 4 positions (7 seasons cannot distinguish market ADP from a three-line
-heuristic at QB/WR/TE) and no amount of model quality fixes that.
+**2 · M2-1, the finding the founder should read first: v1's deficit is located, and it is one
+channel — projected games.** Measured on the frozen v1 panel with pre-registered diagnostics
+(log §M2-1): substituting realised games at fixed per-game rates flips every losing cell to a
+win (upper bound, not a target — it borrows outcome information); the excess rank error vs both
+crowds concentrates in players who missed ≥4 weeks the prior season (86–131% of the market-panel
+excess); v1's games projection has near-zero ordering skill on the board universe (r 0.12–0.24
+with realised games) and is *worse than naive persistence* there on MAE. **The founder's
+"consensus knows things v1 was never told" narrative is right in a specific, actionable form: what
+consensus knows is who is going to play** — not diffuse camp-report magic across all channels. On
+full-prior-season players at the market panel v1 is already at or better than parity.
+
+**3 · v1's disagreements with the market are coin flips (0.46–0.51); with experts they lose
+(0.34–0.41, p=0.0003), but depth-matching to draftable rows moves expert cells to 0.43–0.52.**
+The decision-relevant statement: deviating from consensus on v1's advice is currently
+value-neutral against the market at draftable depth, mildly value-destroying against experts at
+QB/RB. A pre-registered repair candidate (v2-flatgames — delete the games channel) was **rejected
+by its own adoption rule** (1 WIN, 2 HARM): the games model carries real information vs the
+market while being far worse than the experts'. **Recommendation: repair, not ablate** — the
+games prior must distinguish resolved absences from ongoing ones using pre-Week-1 status
+(the Burrow/Hill defect class). Cost days, upper bounds measured. Log §M2-1-REC.
+
+**4 · Holdout recommendation (per mandate, not a spend request): do not spend 2025 on v1 as it
+stands.** It would confirm a loss already established seven ways on dev seasons. The right spend
+is one confirmatory shot at the games-repaired v1.1 in late August, only if it shows dev-season
+recovery first. If no repair lands, spend nothing: ship the consensus-derived board and put the
+effort into availability + recommender. What is lost by spending now: the single confirmation
+bullet this project gets, on a question that is not open.
 
 ## TOKENS USED
 
-~150k of context consumed at this update (estimate from context size; no meter available; ±20%).
+~270k of context consumed at this update (estimate from context size; no meter; ±20%).
 
 ## STATUS
 
 | Section | State |
 |---|---|
 | Frame question (founder's) | **RULED** — log §F |
-| M2-1 rankings | IN PROGRESS — diagnostics pre-registered, computing next |
-| M2-2 availability | not started |
+| M2-1 rankings | **DONE** — log §M2-1, recommendations §M2-1-REC |
+| M2-2 availability | starting next |
 | M2-3 recommender | not started |
-| M2-4 campaign correction | not started |
-| M2-5 nulls: findings or symptoms | not started |
+| M2-4 campaign correction | not started (partial evidence already in F4) |
+| M2-5 nulls: findings or symptoms | not started (frame ruling covers most) |
 | M2-6 the clean PR-009 result | not started |
 
 ---
@@ -91,9 +111,14 @@ route, e.g. batch 7's N18 RESTATEMENT at R² = 0.90, stays dead under any bar). 
 changes what the nulls *mean*, not whether any factor *works*.
 
 **F4 · Two measured defects in the frame beyond the labels.** (a) The FDR endpoint pointed away
-from the product: batches 5 and 7 found every full-universe improvement degrading the ADP board —
-three batches, three positions, four sources (I re-verified the sign pattern from the committed
-results CSVs, see D0 below). Strategist has moved the endpoint to C2 from batch 8 — endorsed.
+from the product — but the published strength of this claim is itself overstated, measured from
+the committed CSVs this run: batch 7's material full-universe improvements degraded the board
+**5 of 5**; batch 5's route family **4 of 4**; but batch 5's receiving-first-downs family improved
+**both** universes at WR/TE/RB (5 of 10 batch-5 improvements were board-better). Combined:
+**10 of 17, not "every."** The direction of strategist's fix (C2 endpoint from batch 8) survives;
+the sentence "it is what a usage feature does by default" (batch 7 results, quoted in
+CURRENT-STATE) does not — one family contradicts it and nobody had counted. Correction owed to
+the batch-7 results doc's §, routed via PM.
 (b) MAE's median-seeking pathology (improvable by shrinkage that destroys ordering) was ruled on
 for the projection metric and never applied to the campaign's own endpoint — meaning even the
 component-level "wins" (lagged YPC, explosive rush) are not yet known to be ordering
@@ -163,3 +188,121 @@ advance:** under "v1 = consensus + noise," inverted pairs resolve for the crowd 
 below 0.50; 0.50 is genuine-parity-of-information; above 0.50 means v1's deviations carry value
 even though full-board ρ loses — these readings are fixed now so the number cannot be renarrated
 after it is seen.
+
+### 2026-08-01 · M2-1 — results of the pre-registered diagnostics
+
+Script: scratchpad `m2_diag.py` / `m2_v2.py` (logic recorded in this file; both operate read-only
+on the committed `ranking_v1_v1_players.csv` + `ranking_v1_v1_season_metrics.csv`; 2025 absent
+from the panel by construction).
+
+
+**D0 — reproduction PASSED.** Max |ρ_mine − ρ_published| over all 44 cells: **2.45e-04** (my
+Spearman uses a mean-product formula vs scipy's; the residual is tie-handling noise, far inside
+the 0.005 gate). The v1 assembly (rookie pinning + veteran reorder) is faithfully replicated;
+everything below inherits it.
+
+**D1 — oracle games (realised games at v1's own fixed per-game rates), Δρ(arm − crowd):**
+
+| cell | Δρ v1 | Δρ oracle-games |
+|---|---|---|
+| M-QB | −0.065 | **+0.383** |
+| M-RB | −0.044 | **+0.208** |
+| M-WR | +0.031 | **+0.254** |
+| M-TE | −0.011 | **+0.277** |
+| E-QB | −0.138 | **+0.158** |
+| E-RB | −0.093 | **+0.135** |
+| E-WR | −0.065 | **+0.118** |
+| E-TE | +0.005 | **+0.207** |
+
+**Read this correctly: the oracle is an upper bound that borrows the outcome's own factor
+(points = ppg × games), exactly as fr136 §4 warned for its games oracle. It is NOT reachable.**
+What it establishes is *location*: with the games channel bypassed there is no deficit anywhere —
+so the deficit lives in that channel, not in rates/volume/TD/bonus.
+
+**D1b — player-level attribution (exact d² decomposition of the Spearman deficit).** Share of the
+v1-vs-crowd excess rank error from players with ≥4 missed weeks in season N−1: **M-QB +131%,
+M-RB +86%, M-TE +117%** (shares >100% mean full-prior-season players contribute *negative* excess
+— v1 is better than the crowd on them); M-WR total excess is negative (v1 ahead overall). Expert
+panel: 54–63% from missed-time players who are 56–65% of that deeper universe — less
+concentrated, still majority. **The Burrow signature at scale: v1's loss to the market is almost
+entirely its handling of players coming off missed time.**
+
+**D2 — disagreement-conditional win rate (8 graded cells, veteran-only pairs, season-block
+bootstrap, seed 20260801):**
+
+| cell | win rate | 95% CI | p | pairs |
+|---|---|---|---|---|
+| M-QB | 0.457 | [0.357, 0.562] | 0.44 | 370 |
+| M-RB | 0.459 | [0.370, 0.540] | 0.34 | 1,770 |
+| M-WR | 0.508 | [0.458, 0.572] | 0.76 | 2,272 |
+| M-TE | 0.506 | [0.394, 0.620] | 0.90 | 176 |
+| E-QB | **0.342** | [0.277, 0.415] | **0.0003** | 941 |
+| E-RB | **0.360** | [0.323, 0.398] | **0.0003** | 5,205 |
+| E-WR | **0.412** | [0.379, 0.436] | **0.0003** | 7,947 |
+| E-TE | 0.507 | [0.471, 0.577] | 0.63 | 2,056 |
+
+All-pairs sensitivity: same picture. The three E-cells at p=0.0003 (bootstrap floor) survive BH
+at any campaign denominator this project could reach; graded **three significant LOSSES, five
+NULL** in the manifest family. Under the pre-registered reading: against experts, v1's
+disagreements are resolved *for the experts* — below the "v1 = consensus + noise" line, i.e.
+worse than adding pure noise to ECR at QB/RB/WR full-depth. Against the market: coin flips.
+Conviction does not rescue it against experts (gap≥10: E-RB 0.367, E-WR 0.415); against the
+market it trends up with conviction (gap≥10: M-QB 0.557, M-WR 0.572, M-RB 0.521 — descriptive
+only, not graded, confounded with the games channel).
+
+**Depth-matched E-panel (descriptive):** restricting each expert board to the market's own
+draftable depth moves E-QB 0.342→0.427, E-RB 0.360→0.435, E-WR 0.412→0.515, E-TE 0.507→0.485.
+**Much of the expert edge over v1 lives in the deep board where no draft decision occurs.** At
+draftable depth: modest losses at QB/RB, coin flips at WR/TE — consistent with the market panel.
+
+**D2-oracle (games fixed): win rates jump to 0.68–0.80 everywhere, p=0.0003.** The disagreements
+v1 loses are overwhelmingly games-driven disagreements.
+
+**D3 — v2-flatgames (registered Amendment 1 before compute): REJECTED by its own rule.**
+Per-cell paired Δ(Δρ), v2 − v1: M-QB +0.060 (p=0.078, NULL), **M-RB +0.036 (p=0.049, WIN)**,
+M-WR −0.010 (NULL), M-TE +0.010 (NULL), **E-QB −0.033 (p=0.0003, HARM)**, **E-RB −0.043
+(p=0.010, HARM)**, E-WR −0.018 (NULL), E-TE −0.017 (NULL). 1 WIN, 2 HARM → adoption rule
+(≥2 WIN, 0 HARM) fails. The 0.5-shrink descriptive sensitivity sits between v1 and flat
+everywhere — no free lunch on the shrinkage path either. **Deleting the games channel helps
+against the market at RB/QB and hurts against experts at QB/RB: v1's games model carries real
+information relative to the market's implied availability handling, and materially less than the
+experts'.**
+
+**Context measurements (descriptive):** on the board universe, veterans only, corr(proj_games,
+realised games) is 0.12–0.24 by position, and proj_games MAE is **worse than naive `games_1`
+persistence at all four positions** (e.g. QB 4.04 vs 3.19). The component docs' "beats naive
+persistence on every component" was measured on the full universe; on the draft-relevant board
+the games component inverts — **the games component is itself an instance of the campaign's own
+full-universe-vs-board pathology (F4).**
+
+### 2026-08-01 · M2-1-REC — what would make the bottom-up rankings better, in order
+
+1. **Repair the games prior for resolved absences (v1.1). Days, not weeks.** The defect class the
+   founder caught by eye (Burrow QB26, Taysom Hill +194) is the same one D1b measures at scale.
+   The prior currently extrapolates season-N−1 absence into season N with no notion of whether
+   the absence *resolved*. Pre-Week-1 status is legitimate §6.1 input ("through end of N−1 and
+   preseason N"): `load_rosters_weekly(N)` week-1 `status` (RES/EXE), `load_injuries(N)` practice
+   status. Caveat for `strategist`: week-1 status postdates a late-August draft by days — rule on
+   the as-of alignment before anyone fits to it. Expected gain, bounded honestly: market-panel
+   deficit → parity-to-small-positive (flat-games already reaches −0.006/−0.008 at QB/RB without
+   *any* games info; a repaired prior keeps the real signal flat-games discards); the expert gap
+   narrows but does not close — experts still know things (holdouts, camp roles) no status file
+   carries.
+2. **Evaluate at draftable depth, both panels, as the reported headline.** The full-ECR-board
+   evaluation overstates the expert edge with rows no draft reaches. The sensitivity machinery
+   exists (`ranking_v1_sensitivity.py`); make it the primary cut in v1.1's results.
+3. **After the repair: one registered confirmatory test of the market-conviction gradient** (win
+   rate at gap≥10 vs the market, currently 0.52–0.57 descriptive). If v1.1's high-conviction
+   market disagreements clear 0.5 with a CI, that is the first affirmative §6.5-adjacent evidence
+   this project will have produced — and the correct holdout spend follows it.
+4. **Do not:** run more public-factor sweeps (F-ruling — the shovel was measuring itself; and the
+   well being dry was never established either); ship flat-games (rejected by rule); blend ECR
+   into v1's inputs (destroys the product's independence, `CLAUDE.md` §4); model rookies
+   (eliminated channel); revisit variance/bonus (dead four ways, `CLAUDE.md` §7).
+5. **September 7, said plainly:** "the best bottom-up rankings" as *demonstrated edge over both
+   crowds* is **not earnable by 7 September** — the F5 power wall plus the current deficit make
+   that arithmetic, not pessimism. What is earnable: a games-repaired v1.1 at measured parity
+   with the market at draftable depth, whose deviations are measured non-harmful, carrying the
+   league-specific cross-positional structure consensus does not price. That is a board worth
+   sitting next to consensus on draft day. Claiming *better than the crowds* requires the holdout
+   confirmation, and only after dev-season recovery.
