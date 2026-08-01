@@ -5,11 +5,11 @@ Per-request files in this directory are the source of truth. Edit a request's ow
 `STATUS:` line, then re-run sync. Protocol: [`README.md`](README.md).
 Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests.md).
 
-**145 requests since freeze.**
+**147 requests since freeze.**
 
 ---
 
-## NEW — 87
+## NEW — 88
 
 | ID | Subject | Raised | Source |
 |---|---|---|---|
@@ -99,7 +99,8 @@ Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests
 | [FR-2026-07-30-widen-the-ranking-input-list](FR-2026-07-30-widen-the-ranking-input-list-research-what-leadi.md) | Widen the ranking input list research what leadi | 2026-07-30 | PM session 2026-07-30, founder chat |
 | [FR-2026-07-31-availability-and-qb-tilt](FR-2026-07-31-two-defects-spotted-by-eye-v1-mishandles-availab.md) | Two defects spotted by eye v1 mishandles availab | 2026-07-31 | PM session 2026-07-31, founder chat — spotted by eye from the rankings chart |
 | [FR-2026-07-31-separate-edge-from-absolute-quality](FR-2026-07-31-separate-edge-over-consensus-from-absolute-ranki.md) | Separate edge over consensus from absolute ranki | 2026-07-31 | PM session 2026-07-31, founder chat |
-| [FR-2026-08-01-parity-before-edge-our-rankings-need-everything](FR-2026-08-01-parity-before-edge-our-rankings-need-everything.md) | Parity before edge our rankings need everything | 2026-08-01 | PM session 2026-07-31, founder chat |
+| [FR-2026-08-01-find-the-early-qb-penalty-scientifically-rather](FR-2026-08-01-find-the-early-qb-penalty-scientifically-rather.md) | Find the early qb penalty scientifically rather | 2026-08-01 | chat 2026-08-01 |
+| [FR-2026-08-01-turn-the-keys-over-to-fable-to-build-the-next-bo](FR-2026-08-01-turn-the-keys-over-to-fable-to-build-the-next-bo.md) | Turn the keys over to fable to build the next bo | 2026-08-01 | chat 2026-08-01 |
 
 ## SCOPING — 1
 
@@ -189,6 +190,7 @@ _None._
 | [FR-2026-07-31-fable-next-week-sequencing](FR-2026-07-31-sequencing-fable-runs-first-next-week-after-the.md) | Sequencing fable runs first next week after the | `RESOLVED — FOUNDER DECISION` |
 | [FR-2026-07-31-holdout-gated-on-fable](FR-2026-07-31-holdout-stays-sealed-until-fable-has-run.md) | Holdout stays sealed until fable has run | `RESOLVED — FOUNDER RULING, NOW A STANDING RULE` |
 | [FR-2026-07-31-league-winner-anatomy](FR-2026-08-01-test-the-anatomy-of-a-league-winner-claims-espec.md) | Test the anatomy of a league winner claims espec | `NEW — REGISTERED FOR TESTING, DELIBERATELY NOT ADJUDICATED` |
+| [FR-2026-07-31-parity-before-edge](FR-2026-08-01-parity-before-edge-our-rankings-need-everything.md) | Parity before edge our rankings need everything | `NEW — FILED, NOTHING RUNNING` |
 | [FR-2026-07-31-reverse-discovery](FR-2026-08-01-discovery-find-thresholds-and-interactions-from.md) | Discovery find thresholds and interactions from | `NEW — REGISTERED, NOT STARTED` |
 | [FR-2026-07-31-threshold-tests-as-a-class](FR-2026-08-01-threshold-and-gate-tests-as-a-class-the-function.md) | Threshold and gate tests as a class the function | `NEW — REGISTERED, DELIBERATELY NOT STARTED` |
 
