@@ -5,11 +5,11 @@ Per-request files in this directory are the source of truth. Edit a request's ow
 `STATUS:` line, then re-run sync. Protocol: [`README.md`](README.md).
 Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests.md).
 
-**149 requests since freeze.**
+**150 requests since freeze.**
 
 ---
 
-## NEW — 90
+## NEW — 91
 
 | ID | Subject | Raised | Source |
 |---|---|---|---|
@@ -102,6 +102,7 @@ Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests
 | [FR-2026-08-01-bar-is-absolute-quality-not-edge-build-rankings](FR-2026-08-01-bar-is-absolute-quality-not-edge-build-rankings.md) | Bar is absolute quality not edge build rankings | 2026-08-01 | chat 2026-08-01 |
 | [FR-2026-08-01-bar-is-parity-with-any-single-analyst-not-with-c](FR-2026-08-01-bar-is-parity-with-any-single-analyst-not-with-c.md) | Bar is parity with any single analyst not with c | 2026-08-01 | chat 2026-08-01 |
 | [FR-2026-08-01-find-the-early-qb-penalty-scientifically-rather](FR-2026-08-01-find-the-early-qb-penalty-scientifically-rather.md) | Find the early qb penalty scientifically rather | 2026-08-01 | chat 2026-08-01 |
+| [FR-2026-08-01-need-an-inclusion-test-run-candidate-factors-as](FR-2026-08-01-need-an-inclusion-test-run-candidate-factors-as.md) | Need an inclusion test run candidate factors as | 2026-08-01 | chat 2026-08-01 |
 | [FR-2026-08-01-turn-the-keys-over-to-fable-to-build-the-next-bo](FR-2026-08-01-turn-the-keys-over-to-fable-to-build-the-next-bo.md) | Turn the keys over to fable to build the next bo | 2026-08-01 | chat 2026-08-01 |
 
 ## SCOPING — 1
