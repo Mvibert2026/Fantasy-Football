@@ -39,6 +39,38 @@ string being added or removed, so it may never have reached a commit) already di
 speculated was the likely fix. Left in place as a record rather than deleted outright, since the
 original escalation is why it was safe to check.
 
+**Last verified:** 2026-08-01, backend session (isolated worktree, merged in `claude/pm-agent-setup-gobxa0`
+first to pick up C1) — **factor batch C2: 12 arm-runs, 29 of 29 registered cells, grading SUSPENDED
+throughout — this batch never emits INCLUDE/EXCLUDE.** Continues C1 (below), which found its own
+registered inclusion rule hands a BH-robust WIN to seeded noise (false-positive rate 9.6% of cells
+vs. nominal 2.5%); `strategist` owns the replacement rule and every C2 cell is `PENDING-RULE`.
+Registration `docs/ranking/factor-campaign-manifest/batch-C2.md`, committed at `ee87b53` before any
+arm was fitted; results `docs/ranking/batch-C2-results.md`. **Part A, five factors untested-for-v2**:
+WOPR (WR/TE, new block on an already-stored column), and three blocks reused verbatim from batch 7
+(never before run against v2) — YAC per reception, receiving share of an RB's own points,
+late-season role trajectory — plus **implied team total, lagged** (the first read of
+`odds_snapshots`, ingested since C1, by any model in this project). All NULL at CI level except two
+cells, both flagged rather than claimed: **A5 QB** (implied team total) CI-WINs at +0.0140 but is
+*smaller* than its own matched-control placebo delta (+0.0216, itself not significant) at the same
+4-season control; **A5k RB**'s coverage-flag-only control CI-WINs while the paired treatment does
+not. **Part B, the founder's RB high-carry-season breakpoint (2026-07-31), never run before**: one
+arm, a single non-linearity test (piecewise-linear hinge basis with his own 350/375/400 as fixed,
+pre-registered spline knots — not a three-way cutoff sweep) rather than the sweep the dispatch
+explicitly warned against. NULL, confirming rather than resolving the underpowered-arm concern
+batch 3/4 raised and never tested: only **1** board-veteran RB-season in the entire graded
+population had ≥350 carries in its feature year. **The placebo was carried again as its own
+calibration instrument** (same generator/salt as C1's, run fresh against this batch's two
+controls): `F0` at the 7-season control reproduces C1's numbers byte-for-byte; `F0D` at a new
+4-season control (needed for the odds-window match) won CI-level at 2 of 4 cells against 0 of 4 at
+7 seasons — an independent second measurement of C1's own "shorter windows are more miscalibrated"
+finding, on a control C1 never tested, and the reason A5's CI-WINs are reported as noise-level
+rather than findings. `docs/factor-ledger.md` Section 0 extended with C2's dispositions (all
+PENDING-RULE). No consensus/ADP/ECR read in any ordering path; every arm asserts
+`n_preseason_proxy_reads == 0`; 2025 holdout never opened. New code:
+`experiments/bottomup/v2/factors_c2.py`, `experiments/bottomup/v2/run_c2.py`. Commits: registration
+`ee87b53`, harness+F0 `6dab690`, F0D `1e80cc8`, A1 `7cae66e`, A2/A2k `d213232`, A3/A3k `b3cb337`,
+A4/A4k `1d48b22`, A5/A5k `c1b11f4`, B1 `06f04cb`.
+
 **Last verified:** 2026-08-01, ranker C1 session — **the factor inclusion test has now been run
 against v2 for the first time, and all six candidate factors returned NULL.** The founder's
 correction (`FR-2026-08-01-need-an-inclusion-test-run-candidate-factors-as`) was that the ~90 nulls
