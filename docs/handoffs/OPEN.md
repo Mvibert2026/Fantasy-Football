@@ -4,7 +4,7 @@
 Threads are the source of truth. Change a thread's `STATUS:`, then re-run sync.
 Protocol: [`README.md`](README.md).
 
-**114 open** · 57 resolved
+**113 open** · 58 resolved
 
 ---
 
@@ -191,7 +191,7 @@ not an omission. Start your session at your own heading.
 | [2026-07-31-attack-factor-batch-5-the-control-arm-beat-its-o](2026-07-31-attack-factor-batch-5-the-control-arm-beat-its-o.md) | Attack factor batch 5 the control arm beat its o | `ranker` | OPEN | 1d | none |
 | [2026-07-31-v1-s-2026-display-board-attack-the-holdout-claim](2026-07-31-v1-s-2026-display-board-attack-the-holdout-claim.md) | V1 s 2026 display board attack the holdout claim | `ranker` | OPEN | 1d | none |
 
-### `ranker` — 5 waiting
+### `ranker` — 4 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
@@ -199,7 +199,6 @@ not an omission. Start your session at your own heading.
 | [099](099-archetype-taxonomy-derivability-review-fr-075.md) | Archetype taxonomy derivability review fr 075 | `researcher` | OPEN | 2d | FR-075 (archetype on the player card), FR-086 (volatility as an archetype dimension) |
 | [2026-07-30-batch-4-blocked-on-you-before-it-runs-the-founde](2026-07-30-batch-4-blocked-on-you-before-it-runs-the-founde.md) | Batch 4 blocked on you before it runs the founde | `ranker` | BLOCKED-ON-YOU | 2d | factor batch 4 |
 | [2026-07-30-component-model-vs-incumbent-head-to-head-compon](2026-07-30-component-model-vs-incumbent-head-to-head-compon.md) | Component model vs incumbent head to head compon | `backend` | OPEN | 2d | none |
-| [2026-08-01-c1-the-registered-win-rule-has-a-14-6-false-posi](2026-08-01-c1-the-registered-win-rule-has-a-14-6-false-posi.md) | C1 the registered win rule has a 14 6 false posi | `ranker` | BLOCKED-ON-YOU | 0d | batch C1 grading (arms continue to run and record) |
 
 ### `operator` — 0 waiting
 
@@ -270,6 +269,7 @@ _Nothing waiting on you._
 | [2026-07-30-pick-18-recommendation-defect-traced-reproduced](2026-07-30-pick-18-recommendation-defect-traced-reproduced.md) | Pick 18 recommendation defect traced reproduced | `ranker` → `strategist` |
 | [2026-07-30-recommendation-card-states-a-rule-the-code-does-](2026-07-30-recommendation-card-states-a-rule-the-code-does-.md) | Recommendation card states a rule the code does  | `strategist` → `frontend` |
 | [2026-07-31-attack-ranking-version-v1-the-first-assembled-ra](2026-07-31-attack-ranking-version-v1-the-first-assembled-ra.md) | Attack ranking version v1 the first assembled ra | `ranker` → `fable` |
+| [2026-08-01-c1-the-registered-win-rule-has-a-14-6-false-posi](2026-08-01-c1-the-registered-win-rule-has-a-14-6-false-posi.md) | C1 the registered win rule has a 14 6 false posi | `ranker` → `strategist` |
 | [2026-08-01-g2a-week-1-status-as-of-ruling-and-v2-ship-revie](2026-08-01-g2a-week-1-status-as-of-ruling-and-v2-ship-revie.md) | G2a week 1 status as of ruling and v2 ship revie | `fable` → `strategist` |
 | [89](089-fr-040-costing-static-hosting-blocks-scoring-rec.md) | Fr 040 costing static hosting blocks scoring rec | `backend` → `frontend, pm` |
 
