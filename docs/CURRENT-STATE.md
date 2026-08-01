@@ -1065,6 +1065,27 @@ pass or is marked as unverified.
 
 **Data capture — time-sensitive, cannot be backfilled**
 
+0. **Per-analyst rankings exist for 2026 ONLY, and that is structural.** 66 individual FantasyPros
+   expert boards, 17,818 rows, `source` = `fantasypros_expert_<id>`, `as_of_date` 2026-08-01
+   (data-ops, 2026-08-01). **FantasyPros exposes no free historical per-expert archive**, so this
+   can never be backfilled to 2018–2024 — it can only be grown forward by re-running the scrape
+   periodically. **Consequence for the founder's stated bar** (*"on par with any single analyst"*,
+   2026-08-01): it **cannot be measured on a completed season today**, because the only season with
+   per-analyst boards has not been played. What 2026 *does* support is measuring the analyst
+   *dispersion* around consensus — which bounds how far out on a limb our board is relative to a
+   normal analyst, without proving equal accuracy. 2,181 rows quarantined in
+   `rankings_expert_quarantine` (`fantasypros_id` not in crosswalk — spot-checked as 2026 rookies
+   missing from the DynastyProcess mirror; no fuzzy matching attempted).
+   **Re-run the scrape before each draft season or the series never starts.**
+
+0b. **Vegas odds now exist: `odds_snapshots`, 3,884 team-game rows, 2018–2024, zero nulls**
+   (data-ops, 2026-08-01, `src/ingest_odds.py`). Spreads, moneylines, game totals and derived
+   **implied team totals**, `as_of_date` = `gameday` (a conservative proxy). Sourced from
+   `nflreadpy.load_schedules()` — already-licensed nflverse CC-BY data, not a new scrape.
+   **Not obtained:** player props (no free historical source found) and season win totals (not in
+   nflverse; `sportsoddshistory.com` renders them in JS, not a parseable table). Win totals were
+   the lowest-priority instrument of the four and are deferred, not forced or faked.
+
 1. **A *scheduled* ADP capture has still never fired.** `.github/workflows/adp-snapshot.yml`
    (09:15 UTC daily) has exactly one run in repository history, `event: workflow_dispatch`,
    triggered by hand. First scheduled opportunity is **2026-07-30 09:15 UTC**. Check `event:`, never
