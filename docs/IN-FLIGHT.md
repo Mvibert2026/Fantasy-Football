@@ -1,174 +1,120 @@
-# In flight — resume here after a token limit or session death
+# In flight — read this first on Monday
 
-**Written 2026-08-01 by pm, mid-session, at the founder's instruction:** *"Make sure it's all
-recorded as you go. Good chance we hit token limits in the middle of this."*
+**Last written 2026-08-01 (Saturday) by pm, with the weekly token pool nearly spent.** The founder's
+words: *"Likely we hit weekly usage soon… If we hit it, next time we will talk is Monday morning."*
 
-**Read this file first if a session died with work running.** It is deliberately not
-`CURRENT-STATE.md` (canonical, settled state) and not `docs/status/` (historical narrative). This is
-the volatile one: what was running, what it was going to produce, and what to do if it never arrived.
-
-**Delete or empty this file when nothing is in flight.** A stale IN-FLIGHT is worse than none — it
-will be read as current. *(The previous contents, dated 2026-07-30, were exactly that: every item in
-them had been resolved or superseded and the worktrees named no longer existed.)*
+Two audiences. **§A is for the founder** — what happened, what it cost, what to decide. **§B onward is
+the agent resume detail.** `CURRENT-STATE.md` is settled state; `docs/status/` is history; **this file
+is the volatile one** and should be emptied when nothing is in flight.
 
 ---
 
-## Where the project is, in one paragraph
+# §A · For the founder, Monday morning
 
-Ranking **v2** exists: built from player-level projections, **no consensus anywhere in its ordering
-path**, with a swappable scoring layer (same stat lines re-rank under half-PPR / full-PPR / standard
-with zero refits). The bar changed on 2026-08-01 (**ADR-069**, `CLAUDE.md` §2a): absolute quality
-against realised outcomes steers development; the four-baseline consensus comparison is a **release
-gate run once at the end**, not a steering metric. On 2024, v2 scores ρ 0.607 overall against
-consensus 0.743 and the shipped adjusted board 0.649 — v2 loses to both, and the **adjusted board
-loses to the raw consensus it is derived from**. v2's entire measured deficit is one channel:
-**projected games**. The founder's bar is **parity with any single analyst**, not with the aggregate.
+## The one-paragraph version
 
----
+Ranking **v2** is built and independent — no consensus anywhere in its ordering path, with a swappable
+scoring layer proven to re-rank under half-PPR / full-PPR / standard with zero refits. It is **not yet
+as good as consensus**: on the three seasons where both exist, v2 averages ρ 0.583 against consensus
+0.725. **But the instrument we were grading factors with turned out to be broken**, which is the real
+news of the day, and it has been replaced (**ADR-070**).
 
-## Running when this was written
+## What happened today, in order of importance
 
-| # | Agent | Task | Where its output goes |
-|---|---|---|---|
-| 1 | ~~`strategist` G2a ruling~~ | **DONE** — ADMIT-WITH-CONDITION, conditions unmet, v2 stays on G0 | thread RESOLVED; follow-on C1–C5 thread open to `backend`/`data-ops` |
-| 2 | ~~`data-ops` ingest~~ | **DONE** — odds 2018–2024 landed; per-analyst is 2026-only and unbackfillable | `odds_snapshots` (3,884 rows), `rankings` 66 expert sources (17,818 rows) |
-| 3 | ~~`ranker` batch C1~~ | **DONE** — 0 of 6 included, **and the placebo won** | `docs/ranking/batch-C1-results.md` |
-| 4 | `strategist` | **Replacement WIN rule** — campaign suspended until it lands | `docs/handoffs/2026-08-01-c1-the-registered-win-rule-has-a-14-6-false-posi.md` |
-| 5 | *(background process)* | **PR-007** recommendation-constants ablation | `src/run_pr007.py` → results doc, handoff to `frontend` |
+1. **A placebo — pure seeded noise — passed our factor inclusion test.** Graded `INCLUDE` at
+   p = 0.0002. Replicated across 34 noise draws: the rule awarded wins to noise on **9.6% of cells
+   against a nominal 2.5%**. Every "significant" factor result this project ever produced sat on that
+   rule. It was caught only because `ranker` registered the placebo as a deliberate calibration check.
+2. **The rule has been replaced — ADR-070.** Permutation-based nulls matched to each arm, sequential
+   Monte Carlo p-values with no parametric tail fit, BH retained at campaign M = 130. **Two of the
+   founder's own inputs were adopted into it:** calibrated sign-consistency as a required condition,
+   and the HARM split into **RE-SPECIFY** vs **EXCLUDE (variance)** — "a consistent signal pointing
+   the wrong way is usable."
+3. **The structural finding, and the most valuable thing on the whole list: we only have 7 seasons.**
+   At S = 7, **no exact test of this kind can reach the significance bar by any method.** At 12 it
+   can. So *"how far back can the target span go"* (measurement **M-4**) is worth more than every
+   individual factor currently queued. **This is the first thing to spend Monday's budget on.**
+4. **Factor inclusion: 6 of ~95 tested against v2, none included.** Snap share, red-zone usage, xFP,
+   NGS separation, route participation, steeper recency. The four sources this repo has long called
+   "in the database and untouched" do not improve v2's ordering. C1 now **re-grades** under ADR-070 —
+   the arms do not re-run, only the null baselines get built.
+5. **Data landed:** Vegas odds 2018–2024 (3,884 rows — spreads, totals, implied team totals), never
+   before ingested and not yet used by any model. Per-analyst boards: 66 experts, **2026 only and
+   structurally unbackfillable**, so the "on par with any single analyst" bar cannot be measured on a
+   completed season.
+6. **A correction to something PM told the founder.** Week-1 roster status was described as
+   cutdown-dated and therefore safe for a 7 September draft. `strategist` read the code: it is
+   **Week-1-kickoff-dated**, 3–6 days *after* the draft. G2a is conditionally admitted with unmet
+   conditions; **v2 stays on the old (G0) games model.**
 
-### The one thing to read first if this session died
+## Decisions waiting on the founder
 
-**The registered inclusion rule awards a WIN to pure noise on 9.6% of cells against a nominal 2.5%**
-(34 independent draws; QB 14.7%, RB 11.8%, TE 11.8%, WR 0%). A seeded-noise placebo arm graded
-`INCLUDE`. **No factor may be graded on that rule.** Batch C1's six NULLs are believed safe —
-miscalibration inflates false *positives* and C1 produced none — but `strategist` was asked to check
-whether the same mechanisms could also *mask* a true effect. Campaign Σm_b is now 130 and the
-effective error control across all prior batches is therefore not what has been reported.
+- **The definition of "exhausted"** before news work begins — proposed in
+  `docs/founder-requests/FR-2026-08-01-ingest-and-use-camp-reports-beat-reporters-depth.md`. Five
+  criteria; correct it if the bar is wrong.
+- **Draft dates for the two secondary leagues** (FR-012). Until known they get the safe default.
+- **Confirmation of the 2026 Week-1 kickoff date** — needed for one config value, not for the ruling.
 
-Two hypotheses survive the placebo but fail the CI rule and are **not included**: **xFP at RB**
-(+0.0186 vs placebo q95 +0.0054) and **steeper recency weighting at QB** (+0.0266 vs q95 +0.0110).
-Both sit where n ≤ 43, which is where the placebo misbehaves most. Ranker will not defend either as
-more than a hypothesis.
+## Standing rulings made today (all recorded, none need re-deciding)
 
-All three agents were told to commit incrementally and keep a `NEXT STEP` block at the top of their
-output file. **Check those files before assuming an agent produced nothing.**
-
----
-
-## 1 · strategist — the G2a ruling (do this first if it did not land)
-
-**The question.** v2's games component was tested as four arms. **G2a** — adding **week-1 roster
-status (IR/PUP/SUS)** — passed its pre-registered rule at **3 WIN / 0 HARM** (RB +0.072, WR +0.048,
-BH-robust) and is the only arm beating naive persistence on games MAE. Adoption was gated, *before
-the arm ran*, on an as-of question: week-1 status ≈ the **late-August cutdown**, which a Labor Day
-drafter knows and a mid-August drafter does not.
-
-**Why it blocks.** Until it is ruled, **v2 defaults to the G0 games arm** (v1's, the weak one) per
-the registered fallback. Every factor graded against v2 is graded against whichever arm is live, so
-a late ruling means a re-grade.
-
-**What is needed back:** ADMIT / ADMIT-WITH-CONDITION / REJECT in one line; the exact condition if
-conditional; whether the **2018–2024 historical construction** of week-1 status is genuinely as-of
-correct or reconstructed post-hoc (**the part most likely to be quietly wrong**, and a different
-question from whether a real drafter would know it); and whether admission should depend on draft
-date.
-
-**Relevant facts:** primary league drafts **7 September 2026** (Labor Day, after cutdowns). Two other
-leagues unconfirmed (FR-012). Fable flagged the effect as "exactly too-good-check-it size" — the
-mechanism is transparent (week-1 IR/PUP/SUS mechanically implies missed games), which makes it both
-plausible and suspicious. `CLAUDE.md` §6.1 wants the cutoff enforced **structurally**, not assumed.
-
-**If it did not land:** re-dispatch `strategist` with the thread. Do not rule it yourself — it is a
-methodology call and PM ruling on it defeats the gate.
+| Ruling | Where |
+|---|---|
+| Bar is absolute quality, not edge over consensus; projections are stat lines, scoring portable | ADR-069, `CLAUDE.md` §2a |
+| Deviation from consensus is a **diagnostic to explain**, never a penalty to minimise | `CLAUDE.md` §2a |
+| Terms of service are the founder's concern, not an agent gate | `CLAUDE.md` §5 |
+| Exhaust measurable modelling before news; capture deferred too | FR, `…camp-reports-beat-reporters-depth.md` |
+| A consistent signal pointing the wrong way is usable — re-specify, don't exclude | ADR-070 §4.4b |
+| The sealed 2025 holdout does not open | `CLAUDE.md` §6.3, restated by founder |
 
 ---
 
-## 2 · data-ops — the two missing sources
+# §B · Agent resume detail
 
-**Vegas odds — confirmed absent.** Zero odds tables in `data/nfl.db` as of 2026-08-01, despite being
-listed in `CLAUDE.md` §5 since the project began. Priority: **implied team totals and spreads**, then
-props, **win totals last** (weakest for our purpose). **Historical 2018–2024 is what makes them
-testable**; a 2026-only pull is much less useful.
+## Running when this was written — check their output files before assuming nothing landed
 
-**Per-analyst rankings.** Only the *aggregate* (`fantasypros_ecr`, 6 seasons) is stored. The
-individual expert boards behind it are needed to make the founder's bar — *"on par with any single
-analyst"* — a measurable claim rather than an aspiration. **v2 is −0.031 vs consensus at WR and
-−0.022 at TE; the analyst spread is plausibly wider than that**, so v2 may already meet the bar at
-those positions and we cannot currently tell.
+| Agent | Task | Output |
+|---|---|---|
+| `ranker` | **Player-availability model** from `injuries` (2009+, incl. practice participation), `depth_charts_weekly` (2001+), `rosters_weekly` | results doc + manifest |
+| `backend` *(worktree)* | **Batch C2** — more ledger factors **+ threshold/breakpoint tests as a class** | `docs/ranking/batch-C2-results.md` |
+| `backend` *(worktree)* | **Discovery pass** — hypothesis *generation* from residuals | `docs/ranking/discovery-pass-1.md` |
+| *(bg process)* | **PR-007** recommendation-constants ablation, `src/run_pr007.py` | results doc → thread to `frontend` |
 
-**Founder's ruling, 2026-08-01, now in `CLAUDE.md` §5:** *"Stop worrying about terms. I will worry
-about them. It's all personal use. Just get the data."* **Do not stall an ingest on a terms review.**
-Still binding and unrelated: `as_of_date` on every time-sensitive row, no credentials in code, no
-paid/trial tiers.
+All were told to commit incrementally and keep a `NEXT STEP` block at the top of their output.
+**Two worktrees under `.claude/worktrees/` belong to running agents — do not sweep them until their
+branches are merged.** Procedure in `docs/environment.md` §4b; each costs ~0.9–1.0 GB.
 
-**If it did not land:** check the DB for partial tables before re-dispatching — commit-as-you-go was
-instructed, so some may exist.
+## Monday's order of work
 
----
+1. **M-4 — how far back can the target span go.** Thread
+   `docs/handoffs/2026-08-01-m-1-m-6-the-measurements-the-replacement-inclusi.md` (`TO: ranker`).
+   Everything else is rate-limited by S = 7. Do this first.
+2. **Merge and read whatever the four agents landed.** Their files, not their absence, are the record.
+3. **Re-grade batch C1 under ADR-070** — build null ensembles only; do not re-run arms.
+4. **Resume factor inclusion**, now on a rule whose error rates are pre-committed (HYPOTHESIS ≤ 5.0%,
+   any INCLUDE/EXCLUDE across an all-null 20-cell batch ≤ 1.3%) — and **verify them empirically the
+   way C1 verified its predecessor.**
+5. Carry a **placebo arm in every batch, permanently.** It is the only reason today's failure was
+   visible.
 
-## 3 · ranker — factor inclusion against v2
+## Live constraints that survive any reset
 
-**Why this is not a repeat.** The previous ~90 factor arms were tested on top of the
-**consensus-derived board**, which already contained consensus's embedded knowledge — so an
-informative factor could return NULL because consensus had already priced it. **v2 contains no
-consensus.** Founder's ruling: those results carry almost no information about inclusion in v2, and
-**the inclusion test has never actually been run.** Do not cite the old nulls as evidence about any
-factor.
+- **Seasons through 2024. The sealed 2025 holdout does not open** — no agent on its own authority,
+  including on a result it considers decisive. Log: `docs/preregistration/holdout_access_log.jsonl`.
+- **v2's games arm stays G0.** No session may flip `v2.json` on the G2a ruling reply alone; conditions
+  C1–C5 in `docs/handoffs/2026-08-01-g2a-admission-conditions-c1-c5-run-these-before.md` are unmet.
+  **C1 of those conditions is the dangerous one** — if nflverse's rebuilt historical roster files
+  restated status, week-1 status is a lagged *outcome* variable and the +0.072 was never real.
+- **Do not cite the old ~90 factor nulls as evidence about inclusion.** They measured a
+  consensus-derived model, not v2. Founder's ruling.
+- **Register thresholds before measuring; correct at the campaign level** (Σm_b = 130). With consensus
+  out of the development loop, this plus the sealed holdout is the *only* overfitting protection.
+- **`v2.json` has two known config defects** flagged by strategist and not yet fixed: `m_b` = 12 where
+  the manifest computes on 20, and the arms list omits G1a/G2a — inside a block marked
+  `immutable_once_run`.
+- Branch **`claude/pm-agent-setup-gobxa0`**; merge to `main` is founder-authorised.
 
-**The test:** add the factor to v2 → measure **absolute rank correlation against realised finish**
-(not delta vs consensus) → grade **WIN / HARM / NULL** against a threshold registered **before**
-measurement → correct at **campaign** level. Harness already exists — it is what B1 used on the games
-arms.
-
-**Standing hazard, and it is the thing most likely to go wrong:** expect a **higher hit rate** than
-the old campaign and treat that as a warning, not a breakthrough. A model with less knowledge baked
-in has more room for anything correlated with outcomes to look useful.
-
-**Ledger discipline:** `docs/factor-ledger.md` rows that measured NULL under the old frame are
-**untested for v2**. Rows excluded for **data availability or licensing** still stand.
-
-**One arm, one change. No stacking.** Weighting is the phase *after* inclusion — founder's explicit
-sequencing. He expects the finished model to carry **many** factors.
-
----
-
-## 4 · PR-007 — recommendation constants
-
-Background process (`src/run_pr007.py`), restarted after a container restart killed the first run at
-cell 6 of 9 with nothing written. Grid is 3 seasons × 3 sigmas.
-
-Tests whether the recommender's three hand-set constants — `+8` unfilled need, `+18` tier-1 TE, `−25`
-early QB — earn their place, measured in **roster points against actual outcomes**, leave-one-out,
-seven criteria per constant. **Powered to delete.** Registered 2026-07-29 and unrun for three days.
-
-**It answers the founder's question** of whether the `−25` should be larger. Note the framing already
-given him: the quantity it approximates is **opportunity cost**, which is contextual (slot, board
-state, who survives to the next pick) — so the likely correct answer is that it should not be a
-constant at all, and PR-007 tests whether it earns its place rather than searching for a better value.
-
-**If the results exist but nobody wrote them up:** dispatch `backend` with the spec at
-`docs/preregistration/PR-007-recommendation-constants-ablation.md`. **The registration is frozen** —
-do not amend thresholds to make a result come out. Any KEEP is PROVISIONAL at n=3 seasons. A DELETE
-means removing the term from `frontend/ui/data/recommendation.ts` via a thread to `frontend`, not a
-self-merge.
-
----
-
-## Standing constraints that survive any reset
-
-- **The sealed 2025 holdout does not open.** `CLAUDE.md` §6.3. No agent on its own authority,
-  including on a result it considers decisive. Founder restated it unprompted on 2026-08-01. Every
-  access logged in `docs/preregistration/holdout_access_log.jsonl`.
-- **Seasons through 2024 only** for all current work.
-- **Register thresholds before measuring; correct at campaign level.** With consensus removed from
-  the development loop, this plus the sealed holdout is the *only* overfitting protection left.
-- **Fable is builder and gate simultaneously**, which the project's own §8 rule exists to prevent.
-  `strategist` is its adversary; nothing merges to the board on Fable's own sign-off.
-- **Branch `claude/pm-agent-setup-gobxa0`.** Merge to `main` is founder-authorised.
-
-## Known-open, not being worked
+## Known-open, nobody working
 
 `PR-` ids still have no allocator. The metric rename (`E1a→C1`) was never applied. Threads 109–111
-carry literal merge-conflict markers. Three corrections owed from Fable's M2 review (batch 7's
-"every arm that improved the full universe degraded the board" is measured 10-of-17; batch 5's
-coverage-artifact mechanism sentence; PR-009's headline prices its two labels asymmetrically).
+carry literal merge-conflict markers. Three corrections owed from Fable's M2 review. `docs/status/`
+narrative for the strategist session was not written (no shell access in that role).
