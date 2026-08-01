@@ -41,13 +41,22 @@ from experiments.bottomup.v2.games_model import naive_persistence_games  # noqa:
 from experiments.bottomup.v2.model_v2 import make_model                # noqa: E402
 from experiments.bottomup.v2.weekshape import build_v2_panel           # noqa: E402
 
+# Carry the v2 feature columns into the output frame for diagnostics. Additive
+# module-level patch, deliberately NOT an edit to the shared harness while
+# another agent runs against it; run()'s `carry` list reads this module global
+# at call time.
+E._CARRY = E._CARRY + [c for c in (
+    "late4_share_1", "endgap_share_1", "played_thru_1", "chronic_missed_share",
+    "miss1_x_endgap", "miss1_x_resolved", "wk1_available", "wk1_reserve")
+    if c not in E._CARRY]
+
 OUT = _REPO / "experiments" / "bottomup" / "results"
 HOLDOUT_SEASON = 2025
 BOOT_REPS, BOOT_SEED = 4000, 20260801
 #: campaign multiplicity at grading time: Σ m_b = 56 (batches 5/6/7) + 16 (M2,
-#: incl. Amendment 1) + 12 (B1) = 84 > floor 80. Per the manifest README the
-#: batch ranks its own p-values against the campaign M.
-M_CAMPAIGN = 84
+#: incl. Amendment 1) + 20 (B1 incl. Amendment 1) = 92 > floor 80. Per the
+#: manifest README the batch ranks its own p-values against the campaign M.
+M_CAMPAIGN = 92
 Q_FDR = 0.10
 
 
@@ -67,15 +76,15 @@ def run_arm(panel, arm: str, positions: List[str], first_target: int,
             panel=panel, position=pos, first_target=first_target,
             last_target=last_target, min_train_seasons=2,
             avail_arm="A", calibrate_bonus=True, arm=arm,
-            feature_fn=(build_features_v2_proxy if arm == "G2"
+            feature_fn=(build_features_v2_proxy if arm == "G2a"
                         else build_features_v2),
-            allow_preseason_proxy=(arm == "G2"))
+            allow_preseason_proxy=(arm == "G2a"))
         players, _ = wf.run()
         aud = pd.DataFrame(wf.audit)
         assert (aud.max_feature_cutoff < aud.season).all(), f"{arm}/{pos} feature leak"
         assert (aud.max_outcome_season < aud.season).all(), f"{arm}/{pos} outcome leak"
         assert (aud.n_outcome_reads_at_target == 0).all(), f"{arm}/{pos} target read"
-        if arm != "G2":
+        if arm != "G2a":
             assert (aud.n_preseason_proxy_reads == 0).all(), f"{arm}/{pos} proxy read"
         assert players["season"].max() < HOLDOUT_SEASON, "HOLDOUT TOUCHED"
         players["position"] = pos
@@ -145,7 +154,9 @@ def contrasts(metrics: Dict[str, pd.DataFrame], positions: List[str]
     specs = [
         ("C-A", "G1", "rho_games", "G1", "rho_games_naive", "games ordering: G1 - naive"),
         ("C-B", "G1", "rho_points", "G0", "rho_points", "absolute quality: G1 - G0"),
-        ("C-C", "G2", "rho_points", "G1", "rho_points", "absolute quality: G2 - G1"),
+        ("C-A'", "G1a", "rho_games", "G1a", "rho_games_naive", "games ordering: G1a - naive"),
+        ("C-B'", "G1a", "rho_points", "G0", "rho_points", "absolute quality: G1a - G0"),
+        ("C-C", "G2a", "rho_points", "G1a", "rho_points", "absolute quality: G2a - G1a"),
     ]
     for cid, arm_a, col_a, arm_b, col_b, label in specs:
         if arm_a not in metrics or arm_b not in metrics:

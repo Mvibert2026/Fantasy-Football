@@ -28,6 +28,17 @@ G1_FEATURES = [
     "chronic_missed_share", "miss1_x_endgap", "miss1_x_resolved",
 ]
 WK1_FEATURES = ["wk1_available", "wk1_reserve"]
+#: batch-B1 Amendment 1 (registered before any G1a number): G1 plus the
+#: standalone lag-1 availability level the smoke showed G1 cannot express.
+G1A_FEATURES = G1_FEATURES + ["gshare_1"]
+
+#: arm → games-model feature list. G2-on-G1 was withdrawn before ever running
+#: (Amendment 1); G2a sits on the amended primary.
+ARM_FEATURES = {
+    "G1": G1_FEATURES,
+    "G1a": G1A_FEATURES,
+    "G2a": G1A_FEATURES + WK1_FEATURES,
+}
 
 
 def _weekshape_block(panel: V2Panel, f: pd.DataFrame,

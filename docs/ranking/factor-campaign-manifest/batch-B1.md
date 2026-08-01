@@ -63,6 +63,37 @@ concentrates where end-of-N−1 was ambiguous (long endgap). Downside registered
 C-B anywhere, the likeliest mechanism is variance added to healthy-veteran games projections —
 report it as such, do not re-tune post hoc.
 
+## Amendment 1, 2026-08-01 — registered after a two-position smoke of G1, before any amended arm ran
+
+**What had been seen when this was written (the peek, recorded verbatim):** G0/G1 cells for TE
+2018–2019 (n≈10/season) and RB 2018–2019 only. TE: G1 ρ_games 0.073 vs naive 0.477 (HARM on 2
+seasons). RB: G1 0.287 vs naive 0.277 (NULL), C-B −0.013 (NULL). Both arms project board veterans
+at median ~12 games against a realised median of 15 (level bias ≈ −2.6, spread compressed).
+Nothing else was computed; 2020–2024 unseen everywhere; QB/WR unseen entirely.
+
+**Mechanism, stated before the fix is run:** the §3 block cannot express "resolved absence still
+carries moderate risk." For a healthy veteran every timing feature collapses to the same point
+(miss1 = 0 kills both interactions), so within-healthy ordering is age noise; and a resolved-miss
+veteran's risk enters *only* through `miss1_x_resolved`, so if that coefficient is small his
+persistence information is discarded entirely — while naive `games_1` keeps it, which is exactly
+how naive wins ordering. The block lacks the standalone lag-1 availability level.
+
+**G1a (amended primary) = G1 + `gshare_1`. One added feature, nothing else changes.**
+**G2a = G1a + the §4 week-1 indicators** (replaces G2-on-G1, which is withdrawn *never having
+been run*; its 4 registered cells are re-pointed, not deleted).
+
+**m_b: 12 → 20.** Cells 1–8 (C-A, C-B on G1) stand and will be run and reported at full span —
+the registered-then-amended arm does not vanish. Cells 9–12 (C-C) become G2a − G1a. New cells
+13–16 (**C-A′**: G1a − GN, games ordering ×4 positions) and 17–20 (**C-B′**: G1a − G0, absolute
+quality ×4). Same bootstrap, same seed, same BH-at-campaign-M convention (M_campaign becomes 92
+with this batch's 20).
+
+**Amended predictions:** C-A′ wins at RB/WR/QB; TE likely unresolvable at n≈10/season. C-B′ wins
+at QB/RB. C-A (unamended G1) expected NULL-to-HARM — recorded so that outcome is a *confirmation
+of the stated mechanism*, not a surprise to be explained away. The board-veteran level bias
+(−2.6 games) is a named descriptive defect; its candidate fix (fit-population weighting) is NOT
+stacked into G1a and would be its own registered arm if pursued.
+
 ## Scope notes
 
 v2's ordering path reads no consensus/ADP/ECR column anywhere (ADR-069; the replaced v1 assembly

@@ -18,15 +18,15 @@ import pandas as pd
 from ..components.pos_model import (
     MODELS, QBComponentModel, RBComponentModel, ReceiverComponentModel,
 )
-from .features_v2 import G1_FEATURES, WK1_FEATURES
+from .features_v2 import ARM_FEATURES
 from .games_model import GamesGLM
 
 
 class _V2AvailabilityMixin:
-    """games_arm: 'G1' (week-shape block) or 'G2' (+ week-1 status)."""
+    """games_arm: 'G1' | 'G1a' | 'G2a' — see features_v2.ARM_FEATURES."""
 
     def _games_features(self):
-        return G1_FEATURES + (WK1_FEATURES if self.games_arm == "G2" else [])
+        return ARM_FEATURES[self.games_arm]
 
     def fit(self, feats: pd.DataFrame, outs: pd.DataFrame,
             rate_pool: Optional[Tuple[pd.DataFrame, pd.DataFrame]] = None):
@@ -71,7 +71,7 @@ def make_model(position: str, arm: str, **kwargs):
     """G0 = the unmodified incumbent (avail arm A). G1/G2 = v2 classes."""
     if arm == "G0":
         return MODELS[position](position=position, avail_arm="A", **kwargs)
-    if arm in ("G1", "G2"):
+    if arm in ("G1", "G1a", "G2a"):
         return V2MODELS[position](position=position, avail_arm="A",
                                   games_arm=arm, **kwargs)
     raise KeyError(f"unknown games arm {arm!r}")
