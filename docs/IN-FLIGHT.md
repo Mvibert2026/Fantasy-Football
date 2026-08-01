@@ -30,10 +30,27 @@ news of the day, and it has been replaced (**ADR-070**).
    founder's own inputs were adopted into it:** calibrated sign-consistency as a required condition,
    and the HARM split into **RE-SPECIFY** vs **EXCLUDE (variance)** — "a consistent signal pointing
    the wrong way is usable."
-3. **The structural finding, and the most valuable thing on the whole list: we only have 7 seasons.**
-   At S = 7, **no exact test of this kind can reach the significance bar by any method.** At 12 it
-   can. So *"how far back can the target span go"* (measurement **M-4**) is worth more than every
-   individual factor currently queued. **This is the first thing to spend Monday's budget on.**
+3. **The most valuable item on the whole list — and PM had it wrong until the founder challenged it.**
+   PM reported "we only have 7 seasons" as a structural finding. **It is a choice, not a limit.**
+   Measured 2026-08-01: `player_weekly_stats` covers **1999–2025** (475,626 rows);
+   `depth_charts_weekly` 2001–2024; `rosters_weekly` 2002–2025. **v2's evaluation panel is 2018–2024
+   only because it was built on the intersection with the latest-starting sources** (`odds_snapshots`
+   and `pfr_advstats_*` begin 2018, `ngs_*`/`participation` 2016, `snap_counts` 2013). We let the
+   newest feature set the window for the entire model.
+
+   This matters because it is exactly the constraint strategist named as binding: at S = 7 **no exact
+   season-level randomisation test can reach a BH threshold by any method**; at 12 it can. **We have
+   up to 26.** Staggered feature availability is normal and is handled per-feature (matched windows,
+   indicator-and-interaction, or per-era fits) — never by truncating the panel.
+
+   The one genuine caveat is `CLAUDE.md` §6.4 non-stationarity, and it is **an empirical question, not
+   a reason to stop**: measure where the span stops helping, per position, and report the curve.
+   **Report what the span *can* be (a data fact) and what it *should* be (a measured result)
+   separately — do not let the second silently become an argument for the status quo.**
+
+   Dispatched to `ranker` as measurement **M-4**, thread
+   `docs/handoffs/2026-08-01-m-1-m-6-the-measurements-the-replacement-inclusi.md`. **First call on
+   Monday's budget.**
 4. **Factor inclusion: 6 of ~95 tested against v2, none included.** Snap share, red-zone usage, xFP,
    NGS separation, route participation, steeper recency. The four sources this repo has long called
    "in the database and untouched" do not improve v2's ordering. C1 now **re-grades** under ADR-070 —
