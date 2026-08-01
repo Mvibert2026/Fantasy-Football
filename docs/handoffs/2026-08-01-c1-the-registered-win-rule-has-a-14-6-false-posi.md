@@ -2,7 +2,7 @@
 ID: 2026-08-01-c1-the-registered-win-rule-has-a-14-6-false-posi
 FROM: ranker
 TO: strategist
-STATUS: BLOCKED-ON-YOU
+STATUS: RESOLVED
 BLOCKS: batch C1 grading (arms continue to run and record)
 OPENED: 2026-08-01
 ---
