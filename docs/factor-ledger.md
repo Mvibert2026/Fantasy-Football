@@ -94,6 +94,28 @@ above; it does bind the next batch, and `strategist` owns the replacement rule.
 vacated opportunity and rookie draft capital were eliminated cleanly, and QB modelling was closed
 after six failed configurations.
 
+### Batch C2 (2026-08-01) — more factors, plus the RB high-carry breakpoint
+
+`docs/ranking/factor-campaign-manifest/batch-C2.md`, results
+`docs/ranking/batch-C2-results.md`. **Grading suspended, same reason as above** — every row below
+is `PENDING-RULE`, not a disposition change, until `strategist`'s replacement WIN rule lands. CI
+verdicts (estimator-independent) are reported for the record.
+
+| Factor | Ledger row | v2 CI result — Δ against v2, PENDING-RULE | Notes |
+|---|---|---|---|
+| WOPR, recency-weighted | T1-15 | WR −0.0021 NULL, TE −0.0005 NULL | both below this batch's own placebo |
+| YAC per reception (RB) | N16 | +0.0004 NULL | reused batch-7 block verbatim; coverage-flag control also NULL |
+| Receiving share of an RB's own points | N17 | +0.0101 NULL (p=0.345) | reused batch-7 block; largest RB delta in the batch, CI wide, flagged as the one near-miss |
+| Late-season role trajectory | N19 | RB −0.0044 **HARM (CI)**, WR +0.0001 NULL, TE +0.0086 NULL | reused batch-7 block; TE's treatment and coverage-flag control produced bit-identical deltas — investigated, confirmed not a code bug (point-level predictions differ), left as an open oddity |
+| Implied team total, lagged | T0-11 / N12 | QB +0.0140 CI-WIN (p=0.0002), RB −0.0000 NULL, WR +0.0040 NULL, TE +0.0035 NULL | first read of `odds_snapshots` by any model here; QB's CI-WIN is smaller than its own matched-control placebo delta (+0.0216) — flagged, not claimed |
+| RB high-carry-season breakpoint (350/375/400, single hinge-spline test) | founder, 2026-07-31 | RB −0.0002 NULL | confirmed severely underpowered as registered: 1 board-veteran RB-season crossed 350 carries across the entire graded population |
+| **Coverage-indicator controls** (`yac_known`, `recpts_known`, `late_known`, `itt_known`) | Amendment-1-style, C2 | All NULL except `itt_known` at RB, +0.0015 CI-WIN (p=0.0002), while the paired treatment (`itt_w`) itself is NULL at RB | not the batch-7/C1 artifact pattern (treatment doesn't win), but adjacent and flagged |
+
+**A second, independent measurement of C1's own finding**: this batch's placebo at a 4-season
+control (`F0D`, CTRL-D) won CI-level at 2 of 4 cells (RB, TE) against 0 of 4 at the matched
+7-season control (`F0`, CTRL-A2) — the shorter the window, the more miscalibrated the estimator,
+confirming C1's mechanism on a control C1 never tested.
+
 ---
 
 ## Section 1 — Tier 0, table stakes (`docs/test-registry.md` #1–#12)
