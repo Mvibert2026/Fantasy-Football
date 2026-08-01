@@ -55,9 +55,25 @@ Also: availability being identical across the UI's selectable board sources is *
 behaviour, mislabelled as a gap** — opponents do not change because the user changed lenses. Log
 §M2-2.
 
+**6 · M2-3 recommender: the two "contradictory" findings are both right, about different
+quantities, and the board is being read as something it is not.** Season VBD is a value *stock*
+(points over replacement if the season goes as projected); a pick recommendation is a *policy*
+(value now minus what the pick forgoes later). Allen can genuinely be the #6 season value AND
+taking a QB in rounds 1–3 can genuinely cost −115 points (PR-003, 12/12 cells) — because QB value
+is cheaply available later (the QB premium collapsed −67→−4) while pick-6 RB/WR value is not.
+The category error is presenting a season-value order as a pick order; the −25 constant is a
+hand patch over exactly that error. **Spec: score = VBD − E[best same-position VBD at your next
+pick], with the expectation from the calibrated availability model — and this must be registered
+and simulated before shipping, because PR-008 already measured a VONA variant with a crude
+scarcity input LOSING to plain VBD by ~−106 to −126.** Opportunity-cost logic is only as good as
+the survival model under it, which is why the founder's build order (availability before
+recommender) is correct. Interim: run PR-007 as registered — it is the founder's own direct ask
+("we need to test those adjustments"), it has sat unrun for three days while ~90 factor tests
+ran, and it is powered to delete. Log §M2-3.
+
 ## TOKENS USED
 
-~330k of context consumed at this update (estimate from context size; no meter; ±20%).
+~390k of context consumed at this update (estimate from context size; no meter; ±20%).
 
 ## STATUS
 
@@ -66,8 +82,8 @@ behaviour, mislabelled as a gap** — opponents do not change because the user c
 | Frame question (founder's) | **RULED** — log §F |
 | M2-1 rankings | **DONE** — log §M2-1, recommendations §M2-1-REC |
 | M2-2 availability | **DONE** — log §M2-2 |
-| M2-3 recommender | starting next |
-| M2-4 campaign correction | not started (partial evidence already in F4) |
+| M2-3 recommender | **DONE** — log §M2-3 |
+| M2-4 campaign correction | starting next |
 | M2-5 nulls: findings or symptoms | not started (frame ruling covers most) |
 | M2-6 the clean PR-009 result | not started |
 
@@ -394,3 +410,71 @@ rooms accumulate, per-mock, never pooled; (5) the dispersion ladder is mocks →
 `times_drafted` until FFC documents it. **September 7: availability at "calibrated to his real
 league" is not earnable (0 Westwood drafts exist, the first arrives that day); availability at
 "fitted to N observed Yahoo rooms with the population caveat labelled" is earnable in days.**
+
+### 2026-08-01 · M2-3 — the recommender: adjudication and specification
+
+Verified this run: `recommendation.ts` ordering is `vbd + 8·unfilled_need + 18·tier1_te −
+25·early_qb`, availability appears nowhere in the ordering path (survival is display-side);
+PR-007 (the constants ablation the founder asked for on 2026-07-29) is registered, frozen — and
+has **zero entries in `test_run_log.jsonl`**: never run. PR-003 ran 2026-07-25 (early-QB −115.4
+[−176.3, −54.4] at σ=10 from slot 3, negative 12/12; elite-TE-early −96.1, negative 12/12).
+PR-008 ran 2026-07-30: gap-aware vs gap-blind VONA NULL on outcome, 100% decision divergence —
+and its third finding is the important one here: **the VONA formulation tested (share-based
+scarcity estimate) underperformed plain VBD by −106.4 [−182.4, −54.3] (σ=10) and −126.0
+[−214.5, −69.2] (σ=20)**, CIs excluding zero, not BH-surviving at n=4 but directionally
+consistent.
+
+**Q — can the board's Allen-at-6 and PR-003's early-QB-costs-115 both be right? Yes, and the
+resolution dissolves the "contradiction."** They measure different objects:
+
+| object | question it answers | Allen |
+|---|---|---|
+| Board VBD (stock) | if the season goes as projected, points over a static replacement level | legitimately top-6: he outscores QB10-replacement by more than pick-6 RB/WRs outscore theirs |
+| Draft policy (flow) | what does spending *this pick* here cost across the whole draft | taking QB in rounds 1–3 costs ~115 points, because QB8-QB12 are nearly free later (QB curve slope −67→−4) while pick-6 RB/WR value is gone by round 3 |
+
+A static replacement level prices players against *end-of-draft* replacement; a pick prices
+against *what you can still get at your next turn*. Presenting the season-value order as a pick
+order is the category error; the −25 is a hand patch over it, and — contra PR-007 §8.2's
+"probably redundant" premise — it patches in the *correct measured direction*: fr136 §2 measured
+the shipped board *lifting* elite QBs ~+20 places vs consensus (Allen +20, Lamar +20), not
+suppressing them. Deleting the −25 without fixing the underlying error would make the
+recommender *more* QB-forward in rounds 1–5, the exact direction PR-003 measured as the costliest
+tested. **PR-007's §9 prediction table should be read with that premise correction attached; the
+design itself is unaffected (it measures rather than assumes).**
+
+**The specification** (what the ordering rule should be):
+
+```
+score(i) = VBD(i) − E[ max VBD among same-position players available at my next pick ]
+```
+
+- The expectation comes from the availability model's per-player survival probabilities — after
+  M2-2's M3 calibration, and closed-form in prep mode, so this is arithmetic, not simulation.
+- Need enters through what it actually is: the marginal starter slot changes *which* VBD is
+  decision-relevant (your second QB is worth ~nothing; your third WR is a starter in this
+  league). `_legal_mask` already enforces the hard floor; the +8 flat bonus is superseded by
+  slot-marginal VBD rather than deleted-and-forgotten.
+- The +18 tier-1 TE constant points at the top of the position while the project's own evidence
+  (elite_te_early −96.1 12/12; the TE7–10 mispricing window) points at the middle. Its
+  disposition belongs to PR-007 as registered.
+
+**The caution, from the project's own measurement:** PR-008 is direct evidence that
+opportunity-cost reasoning with a *bad* survival input is worse than no opportunity-cost
+reasoning at all — reaching on phantom scarcity. So the spec above is a *registered-test
+candidate*, not a shipping instruction: it ships only after beating plain VBD in the same
+paired-simulation harness (new PR, m accounted, same +20-point materiality floor PR-003/007 use).
+If it cannot beat plain VBD with calibrated survival, plain VBD is the recommender and that is a
+fine, honest product.
+
+**Order of operations for the 37 days:** (1) run PR-007 as registered — days, answers the
+founder's direct ask, powered to delete; expected outcome collapses the panel to VBD order.
+(2) M3 λ calibration (M2-2) → closed-form survival. (3) Register and run the VONA-with-calibrated-
+survival arm against plain VBD. (4) Product surface: stop presenting the overall board order as a
+pick order — either label it season value or show the opportunity-adjusted pick score once (3)
+lands. The recommendation card's honesty fixes (2026-07-30) already stopped the card *narrating*
+availability it does not use; step (3) is what makes it actually use it.
+
+**September 7:** a recommender that *demonstrably beats plain VBD* is earnable only if (1)–(3)
+run clean on the first pass — tight but real. A recommender that is *honest* (VBD order, no
+unfitted constants, correctly-labelled availability) is earnable in under a week and is already
+strictly better than what ships.
