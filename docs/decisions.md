@@ -3235,3 +3235,62 @@ no backtest or historical season read.
 **Handoff:** `frontend` thread describing the new fields/files (contract version bump, per
 CLAUDE.md's contract-change rule); reply appended to the M0-M5 availability thread noting the
 interaction and this session's scope decision.
+
+## ADR-069 — The bar is absolute quality, not edge over consensus: rankings are built independent of consensus and portable across league scoring (2026-08-01, pm, founder ruling)
+
+**Status:** Accepted. Written into `CLAUDE.md` as new §2a, with a scope amendment to §6.5 and a new
+schema principle in §4. Source: `docs/founder-requests/FR-2026-08-01-bar-is-absolute-quality-not-edge-build-rankings.md`.
+
+**Context.** Fable's M2 review (`docs/fable/M2-findings.md` §F1-F7) ruled that the campaign's
+measurement frame was asking a question it could not answer in the affirmative: "can we beat
+consensus" was being asked of an object *derived from* consensus. The shipped board is consensus
+re-scored — within-position identical to consensus, deviating only cross-positionally through four
+slopes and four replacement ranks. ~90 factor nulls therefore carry far less information than they
+appeared to, and the correction resurrects no dead factor.
+
+The founder's response was not a better test. It was to stop deriving from consensus and stop
+steering by it:
+
+> "Our bar is not consensus. It's how good can our rankings be. When we think they are as good as
+> they'll get ... then we can test vs the other three models like consensus, consensus adjusted and
+> ADP etc."
+
+**Decision — three binding consequences.**
+
+1. **Consensus is not an input.** The ranking is built from player-level projections, not by
+   re-scoring another party's order. The current board is replaced, not extended.
+2. **Consensus is not the development signal.** Absolute quality against realised outcomes steers
+   the build. §6.5's four baselines become a **release gate run once when a version is declared
+   finished**, not a per-arm steering metric.
+3. **Projections are stored and computed as stat lines, never as fantasy points.** Volume,
+   efficiency and games per player; points derived by applying a league's scoring config; ranks by
+   applying its roster shape to obtain replacement levels. Changing league scoring must re-score and
+   re-rank **without re-fitting**.
+
+**Why (1) and (3) are one requirement, not two.** A board whose within-position order comes from
+consensus cannot respond to league scoring at all — consensus is produced for a generic 12-team
+full-PPR room, so this league's half-PPR, stacking yardage bonuses (§7) and 10-team replacement
+levels cannot reach the ordering by any route. Scoring portability is achievable only *through*
+independence. The corollary matters for planning: the current board **structurally cannot** deliver
+the portability the founder asked for, so this is not optional polish.
+
+**§6.5 is not weakened.** A version that fails the four-baseline gate still has no edge and is still
+reported as a failure in exactly the terms §6.5 requires. Only the *timing* of the question changed,
+so that development is not implicitly optimising toward the benchmark it is meant to be independent
+of. Overfitting protection during development remains the sealed 2025 holdout (§6.3), registered
+thresholds, and the campaign-level `M` — the consensus gap never provided that protection and was
+not doing so.
+
+**Named risk, recorded in advance.** v1's rate projections are already at or better than market
+parity; its entire measured deficit is one channel — **projected games** (Fable M2-1). That is also
+where consensus's real advantage lies: it knows who is going to play. Independence therefore stands
+or falls on building an own player-availability model from injury history, age, workload and
+pre-Week-1 status (resolved vs ongoing absence — the Burrow/Hill defect class). **Distinct from
+*draft* availability despite the shared word.**
+
+**Consequences.** Core of the Monday Fable builder mandate
+(`FR-2026-08-01-turn-the-keys-over-to-fable-to-build-the-next-bo`), priority order: stat-line
+projection architecture, then player availability, then rates. PR-007 is unaffected. Any existing
+document reporting a result as "no edge over consensus" during component development is now
+mislabelled per §6.5's 2026-07-31 scope ruling and this one; corrections route through the owning
+role, not by edit-in-place from whoever notices.

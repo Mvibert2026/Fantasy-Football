@@ -68,6 +68,45 @@ Availability's own inputs, in the founder's order: **ADP, then how the draft has
 then opponents' needs.** The middle one is what justifies simulating at all — with ADP plus
 per-player dispersion the unconditional marginal is nearly closed-form.
 
+### 2a. The bar is absolute quality, not edge — founder's ruling, 2026-08-01
+
+> "Aka independent of consensus. Create the best draft rankings we can that could be easily applied
+> to different league scorings by updating points. Our bar is not consensus. It's how good can our
+> rankings be. When we think they are as good as they'll get (any and all components in it that need
+> to be), then we can test vs the other three models like consensus, consensus adjusted and ADP etc."
+
+This resolves the frame problem Fable ruled on the day before (`docs/fable/M2-findings.md` §F1–F7):
+"can we beat consensus" was being asked of an object *derived from* consensus, which is close to
+structurally incapable of returning a win.
+
+**Three things follow, and they are binding.**
+
+1. **Consensus is not an input.** The ranking is built from player-level projections, not by
+   re-scoring someone else's order. The shipped board today is consensus re-scored — within-position
+   identical to consensus, deviating only cross-positionally — and that is the thing being replaced,
+   not extended.
+2. **Consensus is not the development signal.** During build, measure *absolute* quality against
+   realised outcomes. The four-baseline comparison in §6.5 is a **release gate run once at the end**,
+   not a per-arm steering metric. An arm that improves absolute quality is an improvement even if the
+   gap to consensus does not move.
+3. **Projections output stat lines, not points.** Volume, efficiency and games per player; fantasy
+   points are then computed by applying a league's scoring config (§7) to those stat lines, and
+   replacement levels by applying its roster shape. **Changing league scoring must re-score and
+   re-rank without re-fitting anything.**
+
+**Why (1) and (3) are the same requirement.** A board whose within-position order comes from
+consensus *cannot* respond to league scoring, because consensus was produced for a generic 12-team
+full-PPR room. Half-PPR, the stacking yardage bonuses, and 10-team replacement levels cannot reach
+the ordering through a consensus-derived board at all. Scoring portability is therefore not a
+nice-to-have bolted on later — it is only achievable by building independently in the first place.
+
+**The hard part, named in advance so it is not discovered late.** v1's rate projections are already
+at or better than market parity; its entire measured deficit sits in one channel — **projected
+games** (Fable M2-1). That is also the channel where consensus's advantage is real: what consensus
+knows that we do not is *who is going to play*. Independence therefore stands or falls on building
+our own answer to player availability from injury history, age, workload and pre-Week-1 status.
+Distinct from *draft* availability (§2's question 2) despite the shared word — do not conflate them.
+
 ---
 
 ## 3. Build order
@@ -112,6 +151,11 @@ Steps 1–3 are infrastructure and can be built now. Step 4 depends on the facto
   depth charts, and odds. Without it, look-ahead bias is unavoidable (see §6).
 - **Store a `season_weight` / recency-adjustment field from the start.** Trend regimes shift;
   flat historical averaging is a known failure mode.
+- **Projections are stored as stat lines, never as fantasy points** (§2a, 2026-08-01). Volume,
+  efficiency and games per player; points are derived by applying a league's scoring config, and
+  ranks by applying its roster shape to get replacement levels. A projection table with a `points`
+  column and no stat columns has silently hardcoded one league's rules into the model and cannot be
+  ported by changing config — which is the whole requirement.
 
 ### Core tables (starting shape, expect refinement)
 
@@ -225,6 +269,15 @@ the other, report exactly that — not the flattering half.
 component of an unshipped model is not a ranking version and is not bound by it — that
 misapplication ran through seven factor batches, labelling an arm-vs-primary-model comparison as the
 consensus bar.
+
+**When it fires, ruled 2026-08-01 (see §2a):** §6.5 is a **release gate, run once when a ranking
+version is declared finished** — not a steering metric consulted per arm during development. Build
+against absolute quality measured on realised outcomes; run the four baselines at the end. This does
+not weaken the rule: a version that fails §6.5 still has no edge and must be reported as a failure,
+in exactly the terms above. It changes only *when* the question is asked, so that development is not
+implicitly optimising toward the very benchmark it is supposed to be independent of. The
+overfitting protection during development is the sealed holdout (§6.3), not the consensus gap —
+the consensus gap never provided that protection and was not doing so.
 
 ### 6.6 Evaluation metrics
 
