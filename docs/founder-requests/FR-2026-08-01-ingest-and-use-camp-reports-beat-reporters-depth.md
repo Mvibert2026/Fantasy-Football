@@ -93,17 +93,40 @@ entity-resolution layer is the hard part and the reusable part. Once it exists:
 | The in-app assistant | "Why is this player ranked here" answered with current evidence |
 | Deviation diagnostic (`FR-2026-08-01-respectability-check...`) | The *reason* attached to a large consensus disagreement |
 
-**Consequence for sequencing.** The two-phase order in the Initial read stands for *modelling* --
-structured injury/practice data is backtestable and news is not -- but it should **not** gate
-*capture*. Two independent arguments:
+**Consequence for sequencing — SUPERSEDED by the founder's ruling below. Retained so the reasoning
+is visible, but do not act on it.** PM argued that the two-phase order should govern *modelling*
+only and should not gate *capture*, on two grounds: (1) the archive cannot be built retroactively, so
+every uncaptured day is permanently missing; (2) the pipeline's justification does not rest on the
+ranking result, since four other consumers need it regardless — so a NULL against v2 must not be read
+as "not worth building."
 
-1. **The archive cannot be built retroactively.** Value compounds with running time; every day not
-   captured is permanently missing. Capture should start well before any model consumes it -- the
-   reverse of the usual build order.
-2. **Its justification does not rest on the ranking result.** If a news arm returns NULL against v2,
-   the pipeline is still required by four other consumers. So a null must not be read as "the news
-   pipeline was not worth building" -- a mistake this project is currently primed to make, having
-   just spent a campaign reading nulls as verdicts.
+### FOUNDER'S RULING, 2026-08-01 — exhaust the measurable first
+
+> "We should do as much modeling without news as possible. It's harder to measure and a bit more
+> discretionary. Once we've exhausted that we'll bring in the news."
+
+**This governs. News work — capture and modelling both — is deferred until the measurable programme
+is exhausted.** His reasoning is on the merits, not on cost: news is harder to measure and more
+discretionary, and mixing a weakly-measurable input into a model whose grading rule has just been
+shown to award wins to pure noise (batch C1) would make everything downstream harder to trust.
+
+**"Exhausted" needs a definition or it becomes arguable later. Proposed, pending his correction:**
+
+1. All ~95 `docs/factor-ledger.md` candidates dispositioned **against v2** — not against the old
+   consensus-derived board. **6 of 95 as of 2026-08-01** (batch C1).
+2. Threshold / breakpoint tests run as a class (batch C2, dispatched 2026-08-01).
+3. The discovery pass complete and its candidates confirmed or dropped
+   (`docs/ranking/discovery-pass-1.md`, dispatched 2026-08-01).
+4. The structured availability model built and measured — injuries, practice participation, depth
+   charts (dispatched to `ranker` 2026-08-01). **This is the news-adjacent signal in backtestable
+   form and it is explicitly inside the measurable programme, not deferred with news.**
+5. A valid inclusion decision rule in place (blocked on `strategist`; the registered one awards a WIN
+   to pure noise on 9.6% of cells).
+
+**The one fact that does not go away and should be re-raised when this comes back, not now:** the
+archive is not retroactively buildable, so the cost of deferring capture is a permanently missing
+window, not a delay. The founder has heard this argument and ruled; it is recorded here rather than
+repeated at him.
 
 **Still non-negotiable when built:** timestamp at capture (capture date is the only honest `as_of`),
 and report any news-derived model signal as **2026-forward and unvalidated**, never alongside
