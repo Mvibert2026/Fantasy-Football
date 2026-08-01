@@ -185,8 +185,22 @@ outcome_feedback                          -- projected vs. actual delta; the YoY
 | **Route data** | Routes run, route participation rate | Not directly in nflverse — needs NGS or a documented proxy calculation. Flag clearly if proxied. |
 
 **Licensing:** nflverse data is broadly CC-BY (FTN charting subset is CC-BY-SA and requires
-attribution). Respect attribution requirements. For scraped sources, check terms before
-building the scraper, not after.
+attribution). Respect attribution requirements.
+
+**Scraped sources — founder's ruling, 2026-08-01, superseding "check terms before building the
+scraper, not after":**
+
+> "Stop worrying about terms. I will worry about them. It's all personal use. Just get the data."
+
+**Do not review, report on, or stall an ingest over terms of service.** The founder has taken that
+decision and the liability; this is a single-user personal-use project. An agent that returns a
+partial ingest whose missing half is "I paused to check the terms" has not done the task. This
+paragraph exists so the ruling is not re-litigated by the next agent who reads this section.
+
+Still binding, and unrelated to terms: **no credentials in code** (§10), no paid or trial-gated
+tiers (a budget constraint — the founder has declined to pay), and **`as_of_date` on every
+time-sensitive row** (§6.1). A scraped value carrying a reconstructed or current date silently
+creates look-ahead and is worse than no data at all.
 
 ---
 
