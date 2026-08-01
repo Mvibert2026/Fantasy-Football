@@ -69,3 +69,45 @@ the usual order.
 
 **Note on terms:** the founder ruled 2026-08-01 (`CLAUDE.md` §5) that terms review is his concern,
 not an agent gate. That ruling applies here.
+
+## Addendum, same day -- the news pipeline is shared infrastructure, not a ranking feature
+
+Founder, on being told the news layer would be sequenced second:
+
+> "Also why our news feed and player tagged news is important. We need the backbone for it for
+> rankings anyway. Everything we need for rankings will drive lots of other features."
+
+**This changes the scoping, and he is right.** PM had framed player-tagged news as an *input to the
+ranking model*, to be justified by whether it improves rank correlation. That framing
+under-values it and would get it built wrong -- narrowly, as a feature column, rather than as a
+pipeline.
+
+**The piece every consumer needs is the same piece: news reliably resolved to a `player_id`.** That
+entity-resolution layer is the hard part and the reusable part. Once it exists:
+
+| Consumer | What it uses |
+|---|---|
+| Ranking / availability model | Injury and status signal, dated at capture |
+| Draft room | "News since you last looked" on the board and on the pick recommendation |
+| In-season management (Phase 3) | Start/sit, waiver, and injury alerts -- the whole surface |
+| The in-app assistant | "Why is this player ranked here" answered with current evidence |
+| Deviation diagnostic (`FR-2026-08-01-respectability-check...`) | The *reason* attached to a large consensus disagreement |
+
+**Consequence for sequencing.** The two-phase order in the Initial read stands for *modelling* --
+structured injury/practice data is backtestable and news is not -- but it should **not** gate
+*capture*. Two independent arguments:
+
+1. **The archive cannot be built retroactively.** Value compounds with running time; every day not
+   captured is permanently missing. Capture should start well before any model consumes it -- the
+   reverse of the usual build order.
+2. **Its justification does not rest on the ranking result.** If a news arm returns NULL against v2,
+   the pipeline is still required by four other consumers. So a null must not be read as "the news
+   pipeline was not worth building" -- a mistake this project is currently primed to make, having
+   just spent a campaign reading nulls as verdicts.
+
+**Still non-negotiable when built:** timestamp at capture (capture date is the only honest `as_of`),
+and report any news-derived model signal as **2026-forward and unvalidated**, never alongside
+backtested factors without that caveat.
+
+**Not dispatched.** Scoping note only -- the founder has not asked for it to be built yet, and
+`ranker` is on the structured availability model first.
