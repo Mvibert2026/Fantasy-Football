@@ -106,8 +106,24 @@ branches are merged.** Procedure in `docs/environment.md` §4b; each costs ~0.9�
    `docs/handoffs/2026-08-01-m-1-m-6-the-measurements-the-replacement-inclusi.md` (`TO: ranker`).
    Everything else is rate-limited by S = 7. Do this first.
 2. **Merge and read whatever the four agents landed.** Their files, not their absence, are the record.
-3. **Re-grade batch C1 under ADR-070** — build null ensembles only; do not re-run arms.
-4. **Resume factor inclusion**, now on a rule whose error rates are pre-committed (HYPOTHESIS ≤ 5.0%,
+3. **Do NOT re-grade C1 until the span is settled.** Founder, 2026-08-01: *"We have a lot of new rules
+   and tests. We probably are going to have to retest factors with the new rules."* Correct — and
+   there are **two distinct retests with very different costs**, which must not be conflated:
+
+   | Trigger | What it requires | Cost |
+   |---|---|---|
+   | **Rule change** (ADR-070) | Arms do **not** re-run; only null ensembles get built | Moderate |
+   | **Panel change** (7 → up to 26 seasons) | **Everything re-runs** — it is a different dataset | High |
+
+   Re-grading C1 on the 2018–2024 panel now is work thrown away the moment M-4 lands. **Settle the
+   span first, then re-run and grade once**, under ADR-070, on the final panel. This also applies to
+   batch B1 (fable's games arms) and to whatever C2 and the availability batch produce today.
+
+4. **Honest accounting until that happens: 0 of ~95 factors are dispositioned under final
+   conditions**, not 6. C1's six were measured on a rule now withdrawn *and* a panel about to change.
+   Do not carry "6 of 95" forward as though it were settled.
+
+5. **Then resume factor inclusion**, on a rule whose error rates are pre-committed (HYPOTHESIS ≤ 5.0%,
    any INCLUDE/EXCLUDE across an all-null 20-cell batch ≤ 1.3%) — and **verify them empirically the
    way C1 verified its predecessor.**
 5. Carry a **placebo arm in every batch, permanently.** It is the only reason today's failure was
