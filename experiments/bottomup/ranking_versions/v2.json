@@ -1,0 +1,74 @@
+{
+  "version_id": "bottom-up-v2",
+  "created": "2026-08-01",
+  "owner": "fable (build mandate B1); strategist reviews before ship",
+  "status": "ran-2026-08-01; graded per batch-B1 + Amendment 1",
+  "games_arm_state": {
+    "default": "G0 (G1/G1a rejected by their registered adoption rules: 0 WIN, 1 BH-robust WR HARM each on downstream quality)",
+    "conditional": "G2a passed 3 WIN / 0 HARM; adoption pends the strategist as-of ruling on week-1 roster status (thread 2026-08-01, fable->strategist)",
+    "mandate_bar": "games ordering beats naive persistence: earned at RB only (G1a +0.084, BH-robust); QB/WR/TE unresolved"
+  },
+  "precommit": "docs/ranking/factor-campaign-manifest/batch-B1.md",
+  "mandate": "docs/fable-mandate-B1-2026-08-01.md",
+  "immutable_once_run": true,
+  "_note": "ADR-069 binds this version: no consensus input anywhere in the ordering path; steering metric is absolute quality vs realised outcomes; CLAUDE.md 6.5's four-baseline comparison is a release gate run later, by someone other than fable, and is deliberately absent from this config.",
+
+  "engine": {
+    "module": "experiments.bottomup.v2.run_v2",
+    "harness": "experiments.bottomup.components.pos_eval.WalkForward (subclassed for model construction only; gates and audit inherited)",
+    "first_target": 2018,
+    "last_target": 2024,
+    "min_train_seasons": 2,
+    "calibrate_bonus": true,
+    "positions": ["QB", "RB", "WR", "TE"]
+  },
+
+  "ordering_path": {
+    "rule": "sort by proj_points computed from stat lines under the league scoring config; ties by player_id for determinism",
+    "consensus_inputs": "none — no ADP, no ECR, no rank-space assembly, no rookie pinning",
+    "rookies": "own sub-model (log_draft_pick + age, April-of-N information); flagged entry=rookie in the artifact; excluded from graded cells; quality reported descriptively and honestly"
+  },
+
+  "games_component": {
+    "arms": {
+      "G0": {"kind": "v1_ols_arm_A", "role": "control"},
+      "GN": {"kind": "naive_persistence_games_1", "role": "baseline, component-level bar"},
+      "G1": {"kind": "binom_glm_weekshape", "role": "primary candidate",
+             "features": ["late4_share_1", "endgap_share_1", "played_thru_1", "gshare_w",
+                          "gshare_max3", "present_1", "evidence", "age", "age2",
+                          "chronic_missed_share", "miss1_x_endgap", "miss1_x_resolved"],
+             "fit": "binom_glm(logit, ridge 1e-4) on (games, season_len), veteran training rows, per position, features standardised on training rows"},
+      "G2": {"kind": "G1_plus_week1_status", "role": "secondary; proxy-tagged",
+             "extra_features": ["wk1_available", "wk1_reserve"],
+             "adoption_conditional_on": "strategist as-of ruling (week-1 status postdates a late-August draft by days)"}
+    },
+    "adoption_rules": "batch-B1.md, fixed before fitting"
+  },
+
+  "stat_line_artifact": {
+    "file": "experiments/bottomup/results/ranking_v2_<arm>_players.csv",
+    "columns_contract": "player_id, season, position, entry, proj_games, per-game and per-season volumes (targets/receptions/rec_yards/rec_tds/carries/rush_yards/rush_tds/attempts/pass_yards/pass_tds/interceptions/fumbles_lost), p_<fam>_<t> exceedance probabilities, proj_points_base, proj_bonus_points, proj_points, plus realised outcome columns for evaluation only",
+    "scoring_layer": "experiments/bottomup/v2/scoring_layer.py:score_stat_lines(df, scoring_cfg) — pure arithmetic on stored columns; contains no fit call by construction",
+    "portability_demo": {
+      "configs": ["westwood_half_ppr_bonuses (CLAUDE.md 7)", "full_ppr_no_bonuses", "standard_no_ppr_6pt_pass_td"],
+      "claim_demonstrated": "same stat lines, different scoring config, different within-position order, zero refits",
+      "limitation_stated": "bonus thresholds outside the modelled families (rec/rush 100/150/200, pass 300/350/400) need their own exceedance GLM — a stat-data fit, not a league fit; not built in B1"
+    }
+  },
+
+  "evaluation": {
+    "steering_metric": "spearman_rho_vs_realised_season_points, absolute, per (position, season); comparisons only between own arms (G-family) — never vs any crowd during development",
+    "population": "M-panel veterans (FFC ADP membership defines the evaluation subset only; the column is never a feature and never an ordering input); full universe and rookies descriptive",
+    "seasons": [2018, 2024],
+    "bootstrap": {"unit": "season", "reps": 4000, "seed": 20260801},
+    "family": {"manifest": "docs/ranking/factor-campaign-manifest/batch-B1.md", "m_b": 12,
+               "correction": "BH at campaign denominator, floor 80 per manifest README"},
+    "cross_positional": {
+      "measured_by_this_design": false,
+      "_note": "replacement levels from roster shape (10-team, 1QB/2RB/3WR/1TE/2FLEX) apply downstream of stat lines; not graded in B1 and must not be claimed as tested"
+    }
+  },
+
+  "holdout": {"season": 2025, "sealed": true, "touched": false,
+              "founder_restated": "2026-08-01: Don't unlock 2025"}
+}

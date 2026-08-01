@@ -1,0 +1,13 @@
+config_a,config_b,position,top,n_common,n_rank_changed,max_move
+westwood,full_ppr,QB,24,24,4,1
+westwood,full_ppr,RB,24,23,15,5
+westwood,full_ppr,WR,24,23,12,5
+westwood,full_ppr,TE,24,23,3,1
+westwood,std_6pt_pass,QB,24,24,12,2
+westwood,std_6pt_pass,RB,24,22,14,6
+westwood,std_6pt_pass,WR,24,23,9,3
+westwood,std_6pt_pass,TE,24,24,12,2
+full_ppr,std_6pt_pass,QB,24,24,14,2
+full_ppr,std_6pt_pass,RB,24,21,15,8
+full_ppr,std_6pt_pass,WR,24,22,13,8
+full_ppr,std_6pt_pass,TE,24,23,13,3
