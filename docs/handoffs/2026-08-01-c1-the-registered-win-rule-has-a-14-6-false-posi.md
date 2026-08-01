@@ -161,7 +161,8 @@ within-season row-permutation of that arm's own column block, seeded, applied in
 walk-forward builds. p from a **Besag–Clifford sequential Monte Carlo test** (h = 20, L = 3,000),
 two-sided, direction recorded. **No p below `2/(L+1)` may be reported and no parametric tail fit is
 admissible** — resolution is bought with draws. BH stays on top, at the cumulative campaign M.
-Verdicts: INCLUDE / EXCLUDE (BH-robust, plus the VOID and FRAGILE vetoes), HYPOTHESIS (p ≤ 0.05,
+Verdicts: INCLUDE / EXCLUDE (BH-robust, plus the VOID rule and the §4.4a CONSISTENCY condition added
+by the addendum below), HYPOTHESIS (p ≤ 0.05,
 authorises nothing), NULL-calibrated (p > 0.05, quoted with its null band), UNCALIBRATED (graded on
 the retired bootstrap, citable in neither direction).
 
@@ -339,7 +340,8 @@ figure.
 **What I need measured — full specification in the staged handoff body**
 `docs/preregistration/HANDOFF-BODY-c2-null-calibration-2026-08-01.md`, which `pm` allocates via
 `tools/handoffs.py new`. Summary: **M-1** publish both tails and per-draw per-season deltas (blocks
-the FRAGILE veto and every HARM cell in B1/C1); **M-2** dimension-matched nulls `d ∈ {1,2,3}`
+the CONSISTENCY condition, the RE-SPECIFY split, and every HARM cell in B1/C1); **M-2**
+dimension-matched nulls `d ∈ {1,2,3}`
 (blocks F3-RB); **M-3** measured wall-clock per null draw (blocks budgeting L); **M-4** earliest
 feasible `first_target` per `first_feature_season` — the only structural fix for S = 7 and the
 highest-value item on the list; **M-5** which prior batches used this estimator on a rank-correlation
@@ -349,3 +351,73 @@ endpoint versus a continuous MAE endpoint, so §8's withdrawal is scoped on fact
 work is in the staged thread, not here. If you disagree with any of it — particularly the refusal to
 shrink M, or the refusal to give F6 a two-arm test — open a new thread rather than replying here, so
 the ruling and the challenge are separately addressable.
+
+---
+
+#### Addendum, same session — founder input arrived mid-ruling and changed the rule
+
+Verbatim: *"Yes a rule pointing the other way is a signal. Probably just needs to be included
+differently. Any consistent signal is usable."* Two things followed, both now in the ADR. Captured
+to the founder-requests file as well, per the standing rule — chat is discarded, this is not.
+
+**1. A sign/consistency criterion is adopted, in calibrated form — ADR §4.4a.** My first draft
+rejected the sign test outright and listed it under "considered and rejected," for two correct
+reasons: at S = 7 its p-floor is 2⁻⁷ = 0.0078 and cannot reach a BH threshold of 7.7 × 10⁻⁴, and
+its `π₀ = 0.5` assumption is wrong here — your own replication measures the null sign probability at
+≈ 0.77 at QB. **Both objections vanish when the statistic is calibrated against the ensemble instead
+of against a binomial.** `C = W⁺ − W⁻` is computed for the cell *and for every null draw*; the
+ensemble's own `C` distribution embeds both the 0.77 and the exact-zero mass, so no distributional
+assumption is made anywhere, and it costs zero extra draws — it needs only M-1(B)'s per-season
+deltas. It enters as a **required condition**, never as a second discovery route, so it can only
+remove rejections and cannot touch the error rates registered in §6.1.
+
+It also replaces the leave-one-out fragility veto my first draft carried. `C` catches the same
+one-season-carries-it failure, is an integer computable by hand from seven numbers, and — the reason
+I prefer it — **contains no resampling at all**, which is a property worth having in a rule
+replacing one that failed inside a resampler.
+
+**The consequence I would rather state now than have discovered later: this probably makes INCLUDE
+unreachable at QB.** With 3.75 of 7 QB seasons contributing an exact zero, `C` cannot exceed ~3 and
+the ensemble's q95 will sit near it. **That is the correct answer at S = 7, not a defect** — and it
+is the third independent argument this session for M-4 (more target seasons) being the highest-value
+item on the list.
+
+**2. HARM is no longer one disposition — ADR §4.4b.** The founder's read is statistically sound and
+here is why: **a column carrying no information cannot consistently degrade ordering.** Under the
+null the sign of Δ_s is near-symmetric about the small positive bias, so a run of same-signed
+seasons is not something noise produces. So:
+
+| | |
+|---|---|
+| **RE-SPECIFY** | BH-robust harm **and** CONSISTENT — the column carries information the model is using badly. **Not dead.** |
+| **EXCLUDE (variance)** | BH-robust harm, **not** consistent — extra parameter, no information. Dead. |
+
+**Your F1 snap share at TE (−0.0285) is the live case** and must be graded on that split rather than
+written off. The structural reason it is a real candidate rather than a story is inside the model:
+the TE volume spec already contains `tshare_w`, so snap share's incremental content at TE is *snaps
+that produced no target*, and entering that flat as a positive-ordering feature is a specific,
+checkable mis-specification.
+
+**What stops "include it differently" becoming an unregistered search**: RE-SPECIFY buys **exactly
+one** attempt, its form chosen from a menu fixed in the ADR before anything runs (shrunk or
+sign-constrained coefficient / interaction with the position's volume feature / conditioning on role
+/ registered monotone transform), named in the registration with the mechanism it is meant to fix,
+and its arms enter the campaign denominator as new tests. No menu item may be selected after seeing
+which one would work. `strategist` writes that registration; **do not run a re-specification off
+this thread.**
+
+**And the falsification condition, because the whole of §4.4b rests on one untested claim.** M-1(B)
+tests it for free: I predict the ensemble's `C` distribution in the *harm* direction is tightly
+concentrated near zero at every position, and that the 2.9–5.9% placebo HARM verdicts were
+single-season artifacts. **If noise routinely produces `C ≥ 4`, RE-SPECIFY is wrong and I will
+withdraw it.** Report that immediately if you see it.
+
+**3. On whether C1's six factors are dispositioned.** Asked directly, so answered directly: **no,
+and this is the half of your NULL argument that does not hold.** Miscalibration inflates false
+positives — true — but the same discreteness has *no power* in the mixed-sign regime (ADR §1.3), so
+a NULL from that instrument is not a measurement of absence. **The treatment arms do not need
+re-running** — their per-season deltas are on disk and are estimator-independent — but the **null
+ensembles do need building**, which is M-6, and until they exist those six factors are
+`UNCALIBRATED`, not dispositioned. Where the resulting null band is wide (QB and TE are the
+candidates) the honest ledger entry is "not dispositioned at this position," **not** "dead." Ledger
+Section 0 should say that before anyone reads it as a closed question.

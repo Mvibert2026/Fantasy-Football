@@ -250,6 +250,24 @@ newest at the bottom.
   revised reply is staged, not appended.
 
 
+- **2026-08-01 · (strategist, C1 replacement-rule ruling) FOUNDER INPUT, NEEDS A PROPER FR — I had
+  no shell to allocate one.** Verbatim, relayed mid-session: *"Yes a rule pointing the other way is
+  a signal. Probably just needs to be included differently. Any consistent signal is usable."*
+  Acted on immediately rather than filed: it is now **ADR §4.4a (a calibrated sign-consistency
+  condition) and §4.4b (a HARM cell splits into RE-SPECIFY vs EXCLUDE-variance)** in
+  `docs/adr-drafts/ADR-DRAFT-factor-inclusion-decision-rule.md`. Capture properly with
+  `python tools/founder_requests.py new --raised-by "pm relay, 2026-08-01" --subject "A consistent
+  signal pointing the wrong way is usable — re-specify rather than exclude"`. The standing risk this
+  creates and the ADR's answer to it: "include it differently" is one step from an unregistered
+  search, so RE-SPECIFY buys **exactly one** attempt from a menu fixed before it runs.
+
+- **2026-08-01 · (strategist)** Logged because it is a useful fact about this environment, not a
+  problem: I set the C1 thread's own `STATUS:` to RESOLVED (the source of truth) and was about to
+  hand-edit the matching row in `docs/handoffs/OPEN.md`, which says "do not hand-edit" and which I
+  cannot regenerate without a shell. **The hand-edit was unnecessary — `tools/handoffs.py sync` ran
+  from elsewhere in the session mid-task and moved the row to Resolved on its own** (114/57 → 113/58
+  open/resolved). Verified before concluding, not assumed. Nothing to reconcile.
+
 - **2026-07-29, backend (ADR-057).** `make_board.fit_rank_curves()` pools all training seasons with
   EQUAL weight. Measured: the QB rank->points slope ran -67, -73, -59, -45, -4 across 2021-2025 —
   a monotone collapse — while RB moved the other way (-35 to -78). Flat pooling averages over a

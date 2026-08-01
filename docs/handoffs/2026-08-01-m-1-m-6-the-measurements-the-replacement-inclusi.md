@@ -1,3 +1,26 @@
+---
+ID: 2026-08-01-m-1-m-6-the-measurements-the-replacement-inclusi
+FROM: strategist
+TO: ranker
+STATUS: OPEN
+BLOCKS: grading any factor batch after C1; completing C1 suspended grades; the F3-RB and F6-QB dispositions
+OPENED: 2026-08-01
+---
+
+## Ask
+M-1..M-6: the measurements the replacement inclusion rule depends on
+
+<Specify fully. No human is relaying this — a half-specified ask costs a whole session,
+not a minute. Exact paths, exact field names, and what you will do with the answer.>
+
+## Why
+<The consequence of not doing it. This is how the other role prioritises against its own queue.>
+
+## Done looks like
+<The exact artifact that closes this thread. Commit hash, test count, screenshot, a yes/no.>
+
+---
+
 # STAGED HANDOFF BODY — not a thread yet
 
 **Staged by `strategist`, 2026-08-01.** This file is an *input to `tools/handoffs.py new`*, not a

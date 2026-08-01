@@ -64,16 +64,41 @@ placebo `INCLUDE`. Across **34 independent noise draws** the harness's false-pos
 bootstrap is miscalibrated at n=7 because per-season Spearman on 10–19 players is discrete and
 mostly contributes exact zeros, and adding any regressor carries a small upward bias scaling with
 1/n. **It cannot have manufactured an inclusion here** — it inflates false positives and C1 produced
-none — but it binds the next batch, and `strategist` owns the replacement rule (thread
-`2026-08-01-c1-the-registered-win-rule-has-a-14-6-false-posi`, BLOCKED-ON-YOU). A second defect,
-caught by Amendment 1's coverage-indicator control: an arm graded a BH-robust WIN on a mean delta of
-**3.97×10⁻¹⁷**; fixed by snapping |Δ|<1e−9 to zero, which cleared three spurious wins.
+none — but it binds the next batch. A second defect, caught by Amendment 1's coverage-indicator
+control: an arm graded a BH-robust WIN on a mean delta of **3.97×10⁻¹⁷**; fixed by snapping
+|Δ|<1e−9 to zero, which cleared three spurious wins.
 
-**Two hypotheses survive the placebo null and neither is included:** xFP at **RB** (+0.0186,
-p=0.059, vs placebo q95 +0.0054) and steeper recency at **QB** (+0.0266 vs q95 +0.0110, sign pattern
-across positions exactly as registered). Both await a strategist-registered confirmatory design.
-The factor ledger gains **Section 0** recording these as the first dispositions measured against v2,
-and warning that Sections 1–6 were assigned under the old frame.
+**RULED the same day, strategist session — the replacement rule exists and that thread is RESOLVED.**
+Rule: `docs/adr-drafts/ADR-DRAFT-factor-inclusion-decision-rule.md` (still needs an ADR number from
+`tools/handoffs.py adr next`). Estimator unchanged; uncertainty now comes from a **matched per-cell
+null ensemble** — joint within-season permutation of the arm's own column block — with a
+**Besag–Clifford sequential Monte Carlo p** (h=20, L=3,000), **no p below 2/(L+1) and no parametric
+tail fit admissible**, BH retained on top at the **cumulative** campaign M (**130, deliberately not
+shrunk**). Pre-committed rates for C2 to verify: HYPOTHESIS on a true-null cell ≤5.0% exactly; any
+INCLUDE/EXCLUDE across an all-null 20-cell batch ≤1.3%. Founder input arrived mid-session (*"a rule
+pointing the other way is a signal… any consistent signal is usable"*) and added a **calibrated
+sign-consistency condition**, plus a split of HARM into **RE-SPECIFY** (consistent — buys exactly one
+registered re-specification from a menu fixed in advance) versus **EXCLUDE (variance)**; C1's F1
+snap-share HARM at TE is the live RE-SPECIFY candidate, **not a dead factor**. **A third defect
+strategist found that ranker's diagnosis did not cover: the same discreteness also destroys power on
+mixed-sign season vectors**, so C1's NULLs are **`UNCALIBRATED`, not dispositioned** — C1 is
+re-graded in full (the arms do not re-run; the null ensembles must be built), while batches 1–7's
+closed grades get an annotation and no re-run. **The campaign's realised type-I exposure is nil —
+zero inclusions in ~130 tests — and its live exposure is type-II.**
+
+**Neither surviving hypothesis is included, and neither gets the confirmatory test as proposed.**
+xFP at **RB** (+0.0186) is a C1-registered cell whose grading was *suspended*, so it is finished
+under the new rule rather than "confirmed" — but first a **dimension-matched null** must run (F3
+adds 3 columns; it was compared against a 1-column placebo), and on the existing 34 draws its honest
+p is 2/35. Steeper recency at **QB** (+0.0266): the two-arm test is **REFUSED** and its "clears the
+placebo null" claim **WITHDRAWN** — F6 adds no column, so a column-addition placebo was never its
+null. Replaced by `docs/preregistration/PR-DRAFT-lag-weight-decay-profile.md`: an 8-point decay grid
+per position, null supplied by **lag-order permutations**, pre-committed default of keeping the
+incumbent, m_b=4, under an hour of compute. Measurements commissioned as M-1..M-7, staged at
+`docs/preregistration/HANDOFF-BODY-c2-null-calibration-2026-08-01.md` for `pm` to allocate;
+**M-4 — how far back the target span can go — is the highest-value item, because every problem here
+reduces to S=7.** The factor ledger gains **Section 0** recording C1's cells as the first
+measurements taken against v2, and warning that Sections 1–6 were assigned under the old frame.
 
 **Last verified:** 2026-08-01, fable B1 session — **ranking v2 built, run 2018–2024, graded; the
 games repair splits cleanly in two.** First build mandate ever issued to fable

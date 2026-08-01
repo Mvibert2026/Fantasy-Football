@@ -4,7 +4,7 @@
 Threads are the source of truth. Change a thread's `STATUS:`, then re-run sync.
 Protocol: [`README.md`](README.md).
 
-**113 open** · 58 resolved
+**114 open** · 58 resolved
 
 ---
 
@@ -191,7 +191,7 @@ not an omission. Start your session at your own heading.
 | [2026-07-31-attack-factor-batch-5-the-control-arm-beat-its-o](2026-07-31-attack-factor-batch-5-the-control-arm-beat-its-o.md) | Attack factor batch 5 the control arm beat its o | `ranker` | OPEN | 1d | none |
 | [2026-07-31-v1-s-2026-display-board-attack-the-holdout-claim](2026-07-31-v1-s-2026-display-board-attack-the-holdout-claim.md) | V1 s 2026 display board attack the holdout claim | `ranker` | OPEN | 1d | none |
 
-### `ranker` — 4 waiting
+### `ranker` — 5 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
@@ -199,6 +199,7 @@ not an omission. Start your session at your own heading.
 | [099](099-archetype-taxonomy-derivability-review-fr-075.md) | Archetype taxonomy derivability review fr 075 | `researcher` | OPEN | 2d | FR-075 (archetype on the player card), FR-086 (volatility as an archetype dimension) |
 | [2026-07-30-batch-4-blocked-on-you-before-it-runs-the-founde](2026-07-30-batch-4-blocked-on-you-before-it-runs-the-founde.md) | Batch 4 blocked on you before it runs the founde | `ranker` | BLOCKED-ON-YOU | 2d | factor batch 4 |
 | [2026-07-30-component-model-vs-incumbent-head-to-head-compon](2026-07-30-component-model-vs-incumbent-head-to-head-compon.md) | Component model vs incumbent head to head compon | `backend` | OPEN | 2d | none |
+| [2026-08-01-m-1-m-6-the-measurements-the-replacement-inclusi](2026-08-01-m-1-m-6-the-measurements-the-replacement-inclusi.md) | M 1 m 6 the measurements the replacement inclusi | `strategist` | OPEN | 0d | none |
 
 ### `operator` — 0 waiting
 

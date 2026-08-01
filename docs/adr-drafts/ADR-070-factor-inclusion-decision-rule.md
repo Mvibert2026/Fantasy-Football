@@ -1,8 +1,8 @@
-# ADR-DRAFT — the factor inclusion decision rule for ranking v2
+# ADR-070 — the factor inclusion decision rule for ranking v2
 
 **Author:** `strategist`, 2026-08-01.
-**Status:** DRAFT — needs an ADR number from `python tools/handoffs.py adr next` before landing in
-`docs/decisions.md`. Do not hand-type one.
+**Status:** Accepted as **ADR-070**, 2026-08-01. Number allocated via `tools/handoffs.py adr next`.
+**Lands in:** `docs/decisions.md` as ADR-070.
 **Supersedes, for the per-season rank-correlation endpoint only:** the WIN/HARM rule registered in
 `docs/ranking/factor-campaign-manifest/batch-B1.md` and `batch-C1.md` ("paired season-block
 bootstrap, 4,000 reps, 95% CI; WIN = CI > 0").
@@ -72,7 +72,7 @@ gets through" is not a fix.
 | Candidate | Rejected because |
 |---|---|
 | Keep the bootstrap, widen to 99% | Does not touch either mechanism. The CI excludes zero by construction at *any* confidence level when the sign is degenerate. |
-| Sign test / Wilcoxon on the 7 season deltas | Exactly valid and immune to §1.1 — but **not** to §1.2 (the null sign probability is ≈ 0.77 at QB, not 0.5), and its p-value floor is 2⁻⁷ = 0.0078, which cannot clear a BH threshold of q/M ≈ 7.7 × 10⁻⁴. Structurally incapable of producing a discovery here. |
+| **Plain** sign test / Wilcoxon on the 7 season deltas, as the *primary* test | Immune to §1.1, and rejected in that role for two reasons: it is **not** immune to §1.2 — the null sign probability is ≈ 0.77 at QB, not 0.5, so its stated p is wrong in the anticonservative direction — and its p-floor of 2⁻⁷ = 0.0078 cannot clear a BH threshold of q/M ≈ 7.7 × 10⁻⁴. **But the underlying idea is right and is adopted in calibrated form — see §4.4a.** |
 | Fit a Gaussian (or GPD) tail to the placebo draws and read p off it | This is the **same error in new clothes.** The bootstrap failed because it extrapolated smoothness it had not earned; extrapolating a Gaussian tail from 34 draws out to p = 7.7 × 10⁻⁴ earns it no better. Note what it would have done: a normal-tail fit to the published placebo moments puts F3-RB and F6-QB *over* the BH bar and the placebo *under* it — a rule that flatters exactly the two arms in question, on an assumption nothing validates. Refused. |
 | Change the endpoint to something continuous | Fixes §1.1 at the source, but changes the ADR-069 steering metric mid-campaign and makes B1/C1 non-comparable. **Kept as a required secondary diagnostic** (§4.6), not as the decision endpoint. |
 | Shrink the campaign denominator M — e.g. "batches 1–7 tested a consensus-derived primary and are not evidence about v2" | The argument is coherent and it is also the textbook error: shrinking a denominator after seeing which arms nearly won. C1 re-tested factors that batches 3/5/7 had already tested; that is a second shot at the same goal and it counts. **M stays cumulative** (§4.5). |
@@ -131,7 +131,7 @@ null for that arm.
 The ensemble holds the seasons fixed and randomises the intervention. Clearing it certifies **"this
 is not an artifact of perturbing the fit"**. It does *not* certify that the improvement generalises
 to a season not in the sample — that is season-level uncertainty, S = 7, and no test can conjure it.
-§4.4's fragility veto is the cheapest available proxy; the real answer is more target seasons
+§4.4a's consistency condition is the cheapest available proxy; the real answer is more target seasons
 (§7 M-4) and the §6.5 release gate. **An `INCLUDE` under this rule means "earns a place in the
 design matrix", not "has demonstrated out-of-sample edge."** Nothing may be reported as the latter.
 
@@ -168,24 +168,102 @@ cell runs to L.
 
 | verdict | rule | authorises |
 |---|---|---|
-| **INCLUDE** | BH-robust at campaign M, q = 0.10, direction = WIN; **and** not VOID; **and** not FRAGILE; **and** coverage ≥ 0.80 | the factor's columns enter v2 at that position |
-| **EXCLUDE** | same, direction = HARM | the factor is recorded dead for v2 at that position |
+| **INCLUDE** | BH-robust at campaign M, q = 0.10, direction = WIN; **and** CONSISTENT (§4.4a); **and** not VOID; **and** coverage ≥ 0.80 | the factor's columns enter v2 at that position |
+| **RE-SPECIFY** | BH-robust, direction = HARM, **and** CONSISTENT | **the factor is not dead.** One registered re-specification attempt (§4.4b) |
+| **EXCLUDE (variance)** | BH-robust, direction = HARM, **and not** CONSISTENT | dead for v2 at that position: it costs parameters and buys nothing |
+| **FRAGILE** | BH-robust in either direction but fails CONSISTENT *and* the harm/win is carried by one or two seasons | nothing. Reported with the per-season vector so the reader sees why |
 | **HYPOTHESIS** | `p ≤ 0.05` but not BH-robust | **nothing.** A ledger row, a named live hypothesis, and no more |
 | **NULL (calibrated)** | `p > 0.05`, ensemble ran to its stopping rule | measured no effect **at a stated power** — the null band `[q2.5, q97.5]` must be quoted with it |
 | **NO DATA** | coverage < 0.80, or no ensemble | nothing |
 | **UNCALIBRATED** | graded on the retired bootstrap and not re-graded | **nothing, in either direction.** Not citable as evidence of absence or of presence |
 
-**FRAGILE veto.** From the stored per-season deltas compute `Δ̄_LOOmin = min_s mean(Δ_{s'≠s})` — the
-mean after deleting the single most favourable season — for the cell **and for every null draw**. If
-the cell's `Δ̄_LOOmin` does not exceed the ensemble's 95th percentile of `Δ̄_LOOmin` in the claimed
-direction, the cell is **FRAGILE** and may not be INCLUDE or EXCLUDE. Costs no extra draws, and
-requires only that the ensemble store per-season deltas rather than summary counts (it currently
-does not — see §7 M-1).
-
 **VOID rule retained**, restated on the calibrated p: a treatment WIN is VOID where the paired
 `*k` coverage-indicator control at the same position has `p_win ≤ 0.05` — the loose bar for voiding,
 the BH bar for claiming, exactly as Amendment 1 registered it and for the same reason (batch 7
 measured a coverage flag at 215% of the treatment it was controlling).
+
+### 4.4a CONSISTENCY — the sign criterion, calibrated
+
+**Added 2026-08-01 in response to the founder, verbatim: *"Yes a rule pointing the other way is a
+signal. Probably just needs to be included differently. Any consistent signal is usable."*** He is
+right, and the statistical reason he is right is worth stating: **a column carrying no information
+cannot consistently degrade ordering.** Under the null the sign of Δ_s is near-symmetric about the
+small positive bias of §1.2; a run of same-signed seasons is not something noise produces. Direction
+consistency is therefore genuine, separable evidence — and it is exactly the property the degenerate
+bootstrap was accidentally rewarding (§1.1), which is why it must now be measured honestly instead
+of arriving as a side effect.
+
+**Statistic.** With the derived per-season tolerance of §4.7, let `W⁺ = #{s : Δ_s > tol_s}`,
+`W⁻ = #{s : Δ_s < −tol_s}`, and the directional consistency `C = W⁺ − W⁻` for a WIN claim,
+`W⁻ − W⁺` for a HARM claim. Integers, computable by hand from seven numbers, no resampling anywhere
+in the definition.
+
+**Calibration.** `C` is computed for the cell **and for every draw in the same null ensemble**. A
+cell is **CONSISTENT** iff its `C` exceeds the ensemble's 95th percentile of `C`. This costs no
+extra draws and it fixes the objection that sank the plain sign test: the ensemble's own `C`
+distribution embeds the measured null sign probability (≈ 0.77 at QB, not 0.5) and the exact-zero
+mass, so no `π₀ = 0.5` assumption is made anywhere. It requires only that the ensemble store
+per-season deltas rather than summary counts — §7 M-1.
+
+**Role: a required condition, not a second discovery route.** `C` never grants a verdict on its own.
+Adding it as an alternative route would be a second test statistic on the same data and would need
+its own multiplicity slot; as a condition it can only *remove* rejections, so it costs no
+multiplicity and cannot inflate the rates registered in §6.1.
+
+**Also report, as a descriptive honesty line and explicitly not as a decision input:** `k of S
+seasons in the claimed direction`, the exact binomial p at π = 0.5, and the ensemble's own measured
+`π̂₀`. The gap between those last two is the single clearest picture of §1.2 anyone will get, and it
+is hand-auditable — a property worth having in a rule replacing one that failed inside a resampler.
+
+**A consequence I would rather state than have discovered later: this will probably make INCLUDE
+unreachable at QB, and at S = 7 that is the correct answer, not a defect.** With a mean of 3.75 of 7
+QB seasons contributing an exact zero, `C` cannot exceed ~3 and the ensemble's own q95 will sit
+close to it. The evidence at that position genuinely cannot support an inclusion. The fix is §7 M-4
+(more target seasons), not a weaker condition.
+
+**Registered prediction, testable from M-1(B) alone and written before that data exists:** no
+placebo draw in the 34 already run produced a *consistent* harm — i.e. the ensemble's `C`
+distribution in the harm direction will be tightly concentrated near zero at every position, and
+placebo HARM verdicts (2.9–5.9% per position under the old rule) will turn out to be single-season
+artifacts. If that is wrong — if noise routinely produces `C ≥ 4` — then §4.4b's whole premise is
+wrong and RE-SPECIFY must be withdrawn. That is the falsification condition and it is cheap.
+
+### 4.4b RE-SPECIFY — what a consistent HARM buys, and what it does not
+
+A BH-robust, CONSISTENT harm is evidence that **the column carries information the model is using
+badly**, not that the column is empty. Four mechanisms produce it and they are distinguishable:
+
+| | mechanism | the distinguishing evidence |
+|---|---|---|
+| (a) | coefficient fitted with the wrong sign under collinearity | fitted sign vs. the column's marginal sign against the outcome |
+| (b) | the relationship is non-linear or conditional on role, and a flat linear term mis-specifies it | harm concentrates in an identifiable sub-population |
+| (c) | the column is a time-varying proxy (batch 7's time-dummy geometry) | the paired `*_known` control carries it — already handled by the VOID rule |
+| (d) | genuine variance inflation: no information, just an extra parameter | **inconsistent** sign across seasons — which is what separates EXCLUDE (variance) from RE-SPECIFY |
+
+**What RE-SPECIFY authorises: exactly one pre-registered re-specification attempt, whose form is
+chosen from a menu fixed before it is run, and whose arms enter the campaign denominator as new
+tests.** The founder's "include it differently" is correct and it is one step from an unregistered
+search; the menu is what keeps it one step away. Registered menu, fixed now:
+
+1. the column entered with a **shrunk or sign-constrained** coefficient (ridge, or a registered sign
+   restriction where theory fixes the sign — C1's own F3 luck-residual downside is this case);
+2. an **interaction** with that position's primary volume feature;
+3. **conditioning on role** — the column entered only within a pre-declared sub-population;
+4. a registered **monotone transform** (log, rank, or a two-knot spline).
+
+One menu item per factor per position. A second attempt requires a new registration with the first
+attempt's result already published. **No item may be selected after seeing which one would work** —
+the item is named in the registration, before the run, with the mechanism it is meant to fix.
+
+**Live case: C1's F1 snap share, HARM at TE (−0.0285).** Currently `UNCALIBRATED`; on re-grade it is
+the first candidate for this route. The structural observation that makes it a real candidate rather
+than a story is *inside the model, not received wisdom*: the TE volume spec already contains
+`tshare_w`, so the incremental content of snap share at TE is **snaps that produced no target**, and
+entering that flat as a positive-ordering feature is a specific, checkable mis-specification. Menu
+item 2 (interaction with `tshare_w`) or item 3 is the registered attempt. Per the standing
+calibration prior I am pricing that narrative at half weight and predicting the re-specification
+**fails**; it is registered anyway, because a consistent harm that nobody follows up is exactly the
+signal the founder is pointing at.
 
 ### 4.5 Multiplicity — BH stays, on top, at the cumulative campaign denominator
 
@@ -211,7 +289,8 @@ A calibrated test applied 150 times still yields ~7 nominal-α false positives.
    C1 published the upper tail only, which leaves every HARM cell in B1 and C1 ungradeable against
    its own null.
 3. `p`, `p_floor = 2/(L+1)`, the stopping reason (`h_reached` / `L_exhausted`), the seed, `h`, `L`.
-4. `Δ̄_LOOmin` and the ensemble's `Δ̄_LOOmin` q95.
+4. `W⁺`, `W⁻`, `C`, the ensemble's q95 of `C`, the exact binomial p at π = 0.5, and the ensemble's
+   measured `π̂₀` (§4.4a).
 5. **A secondary continuous diagnostic**: the same delta computed on within-season *Pearson*
    correlation between `proj_points` and realised points. Continuous in the predictions, so it
    cannot produce exact zeros. It is **not** a decision endpoint and no verdict may be read off it —
@@ -312,7 +391,7 @@ in the staged handoff body accompanying this draft.
 
 | id | measurement | who | blocks |
 |---|---|---|---|
-| **M-1** | Publish the placebo ensemble's **both tails** (`min, q05, q25, median, q75, q95, max`) and **per-season deltas per draw**, not just Δ̄ and counts | `ranker` | the FRAGILE veto; every HARM cell in B1/C1 |
+| **M-1** | Publish the placebo ensemble's **both tails** (`min, q05, q25, median, q75, q95, max`) and **per-season deltas per draw**, not just Δ̄ and counts | `ranker` | the §4.4a CONSISTENCY condition; the RE-SPECIFY/EXCLUDE split; every HARM cell in B1/C1 |
 | **M-2** | Dimension-matched null ensembles, `d ∈ {1,2,3}`, K ≥ 200, CTRL-A, all four positions | `ranker` | whether F3's RB near-miss survives at all (§8) |
 | **M-3** | Measured wall-clock per null draw per position | `ranker` | budgeting L |
 | **M-4** | Earliest feasible `first_target` for `first_feature_season ∈ {2009, 2010, 2012}`, naming the binding constraint (`min_train_seasons`, `N_LAGS`, source start) | `ranker` | the only structural fix for S = 7 |
@@ -332,13 +411,25 @@ are not citable in either direction until re-graded.
 tests**, so no discovery's validity is in question and the campaign's realised false-discovery count
 is zero by construction. FDR is a property of claims; there are none.
 
-**Re-grade exactly the cells that carried a decision**, not the ninety that carried none:
+**Batch C1 is the exception and is re-graded in full — all 38 cells.** Its grading was *suspended*,
+not completed, so those cells were never validly graded and they get the new instrument. Note what
+that costs and what it does not: **the treatment arms do not re-run.** Their per-season deltas are
+on disk in `factor_c1_cells.csv` and are estimator-independent. What must be built is the *null
+ensembles*, which is new compute, and the §6.2 calibration checks. The output is worth more than
+what is on disk today: each NULL comes back with a quoted null band, converting "we detected
+nothing" into "we can rule out an effect larger than X at this position" — which is precisely what
+§1.3 says the current NULLs cannot support. **Where that band turns out to be wide (QB and TE are
+the candidates), the honest disposition is that the factor is *not dispositioned* at that position
+and must not enter the ledger as dead.**
+
+**For batches 1–7, re-grade exactly the cells that carried a decision**, not the ninety that carried
+none:
 
 | cell | why it is load-bearing |
 |---|---|
 | B1 `G2a` RB +0.072, WR +0.048, QB +0.019 | the only arm beating naive games MAE; its adoption is live (thread `2026-08-01-g2a-week-1-status-as-of-ruling…`). RB and WR sit far outside anything the placebo produced; **QB +0.019 is the weak one** — QB is where noise wins 14.7% of the time and n = 19 |
 | B1 WR HARM −0.0125 | **two arms (G1, G1a) were rejected on it**, and one placebo draw in 34 produced a WR HARM on the same harness. It cannot be assessed at all until M-1 publishes the lower tail |
-| C1 F1 TE HARM −0.0285 | the batch's only HARM verdict, at the position with the largest null bias |
+| C1 F1 TE HARM −0.0285 | the batch's only HARM verdict, at the position with the largest null bias — and the first live candidate for **RE-SPECIFY** rather than EXCLUDE (§4.4b) |
 
 B1 is `fable`'s registered batch. This ADR supplies the instrument and the scope; **it does not
 re-grade B1**, and no session should re-grade another agent's registered batch on this draft alone.
