@@ -53,6 +53,8 @@ campaign opened. Their m stands as recorded.
 | 5 | ranker | **17** | 2026-07-30, before fitting | `docs/ranking/factor-batch-5-precommit.md` |
 | 6 | ranker | **23** | 2026-07-30, before fitting (in a duplicate manifest, migrated here) | `docs/ranking/factor-batch-6-precommit.md` |
 | 7 | ranker | **16** | 2026-07-30, before fitting (in a duplicate manifest, migrated here) | `docs/ranking/factor-batch-7-precommit.md` |
+| PR-007 | backend (run), strategist (registered) | **4** | 2026-07-29, before fitting; own family `F-RECOMMENDATION-CONSTANTS`, own multiplicity design (BH not applicable, see `pr007.md`) | `docs/preregistration/PR-007-recommendation-constants-ablation.md` |
+| M2 | fable | **8** (+8 amendment 1) | 2026-08-01, before computing | `docs/fable/M2-findings.md` |
 
 *(Other batches: add your row and your `batch-<n>.md` file. If your row is missing at grading
 time, the floor is what protects the campaign.)*
