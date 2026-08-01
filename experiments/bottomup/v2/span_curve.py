@@ -253,9 +253,16 @@ def _feature_fn(variant: str, position: str, ctx: pd.DataFrame):
 def run_span(panel, ctx: pd.DataFrame, first_feature: int, variant: str,
              positions=POSITIONS) -> pd.DataFrame:
     rows: List[Dict] = []
+    # A span starting at S cannot produce a training pair for target S or S+1:
+    # `_pairs` iterates range(first_feature_season, target) and needs
+    # MIN_TRAIN_SEASONS entries. Clamping here rather than letting pandas raise
+    # "No objects to concatenate" -- and `curve_report` joins on season, so a
+    # clamped span is compared only on the seasons it actually covers, with its
+    # own n_seasons reported rather than silently borrowed from the baseline.
+    ft = max(FIRST_TARGET, first_feature + MIN_TRAIN_SEASONS)
     for pos in positions:
         wf = WalkForward(
-            panel=panel, position=pos, first_target=FIRST_TARGET,
+            panel=panel, position=pos, first_target=ft,
             last_target=LAST_TARGET, min_train_seasons=MIN_TRAIN_SEASONS,
             avail_arm="A", calibrate_bonus=True,
             first_feature_season=first_feature,
