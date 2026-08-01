@@ -179,6 +179,13 @@ def _redzone_usage(panel: SeasonPanel, f: pd.DataFrame, target_season: int
 
 
 # ------------------------------------------------------------- F0: the placebo
+#: Empty string reproduces the registered F0 arm byte-for-byte. The REPLICATION
+#: diagnostic varies it to draw independent placebos from the same generator,
+#: which is how "did this one draw get lucky" is separated from "does adding any
+#: column help here". Never set outside that diagnostic.
+PLACEBO_SALT = ""
+
+
 def _placebo(panel: SeasonPanel, f: pd.DataFrame, target_season: int
              ) -> Dict[str, np.ndarray]:
     """A seeded standard-normal column with no relationship to anything.
@@ -195,7 +202,8 @@ def _placebo(panel: SeasonPanel, f: pd.DataFrame, target_season: int
     happened to be sorted and the whole arm is reproducible from the seed alone.
     """
     def draw(pid: str) -> float:
-        h = hashlib.sha256(f"C1-placebo|{target_season}|{pid}".encode()).digest()
+        h = hashlib.sha256(
+            f"C1-placebo{PLACEBO_SALT}|{target_season}|{pid}".encode()).digest()
         # two independent uniforms from disjoint bytes -> Box-Muller
         u1 = (int.from_bytes(h[0:8], "big") + 1) / (2 ** 64 + 1)
         u2 = int.from_bytes(h[8:16], "big") / (2 ** 64)
