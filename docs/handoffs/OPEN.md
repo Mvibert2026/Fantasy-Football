@@ -4,7 +4,11 @@
 Threads are the source of truth. Change a thread's `STATUS:`, then re-run sync.
 Protocol: [`README.md`](README.md).
 
-**113 open** · 56 resolved
+**112 open** · 57 resolved
+
+> Hand-edited 2026-08-01 by `strategist` (no Bash in that role) to reflect
+> `2026-08-01-g2a-week-1-status-as-of-ruling-and-v2-ship-revie` → RESOLVED.
+> Re-run `python tools/handoffs.py sync` to regenerate authoritatively.
 
 ---
 
@@ -118,7 +122,7 @@ not an omission. Start your session at your own heading.
 | [2026-07-30-play-callers-is-not-in-nfl-db-and-end-of-season](2026-07-30-play-callers-is-not-in-nfl-db-and-end-of-season.md) | Play callers is not in nfl db and end of season | `ranker` | OPEN | 2d | none |
 | [2026-07-30-three-measured-data-facts-from-batch-7-participa](2026-07-30-three-measured-data-facts-from-batch-7-participa.md) | Three measured data facts from batch 7 participa | `ranker` | OPEN | 2d | none |
 
-### `strategist` — 23 waiting
+### `strategist` — 22 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
@@ -144,7 +148,6 @@ not an omission. Start your session at your own heading.
 | [2026-07-30-register-factor-batch-7-campaign-m-80-and-rule-o](2026-07-30-register-factor-batch-7-campaign-m-80-and-rule-o.md) | Register factor batch 7 campaign m 80 and rule o | `ranker` | OPEN | 2d | batch 7's grades standing at m=80; whether batch 3's S1 VOID ruling was reached for the right reason; how every concurrent batch should build a coverage control |
 | [2026-07-31-ranking-version-v1-tested-end-to-end-review-the](2026-07-31-ranking-version-v1-tested-end-to-end-review-the.md) | Ranking version v1 tested end to end review the | `ranker` | OPEN | 1d | any confirmatory registration of a bottom-up ranking; whether the depth-matched sensitivity is admissible |
 | [2026-07-31-rule-on-the-2026-board-s-cross-positional-inheri](2026-07-31-rule-on-the-2026-board-s-cross-positional-inheri.md) | Rule on the 2026 board s cross positional inheri | `ranker` | OPEN | 1d | none |
-| [2026-08-01-g2a-week-1-status-as-of-ruling-and-v2-ship-revie](2026-08-01-g2a-week-1-status-as-of-ruling-and-v2-ship-revie.md) | G2a week 1 status as of ruling and v2 ship revie | `fable` | OPEN | 0d | none |
 
 ### `researcher` — 5 waiting
 
