@@ -40,9 +40,24 @@ recovery first. If no repair lands, spend nothing: ship the consensus-derived bo
 effort into availability + recommender. What is lost by spending now: the single confirmation
 bullet this project gets, on a question that is not open.
 
+**5 · M2-2 availability: do not switch the opponent model to FFC ADP — the estimand argument
+conflates units with population.** H1 measured ECR ahead of FFC ADP at predicting real rooms (2 of
+3 mocks, mean −1.27 picks), M0 failed its gate (FFC's `times_drafted` is 6.4% of its own implied
+denominator), and the rooms the founder drafts in are Yahoo rooms anchored on Yahoo's expert-ish
+default list — so "ADP measures the quantity in picks" is true of *FFC's* room, not his. The
+pre-registered "switch proceeds on estimand grounds even if NULL" rule made the accuracy
+measurement decision-irrelevant before it ran; that is commitment, not calibration. Keep the
+estimand *frame* (pick-space, dispersion-aware), feed it the empirically best central tendency
+(the board beat everything in 3 of 3 rooms, descriptively), and calibrate sigma through the
+simulator against the logged rooms (M3, unrun, highest-value cheap measurement in this area —
+its pre-committed direction implies every top-80 availability number is currently too hedged).
+Also: availability being identical across the UI's selectable board sources is **correct
+behaviour, mislabelled as a gap** — opponents do not change because the user changed lenses. Log
+§M2-2.
+
 ## TOKENS USED
 
-~270k of context consumed at this update (estimate from context size; no meter; ±20%).
+~330k of context consumed at this update (estimate from context size; no meter; ±20%).
 
 ## STATUS
 
@@ -50,8 +65,8 @@ bullet this project gets, on a question that is not open.
 |---|---|
 | Frame question (founder's) | **RULED** — log §F |
 | M2-1 rankings | **DONE** — log §M2-1, recommendations §M2-1-REC |
-| M2-2 availability | starting next |
-| M2-3 recommender | not started |
+| M2-2 availability | **DONE** — log §M2-2 |
+| M2-3 recommender | starting next |
 | M2-4 campaign correction | not started (partial evidence already in F4) |
 | M2-5 nulls: findings or symptoms | not started (frame ruling covers most) |
 | M2-6 the clean PR-009 result | not started |
@@ -306,3 +321,76 @@ full-universe-vs-board pathology (F4).**
    league-specific cross-positional structure consensus does not price. That is a board worth
    sitting next to consensus on draft day. Claiming *better than the crowds* requires the holdout
    confirmation, and only after dev-season recovery.
+
+### 2026-08-01 · M2-2 — availability: the two mandate questions, answered
+
+Evidence base: thread `2026-07-30-availability-adp-measurements-m0-m5` (M0 FAILED its gate, M1/H1
+NULL, M2–M5 unrun), the precommit `availability-opponent-model-precommit.md`, and the code
+re-verified this run (`draft_sim.py:120` `CONSENSUS_RANK_SOURCE="fantasypros_ecr"`, `:319`
+`NEED_ADJUSTMENT_SCALE=10.0` hardcoded, `availability.py:239` one shared noise draw per player per
+simulated draft, sigma sweep 5/10/20 with the module docstring itself calling it uncalibrated).
+
+**Q1 — "adopt ADP on estimand grounds despite the accuracy NULL": rationalised, in the specific
+sense that the decision was structured so the measurement could not move it.** The precommit's own
+rule reads: "If NULL, the switch still proceeds on estimand grounds." A decision rule that
+proceeds identically under CONFIRMED and NULL is not using the test — the test existed to gate
+*claims*, not the decision, and that asymmetry was written in before the data arrived. On the
+merits the estimand argument is half right and the wrong half is load-bearing:
+
+- Right: the opponent model needs a *pick distribution* — central tendency in pick units plus
+  dispersion. ECR ranks are ordinal opinion with neither.
+- Wrong: "ADP measures the quantity" ignores *whose* picks. The estimand is "pick distribution in
+  the founder's Yahoo 10-team rooms." FFC ADP estimates FFC's own mock-room population. Yahoo
+  rooms are anchored on Yahoo's default (expert-shaped) list — and H1's direction is exactly what
+  that mechanism predicts: ECR beat FFC ADP at predicting real Yahoo rooms in 2 of 3 mocks (mean
+  gap −1.27 picks in ECR's favour), and the half-PPR board beat all five candidates in all three
+  rooms (descriptive, n=3). Units are not population. **Ruling: keep the estimand frame, reject
+  the source switch.** The central tendency should be whatever best predicts the observed target
+  rooms — currently the incumbent (with the board as the promotable candidate once more rooms are
+  logged) — and the label on every availability number should carry the population caveat
+  (Yahoo mock rooms ≠ Westwood; Westwood calibration count is 0 of ~30).
+
+Dispersion separately: M0's failure means FFC `times_drafted` supports no per-player n, so the
+per-player dispersion half stays dead regardless of source. The mocks themselves are the honest
+dispersion source: per-round MAE 1.12 / 3.66 / 8.22 picks (rounds 1–3) is a measured dispersion
+curve, and M3 — fitting the simulator's lambda to reproduce it — is the single highest-value
+unrun measurement in this whole area. Its pre-registered direction (lambda_hat < 10) implies the
+shipped 5/10/20 sweep systematically over-hedges the top 80, i.e. **every availability
+probability the founder sees for draftable players is currently pushed toward 0.5 by an admitted
+guess.** That is worth a founder sentence when it is fixed, and the fix is a script and three
+logged rooms, not a data acquisition.
+
+**Q2 — the founder's factorisation (ADP → how the draft has fallen → opponents' needs): endorsed
+as an information ordering, and it exposes the simulator's actual value honestly.** With a pick
+distribution per player and no conditioning, the prep-mode marginal is closed-form (M5's point:
+`P(survives pick p) = 1 − F_i(p)`); ADR-061 measured 628 s of Monte Carlo per league to
+approximate arithmetic. "How the draft has fallen" is conditioning — mostly truncation
+(who is gone), also nearly closed-form. The only term that genuinely requires simulation is
+**opponents' needs**, which is precisely the least-validated object in the product: need scale
+hardcoded at 10.0 (D-001 decided, unimplemented), lambda = 0.352 fitted on one hand-transcribed
+draft with need confounded with round, interval [0.21, 0.50] that "more resampling will not
+narrow." So: **prep-mode availability should be closed-form** (and FR-128's 24 empty leagues
+become arithmetic); **the simulator earns its keep only in live mode**, where truncation-plus-need
+interact — and its need term needs Westwood data that starts existing in September. "Mostly
+theatre outside live draft state" is the correct description of the current prep-mode Monte
+Carlo, with the caveat that M5's tolerance check (mean ≤ 0.02, max ≤ 0.05) should be run before
+the swap, exactly as specified, because the removal mechanics could yet surprise.
+
+**A reframe worth recording: the "availability ignores the selected ranking source" gap is not a
+gap.** Post-ADR-068 every `board*.json` carries identical availability blocks across the four
+selectable sources, reported as an audited defect. Availability is a property of the *room*, not
+of the user's lens — opponents do not re-rank because the founder toggled his view. The real
+defect in the founder's 73-of-80 diagnosis is the *user's own* BPA pick running on `fantasypros_ecr`
+instead of his selected board (`strategy_bpa`), which is a one-line source split (the thread's
+code-fact #1), not a reason to rewire opponent behaviour. Recommendation: fix the BPA half, keep
+the opponent half source-independent, and say so in the UI label.
+
+**M2-2 recommendations, in order:** (1) run M3 lambda calibration on the three logged rooms —
+cheap, changes every displayed availability number, converts "a guess" to "fitted to N rooms";
+(2) run M5 and swap prep-mode to closed-form if it passes — fixes FR-128 by arithmetic;
+(3) split `strategy_bpa`'s source from the opponent model's (assertion, not comment);
+(4) do not switch the opponent central tendency to FFC ADP; re-test candidates per logged mock as
+rooms accumulate, per-mock, never pooled; (5) the dispersion ladder is mocks → M3, never
+`times_drafted` until FFC documents it. **September 7: availability at "calibrated to his real
+league" is not earnable (0 Westwood drafts exist, the first arrives that day); availability at
+"fitted to N observed Yahoo rooms with the population caveat labelled" is earnable in days.**
