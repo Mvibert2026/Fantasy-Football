@@ -316,6 +316,37 @@ relevant question is whether the ranking produces better *rosters*, not better *
 this gap explicitly in results; move toward draft-simulation-based evaluation when the harness
 supports it.
 
+**Three objects, three metrics — founder's architecture, 2026-08-01. Do not evaluate one with
+another's metric.**
+
+> "It seems we need to evaluate each position individually. And then you cross rank. Rankings may be
+> different than a draft board which considers vbd. Then the next step is strategy because VBD can't
+> account for availability."
+
+| Layer | The question it answers | Correct metric |
+|---|---|---|
+| **Rankings** | Who is better, *within* a position? | Rank correlation **within position** vs realised finish |
+| **Draft board** | What is each player worth *across* positions? | Roster quality — **not** rank correlation |
+| **Strategy / pick recommendation** | Who should I take *at this pick*? | Simulated roster outcomes under an opponent model |
+
+These map one-to-one onto the founder's three questions in §2, and the layering is why they can be
+built in parallel: the board takes a ranking as input, and strategy takes a board plus an
+availability model.
+
+**The error this corrects, which PM committed on 2026-08-01 and should not recur.** A pooled
+cross-positional Spearman against the all-positions points leaderboard was reported as v2's headline
+quality number (0.607 vs consensus 0.743). That statistic measures the *board*, not the *rankings*,
+and measures it badly — the pooled target is dominated by position, so it rewards whatever ordering
+happens to match the raw points leaderboard rather than draft value. **Within-position correlation is
+the ranking metric. Report it per position and do not pool.**
+
+**Why the third layer cannot be judged on either of the first two.** VBD is a value *stock* — points
+over replacement if the season goes as projected. A pick is a *policy*: value now minus what the
+pick forgoes later, which depends on who survives to your next pick. **VBD cannot account for
+availability**, so a board is never a pick order, and presenting one as the other is the category
+error the recommender's hardcoded −25 QB penalty was patching over (see `docs/fable/M2-findings.md`
+§M2-3).
+
 ---
 
 ## 7. League settings
