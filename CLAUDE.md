@@ -116,6 +116,29 @@ This does **not** reopen (2) above. The distinction is load-bearing and both hal
 Hill (ours 25, consensus 171) and Burrow at QB26 — both real defects in the games channel, not real
 disagreements. The requirement is therefore an explained-deviation report, not a deviation budget.
 
+**Rookies are a separate population and must be modelled separately — founder's ruling, 2026-08-01.**
+
+> "Rookies need to be treated differently. It's just a fact. Would be a mistake to let them or the
+> veterans ruin the others model."
+
+**The mechanism, so this is not treated as a preference.** Every lag feature a veteran projection
+rests on — prior-season volume, efficiency, games, snap share, injury history — is *structurally
+absent* for a rookie, not merely missing at random. A joint fit therefore teaches the model that
+absent prior-season production implies a low projection, which is trivially true for rookies and true
+for a completely different reason than it is for a veteran. The corruption runs both ways: rookies
+drag the veteran coefficients, and veteran-derived coefficients misprice rookies.
+
+**Required:** separate fits, or at minimum a rookie indicator with **full interaction** on every lag
+feature — never a shared slope. Rookie projections are driven by draft capital, athletic profile,
+landing spot and depth-chart role, not by lag features that do not exist. Availability is the sharpest
+case: a rookie has **no injury history at all**, so the availability model cannot use its veteran form.
+
+**What we have for it:** `draft_picks` (1980–2026, 12,927 rows) is already read by the core panel
+builder. **`combine` (2000–2026, 8,968 rows — forty, bench, vertical, broad jump, cone, shuttle,
+height, weight) is NOT** read by any projection model, only by side experiments. Fable's own v2 build
+log records rookies as "crude" and a board-veteran level bias of ~−2.6 games, so this is a known
+live weakness, not a hypothetical.
+
 **The hard part, named in advance so it is not discovered late.** v1's rate projections are already
 at or better than market parity; its entire measured deficit sits in one channel — **projected
 games** (Fable M2-1). That is also the channel where consensus's advantage is real: what consensus

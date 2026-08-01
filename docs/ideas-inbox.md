@@ -1990,3 +1990,30 @@ tuning through a human):
 - **The panel counts REG rows only**, so a player whose only NFL action was a playoff game reads as
   never having played (Frank Gore Jr., Jordan James, Jarquez Hunter, Will Howard — all pinned).
   Consistent with the harness; worth knowing when reading the pinned count.
+
+## 2026-08-01 — ranker (batch D1 + M-4 span)
+
+- **Decided and logged:** batch D1's roster-status arms run against a second matched control at
+  `first_feature_season = 2018` rather than reusing CTRL-A. `rosters_weekly`'s end-of-season reserve
+  capture breaks at 2017 (prevalence 0.012–0.045 for 2012–2016 vs 0.17–0.28 from 2017), which is
+  batch 7 D2's time-dummy geometry. Restricting the *training* window, not just the target window,
+  is batch 5's own lesson applied. Cost: n = 5 seasons instead of 7.
+- **Decided and logged:** `depth_charts_weekly` eliminated as a full-span substitute for
+  end-of-season employment status. Coverage is stable (0.61–0.78, no break) and the contrast is
+  absent (4.26 vs 4.44 mean games in N, sign flips season to season). Do not re-propose it.
+- **Decided and logged:** the two named cases (Burrow, Taysom Hill) are deliberately **not**
+  re-checked player by player in D1's write-up. The −2.41-game level bias is a property of the whole
+  board population, so a single player's projection is not diagnostic until it is fixed, and picking
+  two players out of a frame after seeing the frame is anecdote selection. Re-read both once the
+  level amendment runs.
+- **Not decided, escalated:** whether the next confirmatory arm registers on a continuous residual
+  endpoint instead of per-season Spearman. It is a methodology decision, so it went to `strategist`
+  (`2026-08-01-three-rulings-needed-the-endpoint-is-the-bottlen`) rather than being taken here.
+- **Not decided, escalated:** which evaluation tier the season span adopts (S = 7 / 12 / 21). M-4's
+  own instruction forbids extending unilaterally because it moves every published control ρ.
+- **Residue worth someone's attention:** `rosters_weekly` INA (game-day inactive) rows only exist
+  from 2019 and DEV/CUT from 2017, so any feature built on "not on a roster at all" is a calendar
+  artifact before then. Folded INA into ACT for this reason rather than using it as its own signal.
+- **Residue:** `league_season_metrics.rb_carry_top30_share` and `wr_target_top45_share` are NULL for
+  exactly 2003–2008 — the same gap as `player_weekly_stats.targets`. Excluded them as normalisers,
+  because a normaliser sharing its feature's gap reintroduces the gap as a time dummy.

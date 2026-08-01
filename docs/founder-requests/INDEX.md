@@ -5,11 +5,11 @@ Per-request files in this directory are the source of truth. Edit a request's ow
 `STATUS:` line, then re-run sync. Protocol: [`README.md`](README.md).
 Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests.md).
 
-**157 requests since freeze.**
+**158 requests since freeze.**
 
 ---
 
-## NEW — 98
+## NEW — 99
 
 | ID | Subject | Raised | Source |
 |---|---|---|---|
@@ -107,6 +107,7 @@ Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests
 | [FR-2026-08-01-need-an-inclusion-test-run-candidate-factors-as](FR-2026-08-01-need-an-inclusion-test-run-candidate-factors-as.md) | Need an inclusion test run candidate factors as | 2026-08-01 | chat 2026-08-01 |
 | [FR-2026-08-01-regime-change-must-be-modelled-explicitly-not-ha](FR-2026-08-01-regime-change-must-be-modelled-explicitly-not-ha.md) | Regime change must be modelled explicitly not ha | 2026-08-01 | chat 2026-08-01 |
 | [FR-2026-08-01-respectability-check-large-unexplained-deviation](FR-2026-08-01-respectability-check-large-unexplained-deviation.md) | Respectability check large unexplained deviation | 2026-08-01 | chat 2026-08-01 |
+| [FR-2026-08-01-rookies-must-be-modelled-separately-from-veteran](FR-2026-08-01-rookies-must-be-modelled-separately-from-veteran.md) | Rookies must be modelled separately from veteran | 2026-08-01 | chat 2026-08-01 |
 | [FR-2026-08-01-season-span-is-26-not-7-stop-letting-the-newest](FR-2026-08-01-season-span-is-26-not-7-stop-letting-the-newest.md) | Season span is 26 not 7 stop letting the newest | 2026-08-01 | chat 2026-08-01 |
 | [FR-2026-08-01-terms-of-service-are-the-founder-s-concern-not-a](FR-2026-08-01-terms-of-service-are-the-founder-s-concern-not-a.md) | Terms of service are the founder s concern not a | 2026-08-01 | chat 2026-08-01 |
 | [FR-2026-08-01-three-layers-three-metrics-rankings-are-within-p](FR-2026-08-01-three-layers-three-metrics-rankings-are-within-p.md) | Three layers three metrics rankings are within p | 2026-08-01 | chat 2026-08-01 |
