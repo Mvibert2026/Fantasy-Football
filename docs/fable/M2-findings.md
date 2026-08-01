@@ -111,7 +111,10 @@ registered-test discipline, and it has caught exactly one defect unaided. Do not
 
 ## TOKENS USED
 
-~450k of context consumed at this update (estimate from context size; no meter; ±20%).
+Final: ~500k context consumed across the run (estimate from context size; no meter available;
+±20%). All six sections completed; the shared pool did not run out. Per-section commits:
+skeleton 1a48fa9 · frame ruling + pre-reg 3af33cd · v2 registration fb68505 · M2-1 44c01aa ·
+M2-2 a283767 · M2-3 f5b55ea · M2-4/5/6 0353765 · closeout d29d065.
 
 ## STATUS
 
