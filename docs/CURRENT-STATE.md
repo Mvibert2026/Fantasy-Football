@@ -71,6 +71,64 @@ PENDING-RULE). No consensus/ADP/ECR read in any ordering path; every arm asserts
 `ee87b53`, harness+F0 `6dab690`, F0D `1e80cc8`, A1 `7cae66e`, A2/A2k `d213232`, A3/A3k `b3cb337`,
 A4/A4k `1d48b22`, A5/A5k `c1b11f4`, B1 `06f04cb`.
 
+**Last verified:** 2026-08-01, ranker D1 + M-4 session — **the v2 availability model was built from
+the three unread tables and does not fix the games channel on the registered endpoints; the
+season-span question is answered and the answer is that the stat lines support 21 target seasons,
+not 7.** Registered before compute (`docs/ranking/factor-campaign-manifest/batch-D1.md`, `95e2bc9`,
+m_b=88; campaign Σ m_b now **247** after pm merged C2's concurrent 29). Results
+`docs/ranking/batch-D1-results.md`; span work `docs/ranking/season-span-M4.md`; code
+`experiments/bottomup/v2/{availability_data,availability_features,availability_model,run_d1,reversion_buckets,span_curve}.py`;
+artifacts `experiments/bottomup/results/{avail_d1_*,span_*}`. **2025 never read; every arm asserts
+zero preseason-proxy reads, so nothing here touches the unadmitted G2a week-1-of-N status.**
+
+**Eleven arms, no arm adopted, and the placebo is why.** Swapping the incumbent clipped-OLS
+availability model for a binomial GLM on the *same* features buys +0.067 games-ordering over naive
+persistence at RB — and the seeded-noise placebo buys **+0.070** on the identical contrast, because
+both share the form change. Only **A3 (roster status)** clears its window's placebo bar, at RB only,
+on games ordering only, at n=5. **Practice participation and injury class are measured and dead**;
+their combination is directionally harmful at all four positions. **`depth_charts_weekly` is
+eliminated** as a full-span substitute (stable coverage, no contrast: 4.26 vs 4.44).
+
+**Three findings outrank the arms.** (1) **The resolved-vs-ongoing instrument is real and explains
+why fable's G1/G1a failed**: among players who missed ≥40% of N−1, on reserve at season end predicts
+5.96 games next year vs 4.14 and 26.7% vs 13.7% reaching 12+, while G1's box-score timing signal
+separates 4.56 vs 4.19 and 16% vs 16% — nothing. (2) **The games MAE loss to naive persistence is a
+population mismatch, not a modelling failure**: the model is unbiased on the population it is fitted
+on (−0.14 games) and **−2.41 on the board population it is used on**, and removing that level alone
+wins the MAE bar at every position (QB 4.22→3.21 vs 3.35; RB 4.23→3.31 vs 3.89; WR 3.88→3.00 vs
+3.08). Mechanism measured at matched projected games and matched prior availability: board players
+play 13.77, non-board 9.61, separated by **prior-season points** — the games model has no quality or
+role term, and availability is partly job security. Designed as Amendment 1 and **deliberately not
+run** (found in this batch's own output). (3) **On a continuous residual endpoint the arms visibly
+work and the registered endpoint cannot see it**: in the discovery pass's own buckets G0 carries
++0.315/−0.271 SD, the form change alone moves it 0.011, **A5 moves it 0.101** on n=2,000
+player-seasons. Post-hoc, outside m_b, promotes nothing — but it is a live recommendation to
+`strategist` that the next confirmatory arm be registered on a continuous endpoint.
+
+**M-4, the season span — CAN and SHOULD reported separately, per the founder.** Core stat lines
+(carries, attempts, receptions, rush/rec/pass yards) run **1999–2025 with no gaps** →
+`first_feature_season` 2002, `first_target` 2004, **21 target seasons**. **The binding constraint on
+v2's seven is the ADP archive**, which defines the evaluation universe and nothing else: 7 seasons
+at `half_ppr_12team` (exact format), **12 at `ppr_12team`/`non_ppr_12team`** (format caveat on
+membership only — the ADP column is never a feature), 21 with no ADP at all (`rho_points_fullvet`,
+already computed on every cell). **S=12 is strategist's own threshold** for an exact season-level
+randomisation test reaching a BH bound at all. **Two real gaps named:** `player_weekly_stats.targets`
+is **zero for 2003–2008** (corroborated by `league_season_metrics.wr_target_top45_share` being NULL
+on exactly those seasons; thread open to `data-ops`), so the extension is currently a **QB/RB
+extension only**; air yards do not exist before 2009. **A source's start season is a lower bound on
+usability, not a guarantee** — `rosters_weekly` nominally starts 2002 and its end-of-season reserve
+capture is unusable before 2017. **Nothing adopted:** `FIRST_FEATURE_SEASON` is untouched and every
+span is passed per-run, so no published control ρ moves.
+
+**Rookies, answered in code rather than assumed (founder's ruling, 2026-08-01).** **v2 already fits
+rookies and veterans separately at every stage** — disjoint fit populations, separate availability
+regressions on separate feature lists, separate volume regressions, separate rate handling,
+`np.where(is_rk, …)` at every prediction site. **No lag feature carries a shared slope**, so the
+corruption mechanism the ruling describes cannot occur. The live weakness is different and worse:
+`ROOKIE_COLS = ["log_draft_pick", "age"]` **is** the entire rookie model, and rookie efficiency rates
+are a single population scalar with no player-level term. `combine` (2000–2026, 8,968 rows) is read
+by no projection model and starts early enough not to shorten the panel. Not started.
+
 **Last verified:** 2026-08-01, ranker C1 session — **the factor inclusion test has now been run
 against v2 for the first time, and all six candidate factors returned NULL.** The founder's
 correction (`FR-2026-08-01-need-an-inclusion-test-run-candidate-factors-as`) was that the ~90 nulls

@@ -346,22 +346,29 @@ another's metric.**
 > different than a draft board which considers vbd. Then the next step is strategy because VBD can't
 > account for availability."
 
-| Layer | The question it answers | Correct metric |
-|---|---|---|
-| **Rankings** | Who is better, *within* a position? | Rank correlation **within position** vs realised finish |
-| **Draft board** | What is each player worth *across* positions? | Roster quality — **not** rank correlation |
-| **Strategy / pick recommendation** | Who should I take *at this pick*? | Simulated roster outcomes under an opponent model |
+| # | Deliverable | The question it answers | Correct metric |
+|---|---|---|---|
+| 1 | **Positional rankings** | Who is better, *within* a position? | Rank correlation **within position** vs realised finish |
+| 2 | **Projected-points ranking (pooled)** | Who will score the most fantasy points this season? | **Pooled** rank correlation vs realised points — valid *for this object* |
+| 3 | **Draft board** | What is each player worth *across* positions, for drafting? | Roster quality — **not** rank correlation |
+| 4 | **Strategy / pick recommendation** | Who should I take *at this pick*? | Simulated roster outcomes under an opponent model |
 
-These map one-to-one onto the founder's three questions in §2, and the layering is why they can be
+**These are separate deliverables, each with standalone value — founder, 2026-08-01: *"It has value
+in its own [right]. We probably have multiple deliverables."*** Do not treat 2 as a failed 3, or 3 as
+a failed 4. They map onto the founder's three questions in §2, and the layering is why those can be
 built in parallel: the board takes a ranking as input, and strategy takes a board plus an
 availability model.
 
-**The error this corrects, which PM committed on 2026-08-01 and should not recur.** A pooled
-cross-positional Spearman against the all-positions points leaderboard was reported as v2's headline
-quality number (0.607 vs consensus 0.743). That statistic measures the *board*, not the *rankings*,
-and measures it badly — the pooled target is dominated by position, so it rewards whatever ordering
-happens to match the raw points leaderboard rather than draft value. **Within-position correlation is
-the ranking metric. Report it per position and do not pool.**
+**The error this corrects, which PM committed on 2026-08-01 and should not recur — and note the
+correction is about *labelling*, not about the statistic.** A pooled cross-positional Spearman
+(v2 0.607 against consensus 0.743) was reported as v2's headline **ranking** quality. That number is
+a perfectly valid measure of deliverable **2**; it is simply not a measure of deliverable **1**, and
+it is not a measure of **3** either — the pooled target is dominated by position, so it rewards
+matching the raw points leaderboard rather than draft value.
+
+**PM then over-corrected**, calling the pooled statistic invalid. It is not. **Report both: pooled for
+the projected-points ranking, per-position for the positional rankings, and never present one as the
+other.**
 
 **Why the third layer cannot be judged on either of the first two.** VBD is a value *stock* — points
 over replacement if the season goes as projected. A pick is a *policy*: value now minus what the
