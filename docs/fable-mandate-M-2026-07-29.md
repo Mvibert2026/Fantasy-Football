@@ -1,3 +1,9 @@
+> **SUPERSEDED 2026-07-31 by `docs/fable-mandate-M2-2026-08-01.md`.**
+> This file was written before any of the three questions had been measured, and then accreted to 34
+> asks across three dates. **Do not run it.** Its founder-framing section is reproduced in M2 and is
+> the only part still live; everything else asks Fable to help *design* models that have since been
+> built and tested.
+
 # Fable mandate M — the three model questions
 2026-07-29
 
