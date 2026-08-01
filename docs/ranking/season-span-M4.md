@@ -25,6 +25,10 @@ lines it actually projects from run 1999–2025 with no gaps.
 
 *Rewritten on every update.*
 
+0. **ROOKIES — the founder's ruling of 2026-08-01, answered on fact in §4 below.** Short version so
+   nobody has to go looking: **v2 already fits rookies and veterans separately, structurally, at
+   every stage.** No shared slope exists on any lag feature. The real weakness is different from the
+   one the ruling anticipated and is stated in §4. The rookie *build* work has not started.
 1. **The CAN table is done and is §1.** Nothing further is needed to answer it.
 2. **The SHOULD curve is running / partially landed** — `experiments/bottomup/v2/span_curve.py`,
    `--spans 2012,2018,2015,2010,2006,2002 --ctx`, results in
@@ -182,3 +186,60 @@ their volume channels (attempts, carries) have no gap.
 *Results pending — the run is in flight. `--report` regenerates this table from
 `span_curve_cells.csv` with no refit.*
 <!--SPAN-CURVE-END-->
+
+---
+
+## 4. Rookies — answered on fact, because the founder asked a question with a checkable answer
+
+Founder, 2026-08-01: *"And rookies need to be treated differently. It's just a fact. Would be a
+mistake to let them or the veterans ruin the others model."*
+
+**He is right about the principle and v2 already implements it.** Verified in code, not assumed —
+`experiments/bottomup/components/pos_model.py::BaseComponentModel.fit` (lines 297–345) and
+`_availability` / `_volume` / `_rate` (lines 428–446):
+
+| stage | veteran path | rookie path | shared? |
+|---|---|---|---|
+| fit population | `d[d.entry == "veteran"]` | `d[d.entry == "rookie"]` | **disjoint** |
+| availability | `ols(_design(vet, avail_cols), games/season_len)` | `ols(_design(rk, ROOKIE_COLS), …)` | **separate fit, separate feature list** |
+| volume | `ols(_design(vp, cols), …)` per spec | `ols(_design(rp, ROOKIE_COLS), …)` | **separate** |
+| efficiency rates | `ShrunkRate.fit(vet, …)` | pooled ratio `rk[num].sum() / rk[den].sum()` | **separate** |
+| prediction | `np.where(is_rk, rookie, veteran)` at every call site | | **separate** |
+
+**No lag feature carries a shared slope across the two populations, anywhere.** The corruption
+mechanism the ruling describes — a model learning that absent prior-season production implies a low
+projection, trivially true for a rookie and true for a different reason for a veteran — cannot occur
+here, because a rookie row never enters a veteran regression. Batch D1 preserves this:
+`availability_model._D1AvailabilityMixin._availability` delegates to `super()` for rookies and
+overrides veterans only. **Requirements 1 and 2 of the ruling are already satisfied.**
+
+**The actual weakness is worse than a shared slope and it is the one to fix.**
+
+```
+ROOKIE_COLS = ["log_draft_pick", "age"]        # pos_model.py:53
+```
+
+That is the **entire** rookie model. Two features for availability, the same two for every volume
+channel, and **for efficiency rates not even that** — every rookie at a position receives the same
+scalar, a population ratio with no player-level term at all. Fable's "crude" was generous.
+
+So the ruling's requirement 3 is the live one, and its diagnosis is exactly right: a rookie has no
+injury history, so nothing this session built for veterans transfers. What a rookie path needs is
+**draft capital** (already read), **landing spot and depth-chart role**, **workload expectation**,
+and the **`combine` table** — 2000–2026, 8,968 rows, `forty` / `bench` / `vertical` / `broad_jump` /
+`cone` / `shuttle` / `ht` / `wt` / `draft_ovr`, **read by no projection model**, on precisely the
+population where nothing else exists.
+
+**Two constraints on that work, from this document's own measurements:**
+
+- **`combine` starts in 2000, so it does not shorten the panel.** With `N_LAGS = 3` irrelevant to a
+  rookie, a combine-based rookie feature is usable from the first season the panel supports. Rookies
+  are the one population for whom the span question is easy.
+- **Rookie behaviour is exactly the kind of thing regime change moves**, and this document's own
+  §2 table shows the structural drift (`te_point_share` +35% across the span, `rb_carry_top30_share`
+  −13%). A rookie arm should carry the `ctx` normalisation from the start rather than adding it
+  afterwards.
+
+**Not started.** Registered as the next block of work after strategist rules on R1/R2 of thread
+`2026-08-01-three-rulings-needed-the-endpoint-is-the-bottlen`, because the endpoint ruling
+determines what a rookie arm is graded on.
