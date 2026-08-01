@@ -56,6 +56,12 @@ BOOT_REPS, BOOT_SEED = 4000, 20260801
 M_CAMPAIGN = 130
 Q_FDR = 0.10
 
+#: Deltas below this in absolute value are treated as exactly zero. Spearman on
+#: 10-19 players is a ratio of integers; any real difference is >= ~1e-3. A
+#: delta of 1e-17 is float64 noise from two rhos taking different code paths,
+#: never a model difference.
+DELTA_EPS = 1e-9
+
 #: registered in batch-C1: {control: (first_feature_season, first_target, last)}
 CONTROLS: Dict[str, Tuple[int, int, int]] = {
     "CTRL-A": (2012, 2018, 2024),
@@ -168,7 +174,17 @@ def boot_diff(joined: pd.DataFrame) -> Tuple[float, float, float, int, float]:
     reps and seed as batch-B1 — this batch extends that harness rather than
     inventing a second one."""
     sub = joined[["a", "b"]].dropna()
-    diffs = (sub["a"] - sub["b"]).to_numpy(dtype=float)
+    diffs = np.array((sub["a"] - sub["b"]).to_numpy(dtype=float), copy=True)
+    # NUMERICAL HYGIENE, not a rule change, and it can only remove a WIN.
+    # An arm that changes nothing produces per-season deltas at the float64
+    # representation limit (~1e-17) rather than exact zeros, because the two
+    # rhos travel different code paths. Every such delta then shares a sign, so
+    # every bootstrap resample mean sits above zero and the CI excludes zero:
+    # arm F2k graded a BH-robust WIN on a mean delta of 3.97e-17 (p = 0.00025).
+    # Snapping sub-epsilon deltas to zero is arithmetic, not judgment. It does
+    # NOT address the separate calibration defect measured by the placebo, where
+    # the deltas are real.
+    diffs[np.abs(diffs) < DELTA_EPS] = 0.0
     n = len(diffs)
     if n == 0:
         return np.nan, np.nan, np.nan, 0, np.nan
@@ -218,9 +234,11 @@ def grade(df: pd.DataFrame) -> pd.DataFrame:
             return "NO DATA"
         if np.isfinite(r["coverage"]) and r["coverage"] < COVERAGE_FLOOR:
             return "NO DATA (coverage)"
-        if r["lo"] > 0:
+        if abs(r["delta"]) < DELTA_EPS:
+            return "NULL (no change)"
+        if r["lo"] > DELTA_EPS:
             return "WIN"
-        if r["hi"] < 0:
+        if r["hi"] < -DELTA_EPS:
             return "HARM"
         return "NULL"
 
@@ -289,8 +307,31 @@ def factor_verdict(g: pd.DataFrame) -> str:
 
 
 # ----------------------------------------------------------------------- main
+def read_contrasts() -> pd.DataFrame:
+    """`keep_default_na=False` because pandas reads the literal verdict string
+    `NULL` back as NaN — which silently turned every graded NULL cell into a
+    missing verdict on the round trip. Empty fields are still NaN."""
+    return pd.read_csv(CONTRASTS_CSV, keep_default_na=False, na_values=[""])
+
+
+def recontrast(cells: pd.DataFrame) -> pd.DataFrame:
+    """Recompute every contrast from the per-season cells on disk, then grade.
+
+    Cheap — no model is refitted — and it is the only correct response to a
+    change in the estimator, since `lo`/`hi`/`p` stored from an earlier run are
+    stale the moment `boot_diff` changes.
+    """
+    runs = set(cells["run"].unique())
+    rows: List[Dict] = []
+    for f in ARMS:
+        if f in runs:
+            rows.extend(contrast_rows(cells, f))
+    return grade(pd.DataFrame(rows))
+
+
 def _append(path: Path, new: pd.DataFrame, keys: List[str]) -> pd.DataFrame:
-    old = pd.read_csv(path) if path.exists() else pd.DataFrame()
+    old = (read_contrasts() if path == CONTRASTS_CSV else pd.read_csv(path)) \
+        if path.exists() else pd.DataFrame()
     if len(old):
         merged = pd.concat([old, new], ignore_index=True)
         merged = merged.drop_duplicates(subset=keys, keep="last")
@@ -310,7 +351,7 @@ def main() -> None:
     OUT.mkdir(parents=True, exist_ok=True)
 
     if args.regrade and not args.arms:
-        df = grade(pd.read_csv(CONTRASTS_CSV))
+        df = recontrast(pd.read_csv(CELLS_CSV))
         df.to_csv(CONTRASTS_CSV, index=False)
         _report(df)
         return
@@ -353,14 +394,12 @@ def main() -> None:
         cells = _append(CELLS_CSV, cell_metrics(full, factor, factor),
                         ["run", "position", "season"])
 
-        new = pd.DataFrame(contrast_rows(cells, factor))
-        allc = _append(CONTRASTS_CSV, new, ["factor", "position"])
-        allc = grade(allc)
+        allc = recontrast(cells)
         allc.to_csv(CONTRASTS_CSV, index=False)
         _report(allc[allc["factor"] == factor])
         print(f"[recorded] {CELLS_CSV.name} + {CONTRASTS_CSV.name}", flush=True)
 
-    _report(grade(pd.read_csv(CONTRASTS_CSV)))
+    _report(recontrast(pd.read_csv(CELLS_CSV)))
 
 
 def _report(df: pd.DataFrame) -> None:
