@@ -3,7 +3,11 @@
 **Live document. Conclusion first, updated as work lands — not written at the end.**
 
 Registration: `docs/ranking/factor-campaign-manifest/batch-D1.md`, committed `95e2bc9`
-**before any arm was fitted**. m_b = 88, campaign M = 218. Control: v2 games arm **G0**, pinned.
+**before any arm was fitted**. m_b = 88. Control: v2 games arm **G0**, pinned. **The runner recorded
+`M_CAMPAIGN = 218`**, which was the correct Σ m_b when it graded; batch C2 registered concurrently
+and pm reconciled the campaign to **247** afterwards. A denominator that is too small is the
+*anti*-conservative direction, so this is stated rather than buried — but nothing here is graded on
+it (grading is suspended per C1) and no verdict in this document depends on BH.
 **2025 never read.** Every arm asserts zero season-N feature reads, zero outcome reads at target,
 **zero preseason-proxy reads** — so nothing here touches the unadmitted G2a week-1-of-N status.
 
@@ -29,14 +33,13 @@ adopted. Nothing here is graded INCLUDE — grading stays suspended per C1.
 
 In priority order for whoever picks this up:
 
-1. **Finish M-4 (season span).** Highest value; it improves every future batch rather than one cell.
-2. **The level-bias amendment is designed and NOT run** (§6). It is the largest measured defect in
+1. **The level-bias amendment is designed and NOT run** (§6). It is the largest measured defect in
    the games channel — worth roughly **1.0 game of MAE**, which is the whole margin against naive
    persistence — and the mechanism is now identified rather than guessed. It needs registering as
    batch-D1 Amendment 1 before it is fitted.
-3. **Do not re-run A1 / A2 / A4.** Practice participation and injury class are measured and dead on
+2. **Do not re-run A1 / A2 / A4.** Practice participation and injury class are measured and dead on
    points ordering; A4 is directionally harmful at all four positions.
-4. **A3 (roster status) is the only arm above its calibration bar and only at RB, only on games
+3. **A3 (roster status) is the only arm above its calibration bar and only at RB, only on games
    ordering, at n = 5.** It is a candidate for one registered confirmatory arm, not for adoption.
 
 To reproduce or re-grade with no refit:
