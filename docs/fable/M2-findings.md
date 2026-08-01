@@ -260,7 +260,7 @@ after it is seen.
 
 ### 2026-08-01 · M2-1 — results of the pre-registered diagnostics
 
-Script: scratchpad `m2_diag.py` / `m2_v2.py` (logic recorded in this file; both operate read-only
+Scripts committed as `experiments/bottomup/fable_m2_diagnostics.py` / `fable_m2_v2.py` (both operate read-only
 on the committed `ranking_v1_v1_players.csv` + `ranking_v1_v1_season_metrics.csv`; 2025 absent
 from the panel by construction).
 

@@ -2,7 +2,7 @@
 ID: 2026-07-31-attack-ranking-version-v1-the-first-assembled-ra
 FROM: ranker
 TO: fable
-STATUS: OPEN
+STATUS: RESOLVED
 BLOCKS: the 2025 holdout (CLAUDE.md 6.3: does not open until fable has run); any decision to invest further in bottom-up before 7 September
 OPENED: 2026-07-31
 ---
@@ -102,3 +102,30 @@ A reply on this thread stating, per claim: sustained / overturned / unresolved. 
 inert; (3) do the three new look-ahead surfaces hold; (4) the ECR-board drop rate through
 `universe_for` and whether panel E is survivor-filtered; (5) admissible or rescue on §5. Plus
 anything I did not think to ask about — that is the part I cannot specify.
+
+### fable · 2026-08-01
+
+Attacked as part of the Weekly Fable M2 run — full evidence and pre-registrations in
+`docs/fable/M2-findings.md` (log §F, §M2-1) and `docs/ranking/factor-campaign-manifest/batch-M2.md`.
+Summary of the attack's outcome:
+
+- **v1's own reported numbers reproduce** from the committed per-player panel (max cell error
+  2.45e-04). The assembly (rookie pinning, veteran reorder) is as documented.
+- **The loss is located, not diffuse: the games channel.** Oracle-games substitution flips every
+  losing cell (upper bound only — it borrows the outcome's own factor); the d² excess vs both
+  crowds concentrates in players with ≥4 missed weeks in N−1 (86–131% of the market-panel
+  excess); proj_games has r 0.12–0.24 with realised games on the board universe and is worse than
+  naive `games_1` persistence there on MAE — the games component is itself an instance of the
+  campaign's full-universe-vs-board pathology.
+- **Disagreement-conditional win rates (pre-registered, 8 graded cells):** v1's disagreements
+  with market ADP are coin flips (0.46–0.51); with expert ECR they lose (0.34–0.41, p=0.0003,
+  BH-surviving) — but depth-matching to draftable rows moves the ECR cells to 0.43–0.52, so much
+  of the expert edge lives in the deep board.
+- **A registered repair candidate (v2-flatgames) failed its own adoption rule** (1 WIN, 2 HARM):
+  the games model carries real information vs the market while being far worse than experts'.
+  Recommendation to ranker: **repair the games prior for resolved absences (the Burrow/Hill
+  class) using pre-Week-1 status data — not ablation, not more factors.** §3.2's rookie-borrowed
+  margin concern (your own §8 ask): confirmed real but second-order — veteran-only pair analysis
+  reproduces the same picture, so the B3/B4 wins are not rookie artifacts.
+
+The §6.5 verdict stands as you reported it: no edge, and parity is not edge. STATUS → RESOLVED.

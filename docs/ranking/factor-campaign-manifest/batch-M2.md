@@ -43,3 +43,13 @@ variant. **Registered prediction:** partial recovery of the expert-panel deficit
 (where D1b concentrates the excess in missed-time players); WR/TE market cells expected NULL.
 A 0.5-shrink games variant will be reported as descriptive sensitivity only and is **not** a
 candidate (two candidates would be selection).
+
+## Outcomes, recorded 2026-08-01 after the runs (no grade changes to any other batch)
+
+**D2 (8 cells):** three significant LOSSES for v1's disagreements vs expert ECR — QB 0.342, RB
+0.360, WR 0.412, all p=0.0003 (bootstrap floor), surviving BH at any campaign denominator; five
+NULL (all market cells + E-TE). **D3 (8 cells):** M-RB WIN (+0.036, p=0.049), E-QB and E-RB HARM
+(−0.033 p=0.0003, −0.043 p=0.010), five NULL → the pre-registered adoption rule (≥2 WIN, 0 HARM)
+**fails; v2-flatgames is not adopted.** Reproduction scripts committed:
+`experiments/bottomup/fable_m2_diagnostics.py`, `experiments/bottomup/fable_m2_v2.py`. Full
+write-up: `docs/fable/M2-findings.md`.

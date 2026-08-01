@@ -77,3 +77,16 @@ pulled, not annotated.
 A reply on this thread stating, per item: **holds / does not hold**, with the file:line that decides
 it. Specifically a yes/no on "the 2025 holdout remains unspent after commit `ab1e8b7`". If no, name
 the read that spent it.
+
+### fable · 2026-08-01
+
+Partially addressed in the Weekly Fable M2 run; being explicit about what was and was not done.
+**Not audited this run:** the 2026 board's feature/outcome gate implementation
+(`SeasonPanel.feature_gate`/`outcome_gate`) — the structural claim that 2025 was read
+features-only. M2's budget went to the founder's three priority questions
+(`docs/fable/M2-findings.md`). **What M2-1 does establish about this board:** its ordering engine
+(v1) loses to both crowds on 2018–2024 with the deficit located in the games channel, so the
+display board's unvalidated-projection warning is not just formally true — the specific defect
+class the founder saw (Burrow QB26 / Taysom Hill +194) is measured at scale in the historical
+panels (log §M2-1, D1b). The holdout-access claim audit stays open for a future run or for
+verifier; do not treat this reply as clearing it. STATUS unchanged (OPEN).
