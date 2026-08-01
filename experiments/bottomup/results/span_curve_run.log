@@ -1756,3 +1756,153 @@ WR            0.5515              0.7504     0.2335     3.7004
   f["gshare_max3"] = np.nan_to_num(np.nanmax(gshares, axis=1), nan=0.0)
 /home/user/Fantasy-Football/experiments/bottomup/components/pos_features.py:179: RuntimeWarning: All-NaN slice encountered
   f["gshare_max3"] = np.nan_to_num(np.nanmax(gshares, axis=1), nan=0.0)
+/home/user/Fantasy-Football/experiments/bottomup/components/pos_features.py:179: RuntimeWarning: All-NaN slice encountered
+  f["gshare_max3"] = np.nan_to_num(np.nanmax(gshares, axis=1), nan=0.0)
+/home/user/Fantasy-Football/experiments/bottomup/components/pos_features.py:179: RuntimeWarning: All-NaN slice encountered
+  f["gshare_max3"] = np.nan_to_num(np.nanmax(gshares, axis=1), nan=0.0)
+/home/user/Fantasy-Football/experiments/bottomup/components/pos_features.py:179: RuntimeWarning: All-NaN slice encountered
+  f["gshare_max3"] = np.nan_to_num(np.nanmax(gshares, axis=1), nan=0.0)
+/home/user/Fantasy-Football/experiments/bottomup/components/pos_features.py:179: RuntimeWarning: All-NaN slice encountered
+  f["gshare_max3"] = np.nan_to_num(np.nanmax(gshares, axis=1), nan=0.0)
+/home/user/Fantasy-Football/experiments/bottomup/components/pos_features.py:179: RuntimeWarning: All-NaN slice encountered
+  f["gshare_max3"] = np.nan_to_num(np.nanmax(gshares, axis=1), nan=0.0)
+/home/user/Fantasy-Football/experiments/bottomup/components/pos_features.py:179: RuntimeWarning: All-NaN slice encountered
+  f["gshare_max3"] = np.nan_to_num(np.nanmax(gshares, axis=1), nan=0.0)
+/home/user/Fantasy-Football/experiments/bottomup/components/pos_features.py:179: RuntimeWarning: All-NaN slice encountered
+  f["gshare_max3"] = np.nan_to_num(np.nanmax(gshares, axis=1), nan=0.0)
+/home/user/Fantasy-Football/experiments/bottomup/components/pos_features.py:179: RuntimeWarning: All-NaN slice encountered
+  f["gshare_max3"] = np.nan_to_num(np.nanmax(gshares, axis=1), nan=0.0)
+/home/user/Fantasy-Football/experiments/bottomup/components/pos_features.py:179: RuntimeWarning: All-NaN slice encountered
+  f["gshare_max3"] = np.nan_to_num(np.nanmax(gshares, axis=1), nan=0.0)
+/home/user/Fantasy-Football/experiments/bottomup/components/pos_features.py:179: RuntimeWarning: All-NaN slice encountered
+  f["gshare_max3"] = np.nan_to_num(np.nanmax(gshares, axis=1), nan=0.0)
+/home/user/Fantasy-Football/experiments/bottomup/components/pos_features.py:179: RuntimeWarning: All-NaN slice encountered
+  f["gshare_max3"] = np.nan_to_num(np.nanmax(gshares, axis=1), nan=0.0)
+/home/user/Fantasy-Football/experiments/bottomup/components/pos_features.py:179: RuntimeWarning: All-NaN slice encountered
+  f["gshare_max3"] = np.nan_to_num(np.nanmax(gshares, axis=1), nan=0.0)
+/home/user/Fantasy-Football/experiments/bottomup/components/pos_features.py:179: RuntimeWarning: All-NaN slice encountered
+  f["gshare_max3"] = np.nan_to_num(np.nanmax(gshares, axis=1), nan=0.0)
+/home/user/Fantasy-Football/experiments/bottomup/components/pos_features.py:179: RuntimeWarning: All-NaN slice encountered
+  f["gshare_max3"] = np.nan_to_num(np.nanmax(gshares, axis=1), nan=0.0)
+/home/user/Fantasy-Football/experiments/bottomup/components/pos_features.py:179: RuntimeWarning: All-NaN slice encountered
+  f["gshare_max3"] = np.nan_to_num(np.nanmax(gshares, axis=1), nan=0.0)
+/home/user/Fantasy-Football/experiments/bottomup/components/pos_features.py:179: RuntimeWarning: All-NaN slice encountered
+  f["gshare_max3"] = np.nan_to_num(np.nanmax(gshares, axis=1), nan=0.0)
+/home/user/Fantasy-Football/experiments/bottomup/components/pos_features.py:179: RuntimeWarning: All-NaN slice encountered
+  f["gshare_max3"] = np.nan_to_num(np.nanmax(gshares, axis=1), nan=0.0)
+/home/user/Fantasy-Football/experiments/bottomup/components/pos_features.py:179: RuntimeWarning: All-NaN slice encountered
+  f["gshare_max3"] = np.nan_to_num(np.nanmax(gshares, axis=1), nan=0.0)
+/home/user/Fantasy-Football/experiments/bottomup/components/pos_features.py:179: RuntimeWarning: All-NaN slice encountered
+  f["gshare_max3"] = np.nan_to_num(np.nanmax(gshares, axis=1), nan=0.0)
+/home/user/Fantasy-Football/experiments/bottomup/components/pos_features.py:179: RuntimeWarning: All-NaN slice encountered
+  f["gshare_max3"] = np.nan_to_num(np.nanmax(gshares, axis=1), nan=0.0)
+/home/user/Fantasy-Football/experiments/bottomup/components/pos_features.py:179: RuntimeWarning: All-NaN slice encountered
+  f["gshare_max3"] = np.nan_to_num(np.nanmax(gshares, axis=1), nan=0.0)
+/home/user/Fantasy-Football/experiments/bottomup/components/pos_features.py:179: RuntimeWarning: All-NaN slice encountered
+  f["gshare_max3"] = np.nan_to_num(np.nanmax(gshares, axis=1), nan=0.0)
+/home/user/Fantasy-Football/experiments/bottomup/components/pos_features.py:179: RuntimeWarning: All-NaN slice encountered
+  f["gshare_max3"] = np.nan_to_num(np.nanmax(gshares, axis=1), nan=0.0)
+/home/user/Fantasy-Football/experiments/bottomup/components/pos_features.py:179: RuntimeWarning: All-NaN slice encountered
+  f["gshare_max3"] = np.nan_to_num(np.nanmax(gshares, axis=1), nan=0.0)
+/home/user/Fantasy-Football/experiments/bottomup/components/pos_features.py:179: RuntimeWarning: All-NaN slice encountered
+  f["gshare_max3"] = np.nan_to_num(np.nanmax(gshares, axis=1), nan=0.0)
+/home/user/Fantasy-Football/experiments/bottomup/components/pos_features.py:179: RuntimeWarning: All-NaN slice encountered
+  f["gshare_max3"] = np.nan_to_num(np.nanmax(gshares, axis=1), nan=0.0)
+/home/user/Fantasy-Football/experiments/bottomup/components/pos_features.py:179: RuntimeWarning: All-NaN slice encountered
+  f["gshare_max3"] = np.nan_to_num(np.nanmax(gshares, axis=1), nan=0.0)
+/home/user/Fantasy-Football/experiments/bottomup/components/pos_features.py:179: RuntimeWarning: All-NaN slice encountered
+  f["gshare_max3"] = np.nan_to_num(np.nanmax(gshares, axis=1), nan=0.0)
+/home/user/Fantasy-Football/experiments/bottomup/components/pos_features.py:179: RuntimeWarning: All-NaN slice encountered
+  f["gshare_max3"] = np.nan_to_num(np.nanmax(gshares, axis=1), nan=0.0)
+/home/user/Fantasy-Football/experiments/bottomup/components/pos_features.py:179: RuntimeWarning: All-NaN slice encountered
+  f["gshare_max3"] = np.nan_to_num(np.nanmax(gshares, axis=1), nan=0.0)
+/home/user/Fantasy-Football/experiments/bottomup/components/pos_features.py:179: RuntimeWarning: All-NaN slice encountered
+  f["gshare_max3"] = np.nan_to_num(np.nanmax(gshares, axis=1), nan=0.0)
+/home/user/Fantasy-Football/experiments/bottomup/components/pos_features.py:179: RuntimeWarning: All-NaN slice encountered
+  f["gshare_max3"] = np.nan_to_num(np.nanmax(gshares, axis=1), nan=0.0)
+/home/user/Fantasy-Football/experiments/bottomup/components/pos_features.py:179: RuntimeWarning: All-NaN slice encountered
+  f["gshare_max3"] = np.nan_to_num(np.nanmax(gshares, axis=1), nan=0.0)
+/home/user/Fantasy-Football/experiments/bottomup/components/pos_features.py:179: RuntimeWarning: All-NaN slice encountered
+  f["gshare_max3"] = np.nan_to_num(np.nanmax(gshares, axis=1), nan=0.0)
+/home/user/Fantasy-Football/experiments/bottomup/components/pos_features.py:179: RuntimeWarning: All-NaN slice encountered
+  f["gshare_max3"] = np.nan_to_num(np.nanmax(gshares, axis=1), nan=0.0)
+/home/user/Fantasy-Football/experiments/bottomup/components/pos_features.py:179: RuntimeWarning: All-NaN slice encountered
+  f["gshare_max3"] = np.nan_to_num(np.nanmax(gshares, axis=1), nan=0.0)
+/home/user/Fantasy-Football/experiments/bottomup/components/pos_features.py:179: RuntimeWarning: All-NaN slice encountered
+  f["gshare_max3"] = np.nan_to_num(np.nanmax(gshares, axis=1), nan=0.0)
+/home/user/Fantasy-Football/experiments/bottomup/components/pos_features.py:179: RuntimeWarning: All-NaN slice encountered
+  f["gshare_max3"] = np.nan_to_num(np.nanmax(gshares, axis=1), nan=0.0)
+/home/user/Fantasy-Football/experiments/bottomup/components/pos_features.py:179: RuntimeWarning: All-NaN slice encountered
+  f["gshare_max3"] = np.nan_to_num(np.nanmax(gshares, axis=1), nan=0.0)
+/home/user/Fantasy-Football/experiments/bottomup/components/pos_features.py:179: RuntimeWarning: All-NaN slice encountered
+  f["gshare_max3"] = np.nan_to_num(np.nanmax(gshares, axis=1), nan=0.0)
+/home/user/Fantasy-Football/experiments/bottomup/components/pos_features.py:179: RuntimeWarning: All-NaN slice encountered
+  f["gshare_max3"] = np.nan_to_num(np.nanmax(gshares, axis=1), nan=0.0)
+/home/user/Fantasy-Football/experiments/bottomup/components/pos_features.py:179: RuntimeWarning: All-NaN slice encountered
+  f["gshare_max3"] = np.nan_to_num(np.nanmax(gshares, axis=1), nan=0.0)
+/home/user/Fantasy-Football/experiments/bottomup/components/pos_features.py:179: RuntimeWarning: All-NaN slice encountered
+  f["gshare_max3"] = np.nan_to_num(np.nanmax(gshares, axis=1), nan=0.0)
+/home/user/Fantasy-Football/experiments/bottomup/components/pos_features.py:179: RuntimeWarning: All-NaN slice encountered
+  f["gshare_max3"] = np.nan_to_num(np.nanmax(gshares, axis=1), nan=0.0)
+/home/user/Fantasy-Football/experiments/bottomup/components/pos_features.py:179: RuntimeWarning: All-NaN slice encountered
+  f["gshare_max3"] = np.nan_to_num(np.nanmax(gshares, axis=1), nan=0.0)
+/home/user/Fantasy-Football/experiments/bottomup/components/pos_features.py:179: RuntimeWarning: All-NaN slice encountered
+  f["gshare_max3"] = np.nan_to_num(np.nanmax(gshares, axis=1), nan=0.0)
+/home/user/Fantasy-Football/experiments/bottomup/components/pos_features.py:179: RuntimeWarning: All-NaN slice encountered
+  f["gshare_max3"] = np.nan_to_num(np.nanmax(gshares, axis=1), nan=0.0)
+/home/user/Fantasy-Football/experiments/bottomup/components/pos_features.py:179: RuntimeWarning: All-NaN slice encountered
+  f["gshare_max3"] = np.nan_to_num(np.nanmax(gshares, axis=1), nan=0.0)
+/home/user/Fantasy-Football/experiments/bottomup/components/pos_features.py:179: RuntimeWarning: All-NaN slice encountered
+  f["gshare_max3"] = np.nan_to_num(np.nanmax(gshares, axis=1), nan=0.0)
+/home/user/Fantasy-Football/experiments/bottomup/components/pos_features.py:179: RuntimeWarning: All-NaN slice encountered
+  f["gshare_max3"] = np.nan_to_num(np.nanmax(gshares, axis=1), nan=0.0)
+/home/user/Fantasy-Football/experiments/bottomup/components/pos_features.py:179: RuntimeWarning: All-NaN slice encountered
+  f["gshare_max3"] = np.nan_to_num(np.nanmax(gshares, axis=1), nan=0.0)
+/home/user/Fantasy-Football/experiments/bottomup/components/pos_features.py:179: RuntimeWarning: All-NaN slice encountered
+  f["gshare_max3"] = np.nan_to_num(np.nanmax(gshares, axis=1), nan=0.0)
+/home/user/Fantasy-Football/experiments/bottomup/components/pos_features.py:179: RuntimeWarning: All-NaN slice encountered
+  f["gshare_max3"] = np.nan_to_num(np.nanmax(gshares, axis=1), nan=0.0)
+/home/user/Fantasy-Football/experiments/bottomup/components/pos_features.py:179: RuntimeWarning: All-NaN slice encountered
+  f["gshare_max3"] = np.nan_to_num(np.nanmax(gshares, axis=1), nan=0.0)
+/home/user/Fantasy-Football/experiments/bottomup/components/pos_features.py:179: RuntimeWarning: All-NaN slice encountered
+  f["gshare_max3"] = np.nan_to_num(np.nanmax(gshares, axis=1), nan=0.0)
+/home/user/Fantasy-Football/experiments/bottomup/components/pos_features.py:179: RuntimeWarning: All-NaN slice encountered
+  f["gshare_max3"] = np.nan_to_num(np.nanmax(gshares, axis=1), nan=0.0)
+/home/user/Fantasy-Football/experiments/bottomup/components/pos_features.py:179: RuntimeWarning: All-NaN slice encountered
+  f["gshare_max3"] = np.nan_to_num(np.nanmax(gshares, axis=1), nan=0.0)
+/home/user/Fantasy-Football/experiments/bottomup/components/pos_features.py:179: RuntimeWarning: All-NaN slice encountered
+  f["gshare_max3"] = np.nan_to_num(np.nanmax(gshares, axis=1), nan=0.0)
+/home/user/Fantasy-Football/experiments/bottomup/components/pos_features.py:179: RuntimeWarning: All-NaN slice encountered
+  f["gshare_max3"] = np.nan_to_num(np.nanmax(gshares, axis=1), nan=0.0)
+/home/user/Fantasy-Football/experiments/bottomup/components/pos_features.py:179: RuntimeWarning: All-NaN slice encountered
+  f["gshare_max3"] = np.nan_to_num(np.nanmax(gshares, axis=1), nan=0.0)
+/home/user/Fantasy-Football/experiments/bottomup/components/pos_features.py:179: RuntimeWarning: All-NaN slice encountered
+  f["gshare_max3"] = np.nan_to_num(np.nanmax(gshares, axis=1), nan=0.0)
+/home/user/Fantasy-Football/experiments/bottomup/components/pos_features.py:179: RuntimeWarning: All-NaN slice encountered
+  f["gshare_max3"] = np.nan_to_num(np.nanmax(gshares, axis=1), nan=0.0)
+/home/user/Fantasy-Football/experiments/bottomup/components/pos_features.py:179: RuntimeWarning: All-NaN slice encountered
+  f["gshare_max3"] = np.nan_to_num(np.nanmax(gshares, axis=1), nan=0.0)
+/home/user/Fantasy-Football/experiments/bottomup/components/pos_features.py:179: RuntimeWarning: All-NaN slice encountered
+  f["gshare_max3"] = np.nan_to_num(np.nanmax(gshares, axis=1), nan=0.0)
+/home/user/Fantasy-Football/experiments/bottomup/components/pos_features.py:179: RuntimeWarning: All-NaN slice encountered
+  f["gshare_max3"] = np.nan_to_num(np.nanmax(gshares, axis=1), nan=0.0)
+/home/user/Fantasy-Football/experiments/bottomup/components/pos_features.py:179: RuntimeWarning: All-NaN slice encountered
+  f["gshare_max3"] = np.nan_to_num(np.nanmax(gshares, axis=1), nan=0.0)
+/home/user/Fantasy-Football/experiments/bottomup/components/pos_features.py:179: RuntimeWarning: All-NaN slice encountered
+  f["gshare_max3"] = np.nan_to_num(np.nanmax(gshares, axis=1), nan=0.0)
+/home/user/Fantasy-Football/experiments/bottomup/components/pos_features.py:179: RuntimeWarning: All-NaN slice encountered
+  f["gshare_max3"] = np.nan_to_num(np.nanmax(gshares, axis=1), nan=0.0)
+/home/user/Fantasy-Football/experiments/bottomup/components/pos_features.py:179: RuntimeWarning: All-NaN slice encountered
+  f["gshare_max3"] = np.nan_to_num(np.nanmax(gshares, axis=1), nan=0.0)
+/home/user/Fantasy-Football/experiments/bottomup/components/pos_features.py:179: RuntimeWarning: All-NaN slice encountered
+  f["gshare_max3"] = np.nan_to_num(np.nanmax(gshares, axis=1), nan=0.0)
+/home/user/Fantasy-Football/experiments/bottomup/components/pos_features.py:179: RuntimeWarning: All-NaN slice encountered
+  f["gshare_max3"] = np.nan_to_num(np.nanmax(gshares, axis=1), nan=0.0)
+/home/user/Fantasy-Football/experiments/bottomup/components/pos_features.py:179: RuntimeWarning: All-NaN slice encountered
+  f["gshare_max3"] = np.nan_to_num(np.nanmax(gshares, axis=1), nan=0.0)
+/home/user/Fantasy-Football/experiments/bottomup/components/pos_features.py:179: RuntimeWarning: All-NaN slice encountered
+  f["gshare_max3"] = np.nan_to_num(np.nanmax(gshares, axis=1), nan=0.0)
+/home/user/Fantasy-Football/experiments/bottomup/components/pos_features.py:179: RuntimeWarning: All-NaN slice encountered
+  f["gshare_max3"] = np.nan_to_num(np.nanmax(gshares, axis=1), nan=0.0)
+/home/user/Fantasy-Football/experiments/bottomup/components/pos_features.py:179: RuntimeWarning: All-NaN slice encountered
+  f["gshare_max3"] = np.nan_to_num(np.nanmax(gshares, axis=1), nan=0.0)
