@@ -5,11 +5,11 @@ Per-request files in this directory are the source of truth. Edit a request's ow
 `STATUS:` line, then re-run sync. Protocol: [`README.md`](README.md).
 Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests.md).
 
-**161 requests since freeze.**
+**162 requests since freeze.**
 
 ---
 
-## NEW — 102
+## NEW — 103
 
 | ID | Subject | Raised | Source |
 |---|---|---|---|
@@ -104,6 +104,7 @@ Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests
 | [FR-2026-08-01-bar-is-absolute-quality-not-edge-build-rankings](FR-2026-08-01-bar-is-absolute-quality-not-edge-build-rankings.md) | Bar is absolute quality not edge build rankings | 2026-08-01 | chat 2026-08-01 |
 | [FR-2026-08-01-bar-is-parity-with-any-single-analyst-not-with-c](FR-2026-08-01-bar-is-parity-with-any-single-analyst-not-with-c.md) | Bar is parity with any single analyst not with c | 2026-08-01 | chat 2026-08-01 |
 | [FR-2026-08-01-consensus-may-be-draft-oriented-not-points-order](FR-2026-08-01-consensus-may-be-draft-oriented-not-points-order.md) | Consensus may be draft oriented not points order | 2026-08-01 | chat 2026-08-01 |
+| [FR-2026-08-01-dynamic-data-derived-pick-penalty-vona-to-replac](FR-2026-08-01-dynamic-data-derived-pick-penalty-vona-to-replac.md) | Dynamic data derived pick penalty vona to replac | 2026-08-01 | chat 2026-08-01 |
 | [FR-2026-08-01-find-the-early-qb-penalty-scientifically-rather](FR-2026-08-01-find-the-early-qb-penalty-scientifically-rather.md) | Find the early qb penalty scientifically rather | 2026-08-01 | chat 2026-08-01 |
 | [FR-2026-08-01-four-deliverables-not-one-pooled-projected-point](FR-2026-08-01-four-deliverables-not-one-pooled-projected-point.md) | Four deliverables not one pooled projected point | 2026-08-01 | chat 2026-08-01 |
 | [FR-2026-08-01-ingest-and-use-camp-reports-beat-reporters-depth](FR-2026-08-01-ingest-and-use-camp-reports-beat-reporters-depth.md) | Ingest and use camp reports beat reporters depth | 2026-08-01 | chat 2026-08-01 |
