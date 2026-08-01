@@ -4,11 +4,7 @@
 Threads are the source of truth. Change a thread's `STATUS:`, then re-run sync.
 Protocol: [`README.md`](README.md).
 
-**112 open** · 57 resolved
-
-> Hand-edited 2026-08-01 by `strategist` (no Bash in that role) to reflect
-> `2026-08-01-g2a-week-1-status-as-of-ruling-and-v2-ship-revie` → RESOLVED.
-> Re-run `python tools/handoffs.py sync` to regenerate authoritatively.
+**113 open** · 57 resolved
 
 ---
 
@@ -39,7 +35,7 @@ not an omission. Start your session at your own heading.
 | [2026-07-30-operator-standing-check-2026-07-30-handoffs-py-r](2026-07-30-operator-standing-check-2026-07-30-handoffs-py-r.md) | Operator standing check 2026 07 30 handoffs py r | `operator` | OPEN | 2d | none |
 | [90](090-fr-043-audit-claude-md-ss5-staleness-built-but-u.md) | Fr 043 audit claude md ss5 staleness built but u | `librarian` | OPEN | 3d | none |
 
-### `backend` — 31 waiting
+### `backend` — 32 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
@@ -73,6 +69,7 @@ not an omission. Start your session at your own heading.
 | [2026-07-30-availability-adp-measurements-m0-m5](2026-07-30-availability-adp-measurements-m0-m5.md) | Availability adp measurements m0 m5 | `strategist` | OPEN | 2d | FR-131, FR-066, thread 104, FR-128, thread 114 (partially) |
 | [2026-07-30-suggested-pick-rule-measure-qg-against-plain-vbd](2026-07-30-suggested-pick-rule-measure-qg-against-plain-vbd.md) | Suggested pick rule measure qg against plain vbd | `strategist` | OPEN | 2d | FR-2026-07-30-recommendation-logic-is-inverted (question 3 of the founder's bar), FR-051, FR-115 |
 | [2026-07-31-consensus-quality-season-by-season-plus-the-comp](2026-07-31-consensus-quality-season-by-season-plus-the-comp.md) | Consensus quality season by season plus the comp | `strategist` | OPEN | 1d | none |
+| [2026-08-01-g2a-admission-conditions-c1-c5-run-these-before](2026-08-01-g2a-admission-conditions-c1-c5-run-these-before.md) | G2a admission conditions c1 c5 run these before | `strategist` | OPEN | 0d | none |
 | [88](088-pr-004-f-bottomup-core-run-the-confirmatory-bott.md) | Pr 004 f bottomup core run the confirmatory bott | `strategist` | OPEN | 3d | none |
 
 ### `frontend` — 23 waiting
@@ -103,7 +100,7 @@ not an omission. Start your session at your own heading.
 | [2026-07-30-four-selectable-ranking-sources-board-contract-s](2026-07-30-four-selectable-ranking-sources-board-contract-s.md) | Four selectable ranking sources board contract s | `backend` | OPEN | 2d | none |
 | [2026-07-30-wire-assistant-retrieval-to-docs-assistant-conte](2026-07-30-wire-assistant-retrieval-to-docs-assistant-conte.md) | Wire assistant retrieval to docs assistant conte | `librarian` | OPEN | 2d | none |
 
-### `data-ops` — 14 waiting
+### `data-ops` — 15 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
@@ -121,6 +118,7 @@ not an omission. Start your session at your own heading.
 | [2026-07-30-pbp-was-ingested-without-epa-cpoe-sack-and-ff-op](2026-07-30-pbp-was-ingested-without-epa-cpoe-sack-and-ff-op.md) | Pbp was ingested without epa cpoe sack and ff op | `ranker` | OPEN | 2d | none |
 | [2026-07-30-play-callers-is-not-in-nfl-db-and-end-of-season](2026-07-30-play-callers-is-not-in-nfl-db-and-end-of-season.md) | Play callers is not in nfl db and end of season | `ranker` | OPEN | 2d | none |
 | [2026-07-30-three-measured-data-facts-from-batch-7-participa](2026-07-30-three-measured-data-facts-from-batch-7-participa.md) | Three measured data facts from batch 7 participa | `ranker` | OPEN | 2d | none |
+| [2026-08-01-g2a-admission-conditions-c1-c5-run-these-before](2026-08-01-g2a-admission-conditions-c1-c5-run-these-before.md) | G2a admission conditions c1 c5 run these before | `strategist` | OPEN | 0d | none |
 
 ### `strategist` — 22 waiting
 
@@ -271,5 +269,6 @@ _Nothing waiting on you._
 | [2026-07-30-pick-18-recommendation-defect-traced-reproduced](2026-07-30-pick-18-recommendation-defect-traced-reproduced.md) | Pick 18 recommendation defect traced reproduced | `ranker` → `strategist` |
 | [2026-07-30-recommendation-card-states-a-rule-the-code-does-](2026-07-30-recommendation-card-states-a-rule-the-code-does-.md) | Recommendation card states a rule the code does  | `strategist` → `frontend` |
 | [2026-07-31-attack-ranking-version-v1-the-first-assembled-ra](2026-07-31-attack-ranking-version-v1-the-first-assembled-ra.md) | Attack ranking version v1 the first assembled ra | `ranker` → `fable` |
+| [2026-08-01-g2a-week-1-status-as-of-ruling-and-v2-ship-revie](2026-08-01-g2a-week-1-status-as-of-ruling-and-v2-ship-revie.md) | G2a week 1 status as of ruling and v2 ship revie | `fable` → `strategist` |
 | [89](089-fr-040-costing-static-hosting-blocks-scoring-rec.md) | Fr 040 costing static hosting blocks scoring rec | `backend` → `frontend, pm` |
 
