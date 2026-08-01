@@ -30,10 +30,9 @@ lines it actually projects from run 1999–2025 with no gaps.
    every stage.** No shared slope exists on any lag feature. The real weakness is different from the
    one the ruling anticipated and is stated in §4. The rookie *build* work has not started.
 1. **The CAN table is done and is §1.** Nothing further is needed to answer it.
-2. **The SHOULD curve is running / partially landed** — `experiments/bottomup/v2/span_curve.py`,
-   `--spans 2012,2018,2015,2010,2006,2002 --ctx`, results in
-   `experiments/bottomup/results/span_curve_cells.csv`, log `span_curve_run.log`. Re-report with
-   no refit: `.venv/bin/python -m experiments.bottomup.v2.span_curve --report`.
+2. **The SHOULD curve is DONE and is §3** — six spans x two variants x four positions, all n = 7.
+   **The curve is flat: older seasons do not hurt.** Re-report with no refit:
+   `.venv/bin/python -m experiments.bottomup.v2.span_curve --report`.
 3. **Nothing is adopted and nothing may be adopted from this document alone.** M-4's own
    instruction is explicit: *"Do not extend the span unilaterally: it changes every published
    control ρ and would silently break comparability with B1 and C1."* The committed default
@@ -183,8 +182,92 @@ reported as evidence that older seasons are misleading. **QB and RB are the clea
 their volume channels (attempts, carries) have no gap.
 
 <!--SPAN-CURVE-START-->
-*Results pending — the run is in flight. `--report` regenerates this table from
-`span_curve_cells.csv` with no refit.*
+### 3.1 The curve is flat. Older seasons do not hurt.
+
+Δρ against the incumbent `first_feature_season = 2012`, paired by season, n = 7 target seasons
+(2018–2024) for every span. Positive = the alternative span is **better** than the incumbent.
+`raw` variant, board (M-panel) veterans:
+
+| span | QB | RB | TE | WR |
+|---|---|---|---|---|
+| **2002** | **+0.0151** | **+0.0068** | +0.0007 | **−0.0338** |
+| 2006 | −0.0006 | −0.0073 | −0.0037 | −0.0089 |
+| 2010 | −0.0125 | +0.0022 | −0.0037 | −0.0083 |
+| *2012 — incumbent* | — | — | — | — |
+| 2015 | +0.0052 | −0.0084 | +0.0036 | −0.0109 |
+| 2016 | +0.0138 | −0.0038 | +0.0033 | −0.0077 |
+
+Full-veteran-universe endpoint (**no ADP**, the one that could run to 2004):
+
+| span | QB | RB | TE | WR |
+|---|---|---|---|---|
+| 2002 | +0.0036 | +0.0048 | **−0.0131** | −0.0038 |
+| 2006 | +0.0046 | +0.0021 | +0.0025 | +0.0010 |
+| 2010 | +0.0001 | +0.0013 | +0.0022 | +0.0011 |
+| 2015 | −0.0032 | −0.0020 | −0.0039 | −0.0023 |
+| 2016 | +0.0005 | +0.0016 | +0.0013 | −0.0029 |
+
+**Every cell except two sits inside ±0.014, and the whole family is inside ±0.005 on the no-ADP
+endpoint.** Nothing degrades as the training window lengthens. At **QB the deepest span is the best
+cell** (+0.015 board, +0.004 full universe) and at RB it is the best or second-best. There is **no
+measured evidence that the 2002–2011 seasons are misleading**, which is the assumption a
+seven-season window has been resting on.
+
+**The two exceptions are both the confound that was named in advance.** WR at span 2002 is
+−0.0338 and TE at span 2002 is −0.0131 on the no-ADP endpoint — the two receiving positions, at the
+one span whose training window is dominated by feature seasons whose target-derived lag features are
+structurally zero (2003–2008). WR at 2006 and 2010 — spans that also straddle the hole but weight it
+less — are −0.009 and −0.008. **This is the targets defect, not a regime finding**, and it is the
+reason §1.2's `data-ops` thread matters.
+
+`rho_games` tells the same story more weakly: every deeper span is 0.01–0.03 worse at QB and
+0.005–0.015 worse at RB, flat at TE/WR. The availability channel is the one place a longer window is
+mildly unhelpful, and at QB — which is where C1 measured the placebo winning 14.7% of cells and
+where n = 19 — that should be treated as noise until it is replicated.
+
+### 3.2 Context-normalisation is inert on these endpoints, and the reason is structural
+
+`ctx` minus `raw` at the same span, every position, every metric:
+
+- **ρ(games): exactly 0.0000 in all 24 cells.** By construction, and the run confirms it: the
+  availability feature list is `gshare_w, gshare_1, present_1, age, age2, evidence` and **none of
+  those is a level-type feature**, so no normaliser touches it. Worth stating because a nonzero
+  number here would have been a bug.
+- **ρ(points): within ±0.008 in 22 of 24 cells.** The exceptions are both TE at deep spans and both
+  negative (2002 −0.042, 2010 −0.008) — `ctx` makes the worst cell *worse*.
+
+**Regime change is real in the league metrics and normalising for it does not move these
+endpoints.** Two mechanisms, both of which were foreseeable and one of which is already documented
+in §2: (a) the evaluation metric is a **within-season** rank correlation, so it already neutralises
+exactly the level shift `points_per_team_game` and `plays_per_game` measure; (b) an affine rescale
+that is constant within a season is largely absorbed by a linear model's own intercept and slope —
+it only bites through the *differences between* training seasons, which is a second-order effect.
+
+**This is not an argument that regime does not matter.** It is a measurement that *this* correction,
+on *these* endpoints, does nothing — and it points at where the correction would have to act
+instead:
+
+1. **The structural-share features are the ones a regime correction should target** —
+   `rb_carry_top30_share` fell 0.679 → 0.598 and `wr_target_top45_share` 0.582 → 0.522 across the
+   span, which changes *who* is fantasy-relevant, not just how much everyone scores. **Both
+   normalisers are unusable**, because both are NULL for exactly 2003–2008 — the same gap as the
+   feature they would normalise, and a normaliser sharing its feature's gap reintroduces the gap as
+   a time dummy (batch 7 D2). **The regime correction that would matter is blocked by the same data
+   defect as the span extension itself.**
+2. **Recency weighting is the other lever and it was deliberately not pulled here.** It belongs to
+   strategist's live pre-registration and fitting a decay profile outside it would be exactly the
+   unregistered tuning this project's guardrails exist to stop.
+
+### 3.3 What this measurement does and does not settle
+
+**Settles:** a longer *training* window is free. Nothing in the 2002–2011 seasons degrades the model
+at QB, RB or TE, and the WR/TE degradation at the deepest span is attributable to a named data gap.
+
+**Does not settle, and this is where the actual prize is:** the value of a longer *target* window.
+This design deliberately held targets fixed at 2018–2024 so the curve would be a curve, which means
+it measures none of the statistical-power gain that S = 12 or S = 21 would buy. **That gain is the
+whole reason M-4 was called the highest-value item**, and realising it is the tier decision in §1.3,
+which is strategist's to make and not mine.
 <!--SPAN-CURVE-END-->
 
 ---
