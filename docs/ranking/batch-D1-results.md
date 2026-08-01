@@ -13,10 +13,16 @@ Registration: `docs/ranking/factor-campaign-manifest/batch-D1.md`, committed `95
 
 *Rewritten on every update. Written for a successor with none of this context.*
 
-**The founder has re-prioritised, 2026-08-01, and he is right.** The panel's 2018–2024 window was
-set by the latest-starting source, not by the stat lines, which go back to 1999. **The season-span
-measurement (M-4) now outranks any further availability arm.** See §7 for what is measured so far
-and `docs/ranking/season-span-M4.md` for the work itself.
+**The founder re-prioritised mid-session, 2026-08-01, and he was right.** The panel's 2018–2024
+window was set by the latest-starting source, not by the stat lines, which go back to 1999. **That
+work is done**: `docs/ranking/season-span-M4.md`. Headline — the core stat lines support 21 target
+seasons, the binding constraint is the ADP archive, and the span curve is flat, so older seasons do
+not hurt. §7 records what this batch contributed to it.
+
+**Also answered while this batch was in flight** (founder's rookie ruling, 2026-08-01): **v2 already
+fits rookies and veterans separately at every stage** — no lag feature carries a shared slope. The
+live weakness is that `ROOKIE_COLS = ["log_draft_pick", "age"]` *is* the entire rookie model.
+Evidence and the proposed fix: `season-span-M4.md` §4. Not started.
 
 Batch D1 is **run, recorded and complete as registered**: eleven arms, two controls, no arm
 adopted. Nothing here is graded INCLUDE — grading stays suspended per C1.
