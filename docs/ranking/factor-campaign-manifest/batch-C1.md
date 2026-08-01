@@ -210,6 +210,78 @@ and it is reported as such rather than quietly dropped.
 volume gate); F1k, F3k and F5k NULL; F2k NULL. If F4k wins and F4 does not, the honest report is
 that NGS separation contributed nothing and its *coverage flag* was the signal.
 
+## Outcomes, recorded 2026-08-01 after every arm ran (grading final except where noted)
+
+**All six candidate factors returned NULL. Zero factors are included in v2 by this batch.** All 38
+cells ran, every arm asserted `n_preseason_proxy_reads == 0`, the 2025 holdout was never read, and
+each arm was graded against **G0** as pinned. Artifacts: `experiments/bottomup/results/factor_c1_{cells,contrasts}.csv`,
+`factor_c1_placebo_replication.csv`. Full write-up: `docs/ranking/batch-C1-results.md`.
+
+| arm | QB | RB | WR | TE | verdict |
+|---|---|---|---|---|---|
+| **F0 placebo** | +0.0135 NULL | +0.0007 NULL | +0.0005 NULL | **+0.0303 WIN (BH)** | **HARNESS DEFECT** |
+| **F1** snap share | — | +0.0027 NULL | −0.0025 NULL | −0.0285 HARM (CI) | **NULL** |
+| **F2** red-zone usage | — | −0.0001 NULL | −0.0010 NULL | +0.0020 NULL | **NULL** |
+| **F3** xFP + residual | +0.0034 NULL | **+0.0186 NULL** (p=0.059) | −0.0008 NULL | +0.0263 NULL | **NULL** |
+| **F4** NGS separation | — | — | −0.0000 NULL | −0.0220 NULL | **NULL** |
+| **F5** routes / TPRR | — | +0.0019 NULL | +0.0018 NULL | +0.0004 NULL | **NULL** |
+| **F6** steeper recency | **+0.0266 NULL** | −0.0091 NULL | −0.0107 NULL | −0.0115 NULL | **NULL** |
+| F1k–F5k controls | all NULL | all NULL | all NULL | all NULL | controls clean |
+
+### The registered rule failed, and the registered instrument is what caught it
+
+**F0 — pure seeded noise — returned a BH-robust WIN at TE and the registered inclusion rule graded
+the placebo `INCLUDE`.** Replication across independent noise draws measures the harness's
+false-positive rate at **~11–15% of cells against a nominal 2.5%** (QB 15%, RB 15%, TE 12%, WR 0%).
+Two mechanisms, separated by that replication:
+
+1. **The estimator is miscalibrated at n = 7 seasons.** Spearman over 10–19 players is discrete, so
+   a per-season delta is either exactly zero or a quantum of ±0.02–0.06; at QB a mean of 3.75 of 7
+   seasons contribute an exact zero. A season-block bootstrap over such a vector puts nearly all its
+   mass one side of zero whenever no season goes the other way — the CI excludes zero **by
+   construction, at any effect size**.
+2. **Adding any regressor carries a small upward bias scaling with 1/n** — mean placebo Δ +0.0027 QB,
+   +0.0009 RB, +0.0060 TE, −0.0005 WR against graded populations of 19, 43, 14, 50.
+
+A separate **numerical-hygiene bug** was caught by Amendment 1's control arm: `F2k` graded a
+BH-robust WIN on a mean delta of **3.97 × 10⁻¹⁷**, float64 noise whose sub-epsilon per-season
+deltas happened to share a sign. Fixed by snapping |Δ| < 1e−9 to zero — arithmetic, not a rule
+change, and it can only remove a WIN. It cleared three spurious wins (F2k TE, F2k RB, F2 TE) and
+left F0's TE win standing, that one being real arithmetic.
+
+**Consequence for this batch's verdicts:** because every candidate factor returned NULL, the
+miscalibration **cannot have manufactured an inclusion here** — it inflates false *positives*, and
+there are none to inflate. The NULLs stand. What the defect does bind is the *next* batch, and
+`strategist` owns the replacement rule (thread
+`2026-08-01-c1-the-registered-win-rule-has-a-14-6-false-posi.md`).
+
+### Amendment 1's control arms did their job
+
+Every `F1k`–`F5k` cell is NULL, most of them exactly no-change. **No part of any factor's effect is
+attributable to its coverage indicator**, and the registered prediction that `F4k` would win on the
+NGS qualification threshold was wrong — `sep_known_1` moved nothing (WR +0.0008, TE −0.0128, both
+NULL). Coverage was 92–100% everywhere, so no cell was graded NO DATA.
+
+### Registered predictions vs outcomes, scored honestly
+
+| prediction | outcome |
+|---|---|
+| F0: 0 WIN, 0 HARM | **WRONG — 1 BH-robust WIN.** The instrument worked by failing. |
+| F1: WIN at RB | **WRONG** — NULL at RB, HARM at TE |
+| F2: NULL-to-WIN at RB | right (NULL); the registered collinearity downside is the standing explanation |
+| F3: WIN at WR and RB | **WRONG at WR** (−0.0008); RB was the near-miss, so half-right on RB |
+| F3 downside: residual fitted positive → HARM | did not fire — no cell harmed |
+| F4: NULL at both | **right** |
+| F4k: WINs on the NGS volume gate | **WRONG** — moved nothing |
+| F5: WIN at WR | **WRONG** — +0.0018 NULL |
+| F6: NULL at WR/RB/TE, possible WIN at QB | **sign pattern exactly right** (QB +0.027, others all negative); magnitude did not reach the bar |
+| Hit rate 2–5 WIN of 19 non-placebo cells | **0 of 19** — below the registered band |
+
+**Two surviving hypotheses, neither demonstrated, both flagged for a registered confirmatory test
+rather than acted on:** F3 (xFP) at **RB** (+0.0186, above the RB placebo 95th percentile and its
+observed maximum) and F6 (steeper recency) at **QB** (+0.0266, likewise). Neither clears the
+registered CI rule and neither may be included on this batch's evidence.
+
 ## Scope notes
 
 No arm reads consensus, ADP or ECR in its ordering path. No arm reads a season-N proxy. No weights

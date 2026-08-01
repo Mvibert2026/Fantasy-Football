@@ -16,24 +16,34 @@
 > suspended pending a `strategist` ruling on a replacement rule; a thread is open. Arms continue to
 > **run and record** — the per-season deltas are estimator-independent and re-grading is mechanical.
 
-> **RUNNING COUNT OF INCLUDED FACTORS: 0 — 3 of 6 candidate factors measured.**
-> **F1 offensive snap share: NULL at RB and WR, HARM at TE.** The single most-cited untouched factor
-> in the ledger (T0-9 / N18), in `nfl.db` at **99.8–100% coverage** — it does not improve v2 anywhere.
-> **F2 red-zone (inside-20) usage share: NULL at all three positions**, on the full 2009+ PBP window.
-> The registered downside was the outcome: red-zone share is largely a monotone function of volume
-> the model already holds.
-> **F3 expected fantasy points (xFP) + luck residual: NULL at all four positions** — but it is the
-> strongest candidate so far and the only one worth a second look. RB **+0.0186** (CI
-> [−0.0003, +0.0404], p = 0.059) misses the bar by a hair and sits above the RB placebo maximum
-> (+0.0085); TE +0.0263 also clears the TE placebo maximum on a wide interval. **Reported as a
-> hypothesis, not a finding** — which is what `CLAUDE.md` §6.3 requires of a near-miss.
+> ## RUNNING COUNT OF INCLUDED FACTORS: **0 of 6 measured.** All six returned NULL.
+>
+> | factor | source | result |
+> |---|---|---|
+> | **F1** offensive snap share | `snap_counts` 2013+ | NULL at RB/WR, **HARM at TE** |
+> | **F2** red-zone (inside-20) usage share | `pbp` 2009+ | NULL at all three |
+> | **F3** expected fantasy points + luck residual | `ff_opportunity` 2006+ | NULL — **RB +0.0186, p = 0.059, the near-miss** |
+> | **F4** NGS average separation | `ngs_receiving` 2016+ | NULL at both |
+> | **F5** route participation / TPRR (proxy) | `participation` 2016+ | NULL at all three |
+> | **F6** steeper recency weighting | model constant | NULL — **QB +0.0266, sign pattern exactly as predicted** |
+>
+> **The honest headline is not "the well is dry."** It is that the four factors most often named in
+> this repo as *present in the database and untouched* — snap share, red-zone usage, xFP, route
+> participation — do not improve v2's ordering at 92–100% coverage on the full available window.
+> Two hypotheses survive the placebo calibration and neither is demonstrated: **xFP at RB** and
+> **steeper recency at QB**. Both are flagged for a registered confirmatory test, not included.
 
-> **A second harness defect, found by the Amendment 1 control arm.** `F2k` — the coverage indicator
-> alone — graded a **BH-robust WIN at TE on a mean delta of 3.97 × 10⁻¹⁷**, i.e. on float64
-> representation noise, because every season's sub-epsilon delta shared a sign. Fixed by snapping
-> |Δ| < 1e−9 to zero (arithmetic, not a rule change; it can only remove a WIN). That cleared three
-> spurious wins — `F2k` at TE and RB, and `F2` at TE. **The placebo's TE win survives the fix**,
-> because that one is a real arithmetic difference; it is the calibration defect, not this one.
+> ## The registered decision rule is broken, and the placebo proved it on the first arm.
+>
+> **F0 — seeded noise that provably cannot carry signal — returned a BH-robust WIN at TE
+> (+0.0303, CI [+0.0134, +0.0459], p = 0.0002) and the registered rule graded it `INCLUDE`.**
+> Replication across independent noise draws measures the harness's false-positive rate at
+> **~11–15% of cells against a nominal 2.5%** (QB 15%, RB 15%, TE 12%, WR 0%).
+>
+> **This cannot have manufactured an inclusion in this batch** — miscalibration inflates false
+> *positives*, and there are none: every candidate factor is NULL. The NULLs stand. What it binds is
+> the **next** batch. `strategist` owns the replacement rule; thread
+> `docs/handoffs/2026-08-01-c1-the-registered-win-rule-has-a-14-6-false-posi.md` is BLOCKED-ON-YOU.
 
 Registration: `docs/ranking/factor-campaign-manifest/batch-C1.md` (+ Amendment 1), committed before
 any arm was fitted. Control: **v2 with games arm G0**, pinned — the `strategist` G2a ruling is
@@ -52,30 +62,29 @@ a nominal 2.5%. `strategist` owns the replacement rule; thread
 `docs/handoffs/2026-08-01-c1-the-registered-win-rule-has-a-146-false-posi.md`. **Do not grade any
 factor INCLUDE until that lands.**
 
-**Next arm to run:** `F3` and its paired control `F3k` — expected fantasy points per game plus the
-realised-minus-expected residual, positions QB/RB/WR/TE, against **CTRL-A**
-(`first_feature_season=2012`, targets 2018–2024).
+**All six candidate factors and all five control arms have run and are graded. Nothing in batch C1
+is outstanding.** The next actions belong to other roles or to a next batch:
 
-**Command:**
+1. **`strategist` ruling on the WIN criterion** — thread
+   `docs/handoffs/2026-08-01-c1-the-registered-win-rule-has-a-14-6-false-posi.md`, `BLOCKED-ON-YOU`.
+   No further factor batch should be graded on the current rule. C1's NULLs do not depend on it.
+2. **A confirmatory test of the two surviving hypotheses**, registered by `strategist` before it is
+   run, one arm each, on the replacement rule: **F3 xFP at RB** (+0.0186, above the RB placebo 95th
+   percentile +0.0054 and its observed maximum +0.0085) and **F6 steeper recency at QB** (+0.0266
+   vs QB placebo q95 +0.0091). Neither may be included on C1's evidence.
+3. **A next batch (C2) of untested factors** — the ledger rows still untested for v2 and reachable
+   with data in hand: WOPR (T1-15), QB rushing attempts per game (N9), explosive rush rate (N13),
+   YAC per reception (N16), receiving share of an RB's own points (N17), late-season role
+   trajectory (N19), contract year (T1-27), combine athleticism (N34). **Odds-derived factors stay
+   blocked** until `data-ops` lands Vegas odds; `schedules` carries in-season `spread_line` and
+   `total_line` but no pre-season win totals, so nothing there is usable as a pre-draft input.
+
+**To re-grade everything after a rule change, with no refits:**
 
 ```
-.venv/bin/python -m experiments.bottomup.v2.run_c1 --arms F3,F3k
+.venv/bin/python -m experiments.bottomup.v2.run_c1 --regrade
+.venv/bin/python -m experiments.bottomup.v2.c1_report
 ```
-
-**Threshold registered for it:** batch-C1 §"Endpoint" — WIN = paired season-block bootstrap 95% CI
-of the per-season Spearman delta > 0, 4,000 reps, seed 20260801, BH at `M_campaign` = 130, q = 0.10
-— **plus the interim placebo-null floor, which is what any WIN must actually clear** (the
-`vs placebo null` column applies it automatically). Registered prediction: WIN at WR and RB, NULL at
-QB and TE, with a specific registered downside — `xfp_resid_pg_w` is a **luck** term whose correct
-coefficient is negative, so if OLS fits it positive on training rows the arm should HARM, and that
-is the mechanism to report rather than a reason to re-tune. Control `F3k` predicted NULL.
-
-**Primary config it grades against:** v2, games arm **G0**,
-`experiments/bottomup/ranking_versions/v2.json`.
-
-**Then, in order:** `F2,F2k` · `F3,F3k` · `F4,F4k` · `F5,F5k` · `F6`. Each `*k` is the paired
-coverage-indicator control from Amendment 1 and **must be run before its treatment arm's WIN may be
-claimed** — the runner marks an unpaired win `WIN (control pending)`.
 
 **State on disk after every arm:** `experiments/bottomup/results/factor_c1_cells.csv` (per
 position-season) and `factor_c1_contrasts.csv` (graded, BH recomputed over everything accumulated).
@@ -191,6 +200,20 @@ batch and I do not re-grade another agent's registered work.
 | F3k | RB | 7 | 0.993 | 0.4398 | 0.4399 | +0.0001 | [+0.0000, +0.0003] | inside | NULL | — |
 | F3k | TE | 7 | 1.000 | 0.3966 | 0.3966 | +0.0000 | [+0.0000, +0.0000] | inside | NULL (no change) | — |
 | F3k | WR | 7 | 1.000 | 0.5602 | 0.5602 | +0.0000 | [+0.0000, +0.0000] | inside | NULL (no change) | — |
+| F4 | TE | 6 | 0.922 | 0.4044 | 0.3824 | -0.0220 | [-0.0488, +0.0047] | **below** | NULL | — |
+| F4 | WR | 6 | 0.928 | 0.5338 | 0.5337 | -0.0000 | [-0.0019, +0.0019] | inside | NULL | — |
+| F4k | TE | 6 | 0.922 | 0.4044 | 0.3915 | -0.0128 | [-0.0344, +0.0000] | **below** | NULL | — |
+| F4k | WR | 6 | 0.928 | 0.5338 | 0.5346 | +0.0008 | [-0.0007, +0.0020] | inside | NULL | — |
+| F5 | RB | 6 | 0.994 | 0.4246 | 0.4266 | +0.0019 | [-0.0137, +0.0192] | inside | NULL | — |
+| F5 | TE | 6 | 1.000 | 0.4044 | 0.4047 | +0.0004 | [-0.0059, +0.0062] | inside | NULL | — |
+| F5 | WR | 6 | 1.000 | 0.5338 | 0.5355 | +0.0018 | [-0.0007, +0.0053] | **clears** | NULL | — |
+| F5k | RB | 6 | 0.994 | 0.4246 | 0.4256 | +0.0010 | [-0.0012, +0.0031] | inside | NULL | — |
+| F5k | TE | 6 | 1.000 | 0.4044 | 0.4044 | +0.0000 | [+0.0000, +0.0000] | inside | NULL (no change) | — |
+| F5k | WR | 6 | 1.000 | 0.5338 | 0.5341 | +0.0003 | [-0.0025, +0.0027] | inside | NULL | — |
+| F6 | QB | 7 | — | 0.2450 | 0.2715 | +0.0266 | [-0.0110, +0.0714] | **clears** | NULL | — |
+| F6 | RB | 7 | — | 0.4398 | 0.4307 | -0.0091 | [-0.0229, +0.0044] | **below** | NULL | — |
+| F6 | TE | 7 | — | 0.3966 | 0.3851 | -0.0115 | [-0.0477, +0.0239] | **below** | NULL | — |
+| F6 | WR | 7 | — | 0.5602 | 0.5495 | -0.0107 | [-0.0284, +0.0050] | **below** | NULL | — |
 
 ### Factor verdicts
 
@@ -200,8 +223,11 @@ batch and I do not re-grade another agent's registered work.
 | **F1** offensive snap share, recency-weighted | **NULL** | — | 3 cells graded |
 | **F2** red-zone (inside-20) usage share of team | **NULL** | — | 3 cells graded |
 | **F3** expected fantasy points per game + realised-minus-expected residual | **NULL** | — | 4 cells graded |
+| **F4** NGS average separation (lag 1) | **NULL** | — | 2 cells graded |
+| **F5** route participation and targets per route run (LABELLED PROXY) | **NULL** | — | 3 cells graded |
+| **F6** steeper recency weighting of prior seasons (0.70/0.22/0.08) | **NULL** | — | 4 cells graded |
 
-**Included factors: 0. Candidate factors measured: 3 of 6.**
+**Included factors: 0. Candidate factors measured: 6 of 6.**
 <!--C1-TABLE-END-->
 
 ## The hazard watch
