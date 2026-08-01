@@ -87,6 +87,54 @@ news of the day, and it has been replaced (**ADR-070**).
 
 # §B · Agent resume detail
 
+## RESULTS THAT LANDED LATE 2026-08-01 — read these before re-planning
+
+**Batch D1 (availability) + M-4 (season span), `docs/ranking/batch-D1-results.md` and
+`docs/ranking/season-span-M4.md`. No arm adopted.** Five findings, in order of consequence:
+
+1. **The span was capped by the ADP archive, not by the data.** Core stat lines run 1999–2025 with no
+   gaps → **21 target seasons** available. The seven-season panel exists because the *evaluation
+   universe* is defined by ADP coverage: **7 at exact half-PPR, 12 at PPR/non-PPR, 21 with no ADP.**
+   **But the accuracy curve is FLAT** — Δρ within ±0.014 everywhere, ±0.005 on the no-ADP endpoint,
+   and at QB the *deepest* span is the best cell. **So the span does not buy accuracy; it buys
+   statistical power**, which is the actual constraint (S=7 cannot reach a BH threshold by any
+   method; 12 or 21 can). Two data gaps: **targets are zero for 2003–2008** and air yards are absent
+   before 2009, so the extension is currently a **QB/RB extension** — thread open to `data-ops`.
+2. **Availability is partly job security, and the model has no term for it.** The games model is
+   unbiased on its fit population (−0.14 games) and **−2.41 on the board population it is actually
+   used on**. At matched projected games *and* matched prior availability, board players play
+   **13.77** and non-board **9.61**, separated by **prior-season points**. Removing that level alone
+   wins the MAE bar at every position. **Designed as D1 Amendment 1, deliberately not run** — found
+   in the batch's own output, so registering and fitting it in one breath would be tuning.
+3. **Resolved-vs-ongoing runs OPPOSITE to intuition.** Among players missing ≥40% of N−1, being **on
+   reserve at season end predicts MORE games next year** — 5.96 vs 4.14, and 26.7% vs 13.7% reach
+   12+ — because IR means *still employed* rather than gone. Fable's box-score timing signal
+   separates 4.56 vs 4.19, i.e. nothing. **This is why G1/G1a failed.**
+4. **The placebo caught it again.** Swapping clipped-OLS for a binomial GLM buys +0.067 games-ordering
+   at RB — and seeded noise buys **+0.070** on the identical contrast, because both share the *form
+   change*. Only **A3 (roster status)** clears its placebo bar: RB only, games ordering only, +0.025,
+   n=5. Practice participation and injury class are null-to-harmful; combined, directionally harmful
+   at all four positions.
+5. **The endpoint is the bottleneck.** On a continuous residual endpoint the arms **visibly work** and
+   the registered rank-correlation endpoint cannot see it: G0 +0.315/−0.271 SD; form change alone
+   moves it 0.011; **A5 moves it 0.101 on n=2,000.** Post-hoc, so it promotes nothing — but it is a
+   live ruling request in `docs/handoffs/2026-08-01-three-rulings-needed-the-endpoint-is-the-bottlen.md`.
+
+**Regime normalisation is inert.** Context-normalising from `league_season_metrics` moved ρ(games) by
+**exactly 0.0000 in all 24 cells** and ρ(points) within ±0.008 in 22 of 24 — because the metric is
+already within-season and an affine rescale is absorbed by the model's own coefficients. PM
+recommended this; it does not work as specified. The correction that *would* bite targets the
+structural-share features, and both normalisers are NULL for exactly 2003–2008 — the same gap.
+
+**Rookies: answered in code, not assumed.** v2 **already fits rookies and veterans separately** at
+every stage — disjoint fit populations, separate regressions, separate feature lists, no shared slope
+on any lag feature. **The real weakness is worse than the one feared:** `ROOKIE_COLS =
+["log_draft_pick", "age"]` **is the entire rookie model**, and rookie rates are a single population
+scalar. `combine` (2000–2026) is read by no projection model. Not started.
+
+**Two rulings block ranker**, both in the strategist thread above: whether the next confirmatory arm
+registers on the continuous residual endpoint, and which span tier to adopt.
+
 ## Running when this was written — check their output files before assuming nothing landed
 
 | Agent | Task | Output |
