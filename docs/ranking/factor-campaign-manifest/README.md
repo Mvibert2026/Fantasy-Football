@@ -55,11 +55,13 @@ campaign opened. Their m stands as recorded.
 | 7 | ranker | **16** | 2026-07-30, before fitting (in a duplicate manifest, migrated here) | `docs/ranking/factor-batch-7-precommit.md` |
 | PR-007 | backend (run), strategist (registered) | **4** | 2026-07-29, before fitting; own family `F-RECOMMENDATION-CONSTANTS`, own multiplicity design (BH not applicable, see `pr007.md`) | `docs/preregistration/PR-007-recommendation-constants-ablation.md` |
 | M2 | fable | **8** (+8 amendment 1) | 2026-08-01, before computing | `docs/fable/M2-findings.md` |
+| B1 | fable | **20** (12 + 8 amendment 1) | 2026-08-01, before fitting | `batch-B1.md` |
+| C1 | ranker | **38** (23 + 15 amendment 1) | 2026-08-01, before fitting | `batch-C1.md` |
 
 *(Other batches: add your row and your `batch-<n>.md` file. If your row is missing at grading
 time, the floor is what protects the campaign.)*
 
-**Σ m_b = 56 as of 2026-07-30, so the FLOOR of 80 is what bound for batches 5, 6 and 7.** That
+**Σ m_b = 130 as of 2026-08-01** (56 from batches 5/6/7, 16 from M2, 20 from B1, 38 from C1; PR-007's 4 sit in their own family and are excluded). The floor no longer binds. Historical note: **Σ m_b = 56 as of 2026-07-30, so the FLOOR of 80 is what bound for batches 5, 6 and 7.** That
 is the floor doing exactly the job it was put there for: batch 4 ran concurrently and had
 not registered when any of the three graded. No batch's grades change if it registers later —
 80 already exceeds any plausible Σ.
