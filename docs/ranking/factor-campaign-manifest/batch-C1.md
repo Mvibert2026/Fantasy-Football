@@ -22,17 +22,25 @@ the direct measurement of how easily this harness manufactures a win.
 
 ## The pinned primary (control)
 
-**v2 with the G0 games arm**, i.e. `experiments/bottomup/ranking_versions/v2.json`'s registered
-default. G1/G1a were rejected by their own rules in batch-B1; **G2a passed numerically but its
-adoption was conditional on a `strategist` as-of ruling that had not landed in writing when this
-batch was registered** (thread `2026-08-01-g2a-week-1-status-as-of-ruling-and-v2-ship-revie.md`
-carried `STATUS: RESOLVED` with no reply body at registration time).
+**v2 with the G0 games arm — pinned, and no re-grade is owed.**
+`experiments/bottomup/ranking_versions/v2.json`'s registered default is G0. G1/G1a were rejected by
+their own rules in batch-B1. **G2a's `strategist` ruling landed during this batch's registration:
+ADMIT-WITH-CONDITION, and the conditions C1–C5 are not satisfied** (thread
+`2026-08-01-g2a-week-1-status-as-of-ruling-and-v2-ship-revie.md`), whose operative sentence is:
 
-**Registered in advance: if G2a is subsequently admitted as v2's games arm, every cell in this
-batch is owed a re-grade against a G2a control.** The factor arms here all act on the **volume**
-channel while G0→G2a changes the **games** channel, so the two are close to orthogonal and the
-re-grade is expected to be second-order — but "expected to be second-order" is a prediction, not a
-result, and it is written down here so it cannot be renarrated later.
+> "Until conditions C1/C2/C3 return PASS, v2's games arm stays G0. No session may flip `v2.json`
+> on the ruling reply alone."
+
+So every cell in this batch is graded against **G0**, that is recorded in the `games_arm` column of
+`experiments/bottomup/results/factor_c1_contrasts.csv` per row, and no conditional caveat is
+carried.
+
+**No C1 arm reads week-1 roster rows, and this is asserted rather than believed.** Every arm runs
+with `allow_preseason_proxy=False` and asserts `n_preseason_proxy_reads == 0` per position per
+season. That matters because the same ruling established that `pos_data._ROSTER_SQL` filters
+`week = 1 AND game_type = 'REG'` and `_STATUS_AVAILABLE` includes `INA` — so week-1 status is
+**kickoff-dated, not cutdown-dated**, contrary to five documents that say otherwise. Nothing in C1
+inherits that defect because nothing in C1 touches that source.
 
 ### Matched controls — one per feature window
 
@@ -50,7 +58,7 @@ factor with the window. **Each arm is therefore differenced against a control ru
 CTRL-A is batch-B1's G0 re-run; whether it reproduces `ranking_v2_G0_cells.csv` is a descriptive
 reproducibility check, contributing 0 tests.
 
-## m_b = 23 — the graded cells
+## m_b = 23 — the graded cells  (raised to **38** by Amendment 1 below)
 
 Every arm differs from its matched control by **exactly one thing**: one factor's column block
 added to that position's volume feature spec (or, for F6, one constant). Availability arm, rate
@@ -66,7 +74,7 @@ specs, bonus curves, scoring, ordering path and evaluation population are inheri
 | **F5** | Route participation & targets per route run — **LABELLED PROXY** | T1-16 / T1-17 / N3 | `tprr_w`, `rpg_w`, `routes_known` | `participation` 2016+ | RB WR TE | 3 |
 | **F6** | Steeper recency weighting of prior seasons: `LAG_WEIGHTS` 0.55/0.30/0.15 → **0.70/0.22/0.08** | `CLAUDE.md` §6.4 | none — one constant | n/a | QB RB WR TE | 4 |
 
-**Σ m_b = 23. Campaign denominator `M_campaign` = 92 + 23 = 115** (batches 5/6/7 = 56, M2 = 16,
+**Σ m_b = 23, raised to 38 by Amendment 1. Campaign denominator `M_campaign` = 92 + 38 = 130** (batches 5/6/7 = 56, M2 = 16,
 B1 = 20; PR-007's 4 sit in their own family per `pr007.md`). BH at q = 0.10.
 
 ### Which volume spec each factor enters, fixed now
@@ -109,7 +117,7 @@ the factor's `*_known` indicator. Measured after registration, reported per cell
   any season-N proxy**, unlike B1's G2a.
 - **Holdout:** 2025 sealed, never read. Targets end at 2024.
 - **Statistics:** paired season-block bootstrap on the per-season deltas, 4,000 reps, seed
-  20260801, 95% CI. **WIN** = CI > 0, **HARM** = CI < 0, else **NULL**. BH at `M_campaign` = 115,
+  20260801, 95% CI. **WIN** = CI > 0, **HARM** = CI < 0, else **NULL**. BH at `M_campaign` = 130,
   q = 0.10, reported as the robustness flag on top of the CI verdict.
 
 ### The inclusion verdict per factor, fixed now
@@ -149,6 +157,58 @@ stacking is the next phase and needs its own registration.
 **Registered hit-rate prediction:** **2–5 WIN cells of the 19 non-placebo cells (10–26%).** If the
 observed rate lands far above that band, the batch reports it as a hazard to interrogate — starting
 with F0 and with the collinearity of the winning columns — and **not** as a breakthrough.
+
+## Amendment 1, 2026-08-01 — the `_known` control arms, registered before any arm was fitted
+
+**Nothing had been computed when this was written.** No arm had been run; the only numbers seen
+were a wall-clock timing (a G0 TE/WR run at 5–6 s) and table row counts. This amendment is a
+methodology correction arriving from the G2a ruling, not a response to a result.
+
+**The defect being pre-empted.** Every factor in F1–F5 carries a `*_known` coverage indicator, and
+each of those indicators is a **presence/join condition**, not a measurement:
+
+| factor | `*_known` is really | why it can carry signal on its own |
+|---|---|---|
+| F1 | did the `snap_counts` → `player_ids` PFR→gsis crosswalk resolve, and did he take a snap | a join failure is indistinguishable from "did not play" |
+| F2 | did he touch the ball inside the 20 in any lag season | zero red-zone work and "not in the league" are the same row |
+| F3 | does `ff_opportunity` have him | presence is a proxy for having been on an NFL field |
+| F4 | **was he in the NGS *qualified* set** | `ngs_receiving` qualifies on receiving volume — this indicator is close to a volume gate wearing a tracking-metric name |
+| F5 | does `participation` have him running routes | same presence geometry |
+
+This is the geometry **batch 7 measured at 215% of its own treatment effect** and **batch 3 wrote a
+VOID rule for**, and the G2a ruling notes nobody ran the corresponding `wk1_known` control there.
+It is the single most likely route to a false INCLUDE in this batch, which is exactly what the
+founder's hazard warning is about.
+
+**The fix: five paired control arms, registered now.** For each of F1–F5, an arm **F1k…F5k** that
+appends **only** that factor's `*_known` indicator(s) to the same volume specs, at the same
+positions, against the same matched control. No factor value column. Identical grading.
+
+| arm | columns added | positions | cells |
+|---|---|---|---|
+| **F1k** | `snap_known` | RB WR TE | 3 |
+| **F2k** | `rz_use_known` | RB WR TE | 3 |
+| **F3k** | `xfp_known` | QB RB WR TE | 4 |
+| **F4k** | `sep_known_1` | WR TE | 2 |
+| **F5k** | `routes_known` | RB WR TE | 3 |
+
+**m_b: 23 → 38. `M_campaign`: 115 → 130** (56 + 16 + 20 + 38). Controls are counted in the family
+rather than declared descriptive, because each one is graded and each one can change a verdict.
+
+### The VOID rule, fixed now
+
+**A treatment cell's WIN is VOID if the paired `*k` cell at the same position is itself a WIN at
+the CI level.** Deliberately asymmetric: voiding needs only the loose bar, claiming needs the
+BH-robust one. A VOID cell counts as neither WIN nor HARM in the factor verdict, and
+**INCLUDE requires a BH-robust WIN that is not VOID.**
+
+If a `*k` arm wins where its treatment arm does not, that is a finding in its own right — the
+project has been carrying a coverage indicator that outperforms the metric it was attached to —
+and it is reported as such rather than quietly dropped.
+
+**Registered predictions for the control arms:** F4k WINs (the NGS qualification threshold is a
+volume gate); F1k, F3k and F5k NULL; F2k NULL. If F4k wins and F4 does not, the honest report is
+that NGS separation contributed nothing and its *coverage flag* was the signal.
 
 ## Scope notes
 

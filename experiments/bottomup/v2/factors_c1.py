@@ -262,6 +262,34 @@ FACTOR_BLOCKS: Dict[str, Tuple[str, ...]] = {
     "F4": ("sep",), "F5": ("routes",), "F6": (),
 }
 
+#: the `*_known` column whose mean is the coverage measurement, per factor.
+#: F0 is synthetic (always known) and F6 adds no column.
+KNOWN_COL: Dict[str, Optional[str]] = {
+    "F0": None, "F1": "snap_known", "F2": "rz_use_known", "F3": "xfp_known",
+    "F4": "sep_known_1", "F5": "routes_known", "F6": None,
+}
+
+# ---------------------------------------------------------- Amendment 1 arms
+# Five paired CONTROL arms, registered in batch-C1 Amendment 1 before any arm
+# was fitted. Each appends ONLY its factor's coverage indicator to the same
+# volume specs at the same positions.
+#
+# WHY THEY EXIST. Every `*_known` flag above is a presence/join condition, not a
+# measurement: `snap_known` is really "did the PFR->gsis crosswalk resolve",
+# `sep_known_1` is really "was he inside the NGS QUALIFIED set", and so on. A
+# treatment arm can win entirely on that indicator while the metric it is
+# attached to contributes nothing. Batch 7 measured this artifact at 215% of its
+# own treatment effect and batch 3 wrote a VOID rule for it. Deriving the
+# control's column list from the treatment's, rather than retyping it, is what
+# guarantees the pair actually differs by exactly the value column.
+PAIRED_CONTROL = {f"{f}k": f for f in ("F1", "F2", "F3", "F4", "F5")}
+
+for _k, _f in PAIRED_CONTROL.items():
+    FACTOR_COLS[_k] = [KNOWN_COL[_f]]
+    FACTOR_BLOCKS[_k] = FACTOR_BLOCKS[_f]
+    KNOWN_COL[_k] = KNOWN_COL[_f]
+del _k, _f
+
 #: which volume specs a factor column joins, per position (batch-C1 §"Which
 #: volume spec each factor enters"). Base lists are imported, never retyped.
 _BASE_SPECS: Dict[str, Dict[str, List[str]]] = {
@@ -284,10 +312,3 @@ def volume_cols_for(factor: str, position: str) -> Dict[str, List[str]]:
 #: coverage floor from the registration: an arm is NO DATA in a cell where fewer
 #: than 80% of graded rows carry a real value for the factor's `*_known` flag.
 COVERAGE_FLOOR = 0.80
-
-#: the `*_known` column whose mean is the coverage measurement, per factor.
-#: F0 is synthetic (always known) and F6 adds no column.
-KNOWN_COL: Dict[str, Optional[str]] = {
-    "F0": None, "F1": "snap_known", "F2": "rz_use_known", "F3": "xfp_known",
-    "F4": "sep_known_1", "F5": "routes_known", "F6": None,
-}
