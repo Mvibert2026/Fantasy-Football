@@ -38,46 +38,58 @@ def load_base():
 def add_db_joined_features(df):
     """Join two additional pre-Week-1-constructible features from unused DB tables.
 
-    depth_chart_starter_wk1: was this player listed at pos_rank 1 (starter) at their position
-        on their team's Week 1 (regular-season) depth chart of the TARGET season. Depth charts
-        are set before kickoff, so this is available before Week 1 games are played.
-    preseason_injury_flag: did this player appear on an injury report during the PRESEASON
-        (game_type == 'PRE') of the target season, at any practice/report status. Preseason
-        injury reports are, by construction, pre-Week-1.
-    Both are counted in the screening denominator (see NOTE_DB_JOINED below).
+    depth_chart_starter_wk1: was this player listed at depth_team==1 (first-team/starter) at
+        their position on their team's Week 1 regular-season depth chart of the TARGET season.
+        Depth charts are set before kickoff, so this is available before Week 1 games are played.
+    wk1_injury_report_flag: did this player appear on an NFL injury report (any status) for
+        Week 1 of the TARGET regular season. Injury reports are published during the week
+        leading up to the game (Wed-Fri), so this reflects pre-kickoff information, but it is
+        week-1-of-season, not preseason -- the injuries table has no PRE game_type rows at all
+        (checked directly), so this is a proxy for the originally-intended preseason signal and
+        is reported as one.
+    Both are counted in the screening denominator.
     """
     con = sqlite3.connect(DB_PATH)
 
+    # pos_rank/pos_slot are unpopulated (None) throughout this table (checked directly,
+    # 2026-08-01) despite being named for exactly this purpose. `depth_team` is the field that
+    # actually carries starter/backup ordinal ("1" = first team) and is populated.
     depth = pd.read_sql(
         """
-        SELECT DISTINCT gsis_id AS player_id, season, pos_rank
+        SELECT DISTINCT gsis_id AS player_id, season, depth_team
         FROM depth_charts_weekly
         WHERE game_type = 'REG' AND week = 1 AND gsis_id IS NOT NULL
         """,
         con,
     )
-    depth["pos_rank_num"] = pd.to_numeric(depth["pos_rank"], errors="coerce")
-    depth = depth.sort_values("pos_rank_num").drop_duplicates(["player_id", "season"], keep="first")
-    depth["depth_chart_starter_wk1"] = (depth["pos_rank_num"] == 1).astype(float)
+    depth["depth_team_num"] = pd.to_numeric(depth["depth_team"], errors="coerce")
+    depth = depth.sort_values("depth_team_num").drop_duplicates(["player_id", "season"], keep="first")
+    depth["depth_chart_starter_wk1"] = (depth["depth_team_num"] == 1).astype(float)
     depth = depth[["player_id", "season", "depth_chart_starter_wk1"]]
 
+    # injuries table has no game_type == 'PRE' rows (checked directly: only REG/WC/DIV/CON/SB
+    # are present). The closest available pre-Week-1 proxy is any injury-report appearance in
+    # the FIRST REGULAR-SEASON week, which reflects a status set before that week's kickoff but
+    # is week-1-in-season, not preseason -- flagged as a proxy, not the originally intended
+    # signal, and reported as such.
     inj = pd.read_sql(
         """
         SELECT DISTINCT gsis_id AS player_id, season
         FROM injuries
-        WHERE game_type = 'PRE' AND gsis_id IS NOT NULL
+        WHERE game_type = 'REG' AND week = 1 AND gsis_id IS NOT NULL
+          AND report_status IS NOT NULL
         """,
         con,
     )
-    inj["preseason_injury_flag"] = 1.0
-    inj = inj[["player_id", "season", "preseason_injury_flag"]]
+    inj["wk1_injury_report_flag"] = 1.0
+    inj = inj[["player_id", "season", "wk1_injury_report_flag"]]
 
     con.close()
 
     df = df.merge(depth, on=["player_id", "season"], how="left")
     df = df.merge(inj, on=["player_id", "season"], how="left")
     df["depth_chart_starter_wk1"] = df["depth_chart_starter_wk1"].fillna(0.0)
-    df["preseason_injury_flag"] = df["preseason_injury_flag"].fillna(0.0)
+    df["wk1_injury_report_flag"] = df["wk1_injury_report_flag"].fillna(0.0)
     return df
 
 
@@ -100,8 +112,8 @@ CANDIDATE_COLS = [
     "miss1_x_resolved",
     # meta / market
     "average_pick", "n_train_seasons",
-    # DB-joined preseason indicators
-    "depth_chart_starter_wk1", "preseason_injury_flag",
+    # DB-joined pre-Week-1 indicators (see add_db_joined_features docstring for caveats)
+    "depth_chart_starter_wk1", "wk1_injury_report_flag",
 ]
 
 # columns that are NOT candidates: target-season actuals (games, points, targets, rec_yards,
