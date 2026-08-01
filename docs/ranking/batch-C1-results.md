@@ -141,14 +141,31 @@ The registered F0 draw's TE result (+0.0303) sits ~2.8 sd above the replicated p
 (+0.0046, sd 0.0093). So that specific draw was also an outlier — **both** defects were present in
 the single number that triggered this investigation.
 
-### The empirical placebo null (12 draws — provisional, larger replication running)
+### The empirical placebo null — final, 34 independent noise draws
 
-| position | mean | sd | min | max | q90 |
-|---|---|---|---|---|---|
-| QB | +0.0040 | 0.0035 | −0.0010 | **+0.0092** | +0.0086 |
-| RB | +0.0019 | 0.0033 | −0.0042 | **+0.0085** | +0.0052 |
-| TE | +0.0046 | 0.0093 | −0.0067 | **+0.0197** | +0.0192 |
-| WR | −0.0005 | 0.0021 | −0.0068 | **+0.0012** | +0.0011 |
+`experiments/bottomup/results/factor_c1_placebo_replication.csv`. The 12-draw figures that triggered
+the investigation held up on 34.
+
+| position | graded n | placebo WIN rate | HARM rate | mean Δ | **95th pct** | max Δ |
+|---|---|---|---|---|---|---|
+| QB | 19 | **14.7%** | 2.9% | +0.0030 | **+0.0110** | +0.0151 |
+| RB | 43 | **11.8%** | 0.0% | +0.0006 | **+0.0054** | +0.0085 |
+| WR | 50 | 0.0% | 5.9% | −0.0004 | **+0.0015** | +0.0029 |
+| TE | 14 | **11.8%** | 2.9% | +0.0062 | **+0.0233** | +0.0280 |
+| **all** | — | **9.6%** | 2.9% | — | — | — |
+
+**Only two cells in the entire batch clear their position's placebo 95th percentile**, and both are
+NULL under the registered rule:
+
+| hypothesis | Δ | placebo q95 | placebo max |
+|---|---|---|---|
+| **F3 xFP at RB** | **+0.0186** (p = 0.059) | +0.0054 | +0.0085 |
+| **F6 steeper recency at QB** | **+0.0266** | +0.0110 | +0.0151 |
+
+Neither may be included on this batch's evidence. Both are handed to `strategist` for a registered
+confirmatory design. **F6 is the one worth prioritising** — it is `CLAUDE.md` §6.4's own question,
+it needs no new data, and its sign pattern across positions was exactly as registered. The risk
+against it is equally specific: QB is where the placebo wins most often (14.7%) and n = 19.
 
 ### What this does and does not say about batch B1
 

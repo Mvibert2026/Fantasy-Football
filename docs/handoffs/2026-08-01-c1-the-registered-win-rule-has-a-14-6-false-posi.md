@@ -100,3 +100,48 @@ re-grading is a mechanical pass over
 `experiments/bottomup/results/factor_c1_contrasts.csv` (`run_c1.py --regrade`) and costs no refits.
 **No factor will be graded INCLUDE until you rule.** Registration and full write-up:
 `docs/ranking/factor-campaign-manifest/batch-C1.md`, `docs/ranking/batch-C1-results.md`.
+
+### ranker · 2026-08-01
+
+**Batch C1 is complete: all six candidate factors and all five control arms ran and graded. Every
+candidate returned NULL, so nothing here is waiting on your ruling to be reported honestly** — the
+miscalibration inflates false positives and this batch produced none. Your ruling governs the
+**next** batch and the two hypotheses below, not C1's NULLs.
+
+**The larger replication finished at 34 independent noise draws** (was 12 when I opened this).
+Raw: `experiments/bottomup/results/factor_c1_placebo_replication.csv`.
+
+| position | draws | placebo WIN rate | HARM rate | mean Δ | **95th pct** | max Δ |
+|---|---|---|---|---|---|---|
+| QB | 34 | 14.7% | 2.9% | +0.0030 | +0.0110 | +0.0151 |
+| RB | 34 | 11.8% | 0.0% | +0.0006 | +0.0054 | +0.0085 |
+| WR | 34 | 0.0% | 5.9% | -0.0004 | +0.0015 | +0.0029 |
+| TE | 34 | 11.8% | 2.9% | +0.0062 | +0.0233 | +0.0280 |
+
+Aggregate placebo WIN rate **9.6% against a nominal 2.5%** — the 12-draw figure held up.
+
+**A second, separate defect I found and fixed while running, reported so you can check the fix
+rather than take it on trust.** Amendment 1's control arm `F2k` graded a **BH-robust WIN on a mean
+delta of 3.97 × 10⁻¹⁷** — float64 representation noise, because the arm and control rhos travel
+different code paths and every sub-epsilon per-season delta shared a sign, so every bootstrap
+resample mean sat above zero. I snapped |Δ| < 1e−9 to zero in `run_c1.boot_diff`. **I treated that
+as arithmetic rather than a rule change** on the grounds that it can only ever remove a WIN, never
+create one; if you disagree that it was mine to make, say so and I will re-register it. It cleared
+three spurious wins (F2k TE, F2k RB, F2 TE) and left the placebo's TE win standing, that one being
+a real arithmetic difference.
+
+**The two hypotheses I want a confirmatory design for, and will not test myself until you register
+it.** Both fail the current CI rule and both clear the empirical placebo null:
+
+| hypothesis | Δ | position placebo q95 / max | registered prediction was |
+|---|---|---|---|
+| **F3 — xFP + luck residual, at RB** | **+0.0186** (CI [−0.0003, +0.0404], p = 0.059) | +0.0054 / +0.0085 | WIN at RB — half-delivered |
+| **F6 — steeper lag recency (0.70/0.22/0.08), at QB** | **+0.0266** (CI [−0.0110, +0.0714]) | +0.0091 / +0.0107 | possible WIN at QB; **sign pattern exactly right** — positive at QB, negative at RB/WR/TE |
+
+F6 is the one I would prioritise: it is `CLAUDE.md` §6.4's own question, it costs no new data, and
+its direction matches the regime story the project already measured at QB. Note the risk that
+cuts against it — the QB cell is where the placebo wins most often (15%), and n = 19.
+
+Everything is committed and re-gradeable without refits: `run_c1.py --regrade` then
+`c1_report.py`. Registration `docs/ranking/factor-campaign-manifest/batch-C1.md` (Outcomes section
+added), results `docs/ranking/batch-C1-results.md`, ledger Section 0.
