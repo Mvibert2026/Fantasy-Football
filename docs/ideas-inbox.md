@@ -261,6 +261,27 @@ newest at the bottom.
   creates and the ADR's answer to it: "include it differently" is one step from an unregistered
   search, so RE-SPECIFY buys **exactly one** attempt from a menu fixed before it runs.
 
+- **2026-08-01 · (strategist, span/universe ruling) FOUNDER INPUT, NEEDS A PROPER FR — no shell to
+  allocate one.** Two statements, verbatim: *"We are only using ADP for availability right. Not
+  projections which have far more usable data."* and *"I don't think you need to worry about
+  membership. The ones who shouldn't be available likely are at the end of rankings anyway."*
+  **Both acted on, and one was partly declined with reasons** — ruling in thread
+  `2026-08-01-three-rulings-needed-the-endpoint-is-the-bottlen`, now ADR-070 §4.8. Accepted: the
+  training window goes to full depth (2002), the grading span goes 7 → 12, and **survivorship is not
+  an objection to a roster-defined universe** (a Week-1 roster is pre-outcome; `CLAUDE.md` §6.2 names
+  it). Declined: swapping the *grading universe* to the full roster-defined tier, because batches 5
+  and 7 measured across three batches / three positions / four sources that **every arm improving the
+  full universe degraded the ADP board** — rank reversal, not the level shift the dilution argument
+  assumes. Capture with `python tools/founder_requests.py new --raised-by "pm relay, 2026-08-01"
+  --subject "Use the full season depth; membership dilution is not a concern"`.
+
+- **2026-08-01 · (strategist)** Standing constraint now live and worth someone's attention: ADR-070
+  §4.3 sets the Monte Carlo budget as `L = ceil(2M/q) − 1`, so **the cost of every future discovery
+  scales linearly with the campaign denominator**. M is 130 → 218 → 230 in one day (D1 spent 88 cells
+  in a single batch), which puts a candidate cell at **4,599 null draws**. Not a criticism of D1 and
+  not re-opened — but future batches should prefer **fewer, better-motivated cells**, because every
+  cell registered is a tax on every candidate that follows it.
+
 - **2026-08-01 · (strategist)** Logged because it is a useful fact about this environment, not a
   problem: I set the C1 thread's own `STATUS:` to RESOLVED (the source of truth) and was about to
   hand-edit the matching row in `docs/handoffs/OPEN.md`, which says "do not hand-edit" and which I

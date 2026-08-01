@@ -186,9 +186,47 @@ null. Replaced by `docs/preregistration/PR-DRAFT-lag-weight-decay-profile.md`: a
 per position, null supplied by **lag-order permutations**, pre-committed default of keeping the
 incumbent, m_b=4, under an hour of compute. Measurements commissioned as M-1..M-7, staged at
 `docs/preregistration/HANDOFF-BODY-c2-null-calibration-2026-08-01.md` for `pm` to allocate;
-**M-4 — how far back the target span can go — is the highest-value item, because every problem here
-reduces to S=7.** The factor ledger gains **Section 0** recording C1's cells as the first
-measurements taken against v2, and warning that Sections 1–6 were assigned under the old frame.
+**M-4 — how far back the target span can go — was the highest-value item, and it came back the same
+day (see the span ruling below).** The factor ledger gains **Section 0** recording C1's cells as the
+first measurements taken against v2, and warning that Sections 1–6 were assigned under the old frame.
+
+**SPAN, ENDPOINT AND UNIVERSE RULED — 2026-08-01, strategist, thread
+`2026-08-01-three-rulings-needed-the-endpoint-is-the-bottlen` (RESOLVED), now ADR-070 §4.8/§4.9.**
+Ranker's M-4 measurement (`docs/ranking/season-span-M4.md`) found the core stat lines have **no gaps
+1999–2025** and that v2's seven-season window is pinned by the **ADP archive**, which defines the
+evaluation universe and nothing else. **Three knobs were being treated as one and they are
+separable.** (1) **Training window: adopt the deepest clean window** — §3.1 measured the curve as
+**flat** (every cell but two inside ±0.014; QB's deepest span is its *best* cell), so
+`first_feature_season = 2002` at QB/RB. (2) **Grading span: tier 2 — `m_panel_ppr12`, targets
+2013–2024, S = 12 at all four positions**, from the next batch forward; no retrospective re-run,
+because changing span and estimator in one re-grade confounds them. **S = 12 clears the bar that
+S = 7 could not**: an exact season-level randomisation test floors at 2⁻¹² = 2.4×10⁻⁴ < 7.7×10⁻⁴.
+(3) **Grading universe: the M-panel stays.** The full-veteran (roster-defined) tier is **mandatory
+co-reporting on every cell** and is the primary instrument for estimator-calibration work, but it is
+**not** the grading panel — batches 5 and 7 measured, across **three batches, three positions, four
+sources**, that *every arm improving the full universe degraded the ADP board*. That is rank
+**reversal**, not a level shift: Spearman over ~250 rostered players is dominated by separating
+starters from non-players, over the draftable ~20–50 by ordering players who all play. Founder ruled
+membership dilution is not a concern and **he is right that survivorship is not the objection** (a
+Week-1 roster is pre-outcome, `CLAUDE.md` §6.2 names it); the reversal finding is a different and
+binding one. **Tier 2 is also entirely clear of the 2003–2008 targets hole**, which tier 3 is not —
+so the deep tier is a QB/RB extension only, and **the bare claim "21 seasons" is now forbidden
+project-wide unless all four positions have 21**; `S` is published per position. New mandatory
+four-part provenance key on every ρ (`universe / targets / S / first_feature_season`), **enforced by
+a raise on any cross-universe or cross-span join**. **Tier 2 also unlocks the confirmatory test
+strategist had ruled did not exist**: 2013–2017 is data C1 never saw, so **F3 xFP at RB becomes a
+registered arm of the next batch at tier 2**, with the five incremental seasons reported separately
+as the out-of-sample quantity. **Continuous residual endpoint: admitted, paired, never substituted**
+(§4.9) — ordering keeps primacy because D1's A5 arm improves the residual while being directionally
+harmful on ordering at all four positions; and continuity is not calibration, since D1's own
+seeded-noise arm returned +0.070/+0.122 **BH-robust** on a continuous endpoint. **Batch D1
+Amendment 1 registered by strategist** at ranker's request
+(`docs/ranking/factor-campaign-manifest/batch-D1-amendment-1.md`, m_b = 12, **campaign M 218 → 230**):
+the games model is unbiased on the population it is fitted on and **2.41 games low on the population
+it is used on**; three arms, graded on **games, not points** (which dissolves the `ppg_w`
+double-count concern rather than testing it), and the arm strategist added — **Q0, a refit on the
+board population with no new features** — runs first, because the trivial explanation goes before
+the interesting one. Nothing adopted; `v2.json` untouched.
 
 **Last verified:** 2026-08-01, fable B1 session — **ranking v2 built, run 2018–2024, graded; the
 games repair splits cleanly in two.** First build mandate ever issued to fable

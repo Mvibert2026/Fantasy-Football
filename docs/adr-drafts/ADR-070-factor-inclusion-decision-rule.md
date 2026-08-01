@@ -323,6 +323,100 @@ remove a WIN, it changes no estimand, and it caught a BH-robust win on a mean de
 
 ---
 
+### 4.8 Universe and span provenance — added 2026-08-01 with the tier ruling
+
+The C1 defect was an estimator failure. This clause pre-empts the *other* way this endpoint produces
+two numbers for one quantity: computing them on different populations or different spans and putting
+them in the same column.
+
+**Every ρ and every Δρ, in every CSV and every published table, carries a four-part provenance key:**
+
+```
+universe   ∈ {m_panel_halfppr12, m_panel_ppr12, m_panel_nonppr12, full_veteran_roster}
+targets    = "YYYY-YYYY"      S = <int>      first_feature_season = <int>
+```
+
+plus **`S_pos` per position** wherever a position's usable span differs from the headline.
+
+1. **No cross-universe or cross-span delta may ever be computed.** An arm differences only against a
+   control carrying an *identical* key — the existing CTRL-A/B/C matched-control discipline extended
+   to two more dimensions.
+2. **Two ρ values with different `universe` tags may not share a column.** Separate tables, or the
+   tag in the header.
+3. **A number without the key is `UNLABELLED` and is not citable**, the same standing as
+   `UNCALIBRATED` in §4.4.
+4. **Enforced structurally: the grading code raises when asked to join cells whose keys differ.**
+   `CLAUDE.md` §6.1 requires a layer that refuses; a warning is not one.
+5. **Backfill, do not restate.** Every published B1/C1 number is
+   `m_panel_halfppr12 / 2018-2024 / S=7 / ff=2012`. Add the key; do not re-derive the numbers.
+
+**`S` is a per-position property and is published as one.** Any document stating a span states it
+per position and, for any position whose span is shorter, names the binding source. **The bare claim
+"21 seasons" is forbidden project-wide unless all four positions have 21.** Today they do not: the
+2003–2008 targets hole makes the deepest tier a QB/RB extension, and the WR/TE decline measured at
+deep spans (`docs/ranking/season-span-M4.md` §3.1, WR −0.0338 at span 2002) is **that data defect,
+not a regime finding**, and may not be reported as evidence that older seasons mislead.
+
+**The grading panel.** Ruled 2026-08-01, thread
+`2026-08-01-three-rulings-needed-the-endpoint-is-the-bottlen`: **tier 2 — `m_panel_ppr12`, targets
+2013–2024, S = 12 at all four positions** — is the grading panel from the next batch forward, with
+the **deepest clean training window** adopted separately (`first_feature_season` 2002 at QB/RB;
+`season-span-M4.md` §3.1 measured the training-window curve as flat, with QB's deepest span its best
+cell). `full_veteran_roster` is **mandatory co-reporting on every cell** and is the **primary
+instrument for estimator-calibration work** (§6.2's checks, placebo ensembles, discreteness
+diagnostics), where its per-season n of ~250 is a genuine advantage.
+
+**It is not the grading panel, and the reason is a measurement rather than a preference.** Batches 5
+and 7 found, across **three batches, three positions and four sources**, that *every arm improving
+the full universe degraded the ADP board* — rank **reversal** between populations, not a level
+shift. The mechanism: Spearman over ~250 rostered players is dominated by separating starters from
+non-players, which is mostly the availability channel; Spearman over the draftable ~20–50 is
+dominated by ordering players who all play. **They measure different skills**, so an endpoint
+rewarding the first selects arms that lose the second.
+
+**Survivorship is not the objection and was never a valid one** (founder's ruling, 2026-08-01): a
+Week-1 active roster is observable before any outcome and `CLAUDE.md` §6.2 names it explicitly, so
+the wide tier is sound on that axis. One asymmetry for the record, pointing the other way from the
+usual framing: week-1 rows are **kickoff-dated** (G2a ruling), so a roster-defined universe silently
+excludes players cut or IR'd in the final preseason week — the bust class — while an ADP-defined
+universe is dated strictly pre-draft. §6.2 sanctions both.
+
+**Conflict rule, pre-committed:** improves both → normal grading; improves the wide universe and
+**harms** the panel → **not adopted**, reported as a finding about the arm; improves the panel and
+harms the wide universe → eligible, flagged narrow-population-specific, re-checked at §6.5.
+
+**One registered escalation:** if tier-2 QB proves structurally undecidable — §4.4a's consistency
+q95 saturating on exact-zero mass — a **QB-only `full_veteran_roster` primary** is admissible under
+the pre-committed condition that the arm's tier-2 delta is **non-negative**. Nothing else uses it.
+
+**ADR-069 is not at risk.** ADP membership decides *which players are scored*, never what they are
+scored against; the ADP column is not a feature and not an ordering input. §6.5's four-baseline
+comparison is necessarily restricted to seasons where those baselines exist (market ADP 2018–2024,
+ECR 2021–2024, per PR-009) and fires **once at the end** — a restricted release gate is not an
+argument for a restricted development panel, and is not an argument for abandoning a draft-relevant
+grading universe either. Those are separate questions and this clause answers the second on its own
+evidence.
+
+### 4.9 The continuous residual endpoint — admitted, paired, never substituted
+
+Ruled 2026-08-01, same thread. A continuous residual endpoint (`z(realised) − z(projected)`,
+standardised within position-season) is admitted for the class of claim ordering cannot address —
+**bias and calibration** — and is barred from replacing the ordering endpoint.
+
+- **Ordering keeps primacy.** An arm improving the residual while harming ordering is **not
+  adopted**, and is reported as a calibration gain with an ordering cost. Batch D1's A5 arm is
+  exactly that shape: it improves the residual and is directionally harmful on ordering at all four
+  positions.
+- **No separate multiplicity family.** A residual cell counts in campaign M exactly as an ordering
+  cell does, or it is a second bite at the same data.
+- **Continuity is not calibration, and `n` is not reassurance.** The resampling unit is still the
+  **season**, clustered by player — guardrails §0 puts effective N "closer to 5 than 5,100," and
+  2,000 player-seasons with recurring players is that trap exactly. A residual endpoint gets the
+  **same matched null ensemble and the same §6.2(a) leave-one-out check** before it grades anything.
+  D1's own seeded-noise arm returned +0.070 and +0.122 **BH-robust** on its continuous E2 endpoint —
+  a contrast-form failure rather than a discreteness one, which is the point: a different endpoint
+  fails differently, and none is calibrated by assumption.
+
 ## 5. What it costs, and what happens if that is unaffordable
 
 Per §4.3, a 20-cell batch is ≈ 20 × 120 = **2,400 null runs** for the cells that stop early, plus up
