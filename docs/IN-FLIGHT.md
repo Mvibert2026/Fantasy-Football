@@ -30,10 +30,25 @@ loses to the raw consensus it is derived from**. v2's entire measured deficit is
 
 | # | Agent | Task | Where its output goes |
 |---|---|---|---|
-| 1 | `strategist` | **G2a as-of ruling** — blocking everything below | `docs/handoffs/2026-08-01-g2a-week-1-status-as-of-ruling-and-v2-ship-revie.md` |
-| 2 | `data-ops` | Ingest **Vegas odds** + **per-analyst rankings** | `data/nfl.db`, `src/ingest_*`, ingest notes |
-| 3 | `ranker` | **Factor inclusion campaign against v2** | `docs/ranking/factor-campaign-manifest/`, batch results doc |
-| 4 | *(background process)* | **PR-007** recommendation-constants ablation | `src/run_pr007.py` → results doc, handoff to `frontend` |
+| 1 | ~~`strategist` G2a ruling~~ | **DONE** — ADMIT-WITH-CONDITION, conditions unmet, v2 stays on G0 | thread RESOLVED; follow-on C1–C5 thread open to `backend`/`data-ops` |
+| 2 | ~~`data-ops` ingest~~ | **DONE** — odds 2018–2024 landed; per-analyst is 2026-only and unbackfillable | `odds_snapshots` (3,884 rows), `rankings` 66 expert sources (17,818 rows) |
+| 3 | ~~`ranker` batch C1~~ | **DONE** — 0 of 6 included, **and the placebo won** | `docs/ranking/batch-C1-results.md` |
+| 4 | `strategist` | **Replacement WIN rule** — campaign suspended until it lands | `docs/handoffs/2026-08-01-c1-the-registered-win-rule-has-a-14-6-false-posi.md` |
+| 5 | *(background process)* | **PR-007** recommendation-constants ablation | `src/run_pr007.py` → results doc, handoff to `frontend` |
+
+### The one thing to read first if this session died
+
+**The registered inclusion rule awards a WIN to pure noise on 9.6% of cells against a nominal 2.5%**
+(34 independent draws; QB 14.7%, RB 11.8%, TE 11.8%, WR 0%). A seeded-noise placebo arm graded
+`INCLUDE`. **No factor may be graded on that rule.** Batch C1's six NULLs are believed safe —
+miscalibration inflates false *positives* and C1 produced none — but `strategist` was asked to check
+whether the same mechanisms could also *mask* a true effect. Campaign Σm_b is now 130 and the
+effective error control across all prior batches is therefore not what has been reported.
+
+Two hypotheses survive the placebo but fail the CI rule and are **not included**: **xFP at RB**
+(+0.0186 vs placebo q95 +0.0054) and **steeper recency weighting at QB** (+0.0266 vs q95 +0.0110).
+Both sit where n ≤ 43, which is where the placebo misbehaves most. Ranker will not defend either as
+more than a hypothesis.
 
 All three agents were told to commit incrementally and keep a `NEXT STEP` block at the top of their
 output file. **Check those files before assuming an agent produced nothing.**
