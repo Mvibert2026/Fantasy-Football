@@ -5,11 +5,11 @@ Per-request files in this directory are the source of truth. Edit a request's ow
 `STATUS:` line, then re-run sync. Protocol: [`README.md`](README.md).
 Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests.md).
 
-**152 requests since freeze.**
+**153 requests since freeze.**
 
 ---
 
-## NEW — 93
+## NEW — 94
 
 | ID | Subject | Raised | Source |
 |---|---|---|---|
@@ -102,6 +102,7 @@ Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests
 | [FR-2026-08-01-bar-is-absolute-quality-not-edge-build-rankings](FR-2026-08-01-bar-is-absolute-quality-not-edge-build-rankings.md) | Bar is absolute quality not edge build rankings | 2026-08-01 | chat 2026-08-01 |
 | [FR-2026-08-01-bar-is-parity-with-any-single-analyst-not-with-c](FR-2026-08-01-bar-is-parity-with-any-single-analyst-not-with-c.md) | Bar is parity with any single analyst not with c | 2026-08-01 | chat 2026-08-01 |
 | [FR-2026-08-01-find-the-early-qb-penalty-scientifically-rather](FR-2026-08-01-find-the-early-qb-penalty-scientifically-rather.md) | Find the early qb penalty scientifically rather | 2026-08-01 | chat 2026-08-01 |
+| [FR-2026-08-01-ingest-and-use-camp-reports-beat-reporters-depth](FR-2026-08-01-ingest-and-use-camp-reports-beat-reporters-depth.md) | Ingest and use camp reports beat reporters depth | 2026-08-01 | chat 2026-08-01 |
 | [FR-2026-08-01-need-an-inclusion-test-run-candidate-factors-as](FR-2026-08-01-need-an-inclusion-test-run-candidate-factors-as.md) | Need an inclusion test run candidate factors as | 2026-08-01 | chat 2026-08-01 |
 | [FR-2026-08-01-respectability-check-large-unexplained-deviation](FR-2026-08-01-respectability-check-large-unexplained-deviation.md) | Respectability check large unexplained deviation | 2026-08-01 | chat 2026-08-01 |
 | [FR-2026-08-01-terms-of-service-are-the-founder-s-concern-not-a](FR-2026-08-01-terms-of-service-are-the-founder-s-concern-not-a.md) | Terms of service are the founder s concern not a | 2026-08-01 | chat 2026-08-01 |
