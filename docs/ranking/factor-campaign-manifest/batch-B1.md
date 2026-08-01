@@ -94,6 +94,39 @@ of the stated mechanism*, not a surprise to be explained away. The board-veteran
 (−2.6 games) is a named descriptive defect; its candidate fix (fit-population weighting) is NOT
 stacked into G1a and would be its own registered arm if pursued.
 
+## Outcomes, recorded 2026-08-01 after the full run (code at `7cf5bb8` + BH-column rename; no grade changes to any other batch)
+
+Full span 2018–2024, all four positions, arms G0/G1/G1a/G2a; audits clean (zero proxy reads on
+G0/G1/G1a; 2025 never read; exit asserts all passed). Artifacts:
+`experiments/bottomup/results/ranking_v2_{G0,G1,G1a,G2a}_{players,cells}.csv`,
+`ranking_v2_contrasts.csv`.
+
+**C-A (G1 − naive, games ordering):** RB WIN (+0.063, CI-level, not BH), QB/WR/TE NULL — the
+amended prediction ("NULL-to-HARM") was mildly beaten. **C-B (G1 − G0, absolute quality): 0 WIN,
+1 HARM — WR −0.0134 (p=0.0002, BH-robust). G1 rejected by its rule**, confirming Amendment 1's
+mechanism. **C-A′ (G1a − naive):** RB WIN (+0.084, p=0.0002, BH-robust); QB/WR/TE NULL (TE
+unresolvable as pre-declared, CI half-width ≈ 0.29). **C-B′ (G1a − G0): 0 WIN, 1 HARM (WR
+−0.0125, p=0.0005, BH-robust) — G1a REJECTED by the registered adoption rule.** The registered
+downside mechanism (variance added to healthy-veteran projections) is the standing explanation;
+no post-hoc re-tune performed. **C-C (G2a − G1a): 3 WIN, 0 HARM** — QB +0.019 (CI-level),
+RB +0.072 (BH-robust), WR +0.048 (BH-robust), TE NULL. **G2a passes its numeric rule; its
+adoption remains conditional on the strategist as-of ruling exactly as registered.**
+
+Descriptive (uncorrected, stated as such): only G2a beats naive persistence on games MAE
+(RB 3.06 vs 3.64, WR 2.67 vs 3.07, TE 2.67 vs 2.95; QB 3.46 vs naive 3.10 — naive still ahead);
+absolute games-ordering skill remains modest everywhere (best arm ≤ 0.27 mean ρ — most of the
+oracle gap is irreducible from September information); the returning-absent class bias flips
+−1.02 → +0.97 under G2a (single qualifying cell, ~9 players — thin); the board-veteran level bias
+(~−2.6 games) persists in G0/G1/G1a and shrinks under G2a. The G2a magnitudes are exactly the
+size that warrants an as-of challenge before belief: the mechanism is transparent (wk-1 IR/PUP/SUS
+mechanically implies missed games) and the direction of the residual skew is known (a few days
+optimistic vs a real late-August draft; cutdown-day placements are known by a Labor-Day draft).
+Portability demo (descriptive): after fixing a NaN-propagation defect whose signature was a
+false "0 rank changes" (all-NaN points ordered by the player_id tie-break — recorded because a
+plausible-looking PASS table was one careless read away from the write-up), the same G0 stat
+lines under half-PPR / full-PPR / standard-6pt reorder 15/23 top-24 RBs (max move 5–8 slots) with
+zero fitting calls.
+
 ## Scope notes
 
 v2's ordering path reads no consensus/ADP/ECR column anywhere (ADR-069; the replaced v1 assembly

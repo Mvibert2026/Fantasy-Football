@@ -2,7 +2,12 @@
   "version_id": "bottom-up-v2",
   "created": "2026-08-01",
   "owner": "fable (build mandate B1); strategist reviews before ship",
-  "status": "registered",
+  "status": "ran-2026-08-01; graded per batch-B1 + Amendment 1",
+  "games_arm_state": {
+    "default": "G0 (G1/G1a rejected by their registered adoption rules: 0 WIN, 1 BH-robust WR HARM each on downstream quality)",
+    "conditional": "G2a passed 3 WIN / 0 HARM; adoption pends the strategist as-of ruling on week-1 roster status (thread 2026-08-01, fable->strategist)",
+    "mandate_bar": "games ordering beats naive persistence: earned at RB only (G1a +0.084, BH-robust); QB/WR/TE unresolved"
+  },
   "precommit": "docs/ranking/factor-campaign-manifest/batch-B1.md",
   "mandate": "docs/fable-mandate-B1-2026-08-01.md",
   "immutable_once_run": true,

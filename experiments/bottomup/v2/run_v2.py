@@ -177,7 +177,7 @@ def contrasts(metrics: Dict[str, pd.DataFrame], positions: List[str]
     # themselves against M_CAMPAIGN (the implemented, conservative convention
     # recorded in M2-4).
     ok = df["p"].notna()
-    df["bh_reject_M84"] = False
+    df["bh_reject_campaign"] = False
     if ok.any():
         ps = df.loc[ok, "p"].to_numpy()
         order = np.argsort(ps)
@@ -188,7 +188,7 @@ def contrasts(metrics: Dict[str, pd.DataFrame], positions: List[str]
                 thresh = rank
         if thresh > 0:
             keep[order[:thresh]] = True
-        df.loc[ok, "bh_reject_M84"] = keep
+        df.loc[ok, "bh_reject_campaign"] = keep
     def verdict(r):
         if not np.isfinite(r["delta"]):
             return "NO DATA"

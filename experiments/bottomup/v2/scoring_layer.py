@@ -52,6 +52,20 @@ CONFIGS = {"westwood": WESTWOOD, "full_ppr": FULL_PPR_NO_BONUS,
 _MODELLED = {"rec": (100, 150, 200), "rush": (100, 150, 200),
              "pass": (300, 350, 400)}
 
+#: every column the scorer reads. A multi-position artifact carries each as
+#: present-but-NaN on positions that do not produce it (an RB projects no
+#: passing yards); NaN there means zero, and leaving it NaN propagates into
+#: every row's points. The first demo run produced exactly that artifact —
+#: all-NaN points, orderings silently identical via the tie-break — which is
+#: why this fill is explicit rather than assumed.
+_STAT_COLS = (
+    "proj_games", "proj_receptions", "proj_rec_yards", "proj_rec_tds",
+    "proj_rush_yards", "proj_rush_tds", "proj_pass_yards", "proj_pass_tds",
+    "proj_interceptions", "proj_fumbles_lost",
+    "p_rec_100", "p_rec_150", "p_rec_200", "p_rush_100", "p_rush_150",
+    "p_rush_200", "p_pass_300", "p_pass_350", "p_pass_400",
+)
+
 
 def score_stat_lines(stat_lines: pd.DataFrame, scoring: Dict) -> np.ndarray:
     for fam, table in scoring.get("bonuses", {}).items():
@@ -60,7 +74,15 @@ def score_stat_lines(stat_lines: pd.DataFrame, scoring: Dict) -> np.ndarray:
                 raise ValueError(
                     f"threshold {fam}@{t} has no stored exceedance curve; "
                     f"fit one from stat data before scoring this config")
-    return score_components(stat_lines, scoring, bonuses=True)
+    d = stat_lines.copy()
+    for c in _STAT_COLS:
+        if c in d.columns:
+            d[c] = d[c].fillna(0.0)
+    pts = score_components(d, scoring, bonuses=True)
+    if not np.isfinite(pts).all():
+        raise ValueError("non-finite points after scoring; refusing to rank "
+                         "on a silent tie-break")
+    return pts
 
 
 def rank_within_position(stat_lines: pd.DataFrame, scoring: Dict
