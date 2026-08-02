@@ -203,6 +203,21 @@ three that is a genuinely independent re-ranking, not just a re-scoring of the s
 No code changed this session — `simulate_availability`'s source stays gated on thread
 `2026-07-30-availability-adp-measurements-m0-m5` per this file's instruction not to fix it here.
 
+**Added 2026-08-02, backend session — factor batch C3 definitions written, NOT run/fit/registered.**
+`docs/ranking/batch-C3-candidates.md` + `experiments/bottomup/v2/factors_c3.py`: six candidate
+factors (injury report-week burden, practice-participation severity, end-of-prior-season depth-chart
+rank, combine athletic-testing composite, neutral-situation team pass rate, efficiency-over-expected
+rate), each with mechanism, source, usable span, and mandatory `*_known` control. **Written against
+`pos_data.py`'s existing `SeasonPanel`/`feature_gate` interface, not the dispatched
+`factors_c1.py`/`factors_c2.py` contract — those two files do not exist anywhere in this repo
+(verified against `main`, `origin/main`, and this worktree)**, most likely because a concurrent
+`ranker` session building the v2 rewrite (ADR-069) has not merged yet. Flagged to `ranker` in
+thread `2026-08-02-c3-factor-definitions-written-but-v2-factors-c1`; reconcile before fitting.
+Odds_snapshots and PROE were deliberately excluded (ledger T0-11/N12/T1-22 dispositioned as
+`blocked` for data availability, which `docs/factor-ledger.md`'s "do not resurrect" rule covers even
+though the underlying tables now exist) — same thread asks ranker/strategist to rule explicitly on
+whether that stands.
+
 **Last verified:** 2026-07-30, ranker session — **factor batch 7 (RB usage and efficiency): 16
 registered tests, 0 survive, 0 close the RB deficit, and the coverage flag that beats its own
 treatments turns out to be a TIME DUMMY.** Design `docs/ranking/factor-batch-7-precommit.md`
