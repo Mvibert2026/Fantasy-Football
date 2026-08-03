@@ -1,0 +1,5 @@
+[2026-08-03 23:22:39] sweep070 starting; phases done: []
+[2026-08-03 23:22:39] L=5999, h=20, M=259, workers=3
+[2026-08-03 23:24:50] VERIFY__VD1__QB: 200 draws
+[2026-08-03 23:29:05] VERIFY__VD1__RB: 60 draws
+[2026-08-03 23:33:07] VERIFY__VD1__RB: 120 draws
