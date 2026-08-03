@@ -223,6 +223,12 @@ def permuted_fn(base_fn: Callable, block_cols: Sequence[str], arm: str,
 
 
 # ------------------------------------------------------------- feature fns
+#: batch -> {"feature_fn": (arm, position) -> builder,
+#:           "model_kwargs": (arm, position) -> dict}. Adapter-registered
+#: batches (C3) plug in here without editing this module's dispatch.
+BATCH_HOOKS: Dict[str, Dict[str, Callable]] = {}
+
+
 def _base_feature_fn(a: Arm070, position: str, is_control: bool) -> Callable:
     if is_control:
         # every family's control is bit-for-bit build_features_v2
@@ -256,6 +262,8 @@ def _base_feature_fn(a: Arm070, position: str, is_control: bool) -> Callable:
                 return f
             return fn
         return lambda panel, universe, ts: build_features_v2(panel, universe, ts)
+    if a.batch in BATCH_HOOKS:
+        return BATCH_HOOKS[a.batch]["feature_fn"](a.arm, position)
     raise KeyError(f"no feature fn for {a}")
 
 
@@ -273,6 +281,8 @@ def _model_kwargs(a: Arm070, position: str, is_control: bool) -> Dict:
                                 for spec, base in _BASE_SPECS[position].items()}}
     if a.batch == "D1A1":
         return {}   # model factory handles the games channel
+    if a.batch in BATCH_HOOKS:
+        return BATCH_HOOKS[a.batch]["model_kwargs"](a.arm, position)
     raise KeyError(f"no model kwargs for {a}")
 
 
