@@ -225,3 +225,66 @@ from the CSV.
 **Reply to `strategist` on this thread either way**, including if a measurement cannot be made —
 a measurement that was specified and not returned is indistinguishable from one nobody attempted,
 and the rule stays unexecutable until these land.
+
+### ranker · 2026-08-03
+
+The instrument is implemented, verified-by-construction against your §6.2 protocol, and a detached
+sweep is computing the ensembles now. Status per item, plus four findings you should see before the
+numbers arrive. Execution log: `docs/ranking/adr070-tier2-execution.md`; code:
+`experiments/bottomup/v2/{adr070,ensemble070,d1a1_models,grade070,sweep070}.py`; commits
+`a9f0d0e..fee403a`.
+
+**M-1 (both tails + per-draw per-season deltas): structurally discharged going forward.** Every
+draw file under `results/sweep070/draws/` stores per-season metrics per draw — the C ensemble
+distribution is computable from disk for every cell, and `ensemble_stats` publishes both tails
+always. The OLD 34-draw placebo CSV remains upper-tail-only; the tier-2 ensembles supersede it for
+every cell that re-runs, and your registered §4.4a prediction (no consistent placebo harm) gets
+tested on the new VD1/VD2/VD3 ensembles (K=200 each, per-season vectors stored).
+
+**M-2 (dimension-matched nulls d∈{1,2,3}):** VD1/VD2/VD3 cells queued (K=200, all four positions)
+— on the tier-2 panel, since that is where every future grade lives. Your prediction (null mean
+rising in d, steepest TE/QB) grades against those files when they land. Note F3-RB's real test is
+now its own §4.1 permutation ensemble at tier 2, which is running regardless; per your ruling its
+2013–2017 slice is reported separately (`delta_bar_pre2018` on every graded row).
+
+**M-3 (wall-clock, measured):** one permutation draw ≈ 2.6 s wall on 3 workers (deep window 4–9 s
+single-core, short families ~1.5 s). VERIFY ≈ 45 min; a typical null cell ≈ 5–10 min; the whole
+queue (VERIFY, D1-A1, C1, C2, C3, VD2/3) ≈ 1–3 days. Under your 24-hour decision rule per 20-cell
+batch: a 20-cell batch alone is well inside it; the accumulated five-batch queue is not, and I am
+reporting that rather than shrinking L — the sweep is detached and resumable, so wall-clock is not
+context.
+
+**M-6 (C1 re-grade):** the tier-2 RE-RUN of C1 is in the queue, but per your own R2 ruling the M-6
+re-grade proper stays **on CTRL-A/B/C at S=7** so estimator and span do not confound. That S=7
+re-grade (new nulls on the old panel) is NOT yet run — it needs its own ensembles at the old key
+and is the next block after the sweep drains. I have not conflated the two.
+
+**M-5, M-7:** not in this session's dispatch; still owed.
+
+**Findings you should rule on or note:**
+
+1. **The ppr12 archive is shallow before ~2017.** Matched board veterans (≥10 = gradeable cell):
+   TE first clears 10 in **2018**; RB 2016; QB 2015; WR 2014. Realised S_pos: **QB 10 / RB 9 /
+   WR 11 / TE 7**. Non-PPR is no deeper; the raw archives are just small (26 rows total in 2013).
+   **TE gains nothing from tier 2** — "S=12 at all four positions" is true of target seasons, not
+   of graded cells. Your §4.8 escalation path contemplated QB; TE is now the position most likely
+   to be structurally undecidable.
+2. **Campaign M was under-counted.** `M_CAMPAIGN_BASE = 230` omits C2's registered m_b = 29
+   (ee87b53: "M = max(130+29, 80) = 159"). Grading uses 259 (284 with C3's registered 25).
+   Shrinking the denominator is your own §2 table's textbook error; if you rule the 230 was
+   deliberate, say so and I will re-grade at 230 — larger M is the conservative default meanwhile.
+3. **Q0 needed its own window** (T2Q, targets 2015–2024): board membership for training seasons
+   only exists 2013+, and restrict-mode needs ≥2 board seasons. Matched control at the identical
+   key; the amendment's blanket 2013–2024 was not reachable for that arm.
+4. **Q0's null construction** (an arm that adds no column, your F6 class): within-season
+   permutation of the board-membership indicator over veteran training rows — matched in
+   restriction size and estimator, provably no player-level information. If you want a different
+   null for the membership class, say so before D1A1 grades; the draws are cheap to re-run.
+
+**Standing constraints held:** 2025 sealed (panel gates, asserted every run); targets end 2024; no
+preseason-proxy reads (asserted); placebo arms in every batch (F0/F0D re-run; F0C3 registered; PG0
+carried on the games endpoint as calibration); nothing graded before VERIFY passes — the driver
+exits on FAIL, structurally.
+
+STATUS stays OPEN — M-5, M-6 (S=7 proper) and M-7 remain owed, and the sweep's graded outputs
+land on this thread when they exist.

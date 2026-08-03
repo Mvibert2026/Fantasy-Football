@@ -9,30 +9,39 @@ panel at tier 2, verify the instrument, run D1-A1 Q0, re-run C1/C2, reconcile an
 
 *Rewritten on every update. Being cut off is the expected case.*
 
-1. **DONE (prev. session, `a9f0d0e`):** `experiments/bottomup/v2/adr070.py` — the §4 decision
-   machinery (Besag–Clifford sequential p, calibrated C, verdict taxonomy, BH at campaign M,
-   §4.7 snap, §4.8 ProvKey enforced by raise) + `tests/test_adr070_instrument.py` (27 tests).
-2. **IN PROGRESS:** `experiments/bottomup/v2/ensemble070.py` — the permutation-draw runner
-   (§4.1 joint within-season row permutation of the arm's own column block, seed
-   `sha256(f"{arm}|{position}|{season}|{k}")`), plus the tier-2 window map below.
-3. **THEN:** `sweep070.py` — phase-gated queue driver, detached, resumable, writes to
-   `experiments/bottomup/results/sweep070/`. Phase order hard-coded:
-   `VERIFY → (gate: LOO calibration must PASS) → Q0 (D1-A1) → C1 re-run → C2 re-run → C3`.
-   The driver **refuses to grade real factors until VERIFY passes** — structurally, not by
-   convention. Launch it as soon as it and the VERIFY tasks exist; append later phases to the
-   queue file while it runs.
-4. Backfill §4.8 keys onto B1/C1/C2 CSVs (script, no numbers re-derived).
-5. Q0 mixin (population refit of the availability model, graded on games MAE, M-panel primary).
-6. C3 adapter to the real `factors_c1`-style block interface + registration + queue append.
+**THE SWEEP IS RUNNING, DETACHED** (launched 2026-08-03 23:22 UTC, PID 10688,
+`nohup .venv/bin/python -W ignore -m experiments.bottomup.v2.sweep070`). All six dispatch steps are
+implemented and committed; the compute is what remains, and it needs no context to continue.
 
-## Where to read sweep state (for any successor)
+**For any successor session:**
 
-- Queue: `experiments/bottomup/results/sweep070/queue.jsonl` (one task per line, driver appends
-  status to `state.json`).
-- Draws: `experiments/bottomup/results/sweep070/draws/<cell_id>.csv` — one row per draw with the
-  full per-season delta vector (M-1(B): stored, never summarised).
-- Log: `experiments/bottomup/results/sweep070/sweep.log`.
-- Verification verdict: `experiments/bottomup/results/sweep070/VERIFY_STATUS` (PASS/FAIL + rates).
+1. `tail experiments/bottomup/results/sweep070/sweep.log` and `cat .../state.json` — phase progress.
+   If the process died (`ps aux | grep sweep070` empty), relaunch the same nohup line; it resumes
+   from disk exactly (deterministic draw order, incremental CSVs).
+2. When `VERIFY_STATUS` appears: **read it before trusting anything graded.** FAIL → the driver has
+   already exited; report to strategist, do not weaken the check, do not grade.
+3. **Commit accumulated sweep results periodically** (`cells.csv`, `draws/`, `graded_*.csv`,
+   `VERIFY_STATUS`) — the container is disposable and an unmerged container is how results die.
+4. When `graded_D1A1.csv` exists: report Q0 against the amendment's §5 decision rules (games-MAE
+   recovery share). When `graded_C1.csv`/`graded_C2.csv` exist: report which dispositions moved vs
+   the UNCALIBRATED S=7 grades. Any INCLUDE anywhere → stop-and-report to strategist (M-6 rule).
+5. Outstanding non-compute items: reply lands on thread
+   `2026-08-01-m-1-m-6-...` (done this session — check it stayed current), C1's M-6 re-grade **at
+   S=7 on CTRL-A/B/C** (strategist ruled the old-panel re-grade stays separate from the tier-2
+   re-run; the tier-2 re-run here does NOT discharge M-6), and the F6/Q0-class "no-column arm"
+   ruling strategist still owes.
+
+## Where to read sweep state
+
+- `experiments/bottomup/results/sweep070/cells.csv` — observed runs (k=0), §4.8-keyed.
+- `.../draws/<batch>__<arm>__<pos>.csv` — one row per (draw k, season): per-season metrics per draw
+  (M-1(B): stored, never summarised). Deltas derive against the control cells exactly.
+- `.../sweep.log`, `.../state.json` — progress + wall-clock timings.
+- `.../VERIFY_STATUS` — PASS/FAIL + measured LOO rates + end-to-end placebo verdicts.
+- `.../graded_<batch>.csv` — §4.6 cell reports; regenerate any time with
+  `.venv/bin/python -m experiments.bottomup.v2.grade070 --batch <B>`.
+- Phase order (structural gate): VERIFY → D1A1 (Q0 first) → C1 → C2 → C3 (flag set, registered) →
+  VD2/VD3 dimension diagnostics.
 
 ---
 
@@ -96,18 +105,53 @@ backend flagged the T0-11/N12 (odds) tension. C3 launches without an odds factor
 backend wrote it; reopening a dispositioned ledger row is strategist's call, not mine, and not
 this session's bottleneck.
 
+### D7 — Q0 gets its own family (T2Q: targets 2015–2024, S = 10)
+
+Board-membership history (the ppr12 archive) starts 2013 and Q0-restrict needs ≥ 2 board training
+seasons, so its first target is 2015 — the CTRL-A/B/C late-source discipline applied to the board
+archive itself, with a matched control at the identical key. The amendment's blanket
+"targets 2013–2024" is not reachable for this arm; deviation logged, not absorbed. The Q0 fit
+asserts board coverage where it should exist, so a broken archive fails loudly instead of silently
+reproducing the control. Inner bonus-calibration refits on pre-board sub-windows keep the incumbent
+availability (they cannot be restricted to a population that has no board).
+
+### D8 — Measured: the ppr12 archive is shallow before ~2017, and TE gains nothing from tier 2
+
+Matched board veterans per season (ppr12, ≥10 = gradeable cell):
+QB 8,9,11,13,13,18,20,20,24,19,24,26 · RB 3,3,8,11,23,34,… · WR 8,11,23,30,36,… ·
+TE 2,5,7,5,8,11,13,16,19,14,19,19 (2013→2024). Non_ppr is no deeper; the raw archives are simply
+shallow (26 total rows in 2013, zero crosswalk misses). **Realised S_pos at the 10-player floor:
+QB 10 / RB 9 / WR 11 / TE 7.** The tier ruling's "S = 12 at all four positions" holds for target
+seasons, not graded cells, and **TE remains the S = 7 position**. Reported to strategist in the
+M-1..M-6 thread reply; early-season cells also grade rho on boards of 10–23 players, where the
+§4.7 quantum is large — the machinery handles it, but power at QB/TE early seasons is thin.
+
+### D9 — Campaign M corrected to 259 (+ 25 at C3)
+
+`adr070.M_CAMPAIGN_BASE = 230` omitted batch C2's registered m_b = 29 (`batch-C2.md`, ee87b53).
+Shrinking the denominator after the fact is the textbook error, so grading uses
+M = 130 + 29 + 88 + 12 = **259**, and 284 once C3 grades. L = 5,999 (p-floor 3.33e-4) covers
+M ≤ 300. Flagged to strategist rather than silently chosen either way.
+
+### D10 — Timings, measured
+
+Observed T2A control + VD1 runs, all four positions: 20.8 s wall on 3 workers. One permutation
+draw: ~2.6 s wall (deep window ~4–9 s single-core; short families ~1.5 s). VERIFY (800 fixed
+draws) ≈ 45 min; a typical null cell (~120 draws to h = 20) ≈ 5–10 min wall; the full sweep
+(VERIFY + D1A1 + C1 + C2 + C3 + VD2/3, ~90 ensembles) is an estimated **1–3 days** — acceptable
+under "tests are compute, not tokens," and resumable at any point.
+
 ---
 
-## Status vs the six steps (2026-08-03, coordinator check-in)
+## Status vs the six steps (final, 2026-08-03)
 
 | step | state |
 |---|---|
-| 1 ADR-070 instrument | **half done, committed** (`a9f0d0e`, prev. session). Missing: ensemble runner — in progress |
-| 2 tier-2 panel + keys | designed (D1/D2/D5), not coded |
-| 3 verification | designed (phase-gated into the sweep driver), not run |
-| 4 Q0 | designed (D3/D4), not coded |
-| 5 C1/C2 re-run | queued behind VERIFY gate |
-| 6 C3 reconcile + launch | adapter design settled; not coded |
+| 1 ADR-070 instrument | **DONE**: `adr070.py` + 27 tests (`a9f0d0e`), draw engine `ensemble070.py` (`071eb93`) |
+| 2 tier-2 panel + keys | **DONE**: `adp_fmt` on WalkForward, T2 window map, keys raised on every join; backfill of 865 published rows (`a702bf8`) |
+| 3 verification | **RUNNING**: VERIFY phase is the sweep's structural gate; FAIL exits before anything real grades |
+| 4 Q0 (D1-A1) | **CODED + QUEUED first after the gate** (`d1a1_models.py`); smoke at TE: board bias −2.29 → +0.60, MAE 3.63 → 2.46 vs naive 3.12 — direction matches the registered finding |
+| 5 C1/C2 re-run | queued behind D1A1; arms re-run (not re-grade-only), lazy k-arm VOID ensembles |
+| 6 C3 reconcile + launch | **DONE**: adapter + registration (m_b = 25) + flag (`fee403a`); sweep picks it up in order |
 
-No blocker. The four silent hours were spent reading the harness before editing it; the
-correction from here is commit-per-artifact.
+**Sweep detached at 23:22 UTC, PID 10688.** No blocker.

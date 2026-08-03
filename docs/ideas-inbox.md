@@ -2038,3 +2038,7 @@ tuning through a human):
 - **Residue:** `league_season_metrics.rb_carry_top30_share` and `wr_target_top45_share` are NULL for
   exactly 2003–2008 — the same gap as `player_weekly_stats.targets`. Excluded them as normalisers,
   because a normaliser sharing its feature's gap reintroduces the gap as a time dummy.
+
+- 2026-08-03 ranker: ppr12 ADP archive shallow pre-2017 (TE >=10 board vets only from 2018) — worth asking researcher whether any free archive carries deeper early-2010s boards; would buy TE the span tier 2 promised. (Flagged to strategist on the M-1..M-6 thread.)
+- 2026-08-03 ranker: Q0 smoke suggests the fit-population mismatch may generalise — every v2 component (volume, rates) is fitted on the full veteran universe and used on the board. If Q0 grades as a fit-population error, the same audit is owed per component (the amendment's own §5 row 1 says so).
+- 2026-08-03 ranker: draw files store per-season metrics for BOTH endpoints, so a future residual-endpoint calibration (§4.9) can reuse the same ensembles at zero compute — worth remembering before anyone re-runs draws for a residual family.

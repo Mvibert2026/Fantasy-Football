@@ -1,15 +1,15 @@
 # Founder requests — combined view
 
-**Generated 2026-08-01 by `tools/founder_requests.py sync` — do not hand-edit.**
+**Generated 2026-08-03 by `tools/founder_requests.py sync` — do not hand-edit.**
 Per-request files in this directory are the source of truth. Edit a request's own file's
 `STATUS:` line, then re-run sync. Protocol: [`README.md`](README.md).
 Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests.md).
 
-**164 requests since freeze.**
+**165 requests since freeze.**
 
 ---
 
-## NEW — 105
+## NEW — 106
 
 | ID | Subject | Raised | Source |
 |---|---|---|---|
@@ -118,6 +118,7 @@ Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests
 | [FR-2026-08-01-terms-of-service-are-the-founder-s-concern-not-a](FR-2026-08-01-terms-of-service-are-the-founder-s-concern-not-a.md) | Terms of service are the founder s concern not a | 2026-08-01 | chat 2026-08-01 |
 | [FR-2026-08-01-three-layers-three-metrics-rankings-are-within-p](FR-2026-08-01-three-layers-three-metrics-rankings-are-within-p.md) | Three layers three metrics rankings are within p | 2026-08-01 | chat 2026-08-01 |
 | [FR-2026-08-01-turn-the-keys-over-to-fable-to-build-the-next-bo](FR-2026-08-01-turn-the-keys-over-to-fable-to-build-the-next-bo.md) | Turn the keys over to fable to build the next bo | 2026-08-01 | chat 2026-08-01 |
+| [FR-2026-08-03-tests-are-compute-not-tokens-structure-factor-te](FR-2026-08-03-tests-are-compute-not-tokens-structure-factor-te.md) | Tests are compute not tokens structure factor te | 2026-08-03 | pm dispatch 2026-08-03 |
 
 ## SCOPING — 1
 

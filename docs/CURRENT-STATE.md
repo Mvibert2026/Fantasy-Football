@@ -129,6 +129,22 @@ corruption mechanism the ruling describes cannot occur. The live weakness is dif
 are a single population scalar with no player-level term. `combine` (2000–2026, 8,968 rows) is read
 by no projection model and starts early enough not to shorten the panel. Not started.
 
+**Last verified: 2026-08-03, ranker session — the ADR-070 instrument is BUILT and a detached
+sweep is computing on the tier-2 panel right now.** Draw engine + tier-2 windows + grader + driver:
+`experiments/bottomup/v2/{adr070,ensemble070,d1a1_models,grade070,sweep070,factors_c3_adapter}.py`
+(commits `fdca7f7`→`fee403a`; 27 instrument tests green). Phase order, gated structurally:
+**VERIFY (§6.2(a) LOO + end-to-end placebo; FAIL exits before anything real grades) → D1-A1 with
+Q0 first → C1 re-run → C2 re-run → C3 (registered, m_b=25) → dimension diagnostics.** State lives
+under `experiments/bottomup/results/sweep070/` (resumable; relaunch line in
+`docs/ranking/adr070-tier2-execution.md` NEXT STEP). Grading universe `m_panel_ppr12` with §4.8
+keys enforced by raise, backfilled onto all published B1/C1/C2 CSVs. **Two measured corrections to
+the tier ruling's premises:** the ppr12 archive is shallow before ~2017, so realised S_pos at the
+10-player floor is **QB 10 / RB 9 / WR 11 / TE 7 — TE gains nothing from tier 2**; and campaign M
+was under-counted (C2's registered 29 omitted) — grading uses **M = 259**, 284 with C3. Q0 smoke at
+TE reproduces the registered finding's direction (board bias −2.29 → +0.60, MAE beats naive).
+WR/TE cannot reach target 2013 cleanly (targets hole ⇒ ff=2012 ⇒ first target 2014, S=11 registered
+span). All flagged on thread `2026-08-01-m-1-m-6-…` (OPEN — M-5, M-6-at-S=7, M-7 still owed).
+
 **Last verified:** 2026-08-01, ranker C1 session — **the factor inclusion test has now been run
 against v2 for the first time, and all six candidate factors returned NULL.** The founder's
 correction (`FR-2026-08-01-need-an-inclusion-test-run-candidate-factors-as`) was that the ~90 nulls
@@ -159,8 +175,8 @@ control: an arm graded a BH-robust WIN on a mean delta of **3.97×10⁻¹⁷**; 
 |Δ|<1e−9 to zero, which cleared three spurious wins.
 
 **RULED the same day, strategist session — the replacement rule exists and that thread is RESOLVED.**
-Rule: `docs/adr-drafts/ADR-DRAFT-factor-inclusion-decision-rule.md` (still needs an ADR number from
-`tools/handoffs.py adr next`). Estimator unchanged; uncertainty now comes from a **matched per-cell
+Rule: `docs/adr-drafts/ADR-070-factor-inclusion-decision-rule.md` (**accepted as ADR-070; implemented
+2026-08-03, see the block above**). Estimator unchanged; uncertainty now comes from a **matched per-cell
 null ensemble** — joint within-season permutation of the arm's own column block — with a
 **Besag–Clifford sequential Monte Carlo p** (h=20, L=3,000), **no p below 2/(L+1) and no parametric
 tail fit admissible**, BH retained on top at the **cumulative** campaign M (**130, deliberately not
