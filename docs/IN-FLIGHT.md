@@ -105,6 +105,14 @@ incumbent constraints in `docs/founder-requests/FR-2026-08-04-v3-build-strategy-
 test, against a 15–25 predictor survivor set. That is thin and must be registered before any
 coefficient is estimated.
 
+**Approved by the founder, to be done later — not now:** backfill **targets for 2003–2008**.
+Measured 2026-08-04: season 2005 has **zero** rows with `targets > 0` in `player_weekly_stats`, and
+2008 has 17. Air yards are only 97–98% populated from **2009** onward (12% in 2001). This does not
+affect the current campaign, which grades 2013–2024 — it caps how far back **receivers and tight
+ends** can ever be measured. TE realises only **7** usable seasons even at tier 2, the thinnest of
+the four positions, so this is the constraint that would move it. Data-acquisition work; competes
+with nothing.
+
 Also parked: player props were **never ingested** (`odds_snapshots` is game-level only, sourced from
 `nflverse_schedules`); news/camp-report capture, deferred by founder ruling until the measurable work
 is exhausted; the rookie model, which is currently two inputs with `combine` read by nothing.
