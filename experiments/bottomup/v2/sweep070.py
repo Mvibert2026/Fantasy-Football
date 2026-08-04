@@ -68,8 +68,33 @@ BATCH_FLAGS = OUT / "batches"
 QUEUE_CLOSED = OUT / "queue_closed.flag"
 POLL_SECONDS = 600
 
-N_WORKERS = 3
-CHUNK = 12
+#: Workers. Measured 2026-08-04 on the 4-core container: 3 workers held the box
+#: at 271% of 400% with 21.7% idle, so a fourth is free headroom rather than
+#: oversubscription. The parent is idle while `imap` is in flight.
+N_WORKERS = 4
+
+#: Draws per `imap` batch. Between batches the parent re-reads the whole draws
+#: CSV and re-derives every delta_bar to run the sequential test, so a FIXED
+#: chunk makes that serial step O(n) work every CHUNK draws — quadratic in the
+#: draw count, and the workers idle through all of it. At the L=8,999 tail that
+#: was the single largest source of lost throughput.
+#:
+#: It cannot simply be raised: Besag-Clifford stops at h=20 exceedances, and a
+#: dead factor stops within tens of draws. A large fixed chunk would compute
+#: hundreds of draws past the stop on every null cell — and most cells are null.
+#: So grow it with progress: small while an early stop is still plausible, large
+#: once the cell is clearly running to L.
+CHUNK_MIN = 12
+CHUNK_DIVISOR = 8
+
+
+def chunk_for(n_done: int) -> int:
+    """Draws to request next. Overshoot past a sequential stop is bounded by
+    n_done/CHUNK_DIVISOR, so the wasted fraction is constant, not growing."""
+    return max(CHUNK_MIN, n_done // CHUNK_DIVISOR)
+
+
+CHUNK = CHUNK_MIN          # retained: VERIFY's fixed-k path reads it
 K_VERIFY = 200
 L_DRAWS = gr.L_DRAWS
 
@@ -255,13 +280,19 @@ def run_ensemble(pool, a: ens.Arm070, pos: str, fixed_k: Optional[int] = None,
                 log(f"{cid}: stopped ({seq.stop_reason}) at n={seq.n_draws_used} "
                     f"p_two={seq.p_two:.4g} after {time.time()-t0:.0f}s")
                 break
-            nxt = list(range(n_done + 1, n_done + CHUNK + 1))
+            # never request past L: draws beyond it can change no verdict
+            hi = min(n_done + chunk_for(n_done), L_DRAWS)
+            nxt = list(range(n_done + 1, hi + 1))
+            if not nxt:            # L reached but the test did not stop: bail
+                log(f"{cid}: at L={L_DRAWS} without a stop — leaving UNRESOLVED")
+                break
         tasks = [("draw", a.batch, a.arm, pos, k) for k in nxt]
+        # imap appends each draw as it lands, so a container kill mid-chunk
+        # banks every completed draw — chunk size costs nothing on restart
         for rows in pool.imap(_task, tasks):
             _append_draws(a.batch, a.arm, pos, rows)
         n_done = nxt[-1]
-        if n_done % 60 == 0 or fixed_k is not None and n_done >= fixed_k:
-            log(f"{cid}: {n_done} draws")
+        log(f"{cid}: {n_done} draws")
     if st is not None:
         st["timings"][cid] = round(time.time() - t0, 1)
         _save_state(st)
