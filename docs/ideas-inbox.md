@@ -1972,3 +1972,20 @@ tuning through a human):
 - **The panel counts REG rows only**, so a player whose only NFL action was a playoff game reads as
   never having played (Frank Gore Jr., Jordan James, Jarquez Hunter, Will Howard — all pinned).
   Consistent with the harness; worth knowing when reading the pinned count.
+
+## 2026-08-04, backend — decisions made without asking, v3 candidate pool
+
+- Deferred building T1-28 (vacated opportunity via `rosters_weekly`), N14 (red-zone snap rate),
+  T1-30 (exact "first-time-anywhere" play-caller definition), and N21 (exact tendency-portability
+  definition) even though all four are now data-available, because each needs a non-trivial join
+  that risks reproducing a known contamination (T1-28's own prior result) or a harder construction
+  than the time budget allowed — flagged as a follow-up batch in `docs/ranking/standalone-screen-2.md`
+  rather than rushed into this pass.
+- Classified `adot` and `tshare_stability` as AMBIGUOUS rather than picking a side — both are
+  genuinely borderline (route-depth/role signal built from box-score inputs; stability of a
+  constituent quantity) and screen 1 already established AMBIGUOUS as the honest answer for
+  comparable cases (`explosive_rush_rate`).
+- Used the Wikipedia-sourced `play_callers_preseason` table for coordinator continuity despite it
+  being a lower-confidence proxy than the PFR source the ledger originally wanted (which still
+  returns 403) — flagged its confidence field (`medium`/`low`) explicitly in the write-up rather
+  than treating it as equivalent to a verified source.
