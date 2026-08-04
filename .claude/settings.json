@@ -12,5 +12,17 @@
       "WebFetch",
       "WebSearch"
     ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash /home/user/Fantasy-Football/tools/sweep070_boot.sh"
+          }
+        ]
+      }
+    ]
   }
 }

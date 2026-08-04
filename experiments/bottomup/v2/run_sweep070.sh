@@ -9,6 +9,7 @@ for i in $(seq 1 50); do
     echo "[supervisor] sweep already running; exiting" >> "$LOG"
     exit 0
   fi
+  find experiments/bottomup/results/sweep070/draws -name "*.csv" -size -2c -delete 2>/dev/null
   .venv/bin/python -W ignore -m experiments.bottomup.v2.sweep070 >> "$LOG" 2>&1
   code=$?
   if [ "$code" -eq 0 ]; then
