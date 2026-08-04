@@ -14,6 +14,30 @@ in the same voice as current ones. Same hazard `docs/assistant-context.md` warns
 `decisions.md`. It is fine to read either to learn *what happened*; it is not fine to read them to
 learn *what is true*.
 
+**Last verified:** 2026-08-04, backend session — **standalone predictiveness screen 1 run,
+model-independent, decides/grades nothing.** Founder's idea: does a factor alone, with no fitted
+model in the loop, carry rank relationship to next-season points. 58 factor-position cells (14
+factors + placebo, 4 positions, plus 13 within-cluster contrasts), 2013–2019 only, 2025 holdout
+never opened. Every factor classified EXOGENOUS/CONSTITUENT/AMBIGUOUS (founder's mid-session
+correction — partialling out prior-season points is only a valid predictiveness test for
+EXOGENOUS factors; for CONSTITUENT ones it is an arithmetic artifact by construction). Inclusive
+survivor set produced per position (32 of 45 base cells clear their position's noise floor) as
+input to a **v3 joint multivariate fit** the founder redirected toward mid-session — v2 stays as a
+revert checkpoint. Collinearity map is diagnostic only, not a filter (WR/TE: snap share/WOPR/
+red-zone share/depth rank nearly collapse into one cluster); within-cluster percentile-rank
+contrasts screened alongside raw members, strongest new finding is TE depth-rank-vs-usage
+contrasts (~−0.5 to −0.6 raw ρ, nearly as strong as the raw components). **Season budget flagged
+as a real risk, not resolved**: only 5 seasons (2020–2024) remain for a disjoint v3 fit+test split,
+thin against a ~15–25-predictor survivor set and this project's own measured overfitting hazard.
+Self-contained script — does **not** import the uncommitted `v2/factors_c1-c4.py`/`run_c1.py`/
+`sweep070/` (this worktree never had them; they exist only in a sibling checkout mid-build, per
+this task's own dispatch not to touch them). A same-season lag bug in the prior-points lookup was
+caught and fixed by this session's own QA before any number was drawn from the buggy run — see
+the deliverable's Data-quality note. Full write-up `docs/ranking/standalone-screen-1.md`; code
+`experiments/bottomup/v2/standalone_screen1.py`; data `experiments/bottomup/results/
+standalone_screen1_{results,collinearity,contrasts}.csv`. Next: `strategist`/`ranker` to register
+the v3 fit/test split before any coefficient is estimated.
+
 **THE APP IS LIVE ON THE INTERNET, 2026-07-29** — `https://fantasy-football.soft-water-e755.workers.dev`,
 a Cloudflare Worker serving the static Vite build from `main` and rebuilding on every push
 (`wrangler.jsonc` at the repo root). Founder confirmed it working in his own browser; independently
