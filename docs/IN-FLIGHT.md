@@ -69,8 +69,26 @@ simply be raised — Besag–Clifford stops at h=20 and a dead factor stops with
 large *fixed* chunk overshoots the stop on every null cell, and most cells are null. Growing it keeps
 overshoot a constant fraction of progress. **47 chunks reach L instead of 749.**
 
-**Measured: 42 → 216 draws/min, a 5.1× speedup. CPU 271% → 398%, idle zero.** No statistic changed —
-L, h and the draw sequence are untouched.
+**Measured, sustained over 5–6 minutes: 42 → 89.3 draws/min, 2.1×.** An earlier claim of 5.1× in
+this file and in chat came from a 90-second sample that landed inside a compute burst — **quote
+sustained rates only, measured over minutes, and read them off the chunk-boundary timestamps in
+`sweep.log` rather than from a short `wc -l` window.**
+
+**Problem 1b — the actual quadratic, which two earlier diagnoses both missed.** `_append_draws` read
+the entire draws CSV, concatenated, de-duplicated and rewrote the whole file **after every completed
+draw**. O(n) per draw, O(n²) per cell; 20% of a core at n=2,800 and growing, so at the L=8,999 tail
+the parent would have been rewriting a 90,000-row file per draw while four workers waited. Now a
+true append (commit `4333ec9`), with the header read back and column order enforced on each write —
+appending in a different key order would silently shift values across columns, the one failure here
+that could corrupt a verdict without failing loudly.
+
+It also removed a live data-loss window: the old rewrite truncated before writing, so a kill
+mid-write rolled the file back to a partial state. That happened during this session's restart and
+cost ~960 banked QB draws. An append cannot do it.
+
+**The box is now saturated — 4 workers at ~98% each, parent at 3.5%, 398% of 400%. No further
+parallelism exists on this machine.** Any additional compute gain must come from making a draw
+cheaper or from more cores.
 
 **Problem 2 — the container exists only while a session turn is in flight, and this is the bigger
 factor.** Disk persists across container death (draws resumed 480 → 985 → 1,267 correctly); compute
@@ -86,7 +104,14 @@ wakes *this* container, and holding it open with five foreground `timeout 570 ta
 firing — ~50 of every 60 minutes rather than ~7. **Delete it when the sweep completes**; it stops
 itself on "sweep completed cleanly" but cannot delete its own Routine.
 
-**Combined effect: ~38× effective throughput** (5.1× compute × ~7.5× duty cycle).
+**Combined effect: ~16× effective throughput** (2.1× compute × ~7.5× duty cycle).
+
+**Remaining unknown, and it is the one that sets the finish date:** Besag–Clifford stops a
+cell as soon as 20 null draws beat it, so a dead factor costs seconds and only a genuinely
+strong one pays the full L=8,999. Total runtime is therefore set by **how many cells run to
+L**, which is not knowable in advance. Full-L cost per cell at the current rate: QB ~1.7 h,
+TE ~2.7 h, WR ~3.9 h, RB ~11 h (per-draw costs scale as the VERIFY timings: QB 123s · TE 193s
+· WR 286s · RB 822s for identical work).
 
 **Cron's floor is hourly**, so ~10 min/hour of container downtime remains. Closing that needs either
 GitHub Actions (free, 6-hour jobs, no tokens) or the founder's own machine — his desktop is Windows
