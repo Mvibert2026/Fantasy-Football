@@ -2012,6 +2012,7 @@ tuning through a human):
   never having played (Frank Gore Jr., Jordan James, Jarquez Hunter, Will Howard — all pinned).
   Consistent with the harness; worth knowing when reading the pinned count.
 
+<<<<<<< HEAD
 ## 2026-08-01 — ranker (batch D1 + M-4 span)
 
 - **Decided and logged:** batch D1's roster-status arms run against a second matched control at
@@ -2042,3 +2043,21 @@ tuning through a human):
 - 2026-08-03 ranker: ppr12 ADP archive shallow pre-2017 (TE >=10 board vets only from 2018) — worth asking researcher whether any free archive carries deeper early-2010s boards; would buy TE the span tier 2 promised. (Flagged to strategist on the M-1..M-6 thread.)
 - 2026-08-03 ranker: Q0 smoke suggests the fit-population mismatch may generalise — every v2 component (volume, rates) is fitted on the full veteran universe and used on the board. If Q0 grades as a fit-population error, the same audit is owed per component (the amendment's own §5 row 1 says so).
 - 2026-08-03 ranker: draw files store per-season metrics for BOTH endpoints, so a future residual-endpoint calibration (§4.9) can reuse the same ensembles at zero compute — worth remembering before anyone re-runs draws for a residual family.
+=======
+## 2026-08-04, backend — decisions made without asking, v3 candidate pool
+
+- Deferred building T1-28 (vacated opportunity via `rosters_weekly`), N14 (red-zone snap rate),
+  T1-30 (exact "first-time-anywhere" play-caller definition), and N21 (exact tendency-portability
+  definition) even though all four are now data-available, because each needs a non-trivial join
+  that risks reproducing a known contamination (T1-28's own prior result) or a harder construction
+  than the time budget allowed — flagged as a follow-up batch in `docs/ranking/standalone-screen-2.md`
+  rather than rushed into this pass.
+- Classified `adot` and `tshare_stability` as AMBIGUOUS rather than picking a side — both are
+  genuinely borderline (route-depth/role signal built from box-score inputs; stability of a
+  constituent quantity) and screen 1 already established AMBIGUOUS as the honest answer for
+  comparable cases (`explosive_rush_rate`).
+- Used the Wikipedia-sourced `play_callers_preseason` table for coordinator continuity despite it
+  being a lower-confidence proxy than the PFR source the ledger originally wanted (which still
+  returns 403) — flagged its confidence field (`medium`/`low`) explicitly in the write-up rather
+  than treating it as equivalent to a verified source.
+>>>>>>> worktree-agent-a9a512e98afbf8ba1

@@ -358,6 +358,11 @@ def batch_phase(pool, batch: str, st: Dict) -> None:
                     f"(p={seq.p_two:.3g}) — running paired {kname} ensemble")
                 run_ensemble(pool, ka, pos, st=st)
     graded = gr.grade_batch(batch)
+    try:                                # the deliverable stays current with
+        from . import report070         # the compute; a report bug must never
+        report070.generate()            # kill the sweep
+    except Exception as e:              # pragma: no cover
+        log(f"report070 regeneration failed (non-fatal): {e}")
     if len(graded):
         log(f"graded {batch}: " + ", ".join(
             f"{r.arm}/{r.position}={r.verdict}"

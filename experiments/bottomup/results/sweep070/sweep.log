@@ -17,3 +17,5 @@
 [2026-08-03 23:46:31] observed runs needed: 24
 [2026-08-03 23:47:41] observed runs done in 69s
 [2026-08-03 23:50:31] D1A1__Q0__QB: 60 draws
+[2026-08-04 00:47:57] sweep070 starting; phases done: ['VERIFY']
+[2026-08-04 00:47:57] L=7999, h=20, M=333, workers=3

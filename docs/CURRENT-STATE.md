@@ -312,6 +312,20 @@ pre-registered MDE rule being wrong by 2× at panel-M QB) and `fable`
 (`docs/handoffs/2026-07-31-attack-ranking-version-v1-the-first-assembled-ra.md`). **Nothing shipped
 to `src/`; `projected_points` is unchanged.**
 
+**Last verified:** 2026-08-04, backend session — **the v3 candidate pool is complete and screened,
+fit not started.** `docs/ranking/standalone-screen-2.md` (supersedes screen 1): **75 distinct
+candidate constructs** (35 base factors + 40 within-cluster contrasts) screened 2013–2019, per
+position, against a noise floor — C1's 6, C2's 6, C3's 6, C4's 6, the six predictive incumbents on
+equal footing per `FR-2026-08-04-v3-build-strategy-screen-all-factors-for-predict.md`'s "no
+grandfather clause" ruling, plus two factors this session's re-audit of the ledger's 17 `blocked`
+rows newly unblocked: PROE (T1-22, never actually blocked once `pbp.xpass` landed) and OC-level
+coordinator continuity (T1-29/T1-30/N21/N22, via `play_callers_preseason`'s 992-row Wikipedia
+proxy). Of the 17 blocked rows: 7 now available and screened, 5 now available but deliberately not
+built this pass (flagged for a follow-up batch), 5 confirmed still genuinely blocked (schema
+checked directly). Season-budget risk from screen 1 (≤5 of 2020–2024 for fit+test, disjoint,
+before the sealed 2025 holdout) still unregistered by `strategist`. Thread:
+`docs/handoffs/2026-08-04-v3-candidate-pool-complete-standalone-screen-2-7.md`.
+
 **Last verified:** 2026-07-31, ranker session — **v1's 2026 board exists, display only, and the 2025
 holdout is still unspent.** `data/export/ranking_v1_2026.json` (527 players) and a `v1` field on
 every row of `data/export/rankings_comparison_2026.json`; runner
