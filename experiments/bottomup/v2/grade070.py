@@ -53,11 +53,11 @@ CELLS_CSV = OUT / "cells.csv"
 #: AB1 27. Late-arrival batches add their M_B here when their registration
 #: lands. Grading is idempotent — the final report regenerates every batch's
 #: grades at the final cumulative M.
-M_EXTRA_REGISTERED = {"C3": 25, "C4": 22, "AB1": 27}
+M_EXTRA_REGISTERED = {"C3": 25, "C4": 22, "AB1": 27, "C5": 27, "CT1": 82}
 M_CAMPAIGN = 259 + sum(M_EXTRA_REGISTERED.values())
-#: §4.3: resolution is bought with draws. p_floor = 2/(L+1) = 2.5e-4 stays
-#: below the BH rank-1 threshold q/M for M <= 400.
-L_DRAWS = 7999
+#: §4.3: resolution is bought with draws. p_floor = 2/(L+1) = 2.22e-4 stays
+#: below the BH rank-1 threshold q/M for M <= 450.
+L_DRAWS = 8999
 
 #: arms never graded as primary cells
 CO_REPORT_ONLY = {("D1A1", "Q0w")}

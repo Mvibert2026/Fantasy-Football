@@ -93,7 +93,17 @@ NAMES.update({
     ("AB1", "ABEVID"): "INCUMBENT evidence weight",
     ("AB1", "ABEXP"): "INCUMBENT experience",
     ("AB1", "F0AB"): "PLACEBO (AB1)",
+    ("C5", "C5P"): "PROE (pass rate over expectation)",
+    ("C5", "C5O"): "OC continuity (coordinator change)",
+    ("C5", "C5D"): "draft capital (veteran-additive)",
+    ("C5", "C5A"): "aDOT (average depth of target)",
+    ("C5", "C5R"): "roster/depth status trio (T0-5)",
+    ("C5", "C5I"): "injury designations pair (T0-6)",
+    ("C5", "F0C5"): "PLACEBO (C5)",
+    ("CT1", "F0CT"): "PLACEBO (contrast-shaped)",
 })
+# CT1 contrast arms display as their own names (CT_<a>_minus_<b>) — readable
+# as-is; the founder's per-position lists carry them verbatim.
 
 PLACEBOS = {"F0", "F0D", "F0C3", "F0C4", "F0AB", "PG0", "VD1", "VD2", "VD3"}
 CO_REPORT = {"Q0w"}
