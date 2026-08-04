@@ -39,6 +39,231 @@ string being added or removed, so it may never have reached a commit) already di
 speculated was the likely fix. Left in place as a record rather than deleted outright, since the
 original escalation is why it was safe to check.
 
+**Last verified:** 2026-08-01, backend session (isolated worktree, merged in `claude/pm-agent-setup-gobxa0`
+first to pick up C1) — **factor batch C2: 12 arm-runs, 29 of 29 registered cells, grading SUSPENDED
+throughout — this batch never emits INCLUDE/EXCLUDE.** Continues C1 (below), which found its own
+registered inclusion rule hands a BH-robust WIN to seeded noise (false-positive rate 9.6% of cells
+vs. nominal 2.5%); `strategist` owns the replacement rule and every C2 cell is `PENDING-RULE`.
+Registration `docs/ranking/factor-campaign-manifest/batch-C2.md`, committed at `ee87b53` before any
+arm was fitted; results `docs/ranking/batch-C2-results.md`. **Part A, five factors untested-for-v2**:
+WOPR (WR/TE, new block on an already-stored column), and three blocks reused verbatim from batch 7
+(never before run against v2) — YAC per reception, receiving share of an RB's own points,
+late-season role trajectory — plus **implied team total, lagged** (the first read of
+`odds_snapshots`, ingested since C1, by any model in this project). All NULL at CI level except two
+cells, both flagged rather than claimed: **A5 QB** (implied team total) CI-WINs at +0.0140 but is
+*smaller* than its own matched-control placebo delta (+0.0216, itself not significant) at the same
+4-season control; **A5k RB**'s coverage-flag-only control CI-WINs while the paired treatment does
+not. **Part B, the founder's RB high-carry-season breakpoint (2026-07-31), never run before**: one
+arm, a single non-linearity test (piecewise-linear hinge basis with his own 350/375/400 as fixed,
+pre-registered spline knots — not a three-way cutoff sweep) rather than the sweep the dispatch
+explicitly warned against. NULL, confirming rather than resolving the underpowered-arm concern
+batch 3/4 raised and never tested: only **1** board-veteran RB-season in the entire graded
+population had ≥350 carries in its feature year. **The placebo was carried again as its own
+calibration instrument** (same generator/salt as C1's, run fresh against this batch's two
+controls): `F0` at the 7-season control reproduces C1's numbers byte-for-byte; `F0D` at a new
+4-season control (needed for the odds-window match) won CI-level at 2 of 4 cells against 0 of 4 at
+7 seasons — an independent second measurement of C1's own "shorter windows are more miscalibrated"
+finding, on a control C1 never tested, and the reason A5's CI-WINs are reported as noise-level
+rather than findings. `docs/factor-ledger.md` Section 0 extended with C2's dispositions (all
+PENDING-RULE). No consensus/ADP/ECR read in any ordering path; every arm asserts
+`n_preseason_proxy_reads == 0`; 2025 holdout never opened. New code:
+`experiments/bottomup/v2/factors_c2.py`, `experiments/bottomup/v2/run_c2.py`. Commits: registration
+`ee87b53`, harness+F0 `6dab690`, F0D `1e80cc8`, A1 `7cae66e`, A2/A2k `d213232`, A3/A3k `b3cb337`,
+A4/A4k `1d48b22`, A5/A5k `c1b11f4`, B1 `06f04cb`.
+
+**Last verified:** 2026-08-01, ranker D1 + M-4 session — **the v2 availability model was built from
+the three unread tables and does not fix the games channel on the registered endpoints; the
+season-span question is answered and the answer is that the stat lines support 21 target seasons,
+not 7.** Registered before compute (`docs/ranking/factor-campaign-manifest/batch-D1.md`, `95e2bc9`,
+m_b=88; campaign Σ m_b now **247** after pm merged C2's concurrent 29). Results
+`docs/ranking/batch-D1-results.md`; span work `docs/ranking/season-span-M4.md`; code
+`experiments/bottomup/v2/{availability_data,availability_features,availability_model,run_d1,reversion_buckets,span_curve}.py`;
+artifacts `experiments/bottomup/results/{avail_d1_*,span_*}`. **2025 never read; every arm asserts
+zero preseason-proxy reads, so nothing here touches the unadmitted G2a week-1-of-N status.**
+
+**Eleven arms, no arm adopted, and the placebo is why.** Swapping the incumbent clipped-OLS
+availability model for a binomial GLM on the *same* features buys +0.067 games-ordering over naive
+persistence at RB — and the seeded-noise placebo buys **+0.070** on the identical contrast, because
+both share the form change. Only **A3 (roster status)** clears its window's placebo bar, at RB only,
+on games ordering only, at n=5. **Practice participation and injury class are measured and dead**;
+their combination is directionally harmful at all four positions. **`depth_charts_weekly` is
+eliminated** as a full-span substitute (stable coverage, no contrast: 4.26 vs 4.44).
+
+**Three findings outrank the arms.** (1) **The resolved-vs-ongoing instrument is real and explains
+why fable's G1/G1a failed**: among players who missed ≥40% of N−1, on reserve at season end predicts
+5.96 games next year vs 4.14 and 26.7% vs 13.7% reaching 12+, while G1's box-score timing signal
+separates 4.56 vs 4.19 and 16% vs 16% — nothing. (2) **The games MAE loss to naive persistence is a
+population mismatch, not a modelling failure**: the model is unbiased on the population it is fitted
+on (−0.14 games) and **−2.41 on the board population it is used on**, and removing that level alone
+wins the MAE bar at every position (QB 4.22→3.21 vs 3.35; RB 4.23→3.31 vs 3.89; WR 3.88→3.00 vs
+3.08). Mechanism measured at matched projected games and matched prior availability: board players
+play 13.77, non-board 9.61, separated by **prior-season points** — the games model has no quality or
+role term, and availability is partly job security. Designed as Amendment 1 and **deliberately not
+run** (found in this batch's own output). (3) **On a continuous residual endpoint the arms visibly
+work and the registered endpoint cannot see it**: in the discovery pass's own buckets G0 carries
++0.315/−0.271 SD, the form change alone moves it 0.011, **A5 moves it 0.101** on n=2,000
+player-seasons. Post-hoc, outside m_b, promotes nothing — but it is a live recommendation to
+`strategist` that the next confirmatory arm be registered on a continuous endpoint.
+
+**M-4, the season span — CAN and SHOULD reported separately, per the founder.** Core stat lines
+(carries, attempts, receptions, rush/rec/pass yards) run **1999–2025 with no gaps** →
+`first_feature_season` 2002, `first_target` 2004, **21 target seasons**. **The binding constraint on
+v2's seven is the ADP archive**, which defines the evaluation universe and nothing else: 7 seasons
+at `half_ppr_12team` (exact format), **12 at `ppr_12team`/`non_ppr_12team`** (format caveat on
+membership only — the ADP column is never a feature), 21 with no ADP at all (`rho_points_fullvet`,
+already computed on every cell). **S=12 is strategist's own threshold** for an exact season-level
+randomisation test reaching a BH bound at all. **Two real gaps named:** `player_weekly_stats.targets`
+is **zero for 2003–2008** (corroborated by `league_season_metrics.wr_target_top45_share` being NULL
+on exactly those seasons; thread open to `data-ops`), so the extension is currently a **QB/RB
+extension only**; air yards do not exist before 2009. **A source's start season is a lower bound on
+usability, not a guarantee** — `rosters_weekly` nominally starts 2002 and its end-of-season reserve
+capture is unusable before 2017. **Nothing adopted:** `FIRST_FEATURE_SEASON` is untouched and every
+span is passed per-run, so no published control ρ moves.
+
+**Rookies, answered in code rather than assumed (founder's ruling, 2026-08-01).** **v2 already fits
+rookies and veterans separately at every stage** — disjoint fit populations, separate availability
+regressions on separate feature lists, separate volume regressions, separate rate handling,
+`np.where(is_rk, …)` at every prediction site. **No lag feature carries a shared slope**, so the
+corruption mechanism the ruling describes cannot occur. The live weakness is different and worse:
+`ROOKIE_COLS = ["log_draft_pick", "age"]` **is** the entire rookie model, and rookie efficiency rates
+are a single population scalar with no player-level term. `combine` (2000–2026, 8,968 rows) is read
+by no projection model and starts early enough not to shorten the panel. Not started.
+
+**Last verified: 2026-08-03, ranker session — the ADR-070 instrument is BUILT and a detached
+sweep is computing on the tier-2 panel right now.** Draw engine + tier-2 windows + grader + driver:
+`experiments/bottomup/v2/{adr070,ensemble070,d1a1_models,grade070,sweep070,factors_c3_adapter}.py`
+(commits `fdca7f7`→`fee403a`; 27 instrument tests green). Phase order, gated structurally:
+**VERIFY (§6.2(a) LOO + end-to-end placebo; FAIL exits before anything real grades) → D1-A1 with
+Q0 first → C1 re-run → C2 re-run → C3 (registered, m_b=25) → dimension diagnostics.** State lives
+under `experiments/bottomup/results/sweep070/` (resumable; relaunch line in
+`docs/ranking/adr070-tier2-execution.md` NEXT STEP). Grading universe `m_panel_ppr12` with §4.8
+keys enforced by raise, backfilled onto all published B1/C1/C2 CSVs. **Two measured corrections to
+the tier ruling's premises:** the ppr12 archive is shallow before ~2017, so realised S_pos at the
+10-player floor is **QB 10 / RB 9 / WR 11 / TE 7 — TE gains nothing from tier 2**; and campaign M
+was under-counted (C2's registered 29 omitted) — grading uses **M = 259**, 284 with C3. Q0 smoke at
+TE reproduces the registered finding's direction (board bias −2.29 → +0.60, MAE beats naive).
+WR/TE cannot reach target 2013 cleanly (targets hole ⇒ ff=2012 ⇒ first target 2014, S=11 registered
+span). All flagged on thread `2026-08-01-m-1-m-6-…` (OPEN — M-5, M-6-at-S=7, M-7 still owed).
+
+**Last verified:** 2026-08-01, ranker C1 session — **the factor inclusion test has now been run
+against v2 for the first time, and all six candidate factors returned NULL.** The founder's
+correction (`FR-2026-08-01-need-an-inclusion-test-run-candidate-factors-as`) was that the ~90 nulls
+from batches 1–7 were measured against a consensus-derived board and say almost nothing about
+inclusion in v2. Registered before compute (`docs/ranking/factor-campaign-manifest/batch-C1.md`
++ Amendment 1, m_b=38, campaign M=130); results `docs/ranking/batch-C1-results.md`; code
+`experiments/bottomup/v2/{factors_c1,run_c1,placebo_replication,c1_report}.py`; artifacts
+`experiments/bottomup/results/factor_c1_*`. Commits `29410c1`→`8b6b84a`.
+
+**Snap share (`snap_counts` 2013+), red-zone inside-20 usage share (`pbp` 2009+), xFP
+(`ff_opportunity` 2006+), NGS separation, route participation/TPRR and steeper recency weighting
+all return NULL** at 92–100% coverage on the full available window — the four most often named in
+this repo as "in the database and untouched" among them. Snap share HARMs at TE. Registered
+hit-rate band was 2–5 WIN cells of 19; **observed 0 of 19**. Control was pinned to **games arm G0**
+throughout (G2a's ruling is ADMIT-WITH-CONDITION, conditions unsatisfied — no re-grade owed); three
+matched controls, one per feature window; every arm asserted zero season-N proxy reads; 2025 never
+read.
+
+**The registered WIN rule is broken and the registered placebo caught it on arm one.** A seeded
+noise column returned a BH-robust WIN at TE (+0.0303, p=0.0002) and the inclusion rule graded the
+placebo `INCLUDE`. Across **34 independent noise draws** the harness's false-positive rate is
+**9.6% of cells against a nominal 2.5%** (QB 14.7%, RB 11.8%, TE 11.8%, WR 0%): the season-block
+bootstrap is miscalibrated at n=7 because per-season Spearman on 10–19 players is discrete and
+mostly contributes exact zeros, and adding any regressor carries a small upward bias scaling with
+1/n. **It cannot have manufactured an inclusion here** — it inflates false positives and C1 produced
+none — but it binds the next batch. A second defect, caught by Amendment 1's coverage-indicator
+control: an arm graded a BH-robust WIN on a mean delta of **3.97×10⁻¹⁷**; fixed by snapping
+|Δ|<1e−9 to zero, which cleared three spurious wins.
+
+**RULED the same day, strategist session — the replacement rule exists and that thread is RESOLVED.**
+Rule: `docs/adr-drafts/ADR-070-factor-inclusion-decision-rule.md` (**accepted as ADR-070; implemented
+2026-08-03, see the block above**). Estimator unchanged; uncertainty now comes from a **matched per-cell
+null ensemble** — joint within-season permutation of the arm's own column block — with a
+**Besag–Clifford sequential Monte Carlo p** (h=20, L=3,000), **no p below 2/(L+1) and no parametric
+tail fit admissible**, BH retained on top at the **cumulative** campaign M (**130, deliberately not
+shrunk**). Pre-committed rates for C2 to verify: HYPOTHESIS on a true-null cell ≤5.0% exactly; any
+INCLUDE/EXCLUDE across an all-null 20-cell batch ≤1.3%. Founder input arrived mid-session (*"a rule
+pointing the other way is a signal… any consistent signal is usable"*) and added a **calibrated
+sign-consistency condition**, plus a split of HARM into **RE-SPECIFY** (consistent — buys exactly one
+registered re-specification from a menu fixed in advance) versus **EXCLUDE (variance)**; C1's F1
+snap-share HARM at TE is the live RE-SPECIFY candidate, **not a dead factor**. **A third defect
+strategist found that ranker's diagnosis did not cover: the same discreteness also destroys power on
+mixed-sign season vectors**, so C1's NULLs are **`UNCALIBRATED`, not dispositioned** — C1 is
+re-graded in full (the arms do not re-run; the null ensembles must be built), while batches 1–7's
+closed grades get an annotation and no re-run. **The campaign's realised type-I exposure is nil —
+zero inclusions in ~130 tests — and its live exposure is type-II.**
+
+**Neither surviving hypothesis is included, and neither gets the confirmatory test as proposed.**
+xFP at **RB** (+0.0186) is a C1-registered cell whose grading was *suspended*, so it is finished
+under the new rule rather than "confirmed" — but first a **dimension-matched null** must run (F3
+adds 3 columns; it was compared against a 1-column placebo), and on the existing 34 draws its honest
+p is 2/35. Steeper recency at **QB** (+0.0266): the two-arm test is **REFUSED** and its "clears the
+placebo null" claim **WITHDRAWN** — F6 adds no column, so a column-addition placebo was never its
+null. Replaced by `docs/preregistration/PR-DRAFT-lag-weight-decay-profile.md`: an 8-point decay grid
+per position, null supplied by **lag-order permutations**, pre-committed default of keeping the
+incumbent, m_b=4, under an hour of compute. Measurements commissioned as M-1..M-7, staged at
+`docs/preregistration/HANDOFF-BODY-c2-null-calibration-2026-08-01.md` for `pm` to allocate;
+**M-4 — how far back the target span can go — was the highest-value item, and it came back the same
+day (see the span ruling below).** The factor ledger gains **Section 0** recording C1's cells as the
+first measurements taken against v2, and warning that Sections 1–6 were assigned under the old frame.
+
+**SPAN, ENDPOINT AND UNIVERSE RULED — 2026-08-01, strategist, thread
+`2026-08-01-three-rulings-needed-the-endpoint-is-the-bottlen` (RESOLVED), now ADR-070 §4.8/§4.9.**
+Ranker's M-4 measurement (`docs/ranking/season-span-M4.md`) found the core stat lines have **no gaps
+1999–2025** and that v2's seven-season window is pinned by the **ADP archive**, which defines the
+evaluation universe and nothing else. **Three knobs were being treated as one and they are
+separable.** (1) **Training window: adopt the deepest clean window** — §3.1 measured the curve as
+**flat** (every cell but two inside ±0.014; QB's deepest span is its *best* cell), so
+`first_feature_season = 2002` at QB/RB. (2) **Grading span: tier 2 — `m_panel_ppr12`, targets
+2013–2024, S = 12 at all four positions**, from the next batch forward; no retrospective re-run,
+because changing span and estimator in one re-grade confounds them. **S = 12 clears the bar that
+S = 7 could not**: an exact season-level randomisation test floors at 2⁻¹² = 2.4×10⁻⁴ < 7.7×10⁻⁴.
+(3) **Grading universe: the M-panel stays.** The full-veteran (roster-defined) tier is **mandatory
+co-reporting on every cell** and is the primary instrument for estimator-calibration work, but it is
+**not** the grading panel — batches 5 and 7 measured, across **three batches, three positions, four
+sources**, that *every arm improving the full universe degraded the ADP board*. That is rank
+**reversal**, not a level shift: Spearman over ~250 rostered players is dominated by separating
+starters from non-players, over the draftable ~20–50 by ordering players who all play. Founder ruled
+membership dilution is not a concern and **he is right that survivorship is not the objection** (a
+Week-1 roster is pre-outcome, `CLAUDE.md` §6.2 names it); the reversal finding is a different and
+binding one. **Tier 2 is also entirely clear of the 2003–2008 targets hole**, which tier 3 is not —
+so the deep tier is a QB/RB extension only, and **the bare claim "21 seasons" is now forbidden
+project-wide unless all four positions have 21**; `S` is published per position. New mandatory
+four-part provenance key on every ρ (`universe / targets / S / first_feature_season`), **enforced by
+a raise on any cross-universe or cross-span join**. **Tier 2 also unlocks the confirmatory test
+strategist had ruled did not exist**: 2013–2017 is data C1 never saw, so **F3 xFP at RB becomes a
+registered arm of the next batch at tier 2**, with the five incremental seasons reported separately
+as the out-of-sample quantity. **Continuous residual endpoint: admitted, paired, never substituted**
+(§4.9) — ordering keeps primacy because D1's A5 arm improves the residual while being directionally
+harmful on ordering at all four positions; and continuity is not calibration, since D1's own
+seeded-noise arm returned +0.070/+0.122 **BH-robust** on a continuous endpoint. **Batch D1
+Amendment 1 registered by strategist** at ranker's request
+(`docs/ranking/factor-campaign-manifest/batch-D1-amendment-1.md`, m_b = 12, **campaign M 218 → 230**):
+the games model is unbiased on the population it is fitted on and **2.41 games low on the population
+it is used on**; three arms, graded on **games, not points** (which dissolves the `ppg_w`
+double-count concern rather than testing it), and the arm strategist added — **Q0, a refit on the
+board population with no new features** — runs first, because the trivial explanation goes before
+the interesting one. Nothing adopted; `v2.json` untouched.
+
+**Last verified:** 2026-08-01, fable B1 session — **ranking v2 built, run 2018–2024, graded; the
+games repair splits cleanly in two.** First build mandate ever issued to fable
+(`docs/fable-mandate-B1-2026-08-01.md`, ADR-069 binding: no consensus input in the ordering path,
+absolute quality as the steering metric, stat lines not points). Registered before compute
+(`docs/ranking/factor-campaign-manifest/batch-B1.md`, m_b=20 incl. Amendment 1, campaign M=92).
+Results (`experiments/bottomup/results/ranking_v2_*`, code `experiments/bottomup/v2/`, commits
+`a80c2e3`→`86a5207`): the end-of-N−1 timing repair (G1/G1a) **rejected by its own registered
+rules** — 0 WIN, 1 BH-robust WR HARM downstream each; the mandate's beats-naive-persistence bar
+earned at RB only (+0.084 BH-robust). **The week-1 roster-status arm G2a passed 3 WIN / 0 HARM**
+(RB +0.072, WR +0.048 BH-robust; absolute steering ρ RB 0.440→0.519, WR 0.560→0.595) and is the
+only arm beating naive games MAE — **its adoption pends strategist's as-of ruling** (wk-1 status ≈
+late-August cutdown; thread `2026-08-01-g2a-week-1-status-as-of-ruling-and-v2-ship-revie`); until
+then v2's default games arm is G0. Scoring portability demonstrated: same stat lines under
+half-PPR / full-PPR / standard-6pt reorder 15/23 top-24 RBs with zero refits (after fixing a
+false-PASS NaN defect, recorded in `docs/fable/v2-build-log.md`). Absolute games-ordering skill
+tops out ≤0.27 — most of M2-1's oracle gap is irreducible from September information. **2025 never
+read; §6.5 four-baseline release gate deliberately unrun** (later, not by fable). Open defects
+named: board-veteran games level bias ~−2.6 (G0/G1/G1a), rookies on the crude sub-model, DEF
+absent, cross-positional replacement ungraded.
+
 **Last verified:** 2026-07-31, ranker session — **ranking version v1 assembled and tested end to
 end. It loses to both crowds.** The first ranking version this project has ever built or measured;
 every one of ~90 registered factor tests before it was a single feature inside one component of an
@@ -56,7 +281,8 @@ explicit that a version failing to beat both crowds has none. Contains table sta
 prior share; #6 injury in a declared secondary arm (inert again, fifth measurement); #5 depth chart
 and the lagged-YPC wire **excluded as post-hoc/unregistered**. Rookies pinned to consensus and
 labelled; **DEF blank with a note**. **2025 holdout never read** and not requested — `CLAUDE.md`
-§6.3 gates it on `fable`, who has not run. Reviews open: `strategist`
+§6.3 gated it on `fable`, whose M2 review has since run (2026-08-01, `docs/fable/M2-findings.md`)
+— the holdout stays sealed, founder restated it the same day. Reviews open: `strategist`
 (`docs/handoffs/2026-07-31-ranking-version-v1-tested-end-to-end-review-the.md`, incl. my own
 pre-registered MDE rule being wrong by 2× at panel-M QB) and `fable`
 (`docs/handoffs/2026-07-31-attack-ranking-version-v1-the-first-assembled-ra.md`). **Nothing shipped
@@ -202,6 +428,21 @@ three that is a genuinely independent re-ranking, not just a re-scoring of the s
   032/033/088), out of this audit's scope.
 No code changed this session — `simulate_availability`'s source stays gated on thread
 `2026-07-30-availability-adp-measurements-m0-m5` per this file's instruction not to fix it here.
+
+**Added 2026-08-02, backend session — factor batch C3 definitions written, NOT run/fit/registered.**
+`docs/ranking/batch-C3-candidates.md` + `experiments/bottomup/v2/factors_c3.py`: six candidate
+factors (injury report-week burden, practice-participation severity, end-of-prior-season depth-chart
+rank, combine athletic-testing composite, neutral-situation team pass rate, efficiency-over-expected
+rate), each with mechanism, source, usable span, and mandatory `*_known` control. **Written against
+`pos_data.py`'s existing `SeasonPanel`/`feature_gate` interface, not the dispatched
+`factors_c1.py`/`factors_c2.py` contract — those two files do not exist anywhere in this repo
+(verified against `main`, `origin/main`, and this worktree)**, most likely because a concurrent
+`ranker` session building the v2 rewrite (ADR-069) has not merged yet. Flagged to `ranker` in
+thread `2026-08-02-c3-factor-definitions-written-but-v2-factors-c1`; reconcile before fitting.
+Odds_snapshots and PROE were deliberately excluded (ledger T0-11/N12/T1-22 dispositioned as
+`blocked` for data availability, which `docs/factor-ledger.md`'s "do not resurrect" rule covers even
+though the underlying tables now exist) — same thread asks ranker/strategist to rule explicitly on
+whether that stands.
 
 **Last verified:** 2026-07-30, ranker session — **factor batch 7 (RB usage and efficiency): 16
 registered tests, 0 survive, 0 close the RB deficit, and the coverage flag that beats its own
@@ -1043,6 +1284,27 @@ Current state only. An item leaves this list when it is done — history lives i
 pass or is marked as unverified.
 
 **Data capture — time-sensitive, cannot be backfilled**
+
+0. **Per-analyst rankings exist for 2026 ONLY, and that is structural.** 66 individual FantasyPros
+   expert boards, 17,818 rows, `source` = `fantasypros_expert_<id>`, `as_of_date` 2026-08-01
+   (data-ops, 2026-08-01). **FantasyPros exposes no free historical per-expert archive**, so this
+   can never be backfilled to 2018–2024 — it can only be grown forward by re-running the scrape
+   periodically. **Consequence for the founder's stated bar** (*"on par with any single analyst"*,
+   2026-08-01): it **cannot be measured on a completed season today**, because the only season with
+   per-analyst boards has not been played. What 2026 *does* support is measuring the analyst
+   *dispersion* around consensus — which bounds how far out on a limb our board is relative to a
+   normal analyst, without proving equal accuracy. 2,181 rows quarantined in
+   `rankings_expert_quarantine` (`fantasypros_id` not in crosswalk — spot-checked as 2026 rookies
+   missing from the DynastyProcess mirror; no fuzzy matching attempted).
+   **Re-run the scrape before each draft season or the series never starts.**
+
+0b. **Vegas odds now exist: `odds_snapshots`, 3,884 team-game rows, 2018–2024, zero nulls**
+   (data-ops, 2026-08-01, `src/ingest_odds.py`). Spreads, moneylines, game totals and derived
+   **implied team totals**, `as_of_date` = `gameday` (a conservative proxy). Sourced from
+   `nflreadpy.load_schedules()` — already-licensed nflverse CC-BY data, not a new scrape.
+   **Not obtained:** player props (no free historical source found) and season win totals (not in
+   nflverse; `sportsoddshistory.com` renders them in JS, not a parseable table). Win totals were
+   the lowest-priority instrument of the four and are deferred, not forced or faked.
 
 1. **A *scheduled* ADP capture has still never fired.** `.github/workflows/adp-snapshot.yml`
    (09:15 UTC daily) has exactly one run in repository history, `event: workflow_dispatch`,

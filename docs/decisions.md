@@ -3294,3 +3294,72 @@ projection architecture, then player availability, then rates. PR-007 is unaffec
 document reporting a result as "no edge over consensus" during component development is now
 mislabelled per §6.5's 2026-07-31 scope ruling and this one; corrections route through the owning
 role, not by edit-in-place from whoever notices.
+
+## ADR-070 — The factor inclusion decision rule for ranking v2: permutation nulls, sequential Monte Carlo p-values, and calibrated sign-consistency (2026-08-01, strategist, thread 2026-08-01-c1-the-registered-win-rule)
+
+**Status:** Accepted. Full text: `docs/adr-drafts/ADR-070-factor-inclusion-decision-rule.md` (§4 is the
+rule, §5 its cost, §6 how the next batch verifies it). Recorded here in summary; that file governs.
+
+**Trigger.** Batch C1's registered placebo — a column of seeded noise that provably cannot carry
+signal — returned a BH-robust WIN at TE (+0.0303, p = 0.0002) and the registered rule graded it
+`INCLUDE`. Replication across 34 independent noise draws measured the harness false-positive rate at
+**9.6% of cells against a nominal 2.5%**.
+
+**Decision.** The estimator is **unchanged** — mean of per-season Spearman deltas. Changing the
+estimand after seeing which arms nearly won is tuning, and every stored per-season delta re-grades
+without a refit. What changes is the uncertainty:
+
+- **Null:** a matched per-cell ensemble — joint within-season row permutation of *that arm's own
+  column block*. Matches column count, marginals, within-block correlation and `*_known` coverage
+  rate for free. The 1-column Gaussian placebo matched none of those for a 3-column arm.
+- **p-value:** Besag–Clifford sequential Monte Carlo (h = 20, L = 3,000), two-sided. **No p below
+  `2/(L+1)`, and no parametric tail fit.** Refusing a Gaussian/GPD tail fit is load-bearing: it would
+  put F3-RB and F6-QB *over* the BH bar and the placebo *under* it, on an assumption nothing
+  validates — the same error the bootstrap made in new clothes.
+- **BH retained** on top, at cumulative campaign **M = 130**, and explicitly **not shrunk** — the
+  "batches 1–7 tested a different primary model" argument was rejected in writing, because C1
+  re-tested factors batches 3/5/7 had already tested.
+- **Pre-committed error rates**, so batch C2 can verify them the way C1 verified its predecessor:
+  HYPOTHESIS on a true null **≤ 5.0%**; any INCLUDE/EXCLUDE across an all-null 20-cell batch
+  **≤ 1.3%**.
+
+**Two changes originating from the founder, mid-task, both adopted.**
+
+1. **Calibrated sign-consistency (§4.4a).** Strategist's first draft rejected a sign criterion for two
+   correct reasons — the p-floor 2⁻⁷ = 0.0078 cannot reach a 7.7×10⁻⁴ threshold, and π₀ ≈ 0.77 at QB
+   rather than 0.5. **Both objections vanish when `C = W⁺ − W⁻` is calibrated against the permutation
+   ensemble instead of a binomial**, because the ensemble embeds both the 0.77 and the exact-zero
+   mass. Costs zero extra draws, is integer and hand-auditable, and contains no resampling in its
+   definition. Enters as a **required condition, never a second discovery route.** Stated consequence,
+   accepted: this probably makes INCLUDE unreachable at QB, and at S = 7 that is the correct answer.
+2. **HARM splits (§4.4b)** into **RE-SPECIFY** (BH-robust *and* sign-consistent — a column carrying no
+   information cannot *consistently* degrade ordering) and **EXCLUDE (variance)**. Guardrail against
+   "include it differently" becoming an unbounded search: **exactly one attempt, from a four-item menu
+   fixed before it runs, named with its mechanism, entering the campaign denominator.** Falsification
+   condition registered — if measurement M-1(B) shows noise routinely produces `C ≥ 4`, RE-SPECIFY is
+   wrong and is withdrawn.
+
+**Consequences.**
+
+- **Batch C1 re-grades in full. The arms do not re-run** — only the null ensembles get built. Its six
+  factor-level NULLs stand as *inclusion outcomes*; its **cell-level** results are `UNCALIBRATED`,
+  not dispositioned. Ranker's argument that miscalibration only inflates false positives is right for
+  what it covers and covers half the problem: the same discreteness has **no power** on mixed-sign
+  vectors (placebo sd ≈ 0.003 at RB against a CI half-width of 0.020).
+- **F6-QB's confirmatory test is refused and its "clears the placebo null" claim withdrawn** — F6 adds
+  no column, so a column-addition placebo was never its null. Replaced by
+  `docs/preregistration/PR-DRAFT-lag-weight-decay-profile.md`.
+- **F3-RB** is a *suspended* registered cell, to be finished in its own family, but a `d` = 3 matched
+  null runs first and may kill it for almost no compute.
+- **Campaign correction:** BH flags are withdrawn as error-control claims on the old estimator, but
+  **realised type-I exposure is nil** — zero inclusions in ~130 tests, and FDR is a property of
+  discoveries. The live exposure is **type-II**, which is why no lower "provisional admit" tier was
+  offered.
+- **Batch B1 was deliberately not touched** (fable's registered batch). The ADR supplies the
+  instrument and names the three load-bearing cells; **B1's WR HARM −0.0125, which rejected G1 and
+  G1a, cannot be assessed until the ensemble's lower tail is published.**
+
+**The structural finding, and the highest-value item on the list (M-4).** Every problem here reduces
+to **S = 7**. At seven seasons **no exact season-level randomisation test can reach a BH threshold by
+any method**; at twelve it can. How far back the target span can go is therefore worth more than any
+individual factor currently queued.

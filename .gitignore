@@ -21,3 +21,8 @@ data/*.db-shm
 # only Yahoo-derived data persisted anywhere in this project (ADR, thread
 # FR-062). Not a raw league payload; access token + refresh token + expiry.
 data/.yahoo_token.json
+
+# ADR-070 sweep permutation-draw cache. Regenerable compute, not results:
+# ~136 KB per cell x hundreds of cells, rewritten on every re-run. The graded
+# output lives in sweep070/cells.csv, which IS committed.
+experiments/bottomup/results/sweep070/draws/

@@ -59,6 +59,65 @@ sweep definition-only 8 · yardage-bonus variance hypothesis 1 = **92**.
 
 ---
 
+## Section 0 — Batch C1: the first dispositions measured against **v2** (2026-08-01)
+
+**Read this before treating any row below as settled.** Every disposition in Sections 1–6 was
+assigned under the **old frame**: measured, if at all, against the **consensus-derived** board,
+which already contained consensus's embedded knowledge. Per the founder's ruling of 2026-08-01
+(`FR-2026-08-01-need-an-inclusion-test-run-candidate-factors-as`), those results **carry almost no
+information about whether a factor belongs in v2**, and a `rejected-with-evidence` or measured-NULL
+row below should be read as **untested for v2**. Rows excluded for **data availability or
+licensing** still stand — those reasons have not changed.
+
+Batch C1 (`docs/ranking/factor-campaign-manifest/batch-C1.md`, results
+`docs/ranking/batch-C1-results.md`) is the first set of dispositions measured **against v2**, which
+contains no consensus. Six factors, 38 registered cells, control = v2 games arm G0, seasons
+2018–2024, 2025 holdout never opened.
+
+| Factor | Ledger row | v2 disposition | Result — absolute rank correlation vs realised finish, Δ against v2 |
+|---|---|---|---|
+| Offensive snap share, recency-weighted | T0-9, N18 | **rejected-with-evidence (v2)** | RB +0.0027 NULL, WR −0.0025 NULL, **TE −0.0285 HARM** (CI, not BH). Coverage 99.8–100% — a measurement, not a gap |
+| Red-zone (inside-20) usage share of team | T0/T1 red-zone usage | **rejected-with-evidence (v2)** | RB −0.0001, WR −0.0010, TE +0.0020, all NULL. Full 2009+ PBP window, coverage 98.5–100% |
+| Expected fantasy points (xFP) + luck residual | T1-18 | **NULL (v2) — hypothesis retained at RB** | QB +0.0034, RB **+0.0186 (p = 0.059)**, WR −0.0008, TE +0.0263, all NULL. RB clears the placebo null; not demonstrated |
+| NGS average separation | N5 | **rejected-with-evidence (v2)** | WR −0.0000, TE −0.0220, both NULL. Coverage 92% |
+| Route participation / targets per route run | T1-16, T1-17, N3 | **rejected-with-evidence (v2)** | RB +0.0019, WR +0.0018, TE +0.0004, all NULL. **Labelled proxy** (routes from `participation.offense_players`) |
+| Steeper recency weighting (0.70/0.22/0.08) | `CLAUDE.md` §6.4 | **NULL (v2) — hypothesis retained at QB** | QB **+0.0266**, RB −0.0091, WR −0.0107, TE −0.0115, all NULL. Sign pattern exactly as registered |
+| **Coverage-indicator controls** (`snap_known`, `rz_use_known`, `xfp_known`, `sep_known_1`, `routes_known`) | Amendment 1 | **rejected-with-evidence (v2)** | All 15 cells NULL, most exactly no-change. No factor's effect is attributable to its presence flag |
+
+**A harness disposition, not a factor one.** A registered **placebo** — seeded noise that provably
+carries no signal — returned a BH-robust WIN at TE and the registered inclusion rule graded it
+`INCLUDE`. Replication puts the harness's false-positive rate at **~11–15% of cells against a
+nominal 2.5%**. It inflates false *positives* only, so it cannot have produced any of the NULLs
+above; it does bind the next batch, and `strategist` owns the replacement rule.
+
+**Two factors from the earlier campaign are NOT resurrected by this correction and remain closed:**
+vacated opportunity and rookie draft capital were eliminated cleanly, and QB modelling was closed
+after six failed configurations.
+
+### Batch C2 (2026-08-01) — more factors, plus the RB high-carry breakpoint
+
+`docs/ranking/factor-campaign-manifest/batch-C2.md`, results
+`docs/ranking/batch-C2-results.md`. **Grading suspended, same reason as above** — every row below
+is `PENDING-RULE`, not a disposition change, until `strategist`'s replacement WIN rule lands. CI
+verdicts (estimator-independent) are reported for the record.
+
+| Factor | Ledger row | v2 CI result — Δ against v2, PENDING-RULE | Notes |
+|---|---|---|---|
+| WOPR, recency-weighted | T1-15 | WR −0.0021 NULL, TE −0.0005 NULL | both below this batch's own placebo |
+| YAC per reception (RB) | N16 | +0.0004 NULL | reused batch-7 block verbatim; coverage-flag control also NULL |
+| Receiving share of an RB's own points | N17 | +0.0101 NULL (p=0.345) | reused batch-7 block; largest RB delta in the batch, CI wide, flagged as the one near-miss |
+| Late-season role trajectory | N19 | RB −0.0044 **HARM (CI)**, WR +0.0001 NULL, TE +0.0086 NULL | reused batch-7 block; TE's treatment and coverage-flag control produced bit-identical deltas — investigated, confirmed not a code bug (point-level predictions differ), left as an open oddity |
+| Implied team total, lagged | T0-11 / N12 | QB +0.0140 CI-WIN (p=0.0002), RB −0.0000 NULL, WR +0.0040 NULL, TE +0.0035 NULL | first read of `odds_snapshots` by any model here; QB's CI-WIN is smaller than its own matched-control placebo delta (+0.0216) — flagged, not claimed |
+| RB high-carry-season breakpoint (350/375/400, single hinge-spline test) | founder, 2026-07-31 | RB −0.0002 NULL | confirmed severely underpowered as registered: 1 board-veteran RB-season crossed 350 carries across the entire graded population |
+| **Coverage-indicator controls** (`yac_known`, `recpts_known`, `late_known`, `itt_known`) | Amendment-1-style, C2 | All NULL except `itt_known` at RB, +0.0015 CI-WIN (p=0.0002), while the paired treatment (`itt_w`) itself is NULL at RB | not the batch-7/C1 artifact pattern (treatment doesn't win), but adjacent and flagged |
+
+**A second, independent measurement of C1's own finding**: this batch's placebo at a 4-season
+control (`F0D`, CTRL-D) won CI-level at 2 of 4 cells (RB, TE) against 0 of 4 at the matched
+7-season control (`F0`, CTRL-A2) — the shorter the window, the more miscalibrated the estimator,
+confirming C1's mechanism on a control C1 never tested.
+
+---
+
 ## Section 1 — Tier 0, table stakes (`docs/test-registry.md` #1–#12)
 
 Everyone has these; not having one is a loss, having it is not an edge (`CLAUDE.md` §12 framing via

@@ -1,0 +1,7 @@
+PASS  (2026-08-03 23:46:31)
+LOO p<=0.05: pooled 40/800 (pass <= 53)
+  QB: 10/200 (pass <= 19)
+  RB: 10/200 (pass <= 19)
+  WR: 10/200 (pass <= 19)
+  TE: 10/200 (pass <= 19)
+end-to-end placebo: 0 INCLUDE/EXCLUDE/RE-SPECIFY (pass = 0), 0 HYPOTHESIS (pass <= 1)

@@ -1,0 +1,8 @@
+Section 2 systematic screening denominator
+Candidate columns (incl. noise control): 63
+Targets: 2
+Slices (pooled + per-position): 5
+TOTAL: 630
+
+Noise control rank, pooled signed_resid: 57 of 63
+Noise control rank, pooled abs_resid: 63 of 63

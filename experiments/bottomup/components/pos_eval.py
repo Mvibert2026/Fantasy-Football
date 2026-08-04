@@ -153,6 +153,11 @@ class WalkForward:
     #: 1-7 bit-for-bit. The caller owns the look-ahead property of what it returns;
     #: anything derived from season-N RESULTS here is survivorship contamination.
     extra_universe_fn: Optional[Callable[[int, str], Sequence[str]]] = None
+    #: ADR-070 §4.8 tier ruling (2026-08-01). Which FFC ADP archive defines the
+    #: board (`average_pick`) at the target season. The default reproduces every
+    #: prior batch byte-for-byte; tier-2 runs pass "ppr_12team" (2013-2024).
+    #: MEMBERSHIP ONLY: the ADP column is never a feature or an ordering input.
+    adp_fmt: str = "half_ppr_12team"
     audit: List[Dict] = field(default_factory=list)
     _cache: Dict = field(default_factory=dict, repr=False)
 
@@ -305,7 +310,7 @@ class WalkForward:
                 continue
             pool = self._pairs(self.pool_position, target) if self.pool_position else None
 
-            board = adp.load_adp(target, position=self.position)
+            board = adp.load_adp(target, fmt=self.adp_fmt, position=self.position)
             extra = (board.loc[~board["unmatched"], "player_id"].tolist()
                      if len(board) else [])
             if self.extra_universe_fn is not None:

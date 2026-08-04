@@ -100,6 +100,45 @@ full-PPR room. Half-PPR, the stacking yardage bonuses, and 10-team replacement l
 the ordering through a consensus-derived board at all. Scoring portability is therefore not a
 nice-to-have bolted on later — it is only achievable by building independently in the first place.
 
+**Deviation from consensus is a diagnostic, not an objective — founder's clarification, 2026-08-01.**
+
+> "Don't take that bar literally. But we need to be respectable. If we have too many major
+> differences from consensus it's probably a red flag."
+
+This does **not** reopen (2) above. The distinction is load-bearing and both halves bind:
+
+- **Never a penalty to minimize.** Scoring the model on closeness to consensus rebuilds a
+  consensus-derived board by the back door and kills scoring portability with it (see below).
+- **Always a flag to investigate.** A board that disagrees violently and cannot say *why* has a bug.
+  Every large deviation should have a stated reason; the ones that do not are the queue.
+
+**This method has a 2-for-2 record here already, both times found by the founder by eye:** Taysom
+Hill (ours 25, consensus 171) and Burrow at QB26 — both real defects in the games channel, not real
+disagreements. The requirement is therefore an explained-deviation report, not a deviation budget.
+
+**Rookies are a separate population and must be modelled separately — founder's ruling, 2026-08-01.**
+
+> "Rookies need to be treated differently. It's just a fact. Would be a mistake to let them or the
+> veterans ruin the others model."
+
+**The mechanism, so this is not treated as a preference.** Every lag feature a veteran projection
+rests on — prior-season volume, efficiency, games, snap share, injury history — is *structurally
+absent* for a rookie, not merely missing at random. A joint fit therefore teaches the model that
+absent prior-season production implies a low projection, which is trivially true for rookies and true
+for a completely different reason than it is for a veteran. The corruption runs both ways: rookies
+drag the veteran coefficients, and veteran-derived coefficients misprice rookies.
+
+**Required:** separate fits, or at minimum a rookie indicator with **full interaction** on every lag
+feature — never a shared slope. Rookie projections are driven by draft capital, athletic profile,
+landing spot and depth-chart role, not by lag features that do not exist. Availability is the sharpest
+case: a rookie has **no injury history at all**, so the availability model cannot use its veteran form.
+
+**What we have for it:** `draft_picks` (1980–2026, 12,927 rows) is already read by the core panel
+builder. **`combine` (2000–2026, 8,968 rows — forty, bench, vertical, broad jump, cone, shuttle,
+height, weight) is NOT** read by any projection model, only by side experiments. Fable's own v2 build
+log records rookies as "crude" and a board-veteran level bias of ~−2.6 games, so this is a known
+live weakness, not a hypothetical.
+
 **The hard part, named in advance so it is not discovered late.** v1's rate projections are already
 at or better than market parity; its entire measured deficit sits in one channel — **projected
 games** (Fable M2-1). That is also the channel where consensus's advantage is real: what consensus
@@ -185,8 +224,22 @@ outcome_feedback                          -- projected vs. actual delta; the YoY
 | **Route data** | Routes run, route participation rate | Not directly in nflverse — needs NGS or a documented proxy calculation. Flag clearly if proxied. |
 
 **Licensing:** nflverse data is broadly CC-BY (FTN charting subset is CC-BY-SA and requires
-attribution). Respect attribution requirements. For scraped sources, check terms before
-building the scraper, not after.
+attribution). Respect attribution requirements.
+
+**Scraped sources — founder's ruling, 2026-08-01, superseding "check terms before building the
+scraper, not after":**
+
+> "Stop worrying about terms. I will worry about them. It's all personal use. Just get the data."
+
+**Do not review, report on, or stall an ingest over terms of service.** The founder has taken that
+decision and the liability; this is a single-user personal-use project. An agent that returns a
+partial ingest whose missing half is "I paused to check the terms" has not done the task. This
+paragraph exists so the ruling is not re-litigated by the next agent who reads this section.
+
+Still binding, and unrelated to terms: **no credentials in code** (§10), no paid or trial-gated
+tiers (a budget constraint — the founder has declined to pay), and **`as_of_date` on every
+time-sensitive row** (§6.1). A scraped value carrying a reconstructed or current date silently
+creates look-ahead and is worse than no data at all.
 
 ---
 
@@ -286,6 +339,44 @@ relevant question is whether the ranking produces better *rosters*, not better *
 this gap explicitly in results; move toward draft-simulation-based evaluation when the harness
 supports it.
 
+**Three objects, three metrics — founder's architecture, 2026-08-01. Do not evaluate one with
+another's metric.**
+
+> "It seems we need to evaluate each position individually. And then you cross rank. Rankings may be
+> different than a draft board which considers vbd. Then the next step is strategy because VBD can't
+> account for availability."
+
+| # | Deliverable | The question it answers | Correct metric |
+|---|---|---|---|
+| 1 | **Positional rankings** | Who is better, *within* a position? | Rank correlation **within position** vs realised finish |
+| 2 | **Projected-points ranking (pooled)** | Who will score the most fantasy points this season? | **Pooled** rank correlation vs realised points — valid *for this object* |
+| 3 | **Draft board** | What is each player worth *across* positions, for drafting? | Roster quality — **not** rank correlation |
+| 4 | **Strategy / pick recommendation** | Who should I take *at this pick*? | Simulated roster outcomes under an opponent model |
+
+**These are separate deliverables, each with standalone value — founder, 2026-08-01: *"It has value
+in its own [right]. We probably have multiple deliverables."*** Do not treat 2 as a failed 3, or 3 as
+a failed 4. They map onto the founder's three questions in §2, and the layering is why those can be
+built in parallel: the board takes a ranking as input, and strategy takes a board plus an
+availability model.
+
+**The error this corrects, which PM committed on 2026-08-01 and should not recur — and note the
+correction is about *labelling*, not about the statistic.** A pooled cross-positional Spearman
+(v2 0.607 against consensus 0.743) was reported as v2's headline **ranking** quality. That number is
+a perfectly valid measure of deliverable **2**; it is simply not a measure of deliverable **1**, and
+it is not a measure of **3** either — the pooled target is dominated by position, so it rewards
+matching the raw points leaderboard rather than draft value.
+
+**PM then over-corrected**, calling the pooled statistic invalid. It is not. **Report both: pooled for
+the projected-points ranking, per-position for the positional rankings, and never present one as the
+other.**
+
+**Why the third layer cannot be judged on either of the first two.** VBD is a value *stock* — points
+over replacement if the season goes as projected. A pick is a *policy*: value now minus what the
+pick forgoes later, which depends on who survives to your next pick. **VBD cannot account for
+availability**, so a board is never a pick order, and presenting one as the other is the category
+error the recommender's hardcoded −25 QB penalty was patching over (see `docs/fable/M2-findings.md`
+§M2-3).
+
 ---
 
 ## 7. League settings
@@ -352,8 +443,8 @@ each role's pinned model and effort; this table says what each is *for*.
 | Agent | Role | Model |
 |---|---|---|
 | **pm** | Sequencing, dispatch, merges, the founder's interface | Opus |
-| **ranker** | The proprietary bottom-up ranking — the product's core | Opus |
-| **strategist** | Methodology, formula specs, pre-registration. **No database access, deliberately** | Opus |
+| **ranker** | The proprietary bottom-up ranking — the product's core | Fable |
+| **strategist** | Methodology, formula specs, pre-registration. **No database access, deliberately** | Fable |
 | **researcher** | External verification, competitive analysis, source audits | Opus |
 | **fable** | Adversarial review on a separate weekly budget | Fable |
 | **frontend** | The React app | Sonnet |
@@ -507,6 +598,55 @@ concerned, never been made.
 - **PM only: sweep dead agent worktrees before ending a session.** Each costs ~0.9–1.0 GB and
   nothing removes them automatically; 49 of them filled the disk to 100% on 2026-07-30 and cost a
   running agent real time. Merge first, then remove — procedure in `docs/environment.md` §4b.
+
+### Supervising a dispatch — every one of these was learned by it going wrong
+
+**A background agent can stop without telling you.** On 2026-08-03 one sat idle roughly four hours
+with no completion notification and no commits; the founder noticed before PM did. **If a dispatched
+agent has committed nothing for an hour, ping it** — ask for a forced checkpoint plus a plain status,
+and say explicitly that "blocked" and "looping" are acceptable answers. Silence is indistinguishable
+from a hang, and you cannot report on it.
+
+**Committed is not pushed.** The same agent had five local commits while the remote branch sat
+behind. Verify the push, not the commit — the stop hook is the backstop, not the plan.
+
+**A worktree branches from wherever it was created, and does not inherit gitignored files.** A
+`backend` worktree created before its dependency merged spent an entire run building against an
+interface it had *reconstructed from documentation*, because the real one was not in its tree. State
+the base commit in the dispatch, and confirm dependencies are merged **before** creating the
+worktree. See `docs/environment.md` §4 for the `data/nfl.db` stub failure, which looks exactly like a
+code regression.
+
+**Two agents will each update a shared counter and both be wrong.** Batch C2 wrote Σm_b = 159, D1
+wrote 218; neither was wrong for its own side and the union was 247. The sharded manifest prevents
+this for batch files and does nothing for the shared README. **Any running total in a shared file is
+PM's to reconcile at merge, never an agent's to recompute.**
+
+**Carry a placebo arm in every batch, permanently.** This is the highest-value rule on the page. It
+is how the broken decision rule was found (ADR-070) and it caught a second false positive in the very
+next batch. A batch without a control cannot tell you whether its instrument works.
+
+**Pre-commit an instrument's error rates, then measure them.** ADR-070 commits to ≤5.0% and ≤1.3%;
+the next batch verifies those empirically before grading anything. An unverified instrument is what
+produced ~130 meaningless test results.
+
+**Compute is free in tokens; thinking is not.** A permutation sweep costs wall-clock only. **When a
+budget ceiling is near, spend the remaining context getting long compute *launched and detached*** —
+it keeps running after the agent that started it is gone, so nothing is lost to the reset.
+
+### PM's own failure modes this session, recorded so the next PM does not repeat them
+
+- **Relayed the founder's argument without checking our own measurements.** Told `strategist` that
+  universe dilution was "a level shift that cannot change which arm wins." Three prior batches had
+  measured the opposite — rank *reversal* — and it refuted me from our own records. **Search the
+  repo before relaying a plausible argument as settled.**
+- **Reported a comparison ranked by raw projected points instead of VBD**, which put seven QBs in a
+  top ten and was an artifact of my own script, not the model.
+- **Ran path checks from the wrong working directory** after a `cd`, and briefly reported present
+  data as missing. `cd` persists between Bash calls.
+- **Showed a single season (2024) as though it were representative.** It was the model's best RB
+  season of seven; the true gap was roughly double what I presented. **Report the multi-season mean,
+  or say plainly that one season is a look and not a verdict.**
 
 ### Completion reporting
 Report commit hash and test count. Not prose summaries.

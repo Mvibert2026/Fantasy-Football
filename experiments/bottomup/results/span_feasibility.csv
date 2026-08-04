@@ -1,0 +1,22 @@
+family,first_season,gap_seasons,earliest_first_feature_season,earliest_first_target,binding
+player_weekly_stats.targets,1999,"2003,2004,2005,2006,2007,2008",2002.0,2004,N_LAGS=3 + gap
+player_weekly_stats.air_yards,2009,"1999,2000,2001,2002,2003,2004,2005,2006,2007,2008",2012.0,2014,N_LAGS=3 + gap
+player_weekly_stats.carries,1999,none,2002.0,2004,N_LAGS=3
+player_weekly_stats.attempts,1999,none,2002.0,2004,N_LAGS=3
+player_weekly_stats.receptions,1999,none,2002.0,2004,N_LAGS=3
+player_weekly_stats.rec_yards,1999,none,2002.0,2004,N_LAGS=3
+player_weekly_stats.rush_yards,1999,none,2002.0,2004,N_LAGS=3
+player_weekly_stats.pass_yards,1999,none,2002.0,2004,N_LAGS=3
+depth_charts_weekly,2001,through 2024,2002.0,2004,source start season
+rosters_weekly,2002,through 2025,2003.0,2005,source start season
+injuries,2009,through 2024,2010.0,2012,source start season
+snap_counts,2013,through 2025,2014.0,2016,source start season
+participation,2016,through 2025,2017.0,2019,source start season
+ngs_receiving,2016,through 2025,2017.0,2019,source start season
+pbp,2009,through 2025,2010.0,2012,source start season
+ff_opportunity,2006,through 2025,2007.0,2009,source start season
+league_season_metrics,1999,through 2025,2000.0,2002,source start season
+ADP half_ppr_12team (evaluation universe definer),2018,7 seasons,,2018,ADP archive
+ADP ppr_12team (evaluation universe definer),2013,12 seasons,,2013,ADP archive
+ADP non_ppr_12team (evaluation universe definer),2013,12 seasons,,2013,ADP archive
+NO ADP (full-veteran-universe endpoint),1999,none,2002.0,2004,N_LAGS=3 + min_train_seasons=2

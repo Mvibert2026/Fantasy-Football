@@ -250,6 +250,45 @@ newest at the bottom.
   revised reply is staged, not appended.
 
 
+- **2026-08-01 · (strategist, C1 replacement-rule ruling) FOUNDER INPUT, NEEDS A PROPER FR — I had
+  no shell to allocate one.** Verbatim, relayed mid-session: *"Yes a rule pointing the other way is
+  a signal. Probably just needs to be included differently. Any consistent signal is usable."*
+  Acted on immediately rather than filed: it is now **ADR §4.4a (a calibrated sign-consistency
+  condition) and §4.4b (a HARM cell splits into RE-SPECIFY vs EXCLUDE-variance)** in
+  `docs/adr-drafts/ADR-DRAFT-factor-inclusion-decision-rule.md`. Capture properly with
+  `python tools/founder_requests.py new --raised-by "pm relay, 2026-08-01" --subject "A consistent
+  signal pointing the wrong way is usable — re-specify rather than exclude"`. The standing risk this
+  creates and the ADR's answer to it: "include it differently" is one step from an unregistered
+  search, so RE-SPECIFY buys **exactly one** attempt from a menu fixed before it runs.
+
+- **2026-08-01 · (strategist, span/universe ruling) FOUNDER INPUT, NEEDS A PROPER FR — no shell to
+  allocate one.** Two statements, verbatim: *"We are only using ADP for availability right. Not
+  projections which have far more usable data."* and *"I don't think you need to worry about
+  membership. The ones who shouldn't be available likely are at the end of rankings anyway."*
+  **Both acted on, and one was partly declined with reasons** — ruling in thread
+  `2026-08-01-three-rulings-needed-the-endpoint-is-the-bottlen`, now ADR-070 §4.8. Accepted: the
+  training window goes to full depth (2002), the grading span goes 7 → 12, and **survivorship is not
+  an objection to a roster-defined universe** (a Week-1 roster is pre-outcome; `CLAUDE.md` §6.2 names
+  it). Declined: swapping the *grading universe* to the full roster-defined tier, because batches 5
+  and 7 measured across three batches / three positions / four sources that **every arm improving the
+  full universe degraded the ADP board** — rank reversal, not the level shift the dilution argument
+  assumes. Capture with `python tools/founder_requests.py new --raised-by "pm relay, 2026-08-01"
+  --subject "Use the full season depth; membership dilution is not a concern"`.
+
+- **2026-08-01 · (strategist)** Standing constraint now live and worth someone's attention: ADR-070
+  §4.3 sets the Monte Carlo budget as `L = ceil(2M/q) − 1`, so **the cost of every future discovery
+  scales linearly with the campaign denominator**. M is 130 → 218 → 230 in one day (D1 spent 88 cells
+  in a single batch), which puts a candidate cell at **4,599 null draws**. Not a criticism of D1 and
+  not re-opened — but future batches should prefer **fewer, better-motivated cells**, because every
+  cell registered is a tax on every candidate that follows it.
+
+- **2026-08-01 · (strategist)** Logged because it is a useful fact about this environment, not a
+  problem: I set the C1 thread's own `STATUS:` to RESOLVED (the source of truth) and was about to
+  hand-edit the matching row in `docs/handoffs/OPEN.md`, which says "do not hand-edit" and which I
+  cannot regenerate without a shell. **The hand-edit was unnecessary — `tools/handoffs.py sync` ran
+  from elsewhere in the session mid-task and moved the row to Resolved on its own** (114/57 → 113/58
+  open/resolved). Verified before concluding, not assumed. Nothing to reconcile.
+
 - **2026-07-29, backend (ADR-057).** `make_board.fit_rank_curves()` pools all training seasons with
   EQUAL weight. Measured: the QB rank->points slope ran -67, -73, -59, -45, -4 across 2021-2025 —
   a monotone collapse — while RB moved the other way (-35 to -78). Flat pooling averages over a
@@ -1972,3 +2011,34 @@ tuning through a human):
 - **The panel counts REG rows only**, so a player whose only NFL action was a playoff game reads as
   never having played (Frank Gore Jr., Jordan James, Jarquez Hunter, Will Howard — all pinned).
   Consistent with the harness; worth knowing when reading the pinned count.
+
+## 2026-08-01 — ranker (batch D1 + M-4 span)
+
+- **Decided and logged:** batch D1's roster-status arms run against a second matched control at
+  `first_feature_season = 2018` rather than reusing CTRL-A. `rosters_weekly`'s end-of-season reserve
+  capture breaks at 2017 (prevalence 0.012–0.045 for 2012–2016 vs 0.17–0.28 from 2017), which is
+  batch 7 D2's time-dummy geometry. Restricting the *training* window, not just the target window,
+  is batch 5's own lesson applied. Cost: n = 5 seasons instead of 7.
+- **Decided and logged:** `depth_charts_weekly` eliminated as a full-span substitute for
+  end-of-season employment status. Coverage is stable (0.61–0.78, no break) and the contrast is
+  absent (4.26 vs 4.44 mean games in N, sign flips season to season). Do not re-propose it.
+- **Decided and logged:** the two named cases (Burrow, Taysom Hill) are deliberately **not**
+  re-checked player by player in D1's write-up. The −2.41-game level bias is a property of the whole
+  board population, so a single player's projection is not diagnostic until it is fixed, and picking
+  two players out of a frame after seeing the frame is anecdote selection. Re-read both once the
+  level amendment runs.
+- **Not decided, escalated:** whether the next confirmatory arm registers on a continuous residual
+  endpoint instead of per-season Spearman. It is a methodology decision, so it went to `strategist`
+  (`2026-08-01-three-rulings-needed-the-endpoint-is-the-bottlen`) rather than being taken here.
+- **Not decided, escalated:** which evaluation tier the season span adopts (S = 7 / 12 / 21). M-4's
+  own instruction forbids extending unilaterally because it moves every published control ρ.
+- **Residue worth someone's attention:** `rosters_weekly` INA (game-day inactive) rows only exist
+  from 2019 and DEV/CUT from 2017, so any feature built on "not on a roster at all" is a calendar
+  artifact before then. Folded INA into ACT for this reason rather than using it as its own signal.
+- **Residue:** `league_season_metrics.rb_carry_top30_share` and `wr_target_top45_share` are NULL for
+  exactly 2003–2008 — the same gap as `player_weekly_stats.targets`. Excluded them as normalisers,
+  because a normaliser sharing its feature's gap reintroduces the gap as a time dummy.
+
+- 2026-08-03 ranker: ppr12 ADP archive shallow pre-2017 (TE >=10 board vets only from 2018) — worth asking researcher whether any free archive carries deeper early-2010s boards; would buy TE the span tier 2 promised. (Flagged to strategist on the M-1..M-6 thread.)
+- 2026-08-03 ranker: Q0 smoke suggests the fit-population mismatch may generalise — every v2 component (volume, rates) is fitted on the full veteran universe and used on the board. If Q0 grades as a fit-population error, the same audit is owed per component (the amendment's own §5 row 1 says so).
+- 2026-08-03 ranker: draw files store per-season metrics for BOTH endpoints, so a future residual-endpoint calibration (§4.9) can reuse the same ensembles at zero compute — worth remembering before anyone re-runs draws for a residual family.

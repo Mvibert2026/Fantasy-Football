@@ -1,15 +1,15 @@
 # Founder requests — combined view
 
-**Generated 2026-08-01 by `tools/founder_requests.py sync` — do not hand-edit.**
+**Generated 2026-08-03 by `tools/founder_requests.py sync` — do not hand-edit.**
 Per-request files in this directory are the source of truth. Edit a request's own file's
 `STATUS:` line, then re-run sync. Protocol: [`README.md`](README.md).
 Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests.md).
 
-**148 requests since freeze.**
+**165 requests since freeze.**
 
 ---
 
-## NEW — 89
+## NEW — 106
 
 | ID | Subject | Raised | Source |
 |---|---|---|---|
@@ -99,9 +99,26 @@ Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests
 | [FR-2026-07-30-widen-the-ranking-input-list](FR-2026-07-30-widen-the-ranking-input-list-research-what-leadi.md) | Widen the ranking input list research what leadi | 2026-07-30 | PM session 2026-07-30, founder chat |
 | [FR-2026-07-31-availability-and-qb-tilt](FR-2026-07-31-two-defects-spotted-by-eye-v1-mishandles-availab.md) | Two defects spotted by eye v1 mishandles availab | 2026-07-31 | PM session 2026-07-31, founder chat — spotted by eye from the rankings chart |
 | [FR-2026-07-31-separate-edge-from-absolute-quality](FR-2026-07-31-separate-edge-over-consensus-from-absolute-ranki.md) | Separate edge over consensus from absolute ranki | 2026-07-31 | PM session 2026-07-31, founder chat |
+| [FR-2026-08-01-a-consistent-signal-pointing-the-wrong-way-is-us](FR-2026-08-01-a-consistent-signal-pointing-the-wrong-way-is-us.md) | A consistent signal pointing the wrong way is us | 2026-08-01 | pm relay, 2026-08-01 |
+| [FR-2026-08-01-adp-defines-availability-membership-only-and-sho](FR-2026-08-01-adp-defines-availability-membership-only-and-sho.md) | Adp defines availability membership only and sho | 2026-08-01 | chat 2026-08-01 |
+| [FR-2026-08-01-availability-conditioning-on-opponent-rosters-ma](FR-2026-08-01-availability-conditioning-on-opponent-rosters-ma.md) | Availability conditioning on opponent rosters ma | 2026-08-01 | chat 2026-08-01 |
 | [FR-2026-08-01-bar-is-absolute-quality-not-edge-build-rankings](FR-2026-08-01-bar-is-absolute-quality-not-edge-build-rankings.md) | Bar is absolute quality not edge build rankings | 2026-08-01 | chat 2026-08-01 |
+| [FR-2026-08-01-bar-is-parity-with-any-single-analyst-not-with-c](FR-2026-08-01-bar-is-parity-with-any-single-analyst-not-with-c.md) | Bar is parity with any single analyst not with c | 2026-08-01 | chat 2026-08-01 |
+| [FR-2026-08-01-consensus-may-be-draft-oriented-not-points-order](FR-2026-08-01-consensus-may-be-draft-oriented-not-points-order.md) | Consensus may be draft oriented not points order | 2026-08-01 | chat 2026-08-01 |
+| [FR-2026-08-01-dynamic-data-derived-pick-penalty-vona-to-replac](FR-2026-08-01-dynamic-data-derived-pick-penalty-vona-to-replac.md) | Dynamic data derived pick penalty vona to replac | 2026-08-01 | chat 2026-08-01 |
 | [FR-2026-08-01-find-the-early-qb-penalty-scientifically-rather](FR-2026-08-01-find-the-early-qb-penalty-scientifically-rather.md) | Find the early qb penalty scientifically rather | 2026-08-01 | chat 2026-08-01 |
+| [FR-2026-08-01-four-deliverables-not-one-pooled-projected-point](FR-2026-08-01-four-deliverables-not-one-pooled-projected-point.md) | Four deliverables not one pooled projected point | 2026-08-01 | chat 2026-08-01 |
+| [FR-2026-08-01-ingest-and-use-camp-reports-beat-reporters-depth](FR-2026-08-01-ingest-and-use-camp-reports-beat-reporters-depth.md) | Ingest and use camp reports beat reporters depth | 2026-08-01 | chat 2026-08-01 |
+| [FR-2026-08-01-membership-does-change-which-arm-wins-measured-r](FR-2026-08-01-membership-does-change-which-arm-wins-measured-r.md) | Membership does change which arm wins measured r | 2026-08-01 | chat 2026-08-01, refuted by strategist |
+| [FR-2026-08-01-need-an-inclusion-test-run-candidate-factors-as](FR-2026-08-01-need-an-inclusion-test-run-candidate-factors-as.md) | Need an inclusion test run candidate factors as | 2026-08-01 | chat 2026-08-01 |
+| [FR-2026-08-01-regime-change-must-be-modelled-explicitly-not-ha](FR-2026-08-01-regime-change-must-be-modelled-explicitly-not-ha.md) | Regime change must be modelled explicitly not ha | 2026-08-01 | chat 2026-08-01 |
+| [FR-2026-08-01-respectability-check-large-unexplained-deviation](FR-2026-08-01-respectability-check-large-unexplained-deviation.md) | Respectability check large unexplained deviation | 2026-08-01 | chat 2026-08-01 |
+| [FR-2026-08-01-rookies-must-be-modelled-separately-from-veteran](FR-2026-08-01-rookies-must-be-modelled-separately-from-veteran.md) | Rookies must be modelled separately from veteran | 2026-08-01 | chat 2026-08-01 |
+| [FR-2026-08-01-season-span-is-26-not-7-stop-letting-the-newest](FR-2026-08-01-season-span-is-26-not-7-stop-letting-the-newest.md) | Season span is 26 not 7 stop letting the newest | 2026-08-01 | chat 2026-08-01 |
+| [FR-2026-08-01-terms-of-service-are-the-founder-s-concern-not-a](FR-2026-08-01-terms-of-service-are-the-founder-s-concern-not-a.md) | Terms of service are the founder s concern not a | 2026-08-01 | chat 2026-08-01 |
+| [FR-2026-08-01-three-layers-three-metrics-rankings-are-within-p](FR-2026-08-01-three-layers-three-metrics-rankings-are-within-p.md) | Three layers three metrics rankings are within p | 2026-08-01 | chat 2026-08-01 |
 | [FR-2026-08-01-turn-the-keys-over-to-fable-to-build-the-next-bo](FR-2026-08-01-turn-the-keys-over-to-fable-to-build-the-next-bo.md) | Turn the keys over to fable to build the next bo | 2026-08-01 | chat 2026-08-01 |
+| [FR-2026-08-03-tests-are-compute-not-tokens-structure-factor-te](FR-2026-08-03-tests-are-compute-not-tokens-structure-factor-te.md) | Tests are compute not tokens structure factor te | 2026-08-03 | pm dispatch 2026-08-03 |
 
 ## SCOPING — 1
 
@@ -192,6 +209,6 @@ _None._
 | [FR-2026-07-31-holdout-gated-on-fable](FR-2026-07-31-holdout-stays-sealed-until-fable-has-run.md) | Holdout stays sealed until fable has run | `RESOLVED — FOUNDER RULING, NOW A STANDING RULE` |
 | [FR-2026-07-31-league-winner-anatomy](FR-2026-08-01-test-the-anatomy-of-a-league-winner-claims-espec.md) | Test the anatomy of a league winner claims espec | `NEW — REGISTERED FOR TESTING, DELIBERATELY NOT ADJUDICATED` |
 | [FR-2026-07-31-parity-before-edge](FR-2026-08-01-parity-before-edge-our-rankings-need-everything.md) | Parity before edge our rankings need everything | `NEW — FILED, NOTHING RUNNING` |
-| [FR-2026-07-31-reverse-discovery](FR-2026-08-01-discovery-find-thresholds-and-interactions-from.md) | Discovery find thresholds and interactions from | `NEW — REGISTERED, NOT STARTED` |
+| [FR-2026-07-31-reverse-discovery](FR-2026-08-01-discovery-find-thresholds-and-interactions-from.md) | Discovery find thresholds and interactions from | `DISCOVERY PASS 1 COMPLETE — HYPOTHESIS GENERATION DONE, CONFIRMATION NOT STARTED` |
 | [FR-2026-07-31-threshold-tests-as-a-class](FR-2026-08-01-threshold-and-gate-tests-as-a-class-the-function.md) | Threshold and gate tests as a class the function | `NEW — REGISTERED, DELIBERATELY NOT STARTED` |
 
