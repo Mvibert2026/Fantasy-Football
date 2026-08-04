@@ -82,3 +82,42 @@ predictor that is *structurally absent* rather than merely weak teaches the mode
 - **The per-position sets are themselves a finding worth reporting.** Which factors matter at RB but
   not WR is a football claim the founder can sanity-check by eye — the same method that caught two
   real defects already.
+
+## Incumbent features get no grandfather clause — founder, 2026-08-04
+
+> "So how many tested factors do we have, why aren't we retesting those 'already in the model'."
+
+**Nine factors are currently inside the model and none has faced the ADR-070 instrument.** They were
+admitted under judgement or under the frame that has since been invalidated — i.e. **exactly the
+evidence basis that caused twelve tested factors to be thrown out.**
+
+| Ledger | Factor | Kind |
+|---|---|---|
+| T0-5 | Depth chart / role | predictive |
+| T0-6 | Injury designations & status | predictive |
+| T0-7 | Age as a decline curve | predictive |
+| T0-8 | Prior-year target / touch share | predictive |
+| T1-14 | Air yards, aDOT | predictive |
+| T1-25 | NFL draft capital (rookies) | predictive |
+| T0-4 | Bye weeks | structural |
+| T2-33 | Re-score under this league's rules | structural — the scoring engine |
+| T2-34 | Replacement levels QB10/RB30/WR40/TE10 | structural — the VBD config |
+
+**Batch C4 skipped T1-14 and T1-25 on the grounds that they are "already base-spec features, not new
+candidates." That reasoning is backwards** and must not be repeated: being already included is a
+reason to test, not a reason to skip. An untested incumbent adds variance to every arm measured
+against it, which makes every *other* factor harder to detect.
+
+**Binding on the v3 fit:**
+
+1. **The six predictive incumbents enter the candidate pool on equal footing with every new
+   factor.** No feature is assumed in. Regularisation decides what earns weight; prior membership
+   confers nothing.
+2. **The three structural rows are out of scope** — scoring rules, replacement levels and bye weeks
+   are configuration, not predictors, and are not fitted.
+3. **If v3 loses to v2 and we revert to incremental testing, the incumbents get explicit ablation
+   arms** — remove the feature, does the model degrade? That is the only way to test an incumbent
+   inside the incremental frame, and it has never been run for any of them.
+4. **Report which incumbents survive.** An incumbent shrunk toward zero by the fit is a finding, and
+   a more valuable one than a new factor failing — it means the current model has been carrying
+   something that does not earn its place.
