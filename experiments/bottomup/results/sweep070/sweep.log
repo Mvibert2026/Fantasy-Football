@@ -3,3 +3,17 @@
 [2026-08-03 23:24:50] VERIFY__VD1__QB: 200 draws
 [2026-08-03 23:29:05] VERIFY__VD1__RB: 60 draws
 [2026-08-03 23:33:07] VERIFY__VD1__RB: 120 draws
+[2026-08-03 23:37:12] VERIFY__VD1__RB: 180 draws
+[2026-08-03 23:38:32] VERIFY__VD1__RB: 200 draws
+[2026-08-03 23:39:58] VERIFY__VD1__WR: 60 draws
+[2026-08-03 23:41:24] VERIFY__VD1__WR: 120 draws
+[2026-08-03 23:42:50] VERIFY__VD1__WR: 180 draws
+[2026-08-03 23:43:18] VERIFY__VD1__WR: 200 draws
+[2026-08-03 23:44:16] VERIFY__VD1__TE: 60 draws
+[2026-08-03 23:45:13] VERIFY__VD1__TE: 120 draws
+[2026-08-03 23:46:10] VERIFY__VD1__TE: 180 draws
+[2026-08-03 23:46:31] VERIFY__VD1__TE: 200 draws
+[2026-08-03 23:46:31] VERIFY: PASS  (2026-08-03 23:46:31) | LOO p<=0.05: pooled 40/800 (pass <= 53) |   QB: 10/200 (pass <= 19) |   RB: 10/200 (pass <= 19) |   WR: 10/200 (pass <= 19) |   TE: 10/200 (pass <= 19) | end-to-end placebo: 0 INCLUDE/EXCLUDE/RE-SPECIFY (pass = 0), 0 HYPOTHESIS (pass <= 1)
+[2026-08-03 23:46:31] observed runs needed: 24
+[2026-08-03 23:47:41] observed runs done in 69s
+[2026-08-03 23:50:31] D1A1__Q0__QB: 60 draws
