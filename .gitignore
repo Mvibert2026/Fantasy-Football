@@ -22,7 +22,12 @@ data/*.db-shm
 # FR-062). Not a raw league payload; access token + refresh token + expiry.
 data/.yahoo_token.json
 
-# ADR-070 sweep permutation-draw cache. Regenerable compute, not results:
-# ~136 KB per cell x hundreds of cells, rewritten on every re-run. The graded
-# output lives in sweep070/cells.csv, which IS committed.
+# ADR-070 sweep permutation-draw cache -- the LIVE csvs stay untracked (they
+# are appended to continuously and would put a blob in history every commit).
+# They are NOT merely regenerable: a full 8,999-draw cell costs 1-3 hours, and
+# on 2026-08-04 a container disk rollback destroyed eight hours of them because
+# this rule was read as "safe to lose". Durability now comes from a gzipped
+# mirror in draws_archive/, which IS committed -- written by
+# tools/sweep070_archive.py archive, and put back by ... restore, which the
+# boot hook runs before relaunching the sweep.
 experiments/bottomup/results/sweep070/draws/

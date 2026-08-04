@@ -25,7 +25,13 @@ if tail -5 "$LOG" 2>/dev/null | grep -q "completed cleanly\|VERIFY FAILED"; then
 # restarts from zero draws, which is what an unreadable file means anyway.
 find experiments/bottomup/results/sweep070/draws -name "*.csv" -size -2c -delete 2>/dev/null
 
+# Put back any draws the container lost. The disk is NOT durable: on 2026-08-04
+# it rolled back ~8 hours, taking three completed 8,999-draw cells with it,
+# because draws/ is gitignored and git is the only thing here that survives.
+# Restore only ever lengthens a file (live ahead of archive is left alone), so
+# this is safe to run unconditionally and is a no-op in the normal case.
 if pgrep -f "experiments.bottomup.v2.sweep070" >/dev/null 2>&1; then exit 0; fi
+.venv/bin/python tools/sweep070_archive.py restore >> "$LOG" 2>&1 || true
 echo "[boot-hook] $(date -u +%FT%TZ) reviving sweep after container restart" >> "$LOG"
 nohup bash experiments/bottomup/v2/run_sweep070.sh >/dev/null 2>&1 &
 exit 0
