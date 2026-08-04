@@ -9,9 +9,17 @@ panel at tier 2, verify the instrument, run D1-A1 Q0, re-run C1/C2, reconcile an
 
 *Rewritten on every update. Being cut off is the expected case.*
 
-**THE SWEEP IS RUNNING, DETACHED** (launched 2026-08-03 23:22 UTC, PID 10688,
-`nohup .venv/bin/python -W ignore -m experiments.bottomup.v2.sweep070`). All six dispatch steps are
-implemented and committed; the compute is what remains, and it needs no context to continue.
+**THE SWEEP IS RUNNING, DETACHED, WITH THE FULL 75-FACTOR POOL QUEUED** (restarted 2026-08-04
+01:25 UTC under the crash-restart supervisor; relaunch line:
+`nohup bash experiments/bottomup/v2/run_sweep070.sh >/dev/null 2>&1 &`). Batches: VERIFY (PASSED,
+5.0% vs pre-committed 5.0%, zero placebo inclusions) → D1A1 → C1 → C2 → C3 → C4 → AB1 → C5 → CT1
+(+ VD2/VD3), then it polls `batches/*.flag` for late arrivals until `queue_closed.flag` exists.
+M = 442, L = 8,999. **Container reboots kill detached processes** (measured: the 00:04 reboot
+killed the first run); the hourly Routine `sweep070-watchdog` (trig_01K9jC4ceHMbUkPQL7CgdVqJ)
+revives it, regenerates the founder report, and commits snapshots — **delete the Routine when the
+sweep completes.** THE DELIVERABLE is `docs/ranking/inclusion-campaign-report.md`, regenerated
+after every batch grades. **Wall-clock estimate, measured not guessed: ~238 ensembles ≈ 14–18 h
+from restart** (D1A1+C1+C2 within ~3–4 h, C3+C4 by ~8 h, AB1/C5/CT1 the tail).
 
 **For any successor session:**
 
