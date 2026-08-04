@@ -443,8 +443,8 @@ each role's pinned model and effort; this table says what each is *for*.
 | Agent | Role | Model |
 |---|---|---|
 | **pm** | Sequencing, dispatch, merges, the founder's interface | Opus |
-| **ranker** | The proprietary bottom-up ranking — the product's core | Opus |
-| **strategist** | Methodology, formula specs, pre-registration. **No database access, deliberately** | Opus |
+| **ranker** | The proprietary bottom-up ranking — the product's core | Fable |
+| **strategist** | Methodology, formula specs, pre-registration. **No database access, deliberately** | Fable |
 | **researcher** | External verification, competitive analysis, source audits | Opus |
 | **fable** | Adversarial review on a separate weekly budget | Fable |
 | **frontend** | The React app | Sonnet |
@@ -598,6 +598,55 @@ concerned, never been made.
 - **PM only: sweep dead agent worktrees before ending a session.** Each costs ~0.9–1.0 GB and
   nothing removes them automatically; 49 of them filled the disk to 100% on 2026-07-30 and cost a
   running agent real time. Merge first, then remove — procedure in `docs/environment.md` §4b.
+
+### Supervising a dispatch — every one of these was learned by it going wrong
+
+**A background agent can stop without telling you.** On 2026-08-03 one sat idle roughly four hours
+with no completion notification and no commits; the founder noticed before PM did. **If a dispatched
+agent has committed nothing for an hour, ping it** — ask for a forced checkpoint plus a plain status,
+and say explicitly that "blocked" and "looping" are acceptable answers. Silence is indistinguishable
+from a hang, and you cannot report on it.
+
+**Committed is not pushed.** The same agent had five local commits while the remote branch sat
+behind. Verify the push, not the commit — the stop hook is the backstop, not the plan.
+
+**A worktree branches from wherever it was created, and does not inherit gitignored files.** A
+`backend` worktree created before its dependency merged spent an entire run building against an
+interface it had *reconstructed from documentation*, because the real one was not in its tree. State
+the base commit in the dispatch, and confirm dependencies are merged **before** creating the
+worktree. See `docs/environment.md` §4 for the `data/nfl.db` stub failure, which looks exactly like a
+code regression.
+
+**Two agents will each update a shared counter and both be wrong.** Batch C2 wrote Σm_b = 159, D1
+wrote 218; neither was wrong for its own side and the union was 247. The sharded manifest prevents
+this for batch files and does nothing for the shared README. **Any running total in a shared file is
+PM's to reconcile at merge, never an agent's to recompute.**
+
+**Carry a placebo arm in every batch, permanently.** This is the highest-value rule on the page. It
+is how the broken decision rule was found (ADR-070) and it caught a second false positive in the very
+next batch. A batch without a control cannot tell you whether its instrument works.
+
+**Pre-commit an instrument's error rates, then measure them.** ADR-070 commits to ≤5.0% and ≤1.3%;
+the next batch verifies those empirically before grading anything. An unverified instrument is what
+produced ~130 meaningless test results.
+
+**Compute is free in tokens; thinking is not.** A permutation sweep costs wall-clock only. **When a
+budget ceiling is near, spend the remaining context getting long compute *launched and detached*** —
+it keeps running after the agent that started it is gone, so nothing is lost to the reset.
+
+### PM's own failure modes this session, recorded so the next PM does not repeat them
+
+- **Relayed the founder's argument without checking our own measurements.** Told `strategist` that
+  universe dilution was "a level shift that cannot change which arm wins." Three prior batches had
+  measured the opposite — rank *reversal* — and it refuted me from our own records. **Search the
+  repo before relaying a plausible argument as settled.**
+- **Reported a comparison ranked by raw projected points instead of VBD**, which put seven QBs in a
+  top ten and was an artifact of my own script, not the model.
+- **Ran path checks from the wrong working directory** after a `cd`, and briefly reported present
+  data as missing. `cd` persists between Bash calls.
+- **Showed a single season (2024) as though it were representative.** It was the model's best RB
+  season of seven; the true gap was roughly double what I presented. **Report the multi-season mean,
+  or say plainly that one season is a look and not a verdict.**
 
 ### Completion reporting
 Report commit hash and test count. Not prose summaries.
