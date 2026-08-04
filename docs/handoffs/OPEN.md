@@ -4,7 +4,7 @@
 Threads are the source of truth. Change a thread's `STATUS:`, then re-run sync.
 Protocol: [`README.md`](README.md).
 
-**118 open** · 58 resolved
+**119 open** · 58 resolved
 
 ---
 
@@ -192,7 +192,7 @@ not an omission. Start your session at your own heading.
 | [2026-07-31-attack-factor-batch-5-the-control-arm-beat-its-o](2026-07-31-attack-factor-batch-5-the-control-arm-beat-its-o.md) | Attack factor batch 5 the control arm beat its o | `ranker` | OPEN | 4d | none |
 | [2026-07-31-v1-s-2026-display-board-attack-the-holdout-claim](2026-07-31-v1-s-2026-display-board-attack-the-holdout-claim.md) | V1 s 2026 display board attack the holdout claim | `ranker` | OPEN | 4d | none |
 
-### `ranker` — 7 waiting
+### `ranker` — 8 waiting
 
 | ID | Subject | From | Status | Age | Blocks |
 |---|---|---|---|---|---|
@@ -202,6 +202,7 @@ not an omission. Start your session at your own heading.
 | [2026-07-30-component-model-vs-incumbent-head-to-head-compon](2026-07-30-component-model-vs-incumbent-head-to-head-compon.md) | Component model vs incumbent head to head compon | `backend` | OPEN | 5d | none |
 | [2026-08-01-m-1-m-6-the-measurements-the-replacement-inclusi](2026-08-01-m-1-m-6-the-measurements-the-replacement-inclusi.md) | M 1 m 6 the measurements the replacement inclusi | `strategist` | OPEN | 3d | grading any factor batch after C1; completing C1 suspended grades; the F3-RB and F6-QB dispositions |
 | [2026-08-02-c3-factor-definitions-written-but-v2-factors-c1](2026-08-02-c3-factor-definitions-written-but-v2-factors-c1.md) | C3 factor definitions written but v2 factors c1 | `backend` | OPEN | 2d | none |
+| [2026-08-04-sweep070-perf-2-8-3-3x-memoization-fix-verified](2026-08-04-sweep070-perf-2-8-3-3x-memoization-fix-verified.md) | Sweep070 perf 2 8 3 3x memoization fix verified | `backend` | OPEN | 0d | none |
 | [2026-08-04-v3-candidate-pool-complete-standalone-screen-2-7](2026-08-04-v3-candidate-pool-complete-standalone-screen-2-7.md) | V3 candidate pool complete standalone screen 2 7 | `backend` | OPEN | 0d | none |
 
 ### `operator` — 0 waiting
