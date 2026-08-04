@@ -129,3 +129,48 @@ pandas.errors.EmptyDataError: No columns to parse from file
 [2026-08-04 14:02:30] L=8999, h=20, M=442, workers=3
 [2026-08-04 14:09:20] sweep070 starting; phases done: ['VERIFY']
 [2026-08-04 14:09:20] L=8999, h=20, M=442, workers=4
+[2026-08-04 14:12:01] D1A1__Q0__QB: 1894 draws
+[2026-08-04 14:14:47] D1A1__Q0__QB: 2130 draws
+[boot-hook] 2026-08-04T14:17:15Z reviving sweep after container restart
+[2026-08-04 14:17:16] sweep070 starting; phases done: ['VERIFY']
+[2026-08-04 14:17:16] L=8999, h=20, M=442, workers=4
+[2026-08-04 14:17:43] D1A1__Q0__QB: 12 draws
+[2026-08-04 14:17:51] D1A1__Q0__QB: 24 draws
+[2026-08-04 14:18:00] D1A1__Q0__QB: 36 draws
+[2026-08-04 14:18:08] D1A1__Q0__QB: 48 draws
+[2026-08-04 14:18:16] D1A1__Q0__QB: 60 draws
+[2026-08-04 14:18:24] D1A1__Q0__QB: 72 draws
+[2026-08-04 14:18:32] D1A1__Q0__QB: 84 draws
+[2026-08-04 14:18:40] D1A1__Q0__QB: 96 draws
+[2026-08-04 14:18:48] D1A1__Q0__QB: 108 draws
+[2026-08-04 14:18:59] D1A1__Q0__QB: 121 draws
+[2026-08-04 14:19:09] D1A1__Q0__QB: 136 draws
+[2026-08-04 14:19:22] D1A1__Q0__QB: 153 draws
+[2026-08-04 14:19:35] D1A1__Q0__QB: 172 draws
+[2026-08-04 14:19:50] D1A1__Q0__QB: 193 draws
+[2026-08-04 14:20:06] D1A1__Q0__QB: 217 draws
+[2026-08-04 14:20:25] D1A1__Q0__QB: 244 draws
+[2026-08-04 14:20:45] D1A1__Q0__QB: 274 draws
+[2026-08-04 14:21:09] D1A1__Q0__QB: 308 draws
+[boot-hook] 2026-08-04T14:22:24Z reviving sweep after container restart
+[2026-08-04 14:22:26] sweep070 starting; phases done: ['VERIFY']
+[2026-08-04 14:22:26] L=8999, h=20, M=442, workers=4
+[2026-08-04 14:23:14] D1A1__Q0__QB: 364 draws
+[2026-08-04 14:23:46] D1A1__Q0__QB: 409 draws
+[2026-08-04 14:24:21] D1A1__Q0__QB: 460 draws
+[2026-08-04 14:25:00] D1A1__Q0__QB: 517 draws
+[2026-08-04 14:25:44] D1A1__Q0__QB: 581 draws
+[2026-08-04 14:26:33] D1A1__Q0__QB: 653 draws
+[boot-hook] 2026-08-04T14:27:35Z reviving sweep after container restart
+[2026-08-04 14:27:36] sweep070 starting; phases done: ['VERIFY']
+[2026-08-04 14:27:36] L=8999, h=20, M=442, workers=4
+[2026-08-04 14:28:51] D1A1__Q0__QB: 739 draws
+[2026-08-04 14:29:53] D1A1__Q0__QB: 831 draws
+[2026-08-04 14:31:03] D1A1__Q0__QB: 934 draws
+[2026-08-04 14:32:23] D1A1__Q0__QB: 1050 draws
+[2026-08-04 14:33:53] D1A1__Q0__QB: 1181 draws
+[2026-08-04 14:35:35] D1A1__Q0__QB: 1328 draws
+[boot-hook] 2026-08-04T14:37:41Z reviving sweep after container restart
+[2026-08-04 14:37:43] sweep070 starting; phases done: ['VERIFY']
+[2026-08-04 14:37:43] L=8999, h=20, M=442, workers=4
+[2026-08-04 14:40:05] D1A1__Q0__QB: 1607 draws
