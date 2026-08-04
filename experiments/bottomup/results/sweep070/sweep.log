@@ -23,3 +23,4 @@
 [2026-08-04 01:25:14] sweep070 starting; phases done: ['VERIFY']
 [2026-08-04 01:25:14] L=8999, h=20, M=442, workers=3
 [supervisor] sweep already running; exiting
+[2026-08-04 01:28:16] D1A1__Q0__QB: 960 draws
