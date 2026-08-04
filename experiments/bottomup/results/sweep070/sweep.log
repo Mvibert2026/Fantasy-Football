@@ -104,3 +104,17 @@ pandas.errors.EmptyDataError: No columns to parse from file
 [supervisor] sweep exited code 1 (attempt 2/50); restarting in 60s
 [2026-08-04 04:32:28] sweep070 starting; phases done: ['VERIFY']
 [2026-08-04 04:32:28] L=8999, h=20, M=442, workers=3
+[2026-08-04 04:34:21] D1A1__Q0__QB: 60 draws
+[2026-08-04 04:35:47] D1A1__Q0__QB: 120 draws
+[2026-08-04 04:37:11] D1A1__Q0__QB: 180 draws
+[2026-08-04 04:38:34] D1A1__Q0__QB: 240 draws
+[2026-08-04 04:39:59] D1A1__Q0__QB: 300 draws
+[2026-08-04 04:41:26] D1A1__Q0__QB: 360 draws
+[2026-08-04 04:42:54] D1A1__Q0__QB: 420 draws
+[boot-hook] 2026-08-04T05:26:29Z reviving sweep after container restart
+[2026-08-04 05:26:42] sweep070 starting; phases done: ['VERIFY']
+[2026-08-04 05:26:42] L=8999, h=20, M=442, workers=3
+[2026-08-04 05:28:50] D1A1__Q0__QB: 480 draws
+[boot-hook] 2026-08-04T05:48:11Z reviving sweep after container restart
+[2026-08-04 05:48:21] sweep070 starting; phases done: ['VERIFY']
+[2026-08-04 05:48:21] L=8999, h=20, M=442, workers=3
