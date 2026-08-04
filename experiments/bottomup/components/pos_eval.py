@@ -199,19 +199,41 @@ class WalkForward:
         """Expanding-window projections INSIDE the training window: for each
         training season s, fit on seasons strictly before s and project s.
         Nothing in these projections has seen its own season. Used only to
-        calibrate the bonus curves."""
+        calibrate the bonus curves.
+
+        PERF (identity-preserving, see docs/ranking/sweep-performance.md): the
+        per-season sub-fit for a given `s` depends only on (position, s, whether
+        a rate-pool is attached) -- NOT on the outer walk-forward target T that
+        is calling this method. `run()` calls this once per target T with `tf,
+        to` truncated at T-1, so consecutive T's re-fit the IDENTICAL sub-model
+        for every s < T-1 that was already fit while scoring T-1. Memoising on
+        `self._cache` (already the season-level feature cache, reset per
+        WalkForward instance i.e. per draw) turns the O(S^2) inner refits into
+        O(S) with no change to a single number produced: same sub_f/sub_o, same
+        model class, same fit() call, same predict() call -- only the redundant
+        repetition is removed. `s` alone is sufficient as the pool-inclusive key
+        because `pool` at season < s is itself reconstructible only from data
+        that does not change across T for a fixed s (see D10 profiling note).
+        """
         out = []
         for s in sorted(to["season"].unique())[1:]:
-            sub_f, sub_o = tf[tf["season"] < s], to[to["season"] < s]
-            if sub_o["season"].nunique() < 1:
-                continue
-            m = self._make_model()
-            pl = None
-            if pool is not None:
-                pf, po = pool
-                pl = (pf[pf["season"] < s], po[po["season"] < s])
-            m.fit(sub_f, sub_o, rate_pool=pl)
-            out.append(m.predict(tf[tf["season"] == s]))
+            key = ("_oos", self.position, int(s), self.pool_position)
+            hit = self._cache.get(key)
+            if hit is None:
+                sub_f, sub_o = tf[tf["season"] < s], to[to["season"] < s]
+                if sub_o["season"].nunique() < 1:
+                    self._cache[key] = None
+                    continue
+                m = self._make_model()
+                pl = None
+                if pool is not None:
+                    pf, po = pool
+                    pl = (pf[pf["season"] < s], po[po["season"] < s])
+                m.fit(sub_f, sub_o, rate_pool=pl)
+                hit = m.predict(tf[tf["season"] == s])
+                self._cache[key] = hit
+            if hit is not None:
+                out.append(hit)
         return pd.concat(out, ignore_index=True) if out else None
 
     def project_target(self, target: int, train_outcome_max: int,
