@@ -52,6 +52,15 @@ contrasts are the tail.
 **Report regenerates automatically** after every batch and hourly:
 `docs/ranking/inclusion-campaign-report.md`. Counting rules fixed in `report070.py`.
 
+**The sweep dies when tokens run out, not at random.** Ranker failed with "session limit" at
+01:42 UTC and the sweep log stopped the same minute — the container is torn down on token
+exhaustion and takes every detached process with it. **The hourly watchdog cannot cover this
+window, because firing it also requires tokens.** Nothing is lost (progress is written every 12
+draws and resumption is verified — it picked up at 1,320 from 1,260), but **elapsed calendar time
+will exceed the runtime estimate by however long the account is dry.** On resuming a session, check
+`pgrep -f sweep070` first and relaunch with
+`nohup bash experiments/bottomup/v2/run_sweep070.sh >/dev/null 2>&1 &`.
+
 **A container reboot killed run one at 00:04.** Mitigated by a supervisor script plus an hourly
 Routine `sweep070-watchdog` (`trig_01K9jC4ceHMbUkPQL7CgdVqJ`) that revives the sweep and commits
 snapshots. **Delete that Routine when the sweep completes** — fired sessions lack MCP tools and it
