@@ -44,7 +44,7 @@ write it up** until this lands.
 | CT1 — within-cluster contrasts | 40 | The founder's collinearity insight. TE depth-rank-vs-usage was the strongest single result found (ρ ≈ −0.5 to −0.6) |
 | **Pool total** | **75 base + contrasts, 5 untestable** | **All queued.** Authoritative list: `docs/ranking/standalone-screen-2.md` |
 
-**Runtime: 14–18 hours from 01:25 UTC 2026-08-04**, measured — ~238 ensembles, 0.6–4.1 s per draw on
+**Runtime estimate below is SUPERSEDED — see "Throughput" section. Original: 14–18 hours from 01:25 UTC 2026-08-04**, measured — ~238 ensembles, 0.6–4.1 s per draw on
 3 workers, L = 8,999 at M = 442. Founder ruled **no trimming**: *"The 2 hours saved are not worth the
 trimming, run it all."* The report fills progressively — D1A1+C1+C2 by ~3–4 h, C3+C4 by ~8 h, the
 contrasts are the tail.
@@ -52,19 +52,45 @@ contrasts are the tail.
 **Report regenerates automatically** after every batch and hourly:
 `docs/ranking/inclusion-campaign-report.md`. Counting rules fixed in `report070.py`.
 
-**The sweep dies when tokens run out, not at random.** Ranker failed with "session limit" at
-01:42 UTC and the sweep log stopped the same minute — the container is torn down on token
-exhaustion and takes every detached process with it. **The hourly watchdog cannot cover this
-window, because firing it also requires tokens.** Nothing is lost (progress is written every 12
-draws and resumption is verified — it picked up at 1,320 from 1,260), but **elapsed calendar time
-will exceed the runtime estimate by however long the account is dry.** On resuming a session, check
-`pgrep -f sweep070` first and relaunch with
-`nohup bash experiments/bottomup/v2/run_sweep070.sh >/dev/null 2>&1 &`.
+### Throughput: what was actually wrong, measured 2026-08-04
 
-**A container reboot killed run one at 00:04.** Mitigated by a supervisor script plus an hourly
-Routine `sweep070-watchdog` (`trig_01K9jC4ceHMbUkPQL7CgdVqJ`) that revives the sweep and commits
-snapshots. **Delete that Routine when the sweep completes** — fired sessions lack MCP tools and it
-cannot delete itself.
+**Two independent problems, and the earlier diagnosis named neither.** "The sweep dies when tokens
+run out" was wrong — the founder confirmed tokens did not run out overnight. Both causes below were
+found by measuring the live run, not by reading the code.
+
+**Problem 1 — the parent process was the bottleneck, not the model.** With a fixed `CHUNK = 12`, the
+parent re-read the entire draws CSV and re-derived every `delta_bar` between every twelve draws to
+run the sequential test: O(n) serial work every 12 draws, **quadratic in draw count**, with all
+workers idle through it. Measured at the L-tail: parent burning a full core on re-parsing, box at
+271% of 400% with 21.7% idle.
+
+Fixed by `chunk_for(n) = max(12, n//8)` plus a fourth worker (commit `ae40f6a`). The chunk could not
+simply be raised — Besag–Clifford stops at h=20 and a dead factor stops within tens of draws, so a
+large *fixed* chunk overshoots the stop on every null cell, and most cells are null. Growing it keeps
+overshoot a constant fraction of progress. **47 chunks reach L instead of 749.**
+
+**Measured: 42 → 216 draws/min, a 5.1× speedup. CPU 271% → 398%, idle zero.** No statistic changed —
+L, h and the draw sequence are untouched.
+
+**Problem 2 — the container exists only while a session turn is in flight, and this is the bigger
+factor.** Disk persists across container death (draws resumed 480 → 985 → 1,267 correctly); compute
+does not. Observed duty cycle before the fix: **~11%** — roughly 7 minutes of compute per hour.
+
+**The old watchdog Routine was the reason overnight was a total loss.** It fired correctly at 13:49
+— and left no entry in the sweep log, because it was configured to spawn a **fresh session**, which
+gets a **fresh container** with no `data/nfl.db` (gitignored) and no banked draws. It revived a
+throwaway box hourly while the real one stayed dead. Deleted.
+
+Replaced by `sweep070-keepalive` (`trig_014aiAwEr2nPX8Lvz5gYf6fv`), **bound to this session** so it
+wakes *this* container, and holding it open with five foreground `timeout 570 tail -f` blocks per
+firing — ~50 of every 60 minutes rather than ~7. **Delete it when the sweep completes**; it stops
+itself on "sweep completed cleanly" but cannot delete its own Routine.
+
+**Combined effect: ~38× effective throughput** (5.1× compute × ~7.5× duty cycle).
+
+**Cron's floor is hourly**, so ~10 min/hour of container downtime remains. Closing that needs either
+GitHub Actions (free, 6-hour jobs, no tokens) or the founder's own machine — his desktop is Windows
+and the sweep uses `fork`, so it would need WSL2, not native Python.
 
 **Realised per-position span differs and TE is thinnest:** QB 10 · RB 9 · WR 11 · **TE 7**.
 
