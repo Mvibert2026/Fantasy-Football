@@ -37,14 +37,27 @@ write it up** until this lands.
 
 | Group | Factors | State |
 |---|---|---|
-| C1 | 6 | Tested under the broken rule — **re-running** |
-| C2 | 6 | Tested under the broken rule — **re-running** |
-| C3 | 6 | Defined, queued |
-| C4 | 6 | Defined, **needs adding to the sweep queue** |
-| Incumbents | 6 | In the model, never tested — **ablation arms, need adding** |
-| Screen contrasts | 13 | Within-cluster gaps; TE depth-rank-vs-usage was the strongest result found |
-| Blocked-list re-audit | ~5–8? | **Running** — unknown until it reports |
-| **Pool total** | **~43–50** | |
+| C1 · C2 | 12 | Tested under the broken rule — **re-running** |
+| C3 · C4 | 12 | Registered, queued |
+| Incumbents (AB1 + additive) | 6 | **Four of the six were never in the running model** — they run as *additive* arms, not ablations. Only the six channels genuinely in the specs are ablated |
+| C5 — newly unblocked | ~7 | PROE was **never blocked**; coordinator continuity via a Wikipedia-derived table, not the PFR source the ledger blamed |
+| CT1 — within-cluster contrasts | 40 | The founder's collinearity insight. TE depth-rank-vs-usage was the strongest single result found (ρ ≈ −0.5 to −0.6) |
+| **Pool total** | **75 base + contrasts, 5 untestable** | **All queued.** Authoritative list: `docs/ranking/standalone-screen-2.md` |
+
+**Runtime: 14–18 hours from 01:25 UTC 2026-08-04**, measured — ~238 ensembles, 0.6–4.1 s per draw on
+3 workers, L = 8,999 at M = 442. Founder ruled **no trimming**: *"The 2 hours saved are not worth the
+trimming, run it all."* The report fills progressively — D1A1+C1+C2 by ~3–4 h, C3+C4 by ~8 h, the
+contrasts are the tail.
+
+**Report regenerates automatically** after every batch and hourly:
+`docs/ranking/inclusion-campaign-report.md`. Counting rules fixed in `report070.py`.
+
+**A container reboot killed run one at 00:04.** Mitigated by a supervisor script plus an hourly
+Routine `sweep070-watchdog` (`trig_01K9jC4ceHMbUkPQL7CgdVqJ`) that revives the sweep and commits
+snapshots. **Delete that Routine when the sweep completes** — fired sessions lack MCP tools and it
+cannot delete itself.
+
+**Realised per-position span differs and TE is thinnest:** QB 10 · RB 9 · WR 11 · **TE 7**.
 
 **Do not quote 95, 80, or 37.** 95 was the raw ledger row count including structural config,
 duplicates, and things already in the model. 37 and "C3 has 19" were **PM counting errors** — a grep
