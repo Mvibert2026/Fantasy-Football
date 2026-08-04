@@ -27,6 +27,24 @@ repo — Cloudflare holds its own deploy token. This closes the last dependency 
 machine: development, tests, the database rebuild, the daily capture and now viewing the app all run
 without it.
 
+**ADR-070 sweep070 (ranker's live 75-factor factor-inclusion campaign) — perf pass, 2026-08-04
+(backend).** Founder asked for a runtime estimate and whether it can go faster. Estimate: **2-5
+days unpatched at `N_WORKERS=3`, ~1-2.5 days with a fix applied**, for the ~190 (arm, position)
+cells estimated to remain — range is wide because it depends on how many cells carry a real
+borderline effect and run toward the 7,999-draw Besag-Clifford ceiling, which isn't knowable in
+advance. Profiled a real draw: `WalkForward._oos_training_projections` (bonus-curve calibration)
+is **69% of a draw's cost**, refitting an identical sub-model O(S²) times instead of O(S) because
+each training-season sub-fit depends only on that season, never on the outer walk-forward target.
+Fixed by memoising on the existing per-draw cache; **verified byte-identical** (`DataFrame.equals
+== True`, all columns/rows) against unpatched code on a real arm at RB and TE in an isolated
+sandbox, existing test suites pass. Measured speedup: RB 2.8-3.3×, TE 1.4-1.6× per draw,
+single-core. More cores help close to linearly *within* one cell (up to ~12 workers, `CHUNK`-
+limited) but `sweep070.py` runs cells strictly sequentially, so extra cores can't run two cells at
+once — a structural ceiling, not a hardware one. Committed `2792921` on branch
+`worktree-agent-aed7849f952c81398` (pushed); **not yet applied to the live sweep** — `ranker` owns
+that checkout/process, flagged in handoff thread `2026-08-04-sweep070-perf-2-8-3-3x-memoization-
+fix-verified` for pull-in on next restart. Full detail: `docs/ranking/sweep-performance.md`.
+
 **RESOLVED as of this librarian session (2026-07-31), verified not assumed.** The escalation
 below described live, unresolved `<<<<<<< HEAD` / `=======` / `>>>>>>>` git merge-conflict markers
 separating the two "Last verified" entries that follow, left by coordinator merge commit
