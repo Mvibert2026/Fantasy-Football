@@ -19,3 +19,7 @@
 [2026-08-03 23:50:31] D1A1__Q0__QB: 60 draws
 [2026-08-04 00:47:57] sweep070 starting; phases done: ['VERIFY']
 [2026-08-04 00:47:57] L=7999, h=20, M=333, workers=3
+[supervisor] sweep exited code 143 (attempt 1/50); restarting in 60s
+[2026-08-04 01:25:14] sweep070 starting; phases done: ['VERIFY']
+[2026-08-04 01:25:14] L=8999, h=20, M=442, workers=3
+[supervisor] sweep already running; exiting
