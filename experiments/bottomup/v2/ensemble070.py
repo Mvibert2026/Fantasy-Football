@@ -349,7 +349,24 @@ def run_players(panel, batch: str, arm: str, position: str,
     if frame_cache is not None:
         base_fn = CachedFeatureFn(base_fn, frame_cache,
                                   f"{batch}:{a.arm}:{position}")
-    fn = permuted_fn(base_fn, a.block_cols, f"{batch}:{a.arm}", position, k)
+    if a.null_kind == "perm_ablate":
+        # INVERTED §4.1 for incumbent ablations. Observed arm (k=0): the
+        # incumbent specs with the channel REMOVED. Null draw (k>=1): the FULL
+        # incumbent specs with the channel's rows permuted within season —
+        # under H0 (channel uninformative) the removal differs from the
+        # control only by the variance cost of a noise block, which is
+        # exactly what the permuted block mimics. Both difference against the
+        # same unmodified control.
+        if k == 0:
+            fn = base_fn
+            kwargs = _model_kwargs(a, position, is_control=False)
+        else:
+            fn = permuted_fn(base_fn, a.block_cols, f"{batch}:{a.arm}",
+                             position, k)
+            kwargs = {}
+    else:
+        fn = permuted_fn(base_fn, a.block_cols, f"{batch}:{a.arm}", position, k)
+        kwargs = _model_kwargs(a, position, is_control=False)
 
     factory = None
     if a.batch == "D1A1":
@@ -360,7 +377,7 @@ def run_players(panel, batch: str, arm: str, position: str,
         panel=panel, position=position, first_target=ft, last_target=lt,
         min_train_seasons=2, avail_arm="A", calibrate_bonus=True,
         first_feature_season=ff, feature_fn=fn,
-        model_kwargs=_model_kwargs(a, position, is_control=False),
+        model_kwargs=kwargs,
         allow_preseason_proxy=False, adp_fmt=ADP_FMT, model_factory=factory)
 
     if batch == "C1" and a.arm == "F6":

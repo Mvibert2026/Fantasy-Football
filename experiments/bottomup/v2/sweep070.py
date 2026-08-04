@@ -60,7 +60,13 @@ DRAWS = gr.DRAWS
 CELLS_CSV = gr.CELLS_CSV
 STATE = OUT / "state.json"
 VERIFY_STATUS = OUT / "VERIFY_STATUS"
-C3_FLAG = OUT / "c3_ready.flag"
+#: flag-driven batch queue: each file under batches/ is one line,
+#: "<batch_name> <importable.module.path>". The driver processes new flags as
+#: they appear and keeps polling until queue_closed.flag exists — room for
+#: late-arrival batches (the blocked-ledger re-audit) at zero token cost.
+BATCH_FLAGS = OUT / "batches"
+QUEUE_CLOSED = OUT / "queue_closed.flag"
+POLL_SECONDS = 600
 
 N_WORKERS = 3
 CHUNK = 12
@@ -90,16 +96,32 @@ _worker_cell: List = [None]
 def _init_worker() -> None:
     # under the fork context the parent's panel is inherited copy-on-write;
     # this is a no-op then, and a lazy build under spawn
-    if C3_FLAG.exists():
-        from experiments.bottomup.v2 import factors_c3_adapter  # noqa: F401
     ens.shared_panel()
+
+
+def _batch_module(batch: str) -> Optional[str]:
+    for p in sorted(BATCH_FLAGS.glob("*.flag")) if BATCH_FLAGS.exists() else []:
+        parts = p.read_text().split()
+        if len(parts) == 2 and parts[0] == batch:
+            return parts[1]
+    return None
+
+
+def _ensure_batch(batch: str) -> None:
+    """Idempotent import of an adapter batch's registry — works in workers
+    forked before the flag appeared."""
+    if any(b == batch for (b, _) in ens.ARMS070):
+        return
+    mod = _batch_module(batch)
+    if mod:
+        import importlib
+        importlib.import_module(mod)
 
 
 def _task(args: Tuple) -> List[Dict]:
     kind = args[0]
-    if kind in ("obs", "draw") and args[1] == "C3":
-        # workers forked before the flag appeared still need the registry
-        from experiments.bottomup.v2 import factors_c3_adapter  # noqa: F401
+    if kind in ("obs", "draw"):
+        _ensure_batch(args[1])
     panel = ens.shared_panel()
     if kind == "ctrl":
         _, family, pos = args
@@ -348,25 +370,26 @@ def batch_phase(pool, batch: str, st: Dict) -> None:
                 f"requires strategist review ***")
 
 
-def c3_phase(pool, st: Dict) -> bool:
-    if not C3_FLAG.exists():
-        return False
-    from experiments.bottomup.v2 import factors_c3_adapter  # noqa: F401
-    batch_phase(pool, "C3", st)
-    return True
+def _pending_flag_batches(done) -> List[Tuple[str, str]]:
+    out = []
+    if not BATCH_FLAGS.exists():
+        return out
+    for p in sorted(BATCH_FLAGS.glob("*.flag")):
+        parts = p.read_text().split()
+        if len(parts) == 2 and parts[0] not in done:
+            out.append((parts[0], parts[1]))
+    return out
 
 
 # ----------------------------------------------------------------------- main
 def main() -> None:
+    import importlib
     OUT.mkdir(parents=True, exist_ok=True)
     DRAWS.mkdir(parents=True, exist_ok=True)
+    BATCH_FLAGS.mkdir(parents=True, exist_ok=True)
     st = _load_state()
     log(f"sweep070 starting; phases done: {st['phases_done']}")
     log(f"L={L_DRAWS}, h={H_EXCEED}, M={gr.M_CAMPAIGN}, workers={N_WORKERS}")
-
-    # C3 arms must be importable in workers too if flagged ready at startup
-    if C3_FLAG.exists():
-        from experiments.bottomup.v2 import factors_c3_adapter  # noqa: F401
 
     # build the panel BEFORE forking: all workers share it copy-on-write,
     # one 8-second build and one copy in RAM instead of three
@@ -388,25 +411,33 @@ def main() -> None:
                 st["phases_done"].append(batch)
                 _save_state(st)
 
-        if "C3" not in st["phases_done"]:
-            if c3_phase(pool, st):
-                st["phases_done"].append("C3")
-                _save_state(st)
-            else:
-                log("C3 not ready (no c3_ready.flag) — will retry at the end")
-
-        for vd in ("VD2", "VD3"):
-            if vd not in st["phases_done"]:
-                a = ens.VERIFY_ARMS[vd]
-                ensure_observed(pool, [a], st)
-                for pos in a.positions:
-                    run_ensemble(pool, a, pos, fixed_k=K_VERIFY, st=st)
-                st["phases_done"].append(vd)
+        # flag-driven batches (C3, C4, AB1, and any late arrival), then the
+        # dimension diagnostics, then keep polling until the queue is closed
+        while True:
+            todo = _pending_flag_batches(st["phases_done"])
+            for name, mod in todo:
+                importlib.import_module(mod)
+                log(f"flag batch {name} ({mod})")
+                batch_phase(pool, name, st)
+                st["phases_done"].append(name)
                 _save_state(st)
 
-        if "C3" not in st["phases_done"] and c3_phase(pool, st):
-            st["phases_done"].append("C3")
-            _save_state(st)
+            for vd in ("VD2", "VD3"):
+                if vd not in st["phases_done"]:
+                    a = ens.VERIFY_ARMS[vd]
+                    ensure_observed(pool, [a], st)
+                    for pos in a.positions:
+                        run_ensemble(pool, a, pos, fixed_k=K_VERIFY, st=st)
+                    st["phases_done"].append(vd)
+                    _save_state(st)
+
+            if _pending_flag_batches(st["phases_done"]):
+                continue
+            if QUEUE_CLOSED.exists():
+                break
+            log(f"queue open, no new batch flags — polling again in "
+                f"{POLL_SECONDS//60} min (touch queue_closed.flag to finish)")
+            time.sleep(POLL_SECONDS)
 
     log("sweep070 complete. Graded CSVs + VERIFY_STATUS under "
         f"{OUT.relative_to(_REPO)}")

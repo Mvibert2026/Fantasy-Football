@@ -47,12 +47,17 @@ OUT = _REPO / "experiments" / "bottomup" / "results" / "sweep070"
 DRAWS = OUT / "draws"
 CELLS_CSV = OUT / "cells.csv"
 
-#: campaign M for grading: 130 (through C1) + 29 (C2) + 88 (D1) + 12 (D1-A1).
-#: C3 adds its m_b at registration (read from c3 adapter when present).
-M_CAMPAIGN = 259
-#: L chosen with headroom for M growing to ~300 (§4.3 convention: resolution
-#: is bought with draws; p_floor = 2/(L+1) = 3.33e-4 < q/M at M <= 300).
-L_DRAWS = 5999
+#: campaign M for grading: 130 (through C1) + 29 (C2) + 88 (D1) + 12 (D1-A1)
+#: = 259 base, plus every batch REGISTERED into the manifest since (a
+#: registered test counts from registration, run or not): C3 25, C4 22,
+#: AB1 27. Late-arrival batches add their M_B here when their registration
+#: lands. Grading is idempotent — the final report regenerates every batch's
+#: grades at the final cumulative M.
+M_EXTRA_REGISTERED = {"C3": 25, "C4": 22, "AB1": 27}
+M_CAMPAIGN = 259 + sum(M_EXTRA_REGISTERED.values())
+#: §4.3: resolution is bought with draws. p_floor = 2/(L+1) = 2.5e-4 stays
+#: below the BH rank-1 threshold q/M for M <= 400.
+L_DRAWS = 7999
 
 #: arms never graded as primary cells
 CO_REPORT_ONLY = {("D1A1", "Q0w")}
