@@ -179,3 +179,8 @@ pandas.errors.EmptyDataError: No columns to parse from file
 [2026-08-04 14:48:03] D1A1__Q0__QB: 2286 draws
 [2026-08-04 14:49:57] sweep070 starting; phases done: ['VERIFY']
 [2026-08-04 14:49:57] L=8999, h=20, M=442, workers=4
+[2026-08-04 14:53:51] D1A1__Q0__QB: 2742 draws
+[2026-08-04 14:56:51] sweep070 starting; phases done: ['VERIFY']
+[2026-08-04 14:56:51] L=8999, h=20, M=442, workers=4
+[2026-08-04 14:59:40] D1A1__Q0__QB: 2066 draws
+[2026-08-04 15:02:34] D1A1__Q0__QB: 2324 draws

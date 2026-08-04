@@ -194,14 +194,39 @@ def _append_cells(rows: List[Dict]) -> None:
 
 
 def _append_draws(batch: str, arm: str, pos: str, rows: List[Dict]) -> None:
+    """Append one draw's rows. TRUE append — O(1) in the draws already banked.
+
+    This used to read the whole CSV, concat, drop_duplicates and rewrite it,
+    once per completed draw. That is O(n) per draw and therefore O(n^2) per
+    cell: measured 2026-08-04 at 20% of a core at n=2,800, and it grows, so at
+    the L=8,999 tail the parent would have been spending most of its time
+    rewriting a 90,000-row file while the workers waited.
+
+    Safe to append blind because `imap` yields in submission order and the
+    driver resumes at `_draws_done() + 1`, so a k is never issued twice — and
+    the reader pivots with aggfunc="last" regardless, so a duplicate from a
+    torn resume would still resolve rather than corrupt.
+
+    Written as one buffered `write` of the whole block so a container kill
+    lands between rows rather than inside one. The old full rewrite could
+    truncate the entire file at exactly that moment; this cannot.
+    """
     if not rows:
         return
     p = DRAWS / f"{gr.cell_id(batch, arm, pos)}.csv"
     new = pd.DataFrame(rows)
-    old = pd.read_csv(p) if p.exists() else pd.DataFrame()
-    merged = pd.concat([old, new], ignore_index=True) if len(old) else new
-    merged = merged.drop_duplicates(subset=["k", "season"], keep="last")
-    merged.to_csv(p, index=False)
+    header = not p.exists() or p.stat().st_size == 0
+    if not header:
+        # match the existing header exactly: appending columns in a different
+        # order than the file was created with would silently shift values
+        with p.open("r") as fh:
+            cols = fh.readline().strip().split(",")
+        if set(cols) != set(new.columns):
+            raise ValueError(f"{p.name}: draw columns {list(new.columns)} do "
+                             f"not match the file's header {cols}")
+        new = new[cols]
+    with p.open("a", newline="") as fh:
+        fh.write(new.to_csv(index=False, header=header))
 
 
 def _have_cells(cells: pd.DataFrame, run: str, pos: str) -> bool:
