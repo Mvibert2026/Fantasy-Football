@@ -97,6 +97,21 @@ def obs_frames(cells: pd.DataFrame, a: ens.Arm070, pos: str
     return arm_c, ctl_c
 
 
+#: Incremental cache for `draw_delta_bars`, keyed by cell.
+#:
+#: The sweep driver calls this between every chunk of draws to run the
+#: sequential test, and the function is O(n) in draws — pivot plus a per-row
+#: `snap_deltas` loop. Called O(log n) times per cell with a growing n, that
+#: serial step was measured (2026-08-04) taking ~72s of a 141s chunk interval
+#: at n=2,000, with all workers idle through it, and it grows with n.
+#:
+#: Draws are append-only and immutable once written, so rows at k <= what we
+#: already folded in can never change. Cache the snapped matrix and extend it
+#: with only the new rows. Results are identical because `snap_deltas` is
+#: applied per row, independently.
+_BARS_CACHE: Dict[Tuple, Dict] = {}
+
+
 def draw_delta_bars(a: ens.Arm070, pos: str, ctrl_cells: pd.DataFrame
                     ) -> Tuple[np.ndarray, np.ndarray, List[int]]:
     """(ordered delta_bars by k, per-draw per-season delta matrix, seasons).
@@ -110,16 +125,40 @@ def draw_delta_bars(a: ens.Arm070, pos: str, ctrl_cells: pd.DataFrame
     sign = 1.0 if a.endpoint == "rho_points" else -1.0
     n_g = [int(ctl.loc[s, "n_board_vet"]) if s in ctl.index else 0
            for s in seasons]
-    piv = d.pivot_table(index="k", columns="season", values=col, aggfunc="last")
-    piv = piv.reindex(columns=seasons).sort_index()
     base = np.array([float(ctl.loc[s, col]) if s in ctl.index else np.nan
                      for s in seasons])
-    mat = sign * (piv.to_numpy(dtype=float) - base[None, :])
     cont = a.endpoint == "mae_games"
+
+    # --- incremental fold-in ------------------------------------------------
+    key = (a.batch, a.arm, pos, a.endpoint)
+    c = _BARS_CACHE.get(key)
+    reusable = (
+        c is not None
+        and c["seasons"] == seasons
+        and c["n_g"] == n_g
+        and np.array_equal(c["base"], base, equal_nan=True)
+        # a resumed run must never re-issue a k; if one reappears the cached
+        # rows could be stale, so fall back to a full recompute
+        and not (d["k"] <= c["last_k"]).all()
+        and int(d["k"].min()) <= c["last_k"] + 1
+    )
+    d_new = d[d["k"] > c["last_k"]] if reusable else d
+    if reusable and not len(d_new):
+        return c["bars"], c["mat"], seasons
+
+    piv = d_new.pivot_table(index="k", columns="season", values=col,
+                            aggfunc="last")
+    piv = piv.reindex(columns=seasons).sort_index()
+    mat = sign * (piv.to_numpy(dtype=float) - base[None, :])
     for i in range(mat.shape[0]):
         mat[i] = snap_deltas(mat[i], n_g, continuous=cont)
     bars = np.array([np.nanmean(r) if np.isfinite(r).any() else np.nan
                      for r in mat])
+    if reusable:
+        mat = np.vstack([c["mat"], mat])
+        bars = np.concatenate([c["bars"], bars])
+    _BARS_CACHE[key] = {"seasons": seasons, "n_g": n_g, "base": base,
+                        "last_k": int(d["k"].max()), "mat": mat, "bars": bars}
     return bars, mat, seasons
 
 
