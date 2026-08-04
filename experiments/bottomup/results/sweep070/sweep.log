@@ -121,3 +121,6 @@ pandas.errors.EmptyDataError: No columns to parse from file
 [boot-hook] 2026-08-04T12:45:12Z reviving sweep after container restart
 [2026-08-04 12:45:27] sweep070 starting; phases done: ['VERIFY']
 [2026-08-04 12:45:27] L=8999, h=20, M=442, workers=3
+[boot-hook] 2026-08-04T12:56:33Z reviving sweep after container restart
+[2026-08-04 12:56:36] sweep070 starting; phases done: ['VERIFY']
+[2026-08-04 12:56:36] L=8999, h=20, M=442, workers=3
