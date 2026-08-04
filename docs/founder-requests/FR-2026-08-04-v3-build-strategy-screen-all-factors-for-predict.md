@@ -50,3 +50,35 @@ disagreement with consensus, nor for the in-app assistant answering "why is this
 **So v3 must ship, alongside its weights, an honest statement of which coefficients are stable enough
 to explain a ranking with and which are not.** A good prediction score does not license after-the-fact
 stories about individual factors.
+
+## Per-position factor sets — founder, 2026-08-03
+
+> "For different positions certain factors may be in or out. And not in others."
+
+**v3 is four models, not one.** There is no global factor set, and no factor is required to appear at
+every position. Screening, selection, fitting and grading are all per position — QB, RB, WR, TE — and
+a factor that earns weight at one position and is dropped at another is a **normal outcome, not an
+inconsistency to reconcile.**
+
+**Why this is not merely tidy.** Air yards and aDOT are meaningful for receivers and close to
+meaningless for backs. Red-zone carries matter at RB and do not exist at QB in the same sense. Route
+participation has no analogue for a quarterback. Forcing one shared feature list would either drop
+signal that only exists at one position, or feed every model columns that are structurally empty for
+it — which is the same error as fitting rookies and veterans jointly (see `CLAUDE.md` §2a): a
+predictor that is *structurally absent* rather than merely weak teaches the model something false.
+
+**Consequences that bind:**
+
+- **Report every result per position.** A pooled number hides that a factor is carrying one position
+  and harming another. Batch C1's snap share was NULL at RB and WR and HARM at TE — one row, three
+  different answers.
+- **Sample size differs sharply by position**, and it drives what is decidable. Tier-2 grading spans
+  12 seasons but the per-position `S_pos` differs, and QB and TE have far fewer draftable players
+  than WR. **INCLUDE may be unreachable at QB and that is the correct answer at this sample size**,
+  not a failure of the factor.
+- **The collinearity clusters differ by position too.** Snap share and route participation are near
+  duplicates at WR; at RB, snaps and carries diverge because of passing-down roles. Cluster the
+  factors **within each position**, never once across all four.
+- **The per-position sets are themselves a finding worth reporting.** Which factors matter at RB but
+  not WR is a football claim the founder can sanity-check by eye — the same method that caught two
+  real defects already.
