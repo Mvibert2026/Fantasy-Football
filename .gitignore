@@ -31,3 +31,7 @@ data/.yahoo_token.json
 # tools/sweep070_archive.py archive, and put back by ... restore, which the
 # boot hook runs before relaunching the sweep.
 experiments/bottomup/results/sweep070/draws/
+
+# Local virtualenvs (a second one appeared 2026-08-04 and was untracked but
+# not ignored, which is one careless `git add -A` away from a 300 MB commit).
+.venv2/

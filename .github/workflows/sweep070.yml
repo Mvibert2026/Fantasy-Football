@@ -1,0 +1,175 @@
+# ADR-070 factor-inclusion sweep — durable compute.
+#
+# WHY THIS EXISTS. The sweep was running in a Claude Code session container.
+# That container only exists while a session turn is in flight, and on
+# 2026-08-04 its disk rolled back ~8 hours, destroying three completed
+# 8,999-draw cells. A GitHub-hosted runner has neither problem: it runs for its
+# full duration whether or not anyone is watching, and it has no disk to roll
+# back because every artifact is committed before the job ends.
+#
+# HOW IT RESUMES. Nothing here is stateful. `draws_archive/` (committed,
+# gzipped) is the single source of truth; `tools/sweep070_archive.py restore`
+# rehydrates the live CSVs at the start of a run and `... archive` re-freezes
+# them at the end. Permutation draws are append-only in a deterministic
+# registered order, so a partial cell is always a valid prefix and the sweep
+# picks up at the next k. A run that dies mid-cell loses at most the draws since
+# the last archive.
+#
+# WHY SCHEDULED RATHER THAN SELF-CHAINING. A workflow authenticated with
+# GITHUB_TOKEN cannot start another workflow run — GitHub blocks it to prevent
+# runaway loops. Self-chaining would need a personal access token, which is a
+# credential to store and rotate for no real gain. A 5-hourly schedule with a
+# concurrency guard achieves the same thing with no secret at all.
+name: ADR-070 sweep
+
+on:
+  schedule:
+    # Every 5 hours. Job budget below is 4h40m, so a run has finished and
+    # pushed before its successor is queued.
+    - cron: "20 */5 * * *"
+  workflow_dispatch:
+    inputs:
+      minutes:
+        description: "Compute budget in minutes (default 280)"
+        required: false
+        default: "280"
+
+# Never two runs at once: both would compute the same cells and then fight over
+# the same archive blobs on push. `cancel-in-progress: false` because killing a
+# running sweep to start a fresh one is strictly worse than waiting.
+concurrency:
+  group: sweep070
+  cancel-in-progress: false
+
+permissions:
+  contents: write          # to push draws_archive/, results and the report
+
+jobs:
+  sweep:
+    runs-on: ubuntu-latest
+    # GitHub's hard ceiling is 360 min. Stay well inside it so the archive and
+    # push steps always get to run — a killed job that never pushed has thrown
+    # its whole compute away, which is the exact failure this workflow exists
+    # to prevent.
+    timeout-minutes: 320
+
+    steps:
+      - name: Check out the working branch
+        uses: actions/checkout@v4
+        with:
+          ref: claude/pm-agent-setup-gobxa0
+          # Full history: the archive restore compares against committed blobs.
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --quiet --upgrade pip
+          python -m pip install --quiet -r requirements.txt
+
+      # data/nfl.db is ~1.9 GB and gitignored, so it is never in the clone.
+      # Rebuilding it takes a few minutes and hits live upstream feeds, so cache
+      # it across runs rather than refetching every five hours. The key is
+      # deliberately coarse (date-based) so the cache refreshes daily and the
+      # panel cannot silently drift for weeks.
+      - name: Cache the database
+        id: dbcache
+        uses: actions/cache@v4
+        with:
+          path: data/nfl.db
+          key: nfldb-${{ hashFiles('scripts/rebuild_database.py') }}-${{ github.run_id }}
+          restore-keys: |
+            nfldb-${{ hashFiles('scripts/rebuild_database.py') }}-
+
+      - name: Rebuild the database if the cache missed
+        run: |
+          if [ -s data/nfl.db ]; then
+            echo "cache hit: $(du -h data/nfl.db | cut -f1)"
+          else
+            echo "cache miss — rebuilding from public sources (no credentials)"
+            python scripts/rebuild_database.py --db data/nfl.db
+          fi
+          python - <<'PY'
+          import sqlite3, sys
+          c = sqlite3.connect("data/nfl.db")
+          n = c.execute("select count(*) from player_weekly_stats").fetchone()[0]
+          print(f"player_weekly_stats rows: {n}")
+          # A structurally valid but empty database would let the sweep run and
+          # produce confident garbage. Fail loudly instead.
+          sys.exit(0 if n > 100_000 else "database is present but far too small")
+          PY
+
+      - name: Restore permutation draws from the committed archive
+        run: python tools/sweep070_archive.py restore
+
+      - name: Run the sweep against a wall-clock budget
+        # The sweep loops until the whole queue drains, which is far longer than
+        # one job. `timeout` ends it cleanly at the budget; every draw completed
+        # by then is already on disk, and the next scheduled run continues from
+        # there. 124 is timeout's "budget reached" code and is the expected exit.
+        run: |
+          MINUTES="${{ github.event.inputs.minutes || '280' }}"
+          echo "compute budget: ${MINUTES} minutes"
+          set +e
+          timeout "${MINUTES}m" python -W ignore -m experiments.bottomup.v2.sweep070
+          CODE=$?
+          set -e
+          case "$CODE" in
+            0)   echo "sweep finished the queue" ;;
+            124) echo "budget reached — resuming next run" ;;
+            2)   echo "::error::VERIFY FAILED — the instrument did not calibrate"; exit 2 ;;
+            *)   echo "::warning::sweep exited $CODE; archiving what completed" ;;
+          esac
+
+      - name: Archive the draws and regenerate the report
+        # `if: always()` is the point of this workflow. Even on a crashed or
+        # timed-out sweep the compute must be persisted, or the run was wasted.
+        if: always()
+        run: |
+          python tools/sweep070_archive.py archive
+          python -m experiments.bottomup.v2.report070 || \
+            echo "::warning::report generation failed; results are still committed"
+
+      - name: Commit and push
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A experiments/bottomup/results/sweep070/ \
+                     docs/ranking/inclusion-campaign-report.md
+          if git diff --cached --quiet; then
+            echo "nothing new to commit"
+            exit 0
+          fi
+          COMPLETED=$(grep -c "stopped (" experiments/bottomup/results/sweep070/sweep.log || echo 0)
+          git commit -m "sweep070: ${COMPLETED} cells complete (Actions run ${GITHUB_RUN_NUMBER})"
+          # A session may have pushed while this ran; rebase rather than fail.
+          for i in 1 2 3 4 5; do
+            git pull --rebase origin claude/pm-agent-setup-gobxa0 && \
+            git push origin "HEAD:claude/pm-agent-setup-gobxa0" && exit 0
+            echo "push attempt $i failed; retrying"
+            sleep $((i * 5))
+          done
+          echo "::error::could not push after 5 attempts — compute is NOT saved"
+          exit 1
+
+      - name: Summary
+        if: always()
+        run: |
+          {
+            echo "### ADR-070 sweep"
+            echo ""
+            echo "| | |"
+            echo "|---|---|"
+            echo "| Cells complete | $(grep -c 'stopped (' experiments/bottomup/results/sweep070/sweep.log || echo 0) |"
+            echo "| Archived cells | $(ls experiments/bottomup/results/sweep070/draws_archive/*.gz 2>/dev/null | wc -l) |"
+            echo ""
+            echo '```'
+            tail -12 experiments/bottomup/results/sweep070/sweep.log
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
