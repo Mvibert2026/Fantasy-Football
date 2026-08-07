@@ -146,8 +146,25 @@ def fetch_preseason_rankings(season: int) -> tuple[pl.DataFrame, str, bool]:
     snap = all_rankings.filter(
         (pl.col("page_type") == PAGE_TYPE) & (pl.col("scrape_date") == as_of_date)
     )
-    ids = nfl.load_ff_playerids().select(["fantasypros_id", "gsis_id"])
-    joined = snap.join(ids, left_on="id", right_on="fantasypros_id", how="left")
+    # Cast both join keys to Utf8 before joining. These are identifiers, not
+    # numbers, and upstream is inconsistent about it: `id` arrives as str while
+    # `fantasypros_id` arrives as i64. Older polars silently coerced; 1.43
+    # raises SchemaError ("datatypes of join keys don't match"), which broke the
+    # database rebuild at step 4/9 on a clean machine (GitHub Actions run 1,
+    # 2026-08-07) while working fine on the dev box's pinned polars.
+    #
+    # Casting to string rather than to int is deliberate: an int cast would
+    # null out any non-numeric id and silently drop a real player. Verified
+    # 2026-08-07 against the live feed -- of 4,930 unique ranking ids, ZERO
+    # have a leading zero and ZERO are non-numeric, so int -> str is lossless
+    # here. If upstream ever breaks that, the mismatch surfaces in the
+    # unresolved-rows count printed below rather than passing silently.
+    ids = nfl.load_ff_playerids().select(["fantasypros_id", "gsis_id"]).with_columns(
+        pl.col("fantasypros_id").cast(pl.Utf8)
+    )
+    joined = snap.with_columns(pl.col("id").cast(pl.Utf8)).join(
+        ids, left_on="id", right_on="fantasypros_id", how="left"
+    )
 
     unresolved = joined.filter(pl.col("gsis_id").is_null())
     n_dst = unresolved.filter(pl.col("pos") == "DST").height
