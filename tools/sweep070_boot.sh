@@ -12,6 +12,17 @@
 # running, and sweep070.py skips phases already in state.json, so a spurious
 # launch after completion costs seconds and changes nothing. Nothing is ever
 # lost: draws are checkpointed every chunk and resume from the last one.
+# RETIRED 2026-08-07. The sweep moved to GitHub Actions
+# (.github/workflows/sweep070.yml, scheduled from main). Reviving it here as
+# well would put two workers on the same cells, racing on the same draw files
+# and the same branch — and the container's copy is the one that keeps losing
+# its disk, so it would be the one corrupting a good run.
+#
+# Kept rather than deleted because everything below it is still correct and
+# hard-won (the zero-byte-CSV crash, the archive restore), and would have to be
+# rediscovered if Actions is ever abandoned. Delete this guard to re-enable.
+exit 0
+
 cd /home/user/Fantasy-Football 2>/dev/null || exit 0
 LOG=experiments/bottomup/results/sweep070/sweep.log
 [ -f "$LOG" ] || exit 0
