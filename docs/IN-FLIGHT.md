@@ -125,6 +125,47 @@ that counted functions rather than factors. The ledger has 132 rows; most are no
 
 ---
 
+## The sweep now runs on GitHub Actions, not in a session container
+
+**Moved 2026-08-07 after two data-loss events in 24 hours.** The session container
+was the wrong host and it is worth naming exactly why, so nobody moves it back:
+
+| | Session container | GitHub Actions |
+|---|---|---|
+| Exists when | only while a session turn is in flight | for the job's full duration |
+| Uptime costs | model tokens (the keep-alive Routine) | **nothing** |
+| Disk | **not durable** — rolled back ~8 h on 08-04 and again on 08-05 | fresh runner, git is the only state |
+
+`.github/workflows/sweep070.yml` — **on `main`, deliberately.** GitHub only fires
+`on: schedule` from the default branch, so a workflow committed to a feature branch
+never runs. `main` hosts the trigger only; the job checks out
+`claude/pm-agent-setup-gobxa0` and works there. Runs every 5 h, 280 min of compute
+per run, concurrency-guarded so two runs can never fight over the same cells.
+
+**Resumption is entirely via `draws_archive/`** (committed, gzipped):
+`tools/sweep070_archive.py restore` at the start, `... archive` at the end. Draws are
+append-only in a deterministic order, so a partial cell is a valid prefix. The archive
+and push steps carry `if: always()` — **a run that computed for five hours and never
+pushed has thrown the compute away**, which is the whole failure this replaced.
+
+**The keep-alive Routine `sweep070-keepalive` is DISABLED**, not deleted. It was the
+container's life support and is now pure token burn. Re-enable only if Actions is
+abandoned.
+
+**Two bugs the move exposed, both real and both now fixed:**
+
+1. `_append_draws` re-read, de-duplicated and rewrote the *entire* draws CSV after
+   every single draw — O(n²) per cell, 20% of a core at n=2,800 and growing. It also
+   truncated before writing, so a kill mid-write rolled the file back. Commit `4333ec9`.
+2. `src/ingest_rankings.py` joined `id` (str) to `fantasypros_id` (i64). Older polars
+   coerced silently; 1.43 raises, which killed the database rebuild at **step 4 of 9**
+   and left steps 5–9 unrun. It had never surfaced because the dev box already had a
+   database. Verified against the live feed: of 4,930 ranking ids, zero have a leading
+   zero and zero are non-numeric, so the string cast is lossless.
+
+**Watch it at** `https://github.com/Mvibert2026/Fantasy-Football/actions` — each run
+writes a summary with cells complete and the log tail. No tokens required to look.
+
 ## Running now
 
 | Agent / process | Task | Notes |
