@@ -494,6 +494,22 @@ tier is ambiguous, say which tier you think it is and why before starting.
 - Local SQLite file is not committed to version control.
 - Respect source licensing and attribution requirements (§5).
 
+**The repository is public (founder's decision, 2026-08-08, to remove the Actions-minutes cap).
+Two consequences that are not obvious and must not be quietly undone:**
+
+- **Public grants read and fork to everyone, write to nobody outside the collaborator list** — which
+  is one person, the founder, as admin. Strangers can clone and open pull requests; they cannot push.
+  Making the repo public did not change that and adding a collaborator is the only thing that would.
+- **The real exposure in a public repo is workflows, not push access.** Both workflows run with
+  `permissions: contents: write`. They are safe today for exactly one reason: they trigger on
+  `schedule` and `workflow_dispatch` only, and `workflow_dispatch` requires write access. **Adding a
+  `pull_request` trigger to any workflow that has `contents: write` would let an outsider run
+  arbitrary code against this repo from a fork.** If a workflow ever needs to run on PRs, it needs
+  `permissions: contents: read` and no secrets — never both a PR trigger and write.
+
+Every commit in history is now readable, so a credential committed and later deleted is still
+public. `.env` has never been committed (verified 2026-08-07 across all history); keep it that way.
+
 ---
 
 ## 11. Working style
