@@ -185,3 +185,49 @@ jobs:
             tail -12 experiments/bottomup/results/sweep070/sweep.log
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
+
+      # Private-repo Actions minutes are a fixed monthly allowance (2,000 on
+      # Free, 3,000 on Pro), and this workflow burns ~280 per run at ~4.5 runs a
+      # day -- so it can exhaust a month's budget in roughly two days. The
+      # founder's instruction (2026-08-08) was "keep going until it's an issue
+      # and let me know", which needs a mechanism rather than someone
+      # remembering to check.
+      #
+      # Sums this workflow's own wall-clock for the current calendar month.
+      # Wall-clock is a close proxy for billable time here: one job, Linux, 1x
+      # multiplier, rounded up per job. It needs no billing scope, which the
+      # default token does not have.
+      #
+      # Past the threshold the run FAILS. That is deliberate and is the whole
+      # point: GitHub emails on workflow failure by default, so a hard stop is
+      # the only signal that reaches the founder without costing model tokens.
+      # It fires only after the compute has been archived, committed and pushed
+      # by the steps above, so nothing is lost -- the run is already complete.
+      - name: Actions-minutes budget check
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          # 80% of the 2,000-minute Free allowance, less headroom for the daily
+          # ADP job (~450/month). Raise to 2400 on Pro, or delete this step if
+          # the repo goes public (public repos have no cap).
+          BUDGET_WARN_MINUTES: "1500"
+        run: |
+          MONTH_START="$(date -u +%Y-%m-01T00:00:00Z)"
+          USED=$(gh api --paginate \
+            "repos/${GITHUB_REPOSITORY}/actions/workflows/sweep070.yml/runs?per_page=100" \
+            --jq '[.workflow_runs[]
+                   | select(.run_started_at >= "'"$MONTH_START"'")
+                   | ((.updated_at|fromdateiso8601) - (.run_started_at|fromdateiso8601)) / 60]
+                  | add // 0' 2>/dev/null | awk '{s+=$1} END {printf "%.0f", s+0}')
+          echo "sweep070 minutes used this month: ${USED} (threshold ${BUDGET_WARN_MINUTES})"
+          {
+            echo ""
+            echo "**Actions minutes this month:** ${USED} / ${BUDGET_WARN_MINUTES} threshold"
+          } >> "$GITHUB_STEP_SUMMARY"
+          if [ "${USED:-0}" -ge "${BUDGET_WARN_MINUTES}" ]; then
+            echo "::error::Actions minutes budget reached — ${USED} min used this month. \
+          The sweep's compute IS saved and pushed; this run is being failed on purpose so the \
+          failure notification reaches the founder. To continue: make the repo public (no cap), \
+          raise BUDGET_WARN_MINUTES, or wait for the monthly reset."
+            exit 1
+          fi
