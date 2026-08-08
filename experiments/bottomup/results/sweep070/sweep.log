@@ -423,3 +423,57 @@ pandas.errors.EmptyDataError: No columns to parse from file
 [2026-08-05 00:05:13] L=8999, h=20, M=442, workers=4
 [2026-08-05 00:20:23] D1A1__Q0__QB: 7373 draws
 [2026-08-05 00:38:42] D1A1__Q0__QB: 8294 draws
+[2026-08-08 18:36:10] sweep070 starting; phases done: ['VERIFY']
+[2026-08-08 18:36:10] L=8999, h=20, M=442, workers=4
+[2026-08-08 18:36:18] D1A1__Q0__QB: stopped (L_exhausted) at n=8999 p_two=0.0002222 after 0s
+[2026-08-08 18:36:19] D1A1__Q0__RB: stopped (L_exhausted) at n=8999 p_two=0.0002222 after 0s
+[2026-08-08 18:36:19] D1A1__Q0__WR: stopped (L_exhausted) at n=8999 p_two=0.0002222 after 0s
+[2026-08-08 18:55:09] D1A1__Q0__TE: 7981 draws
+[2026-08-08 19:15:37] D1A1__Q0__TE: 8978 draws
+[2026-08-08 19:16:03] D1A1__Q0__TE: 8999 draws
+[2026-08-08 19:16:03] D1A1__Q0__TE: stopped (L_exhausted) at n=8999 p_two=0.0002222 after 2384s
+[2026-08-08 19:16:03] D1A1__PG0__QB: stopped (h_reached) at n=103 p_two=0.3883 after 0s
+[2026-08-08 19:16:03] D1A1__PG0__RB: stopped (h_reached) at n=48 p_two=0.8333 after 0s
+[2026-08-08 19:16:03] D1A1__PG0__WR: stopped (h_reached) at n=114 p_two=0.3509 after 0s
+[2026-08-08 19:16:03] D1A1__PG0__TE: stopped (h_reached) at n=88 p_two=0.4545 after 0s
+[2026-08-08 19:43:53] D1A1__Q1__QB: 6202 draws
+[2026-08-08 20:15:10] D1A1__Q1__QB: 6977 draws
+[2026-08-08 20:50:18] D1A1__Q1__QB: 7849 draws
+[2026-08-08 21:29:48] D1A1__Q1__QB: 8830 draws
+[2026-08-08 21:36:35] D1A1__Q1__QB: 8999 draws
+[2026-08-08 21:36:35] D1A1__Q1__QB: stopped (L_exhausted) at n=8999 p_two=0.0002222 after 8433s
+[2026-08-08 21:37:12] D1A1__Q1__RB: 12 draws
+[2026-08-08 21:37:43] D1A1__Q1__RB: 24 draws
+[2026-08-08 21:38:15] D1A1__Q1__RB: 36 draws
+[2026-08-08 21:38:45] D1A1__Q1__RB: 48 draws
+[2026-08-08 21:39:16] D1A1__Q1__RB: 60 draws
+[2026-08-08 21:39:48] D1A1__Q1__RB: 72 draws
+[2026-08-08 21:40:19] D1A1__Q1__RB: 84 draws
+[2026-08-08 21:40:50] D1A1__Q1__RB: 96 draws
+[2026-08-08 21:41:22] D1A1__Q1__RB: 108 draws
+[2026-08-08 21:41:55] D1A1__Q1__RB: 121 draws
+[2026-08-08 21:42:34] D1A1__Q1__RB: 136 draws
+[2026-08-08 21:43:19] D1A1__Q1__RB: 153 draws
+[2026-08-08 21:44:08] D1A1__Q1__RB: 172 draws
+[2026-08-08 21:45:02] D1A1__Q1__RB: 193 draws
+[2026-08-08 21:46:05] D1A1__Q1__RB: 217 draws
+[2026-08-08 21:47:14] D1A1__Q1__RB: 244 draws
+[2026-08-08 21:48:31] D1A1__Q1__RB: 274 draws
+[2026-08-08 21:50:00] D1A1__Q1__RB: 308 draws
+[2026-08-08 21:51:40] D1A1__Q1__RB: 346 draws
+[2026-08-08 21:53:31] D1A1__Q1__RB: 389 draws
+[2026-08-08 21:55:36] D1A1__Q1__RB: 437 draws
+[2026-08-08 21:57:56] D1A1__Q1__RB: 491 draws
+[2026-08-08 22:00:37] D1A1__Q1__RB: 552 draws
+[2026-08-08 22:03:38] D1A1__Q1__RB: 621 draws
+[2026-08-08 22:07:00] D1A1__Q1__RB: 698 draws
+[2026-08-08 22:10:46] D1A1__Q1__RB: 785 draws
+[2026-08-08 22:15:00] D1A1__Q1__RB: 883 draws
+[2026-08-08 22:19:45] D1A1__Q1__RB: 993 draws
+[2026-08-08 22:25:05] D1A1__Q1__RB: 1117 draws
+[2026-08-08 22:31:03] D1A1__Q1__RB: 1256 draws
+[2026-08-08 22:37:51] D1A1__Q1__RB: 1413 draws
+[2026-08-08 22:45:28] D1A1__Q1__RB: 1589 draws
+[2026-08-08 22:54:03] D1A1__Q1__RB: 1787 draws
+[2026-08-08 23:03:37] D1A1__Q1__RB: 2010 draws
+[2026-08-08 23:14:25] D1A1__Q1__RB: 2261 draws
