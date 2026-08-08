@@ -116,8 +116,20 @@ jobs:
           MINUTES="${{ github.event.inputs.minutes || '280' }}"
           echo "compute budget: ${MINUTES} minutes"
           set +e
-          timeout "${MINUTES}m" python -W ignore -m experiments.bottomup.v2.sweep070
-          CODE=$?
+          # Tee into sweep.log, don't just print. sweep070.py's log() writes to
+          # stdout and it is run_sweep070.sh -- not the module -- that redirects
+          # that into sweep.log. Invoking the module directly (as this workflow
+          # does, so `timeout` owns the process) sent every line to the Actions
+          # console instead, and sweep.log was never written. Three consequences,
+          # all observed on runs 1-3: the committed log kept no record of any
+          # Actions compute; the commit message's cell count is derived by
+          # grepping that log, so it reported a stale "8 cells complete" on every
+          # run; and the step-1 "sweep completed cleanly" check could never fire,
+          # so a finished sweep would have gone unnoticed.
+          # PIPESTATUS[0] because tee's exit code would otherwise mask the real one.
+          timeout "${MINUTES}m" python -W ignore -u -m experiments.bottomup.v2.sweep070 \
+            2>&1 | tee -a experiments/bottomup/results/sweep070/sweep.log
+          CODE=${PIPESTATUS[0]}
           set -e
           case "$CODE" in
             0)   echo "sweep finished the queue" ;;
