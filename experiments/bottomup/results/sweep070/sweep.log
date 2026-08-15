@@ -725,3 +725,71 @@ pandas.errors.EmptyDataError: No columns to parse from file
 [2026-08-15 00:27:24] D1A1__Q2__RB: 1413 draws
 [2026-08-15 00:32:06] D1A1__Q2__RB: 1589 draws
 [2026-08-15 00:37:22] D1A1__Q2__RB: 1787 draws
+[2026-08-15 00:38:42] sweep070 starting; phases done: ['VERIFY']
+[2026-08-15 00:38:42] L=8999, h=20, M=442, workers=4
+[2026-08-15 00:38:50] D1A1__Q0__QB: stopped (L_exhausted) at n=8999 p_two=0.0002222 after 0s
+[2026-08-15 00:38:51] D1A1__Q0__RB: stopped (L_exhausted) at n=8999 p_two=0.0002222 after 0s
+[2026-08-15 00:38:51] D1A1__Q0__WR: stopped (L_exhausted) at n=8999 p_two=0.0002222 after 0s
+[2026-08-15 00:47:52] D1A1__Q0__TE: 7981 draws
+[2026-08-15 00:58:09] D1A1__Q0__TE: 8978 draws
+[2026-08-15 00:58:24] D1A1__Q0__TE: 8999 draws
+[2026-08-15 00:58:24] D1A1__Q0__TE: stopped (L_exhausted) at n=8999 p_two=0.0002222 after 1173s
+[2026-08-15 00:58:24] D1A1__PG0__QB: stopped (h_reached) at n=103 p_two=0.3883 after 0s
+[2026-08-15 00:58:24] D1A1__PG0__RB: stopped (h_reached) at n=48 p_two=0.8333 after 0s
+[2026-08-15 00:58:24] D1A1__PG0__WR: stopped (h_reached) at n=114 p_two=0.3509 after 0s
+[2026-08-15 00:58:24] D1A1__PG0__TE: stopped (h_reached) at n=88 p_two=0.4545 after 0s
+[2026-08-15 00:58:24] D1A1__Q1__QB: stopped (L_exhausted) at n=8999 p_two=0.0002222 after 0s
+[2026-08-15 01:26:34] D1A1__Q1__RB: 8832 draws
+[2026-08-15 01:31:19] D1A1__Q1__RB: 8999 draws
+[2026-08-15 01:31:19] D1A1__Q1__RB: stopped (L_exhausted) at n=8999 p_two=0.0002222 after 1975s
+[2026-08-15 01:31:20] D1A1__Q1__WR: stopped (L_exhausted) at n=8999 p_two=0.0002222 after 0s
+[2026-08-15 01:31:20] D1A1__Q1__TE: stopped (L_exhausted) at n=8999 p_two=0.0002222 after 0s
+[2026-08-15 01:31:20] D1A1__Q2__QB: stopped (h_reached) at n=4829 p_two=0.008283 after 0s
+[2026-08-15 01:37:40] D1A1__Q2__RB: 2028 draws
+[2026-08-15 01:44:45] D1A1__Q2__RB: 2281 draws
+[2026-08-15 01:52:42] D1A1__Q2__RB: 2566 draws
+[2026-08-15 02:01:22] D1A1__Q2__RB: 2886 draws
+[2026-08-15 02:11:10] D1A1__Q2__RB: 3246 draws
+[2026-08-15 02:22:17] D1A1__Q2__RB: 3651 draws
+[2026-08-15 02:34:42] D1A1__Q2__RB: 4107 draws
+[2026-08-15 02:48:41] D1A1__Q2__RB: 4620 draws
+[2026-08-15 03:04:29] D1A1__Q2__RB: 5197 draws
+[2026-08-15 03:22:08] D1A1__Q2__RB: 5846 draws
+[2026-08-15 03:41:57] D1A1__Q2__RB: 6576 draws
+[2026-08-15 04:04:14] D1A1__Q2__RB: 7398 draws
+[2026-08-15 04:29:28] D1A1__Q2__RB: 8322 draws
+[2026-08-15 04:47:51] D1A1__Q2__RB: 8999 draws
+[2026-08-15 04:47:51] D1A1__Q2__RB: stopped (L_exhausted) at n=8999 p_two=0.0002222 after 11791s
+[2026-08-15 04:48:04] D1A1__Q2__WR: 12 draws
+[2026-08-15 04:48:16] D1A1__Q2__WR: 24 draws
+[2026-08-15 04:48:27] D1A1__Q2__WR: 36 draws
+[2026-08-15 04:48:39] D1A1__Q2__WR: 48 draws
+[2026-08-15 04:48:50] D1A1__Q2__WR: 60 draws
+[2026-08-15 04:49:02] D1A1__Q2__WR: 72 draws
+[2026-08-15 04:49:13] D1A1__Q2__WR: 84 draws
+[2026-08-15 04:49:25] D1A1__Q2__WR: 96 draws
+[2026-08-15 04:49:37] D1A1__Q2__WR: 108 draws
+[2026-08-15 04:49:50] D1A1__Q2__WR: 121 draws
+[2026-08-15 04:50:04] D1A1__Q2__WR: 136 draws
+[2026-08-15 04:50:21] D1A1__Q2__WR: 153 draws
+[2026-08-15 04:50:40] D1A1__Q2__WR: 172 draws
+[2026-08-15 04:51:00] D1A1__Q2__WR: 193 draws
+[2026-08-15 04:51:23] D1A1__Q2__WR: 217 draws
+[2026-08-15 04:51:49] D1A1__Q2__WR: 244 draws
+[2026-08-15 04:52:18] D1A1__Q2__WR: 274 draws
+[2026-08-15 04:52:51] D1A1__Q2__WR: 308 draws
+[2026-08-15 04:53:27] D1A1__Q2__WR: 346 draws
+[2026-08-15 04:54:09] D1A1__Q2__WR: 389 draws
+[2026-08-15 04:54:56] D1A1__Q2__WR: 437 draws
+[2026-08-15 04:55:47] D1A1__Q2__WR: 491 draws
+[2026-08-15 04:56:45] D1A1__Q2__WR: 552 draws
+[2026-08-15 04:57:52] D1A1__Q2__WR: 621 draws
+[2026-08-15 04:59:05] D1A1__Q2__WR: 698 draws
+[2026-08-15 05:00:29] D1A1__Q2__WR: 785 draws
+[2026-08-15 05:02:02] D1A1__Q2__WR: 883 draws
+[2026-08-15 05:03:47] D1A1__Q2__WR: 993 draws
+[2026-08-15 05:05:45] D1A1__Q2__WR: 1117 draws
+[2026-08-15 05:07:56] D1A1__Q2__WR: 1256 draws
+[2026-08-15 05:10:25] D1A1__Q2__WR: 1413 draws
+[2026-08-15 05:13:12] D1A1__Q2__WR: 1589 draws
+[2026-08-15 05:16:21] D1A1__Q2__WR: 1787 draws
