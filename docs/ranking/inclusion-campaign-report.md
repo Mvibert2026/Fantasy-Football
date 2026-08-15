@@ -1,6 +1,6 @@
 # Factor-inclusion campaign — the founder's four numbers
 
-**Generated 2026-08-15 09:59 UTC** by `experiments/bottomup/v2/report070.py` — regenerate any time with `.venv/bin/python -m experiments.bottomup.v2.report070`. The sweep driver regenerates it after every batch grades, so this file is as current as the compute.
+**Generated 2026-08-15 11:27 UTC** by `experiments/bottomup/v2/report070.py` — regenerate any time with `.venv/bin/python -m experiments.bottomup.v2.report070`. The sweep driver regenerates it after every batch grades, so this file is as current as the compute.
 
 Instrument: ADR-070 (permutation nulls, sequential MC, BH at campaign M = 442, calibrated consistency). Panel: tier 2, `m_panel_ppr12`, trained from 2002, graded 2013–2024 (per-position S_pos on every cell). VERIFY gate: PASSED — measured false-positive rate 5.0% against a pre-committed 5.0%, zero placebo inclusions.
 
@@ -8,21 +8,30 @@ Instrument: ADR-070 (permutation nulls, sequential MC, BH at campaign M = 442, c
 
 | | |
 |---|---|
-| **1. Factors tested for inclusion (ADR-070, tier 2)** | **0** (of 27 registered — 27 still computing) |
-| **2. Factors that passed (INCLUDE at ≥ 1 position)** | **0** |
-| **3. Per-position passes** | QB 0 · RB 0 · WR 0 · TE 0 — table below |
+| **1. Factors tested for inclusion (ADR-070, tier 2)** | **3** (of 27 registered — 24 still computing) |
+| **2. Factors that passed (INCLUDE at ≥ 1 position)** | **3** |
+| **3. Per-position passes** | QB 1 · RB 2 · WR 3 · TE 3 — table below |
 | **4. Untestable / not yet testable** | see the audit table below |
 
-**27 registered factors are still in the compute queue** (sweep phases done: ['VERIFY']); the numbers above grow as it drains. Pending: D1A1:Q0 — games-model population refit (restrict); D1A1:Q1 — availability quality block (full); D1A1:Q2 — availability quality block (ppg-free); C1:F1 — offensive snap share, recency-weighted; C1:F2 — red-zone (inside-20) usage share of team; C1:F3 — expected fantasy points per game + realised-minus-expected residual; C1:F4 — NGS average separation (lag 1); C1:F5 — route participation and targets per route run (LABELLED PROXY); C1:F6 — steeper recency weighting of prior seasons (0.70/0.22/0.08); C2:A1 — WOPR, recency-weighted (WR/TE); C2:A2 — YAC per reception, EB-shrunk (RB) -- batch-7 block, reused; C2:A3 — receiving share of RB's own points (RB) -- batch-7 block, reused; ….
+**24 registered factors are still in the compute queue** (sweep phases done: ['VERIFY', 'D1A1']); the numbers above grow as it drains. Pending: C1:F1 — offensive snap share, recency-weighted; C1:F2 — red-zone (inside-20) usage share of team; C1:F3 — expected fantasy points per game + realised-minus-expected residual; C1:F4 — NGS average separation (lag 1); C1:F5 — route participation and targets per route run (LABELLED PROXY); C1:F6 — steeper recency weighting of prior seasons (0.70/0.22/0.08); C2:A1 — WOPR, recency-weighted (WR/TE); C2:A2 — YAC per reception, EB-shrunk (RB) -- batch-7 block, reused; C2:A3 — receiving share of RB's own points (RB) -- batch-7 block, reused; C2:A4 — late-season role trajectory (RB/WR/TE) -- batch-7 block, reused; C2:A5 — implied team total, lagged (QB/RB/WR/TE); C2:B1 — RB high-carry-season breakpoint (350/375/400 hinge spline); ….
 
 ## 3 — Which factors passed, per position
 
-- **QB:** none
-- **RB:** none
-- **WR:** none
-- **TE:** none
+- **QB:** availability quality block (full) (D1A1:Q1)
+- **RB:** games-model population refit (restrict) (D1A1:Q0); availability quality block (full) (D1A1:Q1)
+- **WR:** games-model population refit (restrict) (D1A1:Q0); availability quality block (full) (D1A1:Q1); availability quality block (ppg-free) (D1A1:Q2)
+- **TE:** games-model population refit (restrict) (D1A1:Q0); availability quality block (full) (D1A1:Q1); availability quality block (ppg-free) (D1A1:Q2)
 
 ## Every graded factor, per position
+
+### D1A1
+
+| factor | QB | RB | WR | TE |
+|---|---|---|---|---|
+| games-model population refit (restrict) | FRAGILE (Δ̄ +1.5355, p 0.000222, S_pos 10) | INCLUDE (Δ̄ +0.8669, p 0.000222, S_pos 8) | INCLUDE (Δ̄ +0.9411, p 0.000222, S_pos 10) | INCLUDE (Δ̄ +1.1759, p 0.000222, S_pos 7) |
+| availability quality block (full) | INCLUDE (Δ̄ +0.7398, p 0.000222, S_pos 10) | INCLUDE (Δ̄ +0.3056, p 0.000222, S_pos 8) | INCLUDE (Δ̄ +0.6641, p 0.000222, S_pos 10) | INCLUDE (Δ̄ +0.3778, p 0.000222, S_pos 7) |
+| availability quality block (ppg-free) | HYPOTHESIS (Δ̄ +0.1282, p 0.00828, S_pos 10) | FRAGILE (Δ̄ +0.1817, p 0.000222, S_pos 8) | INCLUDE (Δ̄ +0.4951, p 0.000222, S_pos 10) | INCLUDE (Δ̄ +0.2997, p 0.000444, S_pos 7) |
+| *PLACEBO (games endpoint)* | QB NULL (calibrated), RB NULL (calibrated), WR NULL (calibrated), TE NULL (calibrated) | | | |
 
 ## Incumbents (batch AB1 — ablation audit, registered translation)
 
