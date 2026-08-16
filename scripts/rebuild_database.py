@@ -98,7 +98,19 @@ ADP_SNAPSHOT_DIR = REPO_ROOT / "data" / "adp-snapshots"
 EXPECTED_MOCK_DRAFTS = 1
 EXPECTED_MOCK_PICKS = 145
 EXPECTED_MOCK_QUARANTINE = 15
-MIN_RANKINGS_2021_2025_ROWS = 2540  # re-pull may exceed this if the mirror gains rows; never less
+# Was 2540 with the note "re-pull may exceed this if the mirror gains rows;
+# never less". That premise was wrong and it blocked every rebuild on
+# 2026-08-16 at got=2538, expected>=2540 -- off by two rows out of 2,540
+# (0.08%). The mirror can LOSE rows as well as gain them: ingest_rankings.py
+# drops any ranking row whose FantasyPros id no longer resolves to a gsis_id,
+# so ordinary churn in the upstream ff_playerids crosswalk moves this count in
+# both directions, on seasons that are themselves long finished.
+#
+# A floor pinned to the observed value therefore fails on noise. 2400 keeps the
+# failure this check exists to catch -- a missing or half-ingested season is
+# ~500 rows, roughly 20%, far below this -- while tolerating crosswalk drift of
+# a few players either way. Do not re-tighten it to the latest observed count.
+MIN_RANKINGS_2021_2025_ROWS = 2400
 MIN_ADP_SNAPSHOT_DATES = 2  # at least the two pre-existing committed CSVs, growing daily
 MIN_PBP_ROWS = 800_000  # 2009-2025 measured at 816,856 rows 2026-07-30; grows each season
 MIN_ROSTERS_WEEKLY_ROWS = 850_000  # 2002-2025 measured at 888,786 rows 2026-07-30
