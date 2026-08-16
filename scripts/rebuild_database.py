@@ -158,6 +158,19 @@ def run_public_ingestion(db_path: Path, python_exe: str) -> None:
         [python_exe, str(SRC_DIR / "ingest_pbp.py"), "--db", str(db_path)],
         "1b/9 ingest_pbp.py",
     )
+    # `participation` was missing from this list until 2026-08-16, and the gap
+    # was invisible on any machine that already had a database. On a clean
+    # rebuild it took down the whole factor campaign: batch C1 crashed with
+    # "sqlite3.OperationalError: no such table: participation" on every GitHub
+    # Actions run for ~24 hours, and because the workflow only warned on a
+    # non-zero sweep exit, every one of those runs still reported success.
+    # It feeds route participation and YPRR (test-registry #16/#17) and the
+    # red-zone snap share block, so several C1/C2 factors cannot be graded
+    # without it.
+    _run(
+        [python_exe, str(SRC_DIR / "ingest_participation.py"), "--db", str(db_path)],
+        "1c/9 ingest_participation.py",
+    )
     _run(
         [python_exe, str(SRC_DIR / "ingest_reference.py"), "--db", str(db_path)],
         "2/9 ingest_reference.py",
