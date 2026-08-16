@@ -135,8 +135,16 @@ jobs:
             0)   echo "sweep finished the queue" ;;
             124) echo "budget reached — resuming next run" ;;
             2)   echo "::error::VERIFY FAILED — the instrument did not calibrate"; exit 2 ;;
-            *)   echo "::warning::sweep exited $CODE; archiving what completed" ;;
+            # Anything else is a crash. This MUST fail the run, not warn: batch
+            # C1 died on "no such table: participation" on every run for ~24
+            # hours while each run still reported success, so nothing surfaced
+            # and a day of compute was spent doing nothing. The archive/commit
+            # steps below carry `if: always()`, so failing here still persists
+            # whatever did complete -- it costs nothing and buys a notification.
+            *)   echo "::error::sweep crashed with exit $CODE — see the log above"
+                 SWEEP_CRASHED=1 ;;
           esac
+          echo "SWEEP_CRASHED=${SWEEP_CRASHED:-0}" >> "$GITHUB_ENV"
 
       - name: Archive the draws and regenerate the report
         # `if: always()` is the point of this workflow. Even on a crashed or
@@ -185,3 +193,12 @@ jobs:
             tail -12 experiments/bottomup/results/sweep070/sweep.log
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
+
+      # Deliberately last, after archive/commit/push have persisted everything.
+      - name: Fail the run if the sweep crashed
+        if: always() && env.SWEEP_CRASHED == '1'
+        run: |
+          echo "::error::The sweep did not run to its budget — it crashed. \
+          Compute that completed has been archived and pushed; this step exists \
+          so the failure is visible instead of a green run that did nothing."
+          exit 1
