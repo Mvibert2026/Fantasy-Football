@@ -187,6 +187,43 @@ def run_public_ingestion(db_path: Path, python_exe: str) -> None:
         [python_exe, str(SRC_DIR / "ingest_reference.py"), "--db", str(db_path)],
         "2/9 ingest_reference.py",
     )
+    # 2b-2d. Tables the factor campaign reads that this script never built.
+    # Every one of these was discovered the same way: a batch reached for a
+    # table, crashed with "no such table", and cost a full 5-hour run. The gap
+    # is invisible on any machine that already has a database. Enumerated in
+    # one pass 2026-08-17 rather than one crash at a time -- ff_opportunity
+    # (C1), odds_snapshots (C2), pfr_advstats_rush (C4).
+    _run(
+        [python_exe, str(SRC_DIR / "ingest_ff_opportunity.py"), "--db", str(db_path)],
+        "2b/9 ingest_ff_opportunity.py",
+    )
+    # odds derives from schedules, so it must follow ingest_reference.
+    _run(
+        [python_exe, str(SRC_DIR / "ingest_odds.py"), "--db", str(db_path)],
+        "2c/9 ingest_odds.py",
+    )
+    _run(
+        [python_exe, str(SRC_DIR / "ingest_pfr_advstats.py"), "--db", str(db_path)],
+        "2d/9 ingest_pfr_advstats.py",
+    )
+    # play_callers_preseason has NO ingestable source -- ingest_play_callers.py
+    # is parked pending a verified one, and the coordinator-continuity factors
+    # are dispositioned BLOCKED because of it. But batch C5/CT1 still QUERIES
+    # the table, and a missing table raises while an empty one simply returns
+    # no rows. Create it empty so a blocked factor reports as blocked instead of
+    # taking the whole run down.
+    print("\n=== 2e/9 play_callers_preseason (empty table; source is parked) ===")
+    import importlib.util as _ilu
+    _spec = _ilu.spec_from_file_location("_pc", SRC_DIR / "ingest_play_callers.py")
+    _pc = _ilu.module_from_spec(_spec); _spec.loader.exec_module(_pc)
+    _conn = sqlite3.connect(db_path)
+    try:
+        _pc.ensure_table(_conn); _conn.commit()
+        n = _conn.execute("SELECT COUNT(*) FROM play_callers_preseason").fetchone()[0]
+        print(f"  table present, {n} rows (0 is expected and correct)")
+    finally:
+        _conn.close()
+
     _run(
         [python_exe, str(SRC_DIR / "ingest_league_metrics.py"), "--db", str(db_path)],
         "3/9 ingest_league_metrics.py",
@@ -311,6 +348,23 @@ def assert_restored(db_path: Path) -> None:
             scalar("SELECT COUNT(*) FROM schedules"),
             MIN_SCHEDULES_ROWS, ">=",
         ))
+        # Every table the factor campaign reads. This exists because four
+        # separate "no such table" crashes each cost a full 5-hour Actions run
+        # before anyone knew: participation, ff_opportunity, and two more
+        # behind them. A row-count check cannot catch a table that was never
+        # created, and checking one table at a time turns one bug into N round
+        # trips. This reports ALL of them at once.
+        required = [
+            "player_weekly_stats", "pbp", "participation", "ff_opportunity",
+            "odds_snapshots", "pfr_advstats_rush", "play_callers_preseason",
+            "combine", "contracts", "injuries", "depth_charts_weekly",
+            "snap_counts", "draft_picks", "rosters_weekly", "schedules",
+            "ff_playerids", "rankings", "league_season_metrics",
+        ]
+        have = {r[0] for r in conn.execute(
+            "SELECT name FROM sqlite_master WHERE type='table'")}
+        for t in required:
+            checks.append((f"table `{t}` exists", 1 if t in have else 0, 1, ">="))
     finally:
         conn.close()
 
