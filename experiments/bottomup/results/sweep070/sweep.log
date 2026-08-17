@@ -1713,3 +1713,98 @@ FROM ff_opportunity
 WHERE player_id IS NOT NULL AND player_id <> ''
   AND CAST(season AS INTEGER) < ?
 ': no such table: ff_opportunity
+[2026-08-17 08:03:28] sweep070 starting; phases done: ['VERIFY', 'D1A1']
+[2026-08-17 08:03:28] L=8999, h=20, M=442, workers=4
+[2026-08-17 08:03:37] observed runs needed: 22
+multiprocessing.pool.RemoteTraceback: 
+"""
+Traceback (most recent call last):
+  File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/pandas/io/sql.py", line 2745, in execute
+    cur.execute(sql, *args)
+sqlite3.OperationalError: no such table: ff_opportunity
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/multiprocessing/pool.py", line 125, in worker
+    result = (True, func(*args, **kwds))
+                    ^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/Fantasy-Football/Fantasy-Football/experiments/bottomup/v2/sweep070.py", line 160, in _task
+    players = ens.run_players(panel, batch, arm, pos, k=0)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/Fantasy-Football/Fantasy-Football/experiments/bottomup/v2/ensemble070.py", line 387, in run_players
+    players, _ = wf.run()
+                 ^^^^^^^^
+  File "/home/runner/work/Fantasy-Football/Fantasy-Football/experiments/bottomup/components/pos_eval.py", line 329, in run
+    tf, to = self._pairs(self.position, target)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/Fantasy-Football/Fantasy-Football/experiments/bottomup/components/pos_eval.py", line 193, in _pairs
+    a, b = self._season_pair(position, s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/Fantasy-Football/Fantasy-Football/experiments/bottomup/components/pos_eval.py", line 181, in _season_pair
+    hit = (self.feature_fn(self.panel, u, s),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/Fantasy-Football/Fantasy-Football/experiments/bottomup/v2/ensemble070.py", line 238, in <lambda>
+    return lambda panel, universe, ts: build_features_c1(
+                                       ^^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/Fantasy-Football/Fantasy-Football/experiments/bottomup/v2/factors_c1.py", line 242, in build_features_c1
+    block.update(_BLOCKS[b](panel, f, target_season))
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/Fantasy-Football/Fantasy-Football/experiments/bottomup/factors/factor_features6.py", line 360, in _xfp
+    _, xf = source(db_path).before(panel, target_season - 1)
+            ^^^^^^^^^^^^^^^
+  File "/home/runner/work/Fantasy-Football/Fantasy-Football/experiments/bottomup/factors/factor_features6.py", line 243, in source
+    _SOURCE = _Batch6Source(db_path)
+              ^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/Fantasy-Football/Fantasy-Football/experiments/bottomup/factors/factor_features6.py", line 222, in __init__
+    self.xfp = load_xfp(db_path)
+               ^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/Fantasy-Football/Fantasy-Football/experiments/bottomup/factors/factor_features6.py", line 196, in load_xfp
+    d = pd.read_sql_query(_XFP_SQL, conn, params=(HOLDOUT_SEASON,))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/pandas/io/sql.py", line 497, in read_sql_query
+    return pandas_sql.read_query(
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/pandas/io/sql.py", line 2809, in read_query
+    cursor = self.execute(sql, params)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/pandas/io/sql.py", line 2757, in execute
+    raise ex from exc
+pandas.errors.DatabaseError: Execution failed on sql '
+SELECT CAST(season AS INTEGER)                 AS season,
+       player_id,
+       CAST(week AS INTEGER)                   AS week,
+       COALESCE(total_fantasy_points_exp, 0.0) AS xfp,
+       COALESCE(total_fantasy_points, 0.0)     AS fp_ppr
+FROM ff_opportunity
+WHERE player_id IS NOT NULL AND player_id <> ''
+  AND CAST(season AS INTEGER) < ?
+': no such table: ff_opportunity
+"""
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/runner/work/Fantasy-Football/Fantasy-Football/experiments/bottomup/v2/sweep070.py", line 508, in <module>
+    main()
+  File "/home/runner/work/Fantasy-Football/Fantasy-Football/experiments/bottomup/v2/sweep070.py", line 471, in main
+    batch_phase(pool, batch, st)
+  File "/home/runner/work/Fantasy-Football/Fantasy-Football/experiments/bottomup/v2/sweep070.py", line 389, in batch_phase
+    ensure_observed(pool, arms, st)
+  File "/home/runner/work/Fantasy-Football/Fantasy-Football/experiments/bottomup/v2/sweep070.py", line 263, in ensure_observed
+    for rows in pool.imap(_task, tasks):
+                ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/multiprocessing/pool.py", line 873, in next
+    raise value
+pandas.errors.DatabaseError: Execution failed on sql '
+SELECT CAST(season AS INTEGER)                 AS season,
+       player_id,
+       CAST(week AS INTEGER)                   AS week,
+       COALESCE(total_fantasy_points_exp, 0.0) AS xfp,
+       COALESCE(total_fantasy_points, 0.0)     AS fp_ppr
+FROM ff_opportunity
+WHERE player_id IS NOT NULL AND player_id <> ''
+  AND CAST(season AS INTEGER) < ?
+': no such table: ff_opportunity
