@@ -38,7 +38,7 @@ on:
 # the same archive blobs on push. `cancel-in-progress: false` because killing a
 # running sweep to start a fresh one is strictly worse than waiting.
 concurrency:
-  group: sweep070
+  group: sweep070-${{ github.workflow }}
   cancel-in-progress: false
 
 permissions:
@@ -47,6 +47,17 @@ permissions:
 jobs:
   sweep:
     runs-on: ubuntu-latest
+    # Batches are independent: each writes its own cells shard, its own draw
+    # files, its own graded_<batch>.csv and its own state_<batch>.json. Nothing
+    # is shared on disk, so they can run at the same time on different runners.
+    # Serial was the real ceiling -- ~300 cells one at a time is a week; this is
+    # a day. max-parallel keeps the nflverse rebuild from being hammered by
+    # seven simultaneous cold caches.
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        batch: [C1, C2, C3, C4, AB1, C5, CT1]
     # GitHub's hard ceiling is 360 min. Stay well inside it so the archive and
     # push steps always get to run — a killed job that never pushed has thrown
     # its whole compute away, which is the exact failure this workflow exists
@@ -128,7 +139,8 @@ jobs:
           # so a finished sweep would have gone unnoticed.
           # PIPESTATUS[0] because tee's exit code would otherwise mask the real one.
           timeout "${MINUTES}m" python -W ignore -u -m experiments.bottomup.v2.sweep070 \
-            2>&1 | tee -a experiments/bottomup/results/sweep070/sweep.log
+            --batch "${{ matrix.batch }}" \
+            2>&1 | tee -a "experiments/bottomup/results/sweep070/sweep_${{ matrix.batch }}.log"
           CODE=${PIPESTATUS[0]}
           set -e
           case "$CODE" in
@@ -152,22 +164,22 @@ jobs:
         if: always()
         run: |
           python tools/sweep070_archive.py archive
-          python -m experiments.bottomup.v2.report070 || \
-            echo "::warning::report generation failed; results are still committed"
+          # The report is a SHARED file. Regenerating it in every matrix job
+          # guarantees a push conflict between jobs, so it is rebuilt once in
+          # the `report` job below, after all batches have landed.
 
       - name: Commit and push
         if: always()
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A experiments/bottomup/results/sweep070/ \
-                     docs/ranking/inclusion-campaign-report.md
+          git add -A experiments/bottomup/results/sweep070/
           if git diff --cached --quiet; then
             echo "nothing new to commit"
             exit 0
           fi
-          COMPLETED=$(grep -c "stopped (" experiments/bottomup/results/sweep070/sweep.log || echo 0)
-          git commit -m "sweep070: ${COMPLETED} cells complete (Actions run ${GITHUB_RUN_NUMBER})"
+          COMPLETED=$(grep -c "stopped (" experiments/bottomup/results/sweep070/sweep_${{ matrix.batch }}.log || echo 0)
+          git commit -m "sweep070: ${{ matrix.batch }} — ${COMPLETED} cells complete (run ${GITHUB_RUN_NUMBER})"
           # A session may have pushed while this ran; rebase rather than fail.
           for i in 1 2 3 4 5; do
             git pull --rebase origin claude/pm-agent-setup-gobxa0 && \
@@ -186,11 +198,11 @@ jobs:
             echo ""
             echo "| | |"
             echo "|---|---|"
-            echo "| Cells complete | $(grep -c 'stopped (' experiments/bottomup/results/sweep070/sweep.log || echo 0) |"
+            echo "| Cells complete | $(grep -c 'stopped (' experiments/bottomup/results/sweep070/sweep_${{ matrix.batch }}.log || echo 0) |"
             echo "| Archived cells | $(ls experiments/bottomup/results/sweep070/draws_archive/*.gz 2>/dev/null | wc -l) |"
             echo ""
             echo '```'
-            tail -12 experiments/bottomup/results/sweep070/sweep.log
+            tail -12 "experiments/bottomup/results/sweep070/sweep_${{ matrix.batch }}.log"
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
 
@@ -202,3 +214,37 @@ jobs:
           Compute that completed has been archived and pushed; this step exists \
           so the failure is visible instead of a green run that did nothing."
           exit 1
+
+  # One job, after every batch, so the shared report file is written exactly
+  # once. `always()` because a batch that crashed still leaves gradeable cells
+  # behind and the report should reflect them.
+  report:
+    needs: sweep
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: claude/pm-agent-setup-gobxa0
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: python -m pip install --quiet -r requirements.txt
+      - name: Regenerate the campaign report
+        run: python -m experiments.bottomup.v2.report070
+      - name: Commit and push the report
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A docs/ranking/inclusion-campaign-report.md \
+                     experiments/bottomup/results/sweep070/
+          git diff --cached --quiet && { echo "report unchanged"; exit 0; }
+          git commit -m "sweep070: campaign report (run ${GITHUB_RUN_NUMBER})"
+          for i in 1 2 3 4 5; do
+            git pull --rebase origin claude/pm-agent-setup-gobxa0 && \
+            git push origin "HEAD:claude/pm-agent-setup-gobxa0" && exit 0
+            sleep $((i * 5))
+          done
+          echo "::error::report push failed"; exit 1

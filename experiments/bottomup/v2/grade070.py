@@ -46,6 +46,15 @@ from experiments.bottomup.v2.adr070 import (                        # noqa: E402
 OUT = _REPO / "experiments" / "bottomup" / "results" / "sweep070"
 DRAWS = OUT / "draws"
 CELLS_CSV = OUT / "cells.csv"
+#: Per-batch shards. `cells.csv` was a single shared file, which meant two
+#: batches could never run concurrently: both append observed rows, and two
+#: runners pushing a rewritten shared CSV collide on every merge. Sharding by
+#: batch makes the batches genuinely independent -- each writes only its own
+#: file -- which is what allows the matrix in .github/workflows/sweep070.yml to
+#: run them in parallel. The legacy flat file is still read so nothing already
+#: computed is lost.
+CELLS_DIR = OUT / "cells"
+_CELL_KEY = ["batch", "run", "position", "season", "k"]
 
 #: campaign M for grading: 130 (through C1) + 29 (C2) + 88 (D1) + 12 (D1-A1)
 #: = 259 base, plus every batch REGISTERED into the manifest since (a
@@ -70,6 +79,16 @@ def cell_id(batch: str, arm: str, pos: str) -> str:
 
 
 def load_cells() -> pd.DataFrame:
+    """Union of the legacy flat cells.csv and every per-batch shard."""
+    frames = []
+    if CELLS_CSV.exists():
+        frames.append(pd.read_csv(CELLS_CSV))
+    if CELLS_DIR.exists():
+        for shard in sorted(CELLS_DIR.glob("*.csv")):
+            frames.append(pd.read_csv(shard))
+    if frames:
+        df = pd.concat(frames, ignore_index=True)
+        return df.drop_duplicates(subset=_CELL_KEY, keep="last")
     if not CELLS_CSV.exists():
         return pd.DataFrame()
     return pd.read_csv(CELLS_CSV)

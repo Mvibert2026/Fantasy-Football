@@ -183,14 +183,36 @@ def _task(args: Tuple) -> List[Dict]:
 
 # ------------------------------------------------------------ disk plumbing
 def _append_cells(rows: List[Dict]) -> None:
+    """Write observed rows to a PER-BATCH shard, never to a shared file.
+
+    `cells.csv` used to be one file every batch appended to. That single fact
+    made batch-level parallelism impossible: two runners each rewrite the whole
+    CSV and collide on push. Sharding by batch makes batches independent on
+    disk, which is what lets the workflow matrix run them at the same time.
+    `grade070.load_cells()` unions the shards (and the legacy flat file, so
+    nothing already computed is lost).
+    """
     if not rows:
         return
     new = pd.DataFrame(rows)
-    old = pd.read_csv(CELLS_CSV) if CELLS_CSV.exists() else pd.DataFrame()
-    merged = pd.concat([old, new], ignore_index=True) if len(old) else new
-    merged = merged.drop_duplicates(subset=["batch", "run", "position",
-                                            "season", "k"], keep="last")
-    merged.to_csv(CELLS_CSV, index=False)
+    gr.CELLS_DIR.mkdir(parents=True, exist_ok=True)
+    key = ["batch", "run", "position", "season", "k"]
+    # Control rows all carry batch="CTRL", so batching alone would funnel every
+    # family into one shared CTRL.csv -- reintroducing exactly the collision
+    # this sharding exists to remove. Shard those by family instead (the `run`
+    # column is "CTRL-<family>"). Two jobs may still both compute a shared
+    # family; the rows are identical and load_cells() dedupes, so that costs a
+    # little compute and corrupts nothing.
+    new["_shard"] = new.apply(
+        lambda r: str(r["run"]) if r["batch"] == "CTRL" else str(r["batch"]),
+        axis=1)
+    for shard, grp in new.groupby("_shard", sort=False):
+        grp = grp.drop(columns=["_shard"])
+        p = gr.CELLS_DIR / f"{shard}.csv"
+        prev = pd.read_csv(p) if p.exists() else pd.DataFrame()
+        merged = pd.concat([prev, grp], ignore_index=True) if len(prev) else grp
+        merged = merged.drop_duplicates(subset=key, keep="last")
+        merged.to_csv(p, index=False)
 
 
 def _append_draws(batch: str, arm: str, pos: str, rows: List[Dict]) -> None:
@@ -443,8 +465,54 @@ def _pending_flag_batches(done) -> List[Tuple[str, str]]:
 
 
 # ----------------------------------------------------------------------- main
-def main() -> None:
+def run_single_batch(batch: str) -> None:
+    """Run exactly one batch, then grade it and stop.
+
+    This is what makes batch-level parallelism possible. The default main()
+    walks every phase in order on one machine, which is correct but strictly
+    serial -- and with ~300 cells left and most of the cost in a handful of
+    real effects, serial was the difference between finishing in a day and
+    finishing in a week.
+
+    Isolation is the whole point, so nothing here touches shared state:
+    observed rows go to a per-batch shard (`_append_cells`), draws are already
+    per-cell, grading writes `graded_<batch>.csv`, and progress is recorded in
+    `state_<batch>.json` rather than the shared `state.json`. Two of these can
+    run on two machines and collide on nothing.
+    """
     import importlib
+    OUT.mkdir(parents=True, exist_ok=True)
+    DRAWS.mkdir(parents=True, exist_ok=True)
+    mod = _batch_module(batch)
+    if mod:
+        importlib.import_module(mod)
+    if not any(b == batch for (b, _) in ens.ARMS070):
+        log(f"batch {batch} has no registered arms — nothing to do")
+        return
+    st_path = OUT / f"state_{batch}.json"
+    st = json.loads(st_path.read_text()) if st_path.exists() else \
+        {"phases_done": [], "timings": {}}
+    log(f"single-batch mode: {batch}")
+    log(f"L={L_DRAWS}, h={H_EXCEED}, M={gr.M_CAMPAIGN}, workers={N_WORKERS}")
+    ens.shared_panel()
+    with mp.get_context("fork").Pool(N_WORKERS, initializer=_init_worker) \
+            as pool:
+        batch_phase(pool, batch, st)
+    st["phases_done"] = sorted(set(st["phases_done"]) | {batch})
+    st_path.write_text(json.dumps(st, indent=1))
+    log(f"batch {batch} complete")
+
+
+def main() -> None:
+    import argparse
+    import importlib
+    ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument("--batch", help="run only this batch, then grade and exit "
+                                    "(enables running batches in parallel)")
+    args = ap.parse_args()
+    if args.batch:
+        run_single_batch(args.batch)
+        return
     OUT.mkdir(parents=True, exist_ok=True)
     DRAWS.mkdir(parents=True, exist_ok=True)
     BATCH_FLAGS.mkdir(parents=True, exist_ok=True)

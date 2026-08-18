@@ -1,33 +1,6 @@
 {
- "phases_done": [
-  "VERIFY",
-  "D1A1"
- ],
+ "phases_done": [],
  "timings": {
-  "observed_VERIFY": 20.8,
-  "VERIFY__VD1__QB": 122.9,
-  "VERIFY__VD1__RB": 821.5,
-  "VERIFY__VD1__WR": 286.3,
-  "VERIFY__VD1__TE": 193.2,
-  "observed_D1A1": 69.2,
-  "D1A1__Q0__QB": 0.3,
-  "D1A1__Q0__RB": 0.3,
-  "D1A1__Q0__WR": 0.3,
-  "D1A1__Q0__TE": 1348.2,
-  "D1A1__PG0__QB": 0.0,
-  "D1A1__PG0__RB": 0.0,
-  "D1A1__PG0__WR": 0.0,
-  "D1A1__PG0__TE": 0.0,
-  "D1A1__Q1__QB": 0.3,
-  "D1A1__Q1__RB": 2195.5,
-  "D1A1__Q1__WR": 0.3,
-  "D1A1__Q1__TE": 0.3,
-  "D1A1__Q2__QB": 0.2,
-  "D1A1__Q2__RB": 0.3,
-  "D1A1__Q2__WR": 0.3,
-  "D1A1__Q2__TE": 1637.9,
-  "observed_C1": 33.6,
-  "C1__F0__QB": 430.1,
-  "C1__F0__RB": 75.0
+  "observed_C3": 57.7
  }
 }
