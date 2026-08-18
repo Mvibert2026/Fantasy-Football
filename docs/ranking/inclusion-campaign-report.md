@@ -1,6 +1,6 @@
 # Factor-inclusion campaign — the founder's four numbers
 
-**Generated 2026-08-18 11:14 UTC** by `experiments/bottomup/v2/report070.py` — regenerate any time with `.venv/bin/python -m experiments.bottomup.v2.report070`. The sweep driver regenerates it after every batch grades, so this file is as current as the compute.
+**Generated 2026-08-18 18:21 UTC** by `experiments/bottomup/v2/report070.py` — regenerate any time with `.venv/bin/python -m experiments.bottomup.v2.report070`. The sweep driver regenerates it after every batch grades, so this file is as current as the compute.
 
 Instrument: ADR-070 (permutation nulls, sequential MC, BH at campaign M = 442, calibrated consistency). Panel: tier 2, `m_panel_ppr12`, trained from 2002, graded 2013–2024 (per-position S_pos on every cell). VERIFY gate: PASSED — measured false-positive rate 5.0% against a pre-committed 5.0%, zero placebo inclusions.
 
@@ -13,7 +13,7 @@ Instrument: ADR-070 (permutation nulls, sequential MC, BH at campaign M = 442, c
 | **3. Per-position passes** | QB 1 · RB 2 · WR 3 · TE 3 — table below |
 | **4. Untestable / not yet testable** | see the audit table below |
 
-**24 registered factors are still in the compute queue** (sweep phases done: ['VERIFY', 'D1A1']); the numbers above grow as it drains. Pending: C1:F1 — offensive snap share, recency-weighted; C1:F2 — red-zone (inside-20) usage share of team; C1:F3 — expected fantasy points per game + realised-minus-expected residual; C1:F4 — NGS average separation (lag 1); C1:F5 — route participation and targets per route run (LABELLED PROXY); C1:F6 — steeper recency weighting of prior seasons (0.70/0.22/0.08); C2:A1 — WOPR, recency-weighted (WR/TE); C2:A2 — YAC per reception, EB-shrunk (RB) -- batch-7 block, reused; C2:A3 — receiving share of RB's own points (RB) -- batch-7 block, reused; C2:A4 — late-season role trajectory (RB/WR/TE) -- batch-7 block, reused; C2:A5 — implied team total, lagged (QB/RB/WR/TE); C2:B1 — RB high-carry-season breakpoint (350/375/400 hinge spline); ….
+**24 registered factors are still in the compute queue** (sweep phases done: []); the numbers above grow as it drains. Pending: C1:F1 — offensive snap share, recency-weighted; C1:F2 — red-zone (inside-20) usage share of team; C1:F3 — expected fantasy points per game + realised-minus-expected residual; C1:F4 — NGS average separation (lag 1); C1:F5 — route participation and targets per route run (LABELLED PROXY); C1:F6 — steeper recency weighting of prior seasons (0.70/0.22/0.08); C2:A1 — WOPR, recency-weighted (WR/TE); C2:A2 — YAC per reception, EB-shrunk (RB) -- batch-7 block, reused; C2:A3 — receiving share of RB's own points (RB) -- batch-7 block, reused; C2:A4 — late-season role trajectory (RB/WR/TE) -- batch-7 block, reused; C2:A5 — implied team total, lagged (QB/RB/WR/TE); C2:B1 — RB high-carry-season breakpoint (350/375/400 hinge spline); ….
 
 ## 3 — Which factors passed, per position
 
