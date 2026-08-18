@@ -206,21 +206,42 @@ def run_public_ingestion(db_path: Path, python_exe: str) -> None:
         [python_exe, str(SRC_DIR / "ingest_pfr_advstats.py"), "--db", str(db_path)],
         "2d/9 ingest_pfr_advstats.py",
     )
-    # play_callers_preseason has NO ingestable source -- ingest_play_callers.py
-    # is parked pending a verified one, and the coordinator-continuity factors
-    # are dispositioned BLOCKED because of it. But batch C5/CT1 still QUERIES
-    # the table, and a missing table raises while an empty one simply returns
-    # no rows. Create it empty so a blocked factor reports as blocked instead of
-    # taking the whole run down.
-    print("\n=== 2e/9 play_callers_preseason (empty table; source is parked) ===")
+    # play_callers_preseason. src/ingest_play_callers.py is parked and builds a
+    # DIFFERENT table (`play_callers`) -- assuming otherwise cost a rebuild on
+    # 2026-08-17. The table batches C5/CT1 actually read is built by
+    # experiments/bottomup/factors/coord_preseason.py from Wikipedia navbox
+    # revisions dated before each season's Week 1, which is what produced the
+    # 992 rows in the working database. The raw captures are NOT committed, so
+    # this refetches.
+    #
+    # Non-fatal by design. Those coordinator factors are already dispositioned
+    # BLOCKED, so real rows are a bonus and a Wikipedia outage must not take the
+    # whole campaign down. On any failure the table is created EMPTY, because a
+    # missing table raises where an empty one returns no rows -- the difference
+    # between a factor reporting blocked and a five-hour run dying.
+    print("\n=== 2e/9 coord_preseason.py (play_callers_preseason) ===")
     import importlib.util as _ilu
-    _spec = _ilu.spec_from_file_location("_pc", SRC_DIR / "ingest_play_callers.py")
-    _pc = _ilu.module_from_spec(_spec); _spec.loader.exec_module(_pc)
+    _spec = _ilu.spec_from_file_location(
+        "_cp", REPO_ROOT / "experiments/bottomup/factors/coord_preseason.py")
+    _cp = _ilu.module_from_spec(_spec)
+    try:
+        _spec.loader.exec_module(_cp)
+        _cp.ingest(range(2010, 2026), db_path=db_path)
+    except Exception as exc:                                # noqa: BLE001
+        print(f"  coordinator fetch failed ({type(exc).__name__}: {exc}); "
+              f"creating the table empty and continuing -- these factors are "
+              f"dispositioned BLOCKED, so this is a known gap, not a new one")
+        _conn = sqlite3.connect(db_path)
+        try:
+            _conn.execute(_cp._CREATE_SQL)
+            _conn.execute(_cp._QUAR_SQL)
+            _conn.commit()
+        finally:
+            _conn.close()
     _conn = sqlite3.connect(db_path)
     try:
-        _pc.ensure_table(_conn); _conn.commit()
         n = _conn.execute("SELECT COUNT(*) FROM play_callers_preseason").fetchone()[0]
-        print(f"  table present, {n} rows (0 is expected and correct)")
+        print(f"  play_callers_preseason: {n} rows")
     finally:
         _conn.close()
 
