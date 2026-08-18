@@ -1903,3 +1903,5 @@ FROM ff_opportunity
 WHERE player_id IS NOT NULL AND player_id <> ''
   AND CAST(season AS INTEGER) < ?
 ': no such table: ff_opportunity
+[supervisor] sweep exited code 1 (attempt 1/50); restarting in 60s
+[supervisor] sweep already running; exiting
