@@ -1,15 +1,15 @@
 # Founder requests — combined view
 
-**Generated 2026-08-04 by `tools/founder_requests.py sync` — do not hand-edit.**
+**Generated 2026-08-19 by `tools/founder_requests.py sync` — do not hand-edit.**
 Per-request files in this directory are the source of truth. Edit a request's own file's
 `STATUS:` line, then re-run sync. Protocol: [`README.md`](README.md).
 Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests.md).
 
-**166 requests since freeze.**
+**167 requests since freeze.**
 
 ---
 
-## NEW — 107
+## NEW — 108
 
 | ID | Subject | Raised | Source |
 |---|---|---|---|
@@ -120,6 +120,7 @@ Archive (FR-001..FR-017, frozen): [`../founder-requests.md`](../founder-requests
 | [FR-2026-08-01-turn-the-keys-over-to-fable-to-build-the-next-bo](FR-2026-08-01-turn-the-keys-over-to-fable-to-build-the-next-bo.md) | Turn the keys over to fable to build the next bo | 2026-08-01 | chat 2026-08-01 |
 | [FR-2026-08-03-tests-are-compute-not-tokens-structure-factor-te](FR-2026-08-03-tests-are-compute-not-tokens-structure-factor-te.md) | Tests are compute not tokens structure factor te | 2026-08-03 | pm dispatch 2026-08-03 |
 | [FR-2026-08-04-v3-build-strategy-screen-all-factors-for-predict](FR-2026-08-04-v3-build-strategy-screen-all-factors-for-predict.md) | V3 build strategy screen all factors for predict | 2026-08-04 | chat 2026-08-03 |
+| [FR-2026-08-19-compute-setup-must-not-require-terminal-access-r](FR-2026-08-19-compute-setup-must-not-require-terminal-access-r.md) | Compute setup must not require terminal access r | 2026-08-19 | chat 2026-08-19 |
 
 ## SCOPING — 1
 
