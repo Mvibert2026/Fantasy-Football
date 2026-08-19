@@ -127,14 +127,11 @@ save_now() {
   flock -w 600 9 || return 0
   ./.venv/bin/python tools/sweep070_archive.py archive >/dev/null 2>&1 || true
   if [ -n "${GITHUB_TOKEN:-}" ]; then
-    git add -A experiments/bottomup/results/sweep070/ >/dev/null 2>&1
-    if ! git diff --cached --quiet; then
-      git commit -q -m "sweep070: periodic snapshot from runpod" || true
-      for i in 1 2 3; do
-        git pull --rebase -q origin "$BRANCH" && git push -q origin "HEAD:$BRANCH" && break
-        sleep $((i * 5))
-      done
-    fi
+    # sweep070_push.py, not a pull/push loop: GitHub Actions may be running the
+    # same batches, and a rebase conflict on a binary draws archive otherwise
+    # leaves the repo mid-rebase and every later push in this run fails.
+    ./.venv/bin/python tools/sweep070_push.py --branch "$BRANCH" \
+      --message "sweep070: periodic snapshot from runpod" || true
   fi
 } 9>"$LOCK"
 
@@ -170,14 +167,10 @@ for b in $BATCHES; do
   {
     flock -w 600 9 || true
     if [ -n "${GITHUB_TOKEN:-}" ]; then
-      git add -A experiments/bottomup/results/sweep070/ docs/ranking/inclusion-campaign-report.md
-      if ! git diff --cached --quiet; then
-        git commit -q -m "sweep070: $b complete from runpod ($(nproc) cores)"
-        for i in 1 2 3 4 5; do
-          git pull --rebase origin "$BRANCH" && git push origin "HEAD:$BRANCH" && break
-          echo "push attempt $i failed; retrying"; sleep $((i * 5))
-        done
-      fi
+      ./.venv/bin/python tools/sweep070_push.py --branch "$BRANCH" \
+        --message "sweep070: $b complete from runpod ($(nproc) cores)" \
+        --paths experiments/bottomup/results/sweep070/ \
+                docs/ranking/inclusion-campaign-report.md || true
     fi
   } 9>"$LOCK"
   echo "--- $b done; graded batches so far: $(ls experiments/bottomup/results/sweep070/graded_*.csv 2>/dev/null | wc -l)"
