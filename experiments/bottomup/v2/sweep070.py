@@ -39,6 +39,7 @@ from __future__ import annotations
 
 import json
 import multiprocessing as mp
+import os
 import sys
 import time
 from pathlib import Path
@@ -71,7 +72,16 @@ POLL_SECONDS = 600
 #: Workers. Measured 2026-08-04 on the 4-core container: 3 workers held the box
 #: at 271% of 400% with 21.7% idle, so a fourth is free headroom rather than
 #: oversubscription. The parent is idle while `imap` is in flight.
-N_WORKERS = 4
+#: Overridable so a bigger box can actually use its cores: SWEEP_WORKERS=64.
+#: The draws inside one cell are embarrassingly parallel, and batch-level
+#: parallelism does NOT help the thing that dominates runtime -- a single real
+#: factor grinding through all 8,999 draws. Only more workers does. Measured
+#: headroom for that: at 4 workers the box sat at 398% of 400% with the parent
+#: at 3.5%, i.e. a serial fraction near 1%, so scaling is close to linear well
+#: past 32. Defaults to the core count, capped at 4 to preserve the previous
+#: behaviour on the small containers this normally runs on.
+N_WORKERS = int(os.environ.get("SWEEP_WORKERS", "0")) or min(
+    4, os.cpu_count() or 4)
 
 #: Draws per `imap` batch. Between batches the parent re-reads the whole draws
 #: CSV and re-derives every delta_bar to run the sequential test, so a FIXED
