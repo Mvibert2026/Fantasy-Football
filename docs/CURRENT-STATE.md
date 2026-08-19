@@ -64,10 +64,42 @@ Fixed by memoising on the existing per-draw cache; **verified byte-identical** (
 sandbox, existing test suites pass. Measured speedup: RB 2.8-3.3×, TE 1.4-1.6× per draw,
 single-core. More cores help close to linearly *within* one cell (up to ~12 workers, `CHUNK`-
 limited) but `sweep070.py` runs cells strictly sequentially, so extra cores can't run two cells at
-once — a structural ceiling, not a hardware one. Committed `2792921` on branch
-`worktree-agent-aed7849f952c81398` (pushed); **not yet applied to the live sweep** — `ranker` owns
-that checkout/process, flagged in handoff thread `2026-08-04-sweep070-perf-2-8-3-3x-memoization-
-fix-verified` for pull-in on next restart. Full detail: `docs/ranking/sweep-performance.md`.
+once. Committed `2792921` on branch `worktree-agent-aed7849f952c81398` (pushed). Full detail:
+`docs/ranking/sweep-performance.md`.
+
+**How the campaign actually runs, and what was destroying it — 2026-08-19 (pm).** The campaign
+runs on **GitHub Actions** (`.github/workflows/sweep070.yml`, scheduled from `main`, a 7-batch
+matrix at `max-parallel: 4`, checking out this working branch). Free and uncapped since the repo
+went public. `sweep070.py --batch` gives batch-level parallelism, so the "cells run strictly
+sequentially" ceiling above is historical.
+
+Progress was near-zero for days and the cause was **not** compute. Two defects, both fixed and
+both verified:
+
+1. **`KeyError: 'T2P'`** — control families register as an import side effect and are shared
+   across batches (`T2P` is defined in the C3 adapter, used by C4), so single-batch mode left
+   `ens.TIER2` half-built and every matrix job died. An earlier fix for this was itself wrong.
+2. **The push loop could not survive its own concurrency** — four jobs finish within seconds and
+   all push to one branch; a conflict on a binary draws archive left the repo *mid-rebase*, so all
+   five retries then failed on "cannot pull during a rebase". Jobs computed for hours and saved
+   nothing. Exactly one batch's results landed per run, for days, silently. Now goes through
+   `tools/sweep070_push.py`, which reconciles by union (exact, not heuristic: draws are pure
+   functions of `(cell, k)` and append-only, so *longer wins* is the union; the archive is a pure
+   function of the live draws). Never a force push. Tested:
+   `tests/test_sweep070_push_reconcile.py`.
+
+**Renting a CPU box was tried on 2026-08-19 and abandoned** — the founder could not reach a shell
+on the pod (FR-2026-08-19; `docs/rented-box-runbook.md` has the no-terminal path and the billing
+trap that *Stop* does not end the bill, *Terminate* does). It was also the wrong instrument: a
+faster machine fails faster, and both defects above would have been paid for at $0.96/hr.
+
+**Campaign progress: 1 of 8 batches graded (D1A1), 0 of 75 pool factors graded.** The four-number
+deliverable the founder actually wants — factors tested, factors passed, passes per position,
+untestable with reasons — is still unanswered. **C4K (contract-year status) is known-untestable at
+all four positions**: it trips the look-ahead guard by reading season-N data for a season-N
+feature. The guard was not touched and must not be; this needs a strategist/fable decision (a
+properly-dated preseason proxy, or formal disposition). Sibling C4J shares the family window and
+does not trip it.
 
 **RESOLVED as of this librarian session (2026-07-31), verified not assumed.** The escalation
 below described live, unresolved `<<<<<<< HEAD` / `=======` / `>>>>>>>` git merge-conflict markers
