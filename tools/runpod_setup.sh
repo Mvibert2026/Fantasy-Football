@@ -29,7 +29,18 @@ set -euo pipefail
 REPO_URL="https://github.com/Mvibert2026/Fantasy-Football.git"
 BRANCH="claude/pm-agent-setup-gobxa0"
 WORKDIR="${WORKDIR:-$HOME/ff}"
-BATCHES="${BATCHES:-C1 C2 C3 C4 AB1 C5 CT1}"
+# Order matters on a metered box: the budget may not cover everything, so run
+# the batches whose answers are worth most first, and the biggest last.
+#
+#   AB1 (27 cells) first -- it ablates the factors ALREADY IN the shipped
+#       model. "Is what we are about to draft with actually justified" is the
+#       most decision-relevant question before a real draft, and it is also
+#       one of the smallest batches, so it completes.
+#   C1  (38, part-done) then C2 (29) -- the twelve re-run under the new rule.
+#   C4 (40), C3 (46), C5 (46) -- C4K is excluded by the look-ahead guard.
+#   CT1 (82) last -- the biggest by far and the most likely to be cut off, so
+#       it is the one that should be interrupted rather than anything else.
+BATCHES="${BATCHES:-AB1 C1 C2 C4 C3 C5 CT1}"
 : "${SWEEP_WORKERS:=$(( $(nproc) > 2 ? $(nproc) - 2 : 1 ))}"
 export SWEEP_WORKERS
 
@@ -83,6 +94,35 @@ fi
 echo "--- restoring banked draws"
 ./.venv/bin/python tools/sweep070_archive.py restore
 
+# --- periodic save ----------------------------------------------------------
+# A rented box can be stopped at any moment -- deliberately, when the budget
+# runs out, or by the provider. Archiving only between batches would throw away
+# hours of a long batch. This snapshots every 20 minutes so the most that can
+# ever be lost is 20 minutes of compute.
+#
+# flock because the end-of-batch save below runs the same commands; two git
+# processes in one repo at once corrupts the index.
+LOCK="$WORKDIR/.sweep-git.lock"
+save_now() {
+  flock -w 600 9 || return 0
+  ./.venv/bin/python tools/sweep070_archive.py archive >/dev/null 2>&1 || true
+  if [ -n "${GITHUB_TOKEN:-}" ]; then
+    git add -A experiments/bottomup/results/sweep070/ >/dev/null 2>&1
+    if ! git diff --cached --quiet; then
+      git commit -q -m "sweep070: periodic snapshot from runpod" || true
+      for i in 1 2 3; do
+        git pull --rebase -q origin "$BRANCH" && git push -q origin "HEAD:$BRANCH" && break
+        sleep $((i * 5))
+      done
+    fi
+  fi
+} 9>"$LOCK"
+
+( while true; do sleep 1200; save_now; done ) &
+SAVER_PID=$!
+trap 'kill $SAVER_PID 2>/dev/null || true' EXIT
+echo "--- periodic save every 20 min (pid $SAVER_PID)"
+
 # --- run --------------------------------------------------------------------
 # Batches are independent (per-batch cells shards, state and logs), so they run
 # sequentially here while each one internally uses every core. That is the right
@@ -93,20 +133,27 @@ for b in $BATCHES; do
     2>&1 | tee -a "experiments/bottomup/results/sweep070/sweep_${b}.log" || \
     echo "!!! batch $b exited non-zero; continuing with the rest"
 
-  ./.venv/bin/python tools/sweep070_archive.py archive
+  save_now
   ./.venv/bin/python -m experiments.bottomup.v2.report070 || true
-
-  if [ -n "${GITHUB_TOKEN:-}" ]; then
-    git add -A experiments/bottomup/results/sweep070/ docs/ranking/inclusion-campaign-report.md
-    if ! git diff --cached --quiet; then
-      git commit -q -m "sweep070: $b from runpod ($(nproc) cores)"
-      for i in 1 2 3 4 5; do
-        git pull --rebase origin "$BRANCH" && git push origin "HEAD:$BRANCH" && break
-        echo "push attempt $i failed; retrying"; sleep $((i * 5))
-      done
+  {
+    flock -w 600 9 || true
+    if [ -n "${GITHUB_TOKEN:-}" ]; then
+      git add -A experiments/bottomup/results/sweep070/ docs/ranking/inclusion-campaign-report.md
+      if ! git diff --cached --quiet; then
+        git commit -q -m "sweep070: $b complete from runpod ($(nproc) cores)"
+        for i in 1 2 3 4 5; do
+          git pull --rebase origin "$BRANCH" && git push origin "HEAD:$BRANCH" && break
+          echo "push attempt $i failed; retrying"; sleep $((i * 5))
+        done
+      fi
     fi
-  fi
+  } 9>"$LOCK"
+  echo "--- $b done; graded batches so far: $(ls experiments/bottomup/results/sweep070/graded_*.csv 2>/dev/null | wc -l)"
 done
 
 echo "=== all batches attempted ==="
 grep -c 'stopped (' experiments/bottomup/results/sweep070/sweep_*.log 2>/dev/null || true
+echo
+echo "############################################################"
+echo "#  CAMPAIGN RUN FINISHED — STOP THE POD to stop the meter.  #"
+echo "############################################################"
