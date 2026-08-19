@@ -84,8 +84,10 @@ else
 fi
 
 [ -d .venv ] || "$PY" -m venv .venv
-./.venv/bin/python -m pip install --quiet --upgrade pip
-./.venv/bin/python -m pip install --quiet -r requirements.txt
+# --no-cache-dir: pip's wheel cache is a few hundred MB of pure waste on a box
+# whose disk we are trying not to fill.
+./.venv/bin/python -m pip install --quiet --no-cache-dir --upgrade pip
+./.venv/bin/python -m pip install --quiet --no-cache-dir -r requirements.txt
 
 # --- database ---------------------------------------------------------------
 # ~3.3 GB, gitignored, so it is never in the clone. Built from public sources,
@@ -96,6 +98,17 @@ if [ ! -s data/nfl.db ]; then
 else
   echo "--- database already present ($(du -h data/nfl.db | cut -f1))"
 fi
+
+# Reclaim what the build leaves behind. Measured on the dev box: nflreadpy's
+# download cache is ~430 MB of parquet that is dead weight once the tables are
+# in sqlite, and VACUUM recovers the free pages the ingests churn. Both matter
+# on a small container disk and cost nothing on a large one.
+echo "--- reclaiming build space"
+BEFORE=$(du -sm data/nfl.db | cut -f1)
+rm -rf "$HOME/.cache/nflreadpy" 2>/dev/null || true
+./.venv/bin/python -c "import sqlite3; c=sqlite3.connect('data/nfl.db'); c.execute('VACUUM'); c.close()" || true
+echo "    database ${BEFORE}MB -> $(du -sm data/nfl.db | cut -f1)MB; download cache cleared"
+df -h . | tail -1
 
 # --- restore everything already computed ------------------------------------
 echo "--- restoring banked draws"
