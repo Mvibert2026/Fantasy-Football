@@ -173,22 +173,19 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A experiments/bottomup/results/sweep070/
-          if git diff --cached --quiet; then
-            echo "nothing new to commit"
-            exit 0
-          fi
           COMPLETED=$(grep -c "stopped (" experiments/bottomup/results/sweep070/sweep_${{ matrix.batch }}.log || echo 0)
-          git commit -m "sweep070: ${{ matrix.batch }} — ${COMPLETED} cells complete (run ${GITHUB_RUN_NUMBER})"
-          # A session may have pushed while this ran; rebase rather than fail.
-          for i in 1 2 3 4 5; do
-            git pull --rebase origin claude/pm-agent-setup-gobxa0 && \
-            git push origin "HEAD:claude/pm-agent-setup-gobxa0" && exit 0
-            echo "push attempt $i failed; retrying"
-            sleep $((i * 5))
-          done
-          echo "::error::could not push after 5 attempts — compute is NOT saved"
-          exit 1
+          # Four matrix jobs finish within seconds of each other and all push to
+          # the same branch. The old loop here was `git pull --rebase && push`,
+          # five times -- which cannot work, because a conflict on a binary
+          # draws archive stops the rebase and leaves the repo *in* a rebase, so
+          # every later attempt failed on "cannot pull during a rebase" no
+          # matter how long contention took to clear. One conflict poisoned all
+          # five retries and the job exited having computed for hours and saved
+          # nothing; for days only one batch's results ever landed per run.
+          # sweep070_push.py aborts the rebase and reconciles by union instead.
+          python tools/sweep070_push.py \
+            --branch claude/pm-agent-setup-gobxa0 \
+            --message "sweep070: ${{ matrix.batch }} — ${COMPLETED} cells complete (run ${GITHUB_RUN_NUMBER})"
 
       - name: Summary
         if: always()
@@ -238,13 +235,8 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A docs/ranking/inclusion-campaign-report.md \
-                     experiments/bottomup/results/sweep070/
-          git diff --cached --quiet && { echo "report unchanged"; exit 0; }
-          git commit -m "sweep070: campaign report (run ${GITHUB_RUN_NUMBER})"
-          for i in 1 2 3 4 5; do
-            git pull --rebase origin claude/pm-agent-setup-gobxa0 && \
-            git push origin "HEAD:claude/pm-agent-setup-gobxa0" && exit 0
-            sleep $((i * 5))
-          done
-          echo "::error::report push failed"; exit 1
+          python tools/sweep070_push.py \
+            --branch claude/pm-agent-setup-gobxa0 \
+            --message "sweep070: campaign report (run ${GITHUB_RUN_NUMBER})" \
+            --paths docs/ranking/inclusion-campaign-report.md \
+                    experiments/bottomup/results/sweep070/
