@@ -181,6 +181,26 @@ def _task(args: Tuple) -> List[Dict]:
     raise KeyError(kind)
 
 
+def _task_safe(args: Tuple) -> List[Dict]:
+    """`_task`, but a failure returns a marker row instead of raising.
+
+    One bad arm used to kill the whole batch: `pool.imap` re-raises in the
+    parent, so C4's 36 observed runs all died because a single arm tripped the
+    look-ahead guard. Isolating the failure lets the other arms grade.
+
+    This is deliberately NOT error-swallowing. Every failure is logged, written
+    to errors_<batch>.csv, and the arm simply produces no observed cells -- so
+    it is reported as NOT TESTED rather than quietly counted as a null. A factor
+    that errored and a factor that was measured and found dead must never look
+    the same in the four-number report.
+    """
+    try:
+        return _task(args)
+    except Exception as exc:                                # noqa: BLE001
+        return [{"__error__": f"{type(exc).__name__}: {exc}",
+                 "__task__": " ".join(str(x) for x in args)}]
+
+
 # ------------------------------------------------------------ disk plumbing
 def _append_cells(rows: List[Dict]) -> None:
     """Write observed rows to a PER-BATCH shard, never to a shared file.
@@ -282,8 +302,19 @@ def ensure_observed(pool, arms: List[ens.Arm070], st: Dict) -> None:
         return
     log(f"observed runs needed: {len(tasks)}")
     t0 = time.time()
-    for rows in pool.imap(_task, tasks):
+    errors: List[Dict] = []
+    for rows in pool.imap(_task_safe, tasks):
+        if rows and "__error__" in rows[0]:
+            errors.append(rows[0])
+            log(f"  ARM FAILED — {rows[0]['__task__']}: {rows[0]['__error__']}")
+            continue
         _append_cells(rows)
+    if errors:
+        ep = OUT / f"errors_{arms[0].batch}.csv"
+        pd.DataFrame(errors).to_csv(ep, index=False)
+        log(f"*** {len(errors)} of {len(tasks)} observed runs FAILED and are "
+            f"recorded in {ep.name}. Those arms produce no cells and must be "
+            f"reported as NOT TESTED, never as null. ***")
     st["timings"][f"observed_{arms[0].batch}"] = round(time.time() - t0, 1)
     _save_state(st)
     log(f"observed runs done in {time.time()-t0:.0f}s")
@@ -483,6 +514,19 @@ def run_single_batch(batch: str) -> None:
     import importlib
     OUT.mkdir(parents=True, exist_ok=True)
     DRAWS.mkdir(parents=True, exist_ok=True)
+    # Import EVERY registered batch module, not just this one, then run only
+    # the requested batch. Control families are shared across batches and are
+    # registered as an import side effect -- `T2P` is defined in
+    # factors_c3_adapter.py but used by C4 -- so importing one batch in
+    # isolation left TIER2 incomplete and every matrix job died with
+    # KeyError: 'T2P'. Serial mode never hit this because it imported the
+    # batches cumulatively as it walked the queue. Imports are cheap and
+    # idempotent; only the run below is scoped to one batch.
+    for _, _mod in _pending_flag_batches([]):
+        try:
+            importlib.import_module(_mod)
+        except Exception as exc:                            # noqa: BLE001
+            log(f"could not import {_mod}: {type(exc).__name__}: {exc}")
     mod = _batch_module(batch)
     if mod:
         importlib.import_module(mod)

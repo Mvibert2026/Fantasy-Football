@@ -1,0 +1,9 @@
+__error__,__task__
+"RuntimeError: look-ahead: target 2014 saw {'max_feature_cutoff': 2014, 'max_outcome_season': 2013, 'n_outcome_reads_at_target': 0, 'n_preseason_proxy_reads': 0, 'max_proxy_season': -1, 'season': 2014, 'phase': 'pre_outcome'}",obs C4 C4K QB
+"RuntimeError: look-ahead: target 2014 saw {'max_feature_cutoff': 2014, 'max_outcome_season': 2013, 'n_outcome_reads_at_target': 0, 'n_preseason_proxy_reads': 0, 'max_proxy_season': -1, 'season': 2014, 'phase': 'pre_outcome'}",obs C4 C4K RB
+"RuntimeError: look-ahead: target 2014 saw {'max_feature_cutoff': 2014, 'max_outcome_season': 2013, 'n_outcome_reads_at_target': 0, 'n_preseason_proxy_reads': 0, 'max_proxy_season': -1, 'season': 2014, 'phase': 'pre_outcome'}",obs C4 C4K WR
+"RuntimeError: look-ahead: target 2014 saw {'max_feature_cutoff': 2014, 'max_outcome_season': 2013, 'n_outcome_reads_at_target': 0, 'n_preseason_proxy_reads': 0, 'max_proxy_season': -1, 'season': 2014, 'phase': 'pre_outcome'}",obs C4 C4K TE
+"RuntimeError: look-ahead: target 2014 saw {'max_feature_cutoff': 2014, 'max_outcome_season': 2013, 'n_outcome_reads_at_target': 0, 'n_preseason_proxy_reads': 0, 'max_proxy_season': -1, 'season': 2014, 'phase': 'pre_outcome'}",obs C4 C4Kk QB
+"RuntimeError: look-ahead: target 2014 saw {'max_feature_cutoff': 2014, 'max_outcome_season': 2013, 'n_outcome_reads_at_target': 0, 'n_preseason_proxy_reads': 0, 'max_proxy_season': -1, 'season': 2014, 'phase': 'pre_outcome'}",obs C4 C4Kk RB
+"RuntimeError: look-ahead: target 2014 saw {'max_feature_cutoff': 2014, 'max_outcome_season': 2013, 'n_outcome_reads_at_target': 0, 'n_preseason_proxy_reads': 0, 'max_proxy_season': -1, 'season': 2014, 'phase': 'pre_outcome'}",obs C4 C4Kk WR
+"RuntimeError: look-ahead: target 2014 saw {'max_feature_cutoff': 2014, 'max_outcome_season': 2013, 'n_outcome_reads_at_target': 0, 'n_preseason_proxy_reads': 0, 'max_proxy_season': -1, 'season': 2014, 'phase': 'pre_outcome'}",obs C4 C4Kk TE

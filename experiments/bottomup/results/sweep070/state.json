@@ -1,6 +1,8 @@
 {
  "phases_done": [],
  "timings": {
-  "observed_C3": 57.7
+  "observed_C4": 49.0,
+  "C4__C4I__WR": 186.0,
+  "C4__C4I__TE": 20.8
  }
 }
