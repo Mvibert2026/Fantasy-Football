@@ -24,6 +24,9 @@
 #                   cannot push results back. Never write it into a file in the
 #                   repo -- export it in the shell only (CLAUDE.md 10).
 #   BATCHES         space-separated batches (default: the remaining seven)
+#   MAX_HOURS       wall-clock budget (default 13.5). $14 at $0.96/hr is ~14.5
+#                   hours, so this stops with margin and, crucially, with a
+#                   final push completed rather than mid-write.
 set -euo pipefail
 
 REPO_URL="https://github.com/Mvibert2026/Fantasy-Football.git"
@@ -41,6 +44,10 @@ WORKDIR="${WORKDIR:-$HOME/ff}"
 #   CT1 (82) last -- the biggest by far and the most likely to be cut off, so
 #       it is the one that should be interrupted rather than anything else.
 BATCHES="${BATCHES:-AB1 C1 C2 C4 C3 C5 CT1}"
+MAX_HOURS="${MAX_HOURS:-13.5}"
+START_TS=$(date +%s)
+DEADLINE=$(python3 -c "print(int($START_TS + $MAX_HOURS*3600))")
+remaining() { echo $(( DEADLINE - $(date +%s) )); }
 : "${SWEEP_WORKERS:=$(( $(nproc) > 2 ? $(nproc) - 2 : 1 ))}"
 export SWEEP_WORKERS
 
@@ -128,10 +135,22 @@ echo "--- periodic save every 20 min (pid $SAVER_PID)"
 # sequentially here while each one internally uses every core. That is the right
 # split: within-cell parallelism is what the expensive cells need.
 for b in $BATCHES; do
-  echo "=== batch $b ==="
-  ./.venv/bin/python -W ignore -u -m experiments.bottomup.v2.sweep070 --batch "$b" \
+  LEFT=$(remaining)
+  # Below a quarter hour there is not enough time for a cell to finish AND be
+  # pushed, and an unpushed draw on a box about to be destroyed is worth
+  # nothing. Stop while the result still gets home.
+  if [ "$LEFT" -lt 900 ]; then
+    echo "=== budget spent ($(( LEFT ))s left); stopping before $b ==="
+    break
+  fi
+  echo "=== batch $b — $(( LEFT / 60 )) min of budget left ==="
+  # Cap the batch at the remaining budget. A cut-off batch is not lost work:
+  # every completed draw is banked and the next machine resumes from the next
+  # k. This just stops one huge batch (CT1 is 82 cells) from eating the whole
+  # clock and leaving the smaller ones unrun.
+  timeout "${LEFT}s" ./.venv/bin/python -W ignore -u -m experiments.bottomup.v2.sweep070 --batch "$b" \
     2>&1 | tee -a "experiments/bottomup/results/sweep070/sweep_${b}.log" || \
-    echo "!!! batch $b exited non-zero; continuing with the rest"
+    echo "!!! batch $b stopped early (budget or error); continuing"
 
   save_now
   ./.venv/bin/python -m experiments.bottomup.v2.report070 || true
@@ -151,7 +170,9 @@ for b in $BATCHES; do
   echo "--- $b done; graded batches so far: $(ls experiments/bottomup/results/sweep070/graded_*.csv 2>/dev/null | wc -l)"
 done
 
-echo "=== all batches attempted ==="
+echo "=== finished after $(( ( $(date +%s) - START_TS ) / 60 )) minutes ==="
+echo "graded batches: $(ls experiments/bottomup/results/sweep070/graded_*.csv 2>/dev/null | wc -l)"
+echo "archived cells: $(ls experiments/bottomup/results/sweep070/draws_archive/*.gz 2>/dev/null | wc -l)"
 grep -c 'stopped (' experiments/bottomup/results/sweep070/sweep_*.log 2>/dev/null || true
 echo
 echo "############################################################"
