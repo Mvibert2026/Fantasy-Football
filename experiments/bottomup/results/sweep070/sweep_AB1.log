@@ -1,0 +1,9 @@
+[2026-08-19 05:34:13] single-batch mode: AB1
+[2026-08-19 05:34:13] L=8999, h=20, M=442, workers=4
+[2026-08-19 05:34:21] AB1__ABAGE__QB: stopped (h_reached) at n=29 p_two=1 after 0s
+[2026-08-19 05:34:21] AB1__ABAGE__RB: stopped (h_reached) at n=20 p_two=1 after 0s
+[2026-08-19 05:34:21] AB1__ABAGE__WR: stopped (h_reached) at n=22 p_two=1 after 0s
+[2026-08-19 05:34:21] AB1__ABAGE__TE: stopped (h_reached) at n=23 p_two=1 after 0s
+[2026-08-19 05:34:21] AB1__ABEVID__QB: stopped (h_reached) at n=24 p_two=1 after 0s
+[2026-08-19 05:34:21] AB1__ABEVID__RB: stopped (h_reached) at n=89 p_two=0.4494 after 0s
+[2026-08-19 05:34:21] AB1__ABEVID__WR: stopped (h_reached) at n=47 p_two=0.8511 after 0s
