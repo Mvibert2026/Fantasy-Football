@@ -118,3 +118,43 @@ Traceback (most recent call last):
   File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/multiprocessing/pool.py", line 873, in next
     raise value
 KeyError: 'T2P'
+[2026-08-19 03:30:09] single-batch mode: C4
+[2026-08-19 03:30:09] L=8999, h=20, M=442, workers=4
+[2026-08-19 03:30:19] observed runs needed: 36
+multiprocessing.pool.RemoteTraceback: 
+"""
+Traceback (most recent call last):
+  File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/multiprocessing/pool.py", line 125, in worker
+    result = (True, func(*args, **kwds))
+                    ^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/Fantasy-Football/Fantasy-Football/experiments/bottomup/v2/sweep070.py", line 160, in _task
+    players = ens.run_players(panel, batch, arm, pos, k=0)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/Fantasy-Football/Fantasy-Football/experiments/bottomup/v2/ensemble070.py", line 347, in run_players
+    ff, ft, lt = window_for(a.family, position)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/Fantasy-Football/Fantasy-Football/experiments/bottomup/v2/ensemble070.py", line 97, in window_for
+    ff, ft = TIER2[family][position]
+             ~~~~~^^^^^^^^
+KeyError: 'T2P'
+"""
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/runner/work/Fantasy-Football/Fantasy-Football/experiments/bottomup/v2/sweep070.py", line 576, in <module>
+    main()
+  File "/home/runner/work/Fantasy-Football/Fantasy-Football/experiments/bottomup/v2/sweep070.py", line 514, in main
+    run_single_batch(args.batch)
+  File "/home/runner/work/Fantasy-Football/Fantasy-Football/experiments/bottomup/v2/sweep070.py", line 500, in run_single_batch
+    batch_phase(pool, batch, st)
+  File "/home/runner/work/Fantasy-Football/Fantasy-Football/experiments/bottomup/v2/sweep070.py", line 411, in batch_phase
+    ensure_observed(pool, arms, st)
+  File "/home/runner/work/Fantasy-Football/Fantasy-Football/experiments/bottomup/v2/sweep070.py", line 285, in ensure_observed
+    for rows in pool.imap(_task, tasks):
+                ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/multiprocessing/pool.py", line 873, in next
+    raise value
+KeyError: 'T2P'
