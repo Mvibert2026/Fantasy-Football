@@ -1,6 +1,6 @@
 # Factor-inclusion campaign — the founder's four numbers
 
-**Generated 2026-09-05 09:07 UTC** by `experiments/bottomup/v2/report070.py` — regenerate any time with `.venv/bin/python -m experiments.bottomup.v2.report070`. The sweep driver regenerates it after every batch grades, so this file is as current as the compute.
+**Generated 2026-09-05 13:29 UTC** by `experiments/bottomup/v2/report070.py` — regenerate any time with `.venv/bin/python -m experiments.bottomup.v2.report070`. The sweep driver regenerates it after every batch grades, so this file is as current as the compute.
 
 Instrument: ADR-070 (permutation nulls, sequential MC, BH at campaign M = 442, calibrated consistency). Panel: tier 2, `m_panel_ppr12`, trained from 2002, graded 2013–2024 (per-position S_pos on every cell). VERIFY gate: PASSED — measured false-positive rate 5.0% against a pre-committed 5.0%, zero placebo inclusions.
 
