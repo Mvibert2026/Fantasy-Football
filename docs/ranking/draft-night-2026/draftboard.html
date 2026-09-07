@@ -261,20 +261,20 @@ select:focus{outline:2px solid var(--accent);outline-offset:-1px}
     <div class="intro">
       <strong>Picks 51&ndash;100 &mdash; rounds 6 to 10.</strong> Your starters are mostly set by
       here, so this is where the draft is actually won or lost: every one of these is a bet on a
-      role rather than on a known quantity. Sorted by <span class="k">upside</span>. Tap any player
-      for the case and the risk. <strong>Ordered by upside, not by rank</strong> &mdash; use the
-      sort control above for ECR, ADP, or the gap between them.
+      role rather than on a known quantity. <strong>Ranked best-first</strong>; sort by
+      <span class="k">Value vs ADP</span> to see which of them the room lets slide furthest past
+      where the experts have them. Tap any player for the case and the risk.
     </div>
     <div class="list" id="list-mid"></div>
   </section>
   <section id="p-late" role="tabpanel" aria-labelledby="t-late" hidden>
     <div class="intro">
-      <strong>Young, late, and someone believes.</strong> Everyone here goes at pick 100 or later
-      (round 10+), is 25 or younger, and is sorted by <span class="k">upside</span> &mdash; how many
-      picks higher the single most bullish of 135 experts has him than consensus does. It is a
-      measurable stand-in for &ldquo;sleeper,&rdquo; not a vibe. <strong>Ordered by upside, not by
-      rank</strong> &mdash; change that with the sort control above. ADP is from 2,879 real
-      10-team half-PPR drafts.
+      <strong>Young, and still there late.</strong> Everyone here goes at pick 101 or later and is
+      26 or younger, <strong>ranked best-first against each other</strong> &mdash; so the top of this
+      list is simply the best young player left, not the one with the loudest outlier.
+      <span class="k">Upside</span> is still on every card (how many picks higher the most bullish
+      of 135 experts has him) and you can sort by it, but it breaks ties rather than setting the
+      order. ADP is from 2,879 real 10-team half-PPR drafts.
     </div>
     <div class="list" id="list-late"></div>
   </section>
@@ -429,7 +429,7 @@ document.querySelectorAll('nav button').forEach(b => b.addEventListener("click",
   tab = b.id.slice(2);
   ["board","mid","late","sit"].forEach(t => document.getElementById("p-" + t).hidden = (t !== tab));
   if (tab !== "sit"){
-    sort = (tab === "board") ? "ecr" : "up";
+    sort = "ecr";
     document.getElementById("sort").value = sort;
   }
   document.getElementById("controls").style.display = "";
