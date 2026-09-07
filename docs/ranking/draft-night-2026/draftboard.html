@@ -96,14 +96,17 @@ select:focus{outline:2px solid var(--accent);outline-offset:-1px}
   display:grid;grid-template-columns:34px 1fr auto;gap:8px;align-items:start;
   background:var(--surface);border:1px solid var(--line);border-radius:var(--r);
   padding:7px 8px 7px 6px;box-shadow:var(--shadow);
+  cursor:pointer;-webkit-tap-highlight-color:rgba(14,107,92,.10);
 }
 .row.gone{display:none}
+.row:active{background:var(--surface2)}
+.row.open{border-color:var(--accent)}
 .rank{font-size:13px;font-weight:600;color:var(--ink2);text-align:right;line-height:1.15;padding-top:2px}
 .rank small{display:block;font-size:9.5px;color:var(--muted);font-weight:500}
 .mid{min-width:0}
 .nm{
   display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;
-  font-size:15px;font-weight:600;letter-spacing:-.005em;cursor:pointer;line-height:1.2;
+  font-size:15px;font-weight:600;letter-spacing:-.005em;line-height:1.2;
 }
 .nm .pos{font-size:11.5px;font-weight:600;color:var(--accent);letter-spacing:.03em}
 .meta{font-size:11px;color:var(--muted);margin-top:1px;letter-spacing:.01em;display:flex;flex-wrap:wrap;gap:4px;align-items:center}
@@ -150,7 +153,11 @@ select:focus{outline:2px solid var(--accent);outline-offset:-1px}
 .facts{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:3px}
 .facts li{font-size:12px;color:var(--muted);padding-left:11px;position:relative;line-height:1.4}
 .facts li:before{content:"";position:absolute;left:0;top:7px;width:4px;height:4px;border-radius:50%;background:var(--line)}
-.nm .more{font-size:10px;color:var(--muted);font-weight:600;letter-spacing:.04em}
+.nm .more{
+  font-size:9px;color:var(--accent);font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+  background:var(--accent-soft);border-radius:4px;padding:2px 5px;white-space:nowrap;
+}
+.row.open .nm .more{background:var(--accent);color:var(--accent-ink)}
 
 .take{
   appearance:none;background:var(--surface2);border:1px solid var(--line);color:var(--muted);
@@ -323,7 +330,7 @@ function rowHTML(p){
   return `<article class="row ${sev} ${drafted.has(id) && !showDrafted ? "gone":""}" data-id="${esc(id)}">
     <div class="rank mono">${p.r}<small>${esc(p.pr||"")}</small></div>
     <div class="mid">
-      <div class="nm" data-x="1">${esc(p.n)} <span class="pos">${esc(p.p)}</span><span class="more">&#9662;</span></div>
+      <div class="nm">${esc(p.n)} <span class="pos">${esc(p.p)}</span><span class="more">Details</span></div>
       <div class="meta"><span class="mono">${bits.join(" &middot; ")}</span>${p.st ? `<span class="status s-${esc(p.st)}">${esc(p.st)}</span>` : ""}${tags}</div>
       ${note ? `<div class="note" hidden>${note}</div>` : ""}
     </div>
@@ -393,10 +400,12 @@ document.addEventListener("click", e => {
     if (drafted.has(id)) { drafted.delete(id); } else { drafted.add(id); toast(id.split("|")[1], id); }
     save(); render(); return;
   }
-  const nm = e.target.closest("[data-x]");
-  if (nm){
-    const n = nm.closest(".mid").querySelector(".note");
-    if (n) n.hidden = !n.hidden;
+  const row = e.target.closest(".row");
+  if (row){
+    const n = row.querySelector(".note");
+    if (!n) return;
+    n.hidden = !n.hidden;
+    row.classList.toggle("open", !n.hidden);
   }
 });
 document.getElementById("undobtn").addEventListener("click", () => {
