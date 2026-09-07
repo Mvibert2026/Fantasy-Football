@@ -34,4 +34,9 @@ experiments/bottomup/results/sweep070/draws/
 
 # Local virtualenvs (a second one appeared 2026-08-04 and was untracked but
 # not ignored, which is one careless `git add -A` away from a 300 MB commit).
+# `.venv2/` was ignored then and the PRIMARY `.venv/` was somehow missed --
+# caught 2026-09-07 when a container reset forced a rebuild and it showed up
+# untracked at 265 MB. The repo is public, so a commit like that is permanent
+# and world-readable even if reverted.
+.venv/
 .venv2/
